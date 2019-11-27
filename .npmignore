@@ -1,0 +1,8 @@
+**/*.ts
+!**/*.d.ts
+.git/
+test/
+hooks/
+.circleci/
+tsconfig.json
+setupHooks

@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "ES2016",
+        "strictNullChecks": true,
+        "declaration": true,
+        "module": "commonJS",
+        "outDir": "build",
+        "moduleResolution": "Node",
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "noImplicitThis": true,
+        "lib": ["ES2017"]
+    },
+    "include": [
+        "ts/**/*"
+    ],
+    "exclude": [
+        "build"
+    ],
+    "compileOnSave": true
+}

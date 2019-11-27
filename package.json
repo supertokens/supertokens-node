@@ -1,0 +1,38 @@
+{
+  "name": "supertokens-node",
+  "version": "0.0.1",
+  "description": "NodeJS driver for SuperTokens core",
+  "main": "index.js",
+  "scripts": {
+    "test": "TEST_MODE=testing npx mocha",
+    "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit",
+    "build": "cd lib && npx tsc -p tsconfig.json",
+    "pretty": "cd lib && npx prettier --write --config .prettierrc \"ts/**/*.ts\" \"build/**/*.js\" \"../test/**/*.js\"",
+    "build-pretty": "npm run build && npm run pretty",
+    "pretty-check": "cd lib && npx prettier --check --config .prettierrc \"ts/**/*.ts\" \"build/**/*.js\" \"../test/**/*.js\"",
+    "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
+  },
+  "keywords": [
+    "auth",
+    "authentication",
+    "authorisation",
+    "nodejs",
+    "supertokens",
+    "jwt",
+    "refresh tokens"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supertokens/supertokens-node.git"
+  },
+  "author": "rishabhpoddar",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/supertokens/supertokens-node/issues"
+  },
+  "homepage": "https://github.com/supertokens/supertokens-node#readme",
+  "devDependencies": {
+    "mocha": "6.1.4",
+    "typescript": "3.5.2"
+  }
+}

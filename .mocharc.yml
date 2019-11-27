@@ -1,0 +1,5 @@
+spec: test/**/*.test.js
+exit: true
+slow: 10000
+timeout: 20000
+reporter: spec

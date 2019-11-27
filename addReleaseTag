@@ -1,0 +1,144 @@
+#!/bin/bash
+# working directory is inside com-*/. Expects a releasePassword file to be ../
+
+# get version------------
+version=`cat package.json | grep -e '"version":'`
+while IFS='"' read -ra ADDR; do
+    counter=0
+    for i in "${ADDR[@]}"; do
+        if [ $counter == 3 ]
+        then
+            version=$i
+        fi
+        counter=$(($counter+1))
+    done
+done <<< "$version"
+
+branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
+branch_name="(unnamed branch)"     # detached HEAD
+
+branch_name=${branch_name##refs/heads/}
+
+# check if branch is correct based on the version-----------
+
+if ! [[ $version == $branch_name* ]]
+then
+	RED='\033[0;31m'
+  NC='\033[0m' # No Color
+  printf "${RED}Adding tag to wrong branch. Stopping process${NC}\n"
+  exit 1
+fi
+
+git fetch --prune --prune-tags
+
+password=`cat ./apiPassword`
+
+
+# we get from the server is the tests have passed or not.
+testPassedJson=`curl -s -X GET \
+"https://api.supertokens.io/0/driver?password=$password&planType=FREE&version=$version&name=node" \
+-H 'api-version: 0'`
+
+
+if [[ `echo $testPassedJson | jq .testPassed` == "null"  ]]
+then
+  testPassed="false"
+else
+  testPassed=`echo $testPassedJson | jq .testPassed`
+fi
+
+if [[ $testPassed == "false" ]]
+then
+	RED='\033[0;31m'
+  NC='\033[0m' # No Color
+  printf "${RED}All tests have not passed. So stopping process.${NC}\n"
+  exit 1
+fi
+
+# check that current commit has a dev tag and that it is the correct version
+# get current commit hash------------
+if [ $# -eq 0 ]
+then
+	commit_hash=`git log --pretty=format:'%H' -n 1`
+else
+	commit_hash=$1
+fi
+
+
+# check if current commit already has a tag or not------------
+currTag=`git tag -l --points-at $commit_hash`
+
+expectedCurrTag=dev-v$version
+
+if [[ $currTag == $expectedCurrTag ]]
+then
+	continue=1
+else
+	RED='\033[0;31m'
+	NC='\033[0m'
+	printf "${RED}This commit does not have the right tag for the version you want to release.${NC}\n"
+	exit 1
+fi
+
+releasePassword=`cat ./releasePassword`
+
+# now we call the patch API to make it release mode
+responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PATCH \
+    https://api.supertokens.io/0/driver \
+    -H 'Content-Type: application/json' \
+    -H 'api-version: 0' \
+    -d "{
+        \"password\": \"$releasePassword\",
+        \"planType\":\"FREE\",
+        \"name\":\"node\",
+        \"version\":\"$version\",
+        \"release\": true
+    }"`
+
+if [ $responseStatus -ne "200" ]
+then
+    RED='\033[0;31m'
+    NC='\033[0m'
+    printf "${RED}patch api failed, removing release tag. Please add dev tag again and then release again.${NC}\n"
+    git tag --delete v$version
+    git push --delete origin v$version
+    exit 1
+fi
+
+git tag --delete $currTag
+git push --delete origin $currTag
+
+git tag v$version
+git push --tags
+
+
+response=`curl -s -X GET \
+"https://api.supertokens.io/0/driver/latest/check?password=$password&planType=FREE&version=$version&name=node" \
+-H 'api-version: 0'`
+response=`echo $response | jq .isLatest`
+
+
+if [[ $response == "null"  ]]
+then
+  RED='\033[0;31m'
+  NC='\033[0m'
+  printf "${RED}error while determining if we should push to master or not. Please do so manually if needed:${NC}\n"
+  echo "git merge -s ours master"
+  echo "git checkout master"
+  echo "git merge $branch_name"
+  echo "git push"
+  echo "git checkout $branch_name"
+  exit 1
+fi
+
+if [[ $response == "true" ]]
+then
+  echo "pushing to mater..."
+  git merge -s ours master
+  git checkout master
+  git merge $branch_name
+  git push
+  git checkout $branch_name
+fi
+
+echo "done!"
