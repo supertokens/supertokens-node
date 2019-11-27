@@ -88,7 +88,6 @@ while IFS='"' read -ra ADDR; do
     done
 done <<< "$version"
 
-
 # get git branch name-----------
 
 branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
@@ -106,7 +105,7 @@ then
 elif [[ $version == $branch_name* ]]
 then
 	continue=1
-elif ! [[ $branch_name* =~ ^[0-9].[0-9]$ ]]
+elif ! [[ $branch_name =~ ^[0-9].[0-9]$ ]]
 then
 	YELLOW='\033[1;33m'
 	NC='\033[0m' # No Color
