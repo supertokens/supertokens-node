@@ -1,4 +1,5 @@
 import { HandshakeInfo } from "./handshakeInfo";
+import { Querier } from "./querier";
 import { TypeInput } from "./types";
 
 export { AuthError as Error } from "./error";
@@ -7,12 +8,11 @@ export { AuthError as Error } from "./error";
  * Please create a database in your mysql instance before calling this function
  * @throws AuthError GENERAL_ERROR in case anything fails.
  */
-export async function init(config: TypeInput) {
-    try {
-        await HandshakeInfo.getInstance();
-    } catch (err) {
-        // ignored..
-    }
+export function init(hosts: TypeInput) {
+    Querier.initInstance(hosts);
+    HandshakeInfo.getInstance().catch(err => {
+        // ignored
+    });
 }
 
 /**

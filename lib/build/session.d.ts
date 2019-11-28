@@ -5,7 +5,7 @@ export { AuthError as Error } from "./error";
  * Please create a database in your mysql instance before calling this function
  * @throws AuthError GENERAL_ERROR in case anything fails.
  */
-export declare function init(config: TypeInput): Promise<void>;
+export declare function init(hosts: TypeInput): void;
 /**
  * @description call this to "login" a user.
  * @throws GENERAL_ERROR in case anything fails.

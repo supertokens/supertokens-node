@@ -23,8 +23,8 @@ import { TypeInput } from "./types";
  * @param client: mongo client. Default is undefined. If you provide this, please make sure that it is already connected to the right database that has the auth collections. If you do not provide this, then the library will manage its own connection.
  * @throws AuthError GENERAL_ERROR in case anything fails.
  */
-export async function init(config: TypeInput) {
-    return SessionFunctions.init(config);
+export function init(hosts: TypeInput) {
+    SessionFunctions.init(hosts);
 }
 
 /**

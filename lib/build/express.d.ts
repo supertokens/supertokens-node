@@ -7,7 +7,7 @@ import { TypeInput } from "./types";
  * @param client: mongo client. Default is undefined. If you provide this, please make sure that it is already connected to the right database that has the auth collections. If you do not provide this, then the library will manage its own connection.
  * @throws AuthError GENERAL_ERROR in case anything fails.
  */
-export declare function init(config: TypeInput): Promise<void>;
+export declare function init(hosts: TypeInput): void;
 /**
  * @description call this to "login" a user. This overwrites any existing session that exists.
  * To check if a session exists, call getSession function.
