@@ -88,6 +88,28 @@ while IFS='"' read -ra ADDR; do
     done
 done <<< "$version"
 
+codeversion=`cat ./lib/build/version.js | grep -e 'version'`
+while IFS='"' read -ra ADDR; do
+    counter=0
+    for i in "${ADDR[@]}"; do
+        if [ $counter == 1 ]
+        then
+            codeversion=$i
+        fi
+        counter=$(($counter+1))
+    done
+done <<< "$codeversion"
+
+echo $codeversion
+
+if [ $version != $codeversion ]
+then
+    RED='\033[0;31m'
+    NC='\033[0m' # No Color
+    printf "${RED}Version codes in constants.ts and package.json are not the same${NC}\n"
+    exit 1
+fi
+
 # get git branch name-----------
 
 branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
