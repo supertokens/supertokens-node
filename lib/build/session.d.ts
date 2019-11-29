@@ -61,7 +61,7 @@ export declare function getSession(accessToken: string, antiCsrfToken: string | 
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
- * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, UNAUTHORISED_AND_TOKEN_THEFT_DETECTED
+ * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
 export declare function refreshSession(refreshToken: string): Promise<{
     session: {

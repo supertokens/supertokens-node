@@ -92,29 +92,30 @@ export async function getSession(
 }> {
     let handShakeInfo = await HandshakeInfo.getInstance();
 
-    // TODO: first try to verify here.. if failed, then verify with webserver
+    // TODO: first try to verify here..
 
-    return {
-        session: {
-            handle: "",
-            userId: "",
-            jwtPayload: {}
-        },
-        accessToken: {
-            token: "",
-            expiry: 0,
-            createdTime: 0,
-            cookiePath: "",
-            cookieSecure: true,
-            domain: ""
-        }
-    };
+    let response = await Querier.getInstance().sendPostRequest("/session/verify", {
+        accessToken,
+        antiCsrfToken,
+        doAntiCsrfCheck
+    });
+    if (response.status == "OK") {
+        let instance = await HandshakeInfo.getInstance();
+        instance.updateJwtSigningPublicKey(response.jwtSigningPublicKey);
+        delete response.status;
+        delete response.jwtSigningPublicKey;
+        return response;
+    } else if (response.status == "UNAUTHORISED") {
+        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+    } else {
+        throw generateError(AuthError.TRY_REFRESH_TOKEN, new Error(response.message));
+    }
 }
 
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
- * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, UNAUTHORISED_AND_TOKEN_THEFT_DETECTED
+ * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
 export async function refreshSession(
     refreshToken: string
