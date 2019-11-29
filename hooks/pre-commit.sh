@@ -106,7 +106,7 @@ if [ $version != $codeversion ]
 then
     RED='\033[0;31m'
     NC='\033[0m' # No Color
-    printf "${RED}Version codes in constants.ts and package.json are not the same${NC}\n"
+    printf "${RED}Version codes in version.ts and package.json are not the same${NC}\n"
     exit 1
 fi
 
