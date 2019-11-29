@@ -1,5 +1,4 @@
 import * as ST from "./express";
-import { Querier } from "./querier";
 
 export * from "./express";
 
@@ -12,12 +11,3 @@ ST.init([
         port: 8080
     }
 ]);
-
-Querier.getInstance()
-    .sendPostRequest("/", {})
-    .then(a => {
-        console.log(a);
-    })
-    .catch(err => {
-        console.log(err);
-    });

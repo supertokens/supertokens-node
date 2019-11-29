@@ -1,3 +1,5 @@
+import { Querier } from "./querier";
+
 export class HandshakeInfo {
     static instance: HandshakeInfo | undefined;
 
@@ -10,8 +12,14 @@ export class HandshakeInfo {
     // @throws GENERAL_ERROR
     static async getInstance(): Promise<HandshakeInfo> {
         if (HandshakeInfo.instance == undefined) {
-            // TODO: webserver call
-            HandshakeInfo.instance = new HandshakeInfo("", "", true, "", "");
+            let response = await Querier.getInstance().sendPostRequest("/handshake", {});
+            HandshakeInfo.instance = new HandshakeInfo(
+                response.jwtSigningPublicKey,
+                response.cookieDomain,
+                response.cookieSecure,
+                response.accessTokenPath,
+                response.refreshTokenPath
+            );
         }
         return HandshakeInfo.instance;
     }
