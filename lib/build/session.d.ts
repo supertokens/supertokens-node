@@ -38,7 +38,6 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
         createdTime: number;
     };
     antiCsrfToken: string | undefined;
-    jwtSigningPublicKey: string;
 }>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication

@@ -17,7 +17,7 @@ export class AuthError {
     static GENERAL_ERROR = 1000;
     static UNAUTHORISED = 2000;
     static TRY_REFRESH_TOKEN = 3000;
-    static UNAUTHORISED_AND_TOKEN_THEFT_DETECTED = 4000;
+    static TOKEN_THEFT_DETECTED = 4000;
 
     static isErrorFromAuth = (err: any): err is TypeAuthError => {
         return err.errMagic === ERROR_MAGIC;

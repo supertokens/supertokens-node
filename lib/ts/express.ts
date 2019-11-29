@@ -7,6 +7,7 @@ import {
     getAccessTokenFromCookie,
     getAntiCsrfTokenFromHeaders,
     getRefreshTokenFromCookie,
+    saveFrontendInfoFromRequest,
     setAntiCsrfTokenInHeaders,
     setIdRefreshTokenInHeader,
     setOptionsAPIHeader
@@ -79,6 +80,7 @@ export async function getSession(
     res: express.Response,
     doAntiCsrfCheck: boolean
 ): Promise<Session> {
+    saveFrontendInfoFromRequest(req);
     let accessToken = getAccessTokenFromCookie(req);
     if (accessToken === undefined) {
         // maybe the access token has expired.
@@ -115,10 +117,11 @@ export async function getSession(
 
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
- * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, UNAUTHORISED_AND_TOKEN_THEFT_DETECTED
+ * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  * @sideEffects may remove cookies, or change the accessToken and refreshToken.
  */
 export async function refreshSession(req: express.Request, res: express.Response): Promise<Session> {
+    saveFrontendInfoFromRequest(req);
     let inputRefreshToken = getRefreshTokenFromCookie(req);
     if (inputRefreshToken === undefined) {
         let handShakeInfo = await HandshakeInfo.getInstance();
@@ -163,7 +166,7 @@ export async function refreshSession(req: express.Request, res: express.Response
     } catch (err) {
         if (
             AuthError.isErrorFromAuth(err) &&
-            (err.errType === AuthError.UNAUTHORISED || err.errType === AuthError.UNAUTHORISED_AND_TOKEN_THEFT_DETECTED)
+            (err.errType === AuthError.UNAUTHORISED || err.errType === AuthError.TOKEN_THEFT_DETECTED)
         ) {
             let handShakeInfo = await HandshakeInfo.getInstance();
             clearSessionFromCookie(
@@ -290,7 +293,6 @@ export class Session {
 
     /**
      * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
-     * @param newSessionInfo this can be anything: an array, a promitive type, object etc etc. This will overwrite the current value stored in the database.
      * @sideEffect may clear cookies from response.
      * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
      */

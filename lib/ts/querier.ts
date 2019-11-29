@@ -60,11 +60,73 @@ export class Querier {
                 deviceDriverInfo
             };
         }
-        return this.sendPostRequestHelper(path, body, this.hosts.length);
+        return this.sendRequestHelper(
+            path,
+            "POST",
+            (url: string) => {
+                return axios({
+                    method: "POST",
+                    url,
+                    data: body
+                });
+            },
+            this.hosts.length
+        );
     };
 
     // path should start with "/"
-    private sendPostRequestHelper = async (path: string, body: any, numberOfTries: number): Promise<any> => {
+    sendDeleteRequest = async (path: string, body: any): Promise<any> => {
+        return this.sendRequestHelper(
+            path,
+            "DELETE",
+            (url: string) => {
+                return axios({
+                    method: "DELETE",
+                    url,
+                    data: body
+                });
+            },
+            this.hosts.length
+        );
+    };
+
+    // path should start with "/"
+    sendGetRequest = async (path: string, params: any): Promise<any> => {
+        return this.sendRequestHelper(
+            path,
+            "GET",
+            (url: string) => {
+                return axios.get(url, {
+                    params
+                });
+            },
+            this.hosts.length
+        );
+    };
+
+    // path should start with "/"
+    sendPutRequest = async (path: string, body: any): Promise<any> => {
+        return this.sendRequestHelper(
+            path,
+            "PUT",
+            (url: string) => {
+                return axios({
+                    method: "PUT",
+                    url,
+                    data: body
+                });
+            },
+            this.hosts.length
+        );
+    };
+
+    // path should start with "/"
+    private sendRequestHelper = async (
+        path: string,
+        method: string,
+        axiosFunction: (url: string) => Promise<any>,
+        numberOfTries: number
+    ): Promise<any> => {
         if (numberOfTries == 0) {
             throw generateError(AuthError.GENERAL_ERROR, new Error("no SuperTokens core available to query"));
         }
@@ -72,20 +134,22 @@ export class Querier {
         this.lastTriedIndex++;
         this.lastTriedIndex = this.lastTriedIndex % this.hosts.length;
         try {
-            let response = await axios.post("http://" + currentHost.hostname + ":" + currentHost.port + path, body);
+            let response = await axiosFunction("http://" + currentHost.hostname + ":" + currentHost.port + path);
             if (response.status !== 200) {
                 throw response;
             }
             return response.data;
         } catch (err) {
             if (err.message !== undefined && err.message.includes("ECONNREFUSED")) {
-                return await this.sendPostRequestHelper(path, body, numberOfTries - 1);
+                return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
             }
             if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
                 throw generateError(
                     AuthError.GENERAL_ERROR,
                     new Error(
-                        "SuperTokens core threw an error for a POST request to path: '" +
+                        "SuperTokens core threw an error for a " +
+                            method +
+                            " request to path: '" +
                             path +
                             "' with status code: " +
                             err.response.status +

@@ -1,3 +1,4 @@
+import { AuthError, generateError } from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
 import { Querier } from "./querier";
 import { TypeInput } from "./types";
@@ -51,39 +52,17 @@ export async function createNewSession(
         createdTime: number;
     };
     antiCsrfToken: string | undefined;
-    jwtSigningPublicKey: string;
 }> {
-    // TODO:
-    return {
-        session: {
-            handle: "",
-            userId: "",
-            jwtPayload: {}
-        },
-        accessToken: {
-            token: "",
-            expiry: 0,
-            createdTime: 0,
-            cookiePath: "",
-            cookieSecure: true,
-            domain: ""
-        },
-        refreshToken: {
-            token: "",
-            expiry: 0,
-            createdTime: 0,
-            cookiePath: "",
-            cookieSecure: true,
-            domain: ""
-        },
-        idRefreshToken: {
-            token: "",
-            expiry: 0,
-            createdTime: 0
-        },
-        antiCsrfToken: undefined,
-        jwtSigningPublicKey: ""
-    };
+    let response = await Querier.getInstance().sendPostRequest("/session", {
+        userId,
+        userDataInJWT: jwtPayload,
+        userDataInDatabase: sessionData
+    });
+    let instance = await HandshakeInfo.getInstance();
+    instance.updateJwtSigningPublicKey(response.jwtSigningPublicKey);
+    delete response.status;
+    delete response.jwtSigningPublicKey;
+    return response;
 }
 
 /**
@@ -168,36 +147,20 @@ export async function refreshSession(
     };
     antiCsrfToken: string | undefined;
 }> {
-    // TODO:
-    return {
-        session: {
-            handle: "",
-            userId: "",
-            jwtPayload: {}
-        },
-        accessToken: {
-            token: "",
-            expiry: 0,
-            createdTime: 0,
-            cookiePath: "",
-            cookieSecure: true,
-            domain: ""
-        },
-        refreshToken: {
-            token: "",
-            expiry: 0,
-            createdTime: 0,
-            cookiePath: "",
-            cookieSecure: true,
-            domain: ""
-        },
-        idRefreshToken: {
-            token: "",
-            expiry: 0,
-            createdTime: 0
-        },
-        antiCsrfToken: undefined
-    };
+    let response = await Querier.getInstance().sendPostRequest("/session/refresh", {
+        refreshToken
+    });
+    if (response.status == "OK") {
+        delete response.status;
+        return response;
+    } else if (response.status == "UNAUTHORISED") {
+        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+    } else {
+        throw generateError(AuthError.TOKEN_THEFT_DETECTED, {
+            sessionHandle: response.session.handle,
+            userId: response.session.userId
+        });
+    }
 }
 
 /**
@@ -206,8 +169,10 @@ export async function refreshSession(
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeAllSessionsForUser(userId: string): Promise<number> {
-    // TODO:
-    return 0;
+    let response = await Querier.getInstance().sendDeleteRequest("/session", {
+        userId
+    });
+    return response.numberOfSessionsRevoked;
 }
 
 /**
@@ -215,8 +180,10 @@ export async function revokeAllSessionsForUser(userId: string): Promise<number> 
  * @throws AuthError, GENERAL_ERROR
  */
 export async function getAllSessionHandlesForUser(userId: string): Promise<string[]> {
-    // TODO:
-    return [];
+    let response = await Querier.getInstance().sendGetRequest("/session/user", {
+        userId
+    });
+    return response.sessionHandles;
 }
 
 /**
@@ -225,8 +192,10 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeSessionUsingSessionHandle(sessionHandle: string): Promise<boolean> {
-    // TODO:
-    return true;
+    let response = await Querier.getInstance().sendDeleteRequest("/session", {
+        sessionHandle
+    });
+    return response.numberOfSessionsRevoked == 1;
 }
 
 /**
@@ -235,7 +204,14 @@ export async function revokeSessionUsingSessionHandle(sessionHandle: string): Pr
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getSessionData(sessionHandle: string): Promise<any> {
-    // TODO:
+    let response = await Querier.getInstance().sendGetRequest("/session/data", {
+        sessionHandle
+    });
+    if (response.status == "OK") {
+        return response.userDataInDatabase;
+    } else {
+        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+    }
 }
 
 /**
@@ -243,5 +219,11 @@ export async function getSessionData(sessionHandle: string): Promise<any> {
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateSessionData(sessionHandle: string, newSessionData: any) {
-    // TODO:
+    let response = await Querier.getInstance().sendPutRequest("/session/data", {
+        sessionHandle,
+        userDataInDatabase: newSessionData
+    });
+    if (response.status == "UNAUTHORISED") {
+        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+    }
 }

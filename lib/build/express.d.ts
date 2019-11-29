@@ -1,5 +1,5 @@
-import * as express from "express";
-import { TypeInput } from "./types";
+import * as express from 'express';
+import { TypeInput } from './types';
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
  * Please create a database in your mongo instance before calling this function
@@ -23,7 +23,7 @@ export declare function createNewSession(res: express.Response, userId: string, 
 export declare function getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): Promise<Session>;
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
- * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, UNAUTHORISED_AND_TOKEN_THEFT_DETECTED
+ * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  * @sideEffects may remove cookies, or change the accessToken and refreshToken.
  */
 export declare function refreshSession(req: express.Request, res: express.Response): Promise<Session>;
@@ -85,7 +85,6 @@ export declare class Session {
     getSessionData: () => Promise<any>;
     /**
      * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
-     * @param newSessionInfo this can be anything: an array, a promitive type, object etc etc. This will overwrite the current value stored in the database.
      * @sideEffect may clear cookies from response.
      * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
      */

@@ -6,5 +6,8 @@ export declare class Querier {
     static getInstance(): Querier;
     static initInstance(hosts: TypeInput): void;
     sendPostRequest: (path: string, body: any) => Promise<any>;
-    private sendPostRequestHelper;
+    sendDeleteRequest: (path: string, body: any) => Promise<any>;
+    sendGetRequest: (path: string, params: any) => Promise<any>;
+    sendPutRequest: (path: string, body: any) => Promise<any>;
+    private sendRequestHelper;
 }

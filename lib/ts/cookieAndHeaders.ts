@@ -2,12 +2,31 @@ import { parse, serialize } from "cookie";
 import * as express from "express";
 import { IncomingMessage, ServerResponse } from "http";
 
+import { DeviceInfo } from "./deviceInfo";
 import { AuthError, generateError } from "./error";
 
 const accessTokenCookieKey = "sAccessToken";
 const refreshTokenCookieKey = "sRefreshToken";
 const idRefreshTokenHeaderKey = "id-refresh-token";
 const antiCsrfHeaderKey = "anti-csrf";
+const frontendSDKNameHeaderKey = "supertokens-sdk-name";
+const frontendSDKVersionHeaderKey = "supertokens-sdk-version";
+
+// will be there for all requests that require auth including refresh tokne request
+export function saveFrontendInfoFromRequest(req: express.Request) {
+    try {
+        let name = getHeader(req, frontendSDKNameHeaderKey);
+        let version = getHeader(req, frontendSDKVersionHeaderKey);
+        if (name !== undefined && version !== undefined) {
+            DeviceInfo.getInstance().addToFrontendSDKs({
+                name,
+                version
+            });
+        }
+    } catch (err) {
+        // ignored
+    }
+}
 
 /**
  * @description clears all the auth cookies from the response
@@ -87,6 +106,9 @@ export function getHeader(req: express.Request, key: string): string | undefined
 export function setOptionsAPIHeader(res: express.Response) {
     setHeader(res, "Access-Control-Allow-Headers", antiCsrfHeaderKey);
     setHeader(res, "Access-Control-Allow-Headers", idRefreshTokenHeaderKey);
+    setHeader(res, "Access-Control-Allow-Headers", frontendSDKNameHeaderKey);
+    setHeader(res, "Access-Control-Allow-Headers", frontendSDKVersionHeaderKey);
+
     setHeader(res, "Access-Control-Allow-Credentials", "true");
 }
 
