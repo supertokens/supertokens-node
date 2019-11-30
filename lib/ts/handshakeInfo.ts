@@ -8,6 +8,7 @@ export class HandshakeInfo {
     public cookieSecure: boolean;
     public accessTokenPath: string;
     public refreshTokenPath: string;
+    public enableAntiCsrf: boolean;
 
     // @throws GENERAL_ERROR
     static async getInstance(): Promise<HandshakeInfo> {
@@ -18,7 +19,8 @@ export class HandshakeInfo {
                 response.cookieDomain,
                 response.cookieSecure,
                 response.accessTokenPath,
-                response.refreshTokenPath
+                response.refreshTokenPath,
+                response.enableAntiCsrf
             );
         }
         return HandshakeInfo.instance;
@@ -29,13 +31,15 @@ export class HandshakeInfo {
         cookieDomain: string,
         cookieSecure: boolean,
         accessTokenPath: string,
-        refreshTokenPath: string
+        refreshTokenPath: string,
+        enableAntiCsrf: boolean
     ) {
         this.jwtSigningPublicKey = jwtSigningPublicKey;
         this.cookieDomain = cookieDomain;
         this.cookieSecure = cookieSecure;
         this.accessTokenPath = accessTokenPath;
         this.refreshTokenPath = refreshTokenPath;
+        this.enableAntiCsrf = enableAntiCsrf;
     }
 
     updateJwtSigningPublicKey = (newKey: string) => {
