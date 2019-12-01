@@ -58,7 +58,7 @@ module.exports.killAllST = async function() {
     }
 };
 
-module.exports.startST = async function() {
+module.exports.startST = async function(host = "localhost", port = 8080) {
     return new Promise(async (resolve, reject) => {
         let installationPath = process.env.INSTALL_PATH;
         let pidsBefore = await getListOfPids();
@@ -67,7 +67,10 @@ module.exports.startST = async function() {
             .executeCommand(
                 "cd " +
                     installationPath +
-                    ` && java -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV`
+                    ` && java -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=` +
+                    host +
+                    " port=" +
+                    port
             )
             .catch(err => {
                 if (!returned) {

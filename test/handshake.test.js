@@ -12,7 +12,9 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function() {
     });
 
     it("ST start stop", async function() {
-        let pid = await startST();
+        let pid = await startST("localhost", 8081);
+        let pid2 = await startST("localhost", 8080);
         await stopST(pid);
+        await stopST(pid2);
     });
 });
