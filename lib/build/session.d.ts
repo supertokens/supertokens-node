@@ -1,4 +1,4 @@
-import { TypeInput } from "./types";
+import { TypeInput } from './types';
 export { AuthError as Error } from "./error";
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
@@ -14,7 +14,7 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
     session: {
         handle: string;
         userId: string;
-        jwtPayload: any;
+        userDataInJWT: any;
     };
     accessToken: {
         token: string;
@@ -47,7 +47,7 @@ export declare function getSession(accessToken: string, antiCsrfToken: string | 
     session: {
         handle: string;
         userId: string | number;
-        jwtPayload: any;
+        userDataInJWT: any;
     };
     accessToken: {
         token: string;
@@ -67,7 +67,7 @@ export declare function refreshSession(refreshToken: string): Promise<{
     session: {
         handle: string;
         userId: string | number;
-        jwtPayload: any;
+        userDataInJWT: any;
     };
     accessToken: {
         token: string;

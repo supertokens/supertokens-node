@@ -6,7 +6,8 @@ export declare class HandshakeInfo {
     accessTokenPath: string;
     refreshTokenPath: string;
     enableAntiCsrf: boolean;
+    accessTokenBlacklistingEnabled: boolean;
     static getInstance(): Promise<HandshakeInfo>;
-    constructor(jwtSigningPublicKey: string, cookieDomain: string, cookieSecure: boolean, accessTokenPath: string, refreshTokenPath: string, enableAntiCsrf: boolean);
+    constructor(jwtSigningPublicKey: string, cookieDomain: string, cookieSecure: boolean, accessTokenPath: string, refreshTokenPath: string, enableAntiCsrf: boolean, accessTokenBlacklistingEnabled: boolean);
     updateJwtSigningPublicKey: (newKey: string) => void;
 }

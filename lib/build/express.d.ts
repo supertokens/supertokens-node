@@ -1,5 +1,5 @@
-import * as express from "express";
-import { TypeInput } from "./types";
+import * as express from 'express';
+import { TypeInput } from './types';
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
  * Please create a database in your mongo instance before calling this function
@@ -66,9 +66,9 @@ export declare function setRelevantHeadersForOptionsAPI(res: express.Response): 
 export declare class Session {
     private sessionHandle;
     private userId;
-    private jwtUserPayload;
+    private userDataInJWT;
     private res;
-    constructor(sessionHandle: string, userId: string | number, jwtUserPayload: any, res: express.Response);
+    constructor(sessionHandle: string, userId: string | number, userDataInJWT: any, res: express.Response);
     /**
      * @description call this to logout the current user.
      * This only invalidates the refresh token. The access token can still be used after

@@ -67,7 +67,7 @@ export async function createNewSession(
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
 
-    return new Session(response.session.handle, response.session.userId, response.session.jwtPayload, res);
+    return new Session(response.session.handle, response.session.userId, response.session.userDataInJWT, res);
 }
 
 /**
@@ -99,7 +99,7 @@ export async function getSession(
                 response.accessToken.cookieSecure
             );
         }
-        return new Session(response.session.handle, response.session.userId, response.session.jwtPayload, res);
+        return new Session(response.session.handle, response.session.userId, response.session.userDataInJWT, res);
     } catch (err) {
         if (AuthError.isErrorFromAuth(err) && err.errType === AuthError.UNAUTHORISED) {
             let handShakeInfo = await HandshakeInfo.getInstance();
@@ -162,7 +162,7 @@ export async function refreshSession(req: express.Request, res: express.Response
             setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
         }
 
-        return new Session(response.session.handle, response.session.userId, response.session.jwtPayload, res);
+        return new Session(response.session.handle, response.session.userId, response.session.userDataInJWT, res);
     } catch (err) {
         if (
             AuthError.isErrorFromAuth(err) &&
@@ -238,13 +238,13 @@ export async function setRelevantHeadersForOptionsAPI(res: express.Response) {
 export class Session {
     private sessionHandle: string;
     private userId: string | number;
-    private jwtUserPayload: any;
+    private userDataInJWT: any;
     private res: express.Response;
 
-    constructor(sessionHandle: string, userId: string | number, jwtUserPayload: any, res: express.Response) {
+    constructor(sessionHandle: string, userId: string | number, userDataInJWT: any, res: express.Response) {
         this.sessionHandle = sessionHandle;
         this.userId = userId;
-        this.jwtUserPayload = jwtUserPayload;
+        this.userDataInJWT = userDataInJWT;
         this.res = res;
     }
 
@@ -319,6 +319,6 @@ export class Session {
     };
 
     getJWTPayload = () => {
-        return this.jwtUserPayload;
+        return this.userDataInJWT;
     };
 }

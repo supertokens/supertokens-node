@@ -1,3 +1,4 @@
+import { getInfoFromAccessToken } from "./accessToken";
 import { AuthError, generateError } from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
 import { Querier } from "./querier";
@@ -28,7 +29,7 @@ export async function createNewSession(
     session: {
         handle: string;
         userId: string;
-        jwtPayload: any;
+        userDataInJWT: any;
     };
     accessToken: {
         token: string;
@@ -77,7 +78,7 @@ export async function getSession(
     session: {
         handle: string;
         userId: string | number;
-        jwtPayload: any;
+        userDataInJWT: any;
     };
     accessToken:
         | {
@@ -92,7 +93,48 @@ export async function getSession(
 }> {
     let handShakeInfo = await HandshakeInfo.getInstance();
 
-    // TODO: first try to verify here..
+    try {
+        let accessTokenInfo = await getInfoFromAccessToken(
+            accessToken,
+            handShakeInfo.jwtSigningPublicKey,
+            handShakeInfo.enableAntiCsrf && doAntiCsrfCheck
+        ); // if access token is invalid, this will throw TRY_REFRESH_TOKEN error.
+        let sessionHandle = accessTokenInfo.sessionHandle;
+
+        // anti-csrf check
+        if (
+            handShakeInfo.enableAntiCsrf &&
+            doAntiCsrfCheck &&
+            (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken)
+        ) {
+            if (antiCsrfToken === undefined) {
+                throw generateError(
+                    AuthError.TRY_REFRESH_TOKEN,
+                    new Error(
+                        "provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to true"
+                    )
+                );
+            } else {
+                throw generateError(AuthError.TRY_REFRESH_TOKEN, new Error("anti-csrf check failed"));
+            }
+        }
+
+        if (!handShakeInfo.accessTokenBlacklistingEnabled && accessTokenInfo.parentRefreshTokenHash1 === undefined) {
+            return {
+                session: {
+                    handle: accessTokenInfo.sessionHandle,
+                    userId: accessTokenInfo.userId,
+                    userDataInJWT: accessTokenInfo.userData
+                },
+                accessToken: undefined
+            };
+        }
+    } catch (err) {
+        if (!AuthError.isErrorFromAuth(err) || err.errType !== AuthError.TRY_REFRESH_TOKEN) {
+            // if error is try refresh token, we call the actual API.
+            throw err;
+        }
+    }
 
     let response = await Querier.getInstance().sendPostRequest("/session/verify", {
         accessToken,
@@ -123,7 +165,7 @@ export async function refreshSession(
     session: {
         handle: string;
         userId: string | number;
-        jwtPayload: any;
+        userDataInJWT: any;
     };
     accessToken: {
         token: string;
