@@ -44,9 +44,11 @@ module.exports.stopST = async function(pid) {
         if (pidsAfter.length !== pidsBefore.length - 1) {
             await new Promise(r => setTimeout(r, 100));
             continue;
+        } else {
+            return;
         }
-        return;
     }
+    throw new Error("error while stopping ST with PID: " + pid);
 };
 
 module.exports.killAllST = async function() {
