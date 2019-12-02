@@ -2,6 +2,7 @@ const { exec } = require("child_process");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { DeviceInfo } = require("../lib/build/deviceInfo");
 let { Querier } = require("../lib/build/querier");
+const nock = require("nock");
 
 module.exports.printPath = function(path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -62,6 +63,7 @@ module.exports.killAllST = async function() {
     HandshakeInfo.reset();
     DeviceInfo.reset();
     Querier.reset();
+    nock.cleanAll();
 };
 
 module.exports.startST = async function(host = "localhost", port = 8080) {
