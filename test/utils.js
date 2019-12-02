@@ -22,6 +22,25 @@ module.exports.executeCommand = async function(cmd) {
     });
 };
 
+module.exports.extractInfoFromResponse = function(res) {
+    let antiCsrf = res.headers["anti-csrf"];
+    let accessToken = undefined;
+    let refreshToken = undefined;
+    let cookies = res.headers["set-cookie"];
+    cookies.forEach(i => {
+        if (i.split(";")[0].split("=")[0] === "sAccessToken") {
+            accessToken = i.split(";")[0].split("=")[1];
+        } else {
+            refreshToken = i.split(";")[0].split("=")[1];
+        }
+    });
+    return {
+        antiCsrf,
+        accessToken,
+        refreshToken
+    };
+};
+
 module.exports.setupST = async function() {
     let installationPath = process.env.INSTALL_PATH;
     await module.exports.executeCommand("cd " + installationPath + " && cp temp/licenseKey ./licenseKey");

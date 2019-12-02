@@ -63,6 +63,7 @@ export async function createNewSession(
     instance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
     delete response.status;
     delete response.jwtSigningPublicKey;
+    delete response.jwtSigningPublicKeyExpiryTime;
     return response;
 }
 
@@ -94,12 +95,12 @@ export async function getSession(
     let handShakeInfo = await HandshakeInfo.getInstance();
 
     try {
-        if (handShakeInfo.jwtSigningPublicKeyExpiryTime < Date.now()) {
+        if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
             let accessTokenInfo = await getInfoFromAccessToken(
                 accessToken,
                 handShakeInfo.jwtSigningPublicKey,
                 handShakeInfo.enableAntiCsrf && doAntiCsrfCheck
-            ); // if access token is invalid, this will throw TRY_REFRESH_TOKEN error.
+            );
             let sessionHandle = accessTokenInfo.sessionHandle;
 
             // anti-csrf check
@@ -151,6 +152,7 @@ export async function getSession(
         instance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
         delete response.status;
         delete response.jwtSigningPublicKey;
+        delete response.jwtSigningPublicKeyExpiryTime;
         return response;
     } else if (response.status == "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
