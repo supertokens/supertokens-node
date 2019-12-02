@@ -10,6 +10,13 @@ export class Querier {
     private hosts: TypeInput = [];
     private lastTriedIndex = 0;
 
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
+            throw generateError(AuthError.GENERAL_ERROR, new Error("calling testing function in non testing env"));
+        }
+        Querier.instance = undefined;
+    }
+
     static getInstance(): Querier {
         if (Querier.instance == undefined) {
             Querier.instance = new Querier();
@@ -128,7 +135,7 @@ export class Querier {
         numberOfTries: number
     ): Promise<any> => {
         if (numberOfTries == 0) {
-            throw generateError(AuthError.GENERAL_ERROR, new Error("no SuperTokens core available to query"));
+            throw generateError(AuthError.GENERAL_ERROR, new Error("No SuperTokens core available to query"));
         }
         let currentHost = this.hosts[this.lastTriedIndex];
         this.lastTriedIndex++;

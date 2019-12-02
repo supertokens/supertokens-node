@@ -1,3 +1,4 @@
+import { AuthError, generateError } from "./error";
 import { Querier } from "./querier";
 
 export class HandshakeInfo {
@@ -10,6 +11,13 @@ export class HandshakeInfo {
     public refreshTokenPath: string;
     public enableAntiCsrf: boolean;
     public accessTokenBlacklistingEnabled: boolean;
+
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
+            throw generateError(AuthError.GENERAL_ERROR, new Error("calling testing function in non testing env"));
+        }
+        HandshakeInfo.instance = undefined;
+    }
 
     // @throws GENERAL_ERROR
     static async getInstance(): Promise<HandshakeInfo> {

@@ -36,7 +36,7 @@ password=`cat ./apiPassword`
 
 # we get from the server is the tests have passed or not.
 testPassedJson=`curl -s -X GET \
-"https://api.supertokens.io/0/driver?password=$password&planType=FREE&version=$version&name=node" \
+"https://api.supertokens.io/0/driver?password=$password&version=$version&name=node" \
 -H 'api-version: 0'`
 
 
@@ -89,7 +89,6 @@ responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PATCH \
     -H 'api-version: 0' \
     -d "{
         \"password\": \"$releasePassword\",
-        \"planType\":\"FREE\",
         \"name\":\"node\",
         \"version\":\"$version\",
         \"release\": true
@@ -113,7 +112,7 @@ git push --tags
 
 
 response=`curl -s -X GET \
-"https://api.supertokens.io/0/driver/latest/check?password=$password&planType=FREE&version=$version&name=node" \
+"https://api.supertokens.io/0/driver/latest/check?password=$password&version=$version&name=node" \
 -H 'api-version: 0'`
 response=`echo $response | jq .isLatest`
 

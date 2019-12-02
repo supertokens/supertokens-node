@@ -3,6 +3,7 @@ export declare class Querier {
     static instance: Querier | undefined;
     private hosts;
     private lastTriedIndex;
+    static reset(): void;
     static getInstance(): Querier;
     static initInstance(hosts: TypeInput): void;
     sendPostRequest: (path: string, body: any) => Promise<any>;

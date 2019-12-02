@@ -1,9 +1,18 @@
+import { AuthError, generateError } from "./error";
+
 export class DeviceInfo {
     static instance: DeviceInfo | undefined;
     private frontendSDK: {
         name: string;
         version: string;
     }[] = [];
+
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
+            throw generateError(AuthError.GENERAL_ERROR, new Error("calling testing function in non testing env"));
+        }
+        DeviceInfo.instance = undefined;
+    }
 
     static getInstance(): DeviceInfo {
         if (DeviceInfo.instance == undefined) {
