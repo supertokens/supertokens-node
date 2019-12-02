@@ -9,6 +9,7 @@ export class Querier {
     static instance: Querier | undefined;
     private hosts: TypeInput = [];
     private lastTriedIndex = 0;
+    private hostsAliveForTesting: Set<string> = new Set<string>();
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
@@ -16,6 +17,13 @@ export class Querier {
         }
         Querier.instance = undefined;
     }
+
+    getHostsAliveForTesting = () => {
+        if (process.env.TEST_MODE !== "testing") {
+            throw generateError(AuthError.GENERAL_ERROR, new Error("calling testing function in non testing env"));
+        }
+        return this.hostsAliveForTesting;
+    };
 
     static getInstance(): Querier {
         if (Querier.instance == undefined) {
@@ -142,6 +150,9 @@ export class Querier {
         this.lastTriedIndex = this.lastTriedIndex % this.hosts.length;
         try {
             let response = await axiosFunction("http://" + currentHost.hostname + ":" + currentHost.port + path);
+            if (process.env.TEST_MODE === "testing") {
+                this.hostsAliveForTesting.add(currentHost.hostname + ":" + currentHost.port);
+            }
             if (response.status !== 200) {
                 throw response;
             }
