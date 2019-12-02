@@ -51,8 +51,10 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function() {
         assert.equal(info.refreshTokenPath, "/refresh");
         assert.equal(info.enableAntiCsrf, true);
         assert.equal(info.accessTokenBlacklistingEnabled, false);
-        info.updateJwtSigningPublicKey("hello");
+        assert.equal(typeof info.jwtSigningPublicKeyExpiryTime, "number");
+        info.updateJwtSigningPublicKeyInfo("hello", 100);
         let info2 = await HandshakeInfo.getInstance();
         assert.equal(info2.jwtSigningPublicKey, "hello");
+        assert.equal(info2.jwtSigningPublicKeyExpiryTime, 100);
     });
 });

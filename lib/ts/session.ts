@@ -60,7 +60,7 @@ export async function createNewSession(
         userDataInDatabase: sessionData
     });
     let instance = await HandshakeInfo.getInstance();
-    instance.updateJwtSigningPublicKey(response.jwtSigningPublicKey);
+    instance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
     delete response.status;
     delete response.jwtSigningPublicKey;
     return response;
@@ -94,40 +94,45 @@ export async function getSession(
     let handShakeInfo = await HandshakeInfo.getInstance();
 
     try {
-        let accessTokenInfo = await getInfoFromAccessToken(
-            accessToken,
-            handShakeInfo.jwtSigningPublicKey,
-            handShakeInfo.enableAntiCsrf && doAntiCsrfCheck
-        ); // if access token is invalid, this will throw TRY_REFRESH_TOKEN error.
-        let sessionHandle = accessTokenInfo.sessionHandle;
+        if (handShakeInfo.jwtSigningPublicKeyExpiryTime < Date.now()) {
+            let accessTokenInfo = await getInfoFromAccessToken(
+                accessToken,
+                handShakeInfo.jwtSigningPublicKey,
+                handShakeInfo.enableAntiCsrf && doAntiCsrfCheck
+            ); // if access token is invalid, this will throw TRY_REFRESH_TOKEN error.
+            let sessionHandle = accessTokenInfo.sessionHandle;
 
-        // anti-csrf check
-        if (
-            handShakeInfo.enableAntiCsrf &&
-            doAntiCsrfCheck &&
-            (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken)
-        ) {
-            if (antiCsrfToken === undefined) {
-                throw generateError(
-                    AuthError.TRY_REFRESH_TOKEN,
-                    new Error(
-                        "provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to true"
-                    )
-                );
-            } else {
-                throw generateError(AuthError.TRY_REFRESH_TOKEN, new Error("anti-csrf check failed"));
+            // anti-csrf check
+            if (
+                handShakeInfo.enableAntiCsrf &&
+                doAntiCsrfCheck &&
+                (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken)
+            ) {
+                if (antiCsrfToken === undefined) {
+                    throw generateError(
+                        AuthError.TRY_REFRESH_TOKEN,
+                        new Error(
+                            "provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to true"
+                        )
+                    );
+                } else {
+                    throw generateError(AuthError.TRY_REFRESH_TOKEN, new Error("anti-csrf check failed"));
+                }
             }
-        }
 
-        if (!handShakeInfo.accessTokenBlacklistingEnabled && accessTokenInfo.parentRefreshTokenHash1 === undefined) {
-            return {
-                session: {
-                    handle: accessTokenInfo.sessionHandle,
-                    userId: accessTokenInfo.userId,
-                    userDataInJWT: accessTokenInfo.userData
-                },
-                accessToken: undefined
-            };
+            if (
+                !handShakeInfo.accessTokenBlacklistingEnabled &&
+                accessTokenInfo.parentRefreshTokenHash1 === undefined
+            ) {
+                return {
+                    session: {
+                        handle: accessTokenInfo.sessionHandle,
+                        userId: accessTokenInfo.userId,
+                        userDataInJWT: accessTokenInfo.userData
+                    },
+                    accessToken: undefined
+                };
+            }
         }
     } catch (err) {
         if (!AuthError.isErrorFromAuth(err) || err.errType !== AuthError.TRY_REFRESH_TOKEN) {
@@ -143,7 +148,7 @@ export async function getSession(
     });
     if (response.status == "OK") {
         let instance = await HandshakeInfo.getInstance();
-        instance.updateJwtSigningPublicKey(response.jwtSigningPublicKey);
+        instance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
         delete response.status;
         delete response.jwtSigningPublicKey;
         return response;
