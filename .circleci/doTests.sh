@@ -73,6 +73,7 @@ while [ $i -lt $coreDriverLength ]; do
         echo "test failed... exiting!"
         exit 1
     fi
+    rm -rf ../../com-root
 
     # TODO: remove this comment
     # ./setupAndTestWithFreeCore.sh $coreFree
@@ -81,6 +82,7 @@ while [ $i -lt $coreDriverLength ]; do
     #     echo "test failed... exiting!"
     #     exit 1
     # fi
+    # rm -rf ../../com-root
 done
 
 if [[ $someTestsRan = "true" ]]

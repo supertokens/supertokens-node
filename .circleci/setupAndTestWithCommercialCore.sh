@@ -68,4 +68,6 @@ cd ../com-mysql-plugin
 git checkout $pluginTag
 cd ../
 echo $SUPERTOKENS_API_KEY > apiPassword
-./startTestingEnv --wait
+./utils/setupTestEnvLocal
+cd ../project/
+INSTALL_PATH=../com-root npm test
