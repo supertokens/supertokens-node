@@ -59,7 +59,7 @@ cd ../../
 git clone git@bitbucket.org:vrai-labs/com-root.git
 cd com-root
 echo -e "core,$1\nplugin-interface,$pluginInterfaceVersionXY\nmysql-plugin,$pluginVersionXY" > modules.txt
-./loadModules
+./loadModules --ssh
 cd com-core
 git checkout $coreTag
 cd ../com-plugin-interface
