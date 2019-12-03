@@ -30,6 +30,7 @@ workflows:
               ignore: /.*/
       - test:
           filters:
+            tags:
+              only: /dev-v[0-9]+(\.[0-9]+)*/
             branches:
-              only: 
-                - "0.0"
+              ignore: /.*/

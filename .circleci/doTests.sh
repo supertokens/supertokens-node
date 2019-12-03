@@ -55,16 +55,15 @@ while [ $i -lt $coreDriverLength ]; do
     fi
     coreCommercial=$(echo $coreCommercial | jq .core | tr -d '"')
 
-    # TODO: remove this comment
-    # coreFree=`curl -s -X GET \
-    # "https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion" \
-    # -H 'api-version: 0'`
-    # if [[ `echo $coreFree | jq .core` == "null" ]]
-    # then
-    #     echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: FREE gave response: $coreFree. Please make sure all relevant cores have been pushed."
-    #     exit 1
-    # fi
-    # coreFree=$(echo $coreFree | jq .core | tr -d '"')
+    coreFree=`curl -s -X GET \
+    "https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion" \
+    -H 'api-version: 0'`
+    if [[ `echo $coreFree | jq .core` == "null" ]]
+    then
+        echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: FREE gave response: $coreFree. Please make sure all relevant cores have been pushed."
+        exit 1
+    fi
+    coreFree=$(echo $coreFree | jq .core | tr -d '"')
 
     someTestsRan=true
     ./setupAndTestWithCommercialCore.sh $coreCommercial
@@ -75,14 +74,13 @@ while [ $i -lt $coreDriverLength ]; do
     fi
     rm -rf ../../com-root
 
-    # TODO: remove this comment
-    # ./setupAndTestWithFreeCore.sh $coreFree
-    # if [[ $? -ne 0 ]]
-    # then
-    #     echo "test failed... exiting!"
-    #     exit 1
-    # fi
-    # rm -rf ../../com-root
+    ./setupAndTestWithFreeCore.sh $coreFree
+    if [[ $? -ne 0 ]]
+    then
+        echo "test failed... exiting!"
+        exit 1
+    fi
+    rm -rf ../../com-root
 done
 
 if [[ $someTestsRan = "true" ]]
