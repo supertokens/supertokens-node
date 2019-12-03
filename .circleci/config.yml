@@ -32,4 +32,4 @@ workflows:
           filters:
             branches:
               only: 
-                - 0.0
+                - "0.0"
