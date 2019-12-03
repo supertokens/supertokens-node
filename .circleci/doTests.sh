@@ -70,6 +70,7 @@ while [ $i -lt $coreDriverLength ]; do
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
+        git push --delete origin dev-v$version
         exit 1
     fi
     rm -rf ../../com-root
@@ -78,6 +79,7 @@ while [ $i -lt $coreDriverLength ]; do
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
+        git push --delete origin dev-v$version
         exit 1
     fi
     rm -rf ../../com-root
