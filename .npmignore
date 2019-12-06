@@ -4,9 +4,10 @@
 test/
 hooks/
 .circleci/
-tsconfig.json
+lib/tsconfig.json
 .mocharc.yml
 lib/.prettierrc
+lib/tslint.json
 addDevTag
 addReleaseTag
 frontendDriverInterfaceSupported.json
