@@ -5,4 +5,10 @@ test/
 hooks/
 .circleci/
 tsconfig.json
-setupHooks
+.mocharc.yml
+lib/.prettierrc
+addDevTag
+addReleaseTag
+frontendDriverInterfaceSupported.json
+coreDriverInterfaceSupported.json
+.github/

@@ -1,5 +1,5 @@
 #!/bin/bash
-# working directory is inside com-*/. Expects a releasePassword file to be ../
+# Expects a releasePassword file to be ./
 
 # get version------------
 version=`cat package.json | grep -e '"version":'`
@@ -98,9 +98,7 @@ if [ $responseStatus -ne "200" ]
 then
     RED='\033[0;31m'
     NC='\033[0m'
-    printf "${RED}patch api failed, removing release tag. Please add dev tag again and then release again.${NC}\n"
-    git tag --delete v$version
-    git push --delete origin v$version
+    printf "${RED}patch api failed. Please try again.${NC}\n"
     exit 1
 fi
 
