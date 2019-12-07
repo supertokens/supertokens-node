@@ -68,7 +68,7 @@ export declare class Session {
     private userId;
     private userDataInJWT;
     private res;
-    constructor(sessionHandle: string, userId: string | number, userDataInJWT: any, res: express.Response);
+    constructor(sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response);
     /**
      * @description call this to logout the current user.
      * This only invalidates the refresh token. The access token can still be used after
@@ -89,6 +89,6 @@ export declare class Session {
      * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
      */
     updateSessionData: (newSessionData: any) => Promise<void>;
-    getUserId: () => string | number;
+    getUserId: () => string;
     getJWTPayload: () => any;
 }

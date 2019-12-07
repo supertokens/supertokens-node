@@ -46,7 +46,7 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
 export declare function getSession(accessToken: string, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean): Promise<{
     session: {
         handle: string;
-        userId: string | number;
+        userId: string;
         userDataInJWT: any;
     };
     accessToken: {
@@ -66,7 +66,7 @@ export declare function getSession(accessToken: string, antiCsrfToken: string | 
 export declare function refreshSession(refreshToken: string): Promise<{
     session: {
         handle: string;
-        userId: string | number;
+        userId: string;
         userDataInJWT: any;
     };
     accessToken: {

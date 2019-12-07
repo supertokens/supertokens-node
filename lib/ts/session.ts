@@ -78,7 +78,7 @@ export async function getSession(
 ): Promise<{
     session: {
         handle: string;
-        userId: string | number;
+        userId: string;
         userDataInJWT: any;
     };
     accessToken:
@@ -171,7 +171,7 @@ export async function refreshSession(
 ): Promise<{
     session: {
         handle: string;
-        userId: string | number;
+        userId: string;
         userDataInJWT: any;
     };
     accessToken: {

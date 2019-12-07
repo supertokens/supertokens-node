@@ -1,6 +1,6 @@
 export declare function getInfoFromAccessToken(token: string, jwtSigningPublicKey: string, doAntiCsrfCheck: boolean): Promise<{
     sessionHandle: string;
-    userId: string | number;
+    userId: string;
     refreshTokenHash1: string;
     parentRefreshTokenHash1: string | undefined;
     userData: any;

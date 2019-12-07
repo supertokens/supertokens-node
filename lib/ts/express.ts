@@ -237,11 +237,11 @@ export async function setRelevantHeadersForOptionsAPI(res: express.Response) {
  */
 export class Session {
     private sessionHandle: string;
-    private userId: string | number;
+    private userId: string;
     private userDataInJWT: any;
     private res: express.Response;
 
-    constructor(sessionHandle: string, userId: string | number, userDataInJWT: any, res: express.Response) {
+    constructor(sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response) {
         this.sessionHandle = sessionHandle;
         this.userId = userId;
         this.userDataInJWT = userDataInJWT;
