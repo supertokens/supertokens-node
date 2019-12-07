@@ -37,8 +37,8 @@ export function init(hosts: TypeInput) {
 export async function createNewSession(
     res: express.Response,
     userId: string,
-    jwtPayload?: any,
-    sessionData?: any
+    jwtPayload: any = {},
+    sessionData: any = {}
 ): Promise<Session> {
     let response = await SessionFunctions.createNewSession(userId, jwtPayload, sessionData);
 

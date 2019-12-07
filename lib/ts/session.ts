@@ -23,8 +23,8 @@ export function init(hosts: TypeInput) {
  */
 export async function createNewSession(
     userId: string,
-    jwtPayload?: any,
-    sessionData?: any
+    jwtPayload: any = {},
+    sessionData: any = {}
 ): Promise<{
     session: {
         handle: string;
