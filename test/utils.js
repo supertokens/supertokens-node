@@ -135,7 +135,7 @@ module.exports.startST = async function(host = "localhost", port = 8080) {
 async function getListOfPids() {
     let installationPath = process.env.INSTALL_PATH;
     try {
-        await module.exports.executeCommand("cd " + installationPath + " && ls .started/");
+        (await module.exports.executeCommand("cd " + installationPath + " && ls .started/")).stdout;
     } catch (err) {
         return [];
     }
