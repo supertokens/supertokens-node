@@ -64,7 +64,7 @@ module.exports.stopST = async function(pid) {
     startTime = Date.now();
     while (Date.now() - startTime < 10000) {
         let pidsAfter = await getListOfPids();
-        if (pidsAfter.length !== pidsBefore.length - 1) {
+        if (pidsAfter.includes(pid)) {
             await new Promise(r => setTimeout(r, 100));
             continue;
         } else {
