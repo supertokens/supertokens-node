@@ -51,6 +51,7 @@ while [ $i -lt $coreDriverLength ]; do
     if [[ `echo $coreCommercial | jq .core` == "null" ]]
     then
         echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: COMMERCIAL gave response: $coreCommercial. Please make sure all relevant cores have been pushed."
+        git push --delete origin dev-v$version
         exit 1
     fi
     coreCommercial=$(echo $coreCommercial | jq .core | tr -d '"')
@@ -61,6 +62,7 @@ while [ $i -lt $coreDriverLength ]; do
     if [[ `echo $coreFree | jq .core` == "null" ]]
     then
         echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: FREE gave response: $coreFree. Please make sure all relevant cores have been pushed."
+        git push --delete origin dev-v$version
         exit 1
     fi
     coreFree=$(echo $coreFree | jq .core | tr -d '"')
@@ -87,7 +89,7 @@ done
 
 if [[ $someTestsRan = "true" ]]
 then
-    echo "calling /core PATCH to make testing passed"
+    echo "calling /driver PATCH to make testing passed"
     responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PATCH \
         https://api.supertokens.io/0/driver \
         -H 'Content-Type: application/json' \
