@@ -8,6 +8,8 @@ const express = require("express");
 const request = require("supertest");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 
+// TODO: test with existing header params being there and that the lib appends to those and not overrides those
+
 describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, function() {
     beforeEach(async function() {
         await killAllST();
