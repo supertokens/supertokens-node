@@ -1,1 +1,1 @@
-export * from './lib/ts/session';
+export * from './lib/build/session';
