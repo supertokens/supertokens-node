@@ -61,7 +61,7 @@ module.exports.stopST = async function(pid) {
         return;
     }
     await module.exports.executeCommand("kill " + pid);
-    startTime = Date.now();
+    let startTime = Date.now();
     while (Date.now() - startTime < 10000) {
         let pidsAfter = await getListOfPids();
         if (pidsAfter.includes(pid)) {
@@ -105,7 +105,7 @@ module.exports.startST = async function(host = "localhost", port = 8080) {
                     reject(err);
                 }
             });
-        startTime = Date.now();
+        let startTime = Date.now();
         while (Date.now() - startTime < 10000) {
             let pidsAfter = await getListOfPids();
             if (pidsAfter.length <= pidsBefore.length) {
