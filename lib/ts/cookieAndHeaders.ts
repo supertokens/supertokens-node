@@ -40,6 +40,7 @@ export function clearSessionFromCookie(
 ) {
     setCookie(res, accessTokenCookieKey, "", domain, secure, true, 0, accessTokenPath);
     setCookie(res, refreshTokenCookieKey, "", domain, secure, true, 0, refreshTokenPath);
+    setHeader(res, idRefreshTokenHeaderKey, "REMOVE");
 }
 
 /**
