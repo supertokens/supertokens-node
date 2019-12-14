@@ -24,6 +24,7 @@ module.exports.executeCommand = async function(cmd) {
 
 module.exports.extractInfoFromResponse = function(res) {
     let antiCsrf = res.headers["anti-csrf"];
+    let idRefreshToken = res.headers["id-refresh-token"];
     let accessToken = undefined;
     let refreshToken = undefined;
     let cookies = res.headers["set-cookie"];
@@ -37,7 +38,8 @@ module.exports.extractInfoFromResponse = function(res) {
     return {
         antiCsrf,
         accessToken,
-        refreshToken
+        refreshToken,
+        idRefreshToken
     };
 };
 

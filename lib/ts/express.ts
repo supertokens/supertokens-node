@@ -6,6 +6,7 @@ import {
     clearSessionFromCookie,
     getAccessTokenFromCookie,
     getAntiCsrfTokenFromHeaders,
+    getIdRefreshTokenFromHeaders,
     getRefreshTokenFromCookie,
     saveFrontendInfoFromRequest,
     setAntiCsrfTokenInHeaders,
@@ -88,7 +89,8 @@ export async function getSession(
     }
     try {
         let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
-        let response = await SessionFunctions.getSession(accessToken, antiCsrfToken, doAntiCsrfCheck);
+        let idRefreshToken = getIdRefreshTokenFromHeaders(req);
+        let response = await SessionFunctions.getSession(accessToken, antiCsrfToken, doAntiCsrfCheck, idRefreshToken);
         if (response.accessToken !== undefined) {
             attachAccessTokenToCookie(
                 res,

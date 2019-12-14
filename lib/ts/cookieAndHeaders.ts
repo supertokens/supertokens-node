@@ -83,6 +83,10 @@ export function getAntiCsrfTokenFromHeaders(req: express.Request): string | unde
     return getHeader(req, antiCsrfHeaderKey);
 }
 
+export function getIdRefreshTokenFromHeaders(req: express.Request): string | undefined {
+    return getHeader(req, idRefreshTokenHeaderKey);
+}
+
 export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string) {
     setHeader(res, antiCsrfHeaderKey, antiCsrfToken);
     setHeader(res, "Access-Control-Expose-Headers", antiCsrfHeaderKey);

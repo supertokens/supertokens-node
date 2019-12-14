@@ -74,7 +74,8 @@ export async function createNewSession(
 export async function getSession(
     accessToken: string,
     antiCsrfToken: string | undefined,
-    doAntiCsrfCheck: boolean
+    doAntiCsrfCheck: boolean,
+    idRefreshToken: string | undefined
 ): Promise<{
     session: {
         handle: string;
@@ -92,6 +93,9 @@ export async function getSession(
           }
         | undefined;
 }> {
+    if (idRefreshToken === undefined) {
+        throw generateError(AuthError.UNAUTHORISED, new Error("idRefreshToken missing"));
+    }
     let handShakeInfo = await HandshakeInfo.getInstance();
 
     try {

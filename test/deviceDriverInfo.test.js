@@ -92,6 +92,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
+                .set("id-refresh-token", res.idRefreshToken)
                 .set("supertokens-sdk-name", "ios")
                 .set("supertokens-sdk-version", "0.0.0")
                 .end((err, res) => {
@@ -105,6 +106,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken])
                 .set("anti-csrf", res.antiCsrf)
+                .set("id-refresh-token", res.idRefreshToken)
                 .end((err, res) => {
                     resolve();
                 })
@@ -179,7 +181,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 return [200, { jwtSigningPublicKey: "false" }];
             });
         assert.deepEqual(await ST.createNewSession("", {}, {}), { success: true });
-        assert.deepEqual(await ST.getSession("", "", false), { success: true });
+        assert.deepEqual(await ST.getSession("", "", false, ""), { success: true });
         assert.deepEqual(await ST.refreshSession(""), { success: true });
         HandshakeInfo.reset();
         assert.equal((await HandshakeInfo.getInstance()).jwtSigningPublicKey, "true");

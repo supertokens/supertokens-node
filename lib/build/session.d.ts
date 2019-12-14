@@ -43,7 +43,7 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
  * @description authenticates a session. To be used in APIs that require authentication
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED and TRY_REFRESH_TOKEN
  */
-export declare function getSession(accessToken: string, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean): Promise<{
+export declare function getSession(accessToken: string, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean, idRefreshToken: string | undefined): Promise<{
     session: {
         handle: string;
         userId: string;
