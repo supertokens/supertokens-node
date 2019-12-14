@@ -17,9 +17,9 @@ export declare function attachRefreshTokenToCookie(res: express.Response, token:
 export declare function getAccessTokenFromCookie(req: express.Request): string | undefined;
 export declare function getRefreshTokenFromCookie(req: express.Request): string | undefined;
 export declare function getAntiCsrfTokenFromHeaders(req: express.Request): string | undefined;
-export declare function getIdRefreshTokenFromHeaders(req: express.Request): string | undefined;
+export declare function getIdRefreshTokenFromCookie(req: express.Request): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string): void;
-export declare function setIdRefreshTokenInHeader(res: express.Response, idRefreshToken: string, expiry: number): void;
+export declare function setIdRefreshTokenInHeaderAndCookie(res: express.Response, idRefreshToken: string, expiry: number, domain: string, secure: boolean, path: string): void;
 export declare function getHeader(req: express.Request, key: string): string | undefined;
 export declare function setOptionsAPIHeader(res: express.Response): void;
 /**

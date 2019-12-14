@@ -24,22 +24,26 @@ module.exports.executeCommand = async function(cmd) {
 
 module.exports.extractInfoFromResponse = function(res) {
     let antiCsrf = res.headers["anti-csrf"];
-    let idRefreshToken = res.headers["id-refresh-token"];
+    let idRefreshTokenFromHeader = res.headers["id-refresh-token"];
     let accessToken = undefined;
     let refreshToken = undefined;
+    let idRefreshTokenFromCookie = undefined;
     let cookies = res.headers["set-cookie"];
     cookies.forEach(i => {
         if (i.split(";")[0].split("=")[0] === "sAccessToken") {
             accessToken = i.split(";")[0].split("=")[1];
-        } else {
+        } else if (i.split(";")[0].split("=")[0] === "sRefreshToken") {
             refreshToken = i.split(";")[0].split("=")[1];
+        } else {
+            idRefreshTokenFromCookie = i.split(";")[0].split("=")[1];
         }
     });
     return {
         antiCsrf,
         accessToken,
         refreshToken,
-        idRefreshToken
+        idRefreshTokenFromHeader,
+        idRefreshTokenFromCookie
     };
 };
 

@@ -7,12 +7,16 @@ import { AuthError, generateError } from "./error";
 
 const accessTokenCookieKey = "sAccessToken";
 const refreshTokenCookieKey = "sRefreshToken";
+
+// there are two of them because one is used by the server to check if the user is logged in and the other is checked by the frontend to see if the user is logged in.
+const idRefreshTokenCookieKey = "sIdRefreshToken";
 const idRefreshTokenHeaderKey = "id-refresh-token";
+
 const antiCsrfHeaderKey = "anti-csrf";
 const frontendSDKNameHeaderKey = "supertokens-sdk-name";
 const frontendSDKVersionHeaderKey = "supertokens-sdk-version";
 
-// will be there for all requests that require auth including refresh tokne request
+// will be there for all requests that require auth including refresh token request
 export function saveFrontendInfoFromRequest(req: express.Request) {
     try {
         let name = getHeader(req, frontendSDKNameHeaderKey);
@@ -40,6 +44,7 @@ export function clearSessionFromCookie(
 ) {
     setCookie(res, accessTokenCookieKey, "", domain, secure, true, 0, accessTokenPath);
     setCookie(res, refreshTokenCookieKey, "", domain, secure, true, 0, refreshTokenPath);
+    setCookie(res, idRefreshTokenCookieKey, "", domain, secure, true, 0, accessTokenPath);
     setHeader(res, idRefreshTokenHeaderKey, "remove");
 }
 
@@ -83,8 +88,8 @@ export function getAntiCsrfTokenFromHeaders(req: express.Request): string | unde
     return getHeader(req, antiCsrfHeaderKey);
 }
 
-export function getIdRefreshTokenFromHeaders(req: express.Request): string | undefined {
-    return getHeader(req, idRefreshTokenHeaderKey);
+export function getIdRefreshTokenFromCookie(req: express.Request): string | undefined {
+    return getCookieValue(req, idRefreshTokenCookieKey);
 }
 
 export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string) {
@@ -92,9 +97,18 @@ export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: 
     setHeader(res, "Access-Control-Expose-Headers", antiCsrfHeaderKey);
 }
 
-export function setIdRefreshTokenInHeader(res: express.Response, idRefreshToken: string, expiry: number) {
+export function setIdRefreshTokenInHeaderAndCookie(
+    res: express.Response,
+    idRefreshToken: string,
+    expiry: number,
+    domain: string,
+    secure: boolean,
+    path: string
+) {
     setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry);
     setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey);
+
+    setCookie(res, idRefreshTokenCookieKey, idRefreshToken, domain, secure, true, expiry, path);
 }
 
 export function getHeader(req: express.Request, key: string): string | undefined {
@@ -110,10 +124,8 @@ export function getHeader(req: express.Request, key: string): string | undefined
 
 export function setOptionsAPIHeader(res: express.Response) {
     setHeader(res, "Access-Control-Allow-Headers", antiCsrfHeaderKey);
-    setHeader(res, "Access-Control-Allow-Headers", idRefreshTokenHeaderKey);
     setHeader(res, "Access-Control-Allow-Headers", frontendSDKNameHeaderKey);
     setHeader(res, "Access-Control-Allow-Headers", frontendSDKVersionHeaderKey);
-
     setHeader(res, "Access-Control-Allow-Credentials", "true");
 }
 

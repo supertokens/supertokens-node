@@ -90,9 +90,8 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
         await new Promise(resolve =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken])
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
-                .set("id-refresh-token", res.idRefreshToken)
                 .set("supertokens-sdk-name", "ios")
                 .set("supertokens-sdk-version", "0.0.0")
                 .end((err, res) => {
@@ -104,9 +103,8 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
         await new Promise(resolve =>
             request(app)
                 .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken])
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
-                .set("id-refresh-token", res.idRefreshToken)
                 .end((err, res) => {
                     resolve();
                 })
