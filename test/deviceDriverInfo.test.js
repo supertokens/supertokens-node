@@ -132,7 +132,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 try {
                     assert.deepEqual(ddi, {
                         frontendSDK: [{ name: "ios", version: "0.0.0" }, { name: "android", version: "0.0.1" }],
-                        driver: { name: "node", version: "0.0.1" }
+                        driver: { name: "node", version }
                     });
                     return [200, { success: true }];
                 } catch (err) {}
@@ -145,7 +145,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 try {
                     assert.deepEqual(ddi, {
                         frontendSDK: [{ name: "ios", version: "0.0.0" }, { name: "android", version: "0.0.1" }],
-                        driver: { name: "node", version: "0.0.1" }
+                        driver: { name: "node", version }
                     });
                     return [
                         200,
@@ -161,7 +161,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 try {
                     assert.deepEqual(ddi, {
                         frontendSDK: [{ name: "ios", version: "0.0.0" }, { name: "android", version: "0.0.1" }],
-                        driver: { name: "node", version: "0.0.1" }
+                        driver: { name: "node", version }
                     });
                     return [200, { success: true, status: "OK" }];
                 } catch (err) {}
@@ -174,7 +174,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 try {
                     assert.deepEqual(ddi, {
                         frontendSDK: [{ name: "ios", version: "0.0.0" }, { name: "android", version: "0.0.1" }],
-                        driver: { name: "node", version: "0.0.1" }
+                        driver: { name: "node", version }
                     });
                     return [200, { jwtSigningPublicKey: "true" }];
                 } catch (err) {}
