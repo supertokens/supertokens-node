@@ -1,5 +1,5 @@
-import * as express from "express";
-import { TypeInput } from "./types";
+import * as express from 'express';
+import { TypeInput } from './types';
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
  * Please create a database in your mongo instance before calling this function
@@ -58,7 +58,7 @@ export declare function updateSessionData(sessionHandle: string, newSessionData:
 /**
  * @description Sets relevant Access-Control-Allow-Headers and Access-Control-Allow-Credentials headers
  */
-export declare function setRelevantHeadersForOptionsAPI(res: express.Response): Promise<void>;
+export declare function setRelevantHeadersForOptionsAPI(res: express.Response): void;
 /**
  * @class Session
  * @description an instance of this is created when a session is valid.
