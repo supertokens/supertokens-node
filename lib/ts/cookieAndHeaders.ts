@@ -5,6 +5,9 @@ import { IncomingMessage, ServerResponse } from "http";
 import { DeviceInfo } from "./deviceInfo";
 import { AuthError, generateError } from "./error";
 
+// TODO: set same-site value for cookies as chrome will soon make that compulsory.
+// Setting it to "lax" seems ideal, however there are bugs in safari regarding that. So setting it to "none" might make more sense.
+
 const accessTokenCookieKey = "sAccessToken";
 const refreshTokenCookieKey = "sRefreshToken";
 
