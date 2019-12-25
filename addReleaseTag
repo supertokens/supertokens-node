@@ -19,16 +19,6 @@ branch_name="(unnamed branch)"     # detached HEAD
 
 branch_name=${branch_name##refs/heads/}
 
-# check if branch is correct based on the version-----------
-
-if ! [[ $version == $branch_name* ]]
-then
-	RED='\033[0;31m'
-  NC='\033[0m' # No Color
-  printf "${RED}Adding tag to wrong branch. Stopping process${NC}\n"
-  exit 1
-fi
-
 git fetch --prune --prune-tags
 
 password=`cat ./apiPassword`
@@ -120,22 +110,44 @@ then
   RED='\033[0;31m'
   NC='\033[0m'
   printf "${RED}error while determining if we should push to master or not. Please do so manually if needed:${NC}\n"
-  echo "git merge -s ours master"
-  echo "git checkout master"
-  echo "git merge $branch_name"
-  echo "git push"
-  echo "git checkout $branch_name"
-  exit 1
+  if [[ $branch_name == "(unnamed branch)" ]]
+  then
+    echo "git checkout -b forrelease"
+    echo "git merge -s ours master"
+    echo "git checkout master"
+    echo "git merge forrelease"
+    echo "git push"
+    echo "git checkout forrelease"
+    exit 1
+  else
+    echo "git merge -s ours master"
+    echo "git checkout master"
+    echo "git merge $branch_name"
+    echo "git push"
+    echo "git checkout $branch_name"
+    exit 1
+  fi
+
 fi
 
 if [[ $response == "true" ]]
 then
   echo "pushing to mater..."
-  git merge -s ours master
-  git checkout master
-  git merge $branch_name
-  git push
-  git checkout $branch_name
+  if [[ $branch_name == "(unnamed branch)" ]]
+  then
+    git checkout -b forrelease
+    git merge -s ours master
+    git checkout master
+    git merge forrelease
+    git push
+    git checkout forrelease
+    echo "Done! Please delete this branch"
+  else
+    git merge -s ours master
+    git checkout master
+    git merge $branch_name
+    git push
+    git checkout $branch_name
+    echo "Done!"
+  fi
 fi
-
-echo "done!"
