@@ -30,6 +30,7 @@ export class Querier {
             Querier.instance = new Querier();
         }
         if (Querier.instance.hosts.length == 0) {
+            Querier.instance = undefined;
             throw generateError(
                 AuthError.GENERAL_ERROR,
                 new Error("Please call the init function before using any other functions of the SuperTokens library")
