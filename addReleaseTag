@@ -37,7 +37,7 @@ else
   testPassed=`echo $testPassedJson | jq .testPassed`
 fi
 
-if [[ $testPassed == "false" ]]
+if [[ $testPassed != "true" ]]
 then
 	RED='\033[0;31m'
   NC='\033[0m' # No Color
