@@ -47,7 +47,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function() {
         assert.equal(info.accessTokenPath, "/");
         assert.equal(info.cookieDomain, "supertokens.io");
         assert.equal(typeof info.jwtSigningPublicKey, "string");
-        assert.equal(info.cookieSecure, true);
+        assert.equal(info.cookieSecure, false);
         assert.equal(info.refreshTokenPath, "/refresh");
         assert.equal(info.enableAntiCsrf, true);
         assert.equal(info.accessTokenBlacklistingEnabled, false);

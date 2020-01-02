@@ -1,4 +1,4 @@
-import { TypeInput } from './types';
+import { TypeInput } from "./types";
 export declare class Querier {
     static instance: Querier | undefined;
     private hosts;
