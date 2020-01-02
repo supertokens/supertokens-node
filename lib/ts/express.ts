@@ -141,7 +141,12 @@ export async function refreshSession(req: express.Request, res: express.Response
             handShakeInfo.accessTokenPath,
             handShakeInfo.refreshTokenPath
         );
-        throw generateError(AuthError.UNAUTHORISED, new Error("missing auth tokens in cookies"));
+        throw generateError(
+            AuthError.UNAUTHORISED,
+            new Error(
+                "Missing auth tokens in cookies. Have you set the correct refresh API path in your frontend and SuperTokens config?"
+            )
+        );
     }
 
     try {
