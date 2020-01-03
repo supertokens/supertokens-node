@@ -45,6 +45,30 @@ then
   exit 1
 fi
 
+# we get from the server if the current package can be released safely or not
+if [[ $1 != "--forced" ]]
+then
+  canReleaseSafelyResponse=`curl -s -X GET \
+    "https://api.supertokens.io/0/driver/release/check?password=$password&planType=COMMERCIAL&version=$version&name=node" \
+    -H 'api-version: 0'`
+
+  if [[ `echo $canReleaseSafelyResponse | jq .canRelease` == "null"  ]]
+  then
+    canReleaseSafely="false"
+  else
+    canReleaseSafely=`echo $canReleaseSafelyResponse | jq .canRelease`
+  fi
+
+  if [[ $canReleaseSafely != "true" ]]
+  then
+    RED='\033[0;31m'
+    NC='\033[0m' # No Color
+    printf "${RED}Cannot release core. Have you released corresponding plugin and drivers?${NC}\n"
+    exit 1
+  fi
+fi
+
+
 # check that current commit has a dev tag and that it is the correct version
 # get current commit hash------------
 if [ $# -eq 0 ]
