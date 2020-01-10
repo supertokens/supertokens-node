@@ -22,6 +22,9 @@ let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 - check if input cookies are missing, an appropriate error is thrown
 - if anti-csrf is disabled, check that not having that in input to verify / refresh session is fine
 - the opposite of the above condition
+- calling createNewSession twice, should overwrite the first call (in terms of cookies)
+- calling createNewSession in the case of unauthorised error, should create a proper session
+
 */
 describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, function() {
     beforeEach(async function() {
