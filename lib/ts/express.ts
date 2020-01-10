@@ -19,6 +19,7 @@ import * as SessionFunctions from "./session";
 import { TypeInput } from "./types";
 
 // TODO: Make it also work with PassportJS
+// TODO: implement a function to check if session possibly exists
 
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
