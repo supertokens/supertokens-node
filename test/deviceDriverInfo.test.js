@@ -24,6 +24,7 @@ let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 - the opposite of the above condition
 - calling createNewSession twice, should overwrite the first call (in terms of cookies)
 - calling createNewSession in the case of unauthorised error, should create a proper session
+- revoking old session after create new session, should not remove new session's cookies.
 
 */
 describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, function() {

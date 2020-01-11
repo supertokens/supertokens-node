@@ -1,5 +1,5 @@
-import * as express from 'express';
-import { TypeInput } from './types';
+import * as express from "express";
+import { TypeInput } from "./types";
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
  * Please create a database in your mongo instance before calling this function
