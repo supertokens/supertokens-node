@@ -55,6 +55,18 @@ else
 	exit 1
 fi
 
+# check if release version of this tag exists------------
+
+if git rev-parse dev-v$version >/dev/null 2>&1
+then
+    continue=1
+else
+    RED='\033[0;31m'
+    NC='\033[0m'
+    printf "${RED}The dev version of this tag already exists${NC}\n"
+    exit 1
+fi
+
 
 # tag this commit and push it------------
 
