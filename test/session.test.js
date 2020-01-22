@@ -7,11 +7,13 @@ let { version } = require("../lib/build/version");
 const express = require("express");
 const request = require("supertest");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
+let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 
 describe(`session: ${printPath("[test/session.test.js]")}`, function() {
     beforeEach(async function() {
         await killAllST();
         await setupST();
+        ProcessState.getInstance().reset();
     });
 
     after(async function() {
@@ -166,12 +168,28 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
             true,
             response.idRefreshToken.token
         );
+        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+        assert(verifyState !== undefined);
         assert(response3.session !== undefined);
         assert(response3.accessToken !== undefined);
         assert(Object.keys(response3).length === 2);
 
-        let response4 = await ST.revokeSessionUsingSessionHandle(response3.session.handle);
-        assert(response4 === true);
+        ProcessState.getInstance().reset();
+
+        let response4 = await ST.getSession(
+            response3.accessToken.token,
+            response2.antiCsrfToken,
+            true,
+            response.idRefreshToken.token
+        );
+        let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
+        assert(verifyState2 === undefined);
+        assert(response4.session !== undefined);
+        assert(response4.accessToken === undefined);
+        assert(Object.keys(response4).length === 1);
+
+        let response5 = await ST.revokeSessionUsingSessionHandle(response4.session.handle);
+        assert(response5 === true);
     });
 
     //check basic usage of session** W/IE
@@ -220,7 +238,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(res.idRefreshTokenFromCookie !== undefined);
         assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
-        assert(Object.keys(res).length === 5);
 
         let res2 = extractInfoFromResponse(
             await new Promise(resolve =>
@@ -239,7 +256,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(res2.idRefreshTokenFromCookie !== undefined);
         assert(res2.idRefreshTokenFromHeader !== undefined);
         assert(res2.refreshToken !== undefined);
-        assert(Object.keys(res2).length === 5);
 
         let res3 = extractInfoFromResponse(
             await new Promise(resolve =>
@@ -507,7 +523,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
             await STExpress.revokeAllSessionsForUser(session.getUserId());
             res.status("200").send("");
         });
+        app.post("/session/getSessionsWithUserId1", async (req, res) => {
+            let sessionHandles = await STExpress.getAllSessionHandlesForUser("id1");
+            assert(sessionHandles.length === 0);
+            res.status(200).send("");
+        });
 
+        //create an api call get sesssions from a userid "id1" that returns all the sessions for that userid
         let response = extractInfoFromResponse(
             await new Promise(resolve =>
                 request(app)
@@ -518,24 +540,36 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
                     })
             )
         );
-
-        let response2 = extractInfoFromResponse(
-            await new Promise(resolve =>
-                request(app)
-                    .post("/session/revoke")
-                    .set("Cookie", [
-                        "sAccessToken=" + response.accessToken + ";sIdRefreshToken=" + response.idRefreshTokenFromCookie
-                    ])
-                    .set("anti-csrf", response.antiCsrf)
-                    .expect(200)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
+        let sessionRevokedResponse = await new Promise(resolve =>
+            request(app)
+                .post("/session/revoke")
+                .set("Cookie", [
+                    "sAccessToken=" + response.accessToken + ";sIdRefreshToken=" + response.idRefreshTokenFromCookie
+                ])
+                .set("anti-csrf", response.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res);
+                })
         );
-        assert(response2.idRefreshTokenFromHeader === "remove");
+        let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
+        assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.accessToken === "");
+        assert(sessionRevokedResponseExtracted.refreshToken === "");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
 
-        let temp2 = extractInfoFromResponse(
+        await new Promise(resolve =>
+            request(app)
+                .post("/usercreate")
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        let userCreateResponse = extractInfoFromResponse(
             await new Promise(resolve =>
                 request(app)
                     .post("/usercreate")
@@ -548,50 +582,22 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
 
         await new Promise(resolve =>
             request(app)
-                .post("/usercreate")
-                .expect(200)
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-
-        let temp3 = await new Promise(resolve =>
-            request(app)
                 .post("/session/revokeUserid")
                 .set("Cookie", [
-                    "sAccessToken=" + temp2.accessToken + ";sIdRefreshToken=" + temp2.idRefreshTokenFromCookie
+                    "sAccessToken=" +
+                        userCreateResponse.accessToken +
+                        ";sIdRefreshToken=" +
+                        userCreateResponse.idRefreshTokenFromCookie
                 ])
-                .set("anti-csrf", temp2.antiCsrf)
+                .set("anti-csrf", userCreateResponse.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
                     resolve(res);
                 })
         );
-        console.log(temp3);
-    });
-
-    //testing create new session
-    it("test create new session", async function() {
-        await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080
-            }
-        ]);
-        const app = express();
-        app.post("/create", async (req, res) => {
-            try {
-                await STExpress.createNewSession(res, undefined, undefined, undefined);
-                res.status(200).send("");
-            } catch (error) {
-                console.log(error);
-            }
-        });
-
-        await new Promise(resolve =>
+        new Promise(resolve =>
             request(app)
-                .post("/create")
+                .post("/session/getSessionsWithUserId1")
                 .expect(200)
                 .end((err, res) => {
                     resolve(res);

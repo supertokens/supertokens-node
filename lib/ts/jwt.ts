@@ -22,7 +22,7 @@ export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string)
     let payload = splittedInput[1];
 
     let verifier = crypto.createVerify("sha256");
-    //convert the jwtSigningPublicKey into .pem format RSA-SHA256
+    //convert the jwtSigningPublicKey into .pem format
 
     verifier.update(HEADER + "." + payload);
     if (

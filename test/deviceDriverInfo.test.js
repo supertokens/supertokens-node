@@ -7,6 +7,7 @@ let { version } = require("../lib/build/version");
 const express = require("express");
 const request = require("supertest");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
+let { ProcessState } = require("../lib/build/processState");
 
 /* TODO: 
 - test with existing header params being there and that the lib appends to those and not overrides those**E
@@ -27,6 +28,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
     beforeEach(async function() {
         await killAllST();
         await setupST();
+        ProcessState.getInstance().reset();
     });
 
     after(async function() {

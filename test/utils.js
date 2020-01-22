@@ -28,14 +28,20 @@ module.exports.extractInfoFromResponse = function(res) {
     let accessToken = undefined;
     let refreshToken = undefined;
     let idRefreshTokenFromCookie = undefined;
+    let accessTokenExpiry = undefined;
+    let refreshTokenExpiry = undefined;
+    let idRefreshTokenExpiry = undefined;
     let cookies = res.headers["set-cookie"];
     cookies.forEach(i => {
         if (i.split(";")[0].split("=")[0] === "sAccessToken") {
             accessToken = i.split(";")[0].split("=")[1];
+            accessTokenExpiry = i.split(";")[3].split("=")[1];
         } else if (i.split(";")[0].split("=")[0] === "sRefreshToken") {
             refreshToken = i.split(";")[0].split("=")[1];
+            refreshTokenExpiry = i.split(";")[3].split("=")[1];
         } else {
             idRefreshTokenFromCookie = i.split(";")[0].split("=")[1];
+            idRefreshTokenExpiry = i.split(";")[3].split("=")[1];
         }
     });
     return {
@@ -43,7 +49,10 @@ module.exports.extractInfoFromResponse = function(res) {
         accessToken,
         refreshToken,
         idRefreshTokenFromHeader,
-        idRefreshTokenFromCookie
+        idRefreshTokenFromCookie,
+        accessTokenExpiry,
+        refreshTokenExpiry,
+        idRefreshTokenExpiry
     };
 };
 

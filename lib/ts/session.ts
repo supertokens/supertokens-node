@@ -3,6 +3,7 @@ import { AuthError, generateError } from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
 import { Querier } from "./querier";
 import { TypeInput } from "./types";
+import { ProcessState, PROCESS_STATE } from "./processState";
 
 export { AuthError as Error } from "./error";
 /**
@@ -82,16 +83,14 @@ export async function getSession(
         userId: string;
         userDataInJWT: any;
     };
-    accessToken:
-        | {
-              token: string;
-              expiry: number;
-              createdTime: number;
-              cookiePath: string;
-              cookieSecure: boolean;
-              domain: string;
-          }
-        | undefined;
+    accessToken?: {
+        token: string;
+        expiry: number;
+        createdTime: number;
+        cookiePath: string;
+        cookieSecure: boolean;
+        domain: string;
+    };
 }> {
     if (idRefreshToken === undefined) {
         throw generateError(AuthError.UNAUTHORISED, new Error("idRefreshToken missing"));
@@ -134,8 +133,7 @@ export async function getSession(
                         handle: accessTokenInfo.sessionHandle,
                         userId: accessTokenInfo.userId,
                         userDataInJWT: accessTokenInfo.userData
-                    },
-                    accessToken: undefined
+                    }
                 };
             }
         }
@@ -145,6 +143,8 @@ export async function getSession(
             throw err;
         }
     }
+
+    ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
 
     let response = await Querier.getInstance().sendPostRequest("/session/verify", {
         accessToken,

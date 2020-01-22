@@ -2,11 +2,13 @@ const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./u
 let ST = require("../session");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let assert = require("assert");
+let { ProcessState } = require("../lib/build/processState");
 
 describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function() {
     beforeEach(async function() {
         await killAllST();
         await setupST();
+        ProcessState.getInstance().reset();
     });
 
     after(async function() {
