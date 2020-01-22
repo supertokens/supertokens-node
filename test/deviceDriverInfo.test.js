@@ -9,15 +9,15 @@ const request = require("supertest");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 
 /* TODO: 
-- test with existing header params being there and that the lib appends to those and not overrides those
-- check basic usage of session
-- check for token theft detection
-- check session verify for with / without anti-csrf present
-- check revoking session(s)
-- check manipulating session data
+- test with existing header params being there and that the lib appends to those and not overrides those**E
+- check basic usage of session**
+- check for token theft detection** W/IE
+- check session verify for with / without anti-csrf present**
+- check revoking session(s)**
+- check manipulating session data**
 - check if output headers and set cookies for create session is fine
 - check if output headers and set cookies for refresh session is fine
-- check that verification of session happens without calling the server
+- check that verification of session happens without calling the server**
 - check that if signing key changes, things are still fine
 - check if input cookies are missing, an appropriate error is thrown
 - if anti-csrf is disabled, check that not having that in input to verify / refresh session is fine
