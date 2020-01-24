@@ -353,13 +353,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await STExpress.revokeAllSessionsForUser(session.getUserId());
             res.status("200").send("");
         });
+
+        //create an api call get sesssions from a userid "id1" that returns all the sessions for that userid
         app.post("/session/getSessionsWithUserId1", async (req, res) => {
             let sessionHandles = await STExpress.getAllSessionHandlesForUser("id1");
             assert(sessionHandles.length === 0);
             res.status(200).send("");
         });
 
-        //create an api call get sesssions from a userid "id1" that returns all the sessions for that userid
         let response = extractInfoFromResponse(
             await new Promise(resolve =>
                 request(app)
@@ -595,5 +596,86 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         assert(response["req"]["_header"].split("\r\n").includes("testHeader: testValue"));
         assert(response["req"]["_header"].split("\r\n").length > 1);
+    });
+
+    // - if anti-csrf is disabled, check that not having that in input to verify / refresh session is fine
+    // - the opposite of the above condition
+    it("test that anti-csrf is disabled and check that not having to input verify/refresh is fine express", async function() {
+        await startST();
+        STExpress.init([
+            {
+                hostname: "localhost",
+                port: 8080
+            }
+        ]);
+        const app = express();
+        app.post("/create", async (req, res) => {
+            await STExpress.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/session/refresh", async (req, res) => {
+            await STExpress.refreshSession(req, res);
+            res.status(200).send("");
+        });
+
+        app.post("/session/verify", async (req, res) => {
+            await STExpress.getSession(req, res, false);
+            res.status(200).send("");
+        });
+
+        //create a new session
+        let response = extractInfoFromResponse(
+            await new Promise(resolve =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        let res2 = extractInfoFromResponse(
+            await new Promise(resolve =>
+                request(app)
+                    .post("/session/refresh")
+                    .set("Cookie", ["sRefreshToken=" + response.refreshToken])
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+        //check the response of session / refresh is correct without anti-csrf
+        assert(res2.antiCsrf !== undefined);
+        assert(res2.accessToken !== undefined);
+        assert(res2.refreshToken !== undefined);
+        assert(res2.idRefreshTokenFromHeader !== undefined);
+        assert(res2.idRefreshTokenFromCookie !== undefined);
+        assert(res2.accessTokenExpiry !== undefined);
+        assert(res2.refreshTokenExpiry !== undefined);
+        assert(res2.idRefreshTokenExpiry !== undefined);
+
+        let response3 = extractInfoFromResponse(
+            await new Promise(resolve =>
+                request(app)
+                    .post("/session/verify")
+                    .set("Cookie", [
+                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie
+                    ])
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+        //check the response of session verify is correct without anti-csrf
+        assert(response3.antiCsrf === undefined);
+        assert(response3.accessToken != undefined);
+        assert(response3.accessTokenExpiry != undefined);
+        assert(response3.refreshToken === undefined);
+        assert(response3.idRefreshTokenFromHeader === undefined);
+        assert(response3.idRefreshTokenFromCookie === undefined);
+        assert(response3.refreshTokenExpiry === undefined);
+        assert(response3.idRefreshTokenExpiry === undefined);
     });
 });
