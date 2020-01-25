@@ -18,10 +18,7 @@ export async function getInfoFromAccessToken(
     timeCreated: number;
 }> {
     try {
-        let payload = verifyJWTAndGetPayload(
-            token,
-            "-----BEGIN PUBLIC KEY-----\n" + jwtSigningPublicKey + "\n-----END PUBLIC KEY-----"
-        );
+        let payload = verifyJWTAndGetPayload(token, jwtSigningPublicKey);
 
         let sessionHandle = sanitizeStringInput(payload.sessionHandle);
         let userId = sanitizeStringInput(payload.userId);

@@ -47,7 +47,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         }
     });
 
-    //check basic usage of session** W/IE
+    //check basic usage of session
     it("test basic usage of sessions", async function() {
         await startST();
         STExpress.init([
@@ -64,6 +64,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(response.idRefreshToken !== undefined);
         assert(response.antiCsrfToken !== undefined);
         assert(Object.keys(response).length === 5);
+
+        // TODO: call verify session and make sure it doenst go to PROCESS_STATE.CALLING_IN_VERIFY
 
         let response2 = await ST.refreshSession(response.refreshToken.token);
         assert(response2.session !== undefined);
@@ -103,7 +105,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(response5 === true);
     });
 
-    //check session verify for with / without anti-csrf present**
+    //check session verify for with / without anti-csrf present
     it("test session verify with anti-csrf present", async function() {
         await startST();
         STExpress.init([
@@ -160,7 +162,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         }
     });
 
-    //check revoking session(s)**
+    //check revoking session(s)
     it("test revoking of sessions", async function() {
         await startST();
         STExpress.init([
@@ -173,22 +175,26 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         let res = await ST.createNewSession("", {}, {});
         let res2 = await ST.revokeSessionUsingSessionHandle(res.session.handle);
         assert(res2 === true);
+        // TODO: test that it is actually revoked by using res and trying to verify session - you should get TRY_REFRESH_TOKEN error
 
         //create multiple sessions with the same userID and use revokeAllSessionsForUser to revoke sessions
         await ST.createNewSession("id", {}, {});
         await ST.createNewSession("id", {}, {});
+        // TODO: get all session handles for this user, and you should get two of them.
         let response = await ST.revokeAllSessionsForUser("id");
         assert(response === 2);
+        // TODO: test that it is actually revoked by getting al session handles for this user - which should be empty
 
         //revoke a session with a session handle that does not exist
         let resp = await ST.revokeSessionUsingSessionHandle("");
         assert(resp === false);
 
         //revoke a session with a userId that does not exist
-        let resp2 = await ST.revokeAllSessionsForUser("fiefi");
+        let resp2 = await ST.revokeAllSessionsForUser("random");
         assert(resp2 === 0);
 
-        //passing json input isntead of the session handle
+        // TODO: why are the below two things there?
+        //passing json input instead of the session handle
         try {
             await ST.revokeSessionUsingSessionHandle({ key: "value" });
             throw new Error("should not have come here");
@@ -208,7 +214,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         }
     });
 
-    //check manipulating session data**
+    //check manipulating session data
     it("test manipulating session data", async function() {
         await startST();
         STExpress.init([
@@ -232,7 +238,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
 
         //passing invalid session handle when updating session data
         try {
-            await ST.getSessionData("randomString90", { key2: "value2" });
+            await ST.updateSessionData("random", { key2: "value2" });
         } catch (error) {
             if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.UNAUTHORISED) {
                 throw err;
