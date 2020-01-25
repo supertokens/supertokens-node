@@ -7,30 +7,25 @@ let { version } = require("../lib/build/version");
 const express = require("express");
 const request = require("supertest");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
+let { ProcessState } = require("../lib/build/processState");
 
 /* TODO: 
-- test with existing header params being there and that the lib appends to those and not overrides those
-- check basic usage of session
-- check for token theft detection
-- check session verify for with / without anti-csrf present
-- check revoking session(s)
-- check manipulating session data
+- if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
 - check if output headers and set cookies for create session is fine
 - check if output headers and set cookies for refresh session is fine
-- check that verification of session happens without calling the server
 - check that if signing key changes, things are still fine
 - check if input cookies are missing, an appropriate error is thrown
-- if anti-csrf is disabled, check that not having that in input to verify / refresh session is fine
 - the opposite of the above condition
 - calling createNewSession twice, should overwrite the first call (in terms of cookies)
 - calling createNewSession in the case of unauthorised error, should create a proper session
 - revoking old session after create new session, should not remove new session's cookies.
-
+- check that if idRefreshToken is not passed to express, verify throws UNAUTHORISED
 */
 describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, function() {
     beforeEach(async function() {
         await killAllST();
         await setupST();
+        ProcessState.getInstance().reset();
     });
 
     after(async function() {

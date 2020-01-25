@@ -2,11 +2,13 @@ const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./u
 let ST = require("../session");
 let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
+let { ProcessState } = require("../lib/build/processState");
 
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function() {
     beforeEach(async function() {
         await killAllST();
         await setupST();
+        ProcessState.getInstance().reset();
     });
 
     after(async function() {

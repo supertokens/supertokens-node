@@ -49,14 +49,14 @@ export declare function getSession(accessToken: string, antiCsrfToken: string | 
         userId: string;
         userDataInJWT: any;
     };
-    accessToken: {
+    accessToken?: {
         token: string;
         expiry: number;
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
-    } | undefined;
+    };
 }>;
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.

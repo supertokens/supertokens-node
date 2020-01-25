@@ -22,11 +22,18 @@ export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string)
     let payload = splittedInput[1];
 
     let verifier = crypto.createVerify("sha256");
+    //convert the jwtSigningPublicKey into .pem format
+
     verifier.update(HEADER + "." + payload);
-    if (!verifier.verify(jwtSigningPublicKey, splittedInput[2], "base64")) {
+    if (
+        !verifier.verify(
+            "-----BEGIN PUBLIC KEY-----\n" + jwtSigningPublicKey + "\n-----END PUBLIC KEY-----",
+            splittedInput[2],
+            "base64"
+        )
+    ) {
         throw new Error("JWT verification failed");
     }
-
     // sending payload
     payload = Buffer.from(payload, "base64").toString();
     return JSON.parse(payload);
