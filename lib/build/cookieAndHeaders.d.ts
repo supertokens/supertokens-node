@@ -1,6 +1,6 @@
 /// <reference types="node" />
-import * as express from "express";
-import { IncomingMessage, ServerResponse } from "http";
+import * as express from 'express';
+import { IncomingMessage, ServerResponse } from 'http';
 export declare function saveFrontendInfoFromRequest(req: express.Request): void;
 /**
  * @description clears all the auth cookies from the response

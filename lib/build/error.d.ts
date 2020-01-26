@@ -1,4 +1,4 @@
-import { TypeAuthError } from "./types";
+import { TypeAuthError } from './types';
 export declare function generateError(errType: number, err: any): any;
 export declare class AuthError {
     static GENERAL_ERROR: number;

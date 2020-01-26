@@ -1,4 +1,4 @@
-import { TypeInput } from "./types";
+import { TypeInput } from './types';
 export { AuthError as Error } from "./error";
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
