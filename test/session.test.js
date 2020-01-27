@@ -12,7 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, extractInfoFromResponse } = require("./utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    extractInfoFromResponse,
+    setKeyValueInConfig
+} = require("./utils");
 let ST = require("../session");
 let STExpress = require("../index");
 let assert = require("assert");
@@ -80,6 +89,9 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(Object.keys(response).length === 5);
 
         // TODO: call verify session and make sure it doenst go to PROCESS_STATE.CALLING_IN_VERIFY
+        await ST.getSession(response.accessToken.token, response.antiCsrfToken, true, response.idRefreshToken.token);
+        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+        assert(verifyState3 === undefined);
 
         let response2 = await ST.refreshSession(response.refreshToken.token);
         assert(response2.session !== undefined);
@@ -186,18 +198,29 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
             }
         ]);
         //create a single session and  revoke using the session handle
-        let res = await ST.createNewSession("", {}, {});
+        let res = await ST.createNewSession("id1", {}, {});
         let res2 = await ST.revokeSessionUsingSessionHandle(res.session.handle);
         assert(res2 === true);
+
         // TODO: test that it is actually revoked by using res and trying to verify session - you should get TRY_REFRESH_TOKEN error
+        // calling verify session after calling revokeSessionUsingSessionHandle does not throw TRY_REFRESH_TOKEN error
+        let res3 = await ST.getAllSessionHandlesForUser("id1");
+        assert(res3.length === 0);
 
         //create multiple sessions with the same userID and use revokeAllSessionsForUser to revoke sessions
         await ST.createNewSession("id", {}, {});
         await ST.createNewSession("id", {}, {});
+
         // TODO: get all session handles for this user, and you should get two of them.
+        let sessionIdResponse = await ST.getAllSessionHandlesForUser("id");
+        assert(sessionIdResponse.length === 2);
+
         let response = await ST.revokeAllSessionsForUser("id");
         assert(response === 2);
+
         // TODO: test that it is actually revoked by getting al session handles for this user - which should be empty
+        sessionIdResponse = await ST.getAllSessionHandlesForUser("id");
+        assert(sessionIdResponse.length === 0);
 
         //revoke a session with a session handle that does not exist
         let resp = await ST.revokeSessionUsingSessionHandle("");
@@ -208,24 +231,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(resp2 === 0);
 
         // TODO: why are the below two things there?
-        //passing json input instead of the session handle
-        try {
-            await ST.revokeSessionUsingSessionHandle({ key: "value" });
-            throw new Error("should not have come here");
-        } catch (error) {
-            if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.GENERAL_ERROR) {
-                throw err;
-            }
-        }
-        //passing json input instead of userid
-        try {
-            await ST.revokeAllSessionsForUser({ key: "value" });
-            throw new Error("should not have come here");
-        } catch (error) {
-            if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.GENERAL_ERROR) {
-                throw err;
-            }
-        }
     });
 
     //check manipulating session data
@@ -255,8 +260,31 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
             await ST.updateSessionData("random", { key2: "value2" });
         } catch (error) {
             if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.UNAUTHORISED) {
-                throw err;
+                throw error;
             }
         }
+    });
+
+    //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
+    it("test that when anti-csrf is disabled from ST core not having that in input to verify session is fine", async function() {
+        await setKeyValueInConfig("enable_anti_csrf", "false");
+        await startST();
+        STExpress.init([
+            {
+                hostname: "localhost",
+                port: 8080
+            }
+        ]);
+        let response = await ST.createNewSession("", {}, {});
+
+        //passing anti-csrf token as undefined and anti-csrf check as false
+        let response2 = await ST.getSession(response.accessToken.token, undefined, false, response.idRefreshToken);
+        assert(response2.session != undefined);
+        assert(Object.keys(response2.session).length === 3);
+
+        //passing anti-csrf token as undefined and anti-csrf check as true
+        let response3 = await ST.getSession(response.accessToken.token, undefined, true, response.idRefreshToken);
+        assert(response3.session != undefined);
+        assert(Object.keys(response3.session).length === 3);
     });
 });

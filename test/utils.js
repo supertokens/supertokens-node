@@ -17,6 +17,7 @@ let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { DeviceInfo } = require("../lib/build/deviceInfo");
 let { Querier } = require("../lib/build/querier");
 const nock = require("nock");
+let fs = require("fs");
 
 module.exports.printPath = function(path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -32,6 +33,28 @@ module.exports.executeCommand = async function(cmd) {
                 return;
             }
             resolve({ stdout, stderr });
+        });
+    });
+};
+
+module.exports.setKeyValueInConfig = async function(key, value) {
+    return new Promise((resolve, reject) => {
+        let installationPath = process.env.INSTALL_PATH;
+        fs.readFile(installationPath + "/config.yaml", "utf8", function(err, data) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            let oldStr = new RegExp("((#\\s)?)" + key + "(:|((:\\s).+))\n");
+            let newStr = key + ": " + value + "\n";
+            let result = data.replace(oldStr, newStr);
+            fs.writeFile(installationPath + "/config.yaml", result, "utf8", function(err) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
         });
     });
 };

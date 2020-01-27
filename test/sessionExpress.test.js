@@ -12,7 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, extractInfoFromResponse } = require("./utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    extractInfoFromResponse,
+    setKeyValueInConfig
+} = require("./utils");
 let ST = require("../session");
 let STExpress = require("../index");
 let assert = require("assert");
@@ -61,11 +70,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 await STExpress.refreshSession(req, res);
                 res.status(200).send(JSON.stringify({ success: false }));
             } catch (err) {
-                if (ST.Error.isErrorFromAuth(err) && err.errType === ST.Error.TOKEN_THEFT_DETECTED) {
-                    res.status(200).send(JSON.stringify({ success: true }));
-                } else {
-                    res.status(200).send(JSON.stringify({ success: false }));
-                }
+                res.status(200).json({
+                    success: ST.Error.isErrorFromAuth(err) && err.errType === ST.Error.TOKEN_THEFT_DETECTED
+                });
             }
         });
 
@@ -85,7 +92,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 request(app)
                     .post("/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                    .set("anti-csrf", res.antiCsrf) // TODO: do not need this
                     .end((err, res) => {
                         resolve(res);
                     })
@@ -108,13 +114,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             request(app)
                 .post("/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                .set("anti-csrf", res.antiCsrf) // TODO: remove this
                 .end((err, res) => {
                     resolve(res);
                 })
         );
-
-        assert.deepEqual(res3.text, '{"success":true}'); // compare like res3.data.success, true
+        assert.deepEqual(res3.body.success, true);
 
         let cookies = extractInfoFromResponse(res3);
         assert.deepEqual(cookies.antiCsrf, undefined);
@@ -123,6 +127,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
         assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
         // TODO: check expiry time of cookies as well!
+        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
     });
 
     //check basic usage of session
@@ -150,6 +157,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await STExpress.refreshSession(req, res);
             res.status(200).send("");
         });
+        app.post("/session/revoke", async (req, res) => {
+            let session = await STExpress.getSession(req, res, true);
+            await session.revokeSession();
+            res.status(200).send("");
+        });
 
         let res = extractInfoFromResponse(
             await new Promise(resolve =>
@@ -169,13 +181,24 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.refreshToken !== undefined);
 
         // TODO: call verify session and make sure it doenst go to PROCESS_STATE.CALLING_IN_VERIFY
+        await new Promise(resolve =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+
+        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+        assert(verifyState3 === undefined);
 
         let res2 = extractInfoFromResponse(
             await new Promise(resolve =>
                 request(app)
                     .post("/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                    .set("anti-csrf", res.antiCsrf) // TODO: dont need anti-csrf
                     .end((err, res) => {
                         resolve(res);
                     })
@@ -203,7 +226,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
         assert(verifyState !== undefined);
-        assert(res3.accessToken != undefined);
+        assert(res3.accessToken !== undefined);
 
         ProcessState.getInstance().reset();
 
@@ -222,131 +245,153 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(verifyState2 === undefined);
 
         // TODO: what happened to revoke session? In the non-express, you are calling that!
+        let sessionRevokedResponse = await new Promise(resolve =>
+            request(app)
+                .post("/session/revoke")
+                .set("Cookie", [
+                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie
+                ])
+                .set("anti-csrf", res2.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
+        assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.accessToken === "");
+        assert(sessionRevokedResponseExtracted.refreshToken === "");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
     //check session verify for with / without anti-csrf present**
     // TODO: redo this test from non-express!!! exactly!
-    // it("test express session verify with anti-csrf present", async function () {
-    //     await startST();
-    //     STExpress.init([
-    //         {
-    //             hostname: "localhost",
-    //             port: 8080
-    //         }
-    //     ]);
+    it("test express session verify with anti-csrf present", async function() {
+        await startST();
+        STExpress.init([
+            {
+                hostname: "localhost",
+                port: 8080
+            }
+        ]);
 
-    //     const app = express();
+        const app = express();
+        app.post("/create", async (req, res) => {
+            await STExpress.createNewSession(res, "id1", {}, {});
+            res.status(200).send("");
+        });
 
-    //     app.post("/create", async (req, res) => {
-    //         await STExpress.createNewSession(res, "", {}, {});
-    //         res.status(200).send("");
-    //     });
+        app.post("/session/verify", async (req, res) => {
+            let sessionResponse = await STExpress.getSession(req, res, true);
+            res.status(200).json({ userId: sessionResponse.userId });
+        });
 
-    //     // TODO: you don't need refresh API for this test!
-    //     app.post("/session/refresh", async (req, res) => {
-    //         await STExpress.refreshSession(req, res);
-    //         res.status(200).send("");
-    //     });
+        app.post("/session/verifyAntiCsrfFalse", async (req, res) => {
+            let sessionResponse = await STExpress.getSession(req, res, false);
+            res.status(200).json({ userId: sessionResponse.userId });
+        });
 
-    //     app.post("/session/verify", async (req, res) => {
-    //         await STExpress.getSession(req, res, true);
-    //         res.status(200).send("");
-    //     });
+        let res = extractInfoFromResponse(
+            await new Promise(resolve =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
 
-    //     let res = extractInfoFromResponse(
-    //         await new Promise(resolve =>
-    //             request(app)
-    //                 .post("/create")
-    //                 .expect(200)
-    //                 .end((err, res) => {
-    //                     resolve(res);
-    //                 })
-    //         )
-    //     );
+        let res2 = await new Promise(resolve =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert.deepEqual(res2.body.userId, "id1");
 
-    //     // TODO: why do u need todo refresh here?
-    //     let res2 = extractInfoFromResponse(
-    //         await new Promise(resolve =>
-    //             request(app)
-    //                 .post("/session/refresh")
-    //                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-    //                 .set("anti-csrf", res.antiCsrf)
-    //                 .end((err, res) => {
-    //                     resolve(res);
-    //                 })
-    //         )
-    //     );
-    //     //with anti-csrf present
-    //     let res3 = extractInfoFromResponse(
-    //         await new Promise(resolve =>
-    //             request(app)
-    //                 .post("/session/verify")
-    //                 .set("Cookie", [
-    //                     "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie
-    //                 ])
-    //                 .set("anti-csrf", res2.antiCsrf)
-    //                 .end((err, res) => {
-    //                     resolve(res);
-    //                 })
-    //         )
-    //     );
-    //     assert(res3.accessToken !== undefined);
-
-    //     // TODO: what about the case where you do not provide anti-csrf?
-    // });
+        let res3 = await new Promise(resolve =>
+            request(app)
+                .post("/session/verifyAntiCsrfFalse")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert.deepEqual(res3.body.userId, "id1");
+    });
 
     // //check session verify for with / without anti-csrf present**
-    // it("test session verify without anti-csrf present express", async function () {
-    //     await startST();
-    //     STExpress.init([
-    //         {
-    //             hostname: "localhost",
-    //             port: 8080
-    //         }
-    //     ]);
+    it("test session verify without anti-csrf present express", async function() {
+        await startST();
+        STExpress.init([
+            {
+                hostname: "localhost",
+                port: 8080
+            }
+        ]);
 
-    //     const app = express();
+        const app = express();
 
-    //     app.post("/create", async (req, res) => {
-    //         await STExpress.createNewSession(res, "", {}, {});
-    //         res.status(200).send("");
-    //     });
+        app.post("/create", async (req, res) => {
+            await STExpress.createNewSession(res, "id1", {}, {});
+            res.status(200).send("");
+        });
 
-    //     app.post("/session/verify", async (req, res) => {
-    //         try {
-    //             await STExpress.getSession(req, res, true);
-    //             res.status(200).send("");
-    //         } catch (err) {
-    //             if (!ST.Error.isErrorFromAuth(err) || err.errType !== ST.Error.TRY_REFRESH_TOKEN) {
-    //                 throw err;  // TODO: this is not actually going to fail the test! this will just not respond from the API!
-    //             }
-    //             res.status(200).send(JSON.stringify({ success: true }));
-    //         }
-    //     });
+        app.post("/session/verify", async (req, res) => {
+            try {
+                let sessionResponse = await STExpress.getSession(req, res, true);
+                res.status(200).json({ success: false });
+            } catch (err) {
+                res.status(200).json({
+                    success: ST.Error.isErrorFromAuth(err) && err.errType === ST.Error.TRY_REFRESH_TOKEN
+                });
+            }
+        });
 
-    //     let res = extractInfoFromResponse(
-    //         await new Promise(resolve =>
-    //             request(app)
-    //                 .post("/create")
-    //                 .expect(200)
-    //                 .end((err, res) => {
-    //                     resolve(res);
-    //                 })
-    //         )
-    //     );
+        app.post("/session/verifyAntiCsrfFalse", async (req, res) => {
+            let sessionResponse = await STExpress.getSession(req, res, false);
+            res.status(200).json({ userId: sessionResponse.userId });
+        });
 
-    //     //without anti-csrf present
+        let res = extractInfoFromResponse(
+            await new Promise(resolve =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
 
-    //     let response = await new Promise(resolve =>
-    //         request(app)
-    //             .post("/session/verify")
-    //             .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-    //             .end((err, res) => {
-    //                 resolve(res);
-    //             })
-    //     );
-    //     assert(response.text === JSON.stringify({ success: true }));    // TODO: check JSON properly.. not like this!
-    // });
+        let response = await new Promise(resolve =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert.deepEqual(response.body.success, true);
+
+        let response2 = await new Promise(resolve =>
+            request(app)
+                .post("/session/verifyAntiCsrfFalse")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert.deepEqual(response2.body.userId, "id1");
+    });
 
     //check revoking session(s)**
     it("test revoking express sessions", async function() {
@@ -381,8 +426,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         //create an api call get sesssions from a userid "id1" that returns all the sessions for that userid
         app.post("/session/getSessionsWithUserId1", async (req, res) => {
             let sessionHandles = await STExpress.getAllSessionHandlesForUser("id1");
-            assert(sessionHandles.length === 0);
-            res.status(200).send("");
+            res.status(200).json(sessionHandles);
         });
 
         let response = extractInfoFromResponse(
@@ -450,7 +494,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     resolve(res);
                 })
         );
-        new Promise(resolve =>
+        let sessionHandleResponse = await new Promise(resolve =>
             request(app)
                 .post("/session/getSessionsWithUserId1") // TODO: Ideally, this API should return an array of session handles and here you should check that it is empty
                 .expect(200)
@@ -458,6 +502,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     resolve(res);
                 })
         );
+        assert(sessionHandleResponse.body.length === 0);
     });
 
     //check manipulating session data
@@ -482,7 +527,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.post("/getSessionData", async (req, res) => {
             let session = await STExpress.getSession(req, res, true);
             let sessionData = await session.getSessionData();
-            res.send(JSON.stringify(sessionData));
+            res.status(200).json(sessionData);
         });
 
         app.post("/updateSessionData2", async (req, res) => {
@@ -494,11 +539,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.post("/updateSessionDataInvalidSessionHandle", async (req, res) => {
             try {
                 await STExpress.updateSessionData("InvalidHandle", { key: "value3" });
-                res.status(200).send(JSON.stringify({ success: false }));
+                res.status(200).json({ success: false });
             } catch (err) {
-                res.status(200).send(
-                    JSON.stringify({ success: ST.Error.isErrorFromAuth(err) && err.errType === ST.Error.UNAUTHORISED })
-                );
+                res.status(200).json({
+                    success: ST.Error.isErrorFromAuth(err) && err.errType === ST.Error.UNAUTHORISED
+                });
             }
         });
 
@@ -543,7 +588,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check that the session data returned is valid
-        assert(response2.text === JSON.stringify({ key: "value" })); // TODO: normal JSON check!
+        assert.deepEqual(response2.body.key, "value"); // TODO: normal JSON check!
 
         // change the value of the inserted session data
         await new Promise(resolve =>
@@ -573,10 +618,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check the value of the retrieved
-        assert(response2.text === JSON.stringify({ key: "value2" }));
+        assert.deepEqual(response2.body.key, "value2");
 
         //invalid session handle when updating the session data
-        await new Promise(resolve =>
+        let invalidSessionResponse = await new Promise(resolve =>
             request(app)
                 .post("/updateSessionDataInvalidSessionHandle")
                 .set("Cookie", [
@@ -588,8 +633,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     resolve(res);
                 })
         );
-
         // TODO: check the response is success = true...??
+        assert.deepEqual(invalidSessionResponse.body.success, true);
     });
 
     // test with existing header params being there and that the lib appends to those and not overrides those
@@ -615,95 +660,79 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             request(app)
                 .post("/create")
                 .expect(200)
-                .set("testHeader", ["testValue"]) // TODO: no need for this
                 .end((err, res) => {
                     resolve(res);
                 })
         );
         // TODO: check that response header has the custom thing + normal session headers
-        assert(response["req"]["_header"].split("\r\n").includes("testHeader: testValue"));
-        assert(response["req"]["_header"].split("\r\n").length > 1);
+        //custom header values
+        assert.deepEqual(response.headers.testheader, "testValue");
+        assert.deepEqual(response.headers["access-control-expose-headers"], "customValue, id-refresh-token, anti-csrf");
+
+        //normal session headers
+        let extractInfo = extractInfoFromResponse(response);
+        assert(extractInfo.accessToken !== undefined);
+        assert(extractInfo.refreshToken != undefined);
+        assert(extractInfo.idRefreshTokenFromCookie !== undefined);
+        assert(extractInfo.idRefreshTokenFromHeader !== undefined);
+        assert(extractInfo.antiCsrf !== undefined);
     });
 
-    // TODO: this should not be there anymore.. follow the non-express test for this.
-    // // - if anti-csrf is disabled, check that not having that in input to verify / refresh session is fine
-    // // - the opposite of the above condition
-    // it("test that anti-csrf is disabled and check that not having to input verify/refresh is fine express", async function () {
-    //     await startST();
-    //     STExpress.init([
-    //         {
-    //             hostname: "localhost",
-    //             port: 8080
-    //         }
-    //     ]);
-    //     const app = express();
-    //     app.post("/create", async (req, res) => {
-    //         await STExpress.createNewSession(res, "", {}, {});
-    //         res.status(200).send("");
-    //     });
+    //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
+    it("test that when anti-csrf is disabled from from ST core, not having to input in verify session is fine in express", async function() {
+        await setKeyValueInConfig("enable_anti_csrf", "false");
+        await startST();
+        STExpress.init([
+            {
+                hostname: "localhost",
+                port: 8080
+            }
+        ]);
 
-    //     app.post("/session/refresh", async (req, res) => {
-    //         await STExpress.refreshSession(req, res);
-    //         res.status(200).send("");
-    //     });
+        const app = express();
+        app.post("/create", async (req, res) => {
+            await STExpress.createNewSession(res, "id1", {}, {});
+            res.status(200).send("");
+        });
 
-    //     app.post("/session/verify", async (req, res) => {
-    //         await STExpress.getSession(req, res, false);
-    //         res.status(200).send("");
-    //     });
+        app.post("/session/verify", async (req, res) => {
+            let sessionResponse = await STExpress.getSession(req, res, true);
+            res.status(200).json({ userId: sessionResponse.userId });
+        });
+        app.post("/session/verifyAntiCsrfFalse", async (req, res) => {
+            let sessionResponse = await STExpress.getSession(req, res, false);
+            res.status(200).json({ userId: sessionResponse.userId });
+        });
 
-    //     //create a new session
-    //     let response = extractInfoFromResponse(
-    //         await new Promise(resolve =>
-    //             request(app)
-    //                 .post("/create")
-    //                 .expect(200)
-    //                 .end((err, res) => {
-    //                     resolve(res);
-    //                 })
-    //         )
-    //     );
+        let res = extractInfoFromResponse(
+            await new Promise(resolve =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
 
-    //     let res2 = extractInfoFromResponse(
-    //         await new Promise(resolve =>
-    //             request(app)
-    //                 .post("/session/refresh")
-    //                 .set("Cookie", ["sRefreshToken=" + response.refreshToken])
-    //                 .end((err, res) => {
-    //                     resolve(res);
-    //                 })
-    //         )
-    //     );
-    //     //check the response of session / refresh is correct without anti-csrf
-    //     assert(res2.antiCsrf !== undefined);
-    //     assert(res2.accessToken !== undefined);
-    //     assert(res2.refreshToken !== undefined);
-    //     assert(res2.idRefreshTokenFromHeader !== undefined);
-    //     assert(res2.idRefreshTokenFromCookie !== undefined);
-    //     assert(res2.accessTokenExpiry !== undefined);
-    //     assert(res2.refreshTokenExpiry !== undefined);
-    //     assert(res2.idRefreshTokenExpiry !== undefined);
+        let res2 = await new Promise(resolve =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert.deepEqual(res2.body.userId, "id1");
 
-    //     let response3 = extractInfoFromResponse(
-    //         await new Promise(resolve =>
-    //             request(app)
-    //                 .post("/session/verify")
-    //                 .set("Cookie", [
-    //                     "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie
-    //                 ])
-    //                 .end((err, res) => {
-    //                     resolve(res);
-    //                 })
-    //         )
-    //     );
-    //     //check the response of session verify is correct without anti-csrf
-    //     assert(response3.antiCsrf === undefined);
-    //     assert(response3.accessToken != undefined);
-    //     assert(response3.accessTokenExpiry != undefined);
-    //     assert(response3.refreshToken === undefined);
-    //     assert(response3.idRefreshTokenFromHeader === undefined);
-    //     assert(response3.idRefreshTokenFromCookie === undefined);
-    //     assert(response3.refreshTokenExpiry === undefined);
-    //     assert(response3.idRefreshTokenExpiry === undefined);
-    // });
+        let res3 = await new Promise(resolve =>
+            request(app)
+                .post("/session/verifyAntiCsrfFalse")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert.deepEqual(res3.body.userId, "id1");
+    });
 });
