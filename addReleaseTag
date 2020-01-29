@@ -63,7 +63,7 @@ then
   then
     RED='\033[0;31m'
     NC='\033[0m' # No Color
-    printf "${RED}Cannot release core. Have you released corresponding plugin and drivers?${NC}\n"
+    printf "${RED}Cannot release core. Have you released corresponding core?${NC}\n"
     exit 1
   fi
 fi
