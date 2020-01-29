@@ -49,7 +49,7 @@ fi
 if [[ $1 != "--forced" ]]
 then
   canReleaseSafelyResponse=`curl -s -X GET \
-    "https://api.supertokens.io/0/driver/release/check?password=$password&planType=COMMERCIAL&version=$version&name=node" \
+    "https://api.supertokens.io/0/driver/release/check?password=$password&planType=FREE&version=$version&name=node" \
     -H 'api-version: 0'`
 
   if [[ `echo $canReleaseSafelyResponse | jq .canRelease` == "null"  ]]
