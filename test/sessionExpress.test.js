@@ -126,7 +126,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.deepEqual(cookies.refreshToken, "");
         assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
         assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-        // TODO: check expiry time of cookies as well!
         assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
@@ -180,7 +179,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res.idRefreshTokenFromHeader !== undefined);
         assert(res.refreshToken !== undefined);
 
-        // TODO: call verify session and make sure it doenst go to PROCESS_STATE.CALLING_IN_VERIFY
         await new Promise(resolve =>
             request(app)
                 .post("/session/verify")
@@ -191,7 +189,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
 
-        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
         assert(verifyState3 === undefined);
 
         let res2 = extractInfoFromResponse(
@@ -244,7 +242,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
         assert(verifyState2 === undefined);
 
-        // TODO: what happened to revoke session? In the non-express, you are calling that!
         let sessionRevokedResponse = await new Promise(resolve =>
             request(app)
                 .post("/session/revoke")
@@ -267,8 +264,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
-    //check session verify for with / without anti-csrf present**
-    // TODO: redo this test from non-express!!! exactly!
+    //check session verify for with / without anti-csrf present
     it("test express session verify with anti-csrf present", async function() {
         await startST();
         STExpress.init([
@@ -328,7 +324,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.deepEqual(res3.body.userId, "id1");
     });
 
-    // //check session verify for with / without anti-csrf present**
+    // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present express", async function() {
         await startST();
         STExpress.init([
@@ -372,16 +368,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             )
         );
 
-        let response = await new Promise(resolve =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-        assert.deepEqual(response.body.success, true);
-
         let response2 = await new Promise(resolve =>
             request(app)
                 .post("/session/verifyAntiCsrfFalse")
@@ -391,6 +377,16 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
         assert.deepEqual(response2.body.userId, "id1");
+
+        let response = await new Promise(resolve =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert.deepEqual(response.body.success, true);
     });
 
     //check revoking session(s)**
@@ -496,7 +492,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         let sessionHandleResponse = await new Promise(resolve =>
             request(app)
-                .post("/session/getSessionsWithUserId1") // TODO: Ideally, this API should return an array of session handles and here you should check that it is empty
+                .post("/session/getSessionsWithUserId1")
                 .expect(200)
                 .end((err, res) => {
                     resolve(res);
@@ -588,7 +584,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check that the session data returned is valid
-        assert.deepEqual(response2.body.key, "value"); // TODO: normal JSON check!
+        assert.deepEqual(response2.body.key, "value");
 
         // change the value of the inserted session data
         await new Promise(resolve =>
@@ -633,7 +629,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     resolve(res);
                 })
         );
-        // TODO: check the response is success = true...??
         assert.deepEqual(invalidSessionResponse.body.success, true);
     });
 
@@ -664,8 +659,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     resolve(res);
                 })
         );
-        // TODO: check that response header has the custom thing + normal session headers
-        //custom header values
         assert.deepEqual(response.headers.testheader, "testValue");
         assert.deepEqual(response.headers["access-control-expose-headers"], "customValue, id-refresh-token, anti-csrf");
 

@@ -88,9 +88,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(response.antiCsrfToken !== undefined);
         assert(Object.keys(response).length === 5);
 
-        // TODO: call verify session and make sure it doenst go to PROCESS_STATE.CALLING_IN_VERIFY
         await ST.getSession(response.accessToken.token, response.antiCsrfToken, true, response.idRefreshToken.token);
-        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
         assert(verifyState3 === undefined);
 
         let response2 = await ST.refreshSession(response.refreshToken.token);
@@ -202,7 +201,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         let res2 = await ST.revokeSessionUsingSessionHandle(res.session.handle);
         assert(res2 === true);
 
-        // TODO: test that it is actually revoked by using res and trying to verify session - you should get TRY_REFRESH_TOKEN error
         // calling verify session after calling revokeSessionUsingSessionHandle does not throw TRY_REFRESH_TOKEN error
         let res3 = await ST.getAllSessionHandlesForUser("id1");
         assert(res3.length === 0);
@@ -211,14 +209,12 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         await ST.createNewSession("id", {}, {});
         await ST.createNewSession("id", {}, {});
 
-        // TODO: get all session handles for this user, and you should get two of them.
         let sessionIdResponse = await ST.getAllSessionHandlesForUser("id");
         assert(sessionIdResponse.length === 2);
 
         let response = await ST.revokeAllSessionsForUser("id");
         assert(response === 2);
 
-        // TODO: test that it is actually revoked by getting al session handles for this user - which should be empty
         sessionIdResponse = await ST.getAllSessionHandlesForUser("id");
         assert(sessionIdResponse.length === 0);
 
@@ -229,8 +225,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         //revoke a session with a userId that does not exist
         let resp2 = await ST.revokeAllSessionsForUser("random");
         assert(resp2 === 0);
-
-        // TODO: why are the below two things there?
     });
 
     //check manipulating session data

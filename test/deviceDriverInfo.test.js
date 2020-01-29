@@ -23,8 +23,7 @@ const request = require("supertest");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { ProcessState } = require("../lib/build/processState");
 
-/* TODO: 
-- if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
+/* TODO:
 - check if output headers and set cookies for create session is fine
 - check if output headers and set cookies for refresh session is fine
 - check that if signing key changes, things are still fine
