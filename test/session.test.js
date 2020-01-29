@@ -201,7 +201,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         let res2 = await ST.revokeSessionUsingSessionHandle(res.session.handle);
         assert(res2 === true);
 
-        // calling verify session after calling revokeSessionUsingSessionHandle does not throw TRY_REFRESH_TOKEN error
         let res3 = await ST.getAllSessionHandlesForUser("id1");
         assert(res3.length === 0);
 
