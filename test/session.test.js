@@ -197,24 +197,24 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
             }
         ]);
         //create a single session and  revoke using the session handle
-        let res = await ST.createNewSession("id1", {}, {});
+        let res = await ST.createNewSession("someUniqueUserId", {}, {});
         let res2 = await ST.revokeSessionUsingSessionHandle(res.session.handle);
         assert(res2 === true);
 
-        let res3 = await ST.getAllSessionHandlesForUser("id1");
+        let res3 = await ST.getAllSessionHandlesForUser("someUniqueUserId");
         assert(res3.length === 0);
 
         //create multiple sessions with the same userID and use revokeAllSessionsForUser to revoke sessions
-        await ST.createNewSession("id", {}, {});
-        await ST.createNewSession("id", {}, {});
+        await ST.createNewSession("someUniqueUserId", {}, {});
+        await ST.createNewSession("someUniqueUserId", {}, {});
 
-        let sessionIdResponse = await ST.getAllSessionHandlesForUser("id");
+        let sessionIdResponse = await ST.getAllSessionHandlesForUser("someUniqueUserId");
         assert(sessionIdResponse.length === 2);
 
-        let response = await ST.revokeAllSessionsForUser("id");
+        let response = await ST.revokeAllSessionsForUser("someUniqueUserId");
         assert(response === 2);
 
-        sessionIdResponse = await ST.getAllSessionHandlesForUser("id");
+        sessionIdResponse = await ST.getAllSessionHandlesForUser("someUniqueUserId");
         assert(sessionIdResponse.length === 0);
 
         //revoke a session with a session handle that does not exist

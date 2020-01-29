@@ -404,7 +404,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
         app.post("/usercreate", async (req, res) => {
-            await STExpress.createNewSession(res, "id1", {}, {});
+            await STExpress.createNewSession(res, "someUniqueUserId", {}, {});
             res.status(200).send("");
         });
         app.post("/session/revoke", async (req, res) => {
@@ -421,7 +421,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         //create an api call get sesssions from a userid "id1" that returns all the sessions for that userid
         app.post("/session/getSessionsWithUserId1", async (req, res) => {
-            let sessionHandles = await STExpress.getAllSessionHandlesForUser("id1");
+            let sessionHandles = await STExpress.getAllSessionHandlesForUser("someUniqueUserId");
             res.status(200).json(sessionHandles);
         });
 
