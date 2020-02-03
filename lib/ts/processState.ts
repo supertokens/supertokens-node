@@ -18,7 +18,7 @@ export enum PROCESS_STATE {
 }
 
 export class ProcessState {
-    history: PROCESS_STATE[];
+    history: PROCESS_STATE[] = [];
     private static instance: ProcessState | undefined;
 
     private constructor() {}
