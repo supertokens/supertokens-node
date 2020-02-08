@@ -180,7 +180,7 @@ export function setCookie(
     httpOnly: boolean,
     expires: number,
     path: string,
-    sameSite: "strict" | "lax" | "none" = "lax"
+    sameSite: "strict" | "lax" | "none" = "none"
 ) {
     let opts = {
         domain,
