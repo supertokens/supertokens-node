@@ -179,14 +179,16 @@ export function setCookie(
     secure: boolean,
     httpOnly: boolean,
     expires: number,
-    path: string
+    path: string,
+    sameSite: "strict" | "lax" | "none" = "lax"
 ) {
     let opts = {
         domain,
         secure,
         httpOnly,
         expires: new Date(expires),
-        path
+        path,
+        sameSite: sameSite === "none" ? false : sameSite === "strict" ? true : sameSite
     };
 
     return append(res, "Set-Cookie", serialize(name, value, opts));

@@ -33,5 +33,5 @@ export declare function setOptionsAPIHeader(res: express.Response): void;
  * @param expires
  * @param path
  */
-export declare function setCookie(res: ServerResponse, name: string, value: string, domain: string, secure: boolean, httpOnly: boolean, expires: number, path: string): ServerResponse;
+export declare function setCookie(res: ServerResponse, name: string, value: string, domain: string, secure: boolean, httpOnly: boolean, expires: number, path: string, sameSite?: "strict" | "lax" | "none"): ServerResponse;
 export declare function getCookieValue(req: IncomingMessage, key: string): string | undefined;
