@@ -33,6 +33,7 @@ let { ProcessState } = require("../lib/build/processState");
 - calling createNewSession in the case of unauthorised error, should create a proper session
 - revoking old session after create new session, should not remove new session's cookies.
 - check that if idRefreshToken is not passed to express, verify throws UNAUTHORISED
+- check that Access-Control-Expose-Headers header is being set properly during create, use and destroy session**** only for express
 */
 describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, function() {
     beforeEach(async function() {

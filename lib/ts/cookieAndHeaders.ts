@@ -63,6 +63,7 @@ export function clearSessionFromCookie(
     setCookie(res, refreshTokenCookieKey, "", domain, secure, true, 0, refreshTokenPath);
     setCookie(res, idRefreshTokenCookieKey, "", domain, secure, true, 0, accessTokenPath);
     setHeader(res, idRefreshTokenHeaderKey, "remove");
+    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey);
 }
 
 /**
