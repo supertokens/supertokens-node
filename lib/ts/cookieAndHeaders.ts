@@ -188,7 +188,7 @@ export function setCookie(
         httpOnly,
         expires: new Date(expires),
         path,
-        sameSite: sameSite === "none" ? false : sameSite === "strict" ? true : sameSite
+        sameSite
     };
 
     return append(res, "Set-Cookie", serialize(name, value, opts));
