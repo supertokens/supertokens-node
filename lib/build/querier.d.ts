@@ -4,6 +4,8 @@ export declare class Querier {
     private hosts;
     private lastTriedIndex;
     private hostsAliveForTesting;
+    private apiVersion;
+    getAPIVersion: () => Promise<string>;
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
     static getInstance(): Querier;

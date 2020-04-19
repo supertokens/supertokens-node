@@ -13,3 +13,5 @@
  * under the License.
  */
 export const version = "1.1.0";
+
+export const cdiSupported = ["1.0", "2.0"];

@@ -18,12 +18,52 @@ import { DeviceInfo } from "./deviceInfo";
 import { AuthError, generateError } from "./error";
 import { TypeInput } from "./types";
 import { version } from "./version";
+import { getLargestVersionFromIntersection } from "./utils";
+import { cdiSupported } from "./version";
 
 export class Querier {
     static instance: Querier | undefined;
     private hosts: TypeInput = [];
     private lastTriedIndex = 0;
     private hostsAliveForTesting: Set<string> = new Set<string>();
+    private apiVersion: string | undefined = undefined;
+
+    getAPIVersion = async (): Promise<string> => {
+        if (this.apiVersion !== undefined) {
+            return this.apiVersion;
+        }
+        let response = await this.sendRequestHelper(
+            "/apiversion",
+            "GET",
+            (url: string) => {
+                return axios.get(url);
+            },
+            this.hosts.length
+        );
+        let cdiSupportedByServer: string[] = response.versions;
+        try {
+            let supportedVersion = getLargestVersionFromIntersection(cdiSupportedByServer, cdiSupported);
+            if (supportedVersion === undefined) {
+                throw generateError(
+                    AuthError.GENERAL_ERROR,
+                    new Error(
+                        "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions"
+                    )
+                );
+            }
+            this.apiVersion = supportedVersion;
+            return this.apiVersion;
+        } catch (err) {
+            if (AuthError.isErrorFromAuth(err)) {
+                if (err.err.response.status === 404) {
+                    // this means the core is cdi 1.0
+                    this.apiVersion = "1.0";
+                    return this.apiVersion;
+                }
+            }
+            throw err;
+        }
+    };
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
@@ -93,11 +133,15 @@ export class Querier {
         return this.sendRequestHelper(
             path,
             "POST",
-            (url: string) => {
-                return axios({
+            async (url: string) => {
+                let apiVersion = await this.getAPIVersion();
+                return await axios({
                     method: "POST",
                     url,
-                    data: body
+                    data: body,
+                    headers: {
+                        "cdi-version": apiVersion
+                    }
                 });
             },
             this.hosts.length
@@ -109,11 +153,15 @@ export class Querier {
         return this.sendRequestHelper(
             path,
             "DELETE",
-            (url: string) => {
+            async (url: string) => {
+                let apiVersion = await this.getAPIVersion();
                 return axios({
                     method: "DELETE",
                     url,
-                    data: body
+                    data: body,
+                    headers: {
+                        "cdi-version": apiVersion
+                    }
                 });
             },
             this.hosts.length
@@ -125,9 +173,13 @@ export class Querier {
         return this.sendRequestHelper(
             path,
             "GET",
-            (url: string) => {
+            async (url: string) => {
+                let apiVersion = await this.getAPIVersion();
                 return axios.get(url, {
-                    params
+                    params,
+                    headers: {
+                        "cdi-version": apiVersion
+                    }
                 });
             },
             this.hosts.length
@@ -139,11 +191,15 @@ export class Querier {
         return this.sendRequestHelper(
             path,
             "PUT",
-            (url: string) => {
+            async (url: string) => {
+                let apiVersion = await this.getAPIVersion();
                 return axios({
                     method: "PUT",
                     url,
-                    data: body
+                    data: body,
+                    headers: {
+                        "cdi-version": apiVersion
+                    }
                 });
             },
             this.hosts.length
