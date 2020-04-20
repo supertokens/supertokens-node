@@ -11,8 +11,6 @@ export function getLargestVersionFromIntersection(v1: string[], v2: string[]): s
 }
 
 export function maxVersion(version1: string, version2: string): string {
-    version1 = normaliseVersion(version1);
-    version2 = normaliseVersion(version2);
     let splittedv1 = version1.split(".");
     let splittedv2 = version2.split(".");
     let minLength = Math.min(splittedv1.length, splittedv2.length);
@@ -29,20 +27,4 @@ export function maxVersion(version1: string, version2: string): string {
         return version1;
     }
     return version2;
-}
-
-export function normaliseVersion(appVersion: string): string {
-    let splitted = appVersion.split(".");
-    let indexToKeepTill = 0;
-    for (let i = splitted.length - 1; i > 0; i--) {
-        if (Number(splitted[i]) > 0) {
-            indexToKeepTill = i;
-            break;
-        }
-    }
-    let result = splitted[0];
-    for (let i = 1; i <= indexToKeepTill; i++) {
-        result += "." + splitted[i];
-    }
-    return result;
 }

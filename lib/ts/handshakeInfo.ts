@@ -40,18 +40,33 @@ export class HandshakeInfo {
     static async getInstance(): Promise<HandshakeInfo> {
         if (HandshakeInfo.instance == undefined) {
             let response = await Querier.getInstance().sendPostRequest("/handshake", {});
-            HandshakeInfo.instance = new HandshakeInfo(
-                response.jwtSigningPublicKey,
-                response.cookieDomain,
-                response.cookieSecure,
-                response.accessTokenPath,
-                response.refreshTokenPath,
-                response.enableAntiCsrf,
-                response.accessTokenBlacklistingEnabled,
-                response.jwtSigningPublicKeyExpiryTime,
-                response.cookieSameSite,
-                response.idRefreshTokenPath
-            );
+            if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+                HandshakeInfo.instance = new HandshakeInfo(
+                    response.jwtSigningPublicKey,
+                    response.cookieDomain,
+                    response.cookieSecure,
+                    response.accessTokenPath,
+                    response.refreshTokenPath,
+                    response.enableAntiCsrf,
+                    response.accessTokenBlacklistingEnabled,
+                    response.jwtSigningPublicKeyExpiryTime,
+                    "none",
+                    response.accessTokenPath
+                );
+            } else {
+                HandshakeInfo.instance = new HandshakeInfo(
+                    response.jwtSigningPublicKey,
+                    response.cookieDomain,
+                    response.cookieSecure,
+                    response.accessTokenPath,
+                    response.refreshTokenPath,
+                    response.enableAntiCsrf,
+                    response.accessTokenBlacklistingEnabled,
+                    response.jwtSigningPublicKeyExpiryTime,
+                    response.cookieSameSite,
+                    response.idRefreshTokenPath
+                );
+            }
         }
         return HandshakeInfo.instance;
     }

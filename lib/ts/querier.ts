@@ -32,16 +32,16 @@ export class Querier {
         if (this.apiVersion !== undefined) {
             return this.apiVersion;
         }
-        let response = await this.sendRequestHelper(
-            "/apiversion",
-            "GET",
-            (url: string) => {
-                return axios.get(url);
-            },
-            this.hosts.length
-        );
-        let cdiSupportedByServer: string[] = response.versions;
         try {
+            let response = await this.sendRequestHelper(
+                "/apiversion",
+                "GET",
+                (url: string) => {
+                    return axios.get(url);
+                },
+                this.hosts.length
+            );
+            let cdiSupportedByServer: string[] = response.versions;
             let supportedVersion = getLargestVersionFromIntersection(cdiSupportedByServer, cdiSupported);
             if (supportedVersion === undefined) {
                 throw generateError(
@@ -55,7 +55,7 @@ export class Querier {
             return this.apiVersion;
         } catch (err) {
             if (AuthError.isErrorFromAuth(err)) {
-                if (err.err.response.status === 404) {
+                if (err.err.response !== undefined && err.err.response.status === 404) {
                     // this means the core is cdi 1.0
                     this.apiVersion = "1.0";
                     return this.apiVersion;
@@ -155,7 +155,7 @@ export class Querier {
             "DELETE",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
-                return axios({
+                return await axios({
                     method: "DELETE",
                     url,
                     data: body,
@@ -175,7 +175,7 @@ export class Querier {
             "GET",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
-                return axios.get(url, {
+                return await axios.get(url, {
                     params,
                     headers: {
                         "cdi-version": apiVersion
@@ -193,7 +193,7 @@ export class Querier {
             "PUT",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
-                return axios({
+                return await axios({
                     method: "PUT",
                     url,
                     data: body,
@@ -232,7 +232,12 @@ export class Querier {
             if (err.message !== undefined && err.message.includes("ECONNREFUSED")) {
                 return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
             }
-            if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
+            if (
+                err.response !== undefined &&
+                err.response.status !== undefined &&
+                err.response.data !== undefined &&
+                path !== "/apiversion"
+            ) {
                 throw generateError(
                     AuthError.GENERAL_ERROR,
                     new Error(

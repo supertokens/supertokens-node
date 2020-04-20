@@ -205,7 +205,9 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 return [200, { jwtSigningPublicKey: "false" }];
             });
         assert.deepEqual(await ST.createNewSession("", {}, {}), { success: true });
-        assert.deepEqual(await ST.getSession("", "", false, ""), { success: true });
+        assert.deepEqual(await ST.getSession("", "", false, ""), {
+            success: true
+        });
         assert.deepEqual(await ST.refreshSession(""), { success: true });
         HandshakeInfo.reset();
         assert.equal((await HandshakeInfo.getInstance()).jwtSigningPublicKey, "true");

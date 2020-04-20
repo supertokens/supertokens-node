@@ -88,27 +88,28 @@ export async function createNewSession(
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
     if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-        return {
-            ...response,
-            accessToken: {
-                ...response.accessToken,
-                sameSite: "none"
-            },
-            refreshToken: {
-                ...response.refreshToken,
-                sameSite: "none"
-            },
-            idRefreshToken: {
-                ...response.idRefreshToken,
-                cookiePath: response.accessToken.cookiePath,
-                cookieSecure: response.accessToken.cookieSecure,
-                domain: response.accessToken.domain,
-                sameSite: "none"
-            }
-        };
-    } else {
-        return response;
+        try {
+            return {
+                ...response,
+                accessToken: {
+                    ...response.accessToken,
+                    sameSite: "none"
+                },
+                refreshToken: {
+                    ...response.refreshToken,
+                    sameSite: "none"
+                },
+                idRefreshToken: {
+                    ...response.idRefreshToken,
+                    cookiePath: response.accessToken.cookiePath,
+                    cookieSecure: response.accessToken.cookieSecure,
+                    domain: response.accessToken.domain,
+                    sameSite: "none"
+                }
+            };
+        } catch (ignored) {}
     }
+    return response;
 }
 
 /**
@@ -203,16 +204,17 @@ export async function getSession(
         delete response.jwtSigningPublicKeyExpiryTime;
 
         if ((await Querier.getInstance().getAPIVersion()) === "1.0" && response.accessToken !== undefined) {
-            return {
-                ...response,
-                accessToken: {
-                    ...response.accessToken,
-                    sameSite: "none"
-                }
-            };
-        } else {
-            return response;
+            try {
+                return {
+                    ...response,
+                    accessToken: {
+                        ...response.accessToken,
+                        sameSite: "none"
+                    }
+                };
+            } catch (ignored) {}
         }
+        return response;
     } else if (response.status == "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
     } else {
@@ -268,27 +270,28 @@ export async function refreshSession(
     if (response.status == "OK") {
         delete response.status;
         if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-            return {
-                ...response,
-                accessToken: {
-                    ...response.accessToken,
-                    sameSite: "none"
-                },
-                refreshToken: {
-                    ...response.refreshToken,
-                    sameSite: "none"
-                },
-                idRefreshToken: {
-                    ...response.idRefreshToken,
-                    cookiePath: response.accessToken.cookiePath,
-                    cookieSecure: response.accessToken.cookieSecure,
-                    domain: response.accessToken.domain,
-                    sameSite: "none"
-                }
-            };
-        } else {
-            return response;
+            try {
+                return {
+                    ...response,
+                    accessToken: {
+                        ...response.accessToken,
+                        sameSite: "none"
+                    },
+                    refreshToken: {
+                        ...response.refreshToken,
+                        sameSite: "none"
+                    },
+                    idRefreshToken: {
+                        ...response.idRefreshToken,
+                        cookiePath: response.accessToken.cookiePath,
+                        cookieSecure: response.accessToken.cookieSecure,
+                        domain: response.accessToken.domain,
+                        sameSite: "none"
+                    }
+                };
+            } catch (ignored) {}
         }
+        return response;
     } else if (response.status == "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
     } else {
