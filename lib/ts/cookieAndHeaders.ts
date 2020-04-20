@@ -57,11 +57,13 @@ export function clearSessionFromCookie(
     domain: string,
     secure: boolean,
     accessTokenPath: string,
-    refreshTokenPath: string
+    refreshTokenPath: string,
+    idRefreshTokenPath: string,
+    sameSite: "strict" | "lax" | "none"
 ) {
-    setCookie(res, accessTokenCookieKey, "", domain, secure, true, 0, accessTokenPath);
-    setCookie(res, refreshTokenCookieKey, "", domain, secure, true, 0, refreshTokenPath);
-    setCookie(res, idRefreshTokenCookieKey, "", domain, secure, true, 0, accessTokenPath);
+    setCookie(res, accessTokenCookieKey, "", domain, secure, true, 0, accessTokenPath, sameSite);
+    setCookie(res, refreshTokenCookieKey, "", domain, secure, true, 0, refreshTokenPath, sameSite);
+    setCookie(res, idRefreshTokenCookieKey, "", domain, secure, true, 0, idRefreshTokenPath, sameSite);
     setHeader(res, idRefreshTokenHeaderKey, "remove");
     setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey);
 }
@@ -75,9 +77,10 @@ export function attachAccessTokenToCookie(
     expiry: number,
     domain: string,
     path: string,
-    secure: boolean
+    secure: boolean,
+    sameSite: "strict" | "lax" | "none"
 ) {
-    setCookie(res, accessTokenCookieKey, token, domain, secure, true, expiry, path);
+    setCookie(res, accessTokenCookieKey, token, domain, secure, true, expiry, path, sameSite);
 }
 
 /**
@@ -89,9 +92,10 @@ export function attachRefreshTokenToCookie(
     expiry: number,
     domain: string,
     path: string,
-    secure: boolean
+    secure: boolean,
+    sameSite: "strict" | "lax" | "none"
 ) {
-    setCookie(res, refreshTokenCookieKey, token, domain, secure, true, expiry, path);
+    setCookie(res, refreshTokenCookieKey, token, domain, secure, true, expiry, path, sameSite);
 }
 
 export function getAccessTokenFromCookie(req: express.Request): string | undefined {
@@ -121,12 +125,13 @@ export function setIdRefreshTokenInHeaderAndCookie(
     expiry: number,
     domain: string,
     secure: boolean,
-    path: string
+    path: string,
+    sameSite: "strict" | "lax" | "none"
 ) {
     setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry);
     setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey);
 
-    setCookie(res, idRefreshTokenCookieKey, idRefreshToken, domain, secure, true, expiry, path);
+    setCookie(res, idRefreshTokenCookieKey, idRefreshToken, domain, secure, true, expiry, path, sameSite);
 }
 
 export function getHeader(req: express.Request, key: string): string | undefined {
@@ -181,7 +186,7 @@ export function setCookie(
     httpOnly: boolean,
     expires: number,
     path: string,
-    sameSite: "strict" | "lax" | "none" = "none"
+    sameSite: "strict" | "lax" | "none"
 ) {
     let opts = {
         domain,

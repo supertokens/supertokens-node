@@ -27,6 +27,8 @@ export { AuthError as Error } from "./error";
  */
 export function init(hosts: TypeInput) {
     Querier.initInstance(hosts);
+
+    // this will also call the api version API
     HandshakeInfo.getInstance().catch(err => {
         // ignored
     });
@@ -53,6 +55,7 @@ export async function createNewSession(
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     refreshToken: {
         token: string;
@@ -61,11 +64,16 @@ export async function createNewSession(
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     idRefreshToken: {
         token: string;
         expiry: number;
         createdTime: number;
+        cookiePath: string;
+        cookieSecure: boolean;
+        domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     antiCsrfToken: string | undefined;
 }> {
@@ -79,7 +87,28 @@ export async function createNewSession(
     delete response.status;
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
-    return response;
+    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+        return {
+            ...response,
+            accessToken: {
+                ...response.accessToken,
+                sameSite: "none"
+            },
+            refreshToken: {
+                ...response.refreshToken,
+                sameSite: "none"
+            },
+            idRefreshToken: {
+                ...response.idRefreshToken,
+                cookiePath: response.accessToken.cookiePath,
+                cookieSecure: response.accessToken.cookieSecure,
+                domain: response.accessToken.domain,
+                sameSite: "none"
+            }
+        };
+    } else {
+        return response;
+    }
 }
 
 /**
@@ -104,6 +133,7 @@ export async function getSession(
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
 }> {
     if (idRefreshToken === undefined) {
@@ -171,7 +201,18 @@ export async function getSession(
         delete response.status;
         delete response.jwtSigningPublicKey;
         delete response.jwtSigningPublicKeyExpiryTime;
-        return response;
+
+        if ((await Querier.getInstance().getAPIVersion()) === "1.0" && response.accessToken !== undefined) {
+            return {
+                ...response,
+                accessToken: {
+                    ...response.accessToken,
+                    sameSite: "none"
+                }
+            };
+        } else {
+            return response;
+        }
     } else if (response.status == "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
     } else {
@@ -199,6 +240,7 @@ export async function refreshSession(
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     refreshToken: {
         token: string;
@@ -207,11 +249,16 @@ export async function refreshSession(
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     idRefreshToken: {
         token: string;
         expiry: number;
         createdTime: number;
+        cookiePath: string;
+        cookieSecure: boolean;
+        domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     antiCsrfToken: string | undefined;
 }> {
@@ -220,7 +267,28 @@ export async function refreshSession(
     });
     if (response.status == "OK") {
         delete response.status;
-        return response;
+        if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+            return {
+                ...response,
+                accessToken: {
+                    ...response.accessToken,
+                    sameSite: "none"
+                },
+                refreshToken: {
+                    ...response.refreshToken,
+                    sameSite: "none"
+                },
+                idRefreshToken: {
+                    ...response.idRefreshToken,
+                    cookiePath: response.accessToken.cookiePath,
+                    cookieSecure: response.accessToken.cookieSecure,
+                    domain: response.accessToken.domain,
+                    sameSite: "none"
+                }
+            };
+        } else {
+            return response;
+        }
     } else if (response.status == "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
     } else {
@@ -236,11 +304,18 @@ export async function refreshSession(
  * Access tokens cannot be immediately invalidated. Unless we add a bloacklisting method. Or changed the private key to sign them.
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeAllSessionsForUser(userId: string): Promise<number> {
-    let response = await Querier.getInstance().sendDeleteRequest("/session", {
-        userId
-    });
-    return response.numberOfSessionsRevoked;
+export async function revokeAllSessionsForUser(userId: string): Promise<any> {
+    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+        let response = await Querier.getInstance().sendDeleteRequest("/session", {
+            userId
+        });
+        return response.numberOfSessionsRevoked;
+    } else {
+        let response = await Querier.getInstance().sendPostRequest("/session/remove", {
+            userId
+        });
+        return response.sessionHandlesRevoked;
+    }
 }
 
 /**
@@ -260,10 +335,36 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeSessionUsingSessionHandle(sessionHandle: string): Promise<boolean> {
-    let response = await Querier.getInstance().sendDeleteRequest("/session", {
-        sessionHandle
-    });
-    return response.numberOfSessionsRevoked == 1;
+    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+        let response = await Querier.getInstance().sendDeleteRequest("/session", {
+            sessionHandle
+        });
+        return response.numberOfSessionsRevoked == 1;
+    } else {
+        let response = await Querier.getInstance().sendPostRequest("/session/remove", {
+            sessionHandles: [sessionHandle]
+        });
+        return response.sessionHandlesRevoked.length === 1;
+    }
+}
+
+/**
+ * @description call to destroy multiple sessions
+ * @returns list of sessions revoked
+ * @throws AuthError, GENERAL_ERROR
+ */
+export async function revokeMultipleSessionsUsingSessionHandles(sessionHandles: string[]): Promise<any> {
+    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+        let response = await Querier.getInstance().sendDeleteRequest("/session", {
+            sessionHandles
+        });
+        return response.numberOfSessionsRevoked;
+    } else {
+        let response = await Querier.getInstance().sendPostRequest("/session/remove", {
+            sessionHandles
+        });
+        return response.sessionHandlesRevoked;
+    }
 }
 
 /**

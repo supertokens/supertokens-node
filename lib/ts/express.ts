@@ -33,7 +33,6 @@ import * as SessionFunctions from "./session";
 import { TypeInput } from "./types";
 
 // TODO: Make it also work with PassportJS
-// TODO: implement a function to check if session possibly exists
 
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
@@ -70,7 +69,8 @@ export async function createNewSession(
         accessToken.expiry,
         accessToken.domain,
         accessToken.cookiePath,
-        accessToken.cookieSecure
+        accessToken.cookieSecure,
+        accessToken.sameSite
     );
     attachRefreshTokenToCookie(
         res,
@@ -78,15 +78,17 @@ export async function createNewSession(
         refreshToken.expiry,
         refreshToken.domain,
         refreshToken.cookiePath,
-        refreshToken.cookieSecure
+        refreshToken.cookieSecure,
+        refreshToken.sameSite
     );
     setIdRefreshTokenInHeaderAndCookie(
         res,
         idRefreshToken.token,
         idRefreshToken.expiry,
-        accessToken.domain,
-        accessToken.cookieSecure,
-        accessToken.cookiePath
+        idRefreshToken.domain,
+        idRefreshToken.cookieSecure,
+        idRefreshToken.cookiePath,
+        idRefreshToken.sameSite
     );
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
@@ -122,7 +124,8 @@ export async function getSession(
                 response.accessToken.expiry,
                 response.accessToken.domain,
                 response.accessToken.cookiePath,
-                response.accessToken.cookieSecure
+                response.accessToken.cookieSecure,
+                response.accessToken.sameSite
             );
         }
         return new Session(response.session.handle, response.session.userId, response.session.userDataInJWT, res);
@@ -134,7 +137,9 @@ export async function getSession(
                 handShakeInfo.cookieDomain,
                 handShakeInfo.cookieSecure,
                 handShakeInfo.accessTokenPath,
-                handShakeInfo.refreshTokenPath
+                handShakeInfo.refreshTokenPath,
+                handShakeInfo.idRefreshTokenPath,
+                handShakeInfo.cookieSameSite
             );
         }
         throw err;
@@ -156,7 +161,9 @@ export async function refreshSession(req: express.Request, res: express.Response
             handShakeInfo.cookieDomain,
             handShakeInfo.cookieSecure,
             handShakeInfo.accessTokenPath,
-            handShakeInfo.refreshTokenPath
+            handShakeInfo.refreshTokenPath,
+            handShakeInfo.idRefreshTokenPath,
+            handShakeInfo.cookieSameSite
         );
         throw generateError(
             AuthError.UNAUTHORISED,
@@ -178,7 +185,8 @@ export async function refreshSession(req: express.Request, res: express.Response
             accessToken.expiry,
             accessToken.domain,
             accessToken.cookiePath,
-            accessToken.cookieSecure
+            accessToken.cookieSecure,
+            accessToken.sameSite
         );
         attachRefreshTokenToCookie(
             res,
@@ -186,15 +194,17 @@ export async function refreshSession(req: express.Request, res: express.Response
             refreshToken.expiry,
             refreshToken.domain,
             refreshToken.cookiePath,
-            refreshToken.cookieSecure
+            refreshToken.cookieSecure,
+            refreshToken.sameSite
         );
         setIdRefreshTokenInHeaderAndCookie(
             res,
             idRefreshToken.token,
             idRefreshToken.expiry,
-            accessToken.domain,
-            accessToken.cookieSecure,
-            accessToken.cookiePath
+            idRefreshToken.domain,
+            idRefreshToken.cookieSecure,
+            idRefreshToken.cookiePath,
+            idRefreshToken.sameSite
         );
         if (response.antiCsrfToken !== undefined) {
             setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
@@ -212,7 +222,9 @@ export async function refreshSession(req: express.Request, res: express.Response
                 handShakeInfo.cookieDomain,
                 handShakeInfo.cookieSecure,
                 handShakeInfo.accessTokenPath,
-                handShakeInfo.refreshTokenPath
+                handShakeInfo.refreshTokenPath,
+                handShakeInfo.idRefreshTokenPath,
+                handShakeInfo.cookieSameSite
             );
         }
         throw err;
@@ -243,6 +255,15 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
  */
 export async function revokeSessionUsingSessionHandle(sessionHandle: string): Promise<boolean> {
     return SessionFunctions.revokeSessionUsingSessionHandle(sessionHandle);
+}
+
+/**
+ * @description call to destroy multiple sessions
+ * @returns list of sessions revoked
+ * @throws AuthError, GENERAL_ERROR
+ */
+export async function revokeMultipleSessionsUsingSessionHandles(sessionHandles: string[]) {
+    return SessionFunctions.revokeMultipleSessionsUsingSessionHandles(sessionHandles);
 }
 
 /**
@@ -300,7 +321,9 @@ export class Session {
                 handShakeInfo.cookieDomain,
                 handShakeInfo.cookieSecure,
                 handShakeInfo.accessTokenPath,
-                handShakeInfo.refreshTokenPath
+                handShakeInfo.refreshTokenPath,
+                handShakeInfo.idRefreshTokenPath,
+                handShakeInfo.cookieSameSite
             );
         }
     };
@@ -322,7 +345,9 @@ export class Session {
                     handShakeInfo.cookieDomain,
                     handShakeInfo.cookieSecure,
                     handShakeInfo.accessTokenPath,
-                    handShakeInfo.refreshTokenPath
+                    handShakeInfo.refreshTokenPath,
+                    handShakeInfo.idRefreshTokenPath,
+                    handShakeInfo.cookieSameSite
                 );
             }
             throw err;
@@ -345,7 +370,9 @@ export class Session {
                     handShakeInfo.cookieDomain,
                     handShakeInfo.cookieSecure,
                     handShakeInfo.accessTokenPath,
-                    handShakeInfo.refreshTokenPath
+                    handShakeInfo.refreshTokenPath,
+                    handShakeInfo.idRefreshTokenPath,
+                    handShakeInfo.cookieSameSite
                 );
             }
             throw err;

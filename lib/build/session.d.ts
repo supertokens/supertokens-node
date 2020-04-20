@@ -23,6 +23,7 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     refreshToken: {
         token: string;
@@ -31,11 +32,16 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     idRefreshToken: {
         token: string;
         expiry: number;
         createdTime: number;
+        cookiePath: string;
+        cookieSecure: boolean;
+        domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     antiCsrfToken: string | undefined;
 }>;
@@ -56,6 +62,7 @@ export declare function getSession(accessToken: string, antiCsrfToken: string | 
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
 }>;
 /**
@@ -76,6 +83,7 @@ export declare function refreshSession(refreshToken: string): Promise<{
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     refreshToken: {
         token: string;
@@ -84,11 +92,16 @@ export declare function refreshSession(refreshToken: string): Promise<{
         cookiePath: string;
         cookieSecure: boolean;
         domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     idRefreshToken: {
         token: string;
         expiry: number;
         createdTime: number;
+        cookiePath: string;
+        cookieSecure: boolean;
+        domain: string;
+        sameSite: "none" | "lax" | "strict";
     };
     antiCsrfToken: string | undefined;
 }>;
@@ -97,7 +110,7 @@ export declare function refreshSession(refreshToken: string): Promise<{
  * Access tokens cannot be immediately invalidated. Unless we add a bloacklisting method. Or changed the private key to sign them.
  * @throws AuthError, GENERAL_ERROR
  */
-export declare function revokeAllSessionsForUser(userId: string): Promise<number>;
+export declare function revokeAllSessionsForUser(userId: string): Promise<any>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  * @throws AuthError, GENERAL_ERROR
@@ -109,6 +122,12 @@ export declare function getAllSessionHandlesForUser(userId: string): Promise<str
  * @throws AuthError, GENERAL_ERROR
  */
 export declare function revokeSessionUsingSessionHandle(sessionHandle: string): Promise<boolean>;
+/**
+ * @description call to destroy multiple sessions
+ * @returns list of sessions revoked
+ * @throws AuthError, GENERAL_ERROR
+ */
+export declare function revokeMultipleSessionsUsingSessionHandles(sessionHandles: string[]): Promise<any>;
 /**
  * @description: this function reads from the database every time. It provides no locking mechanism in case other processes are updating session data for this session as well, so please take of that by yourself.
  * @returns session data as provided by the user earlier

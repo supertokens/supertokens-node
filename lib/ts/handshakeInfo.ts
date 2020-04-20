@@ -26,6 +26,8 @@ export class HandshakeInfo {
     public enableAntiCsrf: boolean;
     public accessTokenBlacklistingEnabled: boolean;
     public jwtSigningPublicKeyExpiryTime: number;
+    public cookieSameSite: "none" | "lax" | "strict";
+    public idRefreshTokenPath: string;
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
@@ -46,7 +48,9 @@ export class HandshakeInfo {
                 response.refreshTokenPath,
                 response.enableAntiCsrf,
                 response.accessTokenBlacklistingEnabled,
-                response.jwtSigningPublicKeyExpiryTime
+                response.jwtSigningPublicKeyExpiryTime,
+                response.cookieSameSite,
+                response.idRefreshTokenPath
             );
         }
         return HandshakeInfo.instance;
@@ -60,7 +64,9 @@ export class HandshakeInfo {
         refreshTokenPath: string,
         enableAntiCsrf: boolean,
         accessTokenBlacklistingEnabled: boolean,
-        jwtSigningPublicKeyExpiryTime: number
+        jwtSigningPublicKeyExpiryTime: number,
+        cookieSameSite: "none" | "lax" | "strict",
+        idRefreshTokenPath: string
     ) {
         this.jwtSigningPublicKey = jwtSigningPublicKey;
         this.cookieDomain = cookieDomain;
@@ -70,6 +76,8 @@ export class HandshakeInfo {
         this.enableAntiCsrf = enableAntiCsrf;
         this.accessTokenBlacklistingEnabled = accessTokenBlacklistingEnabled;
         this.jwtSigningPublicKeyExpiryTime = jwtSigningPublicKeyExpiryTime;
+        this.cookieSameSite = cookieSameSite;
+        this.idRefreshTokenPath = idRefreshTokenPath;
     }
 
     updateJwtSigningPublicKeyInfo = (newKey: string, newExpiry: number) => {

@@ -8,8 +8,10 @@ export declare class HandshakeInfo {
     enableAntiCsrf: boolean;
     accessTokenBlacklistingEnabled: boolean;
     jwtSigningPublicKeyExpiryTime: number;
+    cookieSameSite: "none" | "lax" | "strict";
+    idRefreshTokenPath: string;
     static reset(): void;
     static getInstance(): Promise<HandshakeInfo>;
-    constructor(jwtSigningPublicKey: string, cookieDomain: string, cookieSecure: boolean, accessTokenPath: string, refreshTokenPath: string, enableAntiCsrf: boolean, accessTokenBlacklistingEnabled: boolean, jwtSigningPublicKeyExpiryTime: number);
+    constructor(jwtSigningPublicKey: string, cookieDomain: string, cookieSecure: boolean, accessTokenPath: string, refreshTokenPath: string, enableAntiCsrf: boolean, accessTokenBlacklistingEnabled: boolean, jwtSigningPublicKeyExpiryTime: number, cookieSameSite: "none" | "lax" | "strict", idRefreshTokenPath: string);
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
 }
