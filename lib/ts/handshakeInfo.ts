@@ -28,6 +28,7 @@ export class HandshakeInfo {
     public jwtSigningPublicKeyExpiryTime: number;
     public cookieSameSite: "none" | "lax" | "strict";
     public idRefreshTokenPath: string;
+    public sessionExpiredStatusCode: number;
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
@@ -51,7 +52,8 @@ export class HandshakeInfo {
                     response.accessTokenBlacklistingEnabled,
                     response.jwtSigningPublicKeyExpiryTime,
                     "none",
-                    response.accessTokenPath
+                    response.accessTokenPath,
+                    440
                 );
             } else {
                 HandshakeInfo.instance = new HandshakeInfo(
@@ -64,7 +66,8 @@ export class HandshakeInfo {
                     response.accessTokenBlacklistingEnabled,
                     response.jwtSigningPublicKeyExpiryTime,
                     response.cookieSameSite,
-                    response.idRefreshTokenPath
+                    response.idRefreshTokenPath,
+                    response.sessionExpiredStatusCode
                 );
             }
         }
@@ -81,7 +84,8 @@ export class HandshakeInfo {
         accessTokenBlacklistingEnabled: boolean,
         jwtSigningPublicKeyExpiryTime: number,
         cookieSameSite: "none" | "lax" | "strict",
-        idRefreshTokenPath: string
+        idRefreshTokenPath: string,
+        sessionExpiredStatusCode: number
     ) {
         this.jwtSigningPublicKey = jwtSigningPublicKey;
         this.cookieDomain = cookieDomain;
@@ -93,6 +97,7 @@ export class HandshakeInfo {
         this.jwtSigningPublicKeyExpiryTime = jwtSigningPublicKeyExpiryTime;
         this.cookieSameSite = cookieSameSite;
         this.idRefreshTokenPath = idRefreshTokenPath;
+        this.sessionExpiredStatusCode = sessionExpiredStatusCode;
     }
 
     updateJwtSigningPublicKeyInfo = (newKey: string, newExpiry: number) => {
