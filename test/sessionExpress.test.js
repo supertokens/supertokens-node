@@ -651,6 +651,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             app.post("/updateJWTPayload", async (req, res) => {
                 let session = await STExpress.getSession(req, res, true);
                 await session.updateJWTPayload({ key: "value" });
+                // TODO: check that access token has changed too in the session object
                 res.status(200).send("");
             });
             app.post("/getJWTPayload", async (req, res) => {

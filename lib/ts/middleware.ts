@@ -19,22 +19,30 @@ import { AuthError } from "./error";
 import { clearSessionFromCookie } from "./cookieAndHeaders";
 import { HandshakeInfo } from "./handshakeInfo";
 
+// TODO: How will the user get access to this?
 export function sessionVerify(antiCsrfCheck?: boolean) {
+    // TODO: the input request type will be Request only right? The out will have SessionRequest type?
     return async (request: SesssionRequest, response: Response, next: NextFunction) => {
+        // TODO: For OPTIONS API, we must only call next() and then return. Is there any other HTTP Method like that?
         let path = request.originalUrl.split("?")[0];
         if (antiCsrfCheck === undefined) {
             antiCsrfCheck = request.method.toLowerCase() !== "get";
         }
         let handShakeInfo = await HandshakeInfo.getInstance();
+        // TODO: handShakeInfo.refreshTokenPath may or may not have a trailing /
+        // TODO: path may or may not have a trailing /
+        // TODO: modify if statement based on the two point above.
         if (handShakeInfo.refreshTokenPath === path) {
             next();
         } else {
+            // TODO: Discuss: Any reason to not use async / await?
             getSession(request, response, antiCsrfCheck)
                 .then(session => {
                     request.session = session;
                     next();
                 })
                 .catch(async err => {
+                    // TODO: This will changed based on our last discussion.
                     if (AuthError.isErrorFromAuth(err) && err.errType === AuthError.UNAUTHORISED) {
                         clearSessionFromCookie(
                             response,

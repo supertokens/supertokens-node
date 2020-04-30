@@ -295,6 +295,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
             //passing invalid session handle when updating jwt payload
             try {
                 await ST.updateJWTPayload("random", { key2: "value2" });
+                throw new Error();
             } catch (error) {
                 if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.UNAUTHORISED) {
                     throw error;
@@ -304,6 +305,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
             //passing valid session handle when updating jwt payload
             try {
                 await ST.updateJWTPayload(res.session.handle, { key2: "value2" });
+                throw new Error();
             } catch (error) {
                 if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.GENERAL_ERROR) {
                     throw error;
@@ -312,6 +314,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
             //passing valid session handle when getting jwt payload
             try {
                 await ST.getJWTPayload(res.session.handle);
+                throw new Error();
             } catch (error) {
                 if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.GENERAL_ERROR) {
                     throw error;

@@ -457,6 +457,7 @@ export class Session {
         }
         this.userDataInJWT = response.session.userDataInJWT;
         if (response.accessToken !== undefined) {
+            this.accessToken = response.accessToken;
             attachAccessTokenToCookie(
                 this.res,
                 response.accessToken.token,
