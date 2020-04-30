@@ -12,6 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import { Request } from "express";
+import { Session } from "./express";
+
 export type TypeAuthError = {
     errType: number;
     err: any;
@@ -21,3 +24,7 @@ export type TypeInput = {
     hostname: string;
     port: number;
 }[];
+
+export interface SesssionRequest extends Request {
+    session: Session;
+}

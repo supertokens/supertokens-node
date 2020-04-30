@@ -66,6 +66,15 @@ export declare function updateSessionData(sessionHandle: string, newSessionData:
  */
 export declare function setRelevantHeadersForOptionsAPI(res: express.Response): void;
 /**
+ * @returns jwt payload as provided by the user earlier
+ * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
+ */
+export declare function getJWTPayload(sessionHandle: string): Promise<any>;
+/**
+ * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
+ */
+export declare function updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
+/**
  * @class Session
  * @description an instance of this is created when a session is valid.
  */
@@ -74,7 +83,8 @@ export declare class Session {
     private userId;
     private userDataInJWT;
     private res;
-    constructor(sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response);
+    private accessToken;
+    constructor(accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response);
     /**
      * @description call this to logout the current user.
      * This only invalidates the refresh token. The access token can still be used after
@@ -97,4 +107,7 @@ export declare class Session {
     updateSessionData: (newSessionData: any) => Promise<void>;
     getUserId: () => string;
     getJWTPayload: () => any;
+    getHandle: () => string;
+    getAccessToken: () => string;
+    updateJWTPayload: (newJWTPayload: any) => Promise<void>;
 }

@@ -31,6 +31,7 @@ import { AuthError, generateError } from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
 import * as SessionFunctions from "./session";
 import { TypeInput } from "./types";
+import { Querier } from "./querier";
 
 // TODO: Make it also work with PassportJS
 
@@ -94,7 +95,13 @@ export async function createNewSession(
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
 
-    return new Session(response.session.handle, response.session.userId, response.session.userDataInJWT, res);
+    return new Session(
+        accessToken.token,
+        response.session.handle,
+        response.session.userId,
+        response.session.userDataInJWT,
+        res
+    );
 }
 
 /**
@@ -127,8 +134,15 @@ export async function getSession(
                 response.accessToken.cookieSecure,
                 response.accessToken.sameSite
             );
+            accessToken = response.accessToken.token;
         }
-        return new Session(response.session.handle, response.session.userId, response.session.userDataInJWT, res);
+        return new Session(
+            accessToken,
+            response.session.handle,
+            response.session.userId,
+            response.session.userDataInJWT,
+            res
+        );
     } catch (err) {
         if (AuthError.isErrorFromAuth(err) && err.errType === AuthError.UNAUTHORISED) {
             let handShakeInfo = await HandshakeInfo.getInstance();
@@ -210,7 +224,13 @@ export async function refreshSession(req: express.Request, res: express.Response
             setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
         }
 
-        return new Session(response.session.handle, response.session.userId, response.session.userDataInJWT, res);
+        return new Session(
+            accessToken.token,
+            response.session.handle,
+            response.session.userId,
+            response.session.userDataInJWT,
+            res
+        );
     } catch (err) {
         if (
             AuthError.isErrorFromAuth(err) &&
@@ -289,6 +309,20 @@ export async function updateSessionData(sessionHandle: string, newSessionData: a
 export function setRelevantHeadersForOptionsAPI(res: express.Response) {
     setOptionsAPIHeader(res);
 }
+/**
+ * @returns jwt payload as provided by the user earlier
+ * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
+ */
+export async function getJWTPayload(sessionHandle: string): Promise<any> {
+    return SessionFunctions.getJWTPayload(sessionHandle);
+}
+
+/**
+ * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
+ */
+export async function updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
+    return SessionFunctions.updateJWTPayload(sessionHandle, newJWTPayload);
+}
 
 /**
  * @class Session
@@ -299,12 +333,14 @@ export class Session {
     private userId: string;
     private userDataInJWT: any;
     private res: express.Response;
+    private accessToken: string;
 
-    constructor(sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response) {
+    constructor(accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response) {
         this.sessionHandle = sessionHandle;
         this.userId = userId;
         this.userDataInJWT = userDataInJWT;
         this.res = res;
+        this.accessToken = accessToken;
     }
 
     /**
@@ -385,5 +421,51 @@ export class Session {
 
     getJWTPayload = () => {
         return this.userDataInJWT;
+    };
+
+    getHandle = () => {
+        return this.sessionHandle;
+    };
+
+    getAccessToken = () => {
+        return this.accessToken;
+    };
+
+    updateJWTPayload = async (newJWTPayload: any) => {
+        if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+            throw generateError(
+                AuthError.GENERAL_ERROR,
+                new Error("the current function is not supported for the core")
+            );
+        }
+        let response = await Querier.getInstance().sendPostRequest("/session/regenerate", {
+            accessToken: this.accessToken,
+            userDataInJWT: newJWTPayload
+        });
+        if (response.status === "UNAUTHORISED") {
+            let handShakeInfo = await HandshakeInfo.getInstance();
+            clearSessionFromCookie(
+                this.res,
+                handShakeInfo.cookieDomain,
+                handShakeInfo.cookieSecure,
+                handShakeInfo.accessTokenPath,
+                handShakeInfo.refreshTokenPath,
+                handShakeInfo.idRefreshTokenPath,
+                handShakeInfo.cookieSameSite
+            );
+            throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+        }
+        this.userDataInJWT = response.session.userDataInJWT;
+        if (response.accessToken !== undefined) {
+            attachAccessTokenToCookie(
+                this.res,
+                response.accessToken.token,
+                response.accessToken.expiry,
+                response.accessToken.domain,
+                response.accessToken.cookiePath,
+                response.accessToken.cookieSecure,
+                response.accessToken.sameSite
+            );
+        }
     };
 }

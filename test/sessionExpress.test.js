@@ -29,6 +29,7 @@ const nock = require("nock");
 let { version } = require("../lib/build/version");
 const express = require("express");
 const request = require("supertest");
+let { Querier } = require("../lib/build/querier");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 
@@ -630,6 +631,170 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
         assert.deepEqual(invalidSessionResponse.body.success, true);
+    });
+
+    //check manipulating jwt payload
+    it("test manipulating jwt payload with express", async function() {
+        await startST();
+        STExpress.init([
+            {
+                hostname: "localhost",
+                port: 8080
+            }
+        ]);
+        const app = express();
+        app.post("/create", async (req, res) => {
+            await STExpress.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+        if ((await Querier.getInstance().getAPIVersion()) !== "1.0") {
+            app.post("/updateJWTPayload", async (req, res) => {
+                let session = await STExpress.getSession(req, res, true);
+                await session.updateJWTPayload({ key: "value" });
+                res.status(200).send("");
+            });
+            app.post("/getJWTPayload", async (req, res) => {
+                let session = await STExpress.getSession(req, res, true);
+                let jwtPayload = session.getJWTPayload();
+                res.status(200).json(jwtPayload);
+            });
+
+            app.post("/updateJWTPayload2", async (req, res) => {
+                let session = await STExpress.getSession(req, res, true);
+                await session.updateJWTPayload({ key: "value2" });
+                res.status(200).send("");
+            });
+
+            app.post("/updateJWTPayloadInvalidSessionHandle", async (req, res) => {
+                try {
+                    await STExpress.updateJWTPayload("InvalidHandle", { key: "value3" });
+                } catch (err) {
+                    res.status(200).json({
+                        success: ST.Error.isErrorFromAuth(err) && err.errType === ST.Error.UNAUTHORISED
+                    });
+                }
+            });
+
+            //create a new session
+            let response = extractInfoFromResponse(
+                await new Promise(resolve =>
+                    request(app)
+                        .post("/create")
+                        .expect(200)
+                        .end((err, res) => {
+                            resolve(res);
+                        })
+                )
+            );
+
+            //call the updateJWTPayload api to add jwt payload
+            let updatedResponse = extractInfoFromResponse(
+                await new Promise(resolve =>
+                    request(app)
+                        .post("/updateJWTPayload")
+                        .set("Cookie", [
+                            "sAccessToken=" +
+                                response.accessToken +
+                                ";sIdRefreshToken=" +
+                                response.idRefreshTokenFromCookie
+                        ])
+                        .set("anti-csrf", response.antiCsrf)
+                        .expect(200)
+                        .end((err, res) => {
+                            resolve(res);
+                        })
+                )
+            );
+
+            //call the getJWTPayload api to get jwt payload
+            let response2 = await new Promise(resolve =>
+                request(app)
+                    .post("/getJWTPayload")
+                    .set("Cookie", [
+                        "sAccessToken=" +
+                            updatedResponse.accessToken +
+                            ";sIdRefreshToken=" +
+                            response.idRefreshTokenFromCookie
+                    ])
+                    .set("anti-csrf", response.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            );
+            //check that the jwt payload returned is valid
+            assert.deepEqual(response2.body.key, "value");
+
+            // change the value of the inserted jwt payload
+            let updatedResponse2 = extractInfoFromResponse(
+                await new Promise(resolve =>
+                    request(app)
+                        .post("/updateJWTPayload2")
+                        .set("Cookie", [
+                            "sAccessToken=" +
+                                updatedResponse.accessToken +
+                                ";sIdRefreshToken=" +
+                                response.idRefreshTokenFromCookie
+                        ])
+                        .set("anti-csrf", response.antiCsrf)
+                        .expect(200)
+                        .end((err, res) => {
+                            resolve(res);
+                        })
+                )
+            );
+            //retrieve the changed jwt payload
+            response2 = await new Promise(resolve =>
+                request(app)
+                    .post("/getJWTPayload")
+                    .set("Cookie", [
+                        "sAccessToken=" +
+                            updatedResponse2.accessToken +
+                            ";sIdRefreshToken=" +
+                            response.idRefreshTokenFromCookie
+                    ])
+                    .set("anti-csrf", response.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            );
+
+            //check the value of the retrieved
+            assert.deepEqual(response2.body.key, "value2");
+            //invalid session handle when updating the jwt payload
+            let invalidSessionResponse = await new Promise(resolve =>
+                request(app)
+                    .post("/updateJWTPayloadInvalidSessionHandle")
+                    .set("Cookie", [
+                        "sAccessToken=" +
+                            updatedResponse2.accessToken +
+                            ";sIdRefreshToken=" +
+                            response.idRefreshTokenFromCookie
+                    ])
+                    .set("anti-csrf", response.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            );
+            assert.deepEqual(invalidSessionResponse.body.success, true);
+        } else {
+            app.post("/updateJWTPayload", async (req, res) => {
+                let session = await STExpress.getSession(req, res, true);
+                try {
+                    await session.updateJWTPayload({ key: "value" });
+                } catch (err) {
+                    return res.status(200).send("");
+                }
+                return res.status(200).send("");
+            });
+            app.post("/getJWTPayload", async (req, res) => {
+                let session = await STExpress.getSession(req, res, true);
+                let jwtPayload = await session.getJWTPayload();
+                res.status(200).json(jwtPayload);
+            });
+        }
     });
 
     // test with existing header params being there and that the lib appends to those and not overrides those

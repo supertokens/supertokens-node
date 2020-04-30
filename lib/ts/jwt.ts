@@ -14,13 +14,22 @@
  */
 import * as crypto from "crypto";
 
-const HEADER = Buffer.from(
-    JSON.stringify({
-        alg: "RS256",
-        typ: "JWT",
-        version: "1"
-    })
-).toString("base64");
+const HEADERS = new Set([
+    Buffer.from(
+        JSON.stringify({
+            alg: "RS256",
+            typ: "JWT",
+            version: "1"
+        })
+    ).toString("base64"),
+    Buffer.from(
+        JSON.stringify({
+            alg: "RS256",
+            typ: "JWT",
+            version: "2"
+        })
+    ).toString("base64")
+]);
 
 export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string): { [key: string]: any } {
     const splittedInput = jwt.split(".");
@@ -29,7 +38,7 @@ export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string)
     }
 
     // checking header
-    if (splittedInput[0] !== HEADER) {
+    if (!HEADERS.has(splittedInput[0])) {
         throw new Error("JWT header mismatch");
     }
 
@@ -38,7 +47,7 @@ export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string)
     let verifier = crypto.createVerify("sha256");
     //convert the jwtSigningPublicKey into .pem format
 
-    verifier.update(HEADER + "." + payload);
+    verifier.update(splittedInput[0] + "." + payload);
     if (
         !verifier.verify(
             "-----BEGIN PUBLIC KEY-----\n" + jwtSigningPublicKey + "\n-----END PUBLIC KEY-----",

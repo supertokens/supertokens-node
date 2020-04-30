@@ -25,6 +25,7 @@ const {
 let ST = require("../session");
 let STExpress = require("../index");
 let assert = require("assert");
+let { Querier } = require("../lib/build/querier");
 const nock = require("nock");
 let { version } = require("../lib/build/version");
 const express = require("express");
@@ -200,6 +201,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         let res = await ST.createNewSession("someUniqueUserId", {}, {});
         let res2 = await ST.revokeSessionUsingSessionHandle(res.session.handle);
         assert(res2 === true);
+        const CDI_VERSION = await Querier.getInstance().getAPIVersion();
 
         let res3 = await ST.getAllSessionHandlesForUser("someUniqueUserId");
         assert(res3.length === 0);
@@ -212,7 +214,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(sessionIdResponse.length === 2);
 
         let response = await ST.revokeAllSessionsForUser("someUniqueUserId");
-        assert(response === 2);
+        if (CDI_VERSION !== "1.0") {
+            assert(response.length === 2);
+        } else {
+            assert(response === 2);
+        }
 
         sessionIdResponse = await ST.getAllSessionHandlesForUser("someUniqueUserId");
         assert(sessionIdResponse.length === 0);
@@ -223,7 +229,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
 
         //revoke a session with a userId that does not exist
         let resp2 = await ST.revokeAllSessionsForUser("random");
-        assert(resp2 === 0);
+        if (CDI_VERSION !== "1.0") {
+            assert(resp2.length === 0);
+        } else {
+            assert(resp2 === 0);
+        }
     });
 
     //check manipulating session data
@@ -254,6 +264,58 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         } catch (error) {
             if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.UNAUTHORISED) {
                 throw error;
+            }
+        }
+    });
+
+    //check manipulating jwt payload
+    it("test manipulating jwt payload", async function() {
+        await startST();
+        STExpress.init([
+            {
+                hostname: "localhost",
+                port: 8080
+            }
+        ]);
+        //adding jwt payload
+        let res = await ST.createNewSession("", {}, {});
+
+        if ((await Querier.getInstance().getAPIVersion()) !== "1.0") {
+            await ST.updateJWTPayload(res.session.handle, { key: "value" });
+
+            let res2 = await ST.getJWTPayload(res.session.handle);
+            assert.deepEqual(res2, { key: "value" });
+
+            //changing the value of jwt payload with the same key
+            await ST.updateJWTPayload(res.session.handle, { key: "value 2" });
+
+            let res3 = await ST.getJWTPayload(res.session.handle);
+            assert.deepEqual(res3, { key: "value 2" });
+
+            //passing invalid session handle when updating jwt payload
+            try {
+                await ST.updateJWTPayload("random", { key2: "value2" });
+            } catch (error) {
+                if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.UNAUTHORISED) {
+                    throw error;
+                }
+            }
+        } else {
+            //passing valid session handle when updating jwt payload
+            try {
+                await ST.updateJWTPayload(res.session.handle, { key2: "value2" });
+            } catch (error) {
+                if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.GENERAL_ERROR) {
+                    throw error;
+                }
+            }
+            //passing valid session handle when getting jwt payload
+            try {
+                await ST.getJWTPayload(res.session.handle);
+            } catch (error) {
+                if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.GENERAL_ERROR) {
+                    throw error;
+                }
             }
         }
     });

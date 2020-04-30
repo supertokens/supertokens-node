@@ -139,3 +139,12 @@ export declare function getSessionData(sessionHandle: string): Promise<any>;
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export declare function updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
+/**
+ * @returns jwt payload as provided by the user earlier
+ * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
+ */
+export declare function getJWTPayload(sessionHandle: string): Promise<any>;
+/**
+ * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
+ */
+export declare function updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;

@@ -342,7 +342,7 @@ export async function revokeSessionUsingSessionHandle(sessionHandle: string): Pr
         let response = await Querier.getInstance().sendDeleteRequest("/session", {
             sessionHandle
         });
-        return response.numberOfSessionsRevoked == 1;
+        return response.numberOfSessionsRevoked === 1;
     } else {
         let response = await Querier.getInstance().sendPostRequest("/session/remove", {
             sessionHandles: [sessionHandle]
@@ -379,7 +379,7 @@ export async function getSessionData(sessionHandle: string): Promise<any> {
     let response = await Querier.getInstance().sendGetRequest("/session/data", {
         sessionHandle
     });
-    if (response.status == "OK") {
+    if (response.status === "OK") {
         return response.userDataInDatabase;
     } else {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
@@ -395,7 +395,47 @@ export async function updateSessionData(sessionHandle: string, newSessionData: a
         sessionHandle,
         userDataInDatabase: newSessionData
     });
-    if (response.status == "UNAUTHORISED") {
+    if (response.status === "UNAUTHORISED") {
+        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+    }
+}
+
+/**
+ * @returns jwt payload as provided by the user earlier
+ * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
+ */
+export async function getJWTPayload(sessionHandle: string): Promise<any> {
+    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+        throw generateError(
+            AuthError.GENERAL_ERROR,
+            new Error("the current function is not supported for the core. Please upgrade the supertokens service.")
+        );
+    }
+    let response = await Querier.getInstance().sendGetRequest("/jwt/data", {
+        sessionHandle
+    });
+    if (response.status === "OK") {
+        return response.userDataInJWT;
+    } else {
+        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+    }
+}
+
+/**
+ * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
+ */
+export async function updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
+    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+        throw generateError(
+            AuthError.GENERAL_ERROR,
+            new Error("the current function is not supported for the core. Please upgrade the supertokens service.")
+        );
+    }
+    let response = await Querier.getInstance().sendPutRequest("/jwt/data", {
+        sessionHandle,
+        userDataInJWT: newJWTPayload
+    });
+    if (response.status === "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
     }
 }
