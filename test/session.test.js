@@ -127,7 +127,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(response4.accessToken === undefined);
         assert(Object.keys(response4).length === 1);
 
-        let response5 = await ST.revokeSessionUsingSessionHandle(response4.session.handle);
+        let response5 = await ST.revokeSession(response4.session.handle);
         assert(response5 === true);
     });
 
@@ -199,7 +199,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         ]);
         //create a single session and  revoke using the session handle
         let res = await ST.createNewSession("someUniqueUserId", {}, {});
-        let res2 = await ST.revokeSessionUsingSessionHandle(res.session.handle);
+        let res2 = await ST.revokeSession(res.session.handle);
         assert(res2 === true);
         const CDI_VERSION = await Querier.getInstance().getAPIVersion();
 
@@ -224,7 +224,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
         assert(sessionIdResponse.length === 0);
 
         //revoke a session with a session handle that does not exist
-        let resp = await ST.revokeSessionUsingSessionHandle("");
+        let resp = await ST.revokeSession("");
         assert(resp === false);
 
         //revoke a session with a userId that does not exist

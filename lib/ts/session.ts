@@ -337,7 +337,7 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeSessionUsingSessionHandle(sessionHandle: string): Promise<boolean> {
+export async function revokeSession(sessionHandle: string): Promise<boolean> {
     if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
         let response = await Querier.getInstance().sendDeleteRequest("/session", {
             sessionHandle
@@ -356,7 +356,7 @@ export async function revokeSessionUsingSessionHandle(sessionHandle: string): Pr
  * @returns list of sessions revoked
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeMultipleSessionsUsingSessionHandles(sessionHandles: string[]): Promise<any> {
+export async function revokeMultipleSessions(sessionHandles: string[]): Promise<any> {
     if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
         let response = await Querier.getInstance().sendDeleteRequest("/session", {
             sessionHandles

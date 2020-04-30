@@ -273,8 +273,8 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeSessionUsingSessionHandle(sessionHandle: string): Promise<boolean> {
-    return SessionFunctions.revokeSessionUsingSessionHandle(sessionHandle);
+export async function revokeSession(sessionHandle: string): Promise<boolean> {
+    return SessionFunctions.revokeSession(sessionHandle);
 }
 
 /**
@@ -282,8 +282,8 @@ export async function revokeSessionUsingSessionHandle(sessionHandle: string): Pr
  * @returns list of sessions revoked
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeMultipleSessionsUsingSessionHandles(sessionHandles: string[]) {
-    return SessionFunctions.revokeMultipleSessionsUsingSessionHandles(sessionHandles);
+export async function revokeMultipleSessions(sessionHandles: string[]) {
+    return SessionFunctions.revokeMultipleSessions(sessionHandles);
 }
 
 /**
@@ -350,7 +350,7 @@ export class Session {
      * @throw AuthError GENERAL_ERROR
      */
     revokeSession = async () => {
-        if (await SessionFunctions.revokeSessionUsingSessionHandle(this.sessionHandle)) {
+        if (await SessionFunctions.revokeSession(this.sessionHandle)) {
             let handShakeInfo = await HandshakeInfo.getInstance();
             clearSessionFromCookie(
                 this.res,
