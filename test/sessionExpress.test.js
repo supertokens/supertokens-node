@@ -22,7 +22,7 @@ const {
     extractInfoFromResponse,
     setKeyValueInConfig
 } = require("./utils");
-let ST = require("../session");
+let ST = require("../lib/build/session");
 let STExpress = require("../index");
 let assert = require("assert");
 const nock = require("nock");
@@ -650,9 +650,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         if ((await Querier.getInstance().getAPIVersion()) !== "1.0") {
             app.post("/updateJWTPayload", async (req, res) => {
                 let session = await STExpress.getSession(req, res, true);
-                await session.updateJWTPayload({ key: "value" });
                 // TODO: check that access token has changed too in the session object
-                res.status(200).send("");
+                let accessTokenBefore = session.accessToken;
+                await session.updateJWTPayload({ key: "value" });
+                let accessTokenAfter = session.accessToken;
+                let statusCode = accessTokenBefore !== accessTokenAfter ? 200 : 500;
+                res.status(statusCode).send("");
             });
             app.post("/getJWTPayload", async (req, res) => {
                 let session = await STExpress.getSession(req, res, true);
@@ -707,6 +710,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 )
             );
 
+            
             //call the getJWTPayload api to get jwt payload
             let response2 = await new Promise(resolve =>
                 request(app)

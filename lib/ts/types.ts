@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { Request } from "express";
+import { Request, Response, NextFunction } from "express";
 import { Session } from "./express";
 
 export type TypeAuthError = {
@@ -27,4 +27,18 @@ export type TypeInput = {
 
 export interface SesssionRequest extends Request {
     session: Session;
+}
+
+export interface ErrorHandlerMiddleware {
+    (err: any, request: Request, response: Response, next: NextFunction): void;
+}
+
+export interface TokenTheftErrorHandlerMiddleware {
+    (sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction): void;
+}
+
+export interface SuperTokensErrorMiddlewareOptions {
+    onUnauthorised?: ErrorHandlerMiddleware;
+    onTryRefreshToken?: ErrorHandlerMiddleware;
+    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
 }

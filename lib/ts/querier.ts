@@ -28,6 +28,15 @@ export class Querier {
     private hostsAliveForTesting: Set<string> = new Set<string>();
     private apiVersion: string | undefined = undefined;
 
+    private constructor(hosts?: TypeInput) {
+        if (hosts === undefined || hosts.length === 0) {
+            hosts = [{
+                hostname: "localhost",
+                port: 3567
+            }];
+        }
+        this.hosts = hosts;
+    }
     getAPIVersion = async (): Promise<string> => {
         if (this.apiVersion !== undefined) {
             return this.apiVersion;
@@ -80,35 +89,21 @@ export class Querier {
     };
 
     static getInstance(): Querier {
-        if (Querier.instance == undefined) {
+        if (Querier.instance === undefined) {
             Querier.instance = new Querier();
-        }
-        if (Querier.instance.hosts.length == 0) {
-            Querier.instance = undefined;
-            throw generateError(
-                AuthError.GENERAL_ERROR,
-                new Error("Please call the init function before using any other functions of the SuperTokens library")
-            );
         }
         return Querier.instance;
     }
 
     static initInstance(hosts: TypeInput) {
-        if (Querier.instance == undefined) {
-            if (hosts.length == 0) {
-                throw generateError(
-                    AuthError.GENERAL_ERROR,
-                    new Error("Please provide at least one SuperTokens' core address")
-                );
-            }
-            Querier.instance = new Querier();
-            Querier.instance.hosts = hosts;
+        if (Querier.instance === undefined) {
+            Querier.instance = new Querier(hosts);
         }
     }
 
     // path should start with "/"
     sendPostRequest = async (path: string, body: any): Promise<any> => {
-        if (path == "/session" || path == "/session/verify" || path == "/session/refresh" || path == "/handshake") {
+        if (path === "/session" || path === "/session/verify" || path === "/session/refresh" || path === "/handshake") {
             let deviceDriverInfo: {
                 frontendSDK: {
                     name: string;

@@ -468,5 +468,5 @@ export class Session {
                 response.accessToken.sameSite
             );
         }
-    };
+    }
 }

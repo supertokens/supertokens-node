@@ -13,7 +13,7 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, extractInfoFromResponse } = require("./utils");
-let ST = require("../session");
+let ST = require("../lib/build/session");
 let STExpress = require("../index");
 let assert = require("assert");
 const nock = require("nock");

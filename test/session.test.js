@@ -22,7 +22,7 @@ const {
     extractInfoFromResponse,
     setKeyValueInConfig
 } = require("./utils");
-let ST = require("../session");
+let ST = require("../lib/build/session");
 let STExpress = require("../index");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");

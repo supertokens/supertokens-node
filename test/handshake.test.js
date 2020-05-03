@@ -13,7 +13,7 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
-let ST = require("../session");
+let ST = require("../lib/build/session");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");

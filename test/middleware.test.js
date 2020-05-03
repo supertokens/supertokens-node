@@ -13,13 +13,12 @@
  * under the License.
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("./utils");
-let ST = require("../session");
+let ST = require("../lib/build/session");
 let STExpress = require("../index");
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
 let { Querier } = require("../lib/build/querier");
-let { sessionVerify } = require("../lib/build/middleware");
 let { ProcessState } = require("../lib/build/processState");
 
 describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function() {
@@ -35,13 +34,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function() {
     });
 
     it("test session verify middleware", async function() {
-        await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080
-            }
-        ]);
+        await startST("localhost", 3567);
         if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
             return;
         }
@@ -51,51 +44,44 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function() {
             res.status(200).json({ message: true });
         });
 
-        app.get("/user/id", sessionVerify(), async (req, res) => {
+        app.get("/user/id", STExpress.middleware(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handle", sessionVerify(true), async (req, res) => {
+        app.get("/user/handle", STExpress.middleware(true), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
-        app.post("/refresh", sessionVerify(), async (req, res, next) => {
-            try {
-                await STExpress.refreshSession(req, res);
-                res.status(200).json({ message: true });
-            } catch (err) {
-                next(err);
-            }
+        app.post("/refresh", STExpress.middleware(), async (req, res, next) => {
+            res.status(200).json({ message: true });
         });
 
-        app.post("/logout", sessionVerify(), async (req, res) => {
+        app.post("/logout", STExpress.middleware(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
+        app.use(STExpress.errorHandler({
+            onTryRefreshToken: (err, req, res, next) => {
+                res.statusCode = 401;
+                return res.json({
+                    message: "try refresh token"
+                });
+            },
+            onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                res.statusCode = 403;
+                return res.json({
+                    message: "token theft detected"
+                });
+            }
+        }));
+
         app.use((err, req, res, next) => {
             if (ST.Error.isErrorFromAuth(err)) {
-                if (err.errType === ST.Error.UNAUTHORISED) {
-                    res.statusCode = 440;
-                    return res.json({
-                        message: "unauthorised"
-                    });
-                } else if (err.errType === ST.Error.TRY_REFRESH_TOKEN) {
-                    res.statusCode = 440;
-                    return res.json({
-                        message: "try refresh token"
-                    });
-                } else if (err.errType === ST.Error.TOKEN_THEFT_DETECTED) {
-                    res.statusCode = 440;
-                    return res.json({
-                        message: "token theft detected"
-                    });
-                } else {
-                    res.statusCode = 400;
-                    return res.json({
-                        message: "general error"
-                    });
-                }
+                res.statusCode = 400;
+                return res.json({
+                    message: "general error"
+                });
             } else {
                 res.statusCode = 500;
                 return res.json({
@@ -150,7 +136,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function() {
                 .set("Cookie", [
                     "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie
                 ])
-                .expect(440)
+                .expect(401)
                 .end((err, res) => {
                     resolve(res.body.message);
                 })
@@ -214,7 +200,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function() {
             request(app)
                 .post("/refresh")
                 .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
-                .expect(440)
+                .expect(403)
                 .end((err, res) => {
                     resolve(res.body.message);
                 })
@@ -251,7 +237,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function() {
                 .set("Cookie", [
                     "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie
                 ])
-                .expect(440)
+                .expect(401)
                 .end((err, res) => {
                     resolve(res.body.message);
                 })

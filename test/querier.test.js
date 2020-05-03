@@ -13,7 +13,7 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
-let ST = require("../session");
+let ST = require("../lib/build/session");
 let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
@@ -31,19 +31,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function() {
     });
 
     it("querier called without init", async function() {
-        try {
-            Querier.getInstance();
-            throw new Error();
-        } catch (err) {
-            if (
-                !ST.Error.isErrorFromAuth(err) ||
-                err.errType !== ST.Error.GENERAL_ERROR ||
-                err.err.message !==
-                    "Please call the init function before using any other functions of the SuperTokens library"
-            ) {
-                throw err;
-            }
-        }
+        Querier.getInstance();
     });
 
     it("core not available", async function() {

@@ -5,6 +5,7 @@ export declare class Querier {
     private lastTriedIndex;
     private hostsAliveForTesting;
     private apiVersion;
+    private constructor();
     getAPIVersion: () => Promise<string>;
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
