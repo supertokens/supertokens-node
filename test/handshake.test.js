@@ -18,24 +18,24 @@ let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
 
-describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function() {
-    beforeEach(async function() {
+describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
+    beforeEach(async function () {
         await killAllST();
         await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function() {
+    after(async function () {
         await killAllST();
         await cleanST();
     });
 
-    it("core not available", async function() {
+    it("core not available", async function () {
         ST.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         try {
             await ST.createNewSession("", {}, {});
@@ -51,13 +51,13 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function() {
         }
     });
 
-    it("successful handshake and update JWT", async function() {
+    it("successful handshake and update JWT", async function () {
         await startST();
         ST.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         let info = await HandshakeInfo.getInstance();
         assert.equal(info.accessTokenPath, "/");

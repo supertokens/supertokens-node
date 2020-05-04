@@ -35,19 +35,19 @@ let { ProcessState } = require("../lib/build/processState");
 - check that if idRefreshToken is not passed to express, verify throws UNAUTHORISED
 - check that Access-Control-Expose-Headers header is being set properly during create, use and destroy session**** only for express
 */
-describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, function() {
-    beforeEach(async function() {
+describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, function () {
+    beforeEach(async function () {
         await killAllST();
         await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function() {
+    after(async function () {
         await killAllST();
         await cleanST();
     });
 
-    it("driver info check without frontendSDKs", async function() {
+    it("driver info check without frontendSDKs", async function () {
         await startST();
         const scope = nock("http://localhost:8080", { allowUnmocked: true })
             .post("/session")
@@ -69,20 +69,20 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
         ST.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         let response = await ST.createNewSession("", {}, {});
         assert.equal(response.success, true);
     });
 
-    it("driver info check with frontendSDKs", async function() {
+    it("driver info check with frontendSDKs", async function () {
         await startST();
         STExpress.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         // server.
         let server;
@@ -104,7 +104,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
 
         // calling server..
         let res = extractInfoFromResponse(
-            await new Promise(resolve =>
+            await new Promise((resolve) =>
                 request(app)
                     .post("/create")
                     .expect(200)
@@ -113,7 +113,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                     })
             )
         );
-        await new Promise(resolve =>
+        await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
@@ -126,7 +126,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
         );
 
         // with no frontend SDK headers.
-        await new Promise(resolve =>
+        await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
@@ -136,7 +136,7 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 })
         );
 
-        await new Promise(resolve =>
+        await new Promise((resolve) =>
             request(app)
                 .post("/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
@@ -155,8 +155,11 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 let ddi = rb.deviceDriverInfo;
                 try {
                     assert.deepEqual(ddi, {
-                        frontendSDK: [{ name: "ios", version: "0.0.0" }, { name: "android", version: "0.0.1" }],
-                        driver: { name: "node", version }
+                        frontendSDK: [
+                            { name: "ios", version: "0.0.0" },
+                            { name: "android", version: "0.0.1" },
+                        ],
+                        driver: { name: "node", version },
                     });
                     return [200, { success: true }];
                 } catch (err) {}
@@ -168,12 +171,15 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 let ddi = rb.deviceDriverInfo;
                 try {
                     assert.deepEqual(ddi, {
-                        frontendSDK: [{ name: "ios", version: "0.0.0" }, { name: "android", version: "0.0.1" }],
-                        driver: { name: "node", version }
+                        frontendSDK: [
+                            { name: "ios", version: "0.0.0" },
+                            { name: "android", version: "0.0.1" },
+                        ],
+                        driver: { name: "node", version },
                     });
                     return [
                         200,
-                        { status: "OK", jwtSigningPublicKey: "", jwtSigningPublicKeyExpiryTime: 0, success: true }
+                        { status: "OK", jwtSigningPublicKey: "", jwtSigningPublicKeyExpiryTime: 0, success: true },
                     ];
                 } catch (err) {}
                 return [200, { success: false }];
@@ -184,8 +190,11 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 let ddi = rb.deviceDriverInfo;
                 try {
                     assert.deepEqual(ddi, {
-                        frontendSDK: [{ name: "ios", version: "0.0.0" }, { name: "android", version: "0.0.1" }],
-                        driver: { name: "node", version }
+                        frontendSDK: [
+                            { name: "ios", version: "0.0.0" },
+                            { name: "android", version: "0.0.1" },
+                        ],
+                        driver: { name: "node", version },
                     });
                     return [200, { success: true, status: "OK" }];
                 } catch (err) {}
@@ -197,8 +206,11 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 let ddi = rb.deviceDriverInfo;
                 try {
                     assert.deepEqual(ddi, {
-                        frontendSDK: [{ name: "ios", version: "0.0.0" }, { name: "android", version: "0.0.1" }],
-                        driver: { name: "node", version }
+                        frontendSDK: [
+                            { name: "ios", version: "0.0.0" },
+                            { name: "android", version: "0.0.1" },
+                        ],
+                        driver: { name: "node", version },
                     });
                     return [200, { jwtSigningPublicKey: "true" }];
                 } catch (err) {}
@@ -206,14 +218,14 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
             });
         assert.deepEqual(await ST.createNewSession("", {}, {}), { success: true });
         assert.deepEqual(await ST.getSession("", "", false, ""), {
-            success: true
+            success: true,
         });
         assert.deepEqual(await ST.refreshSession(""), { success: true });
         HandshakeInfo.reset();
         assert.equal((await HandshakeInfo.getInstance()).jwtSigningPublicKey, "true");
     });
 
-    it("options API", async function() {
+    it("options API", async function () {
         // TODO:
     });
 });

@@ -19,16 +19,16 @@ const HEADERS = new Set([
         JSON.stringify({
             alg: "RS256",
             typ: "JWT",
-            version: "1"
+            version: "1",
         })
     ).toString("base64"),
     Buffer.from(
         JSON.stringify({
             alg: "RS256",
             typ: "JWT",
-            version: "2"
+            version: "2",
         })
-    ).toString("base64")
+    ).toString("base64"),
 ]);
 
 export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string): { [key: string]: any } {

@@ -29,7 +29,7 @@ export function init(hosts: TypeInput) {
     Querier.initInstance(hosts);
 
     // this will also call the api version API
-    HandshakeInfo.getInstance().catch(err => {
+    HandshakeInfo.getInstance().catch((err) => {
         // ignored
     });
 }
@@ -80,7 +80,7 @@ export async function createNewSession(
     let response = await Querier.getInstance().sendPostRequest("/session", {
         userId,
         userDataInJWT: jwtPayload,
-        userDataInDatabase: sessionData
+        userDataInDatabase: sessionData,
     });
     let instance = await HandshakeInfo.getInstance();
     instance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
@@ -93,19 +93,19 @@ export async function createNewSession(
                 ...response,
                 accessToken: {
                     ...response.accessToken,
-                    sameSite: "none"
+                    sameSite: "none",
                 },
                 refreshToken: {
                     ...response.refreshToken,
-                    sameSite: "none"
+                    sameSite: "none",
                 },
                 idRefreshToken: {
                     ...response.idRefreshToken,
                     cookiePath: response.accessToken.cookiePath,
                     cookieSecure: response.accessToken.cookieSecure,
                     domain: response.accessToken.domain,
-                    sameSite: "none"
-                }
+                    sameSite: "none",
+                },
             };
         } catch (ignored) {}
     }
@@ -177,8 +177,8 @@ export async function getSession(
                     session: {
                         handle: accessTokenInfo.sessionHandle,
                         userId: accessTokenInfo.userId,
-                        userDataInJWT: accessTokenInfo.userData
-                    }
+                        userDataInJWT: accessTokenInfo.userData,
+                    },
                 };
             }
         }
@@ -194,7 +194,7 @@ export async function getSession(
     let response = await Querier.getInstance().sendPostRequest("/session/verify", {
         accessToken,
         antiCsrfToken,
-        doAntiCsrfCheck
+        doAntiCsrfCheck,
     });
     if (response.status == "OK") {
         let instance = await HandshakeInfo.getInstance();
@@ -209,8 +209,8 @@ export async function getSession(
                     ...response,
                     accessToken: {
                         ...response.accessToken,
-                        sameSite: "none"
-                    }
+                        sameSite: "none",
+                    },
                 };
             } catch (ignored) {}
         }
@@ -265,7 +265,7 @@ export async function refreshSession(
     antiCsrfToken: string | undefined;
 }> {
     let response = await Querier.getInstance().sendPostRequest("/session/refresh", {
-        refreshToken
+        refreshToken,
     });
     if (response.status == "OK") {
         delete response.status;
@@ -275,19 +275,19 @@ export async function refreshSession(
                     ...response,
                     accessToken: {
                         ...response.accessToken,
-                        sameSite: "none"
+                        sameSite: "none",
                     },
                     refreshToken: {
                         ...response.refreshToken,
-                        sameSite: "none"
+                        sameSite: "none",
                     },
                     idRefreshToken: {
                         ...response.idRefreshToken,
                         cookiePath: response.accessToken.cookiePath,
                         cookieSecure: response.accessToken.cookieSecure,
                         domain: response.accessToken.domain,
-                        sameSite: "none"
-                    }
+                        sameSite: "none",
+                    },
                 };
             } catch (ignored) {}
         }
@@ -297,7 +297,7 @@ export async function refreshSession(
     } else {
         throw generateError(AuthError.TOKEN_THEFT_DETECTED, {
             sessionHandle: response.session.handle,
-            userId: response.session.userId
+            userId: response.session.userId,
         });
     }
 }
@@ -310,12 +310,12 @@ export async function refreshSession(
 export async function revokeAllSessionsForUser(userId: string): Promise<any> {
     if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
         let response = await Querier.getInstance().sendDeleteRequest("/session", {
-            userId
+            userId,
         });
         return response.numberOfSessionsRevoked;
     } else {
         let response = await Querier.getInstance().sendPostRequest("/session/remove", {
-            userId
+            userId,
         });
         return response.sessionHandlesRevoked;
     }
@@ -327,7 +327,7 @@ export async function revokeAllSessionsForUser(userId: string): Promise<any> {
  */
 export async function getAllSessionHandlesForUser(userId: string): Promise<string[]> {
     let response = await Querier.getInstance().sendGetRequest("/session/user", {
-        userId
+        userId,
     });
     return response.sessionHandles;
 }
@@ -340,12 +340,12 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
 export async function revokeSession(sessionHandle: string): Promise<boolean> {
     if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
         let response = await Querier.getInstance().sendDeleteRequest("/session", {
-            sessionHandle
+            sessionHandle,
         });
         return response.numberOfSessionsRevoked === 1;
     } else {
         let response = await Querier.getInstance().sendPostRequest("/session/remove", {
-            sessionHandles: [sessionHandle]
+            sessionHandles: [sessionHandle],
         });
         return response.sessionHandlesRevoked.length === 1;
     }
@@ -359,12 +359,12 @@ export async function revokeSession(sessionHandle: string): Promise<boolean> {
 export async function revokeMultipleSessions(sessionHandles: string[]): Promise<any> {
     if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
         let response = await Querier.getInstance().sendDeleteRequest("/session", {
-            sessionHandles
+            sessionHandles,
         });
         return response.numberOfSessionsRevoked;
     } else {
         let response = await Querier.getInstance().sendPostRequest("/session/remove", {
-            sessionHandles
+            sessionHandles,
         });
         return response.sessionHandlesRevoked;
     }
@@ -377,7 +377,7 @@ export async function revokeMultipleSessions(sessionHandles: string[]): Promise<
  */
 export async function getSessionData(sessionHandle: string): Promise<any> {
     let response = await Querier.getInstance().sendGetRequest("/session/data", {
-        sessionHandle
+        sessionHandle,
     });
     if (response.status === "OK") {
         return response.userDataInDatabase;
@@ -393,7 +393,7 @@ export async function getSessionData(sessionHandle: string): Promise<any> {
 export async function updateSessionData(sessionHandle: string, newSessionData: any) {
     let response = await Querier.getInstance().sendPutRequest("/session/data", {
         sessionHandle,
-        userDataInDatabase: newSessionData
+        userDataInDatabase: newSessionData,
     });
     if (response.status === "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
@@ -412,7 +412,7 @@ export async function getJWTPayload(sessionHandle: string): Promise<any> {
         );
     }
     let response = await Querier.getInstance().sendGetRequest("/jwt/data", {
-        sessionHandle
+        sessionHandle,
     });
     if (response.status === "OK") {
         return response.userDataInJWT;
@@ -433,7 +433,7 @@ export async function updateJWTPayload(sessionHandle: string, newJWTPayload: any
     }
     let response = await Querier.getInstance().sendPutRequest("/jwt/data", {
         sessionHandle,
-        userDataInJWT: newJWTPayload
+        userDataInJWT: newJWTPayload,
     });
     if (response.status === "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));

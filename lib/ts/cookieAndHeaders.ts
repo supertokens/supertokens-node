@@ -41,7 +41,7 @@ export function saveFrontendInfoFromRequest(req: express.Request) {
         if (name !== undefined && version !== undefined) {
             DeviceInfo.getInstance().addToFrontendSDKs({
                 name,
-                version
+                version,
             });
         }
     } catch (err) {
@@ -194,7 +194,7 @@ export function setCookie(
         httpOnly,
         expires: new Date(expires),
         path,
-        sameSite
+        sameSite,
     };
 
     return append(res, "Set-Cookie", serialize(name, value, opts));

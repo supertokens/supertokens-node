@@ -18,32 +18,32 @@ let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
 
-describe(`Querier: ${printPath("[test/querier.test.js]")}`, function() {
-    beforeEach(async function() {
+describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
+    beforeEach(async function () {
         await killAllST();
         await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function() {
+    after(async function () {
         await killAllST();
         await cleanST();
     });
 
-    it("querier called without init", async function() {
+    it("querier called without init", async function () {
         Querier.getInstance();
     });
 
-    it("core not available", async function() {
+    it("core not available", async function () {
         ST.init([
             {
                 hostname: "localhost",
-                port: 8080
+                port: 8080,
             },
             {
                 hostname: "localhost",
-                port: 8081
-            }
+                port: 8081,
+            },
         ]);
         try {
             let q = Querier.getInstance();
@@ -60,23 +60,23 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function() {
         }
     });
 
-    it("three cores and round robin", async function() {
+    it("three cores and round robin", async function () {
         await startST();
         await startST("localhost", 8081);
         await startST("localhost", 8082);
         ST.init([
             {
                 hostname: "localhost",
-                port: 8080
+                port: 8080,
             },
             {
                 hostname: "localhost",
-                port: 8081
+                port: 8081,
             },
             {
                 hostname: "localhost",
-                port: 8082
-            }
+                port: 8082,
+            },
         ]);
         let q = Querier.getInstance();
         assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");
@@ -91,22 +91,22 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function() {
         assert.equal(hostsAlive.has("localhost:8082"), true);
     });
 
-    it("three cores, one dead and round robin", async function() {
+    it("three cores, one dead and round robin", async function () {
         await startST();
         await startST("localhost", 8082);
         ST.init([
             {
                 hostname: "localhost",
-                port: 8080
+                port: 8080,
             },
             {
                 hostname: "localhost",
-                port: 8081
+                port: 8081,
             },
             {
                 hostname: "localhost",
-                port: 8082
-            }
+                port: 8082,
+            },
         ]);
         let q = Querier.getInstance();
         assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");

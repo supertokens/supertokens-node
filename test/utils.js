@@ -19,13 +19,13 @@ let { Querier } = require("../lib/build/querier");
 const nock = require("nock");
 let fs = require("fs");
 
-module.exports.printPath = function(path) {
+module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
-        consoleOptions.default
+        consoleOptions.default,
     ])}`;
 };
 
-module.exports.executeCommand = async function(cmd) {
+module.exports.executeCommand = async function (cmd) {
     return new Promise((resolve, reject) => {
         exec(cmd, (err, stdout, stderr) => {
             if (err) {
@@ -37,10 +37,10 @@ module.exports.executeCommand = async function(cmd) {
     });
 };
 
-module.exports.setKeyValueInConfig = async function(key, value) {
+module.exports.setKeyValueInConfig = async function (key, value) {
     return new Promise((resolve, reject) => {
         let installationPath = process.env.INSTALL_PATH;
-        fs.readFile(installationPath + "/config.yaml", "utf8", function(err, data) {
+        fs.readFile(installationPath + "/config.yaml", "utf8", function (err, data) {
             if (err) {
                 reject(err);
                 return;
@@ -48,7 +48,7 @@ module.exports.setKeyValueInConfig = async function(key, value) {
             let oldStr = new RegExp("((#\\s)?)" + key + "(:|((:\\s).+))\n");
             let newStr = key + ": " + value + "\n";
             let result = data.replace(oldStr, newStr);
-            fs.writeFile(installationPath + "/config.yaml", result, "utf8", function(err) {
+            fs.writeFile(installationPath + "/config.yaml", result, "utf8", function (err) {
                 if (err) {
                     reject(err);
                 } else {
@@ -59,7 +59,7 @@ module.exports.setKeyValueInConfig = async function(key, value) {
     });
 };
 
-module.exports.extractInfoFromResponse = function(res) {
+module.exports.extractInfoFromResponse = function (res) {
     let antiCsrf = res.headers["anti-csrf"];
     let idRefreshTokenFromHeader = res.headers["id-refresh-token"];
     let accessToken = undefined;
@@ -69,7 +69,7 @@ module.exports.extractInfoFromResponse = function(res) {
     let refreshTokenExpiry = undefined;
     let idRefreshTokenExpiry = undefined;
     let cookies = res.headers["set-cookie"];
-    cookies.forEach(i => {
+    cookies.forEach((i) => {
         if (i.split(";")[0].split("=")[0] === "sAccessToken") {
             accessToken = i.split(";")[0].split("=")[1];
             accessTokenExpiry = i.split(";")[3].split("=")[1];
@@ -89,17 +89,17 @@ module.exports.extractInfoFromResponse = function(res) {
         idRefreshTokenFromCookie,
         accessTokenExpiry,
         refreshTokenExpiry,
-        idRefreshTokenExpiry
+        idRefreshTokenExpiry,
     };
 };
 
-module.exports.setupST = async function() {
+module.exports.setupST = async function () {
     let installationPath = process.env.INSTALL_PATH;
     await module.exports.executeCommand("cd " + installationPath + " && cp temp/licenseKey ./licenseKey");
     await module.exports.executeCommand("cd " + installationPath + " && cp temp/config.yaml ./config.yaml");
 };
 
-module.exports.cleanST = async function() {
+module.exports.cleanST = async function () {
     let installationPath = process.env.INSTALL_PATH;
     await module.exports.executeCommand("cd " + installationPath + " && rm licenseKey");
     await module.exports.executeCommand("cd " + installationPath + " && rm config.yaml");
@@ -107,7 +107,7 @@ module.exports.cleanST = async function() {
     await module.exports.executeCommand("cd " + installationPath + " && rm -rf .started");
 };
 
-module.exports.stopST = async function(pid) {
+module.exports.stopST = async function (pid) {
     let pidsBefore = await getListOfPids();
     if (pidsBefore.length === 0) {
         return;
@@ -117,7 +117,7 @@ module.exports.stopST = async function(pid) {
     while (Date.now() - startTime < 10000) {
         let pidsAfter = await getListOfPids();
         if (pidsAfter.includes(pid)) {
-            await new Promise(r => setTimeout(r, 100));
+            await new Promise((r) => setTimeout(r, 100));
             continue;
         } else {
             return;
@@ -126,7 +126,7 @@ module.exports.stopST = async function(pid) {
     throw new Error("error while stopping ST with PID: " + pid);
 };
 
-module.exports.killAllST = async function() {
+module.exports.killAllST = async function () {
     let pids = await getListOfPids();
     for (let i = 0; i < pids.length; i++) {
         await module.exports.stopST(pids[i]);
@@ -137,7 +137,7 @@ module.exports.killAllST = async function() {
     nock.cleanAll();
 };
 
-module.exports.startST = async function(host = "localhost", port = 8080) {
+module.exports.startST = async function (host = "localhost", port = 8080) {
     return new Promise(async (resolve, reject) => {
         let installationPath = process.env.INSTALL_PATH;
         let pidsBefore = await getListOfPids();
@@ -151,7 +151,7 @@ module.exports.startST = async function(host = "localhost", port = 8080) {
                     " port=" +
                     port
             )
-            .catch(err => {
+            .catch((err) => {
                 if (!returned) {
                     returned = true;
                     reject(err);
@@ -161,10 +161,10 @@ module.exports.startST = async function(host = "localhost", port = 8080) {
         while (Date.now() - startTime < 10000) {
             let pidsAfter = await getListOfPids();
             if (pidsAfter.length <= pidsBefore.length) {
-                await new Promise(r => setTimeout(r, 100));
+                await new Promise((r) => setTimeout(r, 100));
                 continue;
             }
-            let nonIntersection = pidsAfter.filter(x => !pidsBefore.includes(x));
+            let nonIntersection = pidsAfter.filter((x) => !pidsBefore.includes(x));
             if (nonIntersection.length !== 1) {
                 if (!returned) {
                     returned = true;
@@ -237,5 +237,5 @@ const consoleOptions = {
     yellow: 33,
     blue: 34,
     purple: 35,
-    cyan: 36
+    cyan: 36,
 };

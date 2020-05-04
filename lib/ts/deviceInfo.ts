@@ -41,7 +41,7 @@ export class DeviceInfo {
 
     addToFrontendSDKs = (sdk: { name: string; version: string }) => {
         let alreadyExists = false;
-        this.frontendSDK.forEach(i => {
+        this.frontendSDK.forEach((i) => {
             if (i.name == sdk.name && i.version == sdk.version) {
                 alreadyExists = true;
             }

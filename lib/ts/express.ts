@@ -25,7 +25,7 @@ import {
     saveFrontendInfoFromRequest,
     setAntiCsrfTokenInHeaders,
     setIdRefreshTokenInHeaderAndCookie,
-    setOptionsAPIHeader
+    setOptionsAPIHeader,
 } from "./cookieAndHeaders";
 import { AuthError, generateError } from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
@@ -440,7 +440,7 @@ export class Session {
         }
         let response = await Querier.getInstance().sendPostRequest("/session/regenerate", {
             accessToken: this.accessToken,
-            userDataInJWT: newJWTPayload
+            userDataInJWT: newJWTPayload,
         });
         if (response.status === "UNAUTHORISED") {
             let handShakeInfo = await HandshakeInfo.getInstance();
@@ -468,5 +468,5 @@ export class Session {
                 response.accessToken.sameSite
             );
         }
-    }
+    };
 }

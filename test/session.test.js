@@ -20,7 +20,7 @@ const {
     killAllST,
     cleanST,
     extractInfoFromResponse,
-    setKeyValueInConfig
+    setKeyValueInConfig,
 } = require("./utils");
 let ST = require("../lib/build/session");
 let STExpress = require("../index");
@@ -33,26 +33,26 @@ const request = require("supertest");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 
-describe(`session: ${printPath("[test/session.test.js]")}`, function() {
-    beforeEach(async function() {
+describe(`session: ${printPath("[test/session.test.js]")}`, function () {
+    beforeEach(async function () {
         await killAllST();
         await setupST();
         ProcessState.getInstance().reset();
     });
 
-    after(async function() {
+    after(async function () {
         await killAllST();
         await cleanST();
     });
 
     //- check for token theft detection
-    it("token theft detection", async function() {
+    it("token theft detection", async function () {
         await startST();
         STExpress.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
 
         let response = await ST.createNewSession("", {}, {});
@@ -72,13 +72,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
     });
 
     //check basic usage of session
-    it("test basic usage of sessions", async function() {
+    it("test basic usage of sessions", async function () {
         await startST();
         STExpress.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
 
         let response = await ST.createNewSession("", {}, {});
@@ -132,13 +132,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
     });
 
     //check session verify for with / without anti-csrf present
-    it("test session verify with anti-csrf present", async function() {
+    it("test session verify with anti-csrf present", async function () {
         await startST();
         STExpress.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         let response = await ST.createNewSession("", {}, {});
 
@@ -162,13 +162,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
     });
 
     //check session verify for with / without anti-csrf present**
-    it("test session verify without anti-csrf present", async function() {
+    it("test session verify without anti-csrf present", async function () {
         await startST();
         STExpress.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         let response = await ST.createNewSession("", {}, {});
 
@@ -189,13 +189,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
     });
 
     //check revoking session(s)
-    it("test revoking of sessions", async function() {
+    it("test revoking of sessions", async function () {
         await startST();
         STExpress.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         //create a single session and  revoke using the session handle
         let res = await ST.createNewSession("someUniqueUserId", {}, {});
@@ -237,13 +237,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
     });
 
     //check manipulating session data
-    it("test manipulating session data", async function() {
+    it("test manipulating session data", async function () {
         await startST();
         STExpress.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         //adding session data
         let res = await ST.createNewSession("", {}, {});
@@ -269,13 +269,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
     });
 
     //check manipulating jwt payload
-    it("test manipulating jwt payload", async function() {
+    it("test manipulating jwt payload", async function () {
         await startST();
         STExpress.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         //adding jwt payload
         let res = await ST.createNewSession("", {}, {});
@@ -324,14 +324,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function() {
     });
 
     //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
-    it("test that when anti-csrf is disabled from ST core not having that in input to verify session is fine", async function() {
+    it("test that when anti-csrf is disabled from ST core not having that in input to verify session is fine", async function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
         STExpress.init([
             {
                 hostname: "localhost",
-                port: 8080
-            }
+                port: 8080,
+            },
         ]);
         let response = await ST.createNewSession("", {}, {});
 

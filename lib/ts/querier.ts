@@ -30,10 +30,12 @@ export class Querier {
 
     private constructor(hosts?: TypeInput) {
         if (hosts === undefined || hosts.length === 0) {
-            hosts = [{
-                hostname: "localhost",
-                port: 3567
-            }];
+            hosts = [
+                {
+                    hostname: "localhost",
+                    port: 3567,
+                },
+            ];
         }
         this.hosts = hosts;
     }
@@ -117,12 +119,12 @@ export class Querier {
                 frontendSDK: DeviceInfo.getInstance().getFrontendSDKs(),
                 driver: {
                     name: "node",
-                    version
-                }
+                    version,
+                },
             };
             body = {
                 ...body,
-                deviceDriverInfo
+                deviceDriverInfo,
             };
         }
         return this.sendRequestHelper(
@@ -135,8 +137,8 @@ export class Querier {
                     url,
                     data: body,
                     headers: {
-                        "cdi-version": apiVersion
-                    }
+                        "cdi-version": apiVersion,
+                    },
                 });
             },
             this.hosts.length
@@ -155,8 +157,8 @@ export class Querier {
                     url,
                     data: body,
                     headers: {
-                        "cdi-version": apiVersion
-                    }
+                        "cdi-version": apiVersion,
+                    },
                 });
             },
             this.hosts.length
@@ -173,8 +175,8 @@ export class Querier {
                 return await axios.get(url, {
                     params,
                     headers: {
-                        "cdi-version": apiVersion
-                    }
+                        "cdi-version": apiVersion,
+                    },
                 });
             },
             this.hosts.length
@@ -193,8 +195,8 @@ export class Querier {
                     url,
                     data: body,
                     headers: {
-                        "cdi-version": apiVersion
-                    }
+                        "cdi-version": apiVersion,
+                    },
                 });
             },
             this.hosts.length

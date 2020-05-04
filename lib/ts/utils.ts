@@ -1,5 +1,5 @@
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
-    let intersection = v1.filter(value => v2.indexOf(value) !== -1);
+    let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
     if (intersection.length === 0) {
         return undefined;
     }

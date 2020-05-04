@@ -65,7 +65,7 @@ export async function getInfoFromAccessToken(
             userData,
             antiCsrfToken,
             expiryTime,
-            timeCreated
+            timeCreated,
         };
     } catch (err) {
         throw generateError(AuthError.TRY_REFRESH_TOKEN, err);

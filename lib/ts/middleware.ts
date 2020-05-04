@@ -14,11 +14,7 @@
  */
 import { Response, NextFunction, Request } from "express";
 import { getSession, refreshSession, revokeSession } from "./express";
-import {
-    SesssionRequest,
-    ErrorHandlerMiddleware,
-    SuperTokensErrorMiddlewareOptions
-} from "./types";
+import { SesssionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions } from "./types";
 import { AuthError } from "./error";
 import { clearSessionFromCookie } from "./cookieAndHeaders";
 import { HandshakeInfo } from "./handshakeInfo";
@@ -43,10 +39,8 @@ export function middleware(antiCsrfCheck?: boolean) {
         // TODO: Discuss: Any reason to not use async / await?
         try {
             if (
-                handShakeInfo.refreshTokenPath === path
-                ||
-                `${handShakeInfo.refreshTokenPath}/` === path
-                ||
+                handShakeInfo.refreshTokenPath === path ||
+                `${handShakeInfo.refreshTokenPath}/` === path ||
                 handShakeInfo.refreshTokenPath === `${path}/`
             ) {
                 request.session = await refreshSession(request, response);
@@ -60,7 +54,6 @@ export function middleware(antiCsrfCheck?: boolean) {
         // TODO: This will changed based on our last discussion.
     };
 }
-
 
 export function errorHandler(options: SuperTokensErrorMiddlewareOptions): ErrorHandlerMiddleware {
     return (err: any, request: Request, response: Response, next: NextFunction) => {
@@ -110,7 +103,13 @@ async function sendUnauthorisedResponse(err: any, request: Request, response: Re
     }
 }
 
-async function sendTokenTheftDetectedResponse(sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction) {
+async function sendTokenTheftDetectedResponse(
+    sessionHandle: string,
+    userId: string,
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
     try {
         let handshakeInfo = await HandshakeInfo.getInstance();
         await revokeSession(sessionHandle);
@@ -124,7 +123,7 @@ function sendResponse(response: Response, message: string, statusCode: number) {
     if (!response.finished) {
         response.statusCode = statusCode;
         response.json({
-            message
+            message,
         });
     }
 }

@@ -23,7 +23,7 @@ export function generateError(errType: number, err: any): any {
     return {
         errMagic: ERROR_MAGIC,
         errType,
-        err
+        err,
     };
 }
 
