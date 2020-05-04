@@ -29,9 +29,10 @@ export function middleware(antiCsrfCheck?: boolean) {
             let path = request.originalUrl.split("?")[0];
             let handShakeInfo = await HandshakeInfo.getInstance();
             if (
-                handShakeInfo.refreshTokenPath === path ||
-                `${handShakeInfo.refreshTokenPath}/` === path ||
-                handShakeInfo.refreshTokenPath === `${path}/`
+                (handShakeInfo.refreshTokenPath === path ||
+                    `${handShakeInfo.refreshTokenPath}/` === path ||
+                    handShakeInfo.refreshTokenPath === `${path}/`) &&
+                request.method.toLowerCase() === "post"
             ) {
                 request.session = await refreshSession(request, response);
             } else {
