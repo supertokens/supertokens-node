@@ -654,9 +654,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 let accessTokenBefore = session.accessToken;
                 await session.updateJWTPayload({ key: "value" });
                 let accessTokenAfter = session.accessToken;
-                let((statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string"))
-                    ? 200
-                    : 500;
+                let statusCode =
+                    accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
                 res.status(statusCode).send("");
             });
             app.post("/getJWTPayload", async (req, res) => {
