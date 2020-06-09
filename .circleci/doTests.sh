@@ -83,7 +83,57 @@ while [ $i -lt $coreDriverLength ]; do
     rm -rf ../../supertokens-root
 done
 
-if [[ $someTestsRan = "true" ]]
+someFrontendTestsRan=false
+i=0
+coreDriverVersion=`echo $coreDriverArray | jq ". | last"`
+coreDriverVersion=`echo $coreDriverVersion | tr -d '"'`
+coreCommercial=`curl -s -X GET \
+    "https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=COMMERCIAL&mode=DEV&version=$coreDriverVersion" \
+    -H 'api-version: 0'`
+if [[ `echo $coreCommercial | jq .core` == "null" ]]
+then
+    echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: COMMERCIAL gave response: $coreCommercial. Please make sure all relevant cores have been pushed."
+    exit 1
+fi
+coreCommercial=$(echo $coreCommercial | jq .core | tr -d '"')
+while [ $i -lt $frontendDriverLength ]; do 
+    frontendDriverVersion=`echo $frontendDriverArray | jq ".[$i]"`
+    frontendDriverVersion=`echo $frontendDriverVersion | tr -d '"'`
+    i=$((i+1))
+
+    frontendVersionXY=`curl -s -X GET \
+    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=website&mode=DEV&version=$frontendDriverVersion" \
+    -H 'api-version: 0'`
+    if [[ `echo $frontendVersionXY | jq .frontend` == "null" ]]
+    then
+        echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: webiste gave response: $frontend. Please make sure all relevant cores have been pushed."
+        exit 1
+    fi
+    frontendVersionXY=$(echo $frontendVersionXY | jq .frontend | tr -d '"')
+
+    frontendInfo=`curl -s -X GET \
+    "https://api.supertokens.io/0/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendVersionXY&name=website" \
+    -H 'api-version: 0'`
+    if [[ `echo $frontendInfo | jq .tag` == "null" ]]
+    then
+        echo "fetching latest X.Y.Z version for frontend, X.Y version: $frontendVersionXY gave response: $frontendInfo"
+        exit 1
+    fi
+    frontendTag=$(echo $frontendInfo | jq .tag | tr -d '"')
+    frontendVersion=$(echo $frontendInfo | jq .version | tr -d '"')
+
+    echo $coreCommercial $frontendTag
+
+    someFrontendTestsRan=true
+    if [[ $? -ne 0 ]]
+    then
+        echo "test failed... exiting!"
+        exit 1
+    fi
+    rm -rf ../../com-root
+done
+
+if [[ $someFrontendTestsRan = "true" ]] && [[ $someTestsRan = "true" ]]
 then
     echo "calling /driver PATCH to make testing passed"
     responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PATCH \

@@ -1,0 +1,37 @@
+<html>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+<script>
+    async function getNumberOfTimesRefreshCalled() {
+        let instance = axios.create();
+        let response = await instance.get("http://localhost.org:8080/refreshCalledTime");
+        return response.data;
+    };
+
+    async function getNumberOfTimesGetSessionCalled() {
+        let instance = axios.create();
+        let response = await instance.get("http://localhost.org:8080/getSessionCalledTime");
+        return response.data;
+    };
+
+    async function getPackageVersion() {
+        let instance = axios.create();
+        let response = await instance.get("http://localhost.org:8080/getPackageVersion");
+        return response.data;
+    };
+
+    function assertEqual(a, b) {
+        if (a !== b) {
+            throw new Error("assert failed");
+        }
+    }
+
+    async function delay(time) {
+        await new Promise(r => setTimeout(r, time * 1000));
+    }
+</script>
+
+<body>
+</body>
+
+</html>
