@@ -72,16 +72,25 @@ echo $SUPERTOKENS_API_KEY > apiPassword
 ./utils/setupTestEnvLocal
 cd ../
 git clone git@github.com:supertokens/supertokens-website.git
+echo "---------------------------- 1 ----------------------------"
 cd supertokens-website
+echo "---------------------------- 2 ----------------------------"
 git checkout $2
+echo "---------------------------- 3 ----------------------------"
 cd ../project/test/frontendIntegration/
+echo "---------------------------- 4 ----------------------------"
 npm i -d
+echo "---------------------------- 5 ----------------------------"
 node . &
 pid=$!
+echo "---------------------------- 6 ----------------------------"
 cd ../../../supertokens-website/test/server
+echo "---------------------------- 7 ----------------------------"
 npm i -d
 npm i git+https://github.com:supertokens/supertokens-node.git#$3
+echo "---------------------------- 8 ----------------------------"
 cd ../../
+npm i -d
 NODE_PORT=8081 INSTALL_PATH=../com-root npm test
 if [[ $? -ne 0 ]]
 then
