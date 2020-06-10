@@ -183,4 +183,6 @@ app.use(async (err, req, res, next) => {
     res.send(500).send(err);
 });
 
-app.listen(process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT, "0.0.0.0");
+app.listen(process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT, "0.0.0.0", ()=> {
+    console.log("app started");
+});
