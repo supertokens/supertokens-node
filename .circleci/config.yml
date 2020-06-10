@@ -25,6 +25,7 @@ jobs:
           fingerprints:
             - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
       - checkout
+      - run: npm i -d
       - run: (cd .circleci/ && ./doTests.sh)
 
 workflows:
