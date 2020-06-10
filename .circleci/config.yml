@@ -46,6 +46,6 @@ workflows:
       - test_cicd:
         filters:
           tags:
-            only: test-cicd
+            only: /test-cicd/
           branches:
             ignore: /.*/
