@@ -122,14 +122,29 @@ while [ $i -lt $frontendDriverLength ]; do
     frontendTag=$(echo $frontendInfo | jq .tag | tr -d '"')
     frontendVersion=$(echo $frontendInfo | jq .version | tr -d '"')
 
-    echo $coreCommercial $frontendTag
-
-    someFrontendTestsRan=true
-    if [[ $? -ne 0 ]]
+    nodeVersionXY=`curl -s -X GET \
+    "https://api.supertokens.io/0/frontend-driver-interface/dependency/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendDriverVersion&driverName=node" \
+    -H 'api-version: 0'`
+    if [[ `echo $nodeVersionXY | jq .driver` == "null" ]]
     then
-        echo "test failed... exiting!"
+        echo "fetching latest X.Y version for driver given frontend-driver-interface X.Y version: $frontendDriverVersion gave response: $nodeVersionXY. Please make sure all relevant drivers have been pushed."
         exit 1
     fi
+    nodeVersionXY=$(echo $nodeVersionXY | jq .driver | tr -d '"')
+
+    nodeInfo=`curl -s -X GET \
+    "https://api.supertokens.io/0/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$nodeVersionXY&name=node" \
+    -H 'api-version: 0'`
+    if [[ `echo $nodeInfo | jq .tag` == "null" ]]
+    then
+        echo "fetching latest X.Y.Z version for driver, X.Y version: $nodeVersionXY gave response: $nodeInfo"
+        exit 1
+    fi
+    nodeTag=$(echo $nodeInfo | jq .tag | tr -d '"')
+
+    ./setupAndTestWithFrontend.sh $coreCommercial $frontendTag $nodeTag
+
+    someFrontendTestsRan=true
     rm -rf ../../com-root
 done
 

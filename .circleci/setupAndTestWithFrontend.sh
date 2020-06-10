@@ -75,11 +75,19 @@ git clone git@github.com:supertokens/supertokens-website.git
 cd supertokens-website
 git checkout $2
 cd ../project/test/frontendIntegration/
+npm i -d
 node . &
 pid=$!
 cd ../../../supertokens-website/test/server
 npm i -d
-npm i file:../../../project
+npm i git+https://github.com:supertokens/supertokens-node.git#$3
 cd ../../
 NODE_PORT=8081 INSTALL_PATH=../com-root npm test
+if [[ $? -ne 0 ]]
+then
+    echo "test failed... exiting!"
+    exit 1
+fi
+rm -rf ./test/server/node_modules/supertokens-node
+git checkout HEAD -- ./test/server/package.json
 kill -15 $pid

@@ -17,6 +17,15 @@ jobs:
       - checkout
       - run: npm i -d
       - run: (cd .circleci/ && ./doTests.sh)
+  test_cicd:
+    docker:
+      - image: rishabhpoddar/supertokens_node_driver_testing
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
+      - checkout
+      - run: (cd .circleci/ && ./doTests.sh)
 
 workflows:
   version: 2
@@ -34,3 +43,9 @@ workflows:
               only: /dev-v[0-9]+(\.[0-9]+)*/
             branches:
               ignore: /.*/
+      - test_cicd:
+        filters:
+          tags:
+            only: test-cicd
+          branches:
+            ignore: /.*/
