@@ -21,22 +21,22 @@ while IFS='"' read -ra ADDR; do
     done
 done <<< "$version"
 
-responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PUT \
-  https://api.supertokens.io/0/driver \
-  -H 'Content-Type: application/json' \
-  -H 'api-version: 0' \
-  -d "{
-	\"password\": \"$SUPERTOKENS_API_KEY\",
-	\"version\":\"$version\",
-    \"name\": \"node\",
-	\"frontendDriverInterfaces\": $frontendDriverArray,
-	\"coreDriverInterfaces\": $coreDriverArray
-}"`
-if [ $responseStatus -ne "200" ]
-then
-    echo "failed core PUT API status code: $responseStatus. Exiting!"
-	exit 1
-fi
+# responseStatus=`curl -s -o /dev/null -w "%{http_code}" -X PUT \
+#   https://api.supertokens.io/0/driver \
+#   -H 'Content-Type: application/json' \
+#   -H 'api-version: 0' \
+#   -d "{
+# 	\"password\": \"$SUPERTOKENS_API_KEY\",
+# 	\"version\":\"$version\",
+#     \"name\": \"node\",
+# 	\"frontendDriverInterfaces\": $frontendDriverArray,
+# 	\"coreDriverInterfaces\": $coreDriverArray
+# }"`
+# if [ $responseStatus -ne "200" ]
+# then
+#     echo "failed core PUT API status code: $responseStatus. Exiting!"
+# 	exit 1
+# fi
 
 someTestsRan=false
 i=0
