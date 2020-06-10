@@ -44,8 +44,8 @@ workflows:
             branches:
               ignore: /.*/
       - test_cicd:
-        filters:
-          tags:
-            only: /test-cicd/
-          branches:
-            ignore: /.*/
+          filters:
+            tags:
+              only: /test-cicd/
+            branches:
+              ignore: /.*/
