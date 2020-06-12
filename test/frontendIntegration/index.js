@@ -30,8 +30,8 @@ app.use(cookieParser());
 SuperTokens.init([
     {
         hostname: "localhost",
-        port: 9000
-    }
+        port: 9000,
+    },
 ]);
 
 app.options("*", async (req, res) => {
@@ -49,7 +49,6 @@ app.post("/login", async (req, res) => {
     res.header("Access-Control-Allow-Credentials", true);
     res.send(session.userId);
 });
-
 
 app.post("/beforeeach", async (req, res) => {
     noOfTimesRefreshCalledDuringTest = 0;
@@ -138,7 +137,7 @@ app.get("/testHeader", async (req, res) => {
         success = false;
     }
     let data = {
-        success
+        success,
     };
     res.send(JSON.stringify(data));
 });
@@ -175,7 +174,7 @@ app.use(
             res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
             res.header("Access-Control-Allow-Credentials", true);
             res.status(440).send();
-        }
+        },
     })
 );
 
@@ -183,6 +182,6 @@ app.use(async (err, req, res, next) => {
     res.send(500).send(err);
 });
 
-app.listen(process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT, "0.0.0.0", ()=> {
+app.listen(process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT, "0.0.0.0", () => {
     console.log("app started");
 });
