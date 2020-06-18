@@ -48,12 +48,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //- check for token theft detection
     it("token theft detection", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
 
         let response = await ST.createNewSession("", {}, {});
 
@@ -74,12 +69,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check basic usage of session
     it("test basic usage of sessions", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
 
         let response = await ST.createNewSession("", {}, {});
         assert(response.session !== undefined);
@@ -134,12 +124,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check session verify for with / without anti-csrf present
     it("test session verify with anti-csrf present", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         let response = await ST.createNewSession("", {}, {});
 
         let response2 = await ST.getSession(
@@ -164,12 +149,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check session verify for with / without anti-csrf present**
     it("test session verify without anti-csrf present", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         let response = await ST.createNewSession("", {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false
@@ -191,12 +171,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check revoking session(s)
     it("test revoking of sessions", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         //create a single session and  revoke using the session handle
         let res = await ST.createNewSession("someUniqueUserId", {}, {});
         let res2 = await ST.revokeSession(res.session.handle);
@@ -239,12 +214,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check manipulating session data
     it("test manipulating session data", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         //adding session data
         let res = await ST.createNewSession("", {}, {});
         await ST.updateSessionData(res.session.handle, { key: "value" });
@@ -271,12 +241,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check manipulating jwt payload
     it("test manipulating jwt payload", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         //adding jwt payload
         let res = await ST.createNewSession("", {}, {});
 
@@ -327,12 +292,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     it("test that when anti-csrf is disabled from ST core not having that in input to verify session is fine", async function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         let response = await ST.createNewSession("", {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false

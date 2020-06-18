@@ -21,9 +21,13 @@ export type TypeAuthError = {
 };
 
 export type TypeInput = {
-    hostname: string;
-    port: number;
-}[];
+    hosts?: string;
+    accessTokenPath?: string;
+    refreshTokenPath?: string;
+    cookieDomain?: string;
+    cookieSameSite?: "strict" | "lax" | "none";
+    cookieSecure?: boolean;
+};
 
 export interface SesssionRequest extends Request {
     session: Session;

@@ -16,6 +16,7 @@ const { exec } = require("child_process");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { DeviceInfo } = require("../lib/build/deviceInfo");
 let { Querier } = require("../lib/build/querier");
+let { CookieConfig } = require("../lib/build/cookieAndHeaders");
 const nock = require("nock");
 let fs = require("fs");
 
@@ -68,7 +69,11 @@ module.exports.extractInfoFromResponse = function (res) {
     let accessTokenExpiry = undefined;
     let refreshTokenExpiry = undefined;
     let idRefreshTokenExpiry = undefined;
+    let accessTokenCookie = {};
+    let refreshTokenCookie = {};
+    let idRefreshTokenTokenCookie = {};
     let cookies = res.headers["set-cookie"];
+    cookies = cookies === undefined ? [] : cookies;
     cookies.forEach((i) => {
         if (i.split(";")[0].split("=")[0] === "sAccessToken") {
             accessToken = i.split(";")[0].split("=")[1];
@@ -134,6 +139,7 @@ module.exports.killAllST = async function () {
     HandshakeInfo.reset();
     DeviceInfo.reset();
     Querier.reset();
+    CookieConfig.reset();
     nock.cleanAll();
 };
 

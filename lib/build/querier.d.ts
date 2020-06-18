@@ -1,4 +1,3 @@
-import { TypeInput } from "./types";
 export declare class Querier {
     static instance: Querier | undefined;
     private hosts;
@@ -10,7 +9,7 @@ export declare class Querier {
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
     static getInstance(): Querier;
-    static initInstance(hosts: TypeInput): void;
+    static initInstance(hosts?: string): void;
     sendPostRequest: (path: string, body: any) => Promise<any>;
     sendDeleteRequest: (path: string, body: any) => Promise<any>;
     sendGetRequest: (path: string, params: any) => Promise<any>;

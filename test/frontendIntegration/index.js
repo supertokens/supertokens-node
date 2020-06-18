@@ -27,12 +27,7 @@ app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
 
-SuperTokens.init([
-    {
-        hostname: "localhost",
-        port: 9000,
-    },
-]);
+SuperTokens.init({ hosts: "http://localhost:9000" });
 
 app.options("*", async (req, res) => {
     res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");

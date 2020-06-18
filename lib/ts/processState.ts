@@ -24,7 +24,7 @@ export class ProcessState {
     private constructor() {}
 
     static getInstance() {
-        if (ProcessState.instance == undefined) {
+        if (ProcessState.instance === undefined) {
             ProcessState.instance = new ProcessState();
         }
         return ProcessState.instance;

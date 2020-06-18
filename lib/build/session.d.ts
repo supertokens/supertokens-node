@@ -5,7 +5,7 @@ export { AuthError as Error } from "./error";
  * Please create a database in your mysql instance before calling this function
  * @throws AuthError GENERAL_ERROR in case anything fails.
  */
-export declare function init(hosts: TypeInput): void;
+export declare function init(config: TypeInput): void;
 /**
  * @description call this to "login" a user.
  * @throws GENERAL_ERROR in case anything fails.
@@ -49,7 +49,7 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
  * @description authenticates a session. To be used in APIs that require authentication
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED and TRY_REFRESH_TOKEN
  */
-export declare function getSession(accessToken: string, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean, idRefreshToken: string | undefined): Promise<{
+export declare function getSession(accessToken: string, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean): Promise<{
     session: {
         handle: string;
         userId: string;

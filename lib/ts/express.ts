@@ -42,8 +42,8 @@ import { Querier } from "./querier";
  * @param client: mongo client. Default is undefined. If you provide this, please make sure that it is already connected to the right database that has the auth collections. If you do not provide this, then the library will manage its own connection.
  * @throws AuthError GENERAL_ERROR in case anything fails.
  */
-export function init(hosts: TypeInput) {
-    SessionFunctions.init(hosts);
+export function init(config: TypeInput) {
+    SessionFunctions.init(config);
 }
 
 /**
@@ -115,6 +115,10 @@ export async function getSession(
     doAntiCsrfCheck: boolean
 ): Promise<Session> {
     saveFrontendInfoFromRequest(req);
+    let idRefreshToken = getIdRefreshTokenFromCookie(req);
+    if (idRefreshToken === undefined) {
+        throw generateError(AuthError.UNAUTHORISED, new Error("idRefreshToken missing"));
+    }
     let accessToken = getAccessTokenFromCookie(req);
     if (accessToken === undefined) {
         // maybe the access token has expired.
@@ -122,8 +126,7 @@ export async function getSession(
     }
     try {
         let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
-        let idRefreshToken = getIdRefreshTokenFromCookie(req);
-        let response = await SessionFunctions.getSession(accessToken, antiCsrfToken, doAntiCsrfCheck, idRefreshToken);
+        let response = await SessionFunctions.getSession(accessToken, antiCsrfToken, doAntiCsrfCheck);
         if (response.accessToken !== undefined) {
             attachAccessTokenToCookie(
                 res,

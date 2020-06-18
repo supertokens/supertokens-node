@@ -23,21 +23,16 @@ import { cdiSupported } from "./version";
 
 export class Querier {
     static instance: Querier | undefined;
-    private hosts: TypeInput = [];
+    private hosts: string[];
     private lastTriedIndex = 0;
     private hostsAliveForTesting: Set<string> = new Set<string>();
     private apiVersion: string | undefined = undefined;
 
-    private constructor(hosts?: TypeInput) {
-        if (hosts === undefined || hosts.length === 0) {
-            hosts = [
-                {
-                    hostname: "localhost",
-                    port: 3567,
-                },
-            ];
+    private constructor(hosts?: string) {
+        if (hosts === undefined) {
+            hosts = "http://localhost:3567";
         }
-        this.hosts = hosts;
+        this.hosts = hosts.split(";").map((h) => (h.slice(-1) === "/" ? h.slice(0, -1) : h));
     }
     getAPIVersion = async (): Promise<string> => {
         if (this.apiVersion !== undefined) {
@@ -97,7 +92,7 @@ export class Querier {
         return Querier.instance;
     }
 
-    static initInstance(hosts: TypeInput) {
+    static initInstance(hosts?: string) {
         if (Querier.instance === undefined) {
             Querier.instance = new Querier(hosts);
         }
@@ -217,9 +212,9 @@ export class Querier {
         this.lastTriedIndex++;
         this.lastTriedIndex = this.lastTriedIndex % this.hosts.length;
         try {
-            let response = await axiosFunction("http://" + currentHost.hostname + ":" + currentHost.port + path);
+            let response = await axiosFunction(currentHost + path);
             if (process.env.TEST_MODE === "testing") {
-                this.hostsAliveForTesting.add(currentHost.hostname + ":" + currentHost.port);
+                this.hostsAliveForTesting.add(currentHost);
             }
             if (response.status !== 200) {
                 throw response;

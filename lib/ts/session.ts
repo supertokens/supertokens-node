@@ -17,6 +17,7 @@ import { AuthError, generateError } from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import { Querier } from "./querier";
+import { CookieConfig } from "./cookieAndHeaders";
 import { TypeInput } from "./types";
 
 export { AuthError as Error } from "./error";
@@ -25,8 +26,15 @@ export { AuthError as Error } from "./error";
  * Please create a database in your mysql instance before calling this function
  * @throws AuthError GENERAL_ERROR in case anything fails.
  */
-export function init(hosts: TypeInput) {
-    Querier.initInstance(hosts);
+export function init(config: TypeInput) {
+    Querier.initInstance(config.hosts);
+    CookieConfig.init(
+        config.accessTokenPath,
+        config.refreshTokenPath,
+        config.cookieDomain,
+        config.cookieSecure,
+        config.cookieSameSite
+    );
 
     // this will also call the api version API
     HandshakeInfo.getInstance().catch((err) => {
@@ -119,8 +127,7 @@ export async function createNewSession(
 export async function getSession(
     accessToken: string,
     antiCsrfToken: string | undefined,
-    doAntiCsrfCheck: boolean,
-    idRefreshToken: string | undefined
+    doAntiCsrfCheck: boolean
 ): Promise<{
     session: {
         handle: string;
@@ -137,9 +144,6 @@ export async function getSession(
         sameSite: "none" | "lax" | "strict";
     };
 }> {
-    if (idRefreshToken === undefined) {
-        throw generateError(AuthError.UNAUTHORISED, new Error("idRefreshToken missing"));
-    }
     let handShakeInfo = await HandshakeInfo.getInstance();
 
     try {

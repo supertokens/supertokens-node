@@ -31,12 +31,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     });
 
     it("core not available", async function () {
-        ST.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         try {
             await ST.createNewSession("", {}, {});
             throw new Error("should not have come here");
@@ -53,12 +48,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
 
     it("successful handshake and update JWT", async function () {
         await startST();
-        ST.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         let info = await HandshakeInfo.getInstance();
         assert.equal(info.accessTokenPath, "/");
         assert.equal(["supertokens.io", "localhost"].includes(info.cookieDomain), true);

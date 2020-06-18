@@ -48,12 +48,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //- check for token theft detection
     it("express token theft detection", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
         app.post("/create", async (req, res) => {
@@ -135,12 +130,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check basic usage of session
     it("test basic usage of express sessions", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
 
@@ -268,12 +258,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check session verify for with / without anti-csrf present
     it("test express session verify with anti-csrf present", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
         app.post("/create", async (req, res) => {
@@ -328,12 +313,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present express", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
 
@@ -393,12 +373,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check revoking session(s)**
     it("test revoking express sessions", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         const app = express();
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "", {}, {});
@@ -505,12 +480,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check manipulating session data
     it("test manipulating session data with express", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         const app = express();
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "", {}, {});
@@ -636,12 +606,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check manipulating jwt payload
     it("test manipulating jwt payload with express", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         const app = express();
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "", {}, {});
@@ -805,12 +770,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     // test with existing header params being there and that the lib appends to those and not overrides those
     it("test that express appends to existing header params and does not override", async function () {
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
         const app = express();
         app.post("/create", async (req, res) => {
             res.header("testHeader", "testValue");
@@ -845,12 +805,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     it("test that when anti-csrf is disabled from from ST core, not having to input in verify session is fine in express", async function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
-        STExpress.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
         app.post("/create", async (req, res) => {

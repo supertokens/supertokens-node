@@ -33,6 +33,60 @@ const antiCsrfHeaderKey = "anti-csrf";
 const frontendSDKNameHeaderKey = "supertokens-sdk-name";
 const frontendSDKVersionHeaderKey = "supertokens-sdk-version";
 
+export class CookieConfig {
+    private static instance: CookieConfig | undefined = undefined;
+    accessTokenPath: string | undefined;
+    refreshTokenPath: string | undefined;
+    cookieDomain: string | undefined;
+    cookieSecure: boolean | undefined;
+    cookieSameSite: "strict" | "lax" | "none" | undefined;
+    constructor(
+        accessTokenPath?: string,
+        refreshTokenPath?: string,
+        cookieDomain?: string,
+        cookieSecure?: boolean,
+        cookieSameSite?: "strict" | "lax" | "none"
+    ) {
+        this.accessTokenPath = accessTokenPath;
+        this.refreshTokenPath = refreshTokenPath;
+        this.cookieDomain = cookieDomain;
+        this.cookieSameSite = cookieSameSite;
+        this.cookieSecure = cookieSecure;
+    }
+
+    static init(
+        accessTokenPath?: string,
+        refreshTokenPath?: string,
+        cookieDomain?: string,
+        cookieSecure?: boolean,
+        cookieSameSite?: "strict" | "lax" | "none"
+    ) {
+        if (CookieConfig.instance === undefined) {
+            CookieConfig.instance = new CookieConfig(
+                accessTokenPath,
+                refreshTokenPath,
+                cookieDomain,
+                cookieSecure,
+                cookieSameSite
+            );
+        }
+    }
+
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
+            throw generateError(AuthError.GENERAL_ERROR, new Error("calling testing function in non testing env"));
+        }
+        CookieConfig.instance = undefined;
+    }
+
+    static getInstance() {
+        if (CookieConfig.instance === undefined) {
+            CookieConfig.instance = new CookieConfig();
+        }
+        return CookieConfig.instance;
+    }
+}
+
 // will be there for all requests that require auth including refresh token request
 export function saveFrontendInfoFromRequest(req: express.Request) {
     try {
@@ -61,9 +115,20 @@ export function clearSessionFromCookie(
     idRefreshTokenPath: string,
     sameSite: "strict" | "lax" | "none"
 ) {
-    setCookie(res, accessTokenCookieKey, "", domain, secure, true, 0, accessTokenPath, sameSite);
-    setCookie(res, refreshTokenCookieKey, "", domain, secure, true, 0, refreshTokenPath, sameSite);
-    setCookie(res, idRefreshTokenCookieKey, "", domain, secure, true, 0, idRefreshTokenPath, sameSite);
+    setCookie(res, accessTokenCookieKey, "", domain, secure, true, 0, accessTokenPath, sameSite, "accessTokenPath");
+    setCookie(res, refreshTokenCookieKey, "", domain, secure, true, 0, refreshTokenPath, sameSite, "refreshTokenPath");
+    setCookie(
+        res,
+        idRefreshTokenCookieKey,
+        "",
+        domain,
+        secure,
+        true,
+        0,
+        idRefreshTokenPath,
+        sameSite,
+        "accessTokenPath"
+    );
     setHeader(res, idRefreshTokenHeaderKey, "remove");
     setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey);
 }
@@ -80,7 +145,7 @@ export function attachAccessTokenToCookie(
     secure: boolean,
     sameSite: "strict" | "lax" | "none"
 ) {
-    setCookie(res, accessTokenCookieKey, token, domain, secure, true, expiry, path, sameSite);
+    setCookie(res, accessTokenCookieKey, token, domain, secure, true, expiry, path, sameSite, "accessTokenPath");
 }
 
 /**
@@ -95,7 +160,7 @@ export function attachRefreshTokenToCookie(
     secure: boolean,
     sameSite: "strict" | "lax" | "none"
 ) {
-    setCookie(res, refreshTokenCookieKey, token, domain, secure, true, expiry, path, sameSite);
+    setCookie(res, refreshTokenCookieKey, token, domain, secure, true, expiry, path, sameSite, "refreshTokenPath");
 }
 
 export function getAccessTokenFromCookie(req: express.Request): string | undefined {
@@ -131,7 +196,18 @@ export function setIdRefreshTokenInHeaderAndCookie(
     setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry);
     setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey);
 
-    setCookie(res, idRefreshTokenCookieKey, idRefreshToken, domain, secure, true, expiry, path, sameSite);
+    setCookie(
+        res,
+        idRefreshTokenCookieKey,
+        idRefreshToken,
+        domain,
+        secure,
+        true,
+        expiry,
+        path,
+        sameSite,
+        "accessTokenPath"
+    );
 }
 
 export function getHeader(req: express.Request, key: string): string | undefined {
@@ -186,8 +262,32 @@ export function setCookie(
     httpOnly: boolean,
     expires: number,
     path: string,
-    sameSite: "strict" | "lax" | "none"
+    sameSite: "strict" | "lax" | "none",
+    pathType: "refreshTokenPath" | "accessTokenPath" | null = null
 ) {
+    let cookieDomain = CookieConfig.getInstance().cookieDomain;
+    let cookieSecure = CookieConfig.getInstance().cookieSecure;
+    let cookieSameSite = CookieConfig.getInstance().cookieSameSite;
+    if (cookieDomain !== undefined) {
+        domain = cookieDomain;
+    }
+    if (cookieSameSite !== undefined) {
+        sameSite = cookieSameSite;
+    }
+    if (cookieSecure !== undefined) {
+        secure = cookieSecure;
+    }
+    if (pathType === "refreshTokenPath") {
+        let refreshTokenPath = CookieConfig.getInstance().refreshTokenPath;
+        if (refreshTokenPath !== undefined) {
+            path = refreshTokenPath;
+        }
+    } else if (pathType === "accessTokenPath") {
+        let accessTokenPath = CookieConfig.getInstance().accessTokenPath;
+        if (accessTokenPath !== undefined) {
+            path = accessTokenPath;
+        }
+    }
     let opts = {
         domain,
         secure,

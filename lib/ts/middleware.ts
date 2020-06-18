@@ -16,7 +16,7 @@ import { Response, NextFunction, Request } from "express";
 import { getSession, refreshSession, revokeSession } from "./express";
 import { SesssionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions } from "./types";
 import { AuthError } from "./error";
-import { clearSessionFromCookie } from "./cookieAndHeaders";
+import { CookieConfig, clearSessionFromCookie } from "./cookieAndHeaders";
 import { HandshakeInfo } from "./handshakeInfo";
 
 export function middleware(antiCsrfCheck?: boolean) {
@@ -28,10 +28,13 @@ export function middleware(antiCsrfCheck?: boolean) {
             }
             let path = request.originalUrl.split("?")[0];
             let handShakeInfo = await HandshakeInfo.getInstance();
+            let refreshTokenPath = handShakeInfo.refreshTokenPath;
+            let refreshTokenPathConfig = CookieConfig.getInstance().refreshTokenPath;
+            if (refreshTokenPathConfig !== undefined) {
+                refreshTokenPath = refreshTokenPathConfig;
+            }
             if (
-                (handShakeInfo.refreshTokenPath === path ||
-                    `${handShakeInfo.refreshTokenPath}/` === path ||
-                    handShakeInfo.refreshTokenPath === `${path}/`) &&
+                (refreshTokenPath === path || `${refreshTokenPath}/` === path || refreshTokenPath === `${path}/`) &&
                 request.method.toLowerCase() === "post"
             ) {
                 request.session = await refreshSession(request, response);

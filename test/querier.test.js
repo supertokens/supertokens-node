@@ -35,16 +35,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("core not available", async function () {
-        ST.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-            {
-                hostname: "localhost",
-                port: 8081,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080;http://localhost:8081/" });
         try {
             let q = Querier.getInstance();
             await q.sendGetRequest("/", {});
@@ -64,20 +55,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await startST();
         await startST("localhost", 8081);
         await startST("localhost", 8082);
-        ST.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-            {
-                hostname: "localhost",
-                port: 8081,
-            },
-            {
-                hostname: "localhost",
-                port: 8082,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080;http://localhost:8081/;http://localhost:8082" });
         let q = Querier.getInstance();
         assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");
         assert.equal(await q.sendDeleteRequest("/hello", {}), "Hello\n");
@@ -86,28 +64,15 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
-        assert.equal(hostsAlive.has("localhost:8080"), true);
-        assert.equal(hostsAlive.has("localhost:8081"), true);
-        assert.equal(hostsAlive.has("localhost:8082"), true);
+        assert.equal(hostsAlive.has("http://localhost:8080"), true);
+        assert.equal(hostsAlive.has("http://localhost:8081"), true);
+        assert.equal(hostsAlive.has("http://localhost:8082"), true);
     });
 
     it("three cores, one dead and round robin", async function () {
         await startST();
         await startST("localhost", 8082);
-        ST.init([
-            {
-                hostname: "localhost",
-                port: 8080,
-            },
-            {
-                hostname: "localhost",
-                port: 8081,
-            },
-            {
-                hostname: "localhost",
-                port: 8082,
-            },
-        ]);
+        ST.init({ hosts: "http://localhost:8080;http://localhost:8081/;http://localhost:8082" });
         let q = Querier.getInstance();
         assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");
         assert.equal(await q.sendPostRequest("/hello", {}), "Hello\n");
@@ -116,8 +81,8 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert.equal(await q.sendPutRequest("/hello", {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
-        assert.equal(hostsAlive.has("localhost:8080"), true);
-        assert.equal(hostsAlive.has("localhost:8081"), false);
-        assert.equal(hostsAlive.has("localhost:8082"), true);
+        assert.equal(hostsAlive.has("http://localhost:8080"), true);
+        assert.equal(hostsAlive.has("http://localhost:8081"), false);
+        assert.equal(hostsAlive.has("http://localhost:8082"), true);
     });
 });

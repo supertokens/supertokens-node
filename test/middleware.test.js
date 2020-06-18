@@ -34,7 +34,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware", async function () {
-        await startST("localhost", 3567);
+        STExpress.init({
+            hosts: "https://try.supertokens.io",
+        });
         if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
             return;
         }
@@ -91,7 +93,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 });
             }
         });
-
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
@@ -102,7 +103,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     })
             )
         );
-
         let r1 = await new Promise((resolve) =>
             request(app)
                 .get("/user/id")
@@ -115,7 +115,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     resolve(res.body.message);
                 })
         );
-
         assert(r1 === "testing-userId");
 
         await new Promise((resolve) =>
@@ -130,7 +129,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     resolve(res.body.message);
                 })
         );
-
         // not passing anit csrf even if requried
         let r2 = await new Promise((resolve) =>
             request(app)
@@ -184,7 +182,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     })
             )
         );
-
         await new Promise((resolve) =>
             request(app)
                 .get("/user/handle")
@@ -197,7 +194,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     resolve(res.body.message);
                 })
         );
-
         let r4 = await new Promise((resolve) =>
             request(app)
                 .post("/refresh")
@@ -244,7 +240,227 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     resolve(res.body.message);
                 })
         );
-        console.log(r5);
+        assert(r5 === "try refresh token");
+    });
+
+    it("test session verify middleware with driver config", async function () {
+        STExpress.init({
+            hosts: "https://try.supertokens.io",
+            accessTokenPath: "/custom",
+            refreshTokenPath: "/custom/refresh",
+            cookieDomain: "test-driver",
+            cookieSecure: true,
+            cookieSameSite: "strict",
+        });
+        if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
+            return;
+        }
+        const app = express();
+        app.post("/create", async (req, res) => {
+            await STExpress.createNewSession(res, "testing-userId", {}, {});
+            res.status(200).json({ message: true });
+        });
+
+        app.get("/custom/user/id", STExpress.middleware(), async (req, res) => {
+            res.status(200).json({ message: req.session.getUserId() });
+        });
+
+        app.get("/custom/user/handle", STExpress.middleware(true), async (req, res) => {
+            res.status(200).json({ message: req.session.getHandle() });
+        });
+
+        app.post("/custom/refresh", STExpress.middleware(), async (req, res, next) => {
+            res.status(200).json({ message: true });
+        });
+
+        app.post("/custom/logout", STExpress.middleware(), async (req, res) => {
+            await req.session.revokeSession();
+            res.status(200).json({ message: true });
+        });
+
+        app.use(
+            STExpress.errorHandler({
+                onTryRefreshToken: (err, req, res, next) => {
+                    res.statusCode = 401;
+                    return res.json({
+                        message: "try refresh token",
+                    });
+                },
+                onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                    res.statusCode = 403;
+                    return res.json({
+                        message: "token theft detected",
+                    });
+                },
+            })
+        );
+
+        app.use((err, req, res, next) => {
+            if (ST.Error.isErrorFromAuth(err)) {
+                res.statusCode = 400;
+                return res.json({
+                    message: "general error",
+                });
+            } else {
+                res.statusCode = 500;
+                return res.json({
+                    message: "error 500",
+                });
+            }
+        });
+
+        let res1 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/id")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res1.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res.body.message);
+                })
+        );
+
+        assert(r1 === "testing-userId");
+
+        await new Promise((resolve) =>
+            request(app)
+                .get("/user/handle")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res1.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res.body.message);
+                })
+        );
+
+        // not passing anit csrf even if requried
+        let r2 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handle")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(401)
+                .end((err, res) => {
+                    resolve(res.body.message);
+                })
+        );
+        assert(r2 === "try refresh token");
+
+        // not passing id refresh token
+        let r3 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handle")
+                .expect(440)
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
+                .set("anti-csrf", res1.antiCsrf)
+                .end((err, res) => {
+                    resolve(res.body.message);
+                })
+        );
+        assert(r3 === "unauthorised");
+
+        let res2 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/custom/refresh")
+                    .expect(200)
+                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        let res3 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .get("/custom/user/id")
+                    .set("Cookie", [
+                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res2.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handle")
+                .set("Cookie", [
+                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res2.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res.body.message);
+                })
+        );
+
+        let r4 = await new Promise((resolve) =>
+            request(app)
+                .post("/custom/refresh")
+                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                .expect(403)
+                .end((err, res) => {
+                    resolve(res.body.message);
+                })
+        );
+        assert(r4 === "token theft detected");
+
+        let res4 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/custom/logout")
+                    .set("Cookie", [
+                        "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res2.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        assert.deepEqual(res4.antiCsrf, undefined);
+        assert.deepEqual(res4.accessToken, "");
+        assert.deepEqual(res4.refreshToken, "");
+        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
+        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
+        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+
+        let r5 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handle")
+                .set("Cookie", [
+                    "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie,
+                ])
+                .expect(401)
+                .end((err, res) => {
+                    resolve(res.body.message);
+                })
+        );
         assert(r5 === "try refresh token");
     });
 });
