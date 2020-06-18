@@ -117,6 +117,16 @@ export async function getSession(
     saveFrontendInfoFromRequest(req);
     let idRefreshToken = getIdRefreshTokenFromCookie(req);
     if (idRefreshToken === undefined) {
+        let handShakeInfo = await HandshakeInfo.getInstance();
+        clearSessionFromCookie(
+            res,
+            handShakeInfo.cookieDomain,
+            handShakeInfo.cookieSecure,
+            handShakeInfo.accessTokenPath,
+            handShakeInfo.refreshTokenPath,
+            handShakeInfo.idRefreshTokenPath,
+            handShakeInfo.cookieSameSite
+        );
         throw generateError(AuthError.UNAUTHORISED, new Error("idRefreshToken missing"));
     }
     let accessToken = getAccessTokenFromCookie(req);
