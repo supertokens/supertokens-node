@@ -98,7 +98,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
         try {
             let version = await Querier.getInstance().getAPIVersion();
-            if (version !== "1.0" && version !== "2.0") {
+            if (version !== "1.0" && version !== "2.0" && process.env.INSTALL_PATH.includes("com-")) {
                 throw new Error("should not have come here");
             }
         } catch (err) {
