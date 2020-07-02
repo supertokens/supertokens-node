@@ -27,6 +27,7 @@ export type TypeInput = {
     cookieDomain?: string;
     cookieSameSite?: "strict" | "lax" | "none";
     cookieSecure?: boolean;
+    apiKey?: string;
 };
 
 export interface SesssionRequest extends Request {

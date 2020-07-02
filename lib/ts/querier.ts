@@ -27,12 +27,14 @@ export class Querier {
     private lastTriedIndex = 0;
     private hostsAliveForTesting: Set<string> = new Set<string>();
     private apiVersion: string | undefined = undefined;
+    private apiKey: string | undefined = undefined;
 
-    private constructor(hosts?: string) {
+    private constructor(hosts?: string, apiKey?: string) {
         if (hosts === undefined) {
             hosts = "http://localhost:3567";
         }
         this.hosts = hosts.split(";").map((h) => (h.slice(-1) === "/" ? h.slice(0, -1) : h));
+        this.apiKey = apiKey;
     }
     getAPIVersion = async (): Promise<string> => {
         if (this.apiVersion !== undefined) {
@@ -43,7 +45,15 @@ export class Querier {
                 "/apiversion",
                 "GET",
                 (url: string) => {
-                    return axios.get(url);
+                    let headers: any = {};
+                    if (this.apiKey !== undefined) {
+                        headers = {
+                            "api-key": this.apiKey,
+                        };
+                    }
+                    return axios.get(url, {
+                        headers,
+                    });
                 },
                 this.hosts.length
             );
@@ -92,9 +102,9 @@ export class Querier {
         return Querier.instance;
     }
 
-    static initInstance(hosts?: string) {
+    static initInstance(hosts?: string, apiKey?: string) {
         if (Querier.instance === undefined) {
-            Querier.instance = new Querier(hosts);
+            Querier.instance = new Querier(hosts, apiKey);
         }
     }
 
@@ -127,13 +137,18 @@ export class Querier {
             "POST",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
+                let headers: any = { "cdi-version": apiVersion };
+                if (this.apiKey !== undefined) {
+                    headers = {
+                        ...headers,
+                        "api-key": this.apiKey,
+                    };
+                }
                 return await axios({
                     method: "POST",
                     url,
                     data: body,
-                    headers: {
-                        "cdi-version": apiVersion,
-                    },
+                    headers,
                 });
             },
             this.hosts.length
@@ -147,13 +162,18 @@ export class Querier {
             "DELETE",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
+                let headers: any = { "cdi-version": apiVersion };
+                if (this.apiKey !== undefined) {
+                    headers = {
+                        ...headers,
+                        "api-key": this.apiKey,
+                    };
+                }
                 return await axios({
                     method: "DELETE",
                     url,
                     data: body,
-                    headers: {
-                        "cdi-version": apiVersion,
-                    },
+                    headers,
                 });
             },
             this.hosts.length
@@ -167,11 +187,16 @@ export class Querier {
             "GET",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
+                let headers: any = { "cdi-version": apiVersion };
+                if (this.apiKey !== undefined) {
+                    headers = {
+                        ...headers,
+                        "api-key": this.apiKey,
+                    };
+                }
                 return await axios.get(url, {
                     params,
-                    headers: {
-                        "cdi-version": apiVersion,
-                    },
+                    headers,
                 });
             },
             this.hosts.length
@@ -185,13 +210,18 @@ export class Querier {
             "PUT",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
+                let headers: any = { "cdi-version": apiVersion };
+                if (this.apiKey !== undefined) {
+                    headers = {
+                        ...headers,
+                        "api-key": this.apiKey,
+                    };
+                }
                 return await axios({
                     method: "PUT",
                     url,
                     data: body,
-                    headers: {
-                        "cdi-version": apiVersion,
-                    },
+                    headers,
                 });
             },
             this.hosts.length

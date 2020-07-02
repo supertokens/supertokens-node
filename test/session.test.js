@@ -66,6 +66,52 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         }
     });
 
+    it("token theft detection with API key", async function () {
+        await setKeyValueInConfig("api_keys", "shfo3h98308hOIHoei309saiho");
+        await startST();
+        ST.init({
+            hosts: "http://localhost:8080",
+            apiKey: "shfo3h98308hOIHoei309saiho",
+        });
+
+        let response = await ST.createNewSession("", {}, {});
+
+        let response2 = await ST.refreshSession(response.refreshToken.token);
+
+        await ST.getSession(response2.accessToken.token, response2.antiCsrfToken, true, response2.idRefreshToken.token);
+
+        try {
+            await ST.refreshSession(response.refreshToken.token);
+            throw new Error("should not have come here");
+        } catch (err) {
+            if (!ST.Error.isErrorFromAuth(err) || err.errType !== ST.Error.TOKEN_THEFT_DETECTED) {
+                throw err;
+            }
+        }
+    });
+
+    it("query without API key", async function () {
+        await setKeyValueInConfig("api_keys", "shfo3h98308hOIHoei309saiho");
+        await startST();
+        ST.init({
+            hosts: "http://localhost:8080",
+        });
+        try {
+            let version = await Querier.getInstance().getAPIVersion();
+            if (version !== "1.0" && version !== "2.0") {
+                throw new Error("should not have come here");
+            }
+        } catch (err) {
+            if (
+                !ST.Error.isErrorFromAuth(err) ||
+                err.errType !== ST.Error.GENERAL_ERROR ||
+                err.err.message !== "Request failed with status code 401"
+            ) {
+                throw err;
+            }
+        }
+    });
+
     //check basic usage of session
     it("test basic usage of sessions", async function () {
         await startST();

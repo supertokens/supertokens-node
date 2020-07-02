@@ -27,7 +27,8 @@ export { AuthError as Error } from "./error";
  * @throws AuthError GENERAL_ERROR in case anything fails.
  */
 export function init(config: TypeInput) {
-    Querier.initInstance(config.hosts);
+    Querier.initInstance(config.hosts, config.apiKey);
+    // TODO:
     CookieConfig.init(
         config.accessTokenPath,
         config.refreshTokenPath,

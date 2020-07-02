@@ -4,12 +4,13 @@ export declare class Querier {
     private lastTriedIndex;
     private hostsAliveForTesting;
     private apiVersion;
+    private apiKey;
     private constructor();
     getAPIVersion: () => Promise<string>;
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
     static getInstance(): Querier;
-    static initInstance(hosts?: string): void;
+    static initInstance(hosts?: string, apiKey?: string): void;
     sendPostRequest: (path: string, body: any) => Promise<any>;
     sendDeleteRequest: (path: string, body: any) => Promise<any>;
     sendGetRequest: (path: string, params: any) => Promise<any>;
