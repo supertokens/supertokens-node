@@ -14,14 +14,14 @@
  */
 import { Response, NextFunction, Request } from "express";
 import { getSession, refreshSession, revokeSession } from "./express";
-import { SesssionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions } from "./types";
+import { SessionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions } from "./types";
 import { AuthError } from "./error";
 import { CookieConfig, clearSessionFromCookie } from "./cookieAndHeaders";
 import { HandshakeInfo } from "./handshakeInfo";
 
 export function middleware(antiCsrfCheck?: boolean) {
     // We know this should be Request but then Type
-    return async (request: SesssionRequest, response: Response, next: NextFunction) => {
+    return async (request: SessionRequest, response: Response, next: NextFunction) => {
         try {
             if (request.method.toLowerCase() === "options" || request.method.toLowerCase() === "trace") {
                 return next();

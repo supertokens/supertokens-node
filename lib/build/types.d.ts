@@ -13,7 +13,7 @@ export declare type TypeInput = {
     cookieSecure?: boolean;
     apiKey?: string;
 };
-export interface SesssionRequest extends Request {
+export interface SessionRequest extends Request {
     session: Session;
 }
 export interface ErrorHandlerMiddleware {

@@ -30,7 +30,7 @@ export type TypeInput = {
     apiKey?: string;
 };
 
-export interface SesssionRequest extends Request {
+export interface SessionRequest extends Request {
     session: Session;
 }
 
