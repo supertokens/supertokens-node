@@ -853,4 +853,24 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         assert.deepEqual(res3.body.userId, "id1");
     });
+
+    // test no duplicate Access-Control-Allow-Credentials header
+    it("test no duplicate Access-Control-Allow-Credentials header", async function () {
+        const app = express();
+        app.post("/header", async (req, res) => {
+            res.header("Access-Control-Allow-Credentials", "true");
+            await STExpress.setRelevantHeadersForOptionsAPI(res);
+            res.status(200).send("");
+        });
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/header")
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert.deepEqual(response.headers["access-control-allow-credentials"], "true");
+    });
 });

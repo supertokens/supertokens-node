@@ -129,8 +129,8 @@ export function clearSessionFromCookie(
         sameSite,
         "accessTokenPath"
     );
-    setHeader(res, idRefreshTokenHeaderKey, "remove");
-    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey);
+    setHeader(res, idRefreshTokenHeaderKey, "remove", false);
+    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 }
 
 /**
@@ -180,8 +180,8 @@ export function getIdRefreshTokenFromCookie(req: express.Request): string | unde
 }
 
 export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string) {
-    setHeader(res, antiCsrfHeaderKey, antiCsrfToken);
-    setHeader(res, "Access-Control-Expose-Headers", antiCsrfHeaderKey);
+    setHeader(res, antiCsrfHeaderKey, antiCsrfToken, false);
+    setHeader(res, "Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
 }
 
 export function setIdRefreshTokenInHeaderAndCookie(
@@ -193,8 +193,8 @@ export function setIdRefreshTokenInHeaderAndCookie(
     path: string,
     sameSite: "strict" | "lax" | "none"
 ) {
-    setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry);
-    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey);
+    setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
+    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 
     setCookie(
         res,
@@ -222,19 +222,19 @@ export function getHeader(req: express.Request, key: string): string | undefined
 }
 
 export function setOptionsAPIHeader(res: express.Response) {
-    setHeader(res, "Access-Control-Allow-Headers", antiCsrfHeaderKey);
-    setHeader(res, "Access-Control-Allow-Headers", frontendSDKNameHeaderKey);
-    setHeader(res, "Access-Control-Allow-Headers", frontendSDKVersionHeaderKey);
-    setHeader(res, "Access-Control-Allow-Credentials", "true");
+    setHeader(res, "Access-Control-Allow-Headers", antiCsrfHeaderKey, true);
+    setHeader(res, "Access-Control-Allow-Headers", frontendSDKNameHeaderKey, true);
+    setHeader(res, "Access-Control-Allow-Headers", frontendSDKVersionHeaderKey, true);
+    setHeader(res, "Access-Control-Allow-Credentials", "true", false);
 }
 
-function setHeader(res: express.Response, key: string, value: string) {
+function setHeader(res: express.Response, key: string, value: string, allowDuplicateKey: boolean) {
     try {
         let existingHeaders = res.getHeaders();
         let existingValue = existingHeaders[key.toLowerCase()];
         if (existingValue === undefined) {
             res.header(key, value);
-        } else {
+        } else if (allowDuplicateKey) {
             res.header(key, existingValue + ", " + value);
         }
     } catch (err) {
