@@ -1,6 +1,6 @@
 {
   "name": "supertokens-node",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "NodeJS driver for SuperTokens core",
   "main": "index.js",
   "scripts": {
@@ -35,8 +35,10 @@
     "@types/cookie": "0.3.3",
     "@types/express": "4.16.1",
     "@types/validator": "10.11.0",
+    "@types/jsonwebtoken": "8.5.0",
     "axios": "0.19.0",
     "cookie": "0.4.0",
+    "jsonwebtoken": "8.5.1",
     "validator": "10.11.0"
   },
   "devDependencies": {

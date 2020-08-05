@@ -1,5 +1,5 @@
 import * as express from "express";
-import { TypeInput } from "./types";
+import { TypeInput, SessionRequest } from "./types";
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
  * Please create a database in your mongo instance before calling this function
@@ -74,6 +74,7 @@ export declare function getJWTPayload(sessionHandle: string): Promise<any>;
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export declare function updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
+export declare function auth0Handler(request: SessionRequest, response: express.Response, domain: string, clientId: string, clientSecret: string, callback?: (userId: string, idToken: string) => Promise<void>): Promise<express.Response>;
 /**
  * @class Session
  * @description an instance of this is created when a session is valid.

@@ -30,8 +30,11 @@ import {
 import { AuthError, generateError } from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
 import * as SessionFunctions from "./session";
-import { TypeInput } from "./types";
+import { TypeInput, SessionRequest, auth0RequestBody } from "./types";
 import { Querier } from "./querier";
+import axios from "axios";
+import * as qs from "querystring";
+import * as jwt from "jsonwebtoken";
 
 // TODO: Make it also work with PassportJS
 
@@ -335,6 +338,58 @@ export async function getJWTPayload(sessionHandle: string): Promise<any> {
  */
 export async function updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
     return SessionFunctions.updateJWTPayload(sessionHandle, newJWTPayload);
+}
+
+export async function auth0Handler(
+    request: SessionRequest,
+    response: express.Response,
+    domain: string,
+    clientId: string,
+    clientSecret: string,
+    callback?: (userId: string, idToken: string) => Promise<void>
+) {
+    let requestBody: auth0RequestBody = request.body;
+    if (requestBody.action === "logout") {
+        if (request.session === undefined) {
+            request.session = await getSession(request, response, true);
+        }
+        await request.session.revokeSession();
+        return response.json({});
+    }
+    let authCode = requestBody.code;
+    let redirectURI = requestBody.redirect_uri;
+    let auth0Response = await axios({
+        method: "post",
+        url: `https://${domain}/oauth/token`,
+        data: qs.stringify({
+            grant_type: "authorization_code",
+            client_id: clientId,
+            client_secret: clientSecret,
+            code: authCode,
+            redirect_uri: redirectURI,
+        }),
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    });
+    let idToken = auth0Response.data.id_token;
+    let expiresIn = auth0Response.data.expires_in;
+
+    if (requestBody.action === "login") {
+        let payload = jwt.decode(idToken, { json: true });
+        if (payload === null) {
+            throw Error("invalid payload while decoding auth0 idToken");
+        }
+        if (callback !== undefined) {
+            await callback(payload.sub, idToken);
+        } else {
+            createNewSession(response, payload.sub, {}, {});
+        }
+    }
+    return response.json({
+        id_token: idToken,
+        expires_in: expiresIn,
+    });
 }
 
 /**

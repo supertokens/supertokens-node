@@ -16,7 +16,7 @@ import { Response, NextFunction, Request } from "express";
 import { getSession, refreshSession, revokeSession } from "./express";
 import { SessionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions } from "./types";
 import { AuthError } from "./error";
-import { CookieConfig, clearSessionFromCookie } from "./cookieAndHeaders";
+import { CookieConfig } from "./cookieAndHeaders";
 import { HandshakeInfo } from "./handshakeInfo";
 
 export function middleware(antiCsrfCheck?: boolean) {

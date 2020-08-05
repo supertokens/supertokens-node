@@ -47,3 +47,13 @@ export interface SuperTokensErrorMiddlewareOptions {
     onTryRefreshToken?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
 }
+
+export type auth0RequestBody =
+    | {
+          action: "login" | "refresh";
+          code: string;
+          redirect_uri: string;
+      }
+    | {
+          action: "logout";
+      };
