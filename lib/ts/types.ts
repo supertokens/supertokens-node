@@ -50,9 +50,14 @@ export interface SuperTokensErrorMiddlewareOptions {
 
 export type auth0RequestBody =
     | {
-          action: "login" | "refresh";
+          action: "login";
           code: string;
           redirect_uri: string;
+      }
+    | {
+          action: "refresh";
+          code?: string;
+          redirect_uri?: string;
       }
     | {
           action: "logout";

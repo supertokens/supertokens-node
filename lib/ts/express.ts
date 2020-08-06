@@ -346,7 +346,7 @@ export async function auth0Handler(
     domain: string,
     clientId: string,
     clientSecret: string,
-    callback?: (userId: string, idToken: string) => Promise<void>
+    callback?: (userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>
 ) {
     let requestBody: auth0RequestBody = request.body;
     if (requestBody.action === "logout") {
@@ -358,22 +358,49 @@ export async function auth0Handler(
     }
     let authCode = requestBody.code;
     let redirectURI = requestBody.redirect_uri;
-    let auth0Response = await axios({
-        method: "post",
-        url: `https://${domain}/oauth/token`,
-        data: qs.stringify({
+    if (requestBody.action !== "login") {
+        request.session = await getSession(request, response, true);
+    }
+
+    let formData = {};
+    if (authCode === undefined && requestBody.action === "refresh") {
+        let sessionData = await request.session.getSessionData();
+        if (sessionData.refresh_token === undefined) {
+            response.statusCode = 403;
+            return response.json({});
+        }
+        formData = {
+            grant_type: "refresh_token",
+            client_id: clientId,
+            client_secret: clientSecret,
+            refresh_token: sessionData.refresh_token,
+        };
+    } else {
+        formData = {
             grant_type: "authorization_code",
             client_id: clientId,
             client_secret: clientSecret,
             code: authCode,
             redirect_uri: redirectURI,
-        }),
+        };
+    }
+    let auth0Response = await axios({
+        method: "post",
+        url: `https://${domain}/oauth/token`,
+        data: qs.stringify(formData),
         headers: {
             "Content-Type": "application/x-www-form-urlencoded",
         },
     });
+
+    if (auth0Response.status !== 200) {
+        response.statusCode = auth0Response.status;
+        return response.json({});
+    }
     let idToken = auth0Response.data.id_token;
     let expiresIn = auth0Response.data.expires_in;
+    let accessToken = auth0Response.data.access_token;
+    let refreshToken = auth0Response.data.refresh_token;
 
     if (requestBody.action === "login") {
         let payload = jwt.decode(idToken, { json: true });
@@ -381,10 +408,21 @@ export async function auth0Handler(
             throw Error("invalid payload while decoding auth0 idToken");
         }
         if (callback !== undefined) {
-            await callback(payload.sub, idToken);
+            await callback(payload.sub, idToken, accessToken, refreshToken);
         } else {
-            createNewSession(response, payload.sub, {}, {});
+            await createNewSession(
+                response,
+                payload.sub,
+                {},
+                {
+                    refresh_token: refreshToken,
+                }
+            );
         }
+    } else if (authCode !== undefined) {
+        let sessionData = await request.session.getSessionData();
+        sessionData.refresh_token = refreshToken;
+        await request.session.updateSessionData(sessionData);
     }
     return response.json({
         id_token: idToken,
