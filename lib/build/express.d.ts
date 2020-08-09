@@ -74,7 +74,7 @@ export declare function getJWTPayload(sessionHandle: string): Promise<any>;
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export declare function updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
-export declare function auth0Handler(request: SessionRequest, response: express.Response, domain: string, clientId: string, clientSecret: string, callback?: (userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>): Promise<express.Response>;
+export declare function auth0Handler(request: SessionRequest, response: express.Response, next: express.NextFunction, domain: string, clientId: string, clientSecret: string, callback?: (userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>): Promise<express.Response | undefined>;
 /**
  * @class Session
  * @description an instance of this is created when a session is valid.
