@@ -386,18 +386,22 @@ export async function auth0Handler(
                 redirect_uri: redirectURI,
             };
         }
-        let auth0Response = await axios({
-            method: "post",
-            url: `https://${domain}/oauth/token`,
-            data: qs.stringify(formData),
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-        });
-
-        if (auth0Response.status !== 200) {
-            response.statusCode = auth0Response.status;
-            return response.json({});
+        let auth0Response;
+        try {
+            auth0Response = await axios({
+                method: "post",
+                url: `https://${domain}/oauth/token`,
+                data: qs.stringify(formData),
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+            });
+        } catch (err) {
+            if (err.response !== undefined && err.response.status < 500) {
+                response.statusCode = err.response.status;
+                return response.json({});
+            }
+            throw err;
         }
         let idToken = auth0Response.data.id_token;
         let expiresIn = auth0Response.data.expires_in;
