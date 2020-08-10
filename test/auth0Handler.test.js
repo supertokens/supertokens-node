@@ -49,11 +49,12 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use(urlencodedParser);
         app.use(jsonParser);
         app.use(cookieParser());
-        app.post("/create", async (req, res) => {
+        app.post("/create", async (req, res, next) => {
             try {
                 return await STExpress.auth0Handler(
                     req,
                     res,
+                    next,
                     constants.AUTH0_DOMAIN,
                     constants.AUTH0_CLIENT_ID,
                     constants.AUTH0_CLIENT_SECRET
@@ -93,28 +94,25 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use(jsonParser);
         app.use(cookieParser());
         app.post("/create", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET,
-                    async (userId, idToken, accessToken, refreshToken) => {
-                        await STExpress.createNewSession(
-                            res,
-                            userId,
-                            { accessToken, refreshToken },
-                            {
-                                refresh_token: refreshToken,
-                                accessToken,
-                            }
-                        );
-                    }
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET,
+                async (userId, idToken, accessToken, refreshToken) => {
+                    await STExpress.createNewSession(
+                        res,
+                        userId,
+                        { accessToken, refreshToken },
+                        {
+                            refresh_token: refreshToken,
+                            accessToken,
+                        }
+                    );
+                }
+            );
         });
         app.post("/sessionData", STExpress.middleware(), async (req, res) => {
             res.json(await req.session.getSessionData());
@@ -161,22 +159,19 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use(jsonParser);
         app.use(cookieParser());
         app.post("/create", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET,
-                    async (userId, idToken, accessToken, refreshToken) => {
-                        if (accessToken === "test-access-token") {
-                            throw Error("access token not matching");
-                        }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET,
+                async (userId, idToken, accessToken, refreshToken) => {
+                    if (accessToken === "test-access-token") {
+                        throw Error("access token not matching");
                     }
-                );
-            } catch (err) {
-                next(err);
-            }
+                }
+            );
         });
         app.use((err, req, res, next) => {
             res.statusCode = 500;
@@ -199,24 +194,21 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
     it("test auth0Handler login, non 200 response", async function () {
         await startST();
         ST.init({ hosts: "http://localhost:8080" });
-        nock(`https://${constants.AUTH0_DOMAIN}`).post("/oauth/token").reply(203, {});
+        nock(`https://${constants.AUTH0_DOMAIN}`).post("/oauth/token").reply(403, {});
 
         let app = express();
         app.use(urlencodedParser);
         app.use(jsonParser);
         app.use(cookieParser());
         app.post("/create", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.use((err, req, res, next) => {
             res.statusCode = 500;
@@ -231,7 +223,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
                 redirect_uri: "http://localhost:3000",
                 code: "randomString",
             })
-            .expect(203);
+            .expect(403);
     });
 
     it("test auth0Handler login, invalid id_token", async function () {
@@ -251,17 +243,14 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use(jsonParser);
         app.use(cookieParser());
         app.post("/create", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.use((err, req, res, next) => {
             res.statusCode = 500;
@@ -298,30 +287,24 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use(jsonParser);
         app.use(cookieParser());
         app.post("/create", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.post("/logout", STExpress.middleware(), async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.post("/sessionData", STExpress.middleware(), async (req, res) => {
             res.json(await req.session.getSessionData());
@@ -384,17 +367,14 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use(jsonParser);
         app.use(cookieParser());
         app.post("/create", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.post("/logout", async (req, res, next) => {
             try {
@@ -471,30 +451,24 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use(jsonParser);
         app.use(cookieParser());
         app.post("/create", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.post("/refresh-auth0", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.post("/sessionData", STExpress.middleware(), async (req, res) => {
             res.json(await req.session.getSessionData());
@@ -561,33 +535,27 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use(jsonParser);
         app.use(cookieParser());
         app.post("/create", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET,
-                    async (userId, idToken, accessToken, refreshToken) => {
-                        await STExpress.createNewSession(res, userId, {}, {});
-                    }
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET,
+                async (userId, idToken, accessToken, refreshToken) => {
+                    await STExpress.createNewSession(res, userId, {}, {});
+                }
+            );
         });
         app.post("/refresh-auth0", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.post("/sessionData", STExpress.middleware(), async (req, res) => {
             res.json(await req.session.getSessionData());
@@ -642,30 +610,24 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use(jsonParser);
         app.use(cookieParser());
         app.post("/create", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.post("/refresh-auth0", async (req, res, next) => {
-            try {
-                return await STExpress.auth0Handler(
-                    req,
-                    res,
-                    constants.AUTH0_DOMAIN,
-                    constants.AUTH0_CLIENT_ID,
-                    constants.AUTH0_CLIENT_SECRET
-                );
-            } catch (err) {
-                next(err);
-            }
+            return await STExpress.auth0Handler(
+                req,
+                res,
+                next,
+                constants.AUTH0_DOMAIN,
+                constants.AUTH0_CLIENT_ID,
+                constants.AUTH0_CLIENT_SECRET
+            );
         });
         app.post("/sessionData", STExpress.middleware(), async (req, res) => {
             res.json(await req.session.getSessionData());
@@ -694,7 +656,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
                 refresh_token: "test-refresh-token",
             });
 
-        nock(`https://${constants.AUTH0_DOMAIN}`).post("/oauth/token").reply(201, {});
+        nock(`https://${constants.AUTH0_DOMAIN}`).post("/oauth/token").reply(403, {});
         await supertest(app)
             .post("/refresh-auth0")
             .send({
@@ -704,6 +666,6 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
                 "sAccessToken=" + response1.accessToken + ";sIdRefreshToken=" + response1.idRefreshTokenFromCookie,
             ])
             .set("anti-csrf", response1.antiCsrf)
-            .expect(201);
+            .expect(403);
     });
 });
