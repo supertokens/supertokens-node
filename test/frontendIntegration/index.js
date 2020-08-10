@@ -16,6 +16,7 @@ let SuperTokens = require("../../");
 let express = require("express");
 let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
+let cors = require("cors");
 let noOfTimesRefreshCalledDuringTest = 0;
 let noOfTimesGetSessionCalledDuringTest = 0;
 
@@ -23,25 +24,23 @@ let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, pa
 let jsonParser = bodyParser.json({ limit: "20mb" });
 
 let app = express();
+app.use(
+    cors({
+        origin: "http://127.0.0.1:8080",
+        allowedHeaders: ["content-type", ...SuperTokens.getCORSAllowedHeaders()],
+        methods: ["GET", "PUT", "POST", "DELETE"],
+        credentials: true,
+    })
+);
 app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
 
 SuperTokens.init({ hosts: "http://localhost:9000" });
 
-app.options("*", async (req, res) => {
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
-    res.header("Access-Control-Allow-Headers", "content-type");
-    res.header("Access-Control-Allow-Methods", "*");
-    SuperTokens.setRelevantHeadersForOptionsAPI(res);
-    res.send("");
-});
-
 app.post("/login", async (req, res) => {
     let userId = req.body.userId;
     let session = await SuperTokens.createNewSession(res, userId);
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
-    res.header("Access-Control-Allow-Credentials", true);
     res.send(session.userId);
 });
 
@@ -65,20 +64,14 @@ app.post("/multipleInterceptors", async (req, res) => {
 
 app.get("/", SuperTokens.middleware(true), async (req, res) => {
     noOfTimesGetSessionCalledDuringTest += 1;
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
-    res.header("Access-Control-Allow-Credentials", true);
     res.send(req.session.getUserId());
 });
 
 app.get("/update-jwt", SuperTokens.middleware(true), async (req, res) => {
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
-    res.header("Access-Control-Allow-Credentials", true);
     res.json(req.session.getJWTPayload());
 });
 
 app.post("/update-jwt", SuperTokens.middleware(true), async (req, res) => {
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
-    res.header("Access-Control-Allow-Credentials", true);
     await req.session.updateJWTPayload(req.body);
     res.json(req.session.getJWTPayload());
 });
@@ -93,8 +86,6 @@ app.use("/testing", async (req, res) => {
 
 app.post("/logout", SuperTokens.middleware(), async (req, res) => {
     await req.session.revokeSession();
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
-    res.header("Access-Control-Allow-Credentials", true);
     res.send("success");
 });
 
@@ -107,13 +98,10 @@ app.post("/revokeAll", SuperTokens.middleware(), async (req, res) => {
 app.post("/refresh", SuperTokens.middleware(), async (req, res) => {
     refreshCalled = true;
     noOfTimesRefreshCalledDuringTest += 1;
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
-    res.header("Access-Control-Allow-Credentials", true);
     res.send("refresh success");
 });
 
 app.get("/refreshCalledTime", async (req, res) => {
-    res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
     res.status(200).send("" + noOfTimesRefreshCalledDuringTest);
 });
 
@@ -161,13 +149,9 @@ app.use("*", async (req, res, next) => {
 app.use(
     SuperTokens.errorHandler({
         onTryRefreshToken: (err, req, res) => {
-            res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
-            res.header("Access-Control-Allow-Credentials", true);
             res.status(440).send();
         },
         onUnauthorised: (err, req, res) => {
-            res.header("Access-Control-Allow-Origin", "http://127.0.0.1:8080");
-            res.header("Access-Control-Allow-Credentials", true);
             res.status(440).send();
         },
     })

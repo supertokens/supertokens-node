@@ -228,6 +228,10 @@ export function setOptionsAPIHeader(res: express.Response) {
     setHeader(res, "Access-Control-Allow-Credentials", "true", false);
 }
 
+export function getCORSAllowedHeaders(): string[] {
+    return [antiCsrfHeaderKey, frontendSDKNameHeaderKey, frontendSDKVersionHeaderKey];
+}
+
 function setHeader(res: express.Response, key: string, value: string, allowDuplicateKey: boolean) {
     try {
         let existingHeaders = res.getHeaders();

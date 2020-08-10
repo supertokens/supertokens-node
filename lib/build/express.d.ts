@@ -66,6 +66,10 @@ export declare function updateSessionData(sessionHandle: string, newSessionData:
  */
 export declare function setRelevantHeadersForOptionsAPI(res: express.Response): void;
 /**
+ * @description Used to set relevant CORS Access-Control-Allowed-Headers
+ */
+export declare function getCORSAllowedHeaders(): string[];
+/**
  * @returns jwt payload as provided by the user earlier
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */

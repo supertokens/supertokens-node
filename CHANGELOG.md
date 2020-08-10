@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.3.0] - 2020-08-05
 ### Added
 - auth0Handler function
+- `getCORSAllowedHeaders` function to be used by `cors` middleware
 
 ## [2.2.2] - 2020-07-30
 ### Fixed

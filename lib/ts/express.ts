@@ -26,6 +26,7 @@ import {
     setAntiCsrfTokenInHeaders,
     setIdRefreshTokenInHeaderAndCookie,
     setOptionsAPIHeader,
+    getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
 } from "./cookieAndHeaders";
 import { AuthError, generateError } from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
@@ -325,6 +326,14 @@ export async function updateSessionData(sessionHandle: string, newSessionData: a
 export function setRelevantHeadersForOptionsAPI(res: express.Response) {
     setOptionsAPIHeader(res);
 }
+
+/**
+ * @description Used to set relevant CORS Access-Control-Allowed-Headers
+ */
+export function getCORSAllowedHeaders(): string[] {
+    return getCORSAllowedHeadersFromCookiesAndHeaders();
+}
+
 /**
  * @returns jwt payload as provided by the user earlier
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
