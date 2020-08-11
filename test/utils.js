@@ -247,9 +247,9 @@ const consoleOptions = {
 };
 
 module.exports.constants = {
-    AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
-    AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
-    AUTH0_CLIENT_SECRET: process.env.AUTH0_CLIENT_SECRET,
+    AUTH0_DOMAIN: "dev-3myi6b3e.us.auth0.com",
+    AUTH0_CLIENT_ID: "wQwadNYL58PoXDTIEiLeBmCe89BnMfiv",
+    AUTH0_CLIENT_SECRET: "46n7WEAScmrHXukA_w6v1C8uYlVXPvAqEwu5eAyJRD5Wu951BHhiuE_0cQpW5GiV",
     TEST_ID_TOKEN:
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
 };
