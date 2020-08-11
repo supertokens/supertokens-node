@@ -149,10 +149,10 @@ app.use("*", async (req, res, next) => {
 app.use(
     SuperTokens.errorHandler({
         onTryRefreshToken: (err, req, res) => {
-            res.status(440).send();
+            res.status(401).send();
         },
         onUnauthorised: (err, req, res) => {
-            res.status(440).send();
+            res.status(401).send();
         },
     })
 );
