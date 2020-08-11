@@ -36,6 +36,7 @@ import { Querier } from "./querier";
 import axios from "axios";
 import * as qs from "querystring";
 import * as jwt from "jsonwebtoken";
+import { autoRefreshMiddleware } from "./middleware";
 
 // TODO: Make it also work with PassportJS
 
@@ -44,10 +45,10 @@ import * as jwt from "jsonwebtoken";
  * Please create a database in your mongo instance before calling this function
  * @param config
  * @param client: mongo client. Default is undefined. If you provide this, please make sure that it is already connected to the right database that has the auth collections. If you do not provide this, then the library will manage its own connection.
- * @throws AuthError GENERAL_ERROR in case anything fails.
  */
 export function init(config: TypeInput) {
     SessionFunctions.init(config);
+    return autoRefreshMiddleware();
 }
 
 /**

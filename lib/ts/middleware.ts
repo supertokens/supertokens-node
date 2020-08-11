@@ -14,10 +14,39 @@
  */
 import { Response, NextFunction, Request } from "express";
 import { getSession, refreshSession, revokeSession } from "./express";
-import { SessionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions } from "./types";
+import { SessionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions, TypeInput } from "./types";
 import { AuthError } from "./error";
 import { CookieConfig } from "./cookieAndHeaders";
 import { HandshakeInfo } from "./handshakeInfo";
+
+export function autoRefreshMiddleware() {
+    return async (request: Request, response: Response, next: NextFunction) => {
+        try {
+            let path = request.originalUrl.split("?")[0];
+            let refreshTokenPath = await getRefreshPath();
+            if (
+                (refreshTokenPath === path || `${refreshTokenPath}/` === path || refreshTokenPath === `${path}/`) &&
+                request.method.toLowerCase() === "post"
+            ) {
+                await refreshSession(request, response);
+                return response.send(JSON.stringify({}));
+            }
+            return next();
+        } catch (err) {
+            next(err);
+        }
+    };
+}
+
+async function getRefreshPath(): Promise<string> {
+    let handShakeInfo = await HandshakeInfo.getInstance();
+    let refreshTokenPath = handShakeInfo.refreshTokenPath;
+    let refreshTokenPathConfig = CookieConfig.getInstance().refreshTokenPath;
+    if (refreshTokenPathConfig !== undefined) {
+        refreshTokenPath = refreshTokenPathConfig;
+    }
+    return refreshTokenPath;
+}
 
 export function middleware(antiCsrfCheck?: boolean) {
     // We know this should be Request but then Type
@@ -27,12 +56,7 @@ export function middleware(antiCsrfCheck?: boolean) {
                 return next();
             }
             let path = request.originalUrl.split("?")[0];
-            let handShakeInfo = await HandshakeInfo.getInstance();
-            let refreshTokenPath = handShakeInfo.refreshTokenPath;
-            let refreshTokenPathConfig = CookieConfig.getInstance().refreshTokenPath;
-            if (refreshTokenPathConfig !== undefined) {
-                refreshTokenPath = refreshTokenPathConfig;
-            }
+            let refreshTokenPath = await getRefreshPath();
             if (
                 (refreshTokenPath === path || `${refreshTokenPath}/` === path || refreshTokenPath === `${path}/`) &&
                 request.method.toLowerCase() === "post"
