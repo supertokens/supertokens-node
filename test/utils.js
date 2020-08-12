@@ -102,6 +102,7 @@ module.exports.setupST = async function () {
     let installationPath = process.env.INSTALL_PATH;
     await module.exports.executeCommand("cd " + installationPath + " && cp temp/licenseKey ./licenseKey");
     await module.exports.executeCommand("cd " + installationPath + " && cp temp/config.yaml ./config.yaml");
+    await module.exports.setKeyValueInConfig("refresh_api_path", "/refresh");
 };
 
 module.exports.cleanST = async function () {
