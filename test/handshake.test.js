@@ -51,7 +51,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
         ST.init({ hosts: "http://localhost:8080" });
         let info = await HandshakeInfo.getInstance();
         assert.equal(info.accessTokenPath, "/");
-        assert.equal(["supertokens.io", "localhost"].includes(info.cookieDomain), true);
+        assert.equal(["supertokens.io", "localhost", undefined].includes(info.cookieDomain), true);
         assert.equal(typeof info.jwtSigningPublicKey, "string");
         assert.equal(info.cookieSecure, false);
         assert(info.refreshTokenPath === "/refresh");

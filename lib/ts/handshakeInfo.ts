@@ -19,7 +19,7 @@ export class HandshakeInfo {
     static instance: HandshakeInfo | undefined;
 
     public jwtSigningPublicKey: string;
-    public cookieDomain: string;
+    public cookieDomain?: string;
     public cookieSecure: boolean;
     public accessTokenPath: string;
     public refreshTokenPath: string;
@@ -76,7 +76,7 @@ export class HandshakeInfo {
 
     constructor(
         jwtSigningPublicKey: string,
-        cookieDomain: string,
+        cookieDomain: string | undefined,
         cookieSecure: boolean,
         accessTokenPath: string,
         refreshTokenPath: string,

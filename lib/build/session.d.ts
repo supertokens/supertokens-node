@@ -22,7 +22,7 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     refreshToken: {
@@ -31,7 +31,7 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     idRefreshToken: {
@@ -40,7 +40,7 @@ export declare function createNewSession(userId: string, jwtPayload?: any, sessi
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     antiCsrfToken: string | undefined;
@@ -61,7 +61,7 @@ export declare function getSession(accessToken: string, antiCsrfToken: string | 
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
 }>;
@@ -82,7 +82,7 @@ export declare function refreshSession(refreshToken: string): Promise<{
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     refreshToken: {
@@ -91,7 +91,7 @@ export declare function refreshSession(refreshToken: string): Promise<{
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     idRefreshToken: {
@@ -100,7 +100,7 @@ export declare function refreshSession(refreshToken: string): Promise<{
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     antiCsrfToken: string | undefined;

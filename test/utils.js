@@ -69,21 +69,42 @@ module.exports.extractInfoFromResponse = function (res) {
     let accessTokenExpiry = undefined;
     let refreshTokenExpiry = undefined;
     let idRefreshTokenExpiry = undefined;
-    let accessTokenCookie = {};
-    let refreshTokenCookie = {};
-    let idRefreshTokenTokenCookie = {};
+    let accessTokenDomain = undefined;
+    let refreshTokenDomain = undefined;
+    let idRefreshTokenDomain = undefined;
     let cookies = res.headers["set-cookie"];
     cookies = cookies === undefined ? [] : cookies;
     cookies.forEach((i) => {
         if (i.split(";")[0].split("=")[0] === "sAccessToken") {
             accessToken = i.split(";")[0].split("=")[1];
-            accessTokenExpiry = i.split(";")[3].split("=")[1];
+            if (i.split(";")[2].includes("Expires=")) {
+                accessTokenExpiry = i.split(";")[2].split("=")[1];
+            } else {
+                accessTokenExpiry = i.split(";")[3].split("=")[1];
+            }
+            if (i.split(";")[1].includes("Domain=")) {
+                accessTokenDomain = i.split(";")[1].split("=")[1];
+            }
         } else if (i.split(";")[0].split("=")[0] === "sRefreshToken") {
             refreshToken = i.split(";")[0].split("=")[1];
-            refreshTokenExpiry = i.split(";")[3].split("=")[1];
+            if (i.split(";")[2].includes("Expires=")) {
+                refreshTokenExpiry = i.split(";")[2].split("=")[1];
+            } else {
+                refreshTokenExpiry = i.split(";")[3].split("=")[1];
+            }
+            if (i.split(";")[1].includes("Domain=")) {
+                refreshTokenDomain = i.split(";")[1].split("=")[1];
+            }
         } else {
             idRefreshTokenFromCookie = i.split(";")[0].split("=")[1];
-            idRefreshTokenExpiry = i.split(";")[3].split("=")[1];
+            if (i.split(";")[2].includes("Expires=")) {
+                idRefreshTokenExpiry = i.split(";")[2].split("=")[1];
+            } else {
+                idRefreshTokenExpiry = i.split(";")[3].split("=")[1];
+            }
+            if (i.split(";")[1].includes("Domain=")) {
+                idRefreshTokenDomain = i.split(";")[1].split("=")[1];
+            }
         }
     });
     return {
@@ -95,6 +116,9 @@ module.exports.extractInfoFromResponse = function (res) {
         accessTokenExpiry,
         refreshTokenExpiry,
         idRefreshTokenExpiry,
+        accessTokenDomain,
+        refreshTokenDomain,
+        idRefreshTokenDomain,
     };
 };
 

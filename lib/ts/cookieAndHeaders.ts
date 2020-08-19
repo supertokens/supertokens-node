@@ -108,7 +108,7 @@ export function saveFrontendInfoFromRequest(req: express.Request) {
  */
 export function clearSessionFromCookie(
     res: express.Response,
-    domain: string,
+    domain: string | undefined,
     secure: boolean,
     accessTokenPath: string,
     refreshTokenPath: string,
@@ -140,7 +140,7 @@ export function attachAccessTokenToCookie(
     res: express.Response,
     token: string,
     expiry: number,
-    domain: string,
+    domain: string | undefined,
     path: string,
     secure: boolean,
     sameSite: "strict" | "lax" | "none"
@@ -155,7 +155,7 @@ export function attachRefreshTokenToCookie(
     res: express.Response,
     token: string,
     expiry: number,
-    domain: string,
+    domain: string | undefined,
     path: string,
     secure: boolean,
     sameSite: "strict" | "lax" | "none"
@@ -188,7 +188,7 @@ export function setIdRefreshTokenInHeaderAndCookie(
     res: express.Response,
     idRefreshToken: string,
     expiry: number,
-    domain: string,
+    domain: string | undefined,
     secure: boolean,
     path: string,
     sameSite: "strict" | "lax" | "none"
@@ -261,7 +261,7 @@ export function setCookie(
     res: ServerResponse,
     name: string,
     value: string,
-    domain: string,
+    domain: string | undefined,
     secure: boolean,
     httpOnly: boolean,
     expires: number,

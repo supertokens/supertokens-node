@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - auth0Handler function
 - `getCORSAllowedHeaders` function to be used by `cors` middleware
 - Automatically adds a refresh API if the user calls the `init` function inside `app.use()`
+- Support for CDI 2.2
 
 ## [2.2.2] - 2020-07-30
 ### Fixed

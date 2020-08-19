@@ -63,7 +63,7 @@ export async function createNewSession(
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     refreshToken: {
@@ -72,7 +72,7 @@ export async function createNewSession(
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     idRefreshToken: {
@@ -81,7 +81,7 @@ export async function createNewSession(
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     antiCsrfToken: string | undefined;
@@ -141,7 +141,7 @@ export async function getSession(
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
 }> {
@@ -246,7 +246,7 @@ export async function refreshSession(
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     refreshToken: {
@@ -255,7 +255,7 @@ export async function refreshSession(
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     idRefreshToken: {
@@ -264,7 +264,7 @@ export async function refreshSession(
         createdTime: number;
         cookiePath: string;
         cookieSecure: boolean;
-        domain: string;
+        domain?: string;
         sameSite: "none" | "lax" | "strict";
     };
     antiCsrfToken: string | undefined;

@@ -32,6 +32,7 @@ const request = require("supertest");
 let { Querier } = require("../lib/build/querier");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
+let { maxVersion } = require("../lib/build/utils");
 
 describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
     beforeEach(async function () {
@@ -125,6 +126,16 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        let currCDIVersion = await Querier.getInstance().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.1") === "2.1") {
+            assert(cookies.accessTokenDomain === "localhost");
+            assert(cookies.refreshTokenDomain === "localhost");
+            assert(cookies.idRefreshTokenDomain === "localhost");
+        } else {
+            assert(cookies.accessTokenDomain === undefined);
+            assert(cookies.refreshTokenDomain === undefined);
+            assert(cookies.idRefreshTokenDomain === undefined);
+        }
     });
 
     //- check for token theft detection
