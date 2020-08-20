@@ -2,21 +2,21 @@
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
 <script>
-    async function getNumberOfTimesRefreshCalled() {
+    async function getNumberOfTimesRefreshCalled(BASE_URL = "http://localhost.org:8080") {
         let instance = axios.create();
-        let response = await instance.get("http://localhost.org:8080/refreshCalledTime");
+        let response = await instance.get(BASE_URL + "/refreshCalledTime");
         return response.data;
     };
 
-    async function getNumberOfTimesGetSessionCalled() {
+    async function getNumberOfTimesGetSessionCalled(BASE_URL = "http://localhost.org:8080") {
         let instance = axios.create();
-        let response = await instance.get("http://localhost.org:8080/getSessionCalledTime");
+        let response = await instance.get(BASE_URL + "/getSessionCalledTime");
         return response.data;
     };
 
-    async function getPackageVersion() {
+    async function getPackageVersion(BASE_URL = "http://localhost.org:8080") {
         let instance = axios.create();
-        let response = await instance.get("http://localhost.org:8080/getPackageVersion");
+        let response = await instance.get(BASE_URL + "/getPackageVersion");
         return response.data;
     };
 

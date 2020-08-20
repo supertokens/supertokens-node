@@ -26,7 +26,7 @@ let jsonParser = bodyParser.json({ limit: "20mb" });
 let app = express();
 app.use(
     cors({
-        origin: "http://127.0.0.1:8080",
+        origin: "http://localhost.org:8080",
         allowedHeaders: ["content-type", ...SuperTokens.getCORSAllowedHeaders()],
         methods: ["GET", "PUT", "POST", "DELETE"],
         credentials: true,
@@ -36,7 +36,7 @@ app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
 
-SuperTokens.init({ hosts: "http://localhost:9000" });
+SuperTokens.init({ hosts: "http://localhost:9000", cookieSameSite: "lax" });
 
 app.post("/login", async (req, res) => {
     let userId = req.body.userId;

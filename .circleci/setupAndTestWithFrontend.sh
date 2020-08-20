@@ -78,6 +78,8 @@ cd ../project/test/frontendIntegration/
 npm i -d
 node . &
 pid=$!
+NODE_PORT=8082 node . &
+pid2=$!
 cd ../../../supertokens-website/test/server
 npm i -d
 npm i git+https://github.com:supertokens/supertokens-node.git#$3
@@ -92,3 +94,4 @@ fi
 rm -rf ./test/server/node_modules/supertokens-node
 git checkout HEAD -- ./test/server/package.json
 kill -15 $pid
+kill -15 $pid2
