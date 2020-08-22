@@ -128,6 +128,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         let currCDIVersion = await Querier.getInstance().getAPIVersion();
         if (maxVersion(currCDIVersion, "2.1") === "2.1") {
+            console.log("DOMAIN: " + cookies.accessTokenDomain);
             assert(cookies.accessTokenDomain === "localhost");
             assert(cookies.refreshTokenDomain === "localhost");
             assert(cookies.idRefreshTokenDomain === "localhost");
