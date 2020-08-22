@@ -66,7 +66,7 @@ while [ $i -lt $coreDriverLength ]; do
     coreFree=$(echo $coreFree | jq .core | tr -d '"')
 
     someTestsRan=true
-    ./setupAndTestWithCommercialCore.sh $coreCommercial
+    # ./setupAndTestWithCommercialCore.sh $coreCommercial
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
@@ -74,7 +74,7 @@ while [ $i -lt $coreDriverLength ]; do
     fi
     rm -rf ../../com-root
 
-    ./setupAndTestWithFreeCore.sh $coreFree
+    # ./setupAndTestWithFreeCore.sh $coreFree
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
@@ -143,13 +143,12 @@ while [ $i -lt $frontendDriverLength ]; do
     nodeTag=$(echo $nodeInfo | jq .tag | tr -d '"')
 
     ./setupAndTestWithFrontend.sh $coreCommercial $frontendTag $nodeTag
-
-    someFrontendTestsRan=true
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
         exit 1
     fi
+    someFrontendTestsRan=true
     rm -rf ../../com-root
 done
 
