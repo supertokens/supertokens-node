@@ -101,6 +101,10 @@ while [ $i -lt $frontendDriverLength ]; do
     frontendDriverVersion=`echo $frontendDriverVersion | tr -d '"'`
     i=$((i+1))
 
+    if [[ $frontendDriverVersion == '1.0' ]]; then
+        continue
+    fi
+
     frontendVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=website&mode=DEV&version=$frontendDriverVersion" \
     -H 'api-version: 0'`
