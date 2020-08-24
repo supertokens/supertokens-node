@@ -176,7 +176,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use((err, req, res, next) => {
             res.statusCode = 500;
             res.json({
-                err: err.message,
+                err: err.err.message,
             });
         });
         await supertest(app)
@@ -255,7 +255,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         app.use((err, req, res, next) => {
             res.statusCode = 500;
             res.json({
-                err: err.message,
+                err: err.err.message,
             });
         });
         await supertest(app)

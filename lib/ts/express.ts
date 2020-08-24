@@ -445,7 +445,7 @@ export async function auth0Handler(
             expires_in: expiresIn,
         });
     } catch (err) {
-        next(err);
+        next(generateError(AuthError.GENERAL_ERROR, err));
     }
 }
 
