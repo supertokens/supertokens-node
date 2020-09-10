@@ -52,12 +52,12 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let response = await ST.createNewSession("", {}, {});
 
-        let response2 = await ST.refreshSession(response.refreshToken.token);
+        let response2 = await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
 
         await ST.getSession(response2.accessToken.token, response2.antiCsrfToken, true, response2.idRefreshToken.token);
 
         try {
-            await ST.refreshSession(response.refreshToken.token);
+            await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
             throw new Error("should not have come here");
         } catch (err) {
             if (!ST.Error.isErrorFromAuth(err) || err.errType !== ST.Error.TOKEN_THEFT_DETECTED) {
@@ -76,12 +76,12 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let response = await ST.createNewSession("", {}, {});
 
-        let response2 = await ST.refreshSession(response.refreshToken.token);
+        let response2 = await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
 
         await ST.getSession(response2.accessToken.token, response2.antiCsrfToken, true, response2.idRefreshToken.token);
 
         try {
-            await ST.refreshSession(response.refreshToken.token);
+            await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
             throw new Error("should not have come here");
         } catch (err) {
             if (!ST.Error.isErrorFromAuth(err) || err.errType !== ST.Error.TOKEN_THEFT_DETECTED) {
@@ -129,7 +129,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
         assert(verifyState3 === undefined);
 
-        let response2 = await ST.refreshSession(response.refreshToken.token);
+        let response2 = await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
         assert(response2.session !== undefined);
         assert(response2.accessToken !== undefined);
         assert(response2.refreshToken !== undefined);

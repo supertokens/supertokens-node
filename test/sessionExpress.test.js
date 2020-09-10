@@ -89,6 +89,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 request(app)
                     .post("/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         resolve(res);
                     })
@@ -111,6 +112,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             request(app)
                 .post("/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     resolve(res);
                 })
@@ -177,6 +179,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 request(app)
                     .post("/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         resolve(res);
                     })
@@ -199,6 +202,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             request(app)
                 .post("/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     resolve(res);
                 })
@@ -278,6 +282,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 request(app)
                     .post("/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         resolve(res);
                     })
@@ -409,6 +414,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 request(app)
                     .post("/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         resolve(res);
                     })

@@ -70,7 +70,7 @@ export declare function getSession(accessToken: string, antiCsrfToken: string | 
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
-export declare function refreshSession(refreshToken: string): Promise<{
+export declare function refreshSession(refreshToken: string, antiCsrfToken: string | undefined): Promise<{
     session: {
         handle: string;
         userId: string;

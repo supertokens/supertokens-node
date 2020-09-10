@@ -36,6 +36,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     it("test session verify middleware", async function () {
         STExpress.init({
             hosts: "https://try.supertokens.io",
+            refreshTokenPath: "/refresh",
         });
         if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
             return;
@@ -147,7 +148,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r3 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handle")
-                .expect(440)
+                .expect(401)
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .end((err, res) => {
@@ -249,6 +250,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(
             STExpress.init({
                 hosts: "https://try.supertokens.io",
+                refreshTokenPath: "/refresh",
             })
         );
 
@@ -358,7 +360,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r3 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handle")
-                .expect(440)
+                .expect(401)
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .end((err, res) => {
@@ -577,7 +579,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r3 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handle")
-                .expect(440)
+                .expect(401)
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .end((err, res) => {
@@ -798,7 +800,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r3 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handle")
-                .expect(440)
+                .expect(401)
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .end((err, res) => {

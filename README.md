@@ -15,9 +15,6 @@ Learn more at https://supertokens.io
 ## Documentation
 To see documentation, please click [here](https://supertokens.io/docs/nodejs/installation).
 
-## Making changes
-Please see our [Contributing](https://github.com/supertokens/supertokens-node/blob/master/CONTRIBUTING.md) guide.
-
 ## Contact us
 For any queries, or support requests, please email us at team@supertokens.io, or join our [Discord](supertokens.io/discord) server.
 

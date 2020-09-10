@@ -206,7 +206,8 @@ export async function refreshSession(req: express.Request, res: express.Response
     }
 
     try {
-        let response = await SessionFunctions.refreshSession(inputRefreshToken);
+        let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
+        let response = await SessionFunctions.refreshSession(inputRefreshToken, antiCsrfToken);
         // attach tokens to cookies
         let accessToken = response.accessToken;
         let refreshToken = response.refreshToken;

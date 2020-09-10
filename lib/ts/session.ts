@@ -233,7 +233,8 @@ export async function getSession(
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
 export async function refreshSession(
-    refreshToken: string
+    refreshToken: string,
+    antiCsrfToken: string | undefined
 ): Promise<{
     session: {
         handle: string;
@@ -271,6 +272,7 @@ export async function refreshSession(
 }> {
     let response = await Querier.getInstance().sendPostRequest("/session/refresh", {
         refreshToken,
+        antiCsrfToken,
     });
     if (response.status == "OK") {
         delete response.status;

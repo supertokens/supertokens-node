@@ -124,14 +124,19 @@ module.exports.extractInfoFromResponse = function (res) {
 
 module.exports.setupST = async function () {
     let installationPath = process.env.INSTALL_PATH;
-    await module.exports.executeCommand("cd " + installationPath + " && cp temp/licenseKey ./licenseKey");
+    try {
+        await module.exports.executeCommand("cd " + installationPath + " && cp temp/licenseKey ./licenseKey");
+    } catch (ignore) {}
     await module.exports.executeCommand("cd " + installationPath + " && cp temp/config.yaml ./config.yaml");
     await module.exports.setKeyValueInConfig("refresh_api_path", "/refresh");
+    await module.exports.setKeyValueInConfig("enable_anti_csrf", "true");
 };
 
 module.exports.cleanST = async function () {
     let installationPath = process.env.INSTALL_PATH;
-    await module.exports.executeCommand("cd " + installationPath + " && rm licenseKey");
+    try {
+        await module.exports.executeCommand("cd " + installationPath + " && rm licenseKey");
+    } catch (ignore) {}
     await module.exports.executeCommand("cd " + installationPath + " && rm config.yaml");
     await module.exports.executeCommand("cd " + installationPath + " && rm -rf .webserver-temp-*");
     await module.exports.executeCommand("cd " + installationPath + " && rm -rf .started");
