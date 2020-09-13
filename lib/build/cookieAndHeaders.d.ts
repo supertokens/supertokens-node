@@ -32,6 +32,7 @@ export declare function getAntiCsrfTokenFromHeaders(req: express.Request): strin
 export declare function getIdRefreshTokenFromCookie(req: express.Request): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string): void;
 export declare function setIdRefreshTokenInHeaderAndCookie(res: express.Response, idRefreshToken: string, expiry: number, domain: string | undefined, secure: boolean, path: string, sameSite: "strict" | "lax" | "none"): void;
+export declare function setFrontTokenInHeaders(res: express.Response, userId: string, atExpiry: number, jwtPayload: any): void;
 export declare function getHeader(req: express.Request, key: string): string | undefined;
 export declare function setOptionsAPIHeader(res: express.Response): void;
 export declare function getCORSAllowedHeaders(): string[];

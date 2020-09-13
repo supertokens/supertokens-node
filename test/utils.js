@@ -72,6 +72,7 @@ module.exports.extractInfoFromResponse = function (res) {
     let accessTokenDomain = undefined;
     let refreshTokenDomain = undefined;
     let idRefreshTokenDomain = undefined;
+    let frontToken = res.headers["front-token"];
     let cookies = res.headers["set-cookie"];
     cookies = cookies === undefined ? [] : cookies;
     cookies.forEach((i) => {
@@ -119,6 +120,7 @@ module.exports.extractInfoFromResponse = function (res) {
         accessTokenDomain,
         refreshTokenDomain,
         idRefreshTokenDomain,
+        frontToken,
     };
 };
 

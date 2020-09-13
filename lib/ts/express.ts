@@ -27,6 +27,7 @@ import {
     setIdRefreshTokenInHeaderAndCookie,
     setOptionsAPIHeader,
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
+    setFrontTokenInHeaders,
 } from "./cookieAndHeaders";
 import { AuthError, generateError } from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
@@ -69,6 +70,7 @@ export async function createNewSession(
     let accessToken = response.accessToken;
     let refreshToken = response.refreshToken;
     let idRefreshToken = response.idRefreshToken;
+    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
     attachAccessTokenToCookie(
         res,
         accessToken.token,
@@ -143,6 +145,12 @@ export async function getSession(
         let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
         let response = await SessionFunctions.getSession(accessToken, antiCsrfToken, doAntiCsrfCheck);
         if (response.accessToken !== undefined) {
+            setFrontTokenInHeaders(
+                res,
+                response.session.userId,
+                response.accessToken.expiry,
+                response.session.userDataInJWT
+            );
             attachAccessTokenToCookie(
                 res,
                 response.accessToken.token,
@@ -212,6 +220,12 @@ export async function refreshSession(req: express.Request, res: express.Response
         let accessToken = response.accessToken;
         let refreshToken = response.refreshToken;
         let idRefreshToken = response.idRefreshToken;
+        setFrontTokenInHeaders(
+            res,
+            response.session.userId,
+            response.accessToken.expiry,
+            response.session.userDataInJWT
+        );
         attachAccessTokenToCookie(
             res,
             accessToken.token,
@@ -584,6 +598,12 @@ export class Session {
         this.userDataInJWT = response.session.userDataInJWT;
         if (response.accessToken !== undefined) {
             this.accessToken = response.accessToken.token;
+            setFrontTokenInHeaders(
+                this.res,
+                response.session.userId,
+                response.accessToken.expiry,
+                response.session.userDataInJWT
+            );
             attachAccessTokenToCookie(
                 this.res,
                 response.accessToken.token,

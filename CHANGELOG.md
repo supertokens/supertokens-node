@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.4.0] - 2020-09-10
 ### Added
 - Support for CDI 2.3 and FDI 1.2
+- Fixes issue #7
 
 ## [2.3.0] - 2020-08-05
 ### Added

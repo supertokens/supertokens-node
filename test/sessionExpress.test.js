@@ -836,19 +836,22 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         ST.init({ hosts: "http://localhost:8080" });
         const app = express();
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "", {}, {});
+            await STExpress.createNewSession(res, "user1", {}, {});
             res.status(200).send("");
         });
         if ((await Querier.getInstance().getAPIVersion()) !== "1.0") {
             app.post("/updateJWTPayload", async (req, res) => {
                 let session = await STExpress.getSession(req, res, true);
-                // TODO: check that access token has changed too in the session object
                 let accessTokenBefore = session.accessToken;
                 await session.updateJWTPayload({ key: "value" });
                 let accessTokenAfter = session.accessToken;
                 let statusCode =
                     accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
                 res.status(statusCode).send("");
+            });
+            app.post("/session/refresh", async (req, res) => {
+                await STExpress.refreshSession(req, res);
+                res.status(200).send("");
             });
             app.post("/getJWTPayload", async (req, res) => {
                 let session = await STExpress.getSession(req, res, true);
@@ -884,6 +887,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 )
             );
 
+            let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
+            assert(frontendInfo.uid === "user1");
+            assert.deepEqual(frontendInfo.up, {});
+
             //call the updateJWTPayload api to add jwt payload
             let updatedResponse = extractInfoFromResponse(
                 await new Promise((resolve) =>
@@ -902,6 +909,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                         })
                 )
             );
+
+            frontendInfo = JSON.parse(new Buffer.from(updatedResponse.frontToken, "base64").toString());
+            assert(frontendInfo.uid === "user1");
+            assert.deepEqual(frontendInfo.up, { key: "value" });
 
             //call the getJWTPayload api to get jwt payload
             let response2 = await new Promise((resolve) =>
@@ -922,14 +933,14 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             //check that the jwt payload returned is valid
             assert.deepEqual(response2.body.key, "value");
 
-            // change the value of the inserted jwt payload
-            let updatedResponse2 = extractInfoFromResponse(
+            // refresh session
+            response2 = extractInfoFromResponse(
                 await new Promise((resolve) =>
                     request(app)
-                        .post("/updateJWTPayload2")
+                        .post("/session/refresh")
                         .set("Cookie", [
-                            "sAccessToken=" +
-                                updatedResponse.accessToken +
+                            "sRefreshToken=" +
+                                response.refreshToken +
                                 ";sIdRefreshToken=" +
                                 response.idRefreshTokenFromCookie,
                         ])
@@ -940,6 +951,34 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                         })
                 )
             );
+
+            frontendInfo = JSON.parse(new Buffer.from(response2.frontToken, "base64").toString());
+            assert(frontendInfo.uid === "user1");
+            assert.deepEqual(frontendInfo.up, { key: "value" });
+
+            // change the value of the inserted jwt payload
+            let updatedResponse2 = extractInfoFromResponse(
+                await new Promise((resolve) =>
+                    request(app)
+                        .post("/updateJWTPayload2")
+                        .set("Cookie", [
+                            "sAccessToken=" +
+                                response2.accessToken +
+                                ";sIdRefreshToken=" +
+                                response2.idRefreshTokenFromCookie,
+                        ])
+                        .set("anti-csrf", response2.antiCsrf)
+                        .expect(200)
+                        .end((err, res) => {
+                            resolve(res);
+                        })
+                )
+            );
+
+            frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
+            assert(frontendInfo.uid === "user1");
+            assert.deepEqual(frontendInfo.up, { key: "value2" });
+
             //retrieve the changed jwt payload
             response2 = await new Promise((resolve) =>
                 request(app)
@@ -948,9 +987,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                         "sAccessToken=" +
                             updatedResponse2.accessToken +
                             ";sIdRefreshToken=" +
-                            response.idRefreshTokenFromCookie,
+                            response2.idRefreshTokenFromCookie,
                     ])
-                    .set("anti-csrf", response.antiCsrf)
+                    .set("anti-csrf", response2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
                         resolve(res);
@@ -1017,7 +1056,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
         assert.deepEqual(response.headers.testheader, "testValue");
-        assert.deepEqual(response.headers["access-control-expose-headers"], "customValue, id-refresh-token, anti-csrf");
+        assert.deepEqual(
+            response.headers["access-control-expose-headers"],
+            "customValue, front-token, id-refresh-token, anti-csrf"
+        );
 
         //normal session headers
         let extractInfo = extractInfoFromResponse(response);

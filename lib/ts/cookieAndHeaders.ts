@@ -33,6 +33,8 @@ const antiCsrfHeaderKey = "anti-csrf";
 const frontendSDKNameHeaderKey = "supertokens-sdk-name";
 const frontendSDKVersionHeaderKey = "supertokens-sdk-version";
 
+const frontTokenHeaderKey = "front-token";
+
 export class CookieConfig {
     private static instance: CookieConfig | undefined = undefined;
     accessTokenPath: string | undefined;
@@ -210,6 +212,16 @@ export function setIdRefreshTokenInHeaderAndCookie(
     );
 }
 
+export function setFrontTokenInHeaders(res: express.Response, userId: string, atExpiry: number, jwtPayload: any) {
+    let tokenInfo = {
+        uid: userId,
+        ate: atExpiry,
+        up: jwtPayload,
+    };
+    setHeader(res, frontTokenHeaderKey, Buffer.from(JSON.stringify(tokenInfo)).toString("base64"), false);
+    setHeader(res, "Access-Control-Expose-Headers", frontTokenHeaderKey, true);
+}
+
 export function getHeader(req: express.Request, key: string): string | undefined {
     let value = req.headers[key];
     if (value === undefined) {
@@ -240,6 +252,9 @@ function setHeader(res: express.Response, key: string, value: string, allowDupli
             res.header(key, value);
         } else if (allowDuplicateKey) {
             res.header(key, existingValue + ", " + value);
+        } else {
+            // we overwrite the current one with the new one
+            res.header(key, value);
         }
     } catch (err) {
         throw generateError(AuthError.GENERAL_ERROR, err);
@@ -301,7 +316,7 @@ export function setCookie(
         sameSite,
     };
 
-    return append(res, "Set-Cookie", serialize(name, value, opts));
+    return append(res, "Set-Cookie", serialize(name, value, opts), name);
 }
 
 /**
@@ -315,13 +330,29 @@ export function setCookie(
  * @param {string} field
  * @param {string| string[]} val
  */
-function append(res: ServerResponse, field: string, val: string | string[]) {
+function append(res: ServerResponse, field: string, val: string | string[], key: string) {
     let prev: string | string[] | undefined = res.getHeader(field) as string | string[] | undefined;
     let value = val;
 
     if (prev !== undefined) {
-        // concat the new and prev vals
-        value = Array.isArray(prev) ? prev.concat(val) : Array.isArray(val) ? [prev].concat(val) : [prev, val];
+        // removing existing cookie with the same name
+        if (Array.isArray(prev)) {
+            let removedDuplicate = [];
+            for (let i = 0; i < prev.length; i++) {
+                let curr = prev[i];
+                if (!curr.startsWith(key)) {
+                    removedDuplicate.push(curr);
+                }
+            }
+            prev = removedDuplicate;
+        } else {
+            if (prev.startsWith(key)) {
+                prev = undefined;
+            }
+        }
+        if (prev !== undefined) {
+            value = Array.isArray(prev) ? prev.concat(val) : Array.isArray(val) ? [prev].concat(val) : [prev, val];
+        }
     }
 
     value = Array.isArray(value) ? value.map(String) : String(value);
