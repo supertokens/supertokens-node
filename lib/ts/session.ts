@@ -166,7 +166,7 @@ export async function getSession(
                     throw generateError(
                         AuthError.TRY_REFRESH_TOKEN,
                         new Error(
-                            "provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to true"
+                            "provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false"
                         )
                     );
                 } else {
