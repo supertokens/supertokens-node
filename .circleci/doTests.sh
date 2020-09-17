@@ -74,7 +74,7 @@ while [ $i -lt $coreDriverLength ]; do
     fi
     rm -rf ../../com-root
 
-    ./setupAndTestWithFreeCore.sh $coreFree
+    ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
