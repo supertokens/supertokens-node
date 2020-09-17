@@ -40,45 +40,34 @@ export class Querier {
         if (this.apiVersion !== undefined) {
             return this.apiVersion;
         }
-        try {
-            let response = await this.sendRequestHelper(
-                "/apiversion",
-                "GET",
-                (url: string) => {
-                    let headers: any = {};
-                    if (this.apiKey !== undefined) {
-                        headers = {
-                            "api-key": this.apiKey,
-                        };
-                    }
-                    return axios.get(url, {
-                        headers,
-                    });
-                },
-                this.hosts.length
-            );
-            let cdiSupportedByServer: string[] = response.versions;
-            let supportedVersion = getLargestVersionFromIntersection(cdiSupportedByServer, cdiSupported);
-            if (supportedVersion === undefined) {
-                throw generateError(
-                    AuthError.GENERAL_ERROR,
-                    new Error(
-                        "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions"
-                    )
-                );
-            }
-            this.apiVersion = supportedVersion;
-            return this.apiVersion;
-        } catch (err) {
-            if (AuthError.isErrorFromAuth(err)) {
-                if (err.err.response !== undefined && err.err.response.status === 404) {
-                    // this means the core is cdi 1.0
-                    this.apiVersion = "1.0";
-                    return this.apiVersion;
+        let response = await this.sendRequestHelper(
+            "/apiversion",
+            "GET",
+            (url: string) => {
+                let headers: any = {};
+                if (this.apiKey !== undefined) {
+                    headers = {
+                        "api-key": this.apiKey,
+                    };
                 }
-            }
-            throw err;
+                return axios.get(url, {
+                    headers,
+                });
+            },
+            this.hosts.length
+        );
+        let cdiSupportedByServer: string[] = response.versions;
+        let supportedVersion = getLargestVersionFromIntersection(cdiSupportedByServer, cdiSupported);
+        if (supportedVersion === undefined) {
+            throw generateError(
+                AuthError.GENERAL_ERROR,
+                new Error(
+                    "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions"
+                )
+            );
         }
+        this.apiVersion = supportedVersion;
+        return this.apiVersion;
     };
 
     static reset() {
@@ -254,12 +243,7 @@ export class Querier {
             if (err.message !== undefined && err.message.includes("ECONNREFUSED")) {
                 return await this.sendRequestHelper(path, method, axiosFunction, numberOfTries - 1);
             }
-            if (
-                err.response !== undefined &&
-                err.response.status !== undefined &&
-                err.response.data !== undefined &&
-                path !== "/apiversion"
-            ) {
+            if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
                 throw generateError(
                     AuthError.GENERAL_ERROR,
                     new Error(

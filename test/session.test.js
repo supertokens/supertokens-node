@@ -98,7 +98,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
         try {
             let version = await Querier.getInstance().getAPIVersion();
-            if (version !== "1.0" && version !== "2.0" && process.env.INSTALL_PATH.includes("com-")) {
+            if (version !== "2.0" && process.env.INSTALL_PATH.includes("com-")) {
                 throw new Error("should not have come here");
             }
         } catch (err) {
@@ -235,11 +235,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(sessionIdResponse.length === 2);
 
         let response = await ST.revokeAllSessionsForUser("someUniqueUserId");
-        if (CDI_VERSION !== "1.0") {
-            assert(response.length === 2);
-        } else {
-            assert(response === 2);
-        }
+        assert(response.length === 2);
 
         sessionIdResponse = await ST.getAllSessionHandlesForUser("someUniqueUserId");
         assert(sessionIdResponse.length === 0);
@@ -250,11 +246,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         //revoke a session with a userId that does not exist
         let resp2 = await ST.revokeAllSessionsForUser("random");
-        if (CDI_VERSION !== "1.0") {
-            assert(resp2.length === 0);
-        } else {
-            assert(resp2 === 0);
-        }
+        assert(resp2.length === 0);
     });
 
     //check manipulating session data
@@ -291,45 +283,24 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //adding jwt payload
         let res = await ST.createNewSession("", {}, {});
 
-        if ((await Querier.getInstance().getAPIVersion()) !== "1.0") {
-            await ST.updateJWTPayload(res.session.handle, { key: "value" });
+        await ST.updateJWTPayload(res.session.handle, { key: "value" });
 
-            let res2 = await ST.getJWTPayload(res.session.handle);
-            assert.deepEqual(res2, { key: "value" });
+        let res2 = await ST.getJWTPayload(res.session.handle);
+        assert.deepEqual(res2, { key: "value" });
 
-            //changing the value of jwt payload with the same key
-            await ST.updateJWTPayload(res.session.handle, { key: "value 2" });
+        //changing the value of jwt payload with the same key
+        await ST.updateJWTPayload(res.session.handle, { key: "value 2" });
 
-            let res3 = await ST.getJWTPayload(res.session.handle);
-            assert.deepEqual(res3, { key: "value 2" });
+        let res3 = await ST.getJWTPayload(res.session.handle);
+        assert.deepEqual(res3, { key: "value 2" });
 
-            //passing invalid session handle when updating jwt payload
-            try {
-                await ST.updateJWTPayload("random", { key2: "value2" });
-                throw new Error();
-            } catch (error) {
-                if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.UNAUTHORISED) {
-                    throw error;
-                }
-            }
-        } else {
-            //passing valid session handle when updating jwt payload
-            try {
-                await ST.updateJWTPayload(res.session.handle, { key2: "value2" });
-                throw new Error();
-            } catch (error) {
-                if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.GENERAL_ERROR) {
-                    throw error;
-                }
-            }
-            //passing valid session handle when getting jwt payload
-            try {
-                await ST.getJWTPayload(res.session.handle);
-                throw new Error();
-            } catch (error) {
-                if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.GENERAL_ERROR) {
-                    throw error;
-                }
+        //passing invalid session handle when updating jwt payload
+        try {
+            await ST.updateJWTPayload("random", { key2: "value2" });
+            throw new Error();
+        } catch (error) {
+            if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.UNAUTHORISED) {
+                throw error;
             }
         }
     });

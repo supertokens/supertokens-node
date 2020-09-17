@@ -38,9 +38,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             hosts: "https://try.supertokens.io",
             refreshTokenPath: "/refresh",
         });
-        if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-            return;
-        }
         const app = express();
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "testing-userId", {}, {});
@@ -254,10 +251,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             })
         );
 
-        if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-            return;
-        }
-
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
@@ -465,9 +458,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             cookieSecure: true,
             cookieSameSite: "strict",
         });
-        if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-            return;
-        }
         const app = express();
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "testing-userId", {}, {});
@@ -690,9 +680,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 cookieSameSite: "strict",
             })
         );
-        if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-            return;
-        }
 
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "testing-userId", {}, {});

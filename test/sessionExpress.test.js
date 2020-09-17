@@ -839,88 +839,64 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await STExpress.createNewSession(res, "user1", {}, {});
             res.status(200).send("");
         });
-        if ((await Querier.getInstance().getAPIVersion()) !== "1.0") {
-            app.post("/updateJWTPayload", async (req, res) => {
-                let session = await STExpress.getSession(req, res, true);
-                let accessTokenBefore = session.accessToken;
-                await session.updateJWTPayload({ key: "value" });
-                let accessTokenAfter = session.accessToken;
-                let statusCode =
-                    accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
-                res.status(statusCode).send("");
-            });
-            app.post("/session/refresh", async (req, res) => {
-                await STExpress.refreshSession(req, res);
-                res.status(200).send("");
-            });
-            app.post("/getJWTPayload", async (req, res) => {
-                let session = await STExpress.getSession(req, res, true);
-                let jwtPayload = session.getJWTPayload();
-                res.status(200).json(jwtPayload);
-            });
+        app.post("/updateJWTPayload", async (req, res) => {
+            let session = await STExpress.getSession(req, res, true);
+            let accessTokenBefore = session.accessToken;
+            await session.updateJWTPayload({ key: "value" });
+            let accessTokenAfter = session.accessToken;
+            let statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
+            res.status(statusCode).send("");
+        });
+        app.post("/session/refresh", async (req, res) => {
+            await STExpress.refreshSession(req, res);
+            res.status(200).send("");
+        });
+        app.post("/getJWTPayload", async (req, res) => {
+            let session = await STExpress.getSession(req, res, true);
+            let jwtPayload = session.getJWTPayload();
+            res.status(200).json(jwtPayload);
+        });
 
-            app.post("/updateJWTPayload2", async (req, res) => {
-                let session = await STExpress.getSession(req, res, true);
-                await session.updateJWTPayload({ key: "value2" });
-                res.status(200).send("");
-            });
+        app.post("/updateJWTPayload2", async (req, res) => {
+            let session = await STExpress.getSession(req, res, true);
+            await session.updateJWTPayload({ key: "value2" });
+            res.status(200).send("");
+        });
 
-            app.post("/updateJWTPayloadInvalidSessionHandle", async (req, res) => {
-                try {
-                    await STExpress.updateJWTPayload("InvalidHandle", { key: "value3" });
-                } catch (err) {
-                    res.status(200).json({
-                        success: ST.Error.isErrorFromAuth(err) && err.errType === ST.Error.UNAUTHORISED,
-                    });
-                }
-            });
+        app.post("/updateJWTPayloadInvalidSessionHandle", async (req, res) => {
+            try {
+                await STExpress.updateJWTPayload("InvalidHandle", { key: "value3" });
+            } catch (err) {
+                res.status(200).json({
+                    success: ST.Error.isErrorFromAuth(err) && err.errType === ST.Error.UNAUTHORISED,
+                });
+            }
+        });
 
-            //create a new session
-            let response = extractInfoFromResponse(
-                await new Promise((resolve) =>
-                    request(app)
-                        .post("/create")
-                        .expect(200)
-                        .end((err, res) => {
-                            resolve(res);
-                        })
-                )
-            );
-
-            let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
-            assert(frontendInfo.uid === "user1");
-            assert.deepEqual(frontendInfo.up, {});
-
-            //call the updateJWTPayload api to add jwt payload
-            let updatedResponse = extractInfoFromResponse(
-                await new Promise((resolve) =>
-                    request(app)
-                        .post("/updateJWTPayload")
-                        .set("Cookie", [
-                            "sAccessToken=" +
-                                response.accessToken +
-                                ";sIdRefreshToken=" +
-                                response.idRefreshTokenFromCookie,
-                        ])
-                        .set("anti-csrf", response.antiCsrf)
-                        .expect(200)
-                        .end((err, res) => {
-                            resolve(res);
-                        })
-                )
-            );
-
-            frontendInfo = JSON.parse(new Buffer.from(updatedResponse.frontToken, "base64").toString());
-            assert(frontendInfo.uid === "user1");
-            assert.deepEqual(frontendInfo.up, { key: "value" });
-
-            //call the getJWTPayload api to get jwt payload
-            let response2 = await new Promise((resolve) =>
+        //create a new session
+        let response = extractInfoFromResponse(
+            await new Promise((resolve) =>
                 request(app)
-                    .post("/getJWTPayload")
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
+        assert(frontendInfo.uid === "user1");
+        assert.deepEqual(frontendInfo.up, {});
+
+        //call the updateJWTPayload api to add jwt payload
+        let updatedResponse = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/updateJWTPayload")
                     .set("Cookie", [
                         "sAccessToken=" +
-                            updatedResponse.accessToken +
+                            response.accessToken +
                             ";sIdRefreshToken=" +
                             response.idRefreshTokenFromCookie,
                     ])
@@ -929,63 +905,63 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .end((err, res) => {
                         resolve(res);
                     })
-            );
-            //check that the jwt payload returned is valid
-            assert.deepEqual(response2.body.key, "value");
+            )
+        );
 
-            // refresh session
-            response2 = extractInfoFromResponse(
-                await new Promise((resolve) =>
-                    request(app)
-                        .post("/session/refresh")
-                        .set("Cookie", [
-                            "sRefreshToken=" +
-                                response.refreshToken +
-                                ";sIdRefreshToken=" +
-                                response.idRefreshTokenFromCookie,
-                        ])
-                        .set("anti-csrf", response.antiCsrf)
-                        .expect(200)
-                        .end((err, res) => {
-                            resolve(res);
-                        })
-                )
-            );
+        frontendInfo = JSON.parse(new Buffer.from(updatedResponse.frontToken, "base64").toString());
+        assert(frontendInfo.uid === "user1");
+        assert.deepEqual(frontendInfo.up, { key: "value" });
 
-            frontendInfo = JSON.parse(new Buffer.from(response2.frontToken, "base64").toString());
-            assert(frontendInfo.uid === "user1");
-            assert.deepEqual(frontendInfo.up, { key: "value" });
+        //call the getJWTPayload api to get jwt payload
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/getJWTPayload")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                        updatedResponse.accessToken +
+                        ";sIdRefreshToken=" +
+                        response.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", response.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        //check that the jwt payload returned is valid
+        assert.deepEqual(response2.body.key, "value");
 
-            // change the value of the inserted jwt payload
-            let updatedResponse2 = extractInfoFromResponse(
-                await new Promise((resolve) =>
-                    request(app)
-                        .post("/updateJWTPayload2")
-                        .set("Cookie", [
-                            "sAccessToken=" +
-                                response2.accessToken +
-                                ";sIdRefreshToken=" +
-                                response2.idRefreshTokenFromCookie,
-                        ])
-                        .set("anti-csrf", response2.antiCsrf)
-                        .expect(200)
-                        .end((err, res) => {
-                            resolve(res);
-                        })
-                )
-            );
-
-            frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
-            assert(frontendInfo.uid === "user1");
-            assert.deepEqual(frontendInfo.up, { key: "value2" });
-
-            //retrieve the changed jwt payload
-            response2 = await new Promise((resolve) =>
+        // refresh session
+        response2 = extractInfoFromResponse(
+            await new Promise((resolve) =>
                 request(app)
-                    .post("/getJWTPayload")
+                    .post("/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" +
+                            response.refreshToken +
+                            ";sIdRefreshToken=" +
+                            response.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", response.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        frontendInfo = JSON.parse(new Buffer.from(response2.frontToken, "base64").toString());
+        assert(frontendInfo.uid === "user1");
+        assert.deepEqual(frontendInfo.up, { key: "value" });
+
+        // change the value of the inserted jwt payload
+        let updatedResponse2 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/updateJWTPayload2")
                     .set("Cookie", [
                         "sAccessToken=" +
-                            updatedResponse2.accessToken +
+                            response2.accessToken +
                             ";sIdRefreshToken=" +
                             response2.idRefreshTokenFromCookie,
                     ])
@@ -994,43 +970,49 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .end((err, res) => {
                         resolve(res);
                     })
-            );
+            )
+        );
 
-            //check the value of the retrieved
-            assert.deepEqual(response2.body.key, "value2");
-            //invalid session handle when updating the jwt payload
-            let invalidSessionResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/updateJWTPayloadInvalidSessionHandle")
-                    .set("Cookie", [
-                        "sAccessToken=" +
-                            updatedResponse2.accessToken +
-                            ";sIdRefreshToken=" +
-                            response.idRefreshTokenFromCookie,
-                    ])
-                    .set("anti-csrf", response.antiCsrf)
-                    .expect(200)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            );
-            assert.deepEqual(invalidSessionResponse.body.success, true);
-        } else {
-            app.post("/updateJWTPayload", async (req, res) => {
-                let session = await STExpress.getSession(req, res, true);
-                try {
-                    await session.updateJWTPayload({ key: "value" });
-                } catch (err) {
-                    return res.status(200).send("");
-                }
-                return res.status(200).send("");
-            });
-            app.post("/getJWTPayload", async (req, res) => {
-                let session = await STExpress.getSession(req, res, true);
-                let jwtPayload = await session.getJWTPayload();
-                res.status(200).json(jwtPayload);
-            });
-        }
+        frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
+        assert(frontendInfo.uid === "user1");
+        assert.deepEqual(frontendInfo.up, { key: "value2" });
+
+        //retrieve the changed jwt payload
+        response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/getJWTPayload")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                        updatedResponse2.accessToken +
+                        ";sIdRefreshToken=" +
+                        response2.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", response2.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+
+        //check the value of the retrieved
+        assert.deepEqual(response2.body.key, "value2");
+        //invalid session handle when updating the jwt payload
+        let invalidSessionResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/updateJWTPayloadInvalidSessionHandle")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                        updatedResponse2.accessToken +
+                        ";sIdRefreshToken=" +
+                        response.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", response.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert.deepEqual(invalidSessionResponse.body.success, true);
     });
 
     // test with existing header params being there and that the lib appends to those and not overrides those

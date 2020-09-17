@@ -110,7 +110,7 @@ export declare function refreshSession(refreshToken: string, antiCsrfToken: stri
  * Access tokens cannot be immediately invalidated. Unless we add a bloacklisting method. Or changed the private key to sign them.
  * @throws AuthError, GENERAL_ERROR
  */
-export declare function revokeAllSessionsForUser(userId: string): Promise<any>;
+export declare function revokeAllSessionsForUser(userId: string): Promise<string[]>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  * @throws AuthError, GENERAL_ERROR
@@ -127,7 +127,7 @@ export declare function revokeSession(sessionHandle: string): Promise<boolean>;
  * @returns list of sessions revoked
  * @throws AuthError, GENERAL_ERROR
  */
-export declare function revokeMultipleSessions(sessionHandles: string[]): Promise<any>;
+export declare function revokeMultipleSessions(sessionHandles: string[]): Promise<string[]>;
 /**
  * @description: this function reads from the database every time. It provides no locking mechanism in case other processes are updating session data for this session as well, so please take of that by yourself.
  * @returns session data as provided by the user earlier

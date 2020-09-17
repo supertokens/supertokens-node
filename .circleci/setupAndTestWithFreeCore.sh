@@ -59,7 +59,7 @@ mysql -u root --password=root -e "CREATE DATABASE auth_session;"
 cd ../../
 git clone git@github.com:supertokens/supertokens-root.git
 cd supertokens-root
-if [[ $2 == "1.0" ]] || [[ $2 == "2.0" ]] || [[ $2 == "2.1" ]] || [[ $2 == "2.2" ]]
+if [[ $2 == "2.0" ]] || [[ $2 == "2.1" ]] || [[ $2 == "2.2" ]]
 then
     git checkout 36e5af1b9a4e3b07247d0cf333cf82a071a78681
 fi

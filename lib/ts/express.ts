@@ -572,12 +572,6 @@ export class Session {
     };
 
     updateJWTPayload = async (newJWTPayload: any) => {
-        if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-            throw generateError(
-                AuthError.GENERAL_ERROR,
-                new Error("the current function is not supported for the core")
-            );
-        }
         let response = await Querier.getInstance().sendPostRequest("/session/regenerate", {
             accessToken: this.accessToken,
             userDataInJWT: newJWTPayload,

@@ -96,28 +96,6 @@ export async function createNewSession(
     delete response.status;
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
-    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-        try {
-            return {
-                ...response,
-                accessToken: {
-                    ...response.accessToken,
-                    sameSite: "none",
-                },
-                refreshToken: {
-                    ...response.refreshToken,
-                    sameSite: "none",
-                },
-                idRefreshToken: {
-                    ...response.idRefreshToken,
-                    cookiePath: response.accessToken.cookiePath,
-                    cookieSecure: response.accessToken.cookieSecure,
-                    domain: response.accessToken.domain,
-                    sameSite: "none",
-                },
-            };
-        } catch (ignored) {}
-    }
     return response;
 }
 
@@ -207,18 +185,6 @@ export async function getSession(
         delete response.status;
         delete response.jwtSigningPublicKey;
         delete response.jwtSigningPublicKeyExpiryTime;
-
-        if ((await Querier.getInstance().getAPIVersion()) === "1.0" && response.accessToken !== undefined) {
-            try {
-                return {
-                    ...response,
-                    accessToken: {
-                        ...response.accessToken,
-                        sameSite: "none",
-                    },
-                };
-            } catch (ignored) {}
-        }
         return response;
     } else if (response.status == "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
@@ -276,28 +242,6 @@ export async function refreshSession(
     });
     if (response.status == "OK") {
         delete response.status;
-        if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-            try {
-                return {
-                    ...response,
-                    accessToken: {
-                        ...response.accessToken,
-                        sameSite: "none",
-                    },
-                    refreshToken: {
-                        ...response.refreshToken,
-                        sameSite: "none",
-                    },
-                    idRefreshToken: {
-                        ...response.idRefreshToken,
-                        cookiePath: response.accessToken.cookiePath,
-                        cookieSecure: response.accessToken.cookieSecure,
-                        domain: response.accessToken.domain,
-                        sameSite: "none",
-                    },
-                };
-            } catch (ignored) {}
-        }
         return response;
     } else if (response.status == "UNAUTHORISED") {
         throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
@@ -314,18 +258,11 @@ export async function refreshSession(
  * Access tokens cannot be immediately invalidated. Unless we add a bloacklisting method. Or changed the private key to sign them.
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeAllSessionsForUser(userId: string): Promise<any> {
-    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-        let response = await Querier.getInstance().sendDeleteRequest("/session", {
-            userId,
-        });
-        return response.numberOfSessionsRevoked;
-    } else {
-        let response = await Querier.getInstance().sendPostRequest("/session/remove", {
-            userId,
-        });
-        return response.sessionHandlesRevoked;
-    }
+export async function revokeAllSessionsForUser(userId: string): Promise<string[]> {
+    let response = await Querier.getInstance().sendPostRequest("/session/remove", {
+        userId,
+    });
+    return response.sessionHandlesRevoked;
 }
 
 /**
@@ -345,17 +282,10 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeSession(sessionHandle: string): Promise<boolean> {
-    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-        let response = await Querier.getInstance().sendDeleteRequest("/session", {
-            sessionHandle,
-        });
-        return response.numberOfSessionsRevoked === 1;
-    } else {
-        let response = await Querier.getInstance().sendPostRequest("/session/remove", {
-            sessionHandles: [sessionHandle],
-        });
-        return response.sessionHandlesRevoked.length === 1;
-    }
+    let response = await Querier.getInstance().sendPostRequest("/session/remove", {
+        sessionHandles: [sessionHandle],
+    });
+    return response.sessionHandlesRevoked.length === 1;
 }
 
 /**
@@ -363,18 +293,11 @@ export async function revokeSession(sessionHandle: string): Promise<boolean> {
  * @returns list of sessions revoked
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeMultipleSessions(sessionHandles: string[]): Promise<any> {
-    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-        let response = await Querier.getInstance().sendDeleteRequest("/session", {
-            sessionHandles,
-        });
-        return response.numberOfSessionsRevoked;
-    } else {
-        let response = await Querier.getInstance().sendPostRequest("/session/remove", {
-            sessionHandles,
-        });
-        return response.sessionHandlesRevoked;
-    }
+export async function revokeMultipleSessions(sessionHandles: string[]): Promise<string[]> {
+    let response = await Querier.getInstance().sendPostRequest("/session/remove", {
+        sessionHandles,
+    });
+    return response.sessionHandlesRevoked;
 }
 
 /**
@@ -412,12 +335,6 @@ export async function updateSessionData(sessionHandle: string, newSessionData: a
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getJWTPayload(sessionHandle: string): Promise<any> {
-    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-        throw generateError(
-            AuthError.GENERAL_ERROR,
-            new Error("the current function is not supported for the core. Please upgrade the supertokens service.")
-        );
-    }
     let response = await Querier.getInstance().sendGetRequest("/jwt/data", {
         sessionHandle,
     });
@@ -432,12 +349,6 @@ export async function getJWTPayload(sessionHandle: string): Promise<any> {
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-    if ((await Querier.getInstance().getAPIVersion()) === "1.0") {
-        throw generateError(
-            AuthError.GENERAL_ERROR,
-            new Error("the current function is not supported for the core. Please upgrade the supertokens service.")
-        );
-    }
     let response = await Querier.getInstance().sendPutRequest("/jwt/data", {
         sessionHandle,
         userDataInJWT: newJWTPayload,
