@@ -105,7 +105,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             if (
                 !ST.Error.isErrorFromAuth(err) ||
                 err.errType !== ST.Error.GENERAL_ERROR ||
-                err.err.message !== "Request failed with status code 401"
+                err.err.message !==
+                    "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
             ) {
                 throw err;
             }
