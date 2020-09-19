@@ -1,5 +1,5 @@
 import * as express from "express";
-import { SessionRequest, TypeFaunaDBInput } from "./types";
+import { TypeFaunaDBInput } from "./types";
 import * as OriginalExpress from "../";
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
@@ -76,7 +76,6 @@ export declare function getJWTPayload(sessionHandle: string): Promise<any>;
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export declare function updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
-export declare function auth0Handler(request: SessionRequest, response: express.Response, next: express.NextFunction, domain: string, clientId: string, clientSecret: string, callback?: (userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>): Promise<express.Response | undefined>;
 /**
  * @class Session
  * @description an instance of this is created when a session is valid.

@@ -20,6 +20,7 @@ import { SessionRequest, TypeFaunaDBInput } from "./types";
 import * as OriginalExpress from "../";
 import * as faunadb from "faunadb";
 import { AuthError, generateError } from "../error";
+import { autoRefreshMiddleware } from "./middleware";
 
 let accessFaunaDBTokenFromFrontend: boolean;
 let faunaDBClient: faunadb.Client;
@@ -33,13 +34,14 @@ const q = faunadb.query;
  * @param config
  */
 export function init(config: TypeFaunaDBInput) {
+    OriginalExpress.init(config);
     faunaDBClient = new faunadb.Client({
         secret: config.faunadbSecret,
     });
     userCollectionName = config.userCollectionName;
     accessFaunaDBTokenFromFrontend =
         config.accessFaunadbTokenFromFrontend === undefined ? false : config.accessFaunadbTokenFromFrontend;
-    return OriginalExpress.init(config);
+    return autoRefreshMiddleware();
 }
 
 async function getFDAT(session: Session) {
@@ -55,7 +57,6 @@ async function getFDAT(session: Session) {
             ttl: q.TimeAdd(q.Now(), accessTokenLifetime + FAUNADB_TOKEN_TIME_LAG_MILLI, "millisecond"),
         })
     );
-
     return faunaResponse.secret;
 }
 
@@ -244,18 +245,6 @@ export async function getJWTPayload(sessionHandle: string): Promise<any> {
  */
 export async function updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
     return OriginalExpress.updateJWTPayload(sessionHandle, newJWTPayload);
-}
-
-export async function auth0Handler(
-    request: SessionRequest,
-    response: express.Response,
-    next: express.NextFunction,
-    domain: string,
-    clientId: string,
-    clientSecret: string,
-    callback?: (userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>
-) {
-    return OriginalExpress.auth0Handler(request, response, next, domain, clientId, clientSecret, callback);
 }
 
 /**

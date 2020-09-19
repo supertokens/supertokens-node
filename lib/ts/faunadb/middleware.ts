@@ -14,53 +14,71 @@
  */
 
 import { Response, NextFunction, Request } from "express";
-import { ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions, SessionRequest } from "../types";
+import { ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions, SessionRequest } from "./types";
+import { refreshSession, getSession } from "./express";
+import { CookieConfig } from "../cookieAndHeaders";
+import { HandshakeInfo } from "../handshakeInfo";
 import * as OriginalMiddleware from "../middleware";
-import { Session } from "./express";
 
+/* TODO: is there a way to not have to duplicate all the code here from ../middleware?
+ * Simply calling that will not work since we want to call getSession and refreshSession of
+ * faunaDB.
+ */
+
+// We do not use the middleware functions from ../middleware, because we want the
+// refreshSession, getSession of the ones defined for faunadb to be called.
 export function autoRefreshMiddleware() {
-    return async (request: SessionRequest, response: Response, next: NextFunction) => {
-        let originalFunction = OriginalMiddleware.autoRefreshMiddleware();
-        originalFunction(request, response, (err) => {
-            if (err !== undefined) {
-                return next(err);
+    return async (request: Request, response: Response, next: NextFunction) => {
+        try {
+            let path = request.originalUrl.split("?")[0];
+            let refreshTokenPath = await getRefreshPath();
+            if (
+                (refreshTokenPath === path || `${refreshTokenPath}/` === path || refreshTokenPath === `${path}/`) &&
+                request.method.toLowerCase() === "post"
+            ) {
+                await refreshSession(request, response);
+                return response.send(JSON.stringify({}));
             }
-            if (request.session === undefined) {
-                return next();
-            }
-            request.session = new Session(
-                request.session.getAccessToken(),
-                request.session.getHandle(),
-                request.session.getUserId(),
-                request.session.getJWTPayload(),
-                request.session.getAccessTokenExpiry(),
-                response
-            );
             return next();
-        });
+        } catch (err) {
+            next(err);
+        }
     };
 }
 
+async function getRefreshPath(): Promise<string> {
+    let refreshTokenPathConfig = CookieConfig.getInstance().refreshTokenPath;
+    if (refreshTokenPathConfig !== undefined) {
+        return refreshTokenPathConfig;
+    }
+    let handShakeInfo = await HandshakeInfo.getInstance();
+    return handShakeInfo.refreshTokenPath;
+}
+
 export function middleware(antiCsrfCheck?: boolean) {
+    // We know this should be Request but then Type
     return async (request: SessionRequest, response: Response, next: NextFunction) => {
-        let originalFunction = OriginalMiddleware.middleware(antiCsrfCheck);
-        originalFunction(request, response, (err) => {
-            if (err !== undefined) {
-                return next(err);
-            }
-            if (request.session === undefined) {
+        try {
+            if (request.method.toLowerCase() === "options" || request.method.toLowerCase() === "trace") {
                 return next();
             }
-            request.session = new Session(
-                request.session.getAccessToken(),
-                request.session.getHandle(),
-                request.session.getUserId(),
-                request.session.getJWTPayload(),
-                request.session.getAccessTokenExpiry(),
-                response
-            );
+            let path = request.originalUrl.split("?")[0];
+            let refreshTokenPath = await getRefreshPath();
+            if (
+                (refreshTokenPath === path || `${refreshTokenPath}/` === path || refreshTokenPath === `${path}/`) &&
+                request.method.toLowerCase() === "post"
+            ) {
+                request.session = await refreshSession(request, response);
+            } else {
+                if (antiCsrfCheck === undefined) {
+                    antiCsrfCheck = request.method.toLowerCase() !== "get";
+                }
+                request.session = await getSession(request, response, antiCsrfCheck);
+            }
             return next();
-        });
+        } catch (err) {
+            next(err);
+        }
     };
 }
 

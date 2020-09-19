@@ -32,12 +32,12 @@ let { Querier } = require("../lib/build/querier");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let { maxVersion } = require("../lib/build/utils");
+let faunadb = require("faunadb");
+const q = faunadb.query;
 
 /*
-- test that retrieved faunadb token can be used with faunadb
-- test that in refresh, new faunadb token is obtained
-- test that frontend can read faunadb token
 - many general session tests with express to test our middleware
+- test lifetime of fauna db token is 30 secs + lifetime of access token
 */
 
 describe(`faunaDB: ${printPath("[test/sessionExpress.test.js]")}`, function () {
@@ -95,7 +95,7 @@ describe(`faunaDB: ${printPath("[test/sessionExpress.test.js]")}`, function () {
             )
         );
 
-        res = await new Promise((resolve) =>
+        res2 = await new Promise((resolve) =>
             request(app)
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
@@ -105,9 +105,60 @@ describe(`faunaDB: ${printPath("[test/sessionExpress.test.js]")}`, function () {
                 })
         );
 
-        assert(res === "pass");
+        assert(res2 === "pass");
 
-        // TODO: retrieved faunadb token can be used with faunadb
+        let frontToken = JSON.parse(Buffer.from(res.frontToken, "base64").toString());
+
+        let token = frontToken.up.faunadbToken;
+
+        let faunaDBClient = new faunadb.Client({
+            secret: token,
+        });
+
+        let faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+
+        assert(faunaResponse.data.name === "test user 1");
+
+        // refresh session and repeat the above
+        let res3 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/refresh")
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        res4 = await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", [
+                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res3.antiCsrf)
+                .end((err, res) => {
+                    resolve(res.text);
+                })
+        );
+
+        assert(res4 === "pass");
+
+        let frontToken2 = JSON.parse(Buffer.from(res3.frontToken, "base64").toString());
+
+        let token2 = frontToken2.up.faunadbToken;
+
+        assert(token2 !== token);
+
+        faunaDBClient = new faunadb.Client({
+            secret: token2,
+        });
+
+        faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+
+        assert(faunaResponse.data.name === "test user 1");
     });
 
     it("getting FDAT from session data", async function () {
