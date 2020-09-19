@@ -82,6 +82,6 @@ export declare function auth0Handler(request: SessionRequest, response: express.
  * @description an instance of this is created when a session is valid.
  */
 export declare class Session extends OriginalExpress.Session {
-    constructor(accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response);
+    constructor(accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, accessTokenExpiry: number | undefined, res: express.Response);
     getFaunadbToken: () => Promise<string>;
 }

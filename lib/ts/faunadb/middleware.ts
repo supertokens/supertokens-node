@@ -33,6 +33,7 @@ export function autoRefreshMiddleware() {
                 request.session.getHandle(),
                 request.session.getUserId(),
                 request.session.getJWTPayload(),
+                request.session.getAccessTokenExpiry(),
                 response
             );
             return next();
@@ -55,6 +56,7 @@ export function middleware(antiCsrfCheck?: boolean) {
                 request.session.getHandle(),
                 request.session.getUserId(),
                 request.session.getJWTPayload(),
+                request.session.getAccessTokenExpiry(),
                 response
             );
             return next();

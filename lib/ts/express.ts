@@ -70,6 +70,7 @@ export async function createNewSession(
         response.session.handle,
         response.session.userId,
         response.session.userDataInJWT,
+        response.accessToken.expiry,
         res
     );
 }
@@ -130,6 +131,7 @@ export async function getSession(
             response.session.handle,
             response.session.userId,
             response.session.userDataInJWT,
+            response.accessToken !== undefined ? response.accessToken.expiry : undefined,
             res
         );
     } catch (err) {
@@ -185,6 +187,7 @@ export async function refreshSession(req: express.Request, res: express.Response
             response.session.handle,
             response.session.userId,
             response.session.userDataInJWT,
+            response.accessToken.expiry,
             res
         );
     } catch (err) {
@@ -397,14 +400,28 @@ export class Session {
     private userDataInJWT: any;
     private res: express.Response;
     private accessToken: string;
+    private accessTokenExpiry: number | undefined;
 
-    constructor(accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response) {
+    constructor(
+        accessToken: string,
+        sessionHandle: string,
+        userId: string,
+        userDataInJWT: any,
+        accessTokenExpiry: number | undefined,
+        res: express.Response
+    ) {
         this.sessionHandle = sessionHandle;
         this.userId = userId;
         this.userDataInJWT = userDataInJWT;
         this.res = res;
         this.accessToken = accessToken;
+        this.accessTokenExpiry = accessTokenExpiry;
     }
+
+    // TODO: remove when handshakeInfo has accessToken lifetime param
+    getAccessTokenExpiry = () => {
+        return this.accessTokenExpiry;
+    };
 
     /**
      * @description call this to logout the current user.
