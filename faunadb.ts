@@ -12,6 +12,5 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export const version = "2.5.0";
 
-export const cdiSupported = ["2.0", "2.1", "2.2", "2.3"];
+export * from './lib/ts/faunadb';

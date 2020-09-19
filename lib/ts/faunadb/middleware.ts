@@ -12,6 +12,18 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export const version = "2.5.0";
 
-export const cdiSupported = ["2.0", "2.1", "2.2", "2.3"];
+import { ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions } from "../types";
+import * as OriginalMiddleware from "../middleware";
+
+export function autoRefreshMiddleware() {
+    return OriginalMiddleware.autoRefreshMiddleware();
+}
+
+export function middleware(antiCsrfCheck?: boolean) {
+    return OriginalMiddleware.middleware(antiCsrfCheck);
+}
+
+export function errorHandler(options?: SuperTokensErrorMiddlewareOptions): ErrorHandlerMiddleware {
+    return OriginalMiddleware.errorHandler(options);
+}
