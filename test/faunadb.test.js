@@ -40,7 +40,7 @@ let { maxVersion } = require("../lib/build/utils");
 - many general session tests with express to test our middleware
 */
 
-describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
+describe(`faunaDB: ${printPath("[test/sessionExpress.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

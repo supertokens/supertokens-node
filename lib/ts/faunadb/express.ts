@@ -50,13 +50,13 @@ export function init(config: TypeFaunaDBInput) {
  * @throws GENERAL_ERROR in case anything fails.
  * @sideEffect sets cookies in res
  */
-// TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
 export async function createNewSession(
     res: express.Response,
     userId: string,
     jwtPayload: any = {},
     sessionData: any = {}
 ): Promise<Session> {
+    // TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
     let response = await SessionFunctions.createNewSession(userId, jwtPayload, sessionData);
     attachCreateOrRefreshSessionResponseToExpressRes(res, response);
     let session = new Session(
