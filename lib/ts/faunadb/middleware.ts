@@ -20,11 +20,6 @@ import { CookieConfig } from "../cookieAndHeaders";
 import { HandshakeInfo } from "../handshakeInfo";
 import * as OriginalMiddleware from "../middleware";
 
-/* TODO: is there a way to not have to duplicate all the code here from ../middleware?
- * Simply calling that will not work since we want to call getSession and refreshSession of
- * faunaDB.
- */
-
 // We do not use the middleware functions from ../middleware, because we want the
 // refreshSession, getSession of the ones defined for faunadb to be called.
 export function autoRefreshMiddleware() {
