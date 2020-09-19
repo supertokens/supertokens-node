@@ -1,4 +1,4 @@
-import { TypeInput } from "./types";
+import { TypeInput, CreateOrRefreshAPIResponse } from "./types";
 export { AuthError as Error } from "./error";
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
@@ -10,41 +10,7 @@ export declare function init(config: TypeInput): void;
  * @description call this to "login" a user.
  * @throws GENERAL_ERROR in case anything fails.
  */
-export declare function createNewSession(userId: string, jwtPayload?: any, sessionData?: any): Promise<{
-    session: {
-        handle: string;
-        userId: string;
-        userDataInJWT: any;
-    };
-    accessToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    refreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    idRefreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    antiCsrfToken: string | undefined;
-}>;
+export declare function createNewSession(userId: string, jwtPayload?: any, sessionData?: any): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED and TRY_REFRESH_TOKEN
@@ -70,41 +36,7 @@ export declare function getSession(accessToken: string, antiCsrfToken: string | 
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
-export declare function refreshSession(refreshToken: string, antiCsrfToken: string | undefined): Promise<{
-    session: {
-        handle: string;
-        userId: string;
-        userDataInJWT: any;
-    };
-    accessToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    refreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    idRefreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    antiCsrfToken: string | undefined;
-}>;
+export declare function refreshSession(refreshToken: string, antiCsrfToken: string | undefined): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a bloacklisting method. Or changed the private key to sign them.

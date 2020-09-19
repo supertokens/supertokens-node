@@ -38,14 +38,13 @@ import axios from "axios";
 import * as qs from "querystring";
 import * as jwt from "jsonwebtoken";
 import { autoRefreshMiddleware } from "./middleware";
+import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
 
 // TODO: Make it also work with PassportJS
 
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
- * Please create a database in your mongo instance before calling this function
  * @param config
- * @param client: mongo client. Default is undefined. If you provide this, please make sure that it is already connected to the right database that has the auth collections. If you do not provide this, then the library will manage its own connection.
  */
 export function init(config: TypeInput) {
     SessionFunctions.init(config);
@@ -65,45 +64,9 @@ export async function createNewSession(
     sessionData: any = {}
 ): Promise<Session> {
     let response = await SessionFunctions.createNewSession(userId, jwtPayload, sessionData);
-
-    // attach tokens to cookies
-    let accessToken = response.accessToken;
-    let refreshToken = response.refreshToken;
-    let idRefreshToken = response.idRefreshToken;
-    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
-    attachAccessTokenToCookie(
-        res,
-        accessToken.token,
-        accessToken.expiry,
-        accessToken.domain,
-        accessToken.cookiePath,
-        accessToken.cookieSecure,
-        accessToken.sameSite
-    );
-    attachRefreshTokenToCookie(
-        res,
-        refreshToken.token,
-        refreshToken.expiry,
-        refreshToken.domain,
-        refreshToken.cookiePath,
-        refreshToken.cookieSecure,
-        refreshToken.sameSite
-    );
-    setIdRefreshTokenInHeaderAndCookie(
-        res,
-        idRefreshToken.token,
-        idRefreshToken.expiry,
-        idRefreshToken.domain,
-        idRefreshToken.cookieSecure,
-        idRefreshToken.cookiePath,
-        idRefreshToken.sameSite
-    );
-    if (response.antiCsrfToken !== undefined) {
-        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
-    }
-
+    attachCreateOrRefreshSessionResponseToExpressRes(res, response);
     return new Session(
-        accessToken.token,
+        response.accessToken.token,
         response.session.handle,
         response.session.userId,
         response.session.userDataInJWT,
@@ -216,49 +179,9 @@ export async function refreshSession(req: express.Request, res: express.Response
     try {
         let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
         let response = await SessionFunctions.refreshSession(inputRefreshToken, antiCsrfToken);
-        // attach tokens to cookies
-        let accessToken = response.accessToken;
-        let refreshToken = response.refreshToken;
-        let idRefreshToken = response.idRefreshToken;
-        setFrontTokenInHeaders(
-            res,
-            response.session.userId,
-            response.accessToken.expiry,
-            response.session.userDataInJWT
-        );
-        attachAccessTokenToCookie(
-            res,
-            accessToken.token,
-            accessToken.expiry,
-            accessToken.domain,
-            accessToken.cookiePath,
-            accessToken.cookieSecure,
-            accessToken.sameSite
-        );
-        attachRefreshTokenToCookie(
-            res,
-            refreshToken.token,
-            refreshToken.expiry,
-            refreshToken.domain,
-            refreshToken.cookiePath,
-            refreshToken.cookieSecure,
-            refreshToken.sameSite
-        );
-        setIdRefreshTokenInHeaderAndCookie(
-            res,
-            idRefreshToken.token,
-            idRefreshToken.expiry,
-            idRefreshToken.domain,
-            idRefreshToken.cookieSecure,
-            idRefreshToken.cookiePath,
-            idRefreshToken.sameSite
-        );
-        if (response.antiCsrfToken !== undefined) {
-            setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
-        }
-
+        attachCreateOrRefreshSessionResponseToExpressRes(res, response);
         return new Session(
-            accessToken.token,
+            response.accessToken.token,
             response.session.handle,
             response.session.userId,
             response.session.userDataInJWT,

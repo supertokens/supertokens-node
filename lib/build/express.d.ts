@@ -2,9 +2,7 @@ import * as express from "express";
 import { TypeInput, SessionRequest } from "./types";
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
- * Please create a database in your mongo instance before calling this function
  * @param config
- * @param client: mongo client. Default is undefined. If you provide this, please make sure that it is already connected to the right database that has the auth collections. If you do not provide this, then the library will manage its own connection.
  */
 export declare function init(config: TypeInput): (request: express.Request, response: express.Response, next: express.NextFunction) => Promise<void | express.Response>;
 /**

@@ -1,5 +1,40 @@
 import { Request, Response, NextFunction } from "express";
 import { Session } from "./express";
+export declare type CreateOrRefreshAPIResponse = {
+    session: {
+        handle: string;
+        userId: string;
+        userDataInJWT: any;
+    };
+    accessToken: {
+        token: string;
+        expiry: number;
+        createdTime: number;
+        cookiePath: string;
+        cookieSecure: boolean;
+        domain?: string;
+        sameSite: "none" | "lax" | "strict";
+    };
+    refreshToken: {
+        token: string;
+        expiry: number;
+        createdTime: number;
+        cookiePath: string;
+        cookieSecure: boolean;
+        domain?: string;
+        sameSite: "none" | "lax" | "strict";
+    };
+    idRefreshToken: {
+        token: string;
+        expiry: number;
+        createdTime: number;
+        cookiePath: string;
+        cookieSecure: boolean;
+        domain?: string;
+        sameSite: "none" | "lax" | "strict";
+    };
+    antiCsrfToken: string | undefined;
+};
 export declare type TypeAuthError = {
     errType: number;
     err: any;

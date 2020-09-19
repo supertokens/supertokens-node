@@ -18,7 +18,7 @@ import { HandshakeInfo } from "./handshakeInfo";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import { Querier } from "./querier";
 import { CookieConfig } from "./cookieAndHeaders";
-import { TypeInput } from "./types";
+import { TypeInput, CreateOrRefreshAPIResponse } from "./types";
 
 export { AuthError as Error } from "./error";
 /**
@@ -51,41 +51,7 @@ export async function createNewSession(
     userId: string,
     jwtPayload: any = {},
     sessionData: any = {}
-): Promise<{
-    session: {
-        handle: string;
-        userId: string;
-        userDataInJWT: any;
-    };
-    accessToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    refreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    idRefreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    antiCsrfToken: string | undefined;
-}> {
+): Promise<CreateOrRefreshAPIResponse> {
     let response = await Querier.getInstance().sendPostRequest("/session", {
         userId,
         userDataInJWT: jwtPayload,
@@ -201,41 +167,7 @@ export async function getSession(
 export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined
-): Promise<{
-    session: {
-        handle: string;
-        userId: string;
-        userDataInJWT: any;
-    };
-    accessToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    refreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    idRefreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
-    };
-    antiCsrfToken: string | undefined;
-}> {
+): Promise<CreateOrRefreshAPIResponse> {
     let response = await Querier.getInstance().sendPostRequest("/session/refresh", {
         refreshToken,
         antiCsrfToken,

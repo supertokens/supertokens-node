@@ -1,3 +1,53 @@
+import { CreateOrRefreshAPIResponse } from "./types";
+import {
+    setFrontTokenInHeaders,
+    attachAccessTokenToCookie,
+    attachRefreshTokenToCookie,
+    setIdRefreshTokenInHeaderAndCookie,
+    setAntiCsrfTokenInHeaders,
+} from "./cookieAndHeaders";
+import * as express from "express";
+
+export function attachCreateOrRefreshSessionResponseToExpressRes(
+    res: express.Response,
+    response: CreateOrRefreshAPIResponse
+) {
+    let accessToken = response.accessToken;
+    let refreshToken = response.refreshToken;
+    let idRefreshToken = response.idRefreshToken;
+    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
+    attachAccessTokenToCookie(
+        res,
+        accessToken.token,
+        accessToken.expiry,
+        accessToken.domain,
+        accessToken.cookiePath,
+        accessToken.cookieSecure,
+        accessToken.sameSite
+    );
+    attachRefreshTokenToCookie(
+        res,
+        refreshToken.token,
+        refreshToken.expiry,
+        refreshToken.domain,
+        refreshToken.cookiePath,
+        refreshToken.cookieSecure,
+        refreshToken.sameSite
+    );
+    setIdRefreshTokenInHeaderAndCookie(
+        res,
+        idRefreshToken.token,
+        idRefreshToken.expiry,
+        idRefreshToken.domain,
+        idRefreshToken.cookieSecure,
+        idRefreshToken.cookiePath,
+        idRefreshToken.sameSite
+    );
+    if (response.antiCsrfToken !== undefined) {
+        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
+    }
+}
+
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
     if (intersection.length === 0) {

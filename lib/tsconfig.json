@@ -9,7 +9,10 @@
         "noImplicitAny": true,
         "sourceMap": true,
         "noImplicitThis": true,
-        "lib": ["ES2017"]
+        "skipLibCheck": true,
+        "lib": [
+            "ES2017"
+        ]
     },
     "include": [
         "ts/**/*"

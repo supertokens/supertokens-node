@@ -16,16 +16,31 @@
 import * as express from "express";
 
 import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } from "../cookieAndHeaders";
-import { TypeInput, SessionRequest } from "../types";
+import { SessionRequest, TypeFaunaDBInput } from "./types";
 import * as OriginalExpress from "../";
+import * as faunadb from "faunadb";
+import { attachCreateOrRefreshSessionResponseToExpressRes } from "../utils";
+import * as SessionFunctions from "../session";
+import { AuthError, generateError } from "../error";
+
+let accessFaunaDBTokenFromFrontend: boolean;
+let faunaDBClient: faunadb.Client;
+let userCollectionName: string;
+const FAUNADB_TOKEN_TIME_LAG_MILLI = 30 * 1000;
+const FAUNADB_SESSION_KEY = "faunadbToken";
+const q = faunadb.query;
 
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
- * Please create a database in your mongo instance before calling this function
  * @param config
- * @param client: mongo client. Default is undefined. If you provide this, please make sure that it is already connected to the right database that has the auth collections. If you do not provide this, then the library will manage its own connection.
  */
-export function init(config: TypeInput) {
+export function init(config: TypeFaunaDBInput) {
+    faunaDBClient = new faunadb.Client({
+        secret: config.faunadbSecret,
+    });
+    userCollectionName = config.userCollectionName;
+    accessFaunaDBTokenFromFrontend =
+        config.accessFaunadbTokenFromFrontend === undefined ? false : config.accessFaunadbTokenFromFrontend;
     return OriginalExpress.init(config);
 }
 
@@ -35,13 +50,53 @@ export function init(config: TypeInput) {
  * @throws GENERAL_ERROR in case anything fails.
  * @sideEffect sets cookies in res
  */
+// TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
 export async function createNewSession(
     res: express.Response,
     userId: string,
     jwtPayload: any = {},
     sessionData: any = {}
 ): Promise<Session> {
-    return OriginalExpress.createNewSession(res, userId, jwtPayload, sessionData);
+    let response = await SessionFunctions.createNewSession(userId, jwtPayload, sessionData);
+    attachCreateOrRefreshSessionResponseToExpressRes(res, response);
+    let session = new Session(
+        response.accessToken.token,
+        response.session.handle,
+        response.session.userId,
+        response.session.userDataInJWT,
+        res
+    );
+    try {
+        let accessTokenLifetime = response.accessToken.expiry - Date.now();
+
+        let faunaResponse: any = await faunaDBClient.query(
+            q.Create(q.Tokens(), {
+                instance: q.Ref(q.Collection(userCollectionName), userId),
+                ttl: q.TimeAdd(q.Now(), accessTokenLifetime + FAUNADB_TOKEN_TIME_LAG_MILLI, "millisecond"),
+            })
+        );
+
+        let fdat = faunaResponse.secret; // faunadb access token
+
+        if (accessFaunaDBTokenFromFrontend) {
+            let newPayload = {
+                ...jwtPayload,
+            };
+            newPayload[FAUNADB_SESSION_KEY] = fdat;
+            await session.updateJWTPayload(newPayload);
+        } else {
+            let newPayload = {
+                ...sessionData,
+            };
+            newPayload[FAUNADB_SESSION_KEY] = fdat;
+            await session.updateSessionData(newPayload);
+        }
+
+        return session;
+    } catch (err) {
+        console.log(err);
+        throw generateError(AuthError.GENERAL_ERROR, err);
+    }
 }
 
 /**
@@ -54,7 +109,14 @@ export async function getSession(
     res: express.Response,
     doAntiCsrfCheck: boolean
 ): Promise<Session> {
-    return OriginalExpress.getSession(req, res, doAntiCsrfCheck);
+    let originalSession = await OriginalExpress.getSession(req, res, doAntiCsrfCheck);
+    return new Session(
+        originalSession.getAccessToken(),
+        originalSession.getHandle(),
+        originalSession.getUserId(),
+        originalSession.getJWTPayload(),
+        res
+    );
 }
 
 /**
@@ -63,7 +125,14 @@ export async function getSession(
  * @sideEffects may remove cookies, or change the accessToken and refreshToken.
  */
 export async function refreshSession(req: express.Request, res: express.Response): Promise<Session> {
-    return OriginalExpress.refreshSession(req, res);
+    let originalSession = await OriginalExpress.refreshSession(req, res);
+    return new Session(
+        originalSession.getAccessToken(),
+        originalSession.getHandle(),
+        originalSession.getUserId(),
+        originalSession.getJWTPayload(),
+        res
+    );
 }
 
 /**
@@ -167,4 +236,15 @@ export class Session extends OriginalExpress.Session {
     constructor(accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response) {
         super(accessToken, sessionHandle, userId, userDataInJWT, res);
     }
+
+    getFaunadbToken = async (): Promise<string> => {
+        let jwtPayload = this.getJWTPayload();
+        if (jwtPayload[FAUNADB_SESSION_KEY] !== undefined) {
+            // this operation costs nothing. So we can check
+            return jwtPayload[FAUNADB_SESSION_KEY];
+        } else {
+            let sessionData = await this.getSessionData();
+            return sessionData[FAUNADB_SESSION_KEY];
+        }
+    };
 }

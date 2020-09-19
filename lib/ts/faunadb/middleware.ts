@@ -13,15 +13,53 @@
  * under the License.
  */
 
-import { ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions } from "../types";
+import { Response, NextFunction, Request } from "express";
+import { ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions, SessionRequest } from "../types";
 import * as OriginalMiddleware from "../middleware";
+import { Session } from "./express";
 
 export function autoRefreshMiddleware() {
-    return OriginalMiddleware.autoRefreshMiddleware();
+    return async (request: SessionRequest, response: Response, next: NextFunction) => {
+        let originalFunction = OriginalMiddleware.autoRefreshMiddleware();
+        originalFunction(request, response, (err) => {
+            if (err !== undefined) {
+                return next(err);
+            }
+            if (request.session === undefined) {
+                return next();
+            }
+            request.session = new Session(
+                request.session.getAccessToken(),
+                request.session.getHandle(),
+                request.session.getUserId(),
+                request.session.getJWTPayload(),
+                response
+            );
+            return next();
+        });
+    };
 }
 
 export function middleware(antiCsrfCheck?: boolean) {
-    return OriginalMiddleware.middleware(antiCsrfCheck);
+    return async (request: SessionRequest, response: Response, next: NextFunction) => {
+        let originalFunction = OriginalMiddleware.middleware(antiCsrfCheck);
+        originalFunction(request, response, (err) => {
+            if (err !== undefined) {
+                return next(err);
+            }
+            if (request.session === undefined) {
+                return next();
+            }
+            request.session = new Session(
+                request.session.getAccessToken(),
+                request.session.getHandle(),
+                request.session.getUserId(),
+                request.session.getJWTPayload(),
+                response
+            );
+            return next();
+        });
+    };
 }
 
 export function errorHandler(options?: SuperTokensErrorMiddlewareOptions): ErrorHandlerMiddleware {
