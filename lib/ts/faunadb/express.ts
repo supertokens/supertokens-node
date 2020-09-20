@@ -15,8 +15,7 @@
 
 import * as express from "express";
 
-import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } from "../cookieAndHeaders";
-import { SessionRequest, TypeFaunaDBInput } from "./types";
+import { TypeFaunaDBInput } from "./types";
 import * as OriginalExpress from "../";
 import * as faunadb from "faunadb";
 import { AuthError, generateError } from "../error";
@@ -44,6 +43,14 @@ export function init(config: TypeFaunaDBInput) {
     return autoRefreshMiddleware();
 }
 
+function getFaunadbTokenTimeLag() {
+    if (process.env.INSTALL_PATH !== undefined) {
+        // if in testing...
+        return 2 * 1000;
+    }
+    return FAUNADB_TOKEN_TIME_LAG_MILLI;
+}
+
 async function getFDAT(session: Session) {
     let accessTokenExpiry = session.getAccessTokenExpiry();
     if (accessTokenExpiry === undefined) {
@@ -54,7 +61,7 @@ async function getFDAT(session: Session) {
     let faunaResponse: any = await faunaDBClient.query(
         q.Create(q.Tokens(), {
             instance: q.Ref(q.Collection(userCollectionName), session.getUserId()),
-            ttl: q.TimeAdd(q.Now(), accessTokenLifetime + FAUNADB_TOKEN_TIME_LAG_MILLI, "millisecond"),
+            ttl: q.TimeAdd(q.Now(), accessTokenLifetime + getFaunadbTokenTimeLag(), "millisecond"),
         })
     );
     return faunaResponse.secret;
@@ -229,7 +236,7 @@ export function setRelevantHeadersForOptionsAPI(res: express.Response) {
  * @description Used to set relevant CORS Access-Control-Allowed-Headers
  */
 export function getCORSAllowedHeaders(): string[] {
-    return getCORSAllowedHeadersFromCookiesAndHeaders();
+    return OriginalExpress.getCORSAllowedHeaders();
 }
 
 /**

@@ -32,11 +32,6 @@ let { maxVersion } = require("../lib/build/utils");
 let faunadb = require("faunadb");
 const q = faunadb.query;
 
-/*
-TODO:
-- test lifetime of fauna db token is 30 secs + lifetime of access token
-*/
-
 describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -47,6 +42,112 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    it("checking FDAT lifetime", async function () {
+        await setKeyValueInConfig("access_token_validity", "2");
+        await startST();
+
+        const app = express();
+        app.use(
+            STExpress.init({
+                hosts: "http://localhost:8080",
+                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                userCollectionName: "users",
+                accessFaunadbTokenFromFrontend: true,
+            })
+        );
+
+        app.post("/create", async (req, res) => {
+            await STExpress.createNewSession(res, "277082848991642117", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+            let jwtPayload = req.session.getJWTPayload();
+            let token = await req.session.getFaunadbToken();
+            if (token === undefined) {
+                res.status(200).send("fail");
+            } else {
+                if (token === jwtPayload.faunadbToken) {
+                    res.status(200).send("pass");
+                } else {
+                    res.status(200).send("fail");
+                }
+            }
+        });
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        let frontToken = JSON.parse(Buffer.from(res.frontToken, "base64").toString());
+
+        let token = frontToken.up.faunadbToken;
+
+        let faunaDBClient = new faunadb.Client({
+            secret: token,
+        });
+
+        let faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+
+        assert(faunaResponse.data.name === "test user 1");
+
+        await new Promise((r) => setTimeout(r, 6000));
+
+        try {
+            await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+            throw new Error("fail");
+        } catch (err) {
+            if (err.message !== "unauthorized" || err.name !== "Unauthorized") {
+                throw new Error("fail");
+            }
+        }
+
+        // refresh session and repeat the above
+        let res3 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/refresh")
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
+
+        let frontToken2 = JSON.parse(Buffer.from(res3.frontToken, "base64").toString());
+
+        let token2 = frontToken2.up.faunadbToken;
+
+        assert(token2 !== token);
+
+        faunaDBClient = new faunadb.Client({
+            secret: token2,
+        });
+
+        faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+
+        assert(faunaResponse.data.name === "test user 1");
+
+        await new Promise((r) => setTimeout(r, 6000));
+
+        try {
+            await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+            throw new Error("fail");
+        } catch (err) {
+            if (err.message !== "unauthorized" || err.name !== "Unauthorized") {
+                throw new Error("fail");
+            }
+        }
     });
 
     it("getting FDAT from JWT payload", async function () {
