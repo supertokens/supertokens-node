@@ -14,7 +14,7 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 ## Development Setup  
 
   You will need to setup the `supertokens-core` in order to to run the `supertokens-node` tests, you can setup `supertokens-core` by following this [guide](https://github.com/supertokens/supertokens-core/blob/master/CONTRIBUTING.md#development-setup)  
-- Note: If you are not contributing to the core you can skip steps 1 & 4 under Project Setup of the `supertokens-core` contributing guide.  
+- Note: If you are not contributing to the `supertokens-core` you can skip steps 1 & 4 under Project Setup of the `supertokens-core` contributing guide.  
 
 ### Prerequisites
 - OS: Linux or macOS
@@ -41,7 +41,7 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 1. Before submitting a pull request make sure all tests have passed
     - In the directory `supertokens-root` start the testing environment
       - `./startTestingEnv  --wait`  
-    - In the directory `supertokens-node` run all tests make sure they pass
+    - In the directory `supertokens-node` run all tests to make sure they pass
       - `INSTALL_PATH=../supertokens-root npm test`
       ![node tests passing](https://github.com/jscyo/supertokens-logo/blob/master/images/supertokens-node-tests-passing.png) 
     
