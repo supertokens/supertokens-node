@@ -23,11 +23,12 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 
 ### Project Setup
 1. Fork the [supertokens-node](https://github.com/supertokens/supertokens-node) repository
-2. Clone the forked repository in the parent directory of the previously setup `supertokens-root`, both `supertokens-node` and `supertokens-root` should exist side by side within the same parent directory
+2. Clone the forked repository in the parent directory of the previously setup `supertokens-root`.  
+`supertokens-node` and `supertokens-root` should exist side by side within the same parent directory
 3. `cd supertokens-node`
 4. Install the project dependencies  
 `npm i -d`
-5. Run the setup hooks  
+5. Add git pre-commit hooks  
 `npm run set-up-hooks`
 
 ## Modifying Code  
