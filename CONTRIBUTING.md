@@ -28,16 +28,7 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 4. Install the project dependencies  
 `npm i -d`
 5. Run the setup hooks  
-`npmrun set-up-hooks`
-5. Navigate to the `supertokens-root` repository  
-`cd ../supertokens-root/`
-6. Start the testing environment      
-`./startTestingEnv --wait`  
-7. Navigate to the `supertokens-node` repository  
-`cd ../supertokens-node/`  
-8. Run all tests    
-`INSTALL_PATH=../supertokens-root npm test`  
-9. Open the `supertokens-node` project in your IDE and you can start modifying the code
+`npm run set-up-hooks`
 
 ## Modifying Code  
 1. Open the `supertokens-node` project in your IDE and you can start modifying the code  
