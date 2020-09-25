@@ -18,12 +18,12 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 
 ### Prerequisites
 - OS: Linux or macOS
-- Nodejs & npm: [Linux](https://www.geeksforgeeks.org/installation-of-node-js-on-linux/) or [Mac](https://treehouse.github.io/installation-guides/mac/node-mac.html)  
+- Nodejs & npm
 - IDE: [VSCode](https://code.visualstudio.com/download)(recommended) or equivalent IDE  
 
 ### Project Setup
 1. Fork the [supertokens-node](https://github.com/supertokens/supertokens-node) repository
-2. Clone the forked repository in the parent directory of the previously setup `supertokens-root`
+2. Clone the forked repository in the parent directory of the previously setup `supertokens-root`, both `supertokens-node` and `supertokens-root` should exist side by side within the same parent directory
 3. `cd supertokens-node`
 4. Install the project dependencies  
 `npm i -d`
@@ -33,11 +33,10 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 ## Modifying Code  
 1. Open the `supertokens-node` project in your IDE and you can start modifying the code  
 2. After modifying the code, build your project to implement your changes  
-` npm run build -pretty`  
+` npm run build-pretty`  
 
 ## Testing  
 1. Navigate to the `supertokens-root` repository  
-`cd supertokens-root`
 2. Start the testing environment      
 `./startTestingEnv --wait`  
 3. Navigate to the `supertokens-node` repository  
