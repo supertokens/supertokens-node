@@ -14,7 +14,7 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 ## Development Setup  
 
   You will need to setup the `supertokens-core` in order to to run the `supertokens-node` tests, you can setup `supertokens-core` by following this [guide](https://github.com/supertokens/supertokens-core/blob/master/CONTRIBUTING.md#development-setup)  
-- Note: If you are not contributing to the `supertokens-core` you can skip steps 1 & 4 under Project Setup of the `supertokens-core` contributing guide.  
+**Note: If you are not contributing to the `supertokens-core` you can skip steps 1 & 4 under Project Setup of the `supertokens-core` contributing guide.** 
 
 ### Prerequisites
 - OS: Linux or macOS
@@ -23,11 +23,13 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 
 ### Project Setup
 1. Fork the [supertokens-node](https://github.com/supertokens/supertokens-node) repository
-2. Clone the forked repository in your local environment
+2. Clone the forked repository in the parent directory of the previously setup `supertokens-root`
 3. `cd supertokens-node`
 4. Install the project dependencies  
-`npm i -d`    
-5. Navigate to the `supertokens-root` repository which you have previously setup  
+`npm i -d`
+5. Run the setup hooks  
+`npmrun set-up-hooks`
+5. Navigate to the `supertokens-root` repository  
 `cd ../supertokens-root/`
 6. Start the testing environment      
 `./startTestingEnv --wait`  
@@ -35,16 +37,28 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 `cd ../supertokens-node/`  
 8. Run all tests    
 `INSTALL_PATH=../supertokens-root npm test`  
-9. Open the `supertokens-node` project in your IDE and you can start modifying the code  
+9. Open the `supertokens-node` project in your IDE and you can start modifying the code
+
+## Modifying Code  
+1. Open the `supertokens-node` project in your IDE and you can start modifying the code  
+2. After modifying the code, build your project to implement your changes  
+` npm run build -pretty`  
+
+## Testing  
+1. Navigate to the `supertokens-root` repository  
+`cd supertokens-root`
+2. Start the testing environment      
+`./startTestingEnv --wait`  
+3. Navigate to the `supertokens-node` repository  
+`cd ../supertokens-node/`  
+4. Run all tests    
+`INSTALL_PATH=../supertokens-root npm test`
+5. If all tests pass the output should be:  
+![node tests passing](https://github.com/jscyo/supertokens-logo/blob/master/images/supertokens-node-tests-passing.png) 
+
 
 ## Pull Request
-1. Before submitting a pull request make sure all tests have passed
-    - In the directory `supertokens-root` start the testing environment
-      - `./startTestingEnv  --wait`  
-    - In the directory `supertokens-node` run all tests to make sure they pass
-      - `INSTALL_PATH=../supertokens-root npm test`
-      ![node tests passing](https://github.com/jscyo/supertokens-logo/blob/master/images/supertokens-node-tests-passing.png) 
-    
+1. Before submitting a pull request make sure all tests have passed      
 2. Reference the relevant issue or pull request and give a clear description of changes/features added when submitting a pull request
 
 ## SuperTokens Community 
