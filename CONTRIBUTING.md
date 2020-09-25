@@ -45,7 +45,7 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 4. Run all tests    
 `INSTALL_PATH=../supertokens-root npm test`
 5. If all tests pass the output should be:  
-![node tests passing](https://github.com/jscyo/supertokens-logo/blob/master/images/supertokens-node-tests-passing.png) 
+![node tests passing](https://github.com/supertokens/supertokens-logo/blob/master/images/supertokens-node-tests-passing.png) 
 
 
 ## Pull Request
