@@ -45,7 +45,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     });
 
     it("checking FDAT lifetime", async function () {
-        await setKeyValueInConfig("access_token_validity", "2");
+        await setKeyValueInConfig("access_token_validity", "3");
         await startST();
 
         const app = express();
@@ -100,7 +100,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
 
         assert(faunaResponse.data.name === "test user 1");
 
-        await new Promise((r) => setTimeout(r, 6000));
+        await new Promise((r) => setTimeout(r, 7000));
 
         try {
             await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
@@ -138,7 +138,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
 
         assert(faunaResponse.data.name === "test user 1");
 
-        await new Promise((r) => setTimeout(r, 6000));
+        await new Promise((r) => setTimeout(r, 7000));
 
         try {
             await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));

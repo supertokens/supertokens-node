@@ -98,7 +98,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
         try {
             let version = await Querier.getInstance().getAPIVersion();
-            if (version !== "2.0" && process.env.INSTALL_PATH.includes("com-")) {
+            if (
+                (version !== "2.0" && process.env.INSTALL_PATH.includes("com-")) ||
+                (version !== "2.3" && process.env.INSTALL_PATH.includes("supertokens-"))
+            ) {
                 throw new Error("should not have come here");
             }
         } catch (err) {

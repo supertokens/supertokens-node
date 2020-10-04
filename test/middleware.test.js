@@ -34,8 +34,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware", async function () {
+        await startST();
         STExpress.init({
-            hosts: "https://try.supertokens.io",
+            hosts: "http://localhost:8080",
             refreshTokenPath: "/refresh",
         });
         const app = express();
@@ -160,6 +161,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .post("/refresh")
                     .expect(200)
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         resolve(res);
                     })
@@ -196,6 +198,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             request(app)
                 .post("/refresh")
                 .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
                     resolve(res.body.message);
@@ -242,11 +245,12 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with auto refresh", async function () {
+        await startST();
         const app = express();
 
         app.use(
             STExpress.init({
-                hosts: "https://try.supertokens.io",
+                hosts: "http://localhost:8080",
                 refreshTokenPath: "/refresh",
             })
         );
@@ -368,6 +372,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .post("/refresh")
                     .expect(200)
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         resolve(res);
                     })
@@ -404,6 +409,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             request(app)
                 .post("/refresh")
                 .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
                     resolve(res.body.message);
@@ -450,8 +456,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with driver config", async function () {
+        await startST();
         STExpress.init({
-            hosts: "https://try.supertokens.io",
+            hosts: "http://localhost:8080",
             accessTokenPath: "/custom",
             refreshTokenPath: "/custom/refresh",
             cookieDomain: "test-driver",
@@ -584,6 +591,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .post("/custom/refresh")
                     .expect(200)
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         resolve(res);
                     })
@@ -622,6 +630,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             request(app)
                 .post("/custom/refresh")
                 .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
                     resolve(res.body.message);
@@ -668,11 +677,12 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     it("test session verify middleware with driver config with auto refresh", async function () {
+        await startST();
         const app = express();
 
         app.use(
             STExpress.init({
-                hosts: "https://try.supertokens.io",
+                hosts: "http://localhost:8080",
                 accessTokenPath: "/custom",
                 refreshTokenPath: "/custom/refresh",
                 cookieDomain: "test-driver",
@@ -802,6 +812,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .post("/custom/refresh")
                     .expect(200)
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         resolve(res);
                     })
@@ -840,6 +851,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             request(app)
                 .post("/custom/refresh")
                 .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
                     resolve(res.body.message);

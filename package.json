@@ -4,7 +4,7 @@
   "description": "NodeJS driver for SuperTokens core",
   "main": "index.js",
   "scripts": {
-    "test": "TEST_MODE=testing npx mocha",
+    "test": "TEST_MODE=testing npx mocha --timeout 500000",
     "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit",
     "build": "cd lib && npx tsc -p tsconfig.json",
     "pretty": "cd lib && npx prettier --write --config .prettierrc \"ts/**/*.ts\" \"build/**/*.js\" \"../test/**/*.js\"",
