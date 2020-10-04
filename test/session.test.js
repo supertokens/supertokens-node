@@ -32,6 +32,7 @@ const express = require("express");
 const request = require("supertest");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
+const { maxVersion } = require("../lib/build/utils");
 
 describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     beforeEach(async function () {
@@ -100,7 +101,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             let version = await Querier.getInstance().getAPIVersion();
             if (
                 (version !== "2.0" && process.env.INSTALL_PATH.includes("com-")) ||
-                (version !== "2.3" && process.env.INSTALL_PATH.includes("supertokens-"))
+                (maxVersion(version, "2.3") === version && process.env.INSTALL_PATH.includes("supertokens-"))
             ) {
                 throw new Error("should not have come here");
             }
