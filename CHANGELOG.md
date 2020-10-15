@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - FaunaDB integration
 
+## [2.4.1] - 2020-10-15
+### Fixed
+- Issue #17 - Do not clear cookies if they do not exist in the first place
+
 ## [2.4.0] - 2020-09-10
 ### Added
 - Support for CDI 2.3 and FDI 1.2
