@@ -124,16 +124,9 @@ export async function getSession(
     saveFrontendInfoFromRequest(req);
     let idRefreshToken = getIdRefreshTokenFromCookie(req);
     if (idRefreshToken === undefined) {
-        let handShakeInfo = await HandshakeInfo.getInstance();
-        clearSessionFromCookie(
-            res,
-            handShakeInfo.cookieDomain,
-            handShakeInfo.cookieSecure,
-            handShakeInfo.accessTokenPath,
-            handShakeInfo.refreshTokenPath,
-            handShakeInfo.idRefreshTokenPath,
-            handShakeInfo.cookieSameSite
-        );
+        // we do not clear cookies here because of a
+        // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
+
         throw generateError(AuthError.UNAUTHORISED, new Error("idRefreshToken missing"));
     }
     let accessToken = getAccessTokenFromCookie(req);
@@ -195,16 +188,9 @@ export async function refreshSession(req: express.Request, res: express.Response
     saveFrontendInfoFromRequest(req);
     let inputRefreshToken = getRefreshTokenFromCookie(req);
     if (inputRefreshToken === undefined) {
-        let handShakeInfo = await HandshakeInfo.getInstance();
-        clearSessionFromCookie(
-            res,
-            handShakeInfo.cookieDomain,
-            handShakeInfo.cookieSecure,
-            handShakeInfo.accessTokenPath,
-            handShakeInfo.refreshTokenPath,
-            handShakeInfo.idRefreshTokenPath,
-            handShakeInfo.cookieSameSite
-        );
+        // we do not clear cookies here because of a
+        // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
+
         throw generateError(
             AuthError.UNAUTHORISED,
             new Error(

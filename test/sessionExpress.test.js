@@ -1124,4 +1124,82 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         assert.deepEqual(response.headers["access-control-allow-credentials"], "true");
     });
+
+    it("test that getSession does not clear cookies if a session does not exist in the first place", async function () {
+        await startST();
+        ST.init({ hosts: "http://localhost:8080" });
+
+        const app = express();
+
+        app.post("/session/verify", async (req, res) => {
+            try {
+                let sessionResponse = await STExpress.getSession(req, res, true);
+            } catch (err) {
+                if (STExpress.Error.isErrorFromAuth(err) && err.errType === STExpress.Error.UNAUTHORISED) {
+                    res.status(200).json({ success: true });
+                    return;
+                }
+            }
+            res.status(200).json({ success: false });
+        });
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+
+        assert.deepEqual(res.body.success, true);
+
+        let cookies = extractInfoFromResponse(res);
+        assert.deepEqual(cookies.antiCsrf, undefined);
+        assert.deepEqual(cookies.accessToken, undefined);
+        assert.deepEqual(cookies.refreshToken, undefined);
+        assert.deepEqual(cookies.idRefreshTokenFromHeader, undefined);
+        assert.deepEqual(cookies.idRefreshTokenFromCookie, undefined);
+        assert.deepEqual(cookies.accessTokenExpiry, undefined);
+        assert.deepEqual(cookies.idRefreshTokenExpiry, undefined);
+        assert.deepEqual(cookies.refreshTokenExpiry, undefined);
+    });
+
+    it("test that refreshSession does not clear cookies if a session does not exist in the first place", async function () {
+        await startST();
+        ST.init({ hosts: "http://localhost:8080" });
+
+        const app = express();
+
+        app.post("/session/refresh", async (req, res) => {
+            try {
+                await STExpress.refreshSession(req, res);
+            } catch (err) {
+                if (STExpress.Error.isErrorFromAuth(err) && err.errType === STExpress.Error.UNAUTHORISED) {
+                    res.status(200).json({ success: true });
+                    return;
+                }
+            }
+            res.status(200).json({ success: false });
+        });
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/session/refresh")
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+
+        assert.deepEqual(res.body.success, true);
+
+        let cookies = extractInfoFromResponse(res);
+        assert.deepEqual(cookies.antiCsrf, undefined);
+        assert.deepEqual(cookies.accessToken, undefined);
+        assert.deepEqual(cookies.refreshToken, undefined);
+        assert.deepEqual(cookies.idRefreshTokenFromHeader, undefined);
+        assert.deepEqual(cookies.idRefreshTokenFromCookie, undefined);
+        assert.deepEqual(cookies.accessTokenExpiry, undefined);
+        assert.deepEqual(cookies.idRefreshTokenExpiry, undefined);
+        assert.deepEqual(cookies.refreshTokenExpiry, undefined);
+    });
 });
