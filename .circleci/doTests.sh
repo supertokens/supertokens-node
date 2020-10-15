@@ -44,16 +44,6 @@ while [ $i -lt $coreDriverLength ]; do
     coreDriverVersion=`echo $coreDriverArray | jq ".[$i]"`
     coreDriverVersion=`echo $coreDriverVersion | tr -d '"'`
     i=$((i+1))
-    
-    coreCommercial=`curl -s -X GET \
-    "https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=COMMERCIAL&mode=DEV&version=$coreDriverVersion" \
-    -H 'api-version: 0'`
-    if [[ `echo $coreCommercial | jq .core` == "null" ]]
-    then
-        echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: COMMERCIAL gave response: $coreCommercial. Please make sure all relevant cores have been pushed."
-        exit 1
-    fi
-    coreCommercial=$(echo $coreCommercial | jq .core | tr -d '"')
 
     coreFree=`curl -s -X GET \
     "https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion" \
@@ -66,14 +56,6 @@ while [ $i -lt $coreDriverLength ]; do
     coreFree=$(echo $coreFree | jq .core | tr -d '"')
 
     someTestsRan=true
-    ./setupAndTestWithCommercialCore.sh $coreCommercial
-    if [[ $? -ne 0 ]]
-    then
-        echo "test failed... exiting!"
-        exit 1
-    fi
-    rm -rf ../../com-root
-
     ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
     if [[ $? -ne 0 ]]
     then
@@ -87,15 +69,15 @@ someFrontendTestsRan=false
 i=0
 coreDriverVersion=`echo $coreDriverArray | jq ". | last"`
 coreDriverVersion=`echo $coreDriverVersion | tr -d '"'`
-coreCommercial=`curl -s -X GET \
-    "https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=COMMERCIAL&mode=DEV&version=$coreDriverVersion" \
-    -H 'api-version: 0'`
-if [[ `echo $coreCommercial | jq .core` == "null" ]]
+coreFree=`curl -s -X GET \
+"https://api.supertokens.io/0/core-driver-interface/dependency/core/latest?password=$SUPERTOKENS_API_KEY&planType=FREE&mode=DEV&version=$coreDriverVersion" \
+-H 'api-version: 0'`
+if [[ `echo $coreFree | jq .core` == "null" ]]
 then
-    echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: COMMERCIAL gave response: $coreCommercial. Please make sure all relevant cores have been pushed."
+    echo "fetching latest X.Y version for core given core-driver-interface X.Y version: $coreDriverVersion, planType: FREE gave response: $coreFree. Please make sure all relevant cores have been pushed."
     exit 1
 fi
-coreCommercial=$(echo $coreCommercial | jq .core | tr -d '"')
+coreFree=$(echo $coreFree | jq .core | tr -d '"')
 while [ $i -lt $frontendDriverLength ]; do 
     frontendDriverVersion=`echo $frontendDriverArray | jq ".[$i]"`
     frontendDriverVersion=`echo $frontendDriverVersion | tr -d '"'`
@@ -146,14 +128,14 @@ while [ $i -lt $frontendDriverLength ]; do
     fi
     nodeTag=$(echo $nodeInfo | jq .tag | tr -d '"')
 
-    ./setupAndTestWithFrontend.sh $coreCommercial $frontendTag $nodeTag
+    ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
         exit 1
     fi
     someFrontendTestsRan=true
-    rm -rf ../../com-root
+    rm -rf ../../supertokens-root
 done
 
 if [[ $someFrontendTestsRan = "true" ]] && [[ $someTestsRan = "true" ]]
