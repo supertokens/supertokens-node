@@ -339,6 +339,14 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             accessFaunadbTokenFromFrontend: true,
         });
 
+        // if version >- 2.3
+        if (
+            maxVersion(await Querier.getInstance().getAPIVersion(), "2.2") !==
+            (await Querier.getInstance().getAPIVersion())
+        ) {
+            return;
+        }
+
         const app = express();
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "277082848991642117", {}, {});
@@ -444,6 +452,14 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             })
         );
 
+        // if version >- 2.3
+        if (
+            maxVersion(await Querier.getInstance().getAPIVersion(), "2.2") !==
+            (await Querier.getInstance().getAPIVersion())
+        ) {
+            return;
+        }
+
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "277082848991642117", {}, {});
             res.status(200).send("");
@@ -522,6 +538,14 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             userCollectionName: "users",
             accessFaunadbTokenFromFrontend: true,
         });
+
+        // if version >- 2.3
+        if (
+            maxVersion(await Querier.getInstance().getAPIVersion(), "2.2") !==
+            (await Querier.getInstance().getAPIVersion())
+        ) {
+            return;
+        }
 
         const app = express();
 
