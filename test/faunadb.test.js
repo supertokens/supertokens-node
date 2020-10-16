@@ -339,9 +339,9 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             accessFaunadbTokenFromFrontend: true,
         });
 
-        // if version >- 2.3
+        // if version >= 2.3
         if (
-            maxVersion(await Querier.getInstance().getAPIVersion(), "2.2") !==
+            maxVersion(await Querier.getInstance().getAPIVersion(), "2.3") !==
             (await Querier.getInstance().getAPIVersion())
         ) {
             return;
@@ -452,9 +452,9 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             })
         );
 
-        // if version >- 2.3
+        // if version >= 2.3
         if (
-            maxVersion(await Querier.getInstance().getAPIVersion(), "2.2") !==
+            maxVersion(await Querier.getInstance().getAPIVersion(), "2.3") !==
             (await Querier.getInstance().getAPIVersion())
         ) {
             return;
@@ -539,9 +539,9 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             accessFaunadbTokenFromFrontend: true,
         });
 
-        // if version >- 2.3
+        // if version >= 2.3
         if (
-            maxVersion(await Querier.getInstance().getAPIVersion(), "2.2") !==
+            maxVersion(await Querier.getInstance().getAPIVersion(), "2.3") !==
             (await Querier.getInstance().getAPIVersion())
         ) {
             return;
