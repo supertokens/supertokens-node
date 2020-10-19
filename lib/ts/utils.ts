@@ -16,33 +16,9 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     let refreshToken = response.refreshToken;
     let idRefreshToken = response.idRefreshToken;
     setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
-    attachAccessTokenToCookie(
-        res,
-        accessToken.token,
-        accessToken.expiry,
-        accessToken.domain,
-        accessToken.cookiePath,
-        accessToken.cookieSecure,
-        accessToken.sameSite
-    );
-    attachRefreshTokenToCookie(
-        res,
-        refreshToken.token,
-        refreshToken.expiry,
-        refreshToken.domain,
-        refreshToken.cookiePath,
-        refreshToken.cookieSecure,
-        refreshToken.sameSite
-    );
-    setIdRefreshTokenInHeaderAndCookie(
-        res,
-        idRefreshToken.token,
-        idRefreshToken.expiry,
-        idRefreshToken.domain,
-        idRefreshToken.cookieSecure,
-        idRefreshToken.cookiePath,
-        idRefreshToken.sameSite
-    );
+    attachAccessTokenToCookie(res, accessToken.token, accessToken.expiry);
+    attachRefreshTokenToCookie(res, refreshToken.token, refreshToken.expiry);
+    setIdRefreshTokenInHeaderAndCookie(res, idRefreshToken.token, idRefreshToken.expiry);
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }

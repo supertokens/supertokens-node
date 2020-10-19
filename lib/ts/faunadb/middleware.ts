@@ -42,12 +42,7 @@ export function autoRefreshMiddleware() {
 }
 
 async function getRefreshPath(): Promise<string> {
-    let refreshTokenPathConfig = CookieConfig.getInstance().refreshTokenPath;
-    if (refreshTokenPathConfig !== undefined) {
-        return refreshTokenPathConfig;
-    }
-    let handShakeInfo = await HandshakeInfo.getInstance();
-    return handShakeInfo.refreshTokenPath;
+    return CookieConfig.getInstanceOrThrowError().refreshTokenPath;
 }
 
 export function middleware(antiCsrfCheck?: boolean) {

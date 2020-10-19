@@ -17,6 +17,8 @@ let ST = require("../lib/build/session");
 let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
+let { SessionConfig } = require("../lib/build/session");
+let { CookieConfig } = require("../lib/build/cookieAndHeaders");
 
 describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     beforeEach(async function () {
@@ -31,7 +33,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     });
 
     it("core not available", async function () {
-        ST.init({ hosts: "http://localhost:8080" });
+        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
         try {
             await ST.createNewSession("", {}, {});
             throw new Error("should not have come here");
@@ -48,13 +50,9 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
 
     it("successful handshake and update JWT", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
+        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
         let info = await HandshakeInfo.getInstance();
-        assert.equal(info.accessTokenPath, "/");
-        assert.equal(["supertokens.io", "localhost", undefined].includes(info.cookieDomain), true);
         assert.equal(typeof info.jwtSigningPublicKey, "string");
-        assert.equal(info.cookieSecure, false);
-        assert(info.refreshTokenPath === "/refresh");
         assert.equal(info.enableAntiCsrf, true);
         assert.equal(info.accessTokenBlacklistingEnabled, false);
         assert.equal(typeof info.jwtSigningPublicKeyExpiryTime, "number");
@@ -62,5 +60,21 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
         let info2 = await HandshakeInfo.getInstance();
         assert.equal(info2.jwtSigningPublicKey, "hello");
         assert.equal(info2.jwtSigningPublicKeyExpiryTime, 100);
+    });
+
+    it("checking for default cookie config", async function () {
+        await startST();
+        ST.init({ hosts: "http://localhost:8080" });
+        assert.equal(CookieConfig.getInstanceOrThrowError().accessTokenPath, "/");
+        assert.equal(CookieConfig.getInstanceOrThrowError().cookieDomain, undefined);
+        assert.equal(CookieConfig.getInstanceOrThrowError().cookieSameSite, "lax");
+        assert.equal(CookieConfig.getInstanceOrThrowError().cookieSecure, false);
+        assert.equal(CookieConfig.getInstanceOrThrowError().refreshTokenPath, "/session/refresh");
+    });
+
+    it("checking for default session expired status code", async function () {
+        await startST();
+        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        assert.equal(SessionConfig.getInstanceOrThrowError().sessionExpiredStatusCode, 401);
     });
 });

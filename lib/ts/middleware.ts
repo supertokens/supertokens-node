@@ -18,6 +18,7 @@ import { SessionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptio
 import { AuthError } from "./error";
 import { CookieConfig } from "./cookieAndHeaders";
 import { HandshakeInfo } from "./handshakeInfo";
+import { SessionConfig } from "./session";
 
 export function autoRefreshMiddleware() {
     return async (request: Request, response: Response, next: NextFunction) => {
@@ -39,12 +40,7 @@ export function autoRefreshMiddleware() {
 }
 
 async function getRefreshPath(): Promise<string> {
-    let refreshTokenPathConfig = CookieConfig.getInstance().refreshTokenPath;
-    if (refreshTokenPathConfig !== undefined) {
-        return refreshTokenPathConfig;
-    }
-    let handShakeInfo = await HandshakeInfo.getInstance();
-    return handShakeInfo.refreshTokenPath;
+    return CookieConfig.getInstanceOrThrowError().refreshTokenPath;
 }
 
 export function middleware(antiCsrfCheck?: boolean) {
@@ -106,8 +102,7 @@ export function errorHandler(options?: SuperTokensErrorMiddlewareOptions): Error
 
 async function sendTryRefreshTokenResponse(err: any, request: Request, response: Response, next: NextFunction) {
     try {
-        let handshakeInfo = await HandshakeInfo.getInstance();
-        sendResponse(response, "try refresh token", handshakeInfo.sessionExpiredStatusCode);
+        sendResponse(response, "try refresh token", SessionConfig.getInstanceOrThrowError().sessionExpiredStatusCode);
     } catch (err) {
         next(err);
     }
@@ -115,8 +110,7 @@ async function sendTryRefreshTokenResponse(err: any, request: Request, response:
 
 async function sendUnauthorisedResponse(err: any, request: Request, response: Response, next: NextFunction) {
     try {
-        let handshakeInfo = await HandshakeInfo.getInstance();
-        sendResponse(response, "unauthorised", handshakeInfo.sessionExpiredStatusCode);
+        sendResponse(response, "unauthorised", SessionConfig.getInstanceOrThrowError().sessionExpiredStatusCode);
     } catch (err) {
         next(err);
     }
@@ -130,9 +124,12 @@ async function sendTokenTheftDetectedResponse(
     next: NextFunction
 ) {
     try {
-        let handshakeInfo = await HandshakeInfo.getInstance();
         await revokeSession(sessionHandle);
-        sendResponse(response, "token theft detected", handshakeInfo.sessionExpiredStatusCode);
+        sendResponse(
+            response,
+            "token theft detected",
+            SessionConfig.getInstanceOrThrowError().sessionExpiredStatusCode
+        );
     } catch (err) {
         next(err);
     }

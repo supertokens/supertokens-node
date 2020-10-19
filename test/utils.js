@@ -17,6 +17,7 @@ let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { DeviceInfo } = require("../lib/build/deviceInfo");
 let { Querier } = require("../lib/build/querier");
 let { CookieConfig } = require("../lib/build/cookieAndHeaders");
+let { SessionConfig } = require("../lib/build/session");
 const nock = require("nock");
 let fs = require("fs");
 
@@ -130,7 +131,6 @@ module.exports.setupST = async function () {
         await module.exports.executeCommand("cd " + installationPath + " && cp temp/licenseKey ./licenseKey");
     } catch (ignore) {}
     await module.exports.executeCommand("cd " + installationPath + " && cp temp/config.yaml ./config.yaml");
-    await module.exports.setKeyValueInConfig("refresh_api_path", "/refresh");
     await module.exports.setKeyValueInConfig("enable_anti_csrf", "true");
 };
 
@@ -172,6 +172,7 @@ module.exports.killAllST = async function () {
     DeviceInfo.reset();
     Querier.reset();
     CookieConfig.reset();
+    SessionConfig.reset();
     nock.cleanAll();
 };
 

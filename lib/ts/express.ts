@@ -16,21 +16,17 @@ import * as express from "express";
 
 import {
     attachAccessTokenToCookie,
-    attachRefreshTokenToCookie,
     clearSessionFromCookie,
     getAccessTokenFromCookie,
     getAntiCsrfTokenFromHeaders,
     getIdRefreshTokenFromCookie,
     getRefreshTokenFromCookie,
     saveFrontendInfoFromRequest,
-    setAntiCsrfTokenInHeaders,
-    setIdRefreshTokenInHeaderAndCookie,
     setOptionsAPIHeader,
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
     setFrontTokenInHeaders,
 } from "./cookieAndHeaders";
 import { AuthError, generateError } from "./error";
-import { HandshakeInfo } from "./handshakeInfo";
 import * as SessionFunctions from "./session";
 import { TypeInput, SessionRequest, auth0RequestBody } from "./types";
 import { Querier } from "./querier";
@@ -108,15 +104,7 @@ export async function getSession(
                 response.accessToken.expiry,
                 response.session.userDataInJWT
             );
-            attachAccessTokenToCookie(
-                res,
-                response.accessToken.token,
-                response.accessToken.expiry,
-                response.accessToken.domain,
-                response.accessToken.cookiePath,
-                response.accessToken.cookieSecure,
-                response.accessToken.sameSite
-            );
+            attachAccessTokenToCookie(res, response.accessToken.token, response.accessToken.expiry);
             accessToken = response.accessToken.token;
         }
         return new Session(
@@ -129,16 +117,7 @@ export async function getSession(
         );
     } catch (err) {
         if (AuthError.isErrorFromAuth(err) && err.errType === AuthError.UNAUTHORISED) {
-            let handShakeInfo = await HandshakeInfo.getInstance();
-            clearSessionFromCookie(
-                res,
-                handShakeInfo.cookieDomain,
-                handShakeInfo.cookieSecure,
-                handShakeInfo.accessTokenPath,
-                handShakeInfo.refreshTokenPath,
-                handShakeInfo.idRefreshTokenPath,
-                handShakeInfo.cookieSameSite
-            );
+            clearSessionFromCookie(res);
         }
         throw err;
     }
@@ -181,16 +160,7 @@ export async function refreshSession(req: express.Request, res: express.Response
             AuthError.isErrorFromAuth(err) &&
             (err.errType === AuthError.UNAUTHORISED || err.errType === AuthError.TOKEN_THEFT_DETECTED)
         ) {
-            let handShakeInfo = await HandshakeInfo.getInstance();
-            clearSessionFromCookie(
-                res,
-                handShakeInfo.cookieDomain,
-                handShakeInfo.cookieSecure,
-                handShakeInfo.accessTokenPath,
-                handShakeInfo.refreshTokenPath,
-                handShakeInfo.idRefreshTokenPath,
-                handShakeInfo.cookieSameSite
-            );
+            clearSessionFromCookie(res);
         }
         throw err;
     }
@@ -417,16 +387,7 @@ export class Session {
      */
     revokeSession = async () => {
         if (await SessionFunctions.revokeSession(this.sessionHandle)) {
-            let handShakeInfo = await HandshakeInfo.getInstance();
-            clearSessionFromCookie(
-                this.res,
-                handShakeInfo.cookieDomain,
-                handShakeInfo.cookieSecure,
-                handShakeInfo.accessTokenPath,
-                handShakeInfo.refreshTokenPath,
-                handShakeInfo.idRefreshTokenPath,
-                handShakeInfo.cookieSameSite
-            );
+            clearSessionFromCookie(this.res);
         }
     };
 
@@ -441,16 +402,7 @@ export class Session {
             return await SessionFunctions.getSessionData(this.sessionHandle);
         } catch (err) {
             if (AuthError.isErrorFromAuth(err) && err.errType === AuthError.UNAUTHORISED) {
-                let handShakeInfo = await HandshakeInfo.getInstance();
-                clearSessionFromCookie(
-                    this.res,
-                    handShakeInfo.cookieDomain,
-                    handShakeInfo.cookieSecure,
-                    handShakeInfo.accessTokenPath,
-                    handShakeInfo.refreshTokenPath,
-                    handShakeInfo.idRefreshTokenPath,
-                    handShakeInfo.cookieSameSite
-                );
+                clearSessionFromCookie(this.res);
             }
             throw err;
         }
@@ -466,16 +418,7 @@ export class Session {
             await SessionFunctions.updateSessionData(this.sessionHandle, newSessionData);
         } catch (err) {
             if (AuthError.isErrorFromAuth(err) && err.errType === AuthError.UNAUTHORISED) {
-                let handShakeInfo = await HandshakeInfo.getInstance();
-                clearSessionFromCookie(
-                    this.res,
-                    handShakeInfo.cookieDomain,
-                    handShakeInfo.cookieSecure,
-                    handShakeInfo.accessTokenPath,
-                    handShakeInfo.refreshTokenPath,
-                    handShakeInfo.idRefreshTokenPath,
-                    handShakeInfo.cookieSameSite
-                );
+                clearSessionFromCookie(this.res);
             }
             throw err;
         }
@@ -503,16 +446,7 @@ export class Session {
             userDataInJWT: newJWTPayload,
         });
         if (response.status === "UNAUTHORISED") {
-            let handShakeInfo = await HandshakeInfo.getInstance();
-            clearSessionFromCookie(
-                this.res,
-                handShakeInfo.cookieDomain,
-                handShakeInfo.cookieSecure,
-                handShakeInfo.accessTokenPath,
-                handShakeInfo.refreshTokenPath,
-                handShakeInfo.idRefreshTokenPath,
-                handShakeInfo.cookieSameSite
-            );
+            clearSessionFromCookie(this.res);
             throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
         }
         this.userDataInJWT = response.session.userDataInJWT;
@@ -524,15 +458,7 @@ export class Session {
                 response.accessToken.expiry,
                 response.session.userDataInJWT
             );
-            attachAccessTokenToCookie(
-                this.res,
-                response.accessToken.token,
-                response.accessToken.expiry,
-                response.accessToken.domain,
-                response.accessToken.cookiePath,
-                response.accessToken.cookieSecure,
-                response.accessToken.sameSite
-            );
+            attachAccessTokenToCookie(this.res, response.accessToken.token, response.accessToken.expiry);
         }
     };
 }

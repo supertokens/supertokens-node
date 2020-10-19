@@ -1,5 +1,13 @@
 import { TypeInput, CreateOrRefreshAPIResponse } from "./types";
 export { AuthError as Error } from "./error";
+export declare class SessionConfig {
+    private static instance;
+    sessionExpiredStatusCode: number;
+    constructor(sessionExpiredStatusCode: number);
+    static init(sessionExpiredStatusCode?: number): void;
+    static reset(): void;
+    static getInstanceOrThrowError(): SessionConfig;
+}
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
  * Please create a database in your mysql instance before calling this function
@@ -25,10 +33,6 @@ export declare function getSession(accessToken: string, antiCsrfToken: string | 
         token: string;
         expiry: number;
         createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
     };
 }>;
 /**
