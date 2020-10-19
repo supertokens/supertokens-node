@@ -36,7 +36,7 @@ app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
 
-SuperTokens.init({ hosts: "http://localhost:9000", cookieSameSite: "lax" });
+SuperTokens.init({ hosts: "http://localhost:9000", cookieSameSite: "lax", refreshTokenPath: "/refresh" });
 
 app.post("/login", async (req, res) => {
     let userId = req.body.userId;
