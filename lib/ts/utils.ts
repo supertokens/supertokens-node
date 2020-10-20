@@ -7,6 +7,19 @@ import {
     setAntiCsrfTokenInHeaders,
 } from "./cookieAndHeaders";
 import * as express from "express";
+import { AuthError, generateError } from "./error";
+
+export function validateAndNormaliseCookieSameSite(sameSite: string): "strict" | "lax" | "none" {
+    sameSite = sameSite.trim();
+    sameSite = sameSite.toLocaleLowerCase();
+    if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
+        throw generateError(
+            AuthError.GENERAL_ERROR,
+            new Error('cookie same site must be one of "strict", "lax", or "none"')
+        );
+    }
+    return sameSite;
+}
 
 export function attachCreateOrRefreshSessionResponseToExpressRes(
     res: express.Response,
@@ -16,33 +29,9 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     let refreshToken = response.refreshToken;
     let idRefreshToken = response.idRefreshToken;
     setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
-    attachAccessTokenToCookie(
-        res,
-        accessToken.token,
-        accessToken.expiry,
-        accessToken.domain,
-        accessToken.cookiePath,
-        accessToken.cookieSecure,
-        accessToken.sameSite
-    );
-    attachRefreshTokenToCookie(
-        res,
-        refreshToken.token,
-        refreshToken.expiry,
-        refreshToken.domain,
-        refreshToken.cookiePath,
-        refreshToken.cookieSecure,
-        refreshToken.sameSite
-    );
-    setIdRefreshTokenInHeaderAndCookie(
-        res,
-        idRefreshToken.token,
-        idRefreshToken.expiry,
-        idRefreshToken.domain,
-        idRefreshToken.cookieSecure,
-        idRefreshToken.cookiePath,
-        idRefreshToken.sameSite
-    );
+    attachAccessTokenToCookie(res, accessToken.token, accessToken.expiry);
+    attachRefreshTokenToCookie(res, refreshToken.token, refreshToken.expiry);
+    setIdRefreshTokenInHeaderAndCookie(res, idRefreshToken.token, idRefreshToken.expiry);
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }

@@ -18,6 +18,7 @@ import { IncomingMessage, ServerResponse } from "http";
 
 import { DeviceInfo } from "./deviceInfo";
 import { AuthError, generateError } from "./error";
+import { validateAndNormaliseCookieSameSite } from "./utils";
 
 // TODO: set same-site value for cookies as chrome will soon make that compulsory.
 // Setting it to "lax" seems ideal, however there are bugs in safari regarding that. So setting it to "none" might make more sense.
@@ -37,17 +38,17 @@ const frontTokenHeaderKey = "front-token";
 
 export class CookieConfig {
     private static instance: CookieConfig | undefined = undefined;
-    accessTokenPath: string | undefined;
-    refreshTokenPath: string | undefined;
+    accessTokenPath: string;
+    refreshTokenPath: string;
     cookieDomain: string | undefined;
-    cookieSecure: boolean | undefined;
-    cookieSameSite: "strict" | "lax" | "none" | undefined;
+    cookieSecure: boolean;
+    cookieSameSite: "strict" | "lax" | "none";
     constructor(
-        accessTokenPath?: string,
-        refreshTokenPath?: string,
-        cookieDomain?: string,
-        cookieSecure?: boolean,
-        cookieSameSite?: "strict" | "lax" | "none"
+        accessTokenPath: string,
+        refreshTokenPath: string,
+        cookieDomain: string | undefined,
+        cookieSecure: boolean,
+        cookieSameSite: "strict" | "lax" | "none"
     ) {
         this.accessTokenPath = accessTokenPath;
         this.refreshTokenPath = refreshTokenPath;
@@ -63,13 +64,17 @@ export class CookieConfig {
         cookieSecure?: boolean,
         cookieSameSite?: "strict" | "lax" | "none"
     ) {
+        if (cookieSameSite !== undefined) {
+            cookieSameSite = validateAndNormaliseCookieSameSite(cookieSameSite);
+        }
+
         if (CookieConfig.instance === undefined) {
             CookieConfig.instance = new CookieConfig(
-                accessTokenPath,
-                refreshTokenPath,
+                accessTokenPath === undefined ? "/" : accessTokenPath,
+                refreshTokenPath === undefined ? "/session/refresh" : refreshTokenPath,
                 cookieDomain,
-                cookieSecure,
-                cookieSameSite
+                cookieSecure === undefined ? false : cookieSecure,
+                cookieSameSite === undefined ? "lax" : cookieSameSite
             );
         }
     }
@@ -81,9 +86,9 @@ export class CookieConfig {
         CookieConfig.instance = undefined;
     }
 
-    static getInstance() {
+    static getInstanceOrThrowError() {
         if (CookieConfig.instance === undefined) {
-            CookieConfig.instance = new CookieConfig();
+            throw new Error("Please call the init function before using SuperTokens");
         }
         return CookieConfig.instance;
     }
@@ -108,29 +113,10 @@ export function saveFrontendInfoFromRequest(req: express.Request) {
 /**
  * @description clears all the auth cookies from the response
  */
-export function clearSessionFromCookie(
-    res: express.Response,
-    domain: string | undefined,
-    secure: boolean,
-    accessTokenPath: string,
-    refreshTokenPath: string,
-    idRefreshTokenPath: string,
-    sameSite: "strict" | "lax" | "none"
-) {
-    setCookie(res, accessTokenCookieKey, "", domain, secure, true, 0, accessTokenPath, sameSite, "accessTokenPath");
-    setCookie(res, refreshTokenCookieKey, "", domain, secure, true, 0, refreshTokenPath, sameSite, "refreshTokenPath");
-    setCookie(
-        res,
-        idRefreshTokenCookieKey,
-        "",
-        domain,
-        secure,
-        true,
-        0,
-        idRefreshTokenPath,
-        sameSite,
-        "accessTokenPath"
-    );
+export function clearSessionFromCookie(res: express.Response) {
+    setCookie(res, accessTokenCookieKey, "", 0, "accessTokenPath");
+    setCookie(res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
+    setCookie(res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
     setHeader(res, idRefreshTokenHeaderKey, "remove", false);
     setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 }
@@ -138,31 +124,15 @@ export function clearSessionFromCookie(
 /**
  * @param expiry: must be time in milliseconds from epoch time.
  */
-export function attachAccessTokenToCookie(
-    res: express.Response,
-    token: string,
-    expiry: number,
-    domain: string | undefined,
-    path: string,
-    secure: boolean,
-    sameSite: "strict" | "lax" | "none"
-) {
-    setCookie(res, accessTokenCookieKey, token, domain, secure, true, expiry, path, sameSite, "accessTokenPath");
+export function attachAccessTokenToCookie(res: express.Response, token: string, expiry: number) {
+    setCookie(res, accessTokenCookieKey, token, expiry, "accessTokenPath");
 }
 
 /**
  * @param expiry: must be time in milliseconds from epoch time.
  */
-export function attachRefreshTokenToCookie(
-    res: express.Response,
-    token: string,
-    expiry: number,
-    domain: string | undefined,
-    path: string,
-    secure: boolean,
-    sameSite: "strict" | "lax" | "none"
-) {
-    setCookie(res, refreshTokenCookieKey, token, domain, secure, true, expiry, path, sameSite, "refreshTokenPath");
+export function attachRefreshTokenToCookie(res: express.Response, token: string, expiry: number) {
+    setCookie(res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
 }
 
 export function getAccessTokenFromCookie(req: express.Request): string | undefined {
@@ -186,30 +156,11 @@ export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: 
     setHeader(res, "Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
 }
 
-export function setIdRefreshTokenInHeaderAndCookie(
-    res: express.Response,
-    idRefreshToken: string,
-    expiry: number,
-    domain: string | undefined,
-    secure: boolean,
-    path: string,
-    sameSite: "strict" | "lax" | "none"
-) {
+export function setIdRefreshTokenInHeaderAndCookie(res: express.Response, idRefreshToken: string, expiry: number) {
     setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
     setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 
-    setCookie(
-        res,
-        idRefreshTokenCookieKey,
-        idRefreshToken,
-        domain,
-        secure,
-        true,
-        expiry,
-        path,
-        sameSite,
-        "accessTokenPath"
-    );
+    setCookie(res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
 }
 
 export function setFrontTokenInHeaders(res: express.Response, userId: string, atExpiry: number, jwtPayload: any) {
@@ -276,37 +227,19 @@ export function setCookie(
     res: ServerResponse,
     name: string,
     value: string,
-    domain: string | undefined,
-    secure: boolean,
-    httpOnly: boolean,
     expires: number,
-    path: string,
-    sameSite: "strict" | "lax" | "none",
-    pathType: "refreshTokenPath" | "accessTokenPath" | null = null
+    pathType: "refreshTokenPath" | "accessTokenPath"
 ) {
-    let cookieDomain = CookieConfig.getInstance().cookieDomain;
-    let cookieSecure = CookieConfig.getInstance().cookieSecure;
-    let cookieSameSite = CookieConfig.getInstance().cookieSameSite;
-    if (cookieDomain !== undefined) {
-        domain = cookieDomain;
-    }
-    if (cookieSameSite !== undefined) {
-        sameSite = cookieSameSite;
-    }
-    if (cookieSecure !== undefined) {
-        secure = cookieSecure;
-    }
+    let domain = CookieConfig.getInstanceOrThrowError().cookieDomain;
+    let secure = CookieConfig.getInstanceOrThrowError().cookieSecure;
+    let sameSite = CookieConfig.getInstanceOrThrowError().cookieSameSite;
+    let path = "";
     if (pathType === "refreshTokenPath") {
-        let refreshTokenPath = CookieConfig.getInstance().refreshTokenPath;
-        if (refreshTokenPath !== undefined) {
-            path = refreshTokenPath;
-        }
+        path = CookieConfig.getInstanceOrThrowError().refreshTokenPath;
     } else if (pathType === "accessTokenPath") {
-        let accessTokenPath = CookieConfig.getInstance().accessTokenPath;
-        if (accessTokenPath !== undefined) {
-            path = accessTokenPath;
-        }
+        path = CookieConfig.getInstanceOrThrowError().accessTokenPath;
     }
+    let httpOnly = CookieConfig.getInstanceOrThrowError().cookieSecure;
     let opts = {
         domain,
         secure,

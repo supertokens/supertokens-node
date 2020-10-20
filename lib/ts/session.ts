@@ -21,6 +21,38 @@ import { CookieConfig } from "./cookieAndHeaders";
 import { TypeInput, CreateOrRefreshAPIResponse } from "./types";
 
 export { AuthError as Error } from "./error";
+
+export class SessionConfig {
+    private static instance: SessionConfig | undefined = undefined;
+    sessionExpiredStatusCode: number;
+
+    constructor(sessionExpiredStatusCode: number) {
+        this.sessionExpiredStatusCode = sessionExpiredStatusCode;
+    }
+
+    static init(sessionExpiredStatusCode?: number) {
+        if (SessionConfig.instance === undefined) {
+            SessionConfig.instance = new SessionConfig(
+                sessionExpiredStatusCode === undefined ? 401 : sessionExpiredStatusCode
+            );
+        }
+    }
+
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
+            throw generateError(AuthError.GENERAL_ERROR, new Error("calling testing function in non testing env"));
+        }
+        SessionConfig.instance = undefined;
+    }
+
+    static getInstanceOrThrowError() {
+        if (SessionConfig.instance === undefined) {
+            throw new Error("Please call the init function before using SuperTokens");
+        }
+        return SessionConfig.instance;
+    }
+}
+
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
  * Please create a database in your mysql instance before calling this function
@@ -28,7 +60,6 @@ export { AuthError as Error } from "./error";
  */
 export function init(config: TypeInput) {
     Querier.initInstance(config.hosts, config.apiKey);
-    // TODO:
     CookieConfig.init(
         config.accessTokenPath,
         config.refreshTokenPath,
@@ -36,6 +67,7 @@ export function init(config: TypeInput) {
         config.cookieSecure,
         config.cookieSameSite
     );
+    SessionConfig.init(config.sessionExpiredStatusCode);
 
     // this will also call the api version API
     HandshakeInfo.getInstance().catch((err) => {
@@ -62,6 +94,15 @@ export async function createNewSession(
     delete response.status;
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
+    // we check if sameSite is none, antiCsrfTokens is being sent - this is a security check
+    if (CookieConfig.getInstanceOrThrowError().cookieSameSite === "none" && response.antiCsrfToken === undefined) {
+        throw generateError(
+            AuthError.GENERAL_ERROR,
+            new Error(
+                'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
+            )
+        );
+    }
     return response;
 }
 
@@ -83,10 +124,6 @@ export async function getSession(
         token: string;
         expiry: number;
         createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
     };
 }> {
     let handShakeInfo = await HandshakeInfo.getInstance();

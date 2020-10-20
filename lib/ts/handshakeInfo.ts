@@ -19,16 +19,11 @@ export class HandshakeInfo {
     static instance: HandshakeInfo | undefined;
 
     public jwtSigningPublicKey: string;
-    public cookieDomain?: string;
-    public cookieSecure: boolean;
-    public accessTokenPath: string;
-    public refreshTokenPath: string;
     public enableAntiCsrf: boolean;
     public accessTokenBlacklistingEnabled: boolean;
     public jwtSigningPublicKeyExpiryTime: number;
-    public cookieSameSite: "none" | "lax" | "strict";
-    public idRefreshTokenPath: string;
-    public sessionExpiredStatusCode: number;
+    public accessTokenVaildity: number;
+    public refreshTokenVaildity: number;
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
@@ -43,16 +38,11 @@ export class HandshakeInfo {
             let response = await Querier.getInstance().sendPostRequest("/handshake", {});
             HandshakeInfo.instance = new HandshakeInfo(
                 response.jwtSigningPublicKey,
-                response.cookieDomain,
-                response.cookieSecure,
-                response.accessTokenPath,
-                response.refreshTokenPath,
                 response.enableAntiCsrf,
                 response.accessTokenBlacklistingEnabled,
                 response.jwtSigningPublicKeyExpiryTime,
-                response.cookieSameSite,
-                response.idRefreshTokenPath,
-                response.sessionExpiredStatusCode
+                response.accessTokenVaildity,
+                response.refreshTokenVaildity
             );
         }
         return HandshakeInfo.instance;
@@ -60,28 +50,18 @@ export class HandshakeInfo {
 
     constructor(
         jwtSigningPublicKey: string,
-        cookieDomain: string | undefined,
-        cookieSecure: boolean,
-        accessTokenPath: string,
-        refreshTokenPath: string,
         enableAntiCsrf: boolean,
         accessTokenBlacklistingEnabled: boolean,
         jwtSigningPublicKeyExpiryTime: number,
-        cookieSameSite: "none" | "lax" | "strict",
-        idRefreshTokenPath: string,
-        sessionExpiredStatusCode: number
+        accessTokenVaildity: number,
+        refreshTokenVaildity: number
     ) {
         this.jwtSigningPublicKey = jwtSigningPublicKey;
-        this.cookieDomain = cookieDomain;
-        this.cookieSecure = cookieSecure;
-        this.accessTokenPath = accessTokenPath;
-        this.refreshTokenPath = refreshTokenPath;
         this.enableAntiCsrf = enableAntiCsrf;
         this.accessTokenBlacklistingEnabled = accessTokenBlacklistingEnabled;
         this.jwtSigningPublicKeyExpiryTime = jwtSigningPublicKeyExpiryTime;
-        this.cookieSameSite = cookieSameSite;
-        this.idRefreshTokenPath = idRefreshTokenPath;
-        this.sessionExpiredStatusCode = sessionExpiredStatusCode;
+        this.accessTokenVaildity = accessTokenVaildity;
+        this.refreshTokenVaildity = refreshTokenVaildity;
     }
 
     updateJwtSigningPublicKeyInfo = (newKey: string, newExpiry: number) => {

@@ -10,28 +10,16 @@ export declare type CreateOrRefreshAPIResponse = {
         token: string;
         expiry: number;
         createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
     };
     refreshToken: {
         token: string;
         expiry: number;
         createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
     };
     idRefreshToken: {
         token: string;
         expiry: number;
         createdTime: number;
-        cookiePath: string;
-        cookieSecure: boolean;
-        domain?: string;
-        sameSite: "none" | "lax" | "strict";
     };
     antiCsrfToken: string | undefined;
 };
@@ -47,6 +35,7 @@ export declare type TypeInput = {
     cookieSameSite?: "strict" | "lax" | "none";
     cookieSecure?: boolean;
     apiKey?: string;
+    sessionExpiredStatusCode?: number;
 };
 export interface SessionRequest extends Request {
     session: Session;

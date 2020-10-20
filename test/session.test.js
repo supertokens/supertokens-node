@@ -327,4 +327,39 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response3.session != undefined);
         assert(Object.keys(response3.session).length === 3);
     });
+
+    it("test that anti-csrf disabled and sameSite none throws an error", async function () {
+        await setKeyValueInConfig("enable_anti_csrf", "false");
+        await startST();
+
+        ST.init({ hosts: "http://localhost:8080", cookieSameSite: "none" });
+
+        try {
+            await ST.createNewSession("", {}, {});
+            assert(false);
+        } catch (err) {
+            if (
+                !ST.Error.isErrorFromAuth(err) ||
+                err.errType !== ST.Error.GENERAL_ERROR ||
+                err.err.message !==
+                    'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
+            ) {
+                throw error;
+            }
+        }
+    });
+
+    it("test that anti-csrf disabled and sameSite lax does now throw an error", async function () {
+        await setKeyValueInConfig("enable_anti_csrf", "false");
+        await startST();
+        ST.init({ hosts: "http://localhost:8080", cookieSameSite: "lax" });
+        await ST.createNewSession("", {}, {});
+    });
+
+    it("test that anti-csrf disabled and sameSite strict does now throw an error", async function () {
+        await setKeyValueInConfig("enable_anti_csrf", "false");
+        await startST();
+        ST.init({ hosts: "http://localhost:8080", cookieSameSite: "strict" });
+        await ST.createNewSession("", {}, {});
+    });
 });

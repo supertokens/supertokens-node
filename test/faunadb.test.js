@@ -55,6 +55,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                 userCollectionName: "users",
                 accessFaunadbTokenFromFrontend: true,
+                refreshTokenPath: "/refresh",
             })
         );
 
@@ -160,6 +161,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                 userCollectionName: "users",
                 accessFaunadbTokenFromFrontend: true,
+                refreshTokenPath: "/refresh",
             })
         );
 
@@ -268,6 +270,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 hosts: "http://localhost:8080",
                 faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                 userCollectionName: "users",
+                refreshTokenPath: "/refresh",
             })
         );
 
@@ -337,6 +340,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
             userCollectionName: "users",
             accessFaunadbTokenFromFrontend: true,
+            refreshTokenPath: "/refresh",
         });
 
         // if version >= 2.3
@@ -537,6 +541,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
             userCollectionName: "users",
             accessFaunadbTokenFromFrontend: true,
+            refreshTokenPath: "/refresh",
         });
 
         // if version >= 2.3

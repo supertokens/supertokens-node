@@ -17,6 +17,7 @@ let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { DeviceInfo } = require("../lib/build/deviceInfo");
 let { Querier } = require("../lib/build/querier");
 let { CookieConfig } = require("../lib/build/cookieAndHeaders");
+let { SessionConfig } = require("../lib/build/session");
 const nock = require("nock");
 let fs = require("fs");
 
@@ -130,7 +131,6 @@ module.exports.setupST = async function () {
         await module.exports.executeCommand("cd " + installationPath + " && cp temp/licenseKey ./licenseKey");
     } catch (ignore) {}
     await module.exports.executeCommand("cd " + installationPath + " && cp temp/config.yaml ./config.yaml");
-    await module.exports.setKeyValueInConfig("refresh_api_path", "/refresh");
     await module.exports.setKeyValueInConfig("enable_anti_csrf", "true");
 };
 
@@ -163,15 +163,20 @@ module.exports.stopST = async function (pid) {
     throw new Error("error while stopping ST with PID: " + pid);
 };
 
+module.exports.resetAll = function () {
+    HandshakeInfo.reset();
+    DeviceInfo.reset();
+    Querier.reset();
+    CookieConfig.reset();
+    SessionConfig.reset();
+};
+
 module.exports.killAllST = async function () {
     let pids = await getListOfPids();
     for (let i = 0; i < pids.length; i++) {
         await module.exports.stopST(pids[i]);
     }
-    HandshakeInfo.reset();
-    DeviceInfo.reset();
-    Querier.reset();
-    CookieConfig.reset();
+    module.exports.resetAll();
     nock.cleanAll();
 };
 
