@@ -163,16 +163,20 @@ module.exports.stopST = async function (pid) {
     throw new Error("error while stopping ST with PID: " + pid);
 };
 
-module.exports.killAllST = async function () {
-    let pids = await getListOfPids();
-    for (let i = 0; i < pids.length; i++) {
-        await module.exports.stopST(pids[i]);
-    }
+module.exports.resetAll = function () {
     HandshakeInfo.reset();
     DeviceInfo.reset();
     Querier.reset();
     CookieConfig.reset();
     SessionConfig.reset();
+};
+
+module.exports.killAllST = async function () {
+    let pids = await getListOfPids();
+    for (let i = 0; i < pids.length; i++) {
+        await module.exports.stopST(pids[i]);
+    }
+    module.exports.resetAll();
     nock.cleanAll();
 };
 

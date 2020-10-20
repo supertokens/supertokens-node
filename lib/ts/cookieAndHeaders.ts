@@ -18,6 +18,7 @@ import { IncomingMessage, ServerResponse } from "http";
 
 import { DeviceInfo } from "./deviceInfo";
 import { AuthError, generateError } from "./error";
+import { validateAndNormaliseCookieSameSite } from "./utils";
 
 // TODO: set same-site value for cookies as chrome will soon make that compulsory.
 // Setting it to "lax" seems ideal, however there are bugs in safari regarding that. So setting it to "none" might make more sense.
@@ -63,6 +64,10 @@ export class CookieConfig {
         cookieSecure?: boolean,
         cookieSameSite?: "strict" | "lax" | "none"
     ) {
+        if (cookieSameSite !== undefined) {
+            cookieSameSite = validateAndNormaliseCookieSameSite(cookieSameSite);
+        }
+
         if (CookieConfig.instance === undefined) {
             CookieConfig.instance = new CookieConfig(
                 accessTokenPath === undefined ? "/" : accessTokenPath,

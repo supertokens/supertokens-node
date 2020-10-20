@@ -94,6 +94,15 @@ export async function createNewSession(
     delete response.status;
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
+    // we check if sameSite is none, antiCsrfTokens is being sent - this is a security check
+    if (CookieConfig.getInstanceOrThrowError().cookieSameSite === "none" && response.antiCsrfToken === undefined) {
+        throw generateError(
+            AuthError.GENERAL_ERROR,
+            new Error(
+                'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
+            )
+        );
+    }
     return response;
 }
 

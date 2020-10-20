@@ -7,6 +7,19 @@ import {
     setAntiCsrfTokenInHeaders,
 } from "./cookieAndHeaders";
 import * as express from "express";
+import { AuthError, generateError } from "./error";
+
+export function validateAndNormaliseCookieSameSite(sameSite: string): "strict" | "lax" | "none" {
+    sameSite = sameSite.trim();
+    sameSite = sameSite.toLocaleLowerCase();
+    if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
+        throw generateError(
+            AuthError.GENERAL_ERROR,
+            new Error('cookie same site must be one of "strict", "lax", or "none"')
+        );
+    }
+    return sameSite;
+}
 
 export function attachCreateOrRefreshSessionResponseToExpressRes(
     res: express.Response,

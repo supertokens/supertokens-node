@@ -35,6 +35,7 @@ import * as qs from "querystring";
 import * as jwt from "jsonwebtoken";
 import { autoRefreshMiddleware } from "./middleware";
 import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
+import { CookieConfig } from "./cookieAndHeaders";
 
 // TODO: Make it also work with PassportJS
 
