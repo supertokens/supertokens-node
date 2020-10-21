@@ -49,7 +49,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //- check for token theft detection
     it("express token theft detection", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
         app.post("/create", async (req, res) => {
@@ -62,7 +62,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
 
-        app.post("/session/refresh", async (req, res) => {
+        app.post("/auth/session/refresh", async (req, res) => {
             try {
                 await STExpress.refreshSession(req, res);
                 res.status(200).send(JSON.stringify({ success: false }));
@@ -87,7 +87,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
@@ -110,7 +110,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         let res3 = await new Promise((resolve) =>
             request(app)
-                .post("/session/refresh")
+                .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
@@ -128,7 +128,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        let currCDIVersion = await Querier.getInstance().getAPIVersion();
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
         if (maxVersion(currCDIVersion, "2.1") === "2.1") {
             assert(cookies.accessTokenDomain === "localhost" || cookies.accessTokenDomain === "supertokens.io");
             assert(cookies.refreshTokenDomain === "localhost" || cookies.refreshTokenDomain === "supertokens.io");
@@ -148,7 +148,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(
             STExpress.init({
                 hosts: "http://localhost:8080",
-                refreshTokenPath: "/session/refresh",
             })
         );
 
@@ -177,7 +176,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
@@ -200,7 +199,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         let res3 = await new Promise((resolve) =>
             request(app)
-                .post("/session/refresh")
+                .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
@@ -224,7 +223,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check basic usage of session
     it("test basic usage of express sessions", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
 
@@ -237,7 +236,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await STExpress.getSession(req, res, true);
             res.status(200).send("");
         });
-        app.post("/session/refresh", async (req, res) => {
+        app.post("/auth/session/refresh", async (req, res) => {
             await STExpress.refreshSession(req, res);
             res.status(200).send("");
         });
@@ -280,7 +279,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
@@ -358,7 +357,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(
             STExpress.init({
                 hosts: "http://localhost:8080",
-                refreshTokenPath: "/session/refresh",
             })
         );
 
@@ -412,7 +410,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
@@ -485,7 +483,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check session verify for with / without anti-csrf present
     it("test express session verify with anti-csrf present", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
         app.post("/create", async (req, res) => {
@@ -540,7 +538,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     // check session verify for with / without anti-csrf present
     it("test session verify without anti-csrf present express", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
 
@@ -600,7 +598,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check revoking session(s)**
     it("test revoking express sessions", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         const app = express();
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "", {}, {});
@@ -707,7 +705,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check manipulating session data
     it("test manipulating session data with express", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         const app = express();
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "", {}, {});
@@ -833,7 +831,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     //check manipulating jwt payload
     it("test manipulating jwt payload with express", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         const app = express();
         app.post("/create", async (req, res) => {
             await STExpress.createNewSession(res, "user1", {}, {});
@@ -847,7 +845,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
             res.status(statusCode).send("");
         });
-        app.post("/session/refresh", async (req, res) => {
+        app.post("/auth/session/refresh", async (req, res) => {
             await STExpress.refreshSession(req, res);
             res.status(200).send("");
         });
@@ -935,7 +933,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         response2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", [
                         "sRefreshToken=" +
                             response.refreshToken +
@@ -1018,7 +1016,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     // test with existing header params being there and that the lib appends to those and not overrides those
     it("test that express appends to existing header params and does not override", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         const app = express();
         app.post("/create", async (req, res) => {
             res.header("testHeader", "testValue");
@@ -1056,7 +1054,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     it("test that when anti-csrf is disabled from from ST core, not having to input in verify session is fine in express", async function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
         app.post("/create", async (req, res) => {
@@ -1127,7 +1125,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     it("test that getSession does not clear cookies if a session does not exist in the first place", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
 
@@ -1166,11 +1164,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     it("test that refreshSession does not clear cookies if a session does not exist in the first place", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
 
         const app = express();
 
-        app.post("/session/refresh", async (req, res) => {
+        app.post("/auth/session/refresh", async (req, res) => {
             try {
                 await STExpress.refreshSession(req, res);
             } catch (err) {
@@ -1184,7 +1182,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         let res = await new Promise((resolve) =>
             request(app)
-                .post("/session/refresh")
+                .post("/auth/session/refresh")
                 .end((err, res) => {
                     resolve(res);
                 })

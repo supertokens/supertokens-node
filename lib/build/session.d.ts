@@ -4,7 +4,7 @@ export declare class SessionConfig {
     private static instance;
     sessionExpiredStatusCode: number;
     constructor(sessionExpiredStatusCode: number);
-    static init(sessionExpiredStatusCode?: number): void;
+    static init(sessionExpiredStatusCode: number): void;
     static reset(): void;
     static getInstanceOrThrowError(): SessionConfig;
 }

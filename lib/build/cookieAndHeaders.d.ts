@@ -9,7 +9,7 @@ export declare class CookieConfig {
     cookieSecure: boolean;
     cookieSameSite: "strict" | "lax" | "none";
     constructor(accessTokenPath: string, refreshTokenPath: string, cookieDomain: string | undefined, cookieSecure: boolean, cookieSameSite: "strict" | "lax" | "none");
-    static init(accessTokenPath?: string, refreshTokenPath?: string, cookieDomain?: string, cookieSecure?: boolean, cookieSameSite?: "strict" | "lax" | "none"): void;
+    static init(accessTokenPath: string, apiBasePath: string, cookieDomain: string | undefined, cookieSecure: boolean, cookieSameSite: "strict" | "lax" | "none"): void;
     static reset(): void;
     static getInstanceOrThrowError(): CookieConfig;
 }

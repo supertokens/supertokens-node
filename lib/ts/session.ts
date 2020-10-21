@@ -18,7 +18,8 @@ import { HandshakeInfo } from "./handshakeInfo";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import { Querier } from "./querier";
 import { CookieConfig } from "./cookieAndHeaders";
-import { TypeInput, CreateOrRefreshAPIResponse } from "./types";
+import { TypeInput, CreateOrRefreshAPIResponse, TypeNormalisedInput } from "./types";
+import { validateAndNormaliseUserInput } from "./utils";
 
 export { AuthError as Error } from "./error";
 
@@ -30,11 +31,9 @@ export class SessionConfig {
         this.sessionExpiredStatusCode = sessionExpiredStatusCode;
     }
 
-    static init(sessionExpiredStatusCode?: number) {
+    static init(sessionExpiredStatusCode: number) {
         if (SessionConfig.instance === undefined) {
-            SessionConfig.instance = new SessionConfig(
-                sessionExpiredStatusCode === undefined ? 401 : sessionExpiredStatusCode
-            );
+            SessionConfig.instance = new SessionConfig(sessionExpiredStatusCode);
         }
     }
 
@@ -59,15 +58,17 @@ export class SessionConfig {
  * @throws AuthError GENERAL_ERROR in case anything fails.
  */
 export function init(config: TypeInput) {
-    Querier.initInstance(config.hosts, config.apiKey);
+    let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(config);
+
+    Querier.initInstance(normalisedInput.hosts, normalisedInput.apiKey);
     CookieConfig.init(
-        config.accessTokenPath,
-        config.refreshTokenPath,
-        config.cookieDomain,
-        config.cookieSecure,
-        config.cookieSameSite
+        normalisedInput.accessTokenPath,
+        normalisedInput.apiBasePath,
+        normalisedInput.cookieDomain,
+        normalisedInput.cookieSecure,
+        normalisedInput.cookieSameSite
     );
-    SessionConfig.init(config.sessionExpiredStatusCode);
+    SessionConfig.init(normalisedInput.sessionExpiredStatusCode);
 
     // this will also call the api version API
     HandshakeInfo.getInstance().catch((err) => {
@@ -84,7 +85,7 @@ export async function createNewSession(
     jwtPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
-    let response = await Querier.getInstance().sendPostRequest("/session", {
+    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session", {
         userId,
         userDataInJWT: jwtPayload,
         userDataInDatabase: sessionData,
@@ -177,7 +178,7 @@ export async function getSession(
 
     ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
 
-    let response = await Querier.getInstance().sendPostRequest("/session/verify", {
+    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/verify", {
         accessToken,
         antiCsrfToken,
         doAntiCsrfCheck,
@@ -205,7 +206,7 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined
 ): Promise<CreateOrRefreshAPIResponse> {
-    let response = await Querier.getInstance().sendPostRequest("/session/refresh", {
+    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/refresh", {
         refreshToken,
         antiCsrfToken,
     });
@@ -228,7 +229,7 @@ export async function refreshSession(
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeAllSessionsForUser(userId: string): Promise<string[]> {
-    let response = await Querier.getInstance().sendPostRequest("/session/remove", {
+    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/remove", {
         userId,
     });
     return response.sessionHandlesRevoked;
@@ -239,7 +240,7 @@ export async function revokeAllSessionsForUser(userId: string): Promise<string[]
  * @throws AuthError, GENERAL_ERROR
  */
 export async function getAllSessionHandlesForUser(userId: string): Promise<string[]> {
-    let response = await Querier.getInstance().sendGetRequest("/session/user", {
+    let response = await Querier.getInstanceOrThrowError().sendGetRequest("/session/user", {
         userId,
     });
     return response.sessionHandles;
@@ -251,7 +252,7 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeSession(sessionHandle: string): Promise<boolean> {
-    let response = await Querier.getInstance().sendPostRequest("/session/remove", {
+    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/remove", {
         sessionHandles: [sessionHandle],
     });
     return response.sessionHandlesRevoked.length === 1;
@@ -263,7 +264,7 @@ export async function revokeSession(sessionHandle: string): Promise<boolean> {
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeMultipleSessions(sessionHandles: string[]): Promise<string[]> {
-    let response = await Querier.getInstance().sendPostRequest("/session/remove", {
+    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/remove", {
         sessionHandles,
     });
     return response.sessionHandlesRevoked;
@@ -275,7 +276,7 @@ export async function revokeMultipleSessions(sessionHandles: string[]): Promise<
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getSessionData(sessionHandle: string): Promise<any> {
-    let response = await Querier.getInstance().sendGetRequest("/session/data", {
+    let response = await Querier.getInstanceOrThrowError().sendGetRequest("/session/data", {
         sessionHandle,
     });
     if (response.status === "OK") {
@@ -290,7 +291,7 @@ export async function getSessionData(sessionHandle: string): Promise<any> {
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateSessionData(sessionHandle: string, newSessionData: any) {
-    let response = await Querier.getInstance().sendPutRequest("/session/data", {
+    let response = await Querier.getInstanceOrThrowError().sendPutRequest("/session/data", {
         sessionHandle,
         userDataInDatabase: newSessionData,
     });
@@ -304,7 +305,7 @@ export async function updateSessionData(sessionHandle: string, newSessionData: a
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getJWTPayload(sessionHandle: string): Promise<any> {
-    let response = await Querier.getInstance().sendGetRequest("/jwt/data", {
+    let response = await Querier.getInstanceOrThrowError().sendGetRequest("/jwt/data", {
         sessionHandle,
     });
     if (response.status === "OK") {
@@ -318,7 +319,7 @@ export async function getJWTPayload(sessionHandle: string): Promise<any> {
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-    let response = await Querier.getInstance().sendPutRequest("/jwt/data", {
+    let response = await Querier.getInstanceOrThrowError().sendPutRequest("/jwt/data", {
         sessionHandle,
         userDataInJWT: newJWTPayload,
     });

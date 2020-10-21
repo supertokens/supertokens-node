@@ -66,14 +66,14 @@ describe(`deviceDriverInfo: ${printPath("[test/deviceDriverInfo.test.js]")}`, fu
                 } catch (err) {}
                 return [200, { success: success }];
             });
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         let response = await ST.createNewSession("", {}, {});
         assert.equal(response.success, true);
     });
 
     it("driver info check with frontendSDKs", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         // server.
         let server;
         const app = express();
