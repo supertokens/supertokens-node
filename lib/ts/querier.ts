@@ -20,6 +20,7 @@ import { TypeInput } from "./types";
 import { version } from "./version";
 import { getLargestVersionFromIntersection } from "./utils";
 import { cdiSupported } from "./version";
+import { normaliseURLDomainOrThrowError } from "./utils";
 
 export class Querier {
     static instance: Querier | undefined;
@@ -29,13 +30,11 @@ export class Querier {
     private apiVersion: string | undefined = undefined;
     private apiKey: string | undefined = undefined;
 
-    private constructor(hosts?: string, apiKey?: string) {
-        if (hosts === undefined) {
-            hosts = "http://localhost:3567";
-        }
-        this.hosts = hosts.split(";").map((h) => (h.slice(-1) === "/" ? h.slice(0, -1) : h));
+    private constructor(hosts: string, apiKey?: string) {
+        this.hosts = hosts.split(";").map((h) => normaliseURLDomainOrThrowError(h));
         this.apiKey = apiKey;
     }
+
     getAPIVersion = async (): Promise<string> => {
         if (this.apiVersion !== undefined) {
             return this.apiVersion;
@@ -84,14 +83,17 @@ export class Querier {
         return this.hostsAliveForTesting;
     };
 
-    static getInstance(): Querier {
+    static getInstanceOrThrowError(): Querier {
         if (Querier.instance === undefined) {
-            Querier.instance = new Querier();
+            throw generateError(
+                AuthError.GENERAL_ERROR,
+                new Error("Please call the init function before using SuperTokens")
+            );
         }
         return Querier.instance;
     }
 
-    static initInstance(hosts?: string, apiKey?: string) {
+    static initInstance(hosts: string, apiKey?: string) {
         if (Querier.instance === undefined) {
             Querier.instance = new Querier(hosts, apiKey);
         }

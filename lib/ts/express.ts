@@ -442,7 +442,7 @@ export class Session {
     };
 
     updateJWTPayload = async (newJWTPayload: any) => {
-        let response = await Querier.getInstance().sendPostRequest("/session/regenerate", {
+        let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/regenerate", {
             accessToken: this.accessToken,
             userDataInJWT: newJWTPayload,
         });

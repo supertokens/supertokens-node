@@ -35,7 +35,7 @@ export class HandshakeInfo {
     // @throws GENERAL_ERROR
     static async getInstance(): Promise<HandshakeInfo> {
         if (HandshakeInfo.instance == undefined) {
-            let response = await Querier.getInstance().sendPostRequest("/handshake", {});
+            let response = await Querier.getInstanceOrThrowError().sendPostRequest("/handshake", {});
             HandshakeInfo.instance = new HandshakeInfo(
                 response.jwtSigningPublicKey,
                 response.enableAntiCsrf,

@@ -30,12 +30,22 @@ export declare type TypeAuthError = {
 export declare type TypeInput = {
     hosts?: string;
     accessTokenPath?: string;
-    refreshTokenPath?: string;
+    apiBasePath?: string;
     cookieDomain?: string;
     cookieSameSite?: "strict" | "lax" | "none";
     cookieSecure?: boolean;
     apiKey?: string;
     sessionExpiredStatusCode?: number;
+};
+export declare type TypeNormalisedInput = {
+    hosts: string;
+    accessTokenPath: string;
+    apiBasePath: string;
+    cookieDomain: string | undefined;
+    cookieSameSite: "strict" | "lax" | "none";
+    cookieSecure: boolean;
+    apiKey?: string;
+    sessionExpiredStatusCode: number;
 };
 export interface SessionRequest extends Request {
     session: Session;
