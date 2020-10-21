@@ -23,6 +23,8 @@ let {
     normaliseSessionScopeOrThrowError,
     normaliseURLDomainOrThrowError,
 } = require("../lib/build/utils");
+const { Querier } = require("../lib/build/querier");
+const { SessionConfig } = require("../lib/build/session");
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
@@ -256,6 +258,87 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             assert(false);
         } catch (err) {
             assert(err.err.message === "Please provide a valid domain name");
+        }
+    });
+
+    it("various config values", async function () {
+        await startST();
+
+        {
+            STExpress.init({
+                hosts: "http://localhost:8080",
+                apiBasePath: "/custom",
+            });
+            assert(CookieConfig.getInstanceOrThrowError().refreshTokenPath === "/custom/session/refresh");
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                hosts: "http://localhost:8080",
+                apiBasePath: "/",
+            });
+            assert(CookieConfig.getInstanceOrThrowError().refreshTokenPath === "/session/refresh");
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                hosts: "http://localhost:8080",
+            });
+            assert(CookieConfig.getInstanceOrThrowError().refreshTokenPath === "/auth/session/refresh");
+            assert(CookieConfig.getInstanceOrThrowError().accessTokenPath === "/");
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                hosts: "http://localhost:8080",
+                accessTokenPath: "/api/a",
+            });
+            assert(CookieConfig.getInstanceOrThrowError().accessTokenPath === "/api/a");
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                hosts: "http://localhost:8080",
+                accessTokenPath: "/api/a/",
+            });
+            assert(CookieConfig.getInstanceOrThrowError().accessTokenPath === "/api/a");
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                hosts: "http://localhost:8080",
+                apiKey: "haha",
+            });
+            assert(Querier.getInstanceOrThrowError().apiKey === "haha");
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                hosts: "http://localhost:8080",
+                sessionExpiredStatusCode: 402,
+            });
+            assert(SessionConfig.getInstanceOrThrowError().sessionExpiredStatusCode === 402);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                hosts: "http://localhost:8080;try.supertokens.io;try.supertokens.io:8080;localhost:90",
+            });
+            let hosts = Querier.getInstanceOrThrowError().hosts;
+            assert(hosts.length === 4);
+
+            assert(hosts[0] === "http://localhost:8080");
+            assert(hosts[1] === "https://try.supertokens.io");
+            assert(hosts[2] === "https://try.supertokens.io:8080");
+            assert(hosts[3] === "http://localhost:90");
+            resetAll();
         }
     });
 });
