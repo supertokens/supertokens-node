@@ -33,7 +33,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     });
 
     it("core not available", async function () {
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         try {
             await ST.createNewSession("", {}, {});
             throw new Error("should not have come here");
@@ -50,7 +50,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
 
     it("successful handshake and update JWT", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         let info = await HandshakeInfo.getInstance();
         assert.equal(typeof info.jwtSigningPublicKey, "string");
         assert.equal(info.enableAntiCsrf, true);
@@ -69,12 +69,12 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
         assert.equal(CookieConfig.getInstanceOrThrowError().cookieDomain, undefined);
         assert.equal(CookieConfig.getInstanceOrThrowError().cookieSameSite, "lax");
         assert.equal(CookieConfig.getInstanceOrThrowError().cookieSecure, false);
-        assert.equal(CookieConfig.getInstanceOrThrowError().refreshTokenPath, "/session/refresh");
+        assert.equal(CookieConfig.getInstanceOrThrowError().refreshTokenPath, "/auth/session/refresh");
     });
 
     it("checking for default session expired status code", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         assert.equal(SessionConfig.getInstanceOrThrowError().sessionExpiredStatusCode, 401);
     });
 });

@@ -37,7 +37,6 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
         await startST();
         ST.init({
             hosts: "http://localhost:8080",
-            refreshTokenPath: "/refresh",
         });
         nock(`https://${constants.AUTH0_DOMAIN}`)
             .post("/oauth/token")
@@ -82,7 +81,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
 
     it("test auth0Handler login, with callback, no error thrown", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         nock(`https://${constants.AUTH0_DOMAIN}`)
             .post("/oauth/token")
             .reply(200, {
@@ -147,7 +146,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
 
     it("test auth0Handler login, with callback, error thrown", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         nock(`https://${constants.AUTH0_DOMAIN}`)
             .post("/oauth/token")
             .reply(200, {
@@ -196,7 +195,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
 
     it("test auth0Handler login, non 200 response", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         nock(`https://${constants.AUTH0_DOMAIN}`).post("/oauth/token").reply(403, {});
 
         let app = express();
@@ -231,7 +230,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
 
     it("test auth0Handler login, invalid id_token", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         nock(`https://${constants.AUTH0_DOMAIN}`)
             .post("/oauth/token")
             .reply(200, {
@@ -275,7 +274,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
 
     it("test auth0Handler logout, with middleware", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         nock(`https://${constants.AUTH0_DOMAIN}`)
             .post("/oauth/token")
             .reply(200, {
@@ -355,7 +354,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
 
     it("test auth0Handler logout, without middleware", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         nock(`https://${constants.AUTH0_DOMAIN}`)
             .post("/oauth/token")
             .reply(200, {
@@ -439,7 +438,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
 
     it("test auth0Handler refresh, with session data", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         nock(`https://${constants.AUTH0_DOMAIN}`)
             .post("/oauth/token")
             .reply(200, {
@@ -523,7 +522,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
 
     it("test auth0Handler refresh, no session data", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         nock(`https://${constants.AUTH0_DOMAIN}`)
             .post("/oauth/token")
             .reply(200, {
@@ -598,7 +597,7 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
 
     it("test auth0Handler refresh, non 200 response", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080", refreshTokenPath: "/refresh" });
+        ST.init({ hosts: "http://localhost:8080" });
         nock(`https://${constants.AUTH0_DOMAIN}`)
             .post("/oauth/token")
             .reply(200, {

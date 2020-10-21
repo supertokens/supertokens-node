@@ -30,14 +30,10 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await cleanST();
     });
 
-    it("querier called without init", async function () {
-        Querier.getInstance();
-    });
-
     it("core not available", async function () {
         ST.init({ hosts: "http://localhost:8080;http://localhost:8081/" });
         try {
-            let q = Querier.getInstance();
+            let q = Querier.getInstanceOrThrowError();
             await q.sendGetRequest("/", {});
             throw new Error();
         } catch (err) {
@@ -56,7 +52,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await startST("localhost", 8081);
         await startST("localhost", 8082);
         ST.init({ hosts: "http://localhost:8080;http://localhost:8081/;http://localhost:8082" });
-        let q = Querier.getInstance();
+        let q = Querier.getInstanceOrThrowError();
         assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");
         assert.equal(await q.sendDeleteRequest("/hello", {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
@@ -73,7 +69,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await startST();
         await startST("localhost", 8082);
         ST.init({ hosts: "http://localhost:8080;http://localhost:8081/;http://localhost:8082" });
-        let q = Querier.getInstance();
+        let q = Querier.getInstanceOrThrowError();
         assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");
         assert.equal(await q.sendPostRequest("/hello", {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();

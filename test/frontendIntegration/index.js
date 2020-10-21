@@ -36,7 +36,7 @@ app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
 
-SuperTokens.init({ hosts: "http://localhost:9000", cookieSameSite: "lax", refreshTokenPath: "/refresh" });
+SuperTokens.init({ hosts: "http://localhost:9000", cookieSameSite: "lax" });
 
 app.post("/login", async (req, res) => {
     let userId = req.body.userId;
@@ -95,7 +95,7 @@ app.post("/revokeAll", SuperTokens.middleware(), async (req, res) => {
     res.send("success");
 });
 
-app.post("/refresh", SuperTokens.middleware(), async (req, res) => {
+app.post("/auth/session/refresh", SuperTokens.middleware(), async (req, res) => {
     refreshCalled = true;
     noOfTimesRefreshCalledDuringTest += 1;
     res.send("refresh success");

@@ -37,7 +37,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         await startST();
         STExpress.init({
             hosts: "http://localhost:8080",
-            refreshTokenPath: "/refresh",
         });
         const app = express();
         app.post("/create", async (req, res) => {
@@ -53,7 +52,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
-        app.post("/refresh", STExpress.middleware(), async (req, res, next) => {
+        app.post("/auth/session/refresh", STExpress.middleware(), async (req, res, next) => {
             res.status(200).json({ message: true });
         });
 
@@ -158,7 +157,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/refresh")
+                    .post("/auth/session/refresh")
                     .expect(200)
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
@@ -196,7 +195,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         let r4 = await new Promise((resolve) =>
             request(app)
-                .post("/refresh")
+                .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
@@ -251,7 +250,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         app.use(
             STExpress.init({
                 hosts: "http://localhost:8080",
-                refreshTokenPath: "/refresh",
             })
         );
 
@@ -369,7 +367,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/refresh")
+                    .post("/auth/session/refresh")
                     .expect(200)
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
@@ -407,7 +405,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         let r4 = await new Promise((resolve) =>
             request(app)
-                .post("/refresh")
+                .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
@@ -460,7 +458,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         STExpress.init({
             hosts: "http://localhost:8080",
             accessTokenPath: "/custom",
-            refreshTokenPath: "/custom/refresh",
+            apiBasePath: "/custom",
             cookieDomain: "test-driver",
             cookieSecure: true,
             cookieSameSite: "strict",
@@ -479,7 +477,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
-        app.post("/custom/refresh", STExpress.middleware(), async (req, res, next) => {
+        app.post("/custom/session/refresh", STExpress.middleware(), async (req, res, next) => {
             res.status(200).json({ message: true });
         });
 
@@ -588,7 +586,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/custom/refresh")
+                    .post("/custom/session/refresh")
                     .expect(200)
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
@@ -628,7 +626,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         let r4 = await new Promise((resolve) =>
             request(app)
-                .post("/custom/refresh")
+                .post("/custom/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
@@ -684,7 +682,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             STExpress.init({
                 hosts: "http://localhost:8080",
                 accessTokenPath: "/custom",
-                refreshTokenPath: "/custom/refresh",
+                apiBasePath: "/custom",
                 cookieDomain: "test-driver",
                 cookieSecure: true,
                 cookieSameSite: "strict",
@@ -809,7 +807,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/custom/refresh")
+                    .post("/custom/session/refresh")
                     .expect(200)
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
@@ -849,7 +847,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         let r4 = await new Promise((resolve) =>
             request(app)
-                .post("/custom/refresh")
+                .post("/custom/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)

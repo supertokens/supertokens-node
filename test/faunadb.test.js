@@ -55,7 +55,6 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                 userCollectionName: "users",
                 accessFaunadbTokenFromFrontend: true,
-                refreshTokenPath: "/refresh",
             })
         );
 
@@ -116,7 +115,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         let res3 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
@@ -161,7 +160,6 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                 userCollectionName: "users",
                 accessFaunadbTokenFromFrontend: true,
-                refreshTokenPath: "/refresh",
             })
         );
 
@@ -223,7 +221,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         let res3 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
@@ -270,7 +268,6 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 hosts: "http://localhost:8080",
                 faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                 userCollectionName: "users",
-                refreshTokenPath: "/refresh",
             })
         );
 
@@ -340,13 +337,12 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
             userCollectionName: "users",
             accessFaunadbTokenFromFrontend: true,
-            refreshTokenPath: "/refresh",
         });
 
         // if version >= 2.3
         if (
-            maxVersion(await Querier.getInstance().getAPIVersion(), "2.3") !==
-            (await Querier.getInstance().getAPIVersion())
+            maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
+            (await Querier.getInstanceOrThrowError().getAPIVersion())
         ) {
             return;
         }
@@ -362,7 +358,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             res.status(200).send("");
         });
 
-        app.post("/session/refresh", async (req, res) => {
+        app.post("/auth/session/refresh", async (req, res) => {
             try {
                 await STExpress.refreshSession(req, res);
                 res.status(200).send(JSON.stringify({ success: false }));
@@ -388,7 +384,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
@@ -411,7 +407,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
 
         let res3 = await new Promise((resolve) =>
             request(app)
-                .post("/session/refresh")
+                .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
@@ -429,7 +425,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        let currCDIVersion = await Querier.getInstance().getAPIVersion();
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
         if (maxVersion(currCDIVersion, "2.1") === "2.1") {
             assert(cookies.accessTokenDomain === "localhost" || cookies.accessTokenDomain === "supertokens.io");
             assert(cookies.refreshTokenDomain === "localhost" || cookies.refreshTokenDomain === "supertokens.io");
@@ -449,7 +445,6 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         app.use(
             STExpress.init({
                 hosts: "http://localhost:8080",
-                refreshTokenPath: "/session/refresh",
                 faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                 userCollectionName: "users",
                 accessFaunadbTokenFromFrontend: true,
@@ -458,8 +453,8 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
 
         // if version >= 2.3
         if (
-            maxVersion(await Querier.getInstance().getAPIVersion(), "2.3") !==
-            (await Querier.getInstance().getAPIVersion())
+            maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
+            (await Querier.getInstanceOrThrowError().getAPIVersion())
         ) {
             return;
         }
@@ -489,7 +484,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
@@ -512,7 +507,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
 
         let res3 = await new Promise((resolve) =>
             request(app)
-                .post("/session/refresh")
+                .post("/auth/session/refresh")
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
@@ -541,13 +536,12 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
             userCollectionName: "users",
             accessFaunadbTokenFromFrontend: true,
-            refreshTokenPath: "/refresh",
         });
 
         // if version >= 2.3
         if (
-            maxVersion(await Querier.getInstance().getAPIVersion(), "2.3") !==
-            (await Querier.getInstance().getAPIVersion())
+            maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
+            (await Querier.getInstanceOrThrowError().getAPIVersion())
         ) {
             return;
         }
@@ -563,7 +557,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             await STExpress.getSession(req, res, true);
             res.status(200).send("");
         });
-        app.post("/session/refresh", async (req, res) => {
+        app.post("/auth/session/refresh", async (req, res) => {
             await STExpress.refreshSession(req, res);
             res.status(200).send("");
         });
@@ -606,7 +600,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
@@ -685,7 +679,6 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         app.use(
             STExpress.init({
                 hosts: "http://localhost:8080",
-                refreshTokenPath: "/session/refresh",
                 faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                 userCollectionName: "users",
             })
@@ -741,7 +734,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/refresh")
+                    .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {

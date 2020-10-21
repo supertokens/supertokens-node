@@ -98,7 +98,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             hosts: "http://localhost:8080",
         });
         try {
-            let version = await Querier.getInstance().getAPIVersion();
+            let version = await Querier.getInstanceOrThrowError().getAPIVersion();
             if (
                 (version !== "2.0" && process.env.INSTALL_PATH.includes("com-")) ||
                 (maxVersion(version, "2.3") === version && process.env.INSTALL_PATH.includes("supertokens-"))
@@ -227,7 +227,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res = await ST.createNewSession("someUniqueUserId", {}, {});
         let res2 = await ST.revokeSession(res.session.handle);
         assert(res2 === true);
-        const CDI_VERSION = await Querier.getInstance().getAPIVersion();
+        const CDI_VERSION = await Querier.getInstanceOrThrowError().getAPIVersion();
 
         let res3 = await ST.getAllSessionHandlesForUser("someUniqueUserId");
         assert(res3.length === 0);
