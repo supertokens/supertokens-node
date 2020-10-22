@@ -17,6 +17,7 @@ export default class SessionRecipe extends RecipeModule {
     };
     handshakeInfo: HandshakeInfo | undefined;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput);
+    static getInstanceOrThrowError(): SessionRecipe;
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     getHandshakeInfo: () => Promise<HandshakeInfo>;

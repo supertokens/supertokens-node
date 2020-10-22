@@ -81,6 +81,19 @@ export default class SessionRecipe extends RecipeModule {
         }
     }
 
+    static getInstanceOrThrowError(): SessionRecipe {
+        if (SessionRecipe.instance !== undefined) {
+            return SessionRecipe.instance;
+        }
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+            },
+            SessionRecipe.RECIPE_ID
+        );
+    }
+
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo) => {
             if (SessionRecipe.instance === undefined) {

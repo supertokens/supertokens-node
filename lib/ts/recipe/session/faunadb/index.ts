@@ -13,4 +13,65 @@
  * under the License.
  */
 
-// TODO:
+import SessionRecipe from "./sessionRecipe";
+import STError from "../error";
+
+export * from "../error";
+export * from "./sessionClass";
+
+// For Express
+export default class SessionWrapper {
+    static init = SessionRecipe.init;
+
+    static createNewSession = SessionRecipe.getInstanceOrThrowError().createNewSession;
+
+    static getSession = SessionRecipe.getInstanceOrThrowError().getSession;
+
+    static refreshSession = SessionRecipe.getInstanceOrThrowError().refreshSession;
+
+    static revokeAllSessionsForUser = SessionRecipe.getInstanceOrThrowError().revokeAllSessionsForUser;
+
+    static getAllSessionHandlesForUser = SessionRecipe.getInstanceOrThrowError().getAllSessionHandlesForUser;
+
+    static revokeSession = SessionRecipe.getInstanceOrThrowError().revokeSession;
+
+    static revokeMultipleSessions = SessionRecipe.getInstanceOrThrowError().revokeMultipleSessions;
+
+    static getSessionData = SessionRecipe.getInstanceOrThrowError().getSessionData;
+
+    static updateSessionData = SessionRecipe.getInstanceOrThrowError().updateSessionData;
+
+    static getCORSAllowedHeaders = SessionRecipe.getInstanceOrThrowError().getCORSAllowedHeaders;
+
+    static getJWTPayload = SessionRecipe.getInstanceOrThrowError().getJWTPayload;
+
+    static updateJWTPayload = SessionRecipe.getInstanceOrThrowError().updateJWTPayload;
+
+    static Error = STError;
+}
+
+export let init = SessionWrapper.init;
+
+export let createNewSession = SessionWrapper.createNewSession;
+
+export let getSession = SessionWrapper.getSession;
+
+export let refreshSession = SessionWrapper.refreshSession;
+
+export let revokeAllSessionsForUser = SessionWrapper.revokeAllSessionsForUser;
+
+export let getAllSessionHandlesForUser = SessionWrapper.getAllSessionHandlesForUser;
+
+export let revokeSession = SessionWrapper.revokeSession;
+
+export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
+
+export let getSessionData = SessionWrapper.getSessionData;
+
+export let updateSessionData = SessionWrapper.updateSessionData;
+
+export let getCORSAllowedHeaders = SessionWrapper.getCORSAllowedHeaders;
+
+export let getJWTPayload = SessionWrapper.getJWTPayload;
+
+export let updateJWTPayload = SessionWrapper.updateJWTPayload;

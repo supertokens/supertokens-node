@@ -47,6 +47,19 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         };
     }
 
+    static getInstanceOrThrowError(): SessionRecipe {
+        if (SessionRecipe.faunaSessionRecipeInstance !== undefined) {
+            return SessionRecipe.faunaSessionRecipeInstance;
+        }
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+            },
+            SessionRecipe.RECIPE_ID
+        );
+    }
+
     static init(config: TypeFaunaDBInput): RecipeListFunction {
         return (appInfo) => {
             if (SessionRecipe.faunaSessionRecipeInstance === undefined) {

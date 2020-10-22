@@ -12,3 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+import SuperTokens from "./supertokens";
+import STError from "./error";
+
+export * from "./error";
+
+// For Express
+export default class SuperTokensWrapper {
+    static init = SuperTokens.init;
+
+    static Error = STError;
+}
+
+export let init = SuperTokens.init;

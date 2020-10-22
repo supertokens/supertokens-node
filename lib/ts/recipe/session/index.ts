@@ -13,18 +13,69 @@
  * under the License.
  */
 
-// TODO: register resetters
+import SessionRecipe from "./sessionRecipe";
+import STError from "./error";
 
-// TODO: CORS
+export * from "./error";
+export * from "./sessionClass";
 
-// TODO: middleware
+// For Express
+export default class SessionWrapper {
+    static init = SessionRecipe.init;
 
-// TODO: error handlers
+    static createNewSession = SessionRecipe.getInstanceOrThrowError().createNewSession;
 
-// TODO: routing
+    static getSession = SessionRecipe.getInstanceOrThrowError().getSession;
 
-// TODO: other stuff from the issue
+    static refreshSession = SessionRecipe.getInstanceOrThrowError().refreshSession;
 
-// TODO: allow to get appInfo from parent
+    static revokeAllSessionsForUser = SessionRecipe.getInstanceOrThrowError().revokeAllSessionsForUser;
 
-// TODO: export
+    static getAllSessionHandlesForUser = SessionRecipe.getInstanceOrThrowError().getAllSessionHandlesForUser;
+
+    static revokeSession = SessionRecipe.getInstanceOrThrowError().revokeSession;
+
+    static revokeMultipleSessions = SessionRecipe.getInstanceOrThrowError().revokeMultipleSessions;
+
+    static getSessionData = SessionRecipe.getInstanceOrThrowError().getSessionData;
+
+    static updateSessionData = SessionRecipe.getInstanceOrThrowError().updateSessionData;
+
+    static getCORSAllowedHeaders = SessionRecipe.getInstanceOrThrowError().getCORSAllowedHeaders;
+
+    static getJWTPayload = SessionRecipe.getInstanceOrThrowError().getJWTPayload;
+
+    static updateJWTPayload = SessionRecipe.getInstanceOrThrowError().updateJWTPayload;
+
+    static auth0Handler = SessionRecipe.getInstanceOrThrowError().auth0Handler;
+
+    static Error = STError;
+}
+
+export let init = SessionWrapper.init;
+
+export let createNewSession = SessionWrapper.createNewSession;
+
+export let getSession = SessionWrapper.getSession;
+
+export let refreshSession = SessionWrapper.refreshSession;
+
+export let revokeAllSessionsForUser = SessionWrapper.revokeAllSessionsForUser;
+
+export let getAllSessionHandlesForUser = SessionWrapper.getAllSessionHandlesForUser;
+
+export let revokeSession = SessionWrapper.revokeSession;
+
+export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
+
+export let getSessionData = SessionWrapper.getSessionData;
+
+export let updateSessionData = SessionWrapper.updateSessionData;
+
+export let getCORSAllowedHeaders = SessionWrapper.getCORSAllowedHeaders;
+
+export let getJWTPayload = SessionWrapper.getJWTPayload;
+
+export let updateJWTPayload = SessionWrapper.updateJWTPayload;
+
+export let auth0Handler = SessionWrapper.auth0Handler;

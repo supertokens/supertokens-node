@@ -1,5 +1,5 @@
 import { TypeInput, NormalisedAppinfo } from "./types";
-import RecipeModule from './recipeModule';
+import RecipeModule from "./recipeModule";
 export default class SuperTokens {
     private static instance;
     appInfo: NormalisedAppinfo;

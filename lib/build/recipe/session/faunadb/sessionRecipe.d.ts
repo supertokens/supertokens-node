@@ -13,6 +13,7 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         userCollectionName: string;
     };
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeFaunaDBInput);
+    static getInstanceOrThrowError(): SessionRecipe;
     static init(config: TypeFaunaDBInput): RecipeListFunction;
     static reset(): void;
     getFDAT: (session: Session) => Promise<any>;
