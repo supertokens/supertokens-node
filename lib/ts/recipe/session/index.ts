@@ -1,4 +1,3 @@
-"use strict";
 /* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,16 +12,27 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+
+import { Querier } from "../../querier";
+
+export function getRecipeId(): string {
+    return "session";
 }
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(require("./express"));
-var error_1 = require("../error");
-exports.Error = error_1.AuthError;
-var middleware_1 = require("./middleware");
-exports.middleware = middleware_1.middleware;
-exports.errorHandler = middleware_1.errorHandler;
-const Type = require("./types");
-exports.Type = Type;
-//# sourceMappingURL=index.js.map
+
+export function getQuerier(): Querier {
+    return Querier.getInstanceOrThrowError(getRecipeId());
+}
+
+// TODO: register resetters
+
+// TODO: CORS
+
+// TODO: middleware
+
+// TODO: error handlers
+
+// TODO: routing
+
+// TODO: other stuff from the issue
+
+// TODO: export

@@ -21,21 +21,19 @@ import {
     getAntiCsrfTokenFromHeaders,
     getIdRefreshTokenFromCookie,
     getRefreshTokenFromCookie,
-    saveFrontendInfoFromRequest,
     setOptionsAPIHeader,
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
     setFrontTokenInHeaders,
 } from "./cookieAndHeaders";
-import { AuthError, generateError } from "./error";
+import STError from "./error";
 import * as SessionFunctions from "./session";
 import { TypeInput, SessionRequest, auth0RequestBody } from "./types";
-import { Querier } from "./querier";
 import axios from "axios";
 import * as qs from "querystring";
 import * as jwt from "jsonwebtoken";
 import { autoRefreshMiddleware } from "./middleware";
 import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
-import { CookieConfig } from "./cookieAndHeaders";
+import { getQuerier } from "./";
 
 // TODO: Make it also work with PassportJS
 
@@ -82,18 +80,23 @@ export async function getSession(
     res: express.Response,
     doAntiCsrfCheck: boolean
 ): Promise<Session> {
-    saveFrontendInfoFromRequest(req);
     let idRefreshToken = getIdRefreshTokenFromCookie(req);
     if (idRefreshToken === undefined) {
         // we do not clear cookies here because of a
         // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
 
-        throw generateError(AuthError.UNAUTHORISED, new Error("idRefreshToken missing"));
+        throw new STError({
+            message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
+            type: STError.UNAUTHORISED,
+        });
     }
     let accessToken = getAccessTokenFromCookie(req);
     if (accessToken === undefined) {
         // maybe the access token has expired.
-        throw generateError(AuthError.TRY_REFRESH_TOKEN, new Error("access token missing in cookies"));
+        throw new STError({
+            message: "Access token has expired. Please call the refresh API",
+            type: STError.TRY_REFRESH_TOKEN,
+        });
     }
     try {
         let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
@@ -117,7 +120,7 @@ export async function getSession(
             res
         );
     } catch (err) {
-        if (AuthError.isErrorFromAuth(err) && err.errType === AuthError.UNAUTHORISED) {
+        if (STError.isErrorFromSession(err) && err.type === STError.UNAUTHORISED) {
             clearSessionFromCookie(res);
         }
         throw err;
@@ -130,18 +133,15 @@ export async function getSession(
  * @sideEffects may remove cookies, or change the accessToken and refreshToken.
  */
 export async function refreshSession(req: express.Request, res: express.Response): Promise<Session> {
-    saveFrontendInfoFromRequest(req);
     let inputRefreshToken = getRefreshTokenFromCookie(req);
     if (inputRefreshToken === undefined) {
         // we do not clear cookies here because of a
         // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
 
-        throw generateError(
-            AuthError.UNAUTHORISED,
-            new Error(
-                "Missing auth tokens in cookies. Have you set the correct refresh API path in your frontend and SuperTokens config?"
-            )
-        );
+        throw new STError({
+            message: "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
+            type: STError.UNAUTHORISED,
+        });
     }
 
     try {
@@ -158,8 +158,8 @@ export async function refreshSession(req: express.Request, res: express.Response
         );
     } catch (err) {
         if (
-            AuthError.isErrorFromAuth(err) &&
-            (err.errType === AuthError.UNAUTHORISED || err.errType === AuthError.TOKEN_THEFT_DETECTED)
+            STError.isErrorFromSession(err) &&
+            (err.type === STError.UNAUTHORISED || err.type === STError.TOKEN_THEFT_DETECTED)
         ) {
             clearSessionFromCookie(res);
         }
@@ -343,7 +343,12 @@ export async function auth0Handler(
             expires_in: expiresIn,
         });
     } catch (err) {
-        next(generateError(AuthError.GENERAL_ERROR, err));
+        next(
+            new STError({
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            })
+        );
     }
 }
 
@@ -402,7 +407,7 @@ export class Session {
         try {
             return await SessionFunctions.getSessionData(this.sessionHandle);
         } catch (err) {
-            if (AuthError.isErrorFromAuth(err) && err.errType === AuthError.UNAUTHORISED) {
+            if (STError.isErrorFromSession(err) && err.type === STError.UNAUTHORISED) {
                 clearSessionFromCookie(this.res);
             }
             throw err;
@@ -418,7 +423,7 @@ export class Session {
         try {
             await SessionFunctions.updateSessionData(this.sessionHandle, newSessionData);
         } catch (err) {
-            if (AuthError.isErrorFromAuth(err) && err.errType === AuthError.UNAUTHORISED) {
+            if (STError.isErrorFromSession(err) && err.type === STError.UNAUTHORISED) {
                 clearSessionFromCookie(this.res);
             }
             throw err;
@@ -442,13 +447,16 @@ export class Session {
     };
 
     updateJWTPayload = async (newJWTPayload: any) => {
-        let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/regenerate", {
+        let response = await getQuerier().sendPostRequest("/session/regenerate", {
             accessToken: this.accessToken,
             userDataInJWT: newJWTPayload,
         });
         if (response.status === "UNAUTHORISED") {
             clearSessionFromCookie(this.res);
-            throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+            throw new STError({
+                message: "Session has probably been revoked while updating JWT payload",
+                type: STError.UNAUTHORISED,
+            });
         }
         this.userDataInJWT = response.session.userDataInJWT;
         if (response.accessToken !== undefined) {

@@ -13,7 +13,6 @@ export declare class CookieConfig {
     static reset(): void;
     static getInstanceOrThrowError(): CookieConfig;
 }
-export declare function saveFrontendInfoFromRequest(req: express.Request): void;
 /**
  * @description clears all the auth cookies from the response
  */

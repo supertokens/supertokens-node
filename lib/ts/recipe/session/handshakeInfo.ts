@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { AuthError, generateError } from "./error";
-import { Querier } from "./querier";
+import STError from "./error";
+import { getQuerier } from "./";
 
 export class HandshakeInfo {
     static instance: HandshakeInfo | undefined;
@@ -27,7 +27,10 @@ export class HandshakeInfo {
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw generateError(AuthError.GENERAL_ERROR, new Error("calling testing function in non testing env"));
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("calling testing function in non testing env"),
+            });
         }
         HandshakeInfo.instance = undefined;
     }
@@ -35,7 +38,7 @@ export class HandshakeInfo {
     // @throws GENERAL_ERROR
     static async getInstance(): Promise<HandshakeInfo> {
         if (HandshakeInfo.instance == undefined) {
-            let response = await Querier.getInstanceOrThrowError().sendPostRequest("/handshake", {});
+            let response = await getQuerier().sendPostRequest("/handshake", {});
             HandshakeInfo.instance = new HandshakeInfo(
                 response.jwtSigningPublicKey,
                 response.enableAntiCsrf,

@@ -12,28 +12,37 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeAuthError } from "./types";
 
-const ERROR_MAGIC = "ndskajfasndlfkj435234krjdsa";
+export default class SuperTokensError {
+    private static errMagic = "ndskajfasndlfkj435234krjdsa";
+    static GENERAL_ERROR: "GENERAL_ERROR" = "GENERAL_ERROR";
 
-export function generateError(errType: number, err: any): any {
-    if (AuthError.isErrorFromAuth(err)) {
-        return err;
+    public type: string;
+    public message: string;
+    public payload: any;
+    public rId: string;
+
+    constructor(
+        options:
+            | {
+                  rId: string;
+                  message: string;
+                  payload?: any;
+                  type: string;
+              }
+            | {
+                  rId: string;
+                  payload: Error;
+                  type: "GENERAL_ERROR";
+              }
+    ) {
+        this.type = options.type;
+        this.message = options.type === "GENERAL_ERROR" ? options.payload.message : (options as any).message;
+        this.payload = options.payload;
+        this.rId = options.rId;
     }
-    return {
-        errMagic: ERROR_MAGIC,
-        errType,
-        err,
-    };
-}
 
-export class AuthError {
-    static GENERAL_ERROR = 1000;
-    static UNAUTHORISED = 2000;
-    static TRY_REFRESH_TOKEN = 3000;
-    static TOKEN_THEFT_DETECTED = 4000;
-
-    static isErrorFromAuth = (err: any): err is TypeAuthError => {
-        return err.errMagic === ERROR_MAGIC;
-    };
+    static isErrorFromSuperTokens(obj: any): obj is SuperTokensError {
+        return obj.errMagic === SuperTokensError.errMagic;
+    }
 }

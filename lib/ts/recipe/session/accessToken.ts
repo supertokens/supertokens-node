@@ -14,7 +14,7 @@
  */
 import * as validator from "validator";
 
-import { AuthError, generateError } from "./error";
+import STError from "./error";
 import { verifyJWTAndGetPayload } from "./jwt";
 
 export async function getInfoFromAccessToken(
@@ -68,7 +68,10 @@ export async function getInfoFromAccessToken(
             timeCreated,
         };
     } catch (err) {
-        throw generateError(AuthError.TRY_REFRESH_TOKEN, err);
+        throw new STError({
+            message: "Failed to verify access token",
+            type: STError.TRY_REFRESH_TOKEN,
+        });
     }
 }
 

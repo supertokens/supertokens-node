@@ -16,9 +16,9 @@
 import * as express from "express";
 
 import { TypeFaunaDBInput } from "./types";
-import * as OriginalExpress from "../";
+import * as OriginalExpress from "../express";
 import * as faunadb from "faunadb";
-import { AuthError, generateError } from "../error";
+import STError from "../error";
 import { autoRefreshMiddleware } from "./middleware";
 
 let accessFaunaDBTokenFromFrontend: boolean;
@@ -108,7 +108,10 @@ export async function createNewSession(
 
         return session;
     } catch (err) {
-        throw generateError(AuthError.GENERAL_ERROR, err);
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: err,
+        });
     }
 }
 
@@ -169,7 +172,10 @@ export async function refreshSession(req: express.Request, res: express.Response
 
         return session;
     } catch (err) {
-        throw generateError(AuthError.GENERAL_ERROR, err);
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: err,
+        });
     }
 }
 

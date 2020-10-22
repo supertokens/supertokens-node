@@ -1,5 +1,4 @@
 import { TypeInput, CreateOrRefreshAPIResponse } from "./types";
-export { AuthError as Error } from "./error";
 export declare class SessionConfig {
     private static instance;
     sessionExpiredStatusCode: number;

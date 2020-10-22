@@ -16,9 +16,7 @@ import { parse, serialize } from "cookie";
 import * as express from "express";
 import { IncomingMessage, ServerResponse } from "http";
 
-import { DeviceInfo } from "./deviceInfo";
-import { AuthError, generateError } from "./error";
-import { normaliseSameSiteOrThrowError } from "./utils";
+import STError from "./error";
 
 // TODO: set same-site value for cookies as chrome will soon make that compulsory.
 // Setting it to "lax" seems ideal, however there are bugs in safari regarding that. So setting it to "none" might make more sense.
@@ -31,8 +29,6 @@ const idRefreshTokenCookieKey = "sIdRefreshToken";
 const idRefreshTokenHeaderKey = "id-refresh-token";
 
 const antiCsrfHeaderKey = "anti-csrf";
-const frontendSDKNameHeaderKey = "supertokens-sdk-name";
-const frontendSDKVersionHeaderKey = "supertokens-sdk-version";
 
 const frontTokenHeaderKey = "front-token";
 
@@ -77,7 +73,10 @@ export class CookieConfig {
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw generateError(AuthError.GENERAL_ERROR, new Error("calling testing function in non testing env"));
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("calling testing function in non testing env"),
+            });
         }
         CookieConfig.instance = undefined;
     }
@@ -87,22 +86,6 @@ export class CookieConfig {
             throw new Error("Please call the init function before using SuperTokens");
         }
         return CookieConfig.instance;
-    }
-}
-
-// will be there for all requests that require auth including refresh token request
-export function saveFrontendInfoFromRequest(req: express.Request) {
-    try {
-        let name = getHeader(req, frontendSDKNameHeaderKey);
-        let version = getHeader(req, frontendSDKVersionHeaderKey);
-        if (name !== undefined && version !== undefined) {
-            DeviceInfo.getInstance().addToFrontendSDKs({
-                name,
-                version,
-            });
-        }
-    } catch (err) {
-        // ignored
     }
 }
 
@@ -182,13 +165,11 @@ export function getHeader(req: express.Request, key: string): string | undefined
 
 export function setOptionsAPIHeader(res: express.Response) {
     setHeader(res, "Access-Control-Allow-Headers", antiCsrfHeaderKey, true);
-    setHeader(res, "Access-Control-Allow-Headers", frontendSDKNameHeaderKey, true);
-    setHeader(res, "Access-Control-Allow-Headers", frontendSDKVersionHeaderKey, true);
     setHeader(res, "Access-Control-Allow-Credentials", "true", false);
 }
 
 export function getCORSAllowedHeaders(): string[] {
-    return [antiCsrfHeaderKey, frontendSDKNameHeaderKey, frontendSDKVersionHeaderKey];
+    return [antiCsrfHeaderKey];
 }
 
 function setHeader(res: express.Response, key: string, value: string, allowDuplicateKey: boolean) {
@@ -204,7 +185,10 @@ function setHeader(res: express.Response, key: string, value: string, allowDupli
             res.header(key, value);
         }
     } catch (err) {
-        throw generateError(AuthError.GENERAL_ERROR, err);
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Error while setting header with key: " + key + " and value: " + value),
+        });
     }
 }
 

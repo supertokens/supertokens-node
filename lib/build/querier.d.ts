@@ -1,15 +1,17 @@
 export declare class Querier {
-    static instance: Querier | undefined;
-    private hosts;
-    private lastTriedIndex;
-    private hostsAliveForTesting;
-    private apiVersion;
-    private apiKey;
+    private static initCalled;
+    private static hosts;
+    private static apiKey;
+    private static apiVersion;
+    private static lastTriedIndex;
+    private static hostsAliveForTesting;
+    private __hosts;
+    private rId;
     private constructor();
     getAPIVersion: () => Promise<string>;
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
-    static getInstanceOrThrowError(): Querier;
+    static getInstanceOrThrowError(rId: string): Querier;
     static initInstance(hosts: string, apiKey?: string): void;
     sendPostRequest: (path: string, body: any) => Promise<any>;
     sendDeleteRequest: (path: string, body: any) => Promise<any>;

@@ -13,15 +13,14 @@
  * under the License.
  */
 import { getInfoFromAccessToken } from "./accessToken";
-import { AuthError, generateError } from "./error";
+import STError from "./error";
 import { HandshakeInfo } from "./handshakeInfo";
-import { PROCESS_STATE, ProcessState } from "./processState";
-import { Querier } from "./querier";
+import { PROCESS_STATE, ProcessState } from "../../processState";
+import { Querier } from "../../querier";
 import { CookieConfig } from "./cookieAndHeaders";
 import { TypeInput, CreateOrRefreshAPIResponse, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-
-export { AuthError as Error } from "./error";
+import { getQuerier } from "./";
 
 export class SessionConfig {
     private static instance: SessionConfig | undefined = undefined;
@@ -39,7 +38,10 @@ export class SessionConfig {
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw generateError(AuthError.GENERAL_ERROR, new Error("calling testing function in non testing env"));
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("calling testing function in non testing env"),
+            });
         }
         SessionConfig.instance = undefined;
     }
@@ -85,7 +87,7 @@ export async function createNewSession(
     jwtPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
-    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session", {
+    let response = await getQuerier().sendPostRequest("/session", {
         userId,
         userDataInJWT: jwtPayload,
         userDataInDatabase: sessionData,
@@ -97,12 +99,12 @@ export async function createNewSession(
     delete response.jwtSigningPublicKeyExpiryTime;
     // we check if sameSite is none, antiCsrfTokens is being sent - this is a security check
     if (CookieConfig.getInstanceOrThrowError().cookieSameSite === "none" && response.antiCsrfToken === undefined) {
-        throw generateError(
-            AuthError.GENERAL_ERROR,
-            new Error(
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error(
                 'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
-            )
-        );
+            ),
+        });
     }
     return response;
 }
@@ -145,14 +147,16 @@ export async function getSession(
                 (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken)
             ) {
                 if (antiCsrfToken === undefined) {
-                    throw generateError(
-                        AuthError.TRY_REFRESH_TOKEN,
-                        new Error(
-                            "provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false"
-                        )
-                    );
+                    throw new STError({
+                        message:
+                            "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false",
+                        type: STError.TRY_REFRESH_TOKEN,
+                    });
                 } else {
-                    throw generateError(AuthError.TRY_REFRESH_TOKEN, new Error("anti-csrf check failed"));
+                    throw new STError({
+                        message: "anti-csrf check failed",
+                        type: STError.TRY_REFRESH_TOKEN,
+                    });
                 }
             }
 
@@ -170,7 +174,7 @@ export async function getSession(
             }
         }
     } catch (err) {
-        if (!AuthError.isErrorFromAuth(err) || err.errType !== AuthError.TRY_REFRESH_TOKEN) {
+        if (!STError.isErrorFromSession(err) || err.type !== STError.TRY_REFRESH_TOKEN) {
             // if error is try refresh token, we call the actual API.
             throw err;
         }
@@ -178,7 +182,7 @@ export async function getSession(
 
     ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
 
-    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/verify", {
+    let response = await getQuerier().sendPostRequest("/session/verify", {
         accessToken,
         antiCsrfToken,
         doAntiCsrfCheck,
@@ -191,9 +195,15 @@ export async function getSession(
         delete response.jwtSigningPublicKeyExpiryTime;
         return response;
     } else if (response.status == "UNAUTHORISED") {
-        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     } else {
-        throw generateError(AuthError.TRY_REFRESH_TOKEN, new Error(response.message));
+        throw new STError({
+            message: response.message,
+            type: STError.TRY_REFRESH_TOKEN,
+        });
     }
 }
 
@@ -206,7 +216,7 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined
 ): Promise<CreateOrRefreshAPIResponse> {
-    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/refresh", {
+    let response = await getQuerier().sendPostRequest("/session/refresh", {
         refreshToken,
         antiCsrfToken,
     });
@@ -214,11 +224,18 @@ export async function refreshSession(
         delete response.status;
         return response;
     } else if (response.status == "UNAUTHORISED") {
-        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     } else {
-        throw generateError(AuthError.TOKEN_THEFT_DETECTED, {
-            sessionHandle: response.session.handle,
-            userId: response.session.userId,
+        throw new STError({
+            message: "Token theft detected",
+            payload: {
+                userId: response.session.userId,
+                sessionHandle: response.session.sessionHandle,
+            },
+            type: STError.TOKEN_THEFT_DETECTED,
         });
     }
 }
@@ -229,7 +246,7 @@ export async function refreshSession(
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeAllSessionsForUser(userId: string): Promise<string[]> {
-    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/remove", {
+    let response = await getQuerier().sendPostRequest("/session/remove", {
         userId,
     });
     return response.sessionHandlesRevoked;
@@ -240,7 +257,7 @@ export async function revokeAllSessionsForUser(userId: string): Promise<string[]
  * @throws AuthError, GENERAL_ERROR
  */
 export async function getAllSessionHandlesForUser(userId: string): Promise<string[]> {
-    let response = await Querier.getInstanceOrThrowError().sendGetRequest("/session/user", {
+    let response = await getQuerier().sendGetRequest("/session/user", {
         userId,
     });
     return response.sessionHandles;
@@ -252,7 +269,7 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeSession(sessionHandle: string): Promise<boolean> {
-    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/remove", {
+    let response = await getQuerier().sendPostRequest("/session/remove", {
         sessionHandles: [sessionHandle],
     });
     return response.sessionHandlesRevoked.length === 1;
@@ -264,7 +281,7 @@ export async function revokeSession(sessionHandle: string): Promise<boolean> {
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeMultipleSessions(sessionHandles: string[]): Promise<string[]> {
-    let response = await Querier.getInstanceOrThrowError().sendPostRequest("/session/remove", {
+    let response = await getQuerier().sendPostRequest("/session/remove", {
         sessionHandles,
     });
     return response.sessionHandlesRevoked;
@@ -276,13 +293,16 @@ export async function revokeMultipleSessions(sessionHandles: string[]): Promise<
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getSessionData(sessionHandle: string): Promise<any> {
-    let response = await Querier.getInstanceOrThrowError().sendGetRequest("/session/data", {
+    let response = await getQuerier().sendGetRequest("/session/data", {
         sessionHandle,
     });
     if (response.status === "OK") {
         return response.userDataInDatabase;
     } else {
-        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     }
 }
 
@@ -291,12 +311,15 @@ export async function getSessionData(sessionHandle: string): Promise<any> {
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateSessionData(sessionHandle: string, newSessionData: any) {
-    let response = await Querier.getInstanceOrThrowError().sendPutRequest("/session/data", {
+    let response = await getQuerier().sendPutRequest("/session/data", {
         sessionHandle,
         userDataInDatabase: newSessionData,
     });
     if (response.status === "UNAUTHORISED") {
-        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     }
 }
 
@@ -305,13 +328,16 @@ export async function updateSessionData(sessionHandle: string, newSessionData: a
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getJWTPayload(sessionHandle: string): Promise<any> {
-    let response = await Querier.getInstanceOrThrowError().sendGetRequest("/jwt/data", {
+    let response = await getQuerier().sendGetRequest("/jwt/data", {
         sessionHandle,
     });
     if (response.status === "OK") {
         return response.userDataInJWT;
     } else {
-        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     }
 }
 
@@ -319,11 +345,14 @@ export async function getJWTPayload(sessionHandle: string): Promise<any> {
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-    let response = await Querier.getInstanceOrThrowError().sendPutRequest("/jwt/data", {
+    let response = await getQuerier().sendPutRequest("/jwt/data", {
         sessionHandle,
         userDataInJWT: newJWTPayload,
     });
     if (response.status === "UNAUTHORISED") {
-        throw generateError(AuthError.UNAUTHORISED, new Error(response.message));
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     }
 }

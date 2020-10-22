@@ -1,6 +1,6 @@
 import * as express from "express";
 import { TypeFaunaDBInput } from "./types";
-import * as OriginalExpress from "../";
+import * as OriginalExpress from "../express";
 /**
  * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
  * @param config
