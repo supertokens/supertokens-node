@@ -13,7 +13,16 @@
  * under the License.
  */
 import { Request, Response, NextFunction } from "express";
-import { Session } from "./express";
+import Session from "./sessionClass";
+
+export type HandshakeInfo = {
+    jwtSigningPublicKey: string;
+    enableAntiCsrf: boolean;
+    accessTokenBlacklistingEnabled: boolean;
+    jwtSigningPublicKeyExpiryTime: number;
+    accessTokenVaildity: number;
+    refreshTokenVaildity: number;
+};
 
 export type CreateOrRefreshAPIResponse = {
     session: {
@@ -79,7 +88,7 @@ export interface SuperTokensErrorMiddlewareOptions {
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
 }
 
-export type auth0RequestBody =
+export type Auth0RequestBody =
     | {
           action: "login";
           code: string;

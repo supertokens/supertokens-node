@@ -1,4 +1,5 @@
-export declare function getInfoFromAccessToken(token: string, jwtSigningPublicKey: string, doAntiCsrfCheck: boolean): Promise<{
+import SessionRecipe from "./sessionRecipe";
+export declare function getInfoFromAccessToken(recipeInstance: SessionRecipe, token: string, jwtSigningPublicKey: string, doAntiCsrfCheck: boolean): Promise<{
     sessionHandle: string;
     userId: string;
     refreshTokenHash1: string;

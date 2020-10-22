@@ -1,3 +1,4 @@
+import { Querier } from "./querier";
 /* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,17 +14,24 @@
  * under the License.
  */
 
-import { ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions, SessionRequest } from "./types";
-import * as OriginalMiddleware from "../middleware";
-import SessionRecipe from "./sessionRecipe";
+import STError from "./error";
 
-export function middleware(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean) {
-    return OriginalMiddleware.middleware(recipeInstance, antiCsrfCheck);
-}
+export default abstract class RecipeModule {
+    protected recipeId: string;
 
-export function errorHandler(
-    recipeInstance: SessionRecipe,
-    options?: SuperTokensErrorMiddlewareOptions
-): ErrorHandlerMiddleware {
-    return OriginalMiddleware.errorHandler(recipeInstance, options);
+    constructor(recipeId: string) {
+        this.recipeId = recipeId;
+    }
+
+    getRecipeId = (): string => {
+        return this.recipeId;
+    };
+
+    getQuerier = (): Querier => {
+        return Querier.getInstanceOrThrowError(this.getRecipeId());
+    };
+
+    isErrorFromThisRecipe = (err: any): err is STError => {
+        return STError.isErrorFromSuperTokens(err) && err.rId === this.getRecipeId();
+    };
 }

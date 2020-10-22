@@ -14,7 +14,6 @@
  */
 
 import STError from "../../error";
-import { getRecipeId } from "./";
 
 export default class SessionError extends STError {
     static UNAUTHORISED: "UNAUTHORISED" = "UNAUTHORISED";
@@ -43,15 +42,12 @@ export default class SessionError extends STError {
             | {
                   type: "GENERAL_ERROR";
                   payload: Error;
-              }
+              },
+        recipeId: string
     ) {
         super({
             ...options,
-            rId: getRecipeId(),
+            rId: recipeId,
         });
-    }
-
-    static isErrorFromSession(obj: any): obj is SessionError {
-        return obj.rId === getRecipeId();
     }
 }

@@ -1,7 +1,7 @@
 import { URL } from "url";
 import STError from "./error";
 
-export function normaliseURLPathOrThrowError(input: string, rId: string): string {
+export function normaliseURLPathOrThrowError(input: string): string {
     input = input.trim().toLowerCase();
 
     try {
@@ -27,7 +27,7 @@ export function normaliseURLPathOrThrowError(input: string, rId: string): string
         !input.startsWith("https://")
     ) {
         input = "http://" + input;
-        return normaliseURLPathOrThrowError(input, rId);
+        return normaliseURLPathOrThrowError(input);
     }
 
     if (input.charAt(0) !== "/") {
@@ -39,17 +39,13 @@ export function normaliseURLPathOrThrowError(input: string, rId: string): string
         // test that we can convert this to prevent an infinite loop
         new URL("http://example.com" + input);
 
-        return normaliseURLPathOrThrowError("http://example.com" + input, rId);
+        return normaliseURLPathOrThrowError("http://example.com" + input);
     } catch (err) {
-        throw new STError({
-            payload: new Error("Please provide a valid URL path"),
-            type: "GENERAL_ERROR",
-            rId,
-        });
+        throw new Error("Please provide a valid URL path");
     }
 }
 
-export function normaliseURLDomainOrThrowError(input: string, rId: string): string {
+export function normaliseURLDomainOrThrowError(input: string): string {
     function isAnIpAddress(ipaddress: string) {
         return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
             ipaddress
@@ -94,15 +90,11 @@ export function normaliseURLDomainOrThrowError(input: string, rId: string): stri
         // at this point, it should be a valid URL. So we test that before doing a recursive call
         try {
             new URL(input);
-            return normaliseURLDomainOrThrowError(input, rId);
+            return normaliseURLDomainOrThrowError(input);
         } catch (err) {}
     }
 
-    throw new STError({
-        payload: new Error("Please provide a valid domain name"),
-        type: "GENERAL_ERROR",
-        rId,
-    });
+    throw new Error("Please provide a valid domain name");
 }
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {

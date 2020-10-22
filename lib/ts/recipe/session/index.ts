@@ -13,16 +13,6 @@
  * under the License.
  */
 
-import { Querier } from "../../querier";
-
-export function getRecipeId(): string {
-    return "session";
-}
-
-export function getQuerier(): Querier {
-    return Querier.getInstanceOrThrowError(getRecipeId());
-}
-
 // TODO: register resetters
 
 // TODO: CORS
@@ -34,5 +24,7 @@ export function getQuerier(): Querier {
 // TODO: routing
 
 // TODO: other stuff from the issue
+
+// TODO: allow to get appInfo from parent
 
 // TODO: export

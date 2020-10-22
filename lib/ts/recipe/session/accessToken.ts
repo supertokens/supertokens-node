@@ -16,8 +16,10 @@ import * as validator from "validator";
 
 import STError from "./error";
 import { verifyJWTAndGetPayload } from "./jwt";
+import SessionRecipe from "./sessionRecipe";
 
 export async function getInfoFromAccessToken(
+    recipeInstance: SessionRecipe,
     token: string,
     jwtSigningPublicKey: string,
     doAntiCsrfCheck: boolean
@@ -68,10 +70,13 @@ export async function getInfoFromAccessToken(
             timeCreated,
         };
     } catch (err) {
-        throw new STError({
-            message: "Failed to verify access token",
-            type: STError.TRY_REFRESH_TOKEN,
-        });
+        throw new STError(
+            {
+                message: "Failed to verify access token",
+                type: STError.TRY_REFRESH_TOKEN,
+            },
+            recipeInstance.getRecipeId()
+        );
     }
 }
 

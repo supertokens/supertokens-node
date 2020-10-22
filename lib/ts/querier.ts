@@ -105,7 +105,7 @@ export class Querier {
 
     static initInstance(hosts: string, apiKey?: string) {
         if (!Querier.initCalled) {
-            Querier.hosts = hosts.split(";").map((h) => normaliseURLDomainOrThrowError(h, ""));
+            Querier.hosts = hosts.split(";").map((h) => normaliseURLDomainOrThrowError(h));
             Querier.apiKey = apiKey;
             Querier.apiVersion = undefined;
             Querier.lastTriedIndex = 0;

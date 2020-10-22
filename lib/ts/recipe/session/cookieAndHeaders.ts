@@ -17,6 +17,7 @@ import * as express from "express";
 import { IncomingMessage, ServerResponse } from "http";
 
 import STError from "./error";
+import SessionRecipe from "./sessionRecipe";
 
 // TODO: set same-site value for cookies as chrome will soon make that compulsory.
 // Setting it to "lax" seems ideal, however there are bugs in safari regarding that. So setting it to "none" might make more sense.
@@ -32,86 +33,39 @@ const antiCsrfHeaderKey = "anti-csrf";
 
 const frontTokenHeaderKey = "front-token";
 
-export class CookieConfig {
-    private static instance: CookieConfig | undefined = undefined;
-    accessTokenPath: string;
-    refreshTokenPath: string;
-    cookieDomain: string | undefined;
-    cookieSecure: boolean;
-    cookieSameSite: "strict" | "lax" | "none";
-    constructor(
-        accessTokenPath: string,
-        refreshTokenPath: string,
-        cookieDomain: string | undefined,
-        cookieSecure: boolean,
-        cookieSameSite: "strict" | "lax" | "none"
-    ) {
-        this.accessTokenPath = accessTokenPath;
-        this.refreshTokenPath = refreshTokenPath;
-        this.cookieDomain = cookieDomain;
-        this.cookieSameSite = cookieSameSite;
-        this.cookieSecure = cookieSecure;
-    }
-
-    static init(
-        accessTokenPath: string,
-        apiBasePath: string,
-        cookieDomain: string | undefined,
-        cookieSecure: boolean,
-        cookieSameSite: "strict" | "lax" | "none"
-    ) {
-        if (CookieConfig.instance === undefined) {
-            CookieConfig.instance = new CookieConfig(
-                accessTokenPath,
-                apiBasePath + "/session/refresh",
-                cookieDomain,
-                cookieSecure,
-                cookieSameSite
-            );
-        }
-    }
-
-    static reset() {
-        if (process.env.TEST_MODE !== "testing") {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("calling testing function in non testing env"),
-            });
-        }
-        CookieConfig.instance = undefined;
-    }
-
-    static getInstanceOrThrowError() {
-        if (CookieConfig.instance === undefined) {
-            throw new Error("Please call the init function before using SuperTokens");
-        }
-        return CookieConfig.instance;
-    }
-}
-
 /**
  * @description clears all the auth cookies from the response
  */
-export function clearSessionFromCookie(res: express.Response) {
-    setCookie(res, accessTokenCookieKey, "", 0, "accessTokenPath");
-    setCookie(res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
-    setCookie(res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
-    setHeader(res, idRefreshTokenHeaderKey, "remove", false);
-    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
+export function clearSessionFromCookie(recipeInstance: SessionRecipe, res: express.Response) {
+    setCookie(recipeInstance, res, accessTokenCookieKey, "", 0, "accessTokenPath");
+    setCookie(recipeInstance, res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
+    setCookie(recipeInstance, res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
+    setHeader(recipeInstance, res, idRefreshTokenHeaderKey, "remove", false);
+    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 }
 
 /**
  * @param expiry: must be time in milliseconds from epoch time.
  */
-export function attachAccessTokenToCookie(res: express.Response, token: string, expiry: number) {
-    setCookie(res, accessTokenCookieKey, token, expiry, "accessTokenPath");
+export function attachAccessTokenToCookie(
+    recipeInstance: SessionRecipe,
+    res: express.Response,
+    token: string,
+    expiry: number
+) {
+    setCookie(recipeInstance, res, accessTokenCookieKey, token, expiry, "accessTokenPath");
 }
 
 /**
  * @param expiry: must be time in milliseconds from epoch time.
  */
-export function attachRefreshTokenToCookie(res: express.Response, token: string, expiry: number) {
-    setCookie(res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
+export function attachRefreshTokenToCookie(
+    recipeInstance: SessionRecipe,
+    res: express.Response,
+    token: string,
+    expiry: number
+) {
+    setCookie(recipeInstance, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
 }
 
 export function getAccessTokenFromCookie(req: express.Request): string | undefined {
@@ -130,26 +84,43 @@ export function getIdRefreshTokenFromCookie(req: express.Request): string | unde
     return getCookieValue(req, idRefreshTokenCookieKey);
 }
 
-export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string) {
-    setHeader(res, antiCsrfHeaderKey, antiCsrfToken, false);
-    setHeader(res, "Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
+export function setAntiCsrfTokenInHeaders(recipeInstance: SessionRecipe, res: express.Response, antiCsrfToken: string) {
+    setHeader(recipeInstance, res, antiCsrfHeaderKey, antiCsrfToken, false);
+    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
 }
 
-export function setIdRefreshTokenInHeaderAndCookie(res: express.Response, idRefreshToken: string, expiry: number) {
-    setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
-    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
+export function setIdRefreshTokenInHeaderAndCookie(
+    recipeInstance: SessionRecipe,
+    res: express.Response,
+    idRefreshToken: string,
+    expiry: number
+) {
+    setHeader(recipeInstance, res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
+    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 
-    setCookie(res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
+    setCookie(recipeInstance, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
 }
 
-export function setFrontTokenInHeaders(res: express.Response, userId: string, atExpiry: number, jwtPayload: any) {
+export function setFrontTokenInHeaders(
+    recipeInstance: SessionRecipe,
+    res: express.Response,
+    userId: string,
+    atExpiry: number,
+    jwtPayload: any
+) {
     let tokenInfo = {
         uid: userId,
         ate: atExpiry,
         up: jwtPayload,
     };
-    setHeader(res, frontTokenHeaderKey, Buffer.from(JSON.stringify(tokenInfo)).toString("base64"), false);
-    setHeader(res, "Access-Control-Expose-Headers", frontTokenHeaderKey, true);
+    setHeader(
+        recipeInstance,
+        res,
+        frontTokenHeaderKey,
+        Buffer.from(JSON.stringify(tokenInfo)).toString("base64"),
+        false
+    );
+    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", frontTokenHeaderKey, true);
 }
 
 export function getHeader(req: express.Request, key: string): string | undefined {
@@ -163,16 +134,17 @@ export function getHeader(req: express.Request, key: string): string | undefined
     return value;
 }
 
-export function setOptionsAPIHeader(res: express.Response) {
-    setHeader(res, "Access-Control-Allow-Headers", antiCsrfHeaderKey, true);
-    setHeader(res, "Access-Control-Allow-Credentials", "true", false);
-}
-
 export function getCORSAllowedHeaders(): string[] {
     return [antiCsrfHeaderKey];
 }
 
-function setHeader(res: express.Response, key: string, value: string, allowDuplicateKey: boolean) {
+function setHeader(
+    recipeInstance: SessionRecipe,
+    res: express.Response,
+    key: string,
+    value: string,
+    allowDuplicateKey: boolean
+) {
     try {
         let existingHeaders = res.getHeaders();
         let existingValue = existingHeaders[key.toLowerCase()];
@@ -185,10 +157,13 @@ function setHeader(res: express.Response, key: string, value: string, allowDupli
             res.header(key, value);
         }
     } catch (err) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Error while setting header with key: " + key + " and value: " + value),
-        });
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Error while setting header with key: " + key + " and value: " + value),
+            },
+            recipeInstance.getRecipeId()
+        );
     }
 }
 
@@ -204,22 +179,23 @@ function setHeader(res: express.Response, key: string, value: string, allowDupli
  * @param path
  */
 export function setCookie(
+    recipeInstance: SessionRecipe,
     res: ServerResponse,
     name: string,
     value: string,
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath"
 ) {
-    let domain = CookieConfig.getInstanceOrThrowError().cookieDomain;
-    let secure = CookieConfig.getInstanceOrThrowError().cookieSecure;
-    let sameSite = CookieConfig.getInstanceOrThrowError().cookieSameSite;
+    let domain = recipeInstance.config.cookieDomain;
+    let secure = recipeInstance.config.cookieSecure;
+    let sameSite = recipeInstance.config.cookieSameSite;
     let path = "";
     if (pathType === "refreshTokenPath") {
-        path = CookieConfig.getInstanceOrThrowError().refreshTokenPath;
+        path = recipeInstance.config.refreshTokenPath;
     } else if (pathType === "accessTokenPath") {
-        path = CookieConfig.getInstanceOrThrowError().accessTokenPath;
+        path = recipeInstance.config.accessTokenPath;
     }
-    let httpOnly = CookieConfig.getInstanceOrThrowError().cookieSecure;
+    let httpOnly = recipeInstance.config.cookieSecure;
     let opts = {
         domain,
         secure,

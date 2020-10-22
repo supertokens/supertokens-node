@@ -7,10 +7,9 @@ import {
     setAntiCsrfTokenInHeaders,
 } from "./cookieAndHeaders";
 import * as express from "express";
-import STError from "./error";
 import { URL } from "url";
 import { normaliseURLDomainOrThrowError, normaliseURLPathOrThrowError } from "../../utils";
-import { getRecipeId } from "./index";
+import SessionRecipe from "./sessionRecipe";
 
 export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
     sessionScope = sessionScope.trim().toLowerCase();
@@ -35,21 +34,15 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
 
         return sessionScope;
     } catch (err) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Please provide a valid sessionScope"),
-        });
+        throw new Error("Please provide a valid sessionScope");
     }
 }
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
-    let hosts =
-        config.hosts === undefined
-            ? normaliseURLDomainOrThrowError("http://localhost:3567", getRecipeId())
-            : config.hosts;
+    let hosts = config.hosts === undefined ? normaliseURLDomainOrThrowError("http://localhost:3567") : config.hosts;
 
     let accessTokenPath =
-        config.accessTokenPath === undefined ? "" : normaliseURLPathOrThrowError(config.accessTokenPath, getRecipeId());
+        config.accessTokenPath === undefined ? "" : normaliseURLPathOrThrowError(config.accessTokenPath);
     if (accessTokenPath === "") {
         // cookie path being an empty string doesn't work.
         accessTokenPath = "/";
@@ -57,8 +50,8 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
 
     let apiBasePath =
         config.apiBasePath === undefined
-            ? normaliseURLPathOrThrowError("/auth", getRecipeId())
-            : normaliseURLPathOrThrowError(config.apiBasePath, getRecipeId());
+            ? normaliseURLPathOrThrowError("/auth")
+            : normaliseURLPathOrThrowError(config.apiBasePath);
 
     let cookieDomain =
         config.cookieDomain === undefined ? undefined : normaliseSessionScopeOrThrowError(config.cookieDomain);
@@ -87,26 +80,30 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
     sameSite = sameSite.trim();
     sameSite = sameSite.toLocaleLowerCase();
     if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error('cookie same site must be one of "strict", "lax", or "none"'),
-        });
+        throw new Error('cookie same site must be one of "strict", "lax", or "none"');
     }
     return sameSite;
 }
 
 export function attachCreateOrRefreshSessionResponseToExpressRes(
+    recipeInstance: SessionRecipe,
     res: express.Response,
     response: CreateOrRefreshAPIResponse
 ) {
     let accessToken = response.accessToken;
     let refreshToken = response.refreshToken;
     let idRefreshToken = response.idRefreshToken;
-    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
-    attachAccessTokenToCookie(res, accessToken.token, accessToken.expiry);
-    attachRefreshTokenToCookie(res, refreshToken.token, refreshToken.expiry);
-    setIdRefreshTokenInHeaderAndCookie(res, idRefreshToken.token, idRefreshToken.expiry);
+    setFrontTokenInHeaders(
+        recipeInstance,
+        res,
+        response.session.userId,
+        response.accessToken.expiry,
+        response.session.userDataInJWT
+    );
+    attachAccessTokenToCookie(recipeInstance, res, accessToken.token, accessToken.expiry);
+    attachRefreshTokenToCookie(recipeInstance, res, refreshToken.token, refreshToken.expiry);
+    setIdRefreshTokenInHeaderAndCookie(recipeInstance, res, idRefreshToken.token, idRefreshToken.expiry);
     if (response.antiCsrfToken !== undefined) {
-        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
+        setAntiCsrfTokenInHeaders(recipeInstance, res, response.antiCsrfToken);
     }
 }

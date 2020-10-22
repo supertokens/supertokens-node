@@ -20,6 +20,5 @@ export default class SessionError extends STError {
     } | {
         type: "GENERAL_ERROR";
         payload: Error;
-    });
-    static isErrorFromSession(obj: any): obj is SessionError;
+    }, recipeId: string);
 }

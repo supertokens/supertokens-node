@@ -14,97 +14,40 @@
  */
 import { getInfoFromAccessToken } from "./accessToken";
 import STError from "./error";
-import { HandshakeInfo } from "./handshakeInfo";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { Querier } from "../../querier";
-import { CookieConfig } from "./cookieAndHeaders";
-import { TypeInput, CreateOrRefreshAPIResponse, TypeNormalisedInput } from "./types";
-import { validateAndNormaliseUserInput } from "./utils";
-import { getQuerier } from "./";
-
-export class SessionConfig {
-    private static instance: SessionConfig | undefined = undefined;
-    sessionExpiredStatusCode: number;
-
-    constructor(sessionExpiredStatusCode: number) {
-        this.sessionExpiredStatusCode = sessionExpiredStatusCode;
-    }
-
-    static init(sessionExpiredStatusCode: number) {
-        if (SessionConfig.instance === undefined) {
-            SessionConfig.instance = new SessionConfig(sessionExpiredStatusCode);
-        }
-    }
-
-    static reset() {
-        if (process.env.TEST_MODE !== "testing") {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("calling testing function in non testing env"),
-            });
-        }
-        SessionConfig.instance = undefined;
-    }
-
-    static getInstanceOrThrowError() {
-        if (SessionConfig.instance === undefined) {
-            throw new Error("Please call the init function before using SuperTokens");
-        }
-        return SessionConfig.instance;
-    }
-}
-
-/**
- * @description: to be called by user of the library. This initiates all the modules necessary for this library to work.
- * Please create a database in your mysql instance before calling this function
- * @throws AuthError GENERAL_ERROR in case anything fails.
- */
-export function init(config: TypeInput) {
-    let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(config);
-
-    Querier.initInstance(normalisedInput.hosts, normalisedInput.apiKey);
-    CookieConfig.init(
-        normalisedInput.accessTokenPath,
-        normalisedInput.apiBasePath,
-        normalisedInput.cookieDomain,
-        normalisedInput.cookieSecure,
-        normalisedInput.cookieSameSite
-    );
-    SessionConfig.init(normalisedInput.sessionExpiredStatusCode);
-
-    // this will also call the api version API
-    HandshakeInfo.getInstance().catch((err) => {
-        // ignored
-    });
-}
+import { CreateOrRefreshAPIResponse } from "./types";
+import SessionRecipe from "./sessionRecipe";
 
 /**
  * @description call this to "login" a user.
  * @throws GENERAL_ERROR in case anything fails.
  */
 export async function createNewSession(
+    recipeInstance: SessionRecipe,
     userId: string,
     jwtPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
-    let response = await getQuerier().sendPostRequest("/session", {
+    let response = await recipeInstance.getQuerier().sendPostRequest("/session", {
         userId,
         userDataInJWT: jwtPayload,
         userDataInDatabase: sessionData,
     });
-    let instance = await HandshakeInfo.getInstance();
-    instance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
+    recipeInstance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
     delete response.status;
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
     // we check if sameSite is none, antiCsrfTokens is being sent - this is a security check
-    if (CookieConfig.getInstanceOrThrowError().cookieSameSite === "none" && response.antiCsrfToken === undefined) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error(
-                'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
-            ),
-        });
+    if (recipeInstance.config.cookieSameSite === "none" && response.antiCsrfToken === undefined) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error(
+                    'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
+                ),
+            },
+            recipeInstance.getRecipeId()
+        );
     }
     return response;
 }
@@ -114,6 +57,7 @@ export async function createNewSession(
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED and TRY_REFRESH_TOKEN
  */
 export async function getSession(
+    recipeInstance: SessionRecipe,
     accessToken: string,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean
@@ -129,11 +73,12 @@ export async function getSession(
         createdTime: number;
     };
 }> {
-    let handShakeInfo = await HandshakeInfo.getInstance();
+    let handShakeInfo = await recipeInstance.getHandshakeInfo();
 
     try {
         if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
             let accessTokenInfo = await getInfoFromAccessToken(
+                recipeInstance,
                 accessToken,
                 handShakeInfo.jwtSigningPublicKey,
                 handShakeInfo.enableAntiCsrf && doAntiCsrfCheck
@@ -147,16 +92,22 @@ export async function getSession(
                 (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken)
             ) {
                 if (antiCsrfToken === undefined) {
-                    throw new STError({
-                        message:
-                            "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false",
-                        type: STError.TRY_REFRESH_TOKEN,
-                    });
+                    throw new STError(
+                        {
+                            message:
+                                "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false",
+                            type: STError.TRY_REFRESH_TOKEN,
+                        },
+                        recipeInstance.getRecipeId()
+                    );
                 } else {
-                    throw new STError({
-                        message: "anti-csrf check failed",
-                        type: STError.TRY_REFRESH_TOKEN,
-                    });
+                    throw new STError(
+                        {
+                            message: "anti-csrf check failed",
+                            type: STError.TRY_REFRESH_TOKEN,
+                        },
+                        recipeInstance.getRecipeId()
+                    );
                 }
             }
 
@@ -174,7 +125,7 @@ export async function getSession(
             }
         }
     } catch (err) {
-        if (!STError.isErrorFromSession(err) || err.type !== STError.TRY_REFRESH_TOKEN) {
+        if (err.type !== STError.TRY_REFRESH_TOKEN) {
             // if error is try refresh token, we call the actual API.
             throw err;
         }
@@ -182,28 +133,36 @@ export async function getSession(
 
     ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
 
-    let response = await getQuerier().sendPostRequest("/session/verify", {
+    let response = await recipeInstance.getQuerier().sendPostRequest("/session/verify", {
         accessToken,
         antiCsrfToken,
         doAntiCsrfCheck,
     });
     if (response.status == "OK") {
-        let instance = await HandshakeInfo.getInstance();
-        instance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
+        recipeInstance.updateJwtSigningPublicKeyInfo(
+            response.jwtSigningPublicKey,
+            response.jwtSigningPublicKeyExpiryTime
+        );
         delete response.status;
         delete response.jwtSigningPublicKey;
         delete response.jwtSigningPublicKeyExpiryTime;
         return response;
     } else if (response.status == "UNAUTHORISED") {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
+        throw new STError(
+            {
+                message: response.message,
+                type: STError.UNAUTHORISED,
+            },
+            recipeInstance.getRecipeId()
+        );
     } else {
-        throw new STError({
-            message: response.message,
-            type: STError.TRY_REFRESH_TOKEN,
-        });
+        throw new STError(
+            {
+                message: response.message,
+                type: STError.TRY_REFRESH_TOKEN,
+            },
+            recipeInstance.getRecipeId()
+        );
     }
 }
 
@@ -213,10 +172,11 @@ export async function getSession(
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
 export async function refreshSession(
+    recipeInstance: SessionRecipe,
     refreshToken: string,
     antiCsrfToken: string | undefined
 ): Promise<CreateOrRefreshAPIResponse> {
-    let response = await getQuerier().sendPostRequest("/session/refresh", {
+    let response = await recipeInstance.getQuerier().sendPostRequest("/session/refresh", {
         refreshToken,
         antiCsrfToken,
     });
@@ -224,19 +184,25 @@ export async function refreshSession(
         delete response.status;
         return response;
     } else if (response.status == "UNAUTHORISED") {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
-    } else {
-        throw new STError({
-            message: "Token theft detected",
-            payload: {
-                userId: response.session.userId,
-                sessionHandle: response.session.sessionHandle,
+        throw new STError(
+            {
+                message: response.message,
+                type: STError.UNAUTHORISED,
             },
-            type: STError.TOKEN_THEFT_DETECTED,
-        });
+            recipeInstance.getRecipeId()
+        );
+    } else {
+        throw new STError(
+            {
+                message: "Token theft detected",
+                payload: {
+                    userId: response.session.userId,
+                    sessionHandle: response.session.sessionHandle,
+                },
+                type: STError.TOKEN_THEFT_DETECTED,
+            },
+            recipeInstance.getRecipeId()
+        );
     }
 }
 
@@ -245,8 +211,8 @@ export async function refreshSession(
  * Access tokens cannot be immediately invalidated. Unless we add a bloacklisting method. Or changed the private key to sign them.
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeAllSessionsForUser(userId: string): Promise<string[]> {
-    let response = await getQuerier().sendPostRequest("/session/remove", {
+export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
+    let response = await recipeInstance.getQuerier().sendPostRequest("/session/remove", {
         userId,
     });
     return response.sessionHandlesRevoked;
@@ -256,8 +222,8 @@ export async function revokeAllSessionsForUser(userId: string): Promise<string[]
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  * @throws AuthError, GENERAL_ERROR
  */
-export async function getAllSessionHandlesForUser(userId: string): Promise<string[]> {
-    let response = await getQuerier().sendGetRequest("/session/user", {
+export async function getAllSessionHandlesForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
+    let response = await recipeInstance.getQuerier().sendGetRequest("/session/user", {
         userId,
     });
     return response.sessionHandles;
@@ -268,8 +234,8 @@ export async function getAllSessionHandlesForUser(userId: string): Promise<strin
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeSession(sessionHandle: string): Promise<boolean> {
-    let response = await getQuerier().sendPostRequest("/session/remove", {
+export async function revokeSession(recipeInstance: SessionRecipe, sessionHandle: string): Promise<boolean> {
+    let response = await recipeInstance.getQuerier().sendPostRequest("/session/remove", {
         sessionHandles: [sessionHandle],
     });
     return response.sessionHandlesRevoked.length === 1;
@@ -280,8 +246,11 @@ export async function revokeSession(sessionHandle: string): Promise<boolean> {
  * @returns list of sessions revoked
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeMultipleSessions(sessionHandles: string[]): Promise<string[]> {
-    let response = await getQuerier().sendPostRequest("/session/remove", {
+export async function revokeMultipleSessions(
+    recipeInstance: SessionRecipe,
+    sessionHandles: string[]
+): Promise<string[]> {
+    let response = await recipeInstance.getQuerier().sendPostRequest("/session/remove", {
         sessionHandles,
     });
     return response.sessionHandlesRevoked;
@@ -292,17 +261,20 @@ export async function revokeMultipleSessions(sessionHandles: string[]): Promise<
  * @returns session data as provided by the user earlier
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export async function getSessionData(sessionHandle: string): Promise<any> {
-    let response = await getQuerier().sendGetRequest("/session/data", {
+export async function getSessionData(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
+    let response = await recipeInstance.getQuerier().sendGetRequest("/session/data", {
         sessionHandle,
     });
     if (response.status === "OK") {
         return response.userDataInDatabase;
     } else {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
+        throw new STError(
+            {
+                message: response.message,
+                type: STError.UNAUTHORISED,
+            },
+            recipeInstance.getRecipeId()
+        );
     }
 }
 
@@ -310,16 +282,19 @@ export async function getSessionData(sessionHandle: string): Promise<any> {
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export async function updateSessionData(sessionHandle: string, newSessionData: any) {
-    let response = await getQuerier().sendPutRequest("/session/data", {
+export async function updateSessionData(recipeInstance: SessionRecipe, sessionHandle: string, newSessionData: any) {
+    let response = await recipeInstance.getQuerier().sendPutRequest("/session/data", {
         sessionHandle,
         userDataInDatabase: newSessionData,
     });
     if (response.status === "UNAUTHORISED") {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
+        throw new STError(
+            {
+                message: response.message,
+                type: STError.UNAUTHORISED,
+            },
+            recipeInstance.getRecipeId()
+        );
     }
 }
 
@@ -327,32 +302,38 @@ export async function updateSessionData(sessionHandle: string, newSessionData: a
  * @returns jwt payload as provided by the user earlier
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export async function getJWTPayload(sessionHandle: string): Promise<any> {
-    let response = await getQuerier().sendGetRequest("/jwt/data", {
+export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
+    let response = await recipeInstance.getQuerier().sendGetRequest("/jwt/data", {
         sessionHandle,
     });
     if (response.status === "OK") {
         return response.userDataInJWT;
     } else {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
+        throw new STError(
+            {
+                message: response.message,
+                type: STError.UNAUTHORISED,
+            },
+            recipeInstance.getRecipeId()
+        );
     }
 }
 
 /**
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export async function updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-    let response = await getQuerier().sendPutRequest("/jwt/data", {
+export async function updateJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string, newJWTPayload: any) {
+    let response = await recipeInstance.getQuerier().sendPutRequest("/jwt/data", {
         sessionHandle,
         userDataInJWT: newJWTPayload,
     });
     if (response.status === "UNAUTHORISED") {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
+        throw new STError(
+            {
+                message: response.message,
+                type: STError.UNAUTHORISED,
+            },
+            recipeInstance.getRecipeId()
+        );
     }
 }

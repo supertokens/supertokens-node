@@ -1,5 +1,13 @@
 import { Request, Response, NextFunction } from "express";
-import { Session } from "./express";
+import Session from "./sessionClass";
+export declare type HandshakeInfo = {
+    jwtSigningPublicKey: string;
+    enableAntiCsrf: boolean;
+    accessTokenBlacklistingEnabled: boolean;
+    jwtSigningPublicKeyExpiryTime: number;
+    accessTokenVaildity: number;
+    refreshTokenVaildity: number;
+};
 export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
@@ -57,7 +65,7 @@ export interface SuperTokensErrorMiddlewareOptions {
     onTryRefreshToken?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
 }
-export declare type auth0RequestBody = {
+export declare type Auth0RequestBody = {
     action: "login";
     code: string;
     redirect_uri: string;

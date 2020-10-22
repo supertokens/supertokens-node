@@ -1,5 +1,5 @@
-import { Response, NextFunction, Request } from "express";
+/// <reference types="express" />
 import { ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions, SessionRequest } from "./types";
-export declare function autoRefreshMiddleware(): (request: Request, response: Response, next: NextFunction) => Promise<void | Response>;
-export declare function middleware(antiCsrfCheck?: boolean): (request: SessionRequest, response: Response, next: NextFunction) => Promise<void>;
-export declare function errorHandler(options?: SuperTokensErrorMiddlewareOptions): ErrorHandlerMiddleware;
+import SessionRecipe from "./sessionRecipe";
+export declare function middleware(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean): (request: SessionRequest, response: import("express").Response, next: import("express").NextFunction) => Promise<void>;
+export declare function errorHandler(recipeInstance: SessionRecipe, options?: SuperTokensErrorMiddlewareOptions): ErrorHandlerMiddleware;
