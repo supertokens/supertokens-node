@@ -17,11 +17,14 @@ import STError from "./error";
 import { TypeInput, NormalisedAppinfo } from "./types";
 import { normaliseInputAppInfo, normaliseURLDomainOrThrowError } from "./utils";
 import { Querier } from "./querier";
+import RecipeModule from "./recipeModule";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
 
     appInfo: NormalisedAppinfo;
+
+    recipeModules: RecipeModule[];
 
     constructor(config: TypeInput) {
         try {
@@ -32,8 +35,8 @@ export default class SuperTokens {
                 config.supertokens.apiKey
             );
 
-            config.recipeList.forEach((func) => {
-                func(this.appInfo);
+            this.recipeModules = config.recipeList.map((func) => {
+                return func(this.appInfo);
             });
         } catch (err) {
             if (STError.isErrorFromSuperTokens(err)) {
