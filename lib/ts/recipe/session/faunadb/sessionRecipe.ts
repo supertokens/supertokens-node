@@ -19,6 +19,8 @@ import { TypeFaunaDBInput } from "./types";
 import STError from "../error";
 import * as faunadb from "faunadb";
 import Session from "./sessionClass";
+import RecipeModule from "../../../recipeModule";
+import { NormalisedAppinfo, RecipeListFunction } from "../../../types";
 
 export const FAUNADB_TOKEN_TIME_LAG_MILLI = 30 * 1000;
 export const FAUNADB_SESSION_KEY = "faunadbToken";
@@ -35,8 +37,8 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         userCollectionName: string;
     };
 
-    constructor(recipeId: string, config: TypeFaunaDBInput) {
-        super(recipeId, config);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeFaunaDBInput) {
+        super(recipeId, appInfo, config);
         this.faunaConfig = {
             faunadbSecret: config.faunadbSecret,
             accessFaunadbTokenFromFrontend:
@@ -45,18 +47,36 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         };
     }
 
-    static init(config: TypeFaunaDBInput) {
-        if (SessionRecipe.faunaSessionRecipeInstance === undefined) {
-            SessionRecipe.faunaSessionRecipeInstance = new SessionRecipe("session", config);
-        } else {
+    static init(config: TypeFaunaDBInput): RecipeListFunction {
+        return (appInfo) => {
+            if (SessionRecipe.faunaSessionRecipeInstance === undefined) {
+                SessionRecipe.faunaSessionRecipeInstance = new SessionRecipe("session", appInfo, config);
+                return SessionRecipe.faunaSessionRecipeInstance;
+            } else {
+                throw new STError(
+                    {
+                        type: STError.GENERAL_ERROR,
+                        payload: new Error(
+                            "Session recipe has already been initialised. Please check your code for bugs."
+                        ),
+                    },
+                    SessionRecipe.RECIPE_ID
+                );
+            }
+        };
+    }
+
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
             throw new STError(
                 {
                     type: STError.GENERAL_ERROR,
-                    payload: new Error("Session recipe has already been initialised. Please check your code for bugs."),
+                    payload: new Error("calling testing function in non testing env"),
                 },
                 SessionRecipe.RECIPE_ID
             );
         }
+        SessionRecipe.faunaSessionRecipeInstance = undefined;
     }
 
     // instance functions.........

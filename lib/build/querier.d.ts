@@ -12,7 +12,7 @@ export declare class Querier {
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
     static getInstanceOrThrowError(rId: string): Querier;
-    static initInstance(hosts: string, apiKey?: string): void;
+    static init(hosts: string[], apiKey?: string): void;
     sendPostRequest: (path: string, body: any) => Promise<any>;
     sendDeleteRequest: (path: string, body: any) => Promise<any>;
     sendGetRequest: (path: string, params: any) => Promise<any>;

@@ -49,24 +49,21 @@ export type CreateOrRefreshAPIResponse = {
 };
 
 export type TypeInput = {
-    hosts?: string;
     accessTokenPath?: string;
-    apiBasePath?: string;
-    cookieDomain?: string;
-    cookieSameSite?: "strict" | "lax" | "none";
     cookieSecure?: boolean;
-    apiKey?: string;
+    cookieSameSite?: "strict" | "lax" | "none";
     sessionExpiredStatusCode?: number;
+    cookieDomain?: string;
+    sessionRefreshFeature?: {
+        disableDefaultImplementation?: boolean;
+    };
 };
 
 export type TypeNormalisedInput = {
-    hosts: string;
     accessTokenPath: string;
-    apiBasePath: string;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;
-    apiKey?: string;
     sessionExpiredStatusCode: number;
 };
 

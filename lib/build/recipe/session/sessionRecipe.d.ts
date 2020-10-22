@@ -3,6 +3,7 @@ import { TypeInput, SessionRequest } from "./types";
 import Session from "./sessionClass";
 import { HandshakeInfo } from "./types";
 import * as express from "express";
+import { NormalisedAppinfo, RecipeListFunction } from "../../types";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -15,8 +16,9 @@ export default class SessionRecipe extends RecipeModule {
         sessionExpiredStatusCode: number;
     };
     handshakeInfo: HandshakeInfo | undefined;
-    constructor(recipeId: string, config: TypeInput);
-    static init(config: TypeInput): void;
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput);
+    static init(config: TypeInput): RecipeListFunction;
+    static reset(): void;
     getHandshakeInfo: () => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;

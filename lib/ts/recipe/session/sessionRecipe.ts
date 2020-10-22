@@ -34,6 +34,7 @@ import {
     setFrontTokenInHeaders,
 } from "./cookieAndHeaders";
 import axios from "axios";
+import { NormalisedAppinfo, RecipeListFunction } from "../../types";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -51,21 +52,19 @@ export default class SessionRecipe extends RecipeModule {
 
     handshakeInfo: HandshakeInfo | undefined = undefined;
 
-    constructor(recipeId: string, config: TypeInput) {
-        super(recipeId);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput) {
+        super(recipeId, appInfo);
         try {
             let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(config);
 
             this.config = {
                 accessTokenPath: normalisedInput.accessTokenPath,
-                refreshTokenPath: normalisedInput.apiBasePath + "/session/refresh",
+                refreshTokenPath: appInfo.apiBasePath + "/session/refresh",
                 cookieDomain: normalisedInput.cookieDomain,
                 cookieSecure: normalisedInput.cookieSecure,
                 cookieSameSite: normalisedInput.cookieSameSite,
                 sessionExpiredStatusCode: normalisedInput.sessionExpiredStatusCode,
             };
-
-            // TODO: init querier
 
             // Solving the cold start problem
             this.getHandshakeInfo().catch((ignored) => {
@@ -82,20 +81,36 @@ export default class SessionRecipe extends RecipeModule {
         }
     }
 
-    static init(config: TypeInput) {
-        // TODO: change type to match new input.
+    static init(config: TypeInput): RecipeListFunction {
+        return (appInfo) => {
+            if (SessionRecipe.instance === undefined) {
+                SessionRecipe.instance = new SessionRecipe("session", appInfo, config);
+                return SessionRecipe.instance;
+            } else {
+                throw new STError(
+                    {
+                        type: STError.GENERAL_ERROR,
+                        payload: new Error(
+                            "Session recipe has already been initialised. Please check your code for bugs."
+                        ),
+                    },
+                    SessionRecipe.RECIPE_ID
+                );
+            }
+        };
+    }
 
-        if (SessionRecipe.instance === undefined) {
-            SessionRecipe.instance = new SessionRecipe("session", config);
-        } else {
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
             throw new STError(
                 {
                     type: STError.GENERAL_ERROR,
-                    payload: new Error("Session recipe has already been initialised. Please check your code for bugs."),
+                    payload: new Error("calling testing function in non testing env"),
                 },
                 SessionRecipe.RECIPE_ID
             );
         }
+        SessionRecipe.instance = undefined;
     }
 
     // instance functions below...............

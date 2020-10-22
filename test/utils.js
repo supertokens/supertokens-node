@@ -164,11 +164,10 @@ module.exports.stopST = async function (pid) {
 };
 
 module.exports.resetAll = function () {
-    HandshakeInfo.reset();
-    DeviceInfo.reset();
-    Querier.reset();
-    CookieConfig.reset();
-    SessionConfig.reset();
+    // TODO:
+    // SuperTokens.reset
+    // SessionRecipe.reset
+    // FaunaDBSessionRecipe.reset
 };
 
 module.exports.killAllST = async function () {

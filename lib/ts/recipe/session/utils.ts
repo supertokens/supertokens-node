@@ -8,7 +8,7 @@ import {
 } from "./cookieAndHeaders";
 import * as express from "express";
 import { URL } from "url";
-import { normaliseURLDomainOrThrowError, normaliseURLPathOrThrowError } from "../../utils";
+import { normaliseURLPathOrThrowError } from "../../utils";
 import SessionRecipe from "./sessionRecipe";
 
 export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
@@ -39,19 +39,12 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
 }
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
-    let hosts = config.hosts === undefined ? normaliseURLDomainOrThrowError("http://localhost:3567") : config.hosts;
-
     let accessTokenPath =
         config.accessTokenPath === undefined ? "" : normaliseURLPathOrThrowError(config.accessTokenPath);
     if (accessTokenPath === "") {
         // cookie path being an empty string doesn't work.
         accessTokenPath = "/";
     }
-
-    let apiBasePath =
-        config.apiBasePath === undefined
-            ? normaliseURLPathOrThrowError("/auth")
-            : normaliseURLPathOrThrowError(config.apiBasePath);
 
     let cookieDomain =
         config.cookieDomain === undefined ? undefined : normaliseSessionScopeOrThrowError(config.cookieDomain);
@@ -65,13 +58,10 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
         config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
 
     return {
-        hosts,
         accessTokenPath,
-        apiBasePath,
         cookieDomain,
         cookieSameSite,
         cookieSecure,
-        apiKey: config.apiKey,
         sessionExpiredStatusCode,
     };
 }

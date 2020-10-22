@@ -12,3 +12,33 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+import RecipeModule from "./recipeModule";
+import { Querier } from "./querier";
+
+export type AppInfo = {
+    appName: string;
+    websiteDomain: string;
+    apiDomain: string;
+    apiBasePath?: string;
+    websiteBasePath?: string;
+};
+
+export type NormalisedAppinfo = {
+    appName: string;
+    websiteDomain: string;
+    apiDomain: string;
+    apiBasePath: string;
+    websiteBasePath: string;
+};
+
+export type TypeInput = {
+    supertokens: {
+        connectionURI: string;
+        apiKey: string;
+    };
+    appInfo: AppInfo;
+    recipeList: RecipeListFunction[];
+};
+
+export type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;

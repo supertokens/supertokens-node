@@ -32,23 +32,20 @@ export declare type CreateOrRefreshAPIResponse = {
     antiCsrfToken: string | undefined;
 };
 export declare type TypeInput = {
-    hosts?: string;
     accessTokenPath?: string;
-    apiBasePath?: string;
-    cookieDomain?: string;
-    cookieSameSite?: "strict" | "lax" | "none";
     cookieSecure?: boolean;
-    apiKey?: string;
+    cookieSameSite?: "strict" | "lax" | "none";
     sessionExpiredStatusCode?: number;
+    cookieDomain?: string;
+    sessionRefreshFeature?: {
+        disableDefaultImplementation?: boolean;
+    };
 };
 export declare type TypeNormalisedInput = {
-    hosts: string;
     accessTokenPath: string;
-    apiBasePath: string;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;
-    apiKey?: string;
     sessionExpiredStatusCode: number;
 };
 export interface SessionRequest extends Request {

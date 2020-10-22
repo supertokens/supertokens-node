@@ -15,20 +15,33 @@ import { Querier } from "./querier";
  */
 
 import STError from "./error";
+import { NormalisedAppinfo } from "./types";
 
 export default abstract class RecipeModule {
-    protected recipeId: string;
+    private recipeId: string;
 
-    constructor(recipeId: string) {
+    private querier: Querier | undefined;
+
+    private appInfo: NormalisedAppinfo;
+
+    constructor(recipeId: string, appInfo: NormalisedAppinfo) {
         this.recipeId = recipeId;
+        this.appInfo = appInfo;
     }
 
     getRecipeId = (): string => {
         return this.recipeId;
     };
 
+    getAppInfo = (): NormalisedAppinfo => {
+        return this.appInfo;
+    };
+
     getQuerier = (): Querier => {
-        return Querier.getInstanceOrThrowError(this.getRecipeId());
+        if (this.querier === undefined) {
+            this.querier = Querier.getInstanceOrThrowError(this.getRecipeId());
+        }
+        return this.querier;
     };
 
     isErrorFromThisRecipe = (err: any): err is STError => {

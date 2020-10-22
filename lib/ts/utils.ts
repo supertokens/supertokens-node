@@ -1,5 +1,6 @@
 import { URL } from "url";
 import STError from "./error";
+import { AppInfo, NormalisedAppinfo } from "./types";
 
 export function normaliseURLPathOrThrowError(input: string): string {
     input = input.trim().toLowerCase();
@@ -126,4 +127,20 @@ export function maxVersion(version1: string, version2: string): string {
         return version1;
     }
     return version2;
+}
+
+export function normaliseInputAppInfo(appInfo: AppInfo): NormalisedAppinfo {
+    return {
+        appName: appInfo.appName,
+        websiteDomain: normaliseURLDomainOrThrowError(appInfo.websiteDomain),
+        apiDomain: normaliseURLDomainOrThrowError(appInfo.apiDomain),
+        apiBasePath:
+            appInfo.apiBasePath === undefined
+                ? normaliseURLPathOrThrowError("/auth")
+                : normaliseURLPathOrThrowError(appInfo.apiBasePath),
+        websiteBasePath:
+            appInfo.websiteBasePath === undefined
+                ? normaliseURLPathOrThrowError("/auth")
+                : normaliseURLPathOrThrowError(appInfo.websiteBasePath),
+    };
 }
