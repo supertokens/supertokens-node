@@ -25,14 +25,14 @@ import OriginalSessionClass from "../sessionClass";
 
 export const FAUNADB_TOKEN_TIME_LAG_MILLI = 30 * 1000;
 export const FAUNADB_SESSION_KEY = "faunadbToken";
-const q = faunadb.query;
-let faunaDBClient: faunadb.Client;
 
 // For Express
-export default class SessionRecipe extends OriginalSessionRecipe {
-    private static faunaSessionRecipeInstance: SessionRecipe | undefined = undefined;
+export default class SessionRecipe extends RecipeModule {
+    private static instance: SessionRecipe | undefined = undefined;
 
-    faunaConfig: {
+    parentRecipe: OriginalSessionRecipe;
+
+    config: {
         faunadbSecret: string;
         accessFaunadbTokenFromFrontend: boolean;
         userCollectionName: string;
@@ -53,37 +53,64 @@ export default class SessionRecipe extends OriginalSessionRecipe {
 
     superRefreshSession: (req: express.Request, res: express.Response) => Promise<OriginalSessionClass>;
 
+    q = faunadb.query;
+    faunaDBClient: faunadb.Client;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeFaunaDBInput) {
-        super(recipeId, appInfo, config);
-        this.superCreateNewSession = super.createNewSession;
-        this.superGetSession = super.getSession;
-        this.superRefreshSession = super.refreshSession;
-        this.faunaConfig = {
+        super(recipeId, appInfo);
+
+        this.parentRecipe = new OriginalSessionRecipe(recipeId, appInfo, config);
+
+        // we save the parent recipe's functions here, so that they can be used later
+        this.superCreateNewSession = this.parentRecipe.createNewSession;
+        this.superGetSession = this.parentRecipe.getSession;
+        this.superRefreshSession = this.parentRecipe.refreshSession;
+
+        // we override the parent recipe's functions with the modified ones.
+        this.parentRecipe.createNewSession = this.createNewSession;
+        this.parentRecipe.getSession = this.getSession;
+        this.parentRecipe.refreshSession = this.refreshSession;
+
+        this.config = {
             faunadbSecret: config.faunadbSecret,
             accessFaunadbTokenFromFrontend:
                 config.accessFaunadbTokenFromFrontend === undefined ? false : config.accessFaunadbTokenFromFrontend,
             userCollectionName: config.userCollectionName,
         };
+
+        try {
+            this.faunaDBClient = new faunadb.Client({
+                secret: this.config.faunadbSecret,
+            });
+        } catch (err) {
+            throw new STError(
+                {
+                    payload: err,
+                    type: STError.GENERAL_ERROR,
+                },
+                this.getRecipeId()
+            );
+        }
     }
 
     static getInstanceOrThrowError(): SessionRecipe {
-        if (SessionRecipe.faunaSessionRecipeInstance !== undefined) {
-            return SessionRecipe.faunaSessionRecipeInstance;
+        if (SessionRecipe.instance !== undefined) {
+            return SessionRecipe.instance;
         }
         throw new STError(
             {
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
             },
-            SessionRecipe.RECIPE_ID
+            OriginalSessionRecipe.RECIPE_ID
         );
     }
 
     static init(config: TypeFaunaDBInput): RecipeListFunction {
         return (appInfo) => {
-            if (SessionRecipe.faunaSessionRecipeInstance === undefined) {
-                SessionRecipe.faunaSessionRecipeInstance = new SessionRecipe("session", appInfo, config);
-                return SessionRecipe.faunaSessionRecipeInstance;
+            if (SessionRecipe.instance === undefined) {
+                SessionRecipe.instance = new SessionRecipe(OriginalSessionRecipe.RECIPE_ID, appInfo, config);
+                return SessionRecipe.instance;
             } else {
                 throw new STError(
                     {
@@ -92,7 +119,7 @@ export default class SessionRecipe extends OriginalSessionRecipe {
                             "Session recipe has already been initialised. Please check your code for bugs."
                         ),
                     },
-                    SessionRecipe.RECIPE_ID
+                    OriginalSessionRecipe.RECIPE_ID
                 );
             }
         };
@@ -105,11 +132,29 @@ export default class SessionRecipe extends OriginalSessionRecipe {
                     type: STError.GENERAL_ERROR,
                     payload: new Error("calling testing function in non testing env"),
                 },
-                SessionRecipe.RECIPE_ID
+                OriginalSessionRecipe.RECIPE_ID
             );
         }
-        SessionRecipe.faunaSessionRecipeInstance = undefined;
+        SessionRecipe.instance = undefined;
     }
+
+    // abstract instance functions below...............
+
+    getAPIsHandled = () => {
+        return this.parentRecipe.getAPIsHandled();
+    };
+
+    handleAPIRequest = (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        return this.parentRecipe.handleAPIRequest(id, req, res, next);
+    };
+
+    handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {
+        return this.parentRecipe.handleError(err, request, response, next);
+    };
+
+    getAllCORSHeaders = (): string[] => {
+        return this.parentRecipe.getAllCORSHeaders();
+    };
 
     // instance functions.........
 
@@ -128,10 +173,10 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         }
         let accessTokenLifetime = accessTokenExpiry - Date.now();
 
-        let faunaResponse: any = await faunaDBClient.query(
-            q.Create(q.Tokens(), {
-                instance: q.Ref(q.Collection(this.faunaConfig.userCollectionName), session.getUserId()),
-                ttl: q.TimeAdd(q.Now(), accessTokenLifetime + getFaunadbTokenTimeLag(), "millisecond"),
+        let faunaResponse: any = await this.faunaDBClient.query(
+            this.q.Create(this.q.Tokens(), {
+                instance: this.q.Ref(this.q.Collection(this.config.userCollectionName), session.getUserId()),
+                ttl: this.q.TimeAdd(this.q.Now(), accessTokenLifetime + getFaunadbTokenTimeLag(), "millisecond"),
             })
         );
         return faunaResponse.secret;
@@ -146,7 +191,7 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         // TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
         let originalSession = await this.superCreateNewSession(res, userId, jwtPayload, sessionData);
         let session = new Session(
-            this,
+            this.parentRecipe,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),
@@ -157,7 +202,7 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         try {
             let fdat = await this.getFDAT(session);
 
-            if (this.faunaConfig.accessFaunadbTokenFromFrontend) {
+            if (this.config.accessFaunadbTokenFromFrontend) {
                 let newPayload = {
                     ...jwtPayload,
                 };
@@ -186,7 +231,7 @@ export default class SessionRecipe extends OriginalSessionRecipe {
     getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): Promise<Session> => {
         let originalSession = await this.superGetSession(req, res, doAntiCsrfCheck);
         return new Session(
-            this,
+            this.parentRecipe,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),
@@ -199,7 +244,7 @@ export default class SessionRecipe extends OriginalSessionRecipe {
     refreshSession = async (req: express.Request, res: express.Response): Promise<Session> => {
         let originalSession = await this.superRefreshSession(req, res);
         let session = new Session(
-            this,
+            this.parentRecipe,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),

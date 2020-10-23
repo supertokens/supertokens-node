@@ -22,7 +22,8 @@ const {
     extractInfoFromResponse,
     setKeyValueInConfig,
 } = require("./utils");
-let STExpress = require("../faunadb");
+let SuperTokens = require("../");
+let Session = require("../recipe/session/faunadb");
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -48,325 +49,47 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         await setKeyValueInConfig("access_token_validity", "3");
         await startST();
 
-        const app = express();
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-                accessFaunadbTokenFromFrontend: true,
-            })
-        );
-
-        app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
-            res.status(200).send("");
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                    userCollectionName: "users",
+                    accessFaunadbTokenFromFrontend: true,
+                }),
+            ],
         });
-
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
-            let jwtPayload = req.session.getJWTPayload();
-            let token = await req.session.getFaunadbToken();
-            if (token === undefined) {
-                res.status(200).send("fail");
-            } else {
-                if (token === jwtPayload.faunadbToken) {
-                    res.status(200).send("pass");
-                } else {
-                    res.status(200).send("fail");
-                }
-            }
-        });
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        let frontToken = JSON.parse(Buffer.from(res.frontToken, "base64").toString());
-
-        let token = frontToken.up.faunadbToken;
-
-        let faunaDBClient = new faunadb.Client({
-            secret: token,
-        });
-
-        let faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-
-        assert(faunaResponse.data.name === "test user 1");
-
-        await new Promise((r) => setTimeout(r, 7000));
-
-        try {
-            await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-            throw new Error("fail");
-        } catch (err) {
-            if (err.message !== "unauthorized" || err.name !== "Unauthorized") {
-                throw new Error("fail");
-            }
-        }
-
-        // refresh session and repeat the above
-        let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/session/refresh")
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                    .set("anti-csrf", res.antiCsrf)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        let frontToken2 = JSON.parse(Buffer.from(res3.frontToken, "base64").toString());
-
-        let token2 = frontToken2.up.faunadbToken;
-
-        assert(token2 !== token);
-
-        faunaDBClient = new faunadb.Client({
-            secret: token2,
-        });
-
-        faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-
-        assert(faunaResponse.data.name === "test user 1");
-
-        await new Promise((r) => setTimeout(r, 7000));
-
-        try {
-            await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-            throw new Error("fail");
-        } catch (err) {
-            if (err.message !== "unauthorized" || err.name !== "Unauthorized") {
-                throw new Error("fail");
-            }
-        }
-    });
-
-    it("getting FDAT from JWT payload", async function () {
-        await startST();
 
         const app = express();
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-                accessFaunadbTokenFromFrontend: true,
-            })
-        );
+        app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
-            let jwtPayload = req.session.getJWTPayload();
-            let token = await req.session.getFaunadbToken();
-            if (token === undefined) {
-                res.status(200).send("fail");
-            } else {
-                if (token === jwtPayload.faunadbToken) {
-                    res.status(200).send("pass");
-                } else {
-                    res.status(200).send("fail");
-                }
-            }
-        });
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        res2 = await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .set("anti-csrf", res.antiCsrf)
-                .end((err, res) => {
-                    resolve(res.text);
-                })
-        );
-
-        assert(res2 === "pass");
-
-        let frontToken = JSON.parse(Buffer.from(res.frontToken, "base64").toString());
-
-        let token = frontToken.up.faunadbToken;
-
-        let faunaDBClient = new faunadb.Client({
-            secret: token,
-        });
-
-        let faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-
-        assert(faunaResponse.data.name === "test user 1");
-
-        // refresh session and repeat the above
-        let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/session/refresh")
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                    .set("anti-csrf", res.antiCsrf)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        res4 = await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
-                .set("anti-csrf", res3.antiCsrf)
-                .end((err, res) => {
-                    resolve(res.text);
-                })
-        );
-
-        assert(res4 === "pass");
-
-        let frontToken2 = JSON.parse(Buffer.from(res3.frontToken, "base64").toString());
-
-        let token2 = frontToken2.up.faunadbToken;
-
-        assert(token2 !== token);
-
-        faunaDBClient = new faunadb.Client({
-            secret: token2,
-        });
-
-        faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-
-        assert(faunaResponse.data.name === "test user 1");
-    });
-
-    it("getting FDAT from session data", async function () {
-        await startST();
-
-        const app = express();
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-            })
-        );
-
-        app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
-            let sessionData = await req.session.getSessionData();
-            let token = await req.session.getFaunadbToken();
-            if (token === undefined) {
-                res.status(200).send("fail");
-            } else {
-                if (token === sessionData.faunadbToken) {
-                    res.status(200).send("pass");
-                } else {
-                    res.status(200).send("fail");
-                }
-            }
-        });
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        res = await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .set("anti-csrf", res.antiCsrf)
-                .end((err, res) => {
-                    resolve(res.text);
-                })
-        );
-
-        assert(res === "pass");
-    });
-
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////// THE TESTS BELOW ARE A COPY OF THE TESTS//////////////
-    /////////////////// IN sessionExpress.test.js ////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////////////
-
-    //- check for token theft detection
-    it("express token theft detection with faunadb", async function () {
-        await startST();
-        STExpress.init({
-            hosts: "http://localhost:8080",
-            faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-            userCollectionName: "users",
-            accessFaunadbTokenFromFrontend: true,
-        });
-
-        // if version >= 2.3
-        if (
-            maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
-            (await Querier.getInstanceOrThrowError().getAPIVersion())
-        ) {
-            return;
-        }
-
-        const app = express();
-        app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/session/verify", async (req, res) => {
-            await STExpress.getSession(req, res, true);
-            res.status(200).send("");
-        });
-
-        app.post("/auth/session/refresh", async (req, res) => {
             try {
-                await STExpress.refreshSession(req, res);
-                res.status(200).send(JSON.stringify({ success: false }));
+                await Session.createNewSession(res, "277082848991642117", {}, {});
+                res.status(200).send("");
             } catch (err) {
-                res.status(200).json({
-                    success:
-                        STExpress.Error.isErrorFromAuth(err) && err.errType === STExpress.Error.TOKEN_THEFT_DETECTED,
-                });
+                console.log(err);
+            }
+        });
+
+        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+            let jwtPayload = req.session.getJWTPayload();
+            let token = await req.session.getFaunadbToken();
+            if (token === undefined) {
+                res.status(200).send("fail");
+            } else {
+                if (token === jwtPayload.faunadbToken) {
+                    res.status(200).send("pass");
+                } else {
+                    res.status(200).send("fail");
+                }
             }
         });
 
@@ -381,359 +104,33 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             )
         );
 
-        let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/session/refresh")
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                    .set("anti-csrf", res.antiCsrf)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
+        let frontToken = JSON.parse(Buffer.from(res.frontToken, "base64").toString());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
-                .set("anti-csrf", res2.antiCsrf)
-                .end((err, res) => {
-                    resolve();
-                })
-        );
+        let token = frontToken.up.faunadbToken;
 
-        let res3 = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                .set("anti-csrf", res.antiCsrf)
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-        assert.deepEqual(res3.body.success, true);
+        let faunaDBClient = new faunadb.Client({
+            secret: token,
+        });
 
-        let cookies = extractInfoFromResponse(res3);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, "");
-        assert.deepEqual(cookies.refreshToken, "");
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.1") === "2.1") {
-            assert(cookies.accessTokenDomain === "localhost" || cookies.accessTokenDomain === "supertokens.io");
-            assert(cookies.refreshTokenDomain === "localhost" || cookies.refreshTokenDomain === "supertokens.io");
-            assert(cookies.idRefreshTokenDomain === "localhost" || cookies.idRefreshTokenDomain === "supertokens.io");
-        } else {
-            assert(cookies.accessTokenDomain === undefined);
-            assert(cookies.refreshTokenDomain === undefined);
-            assert(cookies.idRefreshTokenDomain === undefined);
-        }
-    });
+        let faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
 
-    //- check for token theft detection
-    it("express token theft detection with auto refresh middleware with faunadb", async function () {
-        await startST();
-        const app = express();
+        assert(faunaResponse.data.name === "test user 1");
 
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-                accessFaunadbTokenFromFrontend: true,
-            })
-        );
+        await new Promise((r) => setTimeout(r, 7000));
 
-        // if version >= 2.3
-        if (
-            maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
-            (await Querier.getInstanceOrThrowError().getAPIVersion())
-        ) {
-            return;
+        try {
+            await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+            throw new Error("fail");
+        } catch (err) {
+            if (err.message !== "unauthorized" || err.name !== "Unauthorized") {
+                throw new Error("fail");
+            }
         }
 
-        app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
-            res.status(200).send("");
-        });
-
-        app.use(STExpress.errorHandler());
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/session/refresh")
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                    .set("anti-csrf", res.antiCsrf)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                ])
-                .set("anti-csrf", res2.antiCsrf)
-                .end((err, res) => {
-                    resolve();
-                })
-        );
-
-        let res3 = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                .set("anti-csrf", res.antiCsrf)
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-        assert(res3.status === 440 || res3.status === 401);
-        assert.deepEqual(res3.text, '{"message":"token theft detected"}');
-
-        let cookies = extractInfoFromResponse(res3);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, "");
-        assert.deepEqual(cookies.refreshToken, "");
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-    });
-
-    //check basic usage of session
-    it("test basic usage of express sessions with faunadb", async function () {
-        await startST();
-        STExpress.init({
-            hosts: "http://localhost:8080",
-            faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-            userCollectionName: "users",
-            accessFaunadbTokenFromFrontend: true,
-        });
-
-        // if version >= 2.3
-        if (
-            maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
-            (await Querier.getInstanceOrThrowError().getAPIVersion())
-        ) {
-            return;
-        }
-
-        const app = express();
-
-        app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/session/verify", async (req, res) => {
-            await STExpress.getSession(req, res, true);
-            res.status(200).send("");
-        });
-        app.post("/auth/session/refresh", async (req, res) => {
-            await STExpress.refreshSession(req, res);
-            res.status(200).send("");
-        });
-        app.post("/session/revoke", async (req, res) => {
-            let session = await STExpress.getSession(req, res, true);
-            await session.revokeSession();
-            res.status(200).send("");
-        });
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        assert(res.accessToken !== undefined);
-        assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
-        assert(res.refreshToken !== undefined);
-
-        await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .set("anti-csrf", res.antiCsrf)
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-
-        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
-        assert(verifyState3 === undefined);
-
-        let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/session/refresh")
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                    .set("anti-csrf", res.antiCsrf)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        assert(res2.accessToken !== undefined);
-        assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
-        assert(res2.refreshToken !== undefined);
-
+        // refresh session and repeat the above
         let res3 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
-                    .set("anti-csrf", res2.antiCsrf)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
-
-        ProcessState.getInstance().reset();
-
-        await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
-                .set("anti-csrf", res2.antiCsrf)
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-        let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
-        assert(verifyState2 === undefined);
-
-        let sessionRevokedResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/session/revoke")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
-                .set("anti-csrf", res2.antiCsrf)
-                .expect(200)
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-        let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
-        assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.accessToken === "");
-        assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
-    });
-
-    //check basic usage of session
-    it("test basic usage of express sessions with auto refresh with faunadb", async function () {
-        await startST();
-
-        const app = express();
-
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-            })
-        );
-
-        app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
-            res.status(200).send("");
-        });
-
-        app.post("/session/revoke", STExpress.middleware(), async (req, res) => {
-            let session = req.session;
-            await session.revokeSession();
-            res.status(200).send("");
-        });
-
-        app.use(STExpress.errorHandler());
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        assert(res.accessToken !== undefined);
-        assert(res.antiCsrf !== undefined);
-        assert(res.idRefreshTokenFromCookie !== undefined);
-        assert(res.idRefreshTokenFromHeader !== undefined);
-        assert(res.refreshToken !== undefined);
-
-        await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .set("anti-csrf", res.antiCsrf)
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-
-        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
-        assert(verifyState3 === undefined);
-
-        let res2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
                     .post("/auth/session/refresh")
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
@@ -743,64 +140,683 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             )
         );
 
-        assert(res2.accessToken !== undefined);
-        assert(res2.antiCsrf !== undefined);
-        assert(res2.idRefreshTokenFromCookie !== undefined);
-        assert(res2.idRefreshTokenFromHeader !== undefined);
-        assert(res2.refreshToken !== undefined);
+        let frontToken2 = JSON.parse(Buffer.from(res3.frontToken, "base64").toString());
 
-        let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/session/verify")
-                    .set("Cookie", [
-                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-                    ])
-                    .set("anti-csrf", res2.antiCsrf)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
-        assert(verifyState !== undefined);
-        assert(res3.accessToken !== undefined);
+        let token2 = frontToken2.up.faunadbToken;
 
-        ProcessState.getInstance().reset();
+        assert(token2 !== token);
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/session/verify")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
-                .set("anti-csrf", res2.antiCsrf)
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-        let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
-        assert(verifyState2 === undefined);
+        faunaDBClient = new faunadb.Client({
+            secret: token2,
+        });
 
-        let sessionRevokedResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/session/revoke")
-                .set("Cookie", [
-                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
-                ])
-                .set("anti-csrf", res2.antiCsrf)
-                .expect(200)
-                .end((err, res) => {
-                    resolve(res);
-                })
-        );
-        let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
-        assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(sessionRevokedResponseExtracted.accessToken === "");
-        assert(sessionRevokedResponseExtracted.refreshToken === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
-        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
+        faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+
+        assert(faunaResponse.data.name === "test user 1");
+
+        await new Promise((r) => setTimeout(r, 7000));
+
+        try {
+            await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+            throw new Error("fail");
+        } catch (err) {
+            if (err.message !== "unauthorized" || err.name !== "Unauthorized") {
+                throw new Error("fail");
+            }
+        }
     });
+
+    // it("getting FDAT from JWT payload", async function () {
+    //     await startST();
+
+    //     const app = express();
+    //     app.use(
+    //         STExpress.init({
+    //             hosts: "http://localhost:8080",
+    //             faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+    //             userCollectionName: "users",
+    //             accessFaunadbTokenFromFrontend: true,
+    //         })
+    //     );
+
+    //     app.post("/create", async (req, res) => {
+    //         await STExpress.createNewSession(res, "277082848991642117", {}, {});
+    //         res.status(200).send("");
+    //     });
+
+    //     app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+    //         let jwtPayload = req.session.getJWTPayload();
+    //         let token = await req.session.getFaunadbToken();
+    //         if (token === undefined) {
+    //             res.status(200).send("fail");
+    //         } else {
+    //             if (token === jwtPayload.faunadbToken) {
+    //                 res.status(200).send("pass");
+    //             } else {
+    //                 res.status(200).send("fail");
+    //             }
+    //         }
+    //     });
+
+    //     let res = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/create")
+    //                 .expect(200)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     res2 = await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/verify")
+    //             .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+    //             .set("anti-csrf", res.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve(res.text);
+    //             })
+    //     );
+
+    //     assert(res2 === "pass");
+
+    //     let frontToken = JSON.parse(Buffer.from(res.frontToken, "base64").toString());
+
+    //     let token = frontToken.up.faunadbToken;
+
+    //     let faunaDBClient = new faunadb.Client({
+    //         secret: token,
+    //     });
+
+    //     let faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+
+    //     assert(faunaResponse.data.name === "test user 1");
+
+    //     // refresh session and repeat the above
+    //     let res3 = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/auth/session/refresh")
+    //                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+    //                 .set("anti-csrf", res.antiCsrf)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     res4 = await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/verify")
+    //             .set("Cookie", [
+    //                 "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
+    //             ])
+    //             .set("anti-csrf", res3.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve(res.text);
+    //             })
+    //     );
+
+    //     assert(res4 === "pass");
+
+    //     let frontToken2 = JSON.parse(Buffer.from(res3.frontToken, "base64").toString());
+
+    //     let token2 = frontToken2.up.faunadbToken;
+
+    //     assert(token2 !== token);
+
+    //     faunaDBClient = new faunadb.Client({
+    //         secret: token2,
+    //     });
+
+    //     faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
+
+    //     assert(faunaResponse.data.name === "test user 1");
+    // });
+
+    // it("getting FDAT from session data", async function () {
+    //     await startST();
+
+    //     const app = express();
+    //     app.use(
+    //         STExpress.init({
+    //             hosts: "http://localhost:8080",
+    //             faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+    //             userCollectionName: "users",
+    //         })
+    //     );
+
+    //     app.post("/create", async (req, res) => {
+    //         await STExpress.createNewSession(res, "277082848991642117", {}, {});
+    //         res.status(200).send("");
+    //     });
+
+    //     app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+    //         let sessionData = await req.session.getSessionData();
+    //         let token = await req.session.getFaunadbToken();
+    //         if (token === undefined) {
+    //             res.status(200).send("fail");
+    //         } else {
+    //             if (token === sessionData.faunadbToken) {
+    //                 res.status(200).send("pass");
+    //             } else {
+    //                 res.status(200).send("fail");
+    //             }
+    //         }
+    //     });
+
+    //     let res = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/create")
+    //                 .expect(200)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     res = await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/verify")
+    //             .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+    //             .set("anti-csrf", res.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve(res.text);
+    //             })
+    //     );
+
+    //     assert(res === "pass");
+    // });
+
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////// THE TESTS BELOW ARE A COPY OF THE TESTS//////////////
+    // /////////////////// IN sessionExpress.test.js ////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+    // //////////////////////////////////////////////////////////////////
+
+    // //- check for token theft detection
+    // it("express token theft detection with faunadb", async function () {
+    //     await startST();
+    //     STExpress.init({
+    //         hosts: "http://localhost:8080",
+    //         faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+    //         userCollectionName: "users",
+    //         accessFaunadbTokenFromFrontend: true,
+    //     });
+
+    //     // if version >= 2.3
+    //     if (
+    //         maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
+    //         (await Querier.getInstanceOrThrowError().getAPIVersion())
+    //     ) {
+    //         return;
+    //     }
+
+    //     const app = express();
+    //     app.post("/create", async (req, res) => {
+    //         await STExpress.createNewSession(res, "277082848991642117", {}, {});
+    //         res.status(200).send("");
+    //     });
+
+    //     app.post("/session/verify", async (req, res) => {
+    //         await STExpress.getSession(req, res, true);
+    //         res.status(200).send("");
+    //     });
+
+    //     app.post("/auth/session/refresh", async (req, res) => {
+    //         try {
+    //             await STExpress.refreshSession(req, res);
+    //             res.status(200).send(JSON.stringify({ success: false }));
+    //         } catch (err) {
+    //             res.status(200).json({
+    //                 success:
+    //                     STExpress.Error.isErrorFromAuth(err) && err.errType === STExpress.Error.TOKEN_THEFT_DETECTED,
+    //             });
+    //         }
+    //     });
+
+    //     let res = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/create")
+    //                 .expect(200)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     let res2 = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/auth/session/refresh")
+    //                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+    //                 .set("anti-csrf", res.antiCsrf)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/verify")
+    //             .set("Cookie", [
+    //                 "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+    //             ])
+    //             .set("anti-csrf", res2.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve();
+    //             })
+    //     );
+
+    //     let res3 = await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/auth/session/refresh")
+    //             .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+    //             .set("anti-csrf", res.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve(res);
+    //             })
+    //     );
+    //     assert.deepEqual(res3.body.success, true);
+
+    //     let cookies = extractInfoFromResponse(res3);
+    //     assert.deepEqual(cookies.antiCsrf, undefined);
+    //     assert.deepEqual(cookies.accessToken, "");
+    //     assert.deepEqual(cookies.refreshToken, "");
+    //     assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
+    //     assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
+    //     assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+    //     if (maxVersion(currCDIVersion, "2.1") === "2.1") {
+    //         assert(cookies.accessTokenDomain === "localhost" || cookies.accessTokenDomain === "supertokens.io");
+    //         assert(cookies.refreshTokenDomain === "localhost" || cookies.refreshTokenDomain === "supertokens.io");
+    //         assert(cookies.idRefreshTokenDomain === "localhost" || cookies.idRefreshTokenDomain === "supertokens.io");
+    //     } else {
+    //         assert(cookies.accessTokenDomain === undefined);
+    //         assert(cookies.refreshTokenDomain === undefined);
+    //         assert(cookies.idRefreshTokenDomain === undefined);
+    //     }
+    // });
+
+    // //- check for token theft detection
+    // it("express token theft detection with auto refresh middleware with faunadb", async function () {
+    //     await startST();
+    //     const app = express();
+
+    //     app.use(
+    //         STExpress.init({
+    //             hosts: "http://localhost:8080",
+    //             faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+    //             userCollectionName: "users",
+    //             accessFaunadbTokenFromFrontend: true,
+    //         })
+    //     );
+
+    //     // if version >= 2.3
+    //     if (
+    //         maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
+    //         (await Querier.getInstanceOrThrowError().getAPIVersion())
+    //     ) {
+    //         return;
+    //     }
+
+    //     app.post("/create", async (req, res) => {
+    //         await STExpress.createNewSession(res, "277082848991642117", {}, {});
+    //         res.status(200).send("");
+    //     });
+
+    //     app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+    //         res.status(200).send("");
+    //     });
+
+    //     app.use(STExpress.errorHandler());
+
+    //     let res = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/create")
+    //                 .expect(200)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     let res2 = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/auth/session/refresh")
+    //                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+    //                 .set("anti-csrf", res.antiCsrf)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/verify")
+    //             .set("Cookie", [
+    //                 "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+    //             ])
+    //             .set("anti-csrf", res2.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve();
+    //             })
+    //     );
+
+    //     let res3 = await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/auth/session/refresh")
+    //             .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+    //             .set("anti-csrf", res.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve(res);
+    //             })
+    //     );
+    //     assert(res3.status === 440 || res3.status === 401);
+    //     assert.deepEqual(res3.text, '{"message":"token theft detected"}');
+
+    //     let cookies = extractInfoFromResponse(res3);
+    //     assert.deepEqual(cookies.antiCsrf, undefined);
+    //     assert.deepEqual(cookies.accessToken, "");
+    //     assert.deepEqual(cookies.refreshToken, "");
+    //     assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
+    //     assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
+    //     assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+    // });
+
+    // //check basic usage of session
+    // it("test basic usage of express sessions with faunadb", async function () {
+    //     await startST();
+    //     STExpress.init({
+    //         hosts: "http://localhost:8080",
+    //         faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+    //         userCollectionName: "users",
+    //         accessFaunadbTokenFromFrontend: true,
+    //     });
+
+    //     // if version >= 2.3
+    //     if (
+    //         maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
+    //         (await Querier.getInstanceOrThrowError().getAPIVersion())
+    //     ) {
+    //         return;
+    //     }
+
+    //     const app = express();
+
+    //     app.post("/create", async (req, res) => {
+    //         await STExpress.createNewSession(res, "277082848991642117", {}, {});
+    //         res.status(200).send("");
+    //     });
+
+    //     app.post("/session/verify", async (req, res) => {
+    //         await STExpress.getSession(req, res, true);
+    //         res.status(200).send("");
+    //     });
+    //     app.post("/auth/session/refresh", async (req, res) => {
+    //         await STExpress.refreshSession(req, res);
+    //         res.status(200).send("");
+    //     });
+    //     app.post("/session/revoke", async (req, res) => {
+    //         let session = await STExpress.getSession(req, res, true);
+    //         await session.revokeSession();
+    //         res.status(200).send("");
+    //     });
+
+    //     let res = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/create")
+    //                 .expect(200)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     assert(res.accessToken !== undefined);
+    //     assert(res.antiCsrf !== undefined);
+    //     assert(res.idRefreshTokenFromCookie !== undefined);
+    //     assert(res.idRefreshTokenFromHeader !== undefined);
+    //     assert(res.refreshToken !== undefined);
+
+    //     await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/verify")
+    //             .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+    //             .set("anti-csrf", res.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve(res);
+    //             })
+    //     );
+
+    //     let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
+    //     assert(verifyState3 === undefined);
+
+    //     let res2 = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/auth/session/refresh")
+    //                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+    //                 .set("anti-csrf", res.antiCsrf)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     assert(res2.accessToken !== undefined);
+    //     assert(res2.antiCsrf !== undefined);
+    //     assert(res2.idRefreshTokenFromCookie !== undefined);
+    //     assert(res2.idRefreshTokenFromHeader !== undefined);
+    //     assert(res2.refreshToken !== undefined);
+
+    //     let res3 = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/session/verify")
+    //                 .set("Cookie", [
+    //                     "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+    //                 ])
+    //                 .set("anti-csrf", res2.antiCsrf)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+    //     let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+    //     assert(verifyState !== undefined);
+    //     assert(res3.accessToken !== undefined);
+
+    //     ProcessState.getInstance().reset();
+
+    //     await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/verify")
+    //             .set("Cookie", [
+    //                 "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
+    //             ])
+    //             .set("anti-csrf", res2.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve(res);
+    //             })
+    //     );
+    //     let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
+    //     assert(verifyState2 === undefined);
+
+    //     let sessionRevokedResponse = await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/revoke")
+    //             .set("Cookie", [
+    //                 "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
+    //             ])
+    //             .set("anti-csrf", res2.antiCsrf)
+    //             .expect(200)
+    //             .end((err, res) => {
+    //                 resolve(res);
+    //             })
+    //     );
+    //     let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
+    //     assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert(sessionRevokedResponseExtracted.accessToken === "");
+    //     assert(sessionRevokedResponseExtracted.refreshToken === "");
+    //     assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
+    //     assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
+    // });
+
+    // //check basic usage of session
+    // it("test basic usage of express sessions with auto refresh with faunadb", async function () {
+    //     await startST();
+
+    //     const app = express();
+
+    //     app.use(
+    //         STExpress.init({
+    //             hosts: "http://localhost:8080",
+    //             faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+    //             userCollectionName: "users",
+    //         })
+    //     );
+
+    //     app.post("/create", async (req, res) => {
+    //         await STExpress.createNewSession(res, "277082848991642117", {}, {});
+    //         res.status(200).send("");
+    //     });
+
+    //     app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+    //         res.status(200).send("");
+    //     });
+
+    //     app.post("/session/revoke", STExpress.middleware(), async (req, res) => {
+    //         let session = req.session;
+    //         await session.revokeSession();
+    //         res.status(200).send("");
+    //     });
+
+    //     app.use(STExpress.errorHandler());
+
+    //     let res = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/create")
+    //                 .expect(200)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     assert(res.accessToken !== undefined);
+    //     assert(res.antiCsrf !== undefined);
+    //     assert(res.idRefreshTokenFromCookie !== undefined);
+    //     assert(res.idRefreshTokenFromHeader !== undefined);
+    //     assert(res.refreshToken !== undefined);
+
+    //     await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/verify")
+    //             .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+    //             .set("anti-csrf", res.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve(res);
+    //             })
+    //     );
+
+    //     let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
+    //     assert(verifyState3 === undefined);
+
+    //     let res2 = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/auth/session/refresh")
+    //                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+    //                 .set("anti-csrf", res.antiCsrf)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+
+    //     assert(res2.accessToken !== undefined);
+    //     assert(res2.antiCsrf !== undefined);
+    //     assert(res2.idRefreshTokenFromCookie !== undefined);
+    //     assert(res2.idRefreshTokenFromHeader !== undefined);
+    //     assert(res2.refreshToken !== undefined);
+
+    //     let res3 = extractInfoFromResponse(
+    //         await new Promise((resolve) =>
+    //             request(app)
+    //                 .post("/session/verify")
+    //                 .set("Cookie", [
+    //                     "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+    //                 ])
+    //                 .set("anti-csrf", res2.antiCsrf)
+    //                 .end((err, res) => {
+    //                     resolve(res);
+    //                 })
+    //         )
+    //     );
+    //     let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+    //     assert(verifyState !== undefined);
+    //     assert(res3.accessToken !== undefined);
+
+    //     ProcessState.getInstance().reset();
+
+    //     await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/verify")
+    //             .set("Cookie", [
+    //                 "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
+    //             ])
+    //             .set("anti-csrf", res2.antiCsrf)
+    //             .end((err, res) => {
+    //                 resolve(res);
+    //             })
+    //     );
+    //     let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
+    //     assert(verifyState2 === undefined);
+
+    //     let sessionRevokedResponse = await new Promise((resolve) =>
+    //         request(app)
+    //             .post("/session/revoke")
+    //             .set("Cookie", [
+    //                 "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res3.idRefreshTokenFromCookie,
+    //             ])
+    //             .set("anti-csrf", res2.antiCsrf)
+    //             .expect(200)
+    //             .end((err, res) => {
+    //                 resolve(res);
+    //             })
+    //     );
+    //     let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
+    //     assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+    //     assert(sessionRevokedResponseExtracted.accessToken === "");
+    //     assert(sessionRevokedResponseExtracted.refreshToken === "");
+    //     assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
+    //     assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
+    // });
 });

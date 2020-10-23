@@ -14,12 +14,13 @@
  */
 
 import OriginalSessionClass from "../sessionClass";
-import SessionRecipe, { FAUNADB_SESSION_KEY } from "./sessionRecipe";
+import { FAUNADB_SESSION_KEY } from "./sessionRecipe";
 import * as express from "express";
+import OriginalSessionRecipe from "../sessionRecipe";
 
 export default class Session extends OriginalSessionClass {
     constructor(
-        recipeInstance: SessionRecipe,
+        recipeInstance: OriginalSessionRecipe,
         accessToken: string,
         sessionHandle: string,
         userId: string,

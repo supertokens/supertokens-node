@@ -35,6 +35,7 @@ const { SessionConfig } = require("../lib/build/session");
  *          - with and without a rId
  *          - where we do not have to handle it and it skips it (with / without rId)
  * TODO: Test various inputs to errorHandler (if it accepts or not)
+ * TODO: Check that access control allow headers have the right set values for each recipe, including one for rid
  */
 
 describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.js]")}`, function () {

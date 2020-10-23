@@ -39,39 +39,39 @@ export default class SessionWrapper {
     }
 
     static revokeAllSessionsForUser(userId: string) {
-        return SessionRecipe.getInstanceOrThrowError().revokeAllSessionsForUser(userId);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.revokeAllSessionsForUser(userId);
     }
 
     static getAllSessionHandlesForUser(userId: string) {
-        return SessionRecipe.getInstanceOrThrowError().getAllSessionHandlesForUser(userId);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.getAllSessionHandlesForUser(userId);
     }
 
     static revokeSession(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().revokeSession(sessionHandle);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.revokeSession(sessionHandle);
     }
 
     static revokeMultipleSessions(sessionHandles: string[]) {
-        return SessionRecipe.getInstanceOrThrowError().revokeMultipleSessions(sessionHandles);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.revokeMultipleSessions(sessionHandles);
     }
 
     static getSessionData(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().getSessionData(sessionHandle);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.getSessionData(sessionHandle);
     }
 
     static updateSessionData(sessionHandle: string, newSessionData: any) {
-        return SessionRecipe.getInstanceOrThrowError().updateSessionData(sessionHandle, newSessionData);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.updateSessionData(sessionHandle, newSessionData);
     }
 
     static getJWTPayload(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().getJWTPayload(sessionHandle);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.getJWTPayload(sessionHandle);
     }
 
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-        return SessionRecipe.getInstanceOrThrowError().updateJWTPayload(sessionHandle, newJWTPayload);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.updateJWTPayload(sessionHandle, newJWTPayload);
     }
 
     static verifySession = (antiCsrfCheck?: boolean) => {
-        return originalVerifySession(SessionRecipe.getInstanceOrThrowError(), antiCsrfCheck);
+        return originalVerifySession(SessionRecipe.getInstanceOrThrowError().parentRecipe, antiCsrfCheck);
     };
 }
 
