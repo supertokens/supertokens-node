@@ -49,7 +49,6 @@ export type CreateOrRefreshAPIResponse = {
 };
 
 export type TypeInput = {
-    accessTokenPath?: string;
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
     sessionExpiredStatusCode?: number;

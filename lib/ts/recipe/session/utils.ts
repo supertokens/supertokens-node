@@ -39,13 +39,6 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
 }
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
-    let accessTokenPath =
-        config.accessTokenPath === undefined ? "" : normaliseURLPathOrThrowError(config.accessTokenPath);
-    if (accessTokenPath === "") {
-        // cookie path being an empty string doesn't work.
-        accessTokenPath = "/";
-    }
-
     let cookieDomain =
         config.cookieDomain === undefined ? undefined : normaliseSessionScopeOrThrowError(config.cookieDomain);
 
@@ -68,7 +61,7 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
     }
 
     return {
-        accessTokenPath,
+        accessTokenPath: "/",
         cookieDomain,
         cookieSameSite,
         cookieSecure,

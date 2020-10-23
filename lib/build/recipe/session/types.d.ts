@@ -32,7 +32,6 @@ export declare type CreateOrRefreshAPIResponse = {
     antiCsrfToken: string | undefined;
 };
 export declare type TypeInput = {
-    accessTokenPath?: string;
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
     sessionExpiredStatusCode?: number;
