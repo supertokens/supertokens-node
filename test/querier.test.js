@@ -13,10 +13,17 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
-let ST = require("../lib/build/session");
+let ST = require("../");
 let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
+let Session = require("../recipe/session");
+
+/**
+ *
+ * TODO: Test that if the querier throws an error from a recipe, that recipe's ID is there
+ * TODO: Check that once the API version is there, it doesn't need to query again
+ */
 
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     beforeEach(async function () {
@@ -31,17 +38,23 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     });
 
     it("core not available", async function () {
-        ST.init({ hosts: "http://localhost:8080;http://localhost:8081/" });
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080;http://localhost:8081/",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
         try {
-            let q = Querier.getInstanceOrThrowError();
+            let q = Querier.getInstanceOrThrowError("");
             await q.sendGetRequest("/", {});
             throw new Error();
         } catch (err) {
-            if (
-                !ST.Error.isErrorFromAuth(err) ||
-                err.errType !== ST.Error.GENERAL_ERROR ||
-                err.err.message !== "No SuperTokens core available to query"
-            ) {
+            if (err.type !== ST.Error.GENERAL_ERROR || err.message !== "No SuperTokens core available to query") {
                 throw err;
             }
         }
@@ -51,8 +64,18 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await startST();
         await startST("localhost", 8081);
         await startST("localhost", 8082);
-        ST.init({ hosts: "http://localhost:8080;http://localhost:8081/;http://localhost:8082" });
-        let q = Querier.getInstanceOrThrowError();
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080;http://localhost:8081/;http://localhost:8082",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+        let q = Querier.getInstanceOrThrowError("");
         assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");
         assert.equal(await q.sendDeleteRequest("/hello", {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
@@ -68,8 +91,18 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     it("three cores, one dead and round robin", async function () {
         await startST();
         await startST("localhost", 8082);
-        ST.init({ hosts: "http://localhost:8080;http://localhost:8081/;http://localhost:8082" });
-        let q = Querier.getInstanceOrThrowError();
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080;http://localhost:8081/;http://localhost:8082",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+        let q = Querier.getInstanceOrThrowError("");
         assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");
         assert.equal(await q.sendPostRequest("/hello", {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();

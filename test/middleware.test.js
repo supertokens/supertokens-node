@@ -13,13 +13,19 @@
  * under the License.
  */
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("./utils");
-let ST = require("../lib/build/session");
-let STExpress = require("../index");
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
 let { Querier } = require("../lib/build/querier");
 let { ProcessState } = require("../lib/build/processState");
+let SuperTokens = require("../");
+let Session = require("../recipe/session");
+
+/**
+ *
+ * TODO: check that disabling default API actually disables it (for session)
+ * TODO: check that disabling default API actually disables it (for emailpassword)
+ */
 
 describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     beforeEach(async function () {
@@ -35,69 +41,70 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
     it("test session verify middleware", async function () {
         await startST();
-        STExpress.init({
-            hosts: "http://localhost:8080",
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    errorHandlers: {
+                        onTryRefreshToken: (err, req, res, next) => {
+                            res.statusCode = 401;
+                            return res.json({
+                                message: "try refresh token",
+                            });
+                        },
+                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                            res.statusCode = 403;
+                            return res.json({
+                                message: "token theft detected",
+                            });
+                        },
+                    },
+                }),
+            ],
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
-        app.get("/user/id", STExpress.middleware(), async (req, res) => {
+        app.get("/user/id", Session.verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handle", STExpress.middleware(true), async (req, res) => {
+        app.get("/user/handle", Session.verifySession(true), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
-        app.post("/auth/session/refresh", STExpress.middleware(), async (req, res, next) => {
+        app.post("/auth/session/refresh", Session.verifySession(), async (req, res, next) => {
             res.status(200).json({ message: true });
         });
 
-        app.post("/logout", STExpress.middleware(), async (req, res) => {
+        app.post("/logout", Session.verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(
-            STExpress.errorHandler({
-                onTryRefreshToken: (err, req, res, next) => {
-                    res.statusCode = 401;
-                    return res.json({
-                        message: "try refresh token",
-                    });
-                },
-                onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
-                    res.statusCode = 403;
-                    return res.json({
-                        message: "token theft detected",
-                    });
-                },
-            })
-        );
+        app.use(SuperTokens.errorHandler());
 
-        app.use((err, req, res, next) => {
-            if (ST.Error.isErrorFromAuth(err)) {
-                res.statusCode = 400;
-                return res.json({
-                    message: "general error",
-                });
-            } else {
-                res.statusCode = 500;
-                return res.json({
-                    message: "error 500",
-                });
-            }
-        });
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -110,7 +117,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r1 === "testing-userId");
@@ -124,7 +135,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         // not passing anit csrf even if requried
@@ -136,7 +151,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 ])
                 .expect(401)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r2 === "try refresh token");
@@ -149,7 +168,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r3 === "unauthorised");
@@ -162,7 +185,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -177,7 +204,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -190,7 +221,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         let r4 = await new Promise((resolve) =>
@@ -200,7 +235,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r4 === "token theft detected");
@@ -215,7 +254,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -237,7 +280,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 ])
                 .expect(401)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r5 === "try refresh token");
@@ -245,69 +292,70 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
     it("test session verify middleware with auto refresh", async function () {
         await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    errorHandlers: {
+                        onTryRefreshToken: (err, req, res, next) => {
+                            res.statusCode = 401;
+                            return res.json({
+                                message: "try refresh token",
+                            });
+                        },
+                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                            res.statusCode = 403;
+                            return res.json({
+                                message: "token theft detected",
+                            });
+                        },
+                    },
+                }),
+            ],
+        });
+
         const app = express();
 
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-            })
-        );
+        app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
-        app.get("/user/id", STExpress.middleware(), async (req, res) => {
+        app.get("/user/id", Session.verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handle", STExpress.middleware(true), async (req, res) => {
+        app.get("/user/handle", Session.verifySession(true), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
-        app.post("/logout", STExpress.middleware(), async (req, res) => {
+        app.post("/logout", Session.verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(
-            STExpress.errorHandler({
-                onTryRefreshToken: (err, req, res, next) => {
-                    res.statusCode = 401;
-                    return res.json({
-                        message: "try refresh token",
-                    });
-                },
-                onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
-                    res.statusCode = 403;
-                    return res.json({
-                        message: "token theft detected",
-                    });
-                },
-            })
-        );
+        app.use(SuperTokens.errorHandler());
 
-        app.use((err, req, res, next) => {
-            if (ST.Error.isErrorFromAuth(err)) {
-                res.statusCode = 400;
-                return res.json({
-                    message: "general error",
-                });
-            } else {
-                res.statusCode = 500;
-                return res.json({
-                    message: "error 500",
-                });
-            }
-        });
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -320,7 +368,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r1 === "testing-userId");
@@ -334,7 +386,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         // not passing anit csrf even if requried
@@ -346,7 +402,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 ])
                 .expect(401)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r2 === "try refresh token");
@@ -359,7 +419,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r3 === "unauthorised");
@@ -372,7 +436,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -387,7 +455,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -400,7 +472,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         let r4 = await new Promise((resolve) =>
@@ -410,7 +486,15 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res.body.message);
+                        }
+                    }
                 })
         );
         assert(r4 === "token theft detected");
@@ -425,7 +509,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -447,7 +535,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 ])
                 .expect(401)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r5 === "try refresh token");
@@ -455,67 +547,63 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
     it("test session verify middleware with driver config", async function () {
         await startST();
-        STExpress.init({
-            hosts: "http://localhost:8080",
-            accessTokenPath: "/custom",
-            apiBasePath: "/custom",
-            cookieDomain: "test-driver",
-            cookieSecure: true,
-            cookieSameSite: "strict",
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiBasePath: "/custom",
+            },
+            recipeList: [
+                Session.init({
+                    cookieDomain: "test-driver",
+                    cookieSecure: true,
+                    cookieSameSite: "strict",
+                    errorHandlers: {
+                        onTryRefreshToken: (err, req, res, next) => {
+                            res.statusCode = 401;
+                            return res.json({
+                                message: "try refresh token",
+                            });
+                        },
+                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                            res.statusCode = 403;
+                            return res.json({
+                                message: "token theft detected",
+                            });
+                        },
+                    },
+                }),
+            ],
         });
+
         const app = express();
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
-        app.get("/custom/user/id", STExpress.middleware(), async (req, res) => {
+        app.get("/custom/user/id", Session.verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handle", STExpress.middleware(true), async (req, res) => {
+        app.get("/custom/user/handle", Session.verifySession(true), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
-        app.post("/custom/session/refresh", STExpress.middleware(), async (req, res, next) => {
+        app.post("/custom/session/refresh", Session.verifySession(), async (req, res, next) => {
             res.status(200).json({ message: true });
         });
 
-        app.post("/custom/logout", STExpress.middleware(), async (req, res) => {
+        app.post("/custom/logout", Session.verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(
-            STExpress.errorHandler({
-                onTryRefreshToken: (err, req, res, next) => {
-                    res.statusCode = 401;
-                    return res.json({
-                        message: "try refresh token",
-                    });
-                },
-                onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
-                    res.statusCode = 403;
-                    return res.json({
-                        message: "token theft detected",
-                    });
-                },
-            })
-        );
-
-        app.use((err, req, res, next) => {
-            if (ST.Error.isErrorFromAuth(err)) {
-                res.statusCode = 400;
-                return res.json({
-                    message: "general error",
-                });
-            } else {
-                res.statusCode = 500;
-                return res.json({
-                    message: "error 500",
-                });
-            }
-        });
+        app.use(SuperTokens.errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -523,7 +611,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -537,7 +629,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
 
@@ -552,7 +648,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
 
@@ -565,7 +665,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 ])
                 .expect(401)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r2 === "try refresh token");
@@ -578,7 +682,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r3 === "unauthorised");
@@ -591,7 +699,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -606,7 +718,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -620,7 +736,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
 
@@ -631,7 +751,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r4 === "token theft detected");
@@ -646,7 +770,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -668,7 +796,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 ])
                 .expect(401)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r5 === "try refresh token");
@@ -676,67 +808,63 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
     it("test session verify middleware with driver config with auto refresh", async function () {
         await startST();
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiBasePath: "/custom",
+            },
+            recipeList: [
+                Session.init({
+                    cookieDomain: "test-driver",
+                    cookieSecure: true,
+                    cookieSameSite: "strict",
+                    errorHandlers: {
+                        onTryRefreshToken: (err, req, res, next) => {
+                            res.statusCode = 401;
+                            return res.json({
+                                message: "try refresh token",
+                            });
+                        },
+                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                            res.statusCode = 403;
+                            return res.json({
+                                message: "token theft detected",
+                            });
+                        },
+                    },
+                }),
+            ],
+        });
+
         const app = express();
 
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                accessTokenPath: "/custom",
-                apiBasePath: "/custom",
-                cookieDomain: "test-driver",
-                cookieSecure: true,
-                cookieSameSite: "strict",
-            })
-        );
+        app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "testing-userId", {}, {});
+            await Session.createNewSession(res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
-        app.get("/custom/user/id", STExpress.middleware(), async (req, res) => {
+        app.get("/custom/user/id", Session.verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handle", STExpress.middleware(true), async (req, res) => {
+        app.get("/custom/user/handle", Session.verifySession(true), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
-        app.post("/custom/logout", STExpress.middleware(), async (req, res) => {
+        app.post("/custom/logout", Session.verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(
-            STExpress.errorHandler({
-                onTryRefreshToken: (err, req, res, next) => {
-                    res.statusCode = 401;
-                    return res.json({
-                        message: "try refresh token",
-                    });
-                },
-                onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
-                    res.statusCode = 403;
-                    return res.json({
-                        message: "token theft detected",
-                    });
-                },
-            })
-        );
-
-        app.use((err, req, res, next) => {
-            if (ST.Error.isErrorFromAuth(err)) {
-                res.statusCode = 400;
-                return res.json({
-                    message: "general error",
-                });
-            } else {
-                res.statusCode = 500;
-                return res.json({
-                    message: "error 500",
-                });
-            }
-        });
+        app.use(SuperTokens.errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -744,7 +872,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -758,7 +890,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
 
@@ -773,7 +909,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
 
@@ -786,7 +926,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 ])
                 .expect(401)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r2 === "try refresh token");
@@ -799,7 +943,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r3 === "unauthorised");
@@ -812,7 +960,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -827,7 +979,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -841,7 +997,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
 
@@ -852,7 +1012,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r4 === "token theft detected");
@@ -867,7 +1031,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -889,7 +1057,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 ])
                 .expect(401)
                 .end((err, res) => {
-                    resolve(res.body.message);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
                 })
         );
         assert(r5 === "try refresh token");

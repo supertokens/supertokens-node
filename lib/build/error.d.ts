@@ -1,9 +1,20 @@
-import { TypeAuthError } from "./types";
-export declare function generateError(errType: number, err: any): any;
-export declare class AuthError {
-    static GENERAL_ERROR: number;
-    static UNAUTHORISED: number;
-    static TRY_REFRESH_TOKEN: number;
-    static TOKEN_THEFT_DETECTED: number;
-    static isErrorFromAuth: (err: any) => err is TypeAuthError;
+export default class SuperTokensError {
+    private static errMagic;
+    static GENERAL_ERROR: "GENERAL_ERROR";
+    type: string;
+    message: string;
+    payload: any;
+    rId: string;
+    private errMagic;
+    constructor(options: {
+        rId: string;
+        message: string;
+        payload?: any;
+        type: string;
+    } | {
+        rId: string;
+        payload: Error;
+        type: "GENERAL_ERROR";
+    });
+    static isErrorFromSuperTokens(obj: any): obj is SuperTokensError;
 }

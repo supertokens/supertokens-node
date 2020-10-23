@@ -12,89 +12,42 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { Request, Response, NextFunction } from "express";
-import { Session } from "./express";
 
-export type CreateOrRefreshAPIResponse = {
-    session: {
-        handle: string;
-        userId: string;
-        userDataInJWT: any;
-    };
-    accessToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
-    refreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
-    idRefreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
-    antiCsrfToken: string | undefined;
+import RecipeModule from "./recipeModule";
+import { Querier } from "./querier";
+
+export type AppInfo = {
+    appName: string;
+    websiteDomain: string;
+    apiDomain: string;
+    apiBasePath?: string;
+    websiteBasePath?: string;
 };
 
-export type TypeAuthError = {
-    errType: number;
-    err: any;
+export type NormalisedAppinfo = {
+    appName: string;
+    websiteDomain: string;
+    apiDomain: string;
+    apiBasePath: string;
+    websiteBasePath: string;
 };
 
 export type TypeInput = {
-    hosts?: string;
-    accessTokenPath?: string;
-    apiBasePath?: string;
-    cookieDomain?: string;
-    cookieSameSite?: "strict" | "lax" | "none";
-    cookieSecure?: boolean;
-    apiKey?: string;
-    sessionExpiredStatusCode?: number;
+    supertokens: {
+        connectionURI: string;
+        apiKey: string;
+    };
+    appInfo: AppInfo;
+    recipeList: RecipeListFunction[];
 };
 
-export type TypeNormalisedInput = {
-    hosts: string;
-    accessTokenPath: string;
-    apiBasePath: string;
-    cookieDomain: string | undefined;
-    cookieSameSite: "strict" | "lax" | "none";
-    cookieSecure: boolean;
-    apiKey?: string;
-    sessionExpiredStatusCode: number;
+export type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
+
+export type APIHandled = {
+    pathWithoutApiBasePath: string;
+    method: HTTPMethod;
+    id: string;
+    disabled: boolean;
 };
 
-export interface SessionRequest extends Request {
-    session: Session;
-}
-
-export interface ErrorHandlerMiddleware {
-    (err: any, request: Request, response: Response, next: NextFunction): void;
-}
-
-export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction): void;
-}
-
-export interface SuperTokensErrorMiddlewareOptions {
-    onUnauthorised?: ErrorHandlerMiddleware;
-    onTryRefreshToken?: ErrorHandlerMiddleware;
-    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
-}
-
-export type auth0RequestBody =
-    | {
-          action: "login";
-          code: string;
-          redirect_uri: string;
-      }
-    | {
-          action: "refresh";
-          code?: string;
-          redirect_uri?: string;
-      }
-    | {
-          action: "logout";
-      };
+export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";

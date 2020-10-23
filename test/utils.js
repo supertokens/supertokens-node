@@ -13,13 +13,12 @@
  * under the License.
  */
 const { exec } = require("child_process");
-let { HandshakeInfo } = require("../lib/build/handshakeInfo");
-let { DeviceInfo } = require("../lib/build/deviceInfo");
-let { Querier } = require("../lib/build/querier");
-let { CookieConfig } = require("../lib/build/cookieAndHeaders");
-let { SessionConfig } = require("../lib/build/session");
 const nock = require("nock");
 let fs = require("fs");
+let SuperTokens = require("../lib/build/supertokens").default;
+let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+let FaunaDBSessionRecipe = require("../lib/build/recipe/session/faunadb/sessionRecipe").default;
+let { ProcessState } = require("../lib/build/processState");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -164,11 +163,10 @@ module.exports.stopST = async function (pid) {
 };
 
 module.exports.resetAll = function () {
-    HandshakeInfo.reset();
-    DeviceInfo.reset();
-    Querier.reset();
-    CookieConfig.reset();
-    SessionConfig.reset();
+    SuperTokens.reset();
+    SessionRecipe.reset();
+    FaunaDBSessionRecipe.reset();
+    ProcessState.getInstance().reset();
 };
 
 module.exports.killAllST = async function () {

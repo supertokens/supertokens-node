@@ -13,6 +13,7 @@
  * under the License.
  */
 let SuperTokens = require("../../");
+let Session = require("../../recipe/session");
 let express = require("express");
 let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
@@ -23,11 +24,34 @@ let noOfTimesGetSessionCalledDuringTest = 0;
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
 
+SuperTokens.init({
+    appInfo: {
+        appName: "SuperTokens",
+        apiDomain: "0.0.0.0:" + (process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT),
+        websiteDomain: "http://localhost.org:8080",
+    },
+    supertokens: {
+        connectionURI: "http://localhost:9000",
+    },
+    recipeList: [
+        Session.init({
+            errorHandlers: {
+                onTryRefreshToken: (err, req, res) => {
+                    res.status(401).send();
+                },
+                onUnauthorised: (err, req, res) => {
+                    res.status(401).send();
+                },
+            },
+        }),
+    ],
+});
+
 let app = express();
 app.use(
     cors({
         origin: "http://localhost.org:8080",
-        allowedHeaders: ["content-type", ...SuperTokens.getCORSAllowedHeaders()],
+        allowedHeaders: ["content-type", ...SuperTokens.getAllCORSHeaders()],
         methods: ["GET", "PUT", "POST", "DELETE"],
         credentials: true,
     })
@@ -36,11 +60,9 @@ app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
 
-SuperTokens.init({ hosts: "http://localhost:9000", cookieSameSite: "lax" });
-
-app.post("/login", async (req, res) => {
+app.post("/login", async (req, res, next) => {
     let userId = req.body.userId;
-    let session = await SuperTokens.createNewSession(res, userId);
+    let session = await Session.createNewSession(res, userId);
     res.send(session.userId);
 });
 
@@ -62,16 +84,16 @@ app.post("/multipleInterceptors", async (req, res) => {
     );
 });
 
-app.get("/", SuperTokens.middleware(true), async (req, res) => {
+app.get("/", Session.verifySession(true), async (req, res) => {
     noOfTimesGetSessionCalledDuringTest += 1;
     res.send(req.session.getUserId());
 });
 
-app.get("/update-jwt", SuperTokens.middleware(true), async (req, res) => {
+app.get("/update-jwt", Session.verifySession(true), async (req, res) => {
     res.json(req.session.getJWTPayload());
 });
 
-app.post("/update-jwt", SuperTokens.middleware(true), async (req, res) => {
+app.post("/update-jwt", Session.verifySession(true), async (req, res) => {
     await req.session.updateJWTPayload(req.body);
     res.json(req.session.getJWTPayload());
 });
@@ -84,18 +106,18 @@ app.use("/testing", async (req, res) => {
     res.send("success");
 });
 
-app.post("/logout", SuperTokens.middleware(), async (req, res) => {
+app.post("/logout", Session.verifySession(), async (req, res) => {
     await req.session.revokeSession();
     res.send("success");
 });
 
-app.post("/revokeAll", SuperTokens.middleware(), async (req, res) => {
+app.post("/revokeAll", Session.verifySession(), async (req, res) => {
     let userId = req.session.getUserId();
     await SuperTokens.revokeAllSessionsForUser(userId);
     res.send("success");
 });
 
-app.post("/auth/session/refresh", SuperTokens.middleware(), async (req, res) => {
+app.post("/auth/session/refresh", Session.verifySession(), async (req, res) => {
     refreshCalled = true;
     noOfTimesRefreshCalledDuringTest += 1;
     res.send("refresh success");
@@ -125,12 +147,6 @@ app.get("/testHeader", async (req, res) => {
     res.send(JSON.stringify(data));
 });
 
-app.get("/checkDeviceInfo", (req, res) => {
-    let sdkName = req.headers["supertokens-sdk-name"];
-    let sdkVersion = req.headers["supertokens-sdk-version"];
-    res.send(sdkName === "website" && typeof sdkVersion === "string" ? true : false);
-});
-
 app.post("/checkAllowCredentials", (req, res) => {
     res.send(req.headers["allow-credentials"] !== undefined ? true : false);
 });
@@ -146,16 +162,7 @@ app.use("*", async (req, res, next) => {
     res.status(404).send();
 });
 
-app.use(
-    SuperTokens.errorHandler({
-        onTryRefreshToken: (err, req, res) => {
-            res.status(401).send();
-        },
-        onUnauthorised: (err, req, res) => {
-            res.status(401).send();
-        },
-    })
-);
+app.use(SuperTokens.errorHandler());
 
 app.use(async (err, req, res, next) => {
     res.send(500).send(err);

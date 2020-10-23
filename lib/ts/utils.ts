@@ -1,16 +1,10 @@
-import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
-import {
-    setFrontTokenInHeaders,
-    attachAccessTokenToCookie,
-    attachRefreshTokenToCookie,
-    setIdRefreshTokenInHeaderAndCookie,
-    setAntiCsrfTokenInHeaders,
-} from "./cookieAndHeaders";
-import * as express from "express";
-import { AuthError, generateError } from "./error";
 import { URL } from "url";
+import STError from "./error";
+import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
+import * as express from "express";
+import { HEADER_RID } from "./constants";
 
-export function normaliseURLPathOrThrowError(input: string): string {
+export function normaliseURLPathOrThrowError(rId: string, input: string): string {
     input = input.trim().toLowerCase();
 
     try {
@@ -36,7 +30,7 @@ export function normaliseURLPathOrThrowError(input: string): string {
         !input.startsWith("https://")
     ) {
         input = "http://" + input;
-        return normaliseURLPathOrThrowError(input);
+        return normaliseURLPathOrThrowError(rId, input);
     }
 
     if (input.charAt(0) !== "/") {
@@ -48,13 +42,17 @@ export function normaliseURLPathOrThrowError(input: string): string {
         // test that we can convert this to prevent an infinite loop
         new URL("http://example.com" + input);
 
-        return normaliseURLPathOrThrowError("http://example.com" + input);
+        return normaliseURLPathOrThrowError(rId, "http://example.com" + input);
     } catch (err) {
-        throw generateError(AuthError.GENERAL_ERROR, new Error("Please provide a valid URL path"));
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            rId,
+            payload: new Error("Please provide a valid URL path"),
+        });
     }
 }
 
-export function normaliseURLDomainOrThrowError(input: string): string {
+export function normaliseURLDomainOrThrowError(rId: string, input: string): string {
     function isAnIpAddress(ipaddress: string) {
         return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
             ipaddress
@@ -99,104 +97,15 @@ export function normaliseURLDomainOrThrowError(input: string): string {
         // at this point, it should be a valid URL. So we test that before doing a recursive call
         try {
             new URL(input);
-            return normaliseURLDomainOrThrowError(input);
+            return normaliseURLDomainOrThrowError(rId, input);
         } catch (err) {}
     }
 
-    throw generateError(AuthError.GENERAL_ERROR, new Error("Please provide a valid domain name"));
-}
-
-export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
-    sessionScope = sessionScope.trim().toLowerCase();
-
-    // first we convert it to a URL so that we can use the URL class
-    if (sessionScope.startsWith(".")) {
-        sessionScope = sessionScope.substr(1);
-    }
-
-    if (!sessionScope.startsWith("http://") && !sessionScope.startsWith("https://")) {
-        sessionScope = "http://" + sessionScope;
-    }
-
-    try {
-        let urlObj = new URL(sessionScope);
-        sessionScope = urlObj.hostname;
-
-        // add a leading dot
-        if (!sessionScope.startsWith(".")) {
-            sessionScope = "." + sessionScope;
-        }
-
-        return sessionScope;
-    } catch (err) {
-        throw generateError(AuthError.GENERAL_ERROR, new Error("Please provide a valid sessionScope"));
-    }
-}
-
-export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
-    let hosts = config.hosts === undefined ? normaliseURLDomainOrThrowError("http://localhost:3567") : config.hosts;
-
-    let accessTokenPath =
-        config.accessTokenPath === undefined ? "" : normaliseURLPathOrThrowError(config.accessTokenPath);
-    if (accessTokenPath === "") {
-        // cookie path being an empty string doesn't work.
-        accessTokenPath = "/";
-    }
-
-    let apiBasePath =
-        config.apiBasePath === undefined
-            ? normaliseURLPathOrThrowError("/auth")
-            : normaliseURLPathOrThrowError(config.apiBasePath);
-
-    let cookieDomain =
-        config.cookieDomain === undefined ? undefined : normaliseSessionScopeOrThrowError(config.cookieDomain);
-
-    let cookieSameSite =
-        config.cookieSameSite === undefined ? "lax" : normaliseSameSiteOrThrowError(config.cookieSameSite);
-
-    let cookieSecure = config.cookieSecure === undefined ? false : config.cookieSecure;
-
-    let sessionExpiredStatusCode =
-        config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
-
-    return {
-        hosts,
-        accessTokenPath,
-        apiBasePath,
-        cookieDomain,
-        cookieSameSite,
-        cookieSecure,
-        apiKey: config.apiKey,
-        sessionExpiredStatusCode,
-    };
-}
-
-export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none" {
-    sameSite = sameSite.trim();
-    sameSite = sameSite.toLocaleLowerCase();
-    if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
-        throw generateError(
-            AuthError.GENERAL_ERROR,
-            new Error('cookie same site must be one of "strict", "lax", or "none"')
-        );
-    }
-    return sameSite;
-}
-
-export function attachCreateOrRefreshSessionResponseToExpressRes(
-    res: express.Response,
-    response: CreateOrRefreshAPIResponse
-) {
-    let accessToken = response.accessToken;
-    let refreshToken = response.refreshToken;
-    let idRefreshToken = response.idRefreshToken;
-    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
-    attachAccessTokenToCookie(res, accessToken.token, accessToken.expiry);
-    attachRefreshTokenToCookie(res, refreshToken.token, refreshToken.expiry);
-    setIdRefreshTokenInHeaderAndCookie(res, idRefreshToken.token, idRefreshToken.expiry);
-    if (response.antiCsrfToken !== undefined) {
-        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
-    }
+    throw new STError({
+        type: STError.GENERAL_ERROR,
+        rId,
+        payload: new Error("Please provide a valid domain name"),
+    });
 }
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
@@ -228,4 +137,69 @@ export function maxVersion(version1: string, version2: string): string {
         return version1;
     }
     return version2;
+}
+
+export function normaliseInputAppInfoOrThrowError(rId: string, appInfo: AppInfo): NormalisedAppinfo {
+    if (appInfo === undefined) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Please provide the appInfo object when calling supertokens.init"),
+            rId: "",
+        });
+    }
+    if (appInfo.apiDomain === undefined) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Please provide your apiDomain inside the appInfo object when calling supertokens.init"),
+            rId: "",
+        });
+    }
+    if (appInfo.appName === undefined) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Please provide your appNmae inside the appInfo object when calling supertokens.init"),
+            rId: "",
+        });
+    }
+    if (appInfo.websiteDomain === undefined) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error(
+                "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
+            ),
+            rId: "",
+        });
+    }
+    return {
+        appName: appInfo.appName,
+        websiteDomain: normaliseURLDomainOrThrowError(rId, appInfo.websiteDomain),
+        apiDomain: normaliseURLDomainOrThrowError(rId, appInfo.apiDomain),
+        apiBasePath:
+            appInfo.apiBasePath === undefined
+                ? normaliseURLPathOrThrowError(rId, "/auth")
+                : normaliseURLPathOrThrowError(rId, appInfo.apiBasePath),
+        websiteBasePath:
+            appInfo.websiteBasePath === undefined
+                ? normaliseURLPathOrThrowError(rId, "/auth")
+                : normaliseURLPathOrThrowError(rId, appInfo.websiteBasePath),
+    };
+}
+
+export function getRIDFromRequest(req: express.Request): string | undefined {
+    return getHeader(req, HEADER_RID);
+}
+
+export function normaliseHttpMethod(method: string): HTTPMethod {
+    return method.toLowerCase() as HTTPMethod;
+}
+
+export function getHeader(req: express.Request, key: string): string | undefined {
+    let value = req.headers[key];
+    if (value === undefined) {
+        return undefined;
+    }
+    if (Array.isArray(value)) {
+        return value[0];
+    }
+    return value;
 }

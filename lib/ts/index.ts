@@ -13,12 +13,34 @@
  * under the License.
  */
 
-export * from "./express";
+import SuperTokens from "./supertokens";
+import SuperTokensError from "./error";
 
-export { AuthError as Error } from "./error";
+// For Express
+export default class SuperTokensWrapper {
+    static init = SuperTokens.init;
 
-export { middleware, errorHandler } from "./middleware";
+    static Error = SuperTokensError;
 
-import * as Type from "./types";
+    static middleware() {
+        return SuperTokens.getInstanceOrThrowError().middleware();
+    }
 
-export { Type };
+    static errorHandler() {
+        return SuperTokens.getInstanceOrThrowError().errorHandler();
+    }
+
+    static getAllCORSHeaders() {
+        return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
+    }
+}
+
+export let init = SuperTokens.init;
+
+export let middleware = SuperTokensWrapper.middleware;
+
+export let errorHandler = SuperTokensWrapper.errorHandler;
+
+export let getAllCORSHeaders = SuperTokensWrapper.getAllCORSHeaders;
+
+export let Error = SuperTokensWrapper.Error;

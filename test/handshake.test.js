@@ -13,12 +13,15 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
-let ST = require("../lib/build/session");
-let { HandshakeInfo } = require("../lib/build/handshakeInfo");
+let ST = require("../");
+let Session = require("../recipe/session");
+let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
-let { SessionConfig } = require("../lib/build/session");
-let { CookieConfig } = require("../lib/build/cookieAndHeaders");
+
+/**
+ * TODO: test that once the info is loaded, it doesn't query again
+ */
 
 describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     beforeEach(async function () {
@@ -33,16 +36,22 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     });
 
     it("core not available", async function () {
-        ST.init({ hosts: "http://localhost:8080" });
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
         try {
-            await ST.createNewSession("", {}, {});
+            await Session.createNewSession("", {}, {});
             throw new Error("should not have come here");
         } catch (err) {
-            if (
-                !ST.Error.isErrorFromAuth(err) ||
-                err.errType !== ST.Error.GENERAL_ERROR ||
-                err.err.message !== "No SuperTokens core available to query"
-            ) {
+            if (err.type !== Session.Error.GENERAL_ERROR || err.message !== "No SuperTokens core available to query") {
                 throw err;
             }
         }
@@ -50,31 +59,25 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
 
     it("successful handshake and update JWT", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
-        let info = await HandshakeInfo.getInstance();
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+        let info = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
         assert.equal(typeof info.jwtSigningPublicKey, "string");
         assert.equal(info.enableAntiCsrf, true);
         assert.equal(info.accessTokenBlacklistingEnabled, false);
         assert.equal(typeof info.jwtSigningPublicKeyExpiryTime, "number");
-        info.updateJwtSigningPublicKeyInfo("hello", 100);
-        let info2 = await HandshakeInfo.getInstance();
+        SessionRecipe.getInstanceOrThrowError().updateJwtSigningPublicKeyInfo("hello", 100);
+        let info2 = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
         assert.equal(info2.jwtSigningPublicKey, "hello");
         assert.equal(info2.jwtSigningPublicKeyExpiryTime, 100);
-    });
-
-    it("checking for default cookie config", async function () {
-        await startST();
-        ST.init({ hosts: "http://localhost:8080" });
-        assert.equal(CookieConfig.getInstanceOrThrowError().accessTokenPath, "/");
-        assert.equal(CookieConfig.getInstanceOrThrowError().cookieDomain, undefined);
-        assert.equal(CookieConfig.getInstanceOrThrowError().cookieSameSite, "lax");
-        assert.equal(CookieConfig.getInstanceOrThrowError().cookieSecure, false);
-        assert.equal(CookieConfig.getInstanceOrThrowError().refreshTokenPath, "/auth/session/refresh");
-    });
-
-    it("checking for default session expired status code", async function () {
-        await startST();
-        ST.init({ hosts: "http://localhost:8080" });
-        assert.equal(SessionConfig.getInstanceOrThrowError().sessionExpiredStatusCode, 401);
     });
 });

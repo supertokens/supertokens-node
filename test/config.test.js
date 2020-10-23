@@ -13,18 +13,22 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("./utils");
-let ST = require("../lib/build/session");
-let STExpress = require("../index");
+let STExpress = require("../");
+let Session = require("../recipe/session");
+let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
-let { CookieConfig } = require("../lib/build/cookieAndHeaders");
-let {
-    normaliseURLPathOrThrowError,
-    normaliseSessionScopeOrThrowError,
-    normaliseURLDomainOrThrowError,
-} = require("../lib/build/utils");
+let { normaliseURLPathOrThrowError, normaliseURLDomainOrThrowError } = require("../lib/build/utils");
+let { normaliseSessionScopeOrThrowError } = require("../lib/build/recipe/session/utils");
 const { Querier } = require("../lib/build/querier");
-const { SessionConfig } = require("../lib/build/session");
+
+/**
+ * TODO: test various inputs for appInfo
+ * TODO: test using zero, one and two recipe modules
+ * TODO: test config for session module
+ * TODO: test config for faunadb session module
+ * TODO: test config for emailpassword module
+ */
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
@@ -43,33 +47,66 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                cookieSameSite: " Lax ",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        cookieSameSite: " Lax ",
+                    }),
+                ],
             });
 
-            assert(CookieConfig.getInstanceOrThrowError().cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
 
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                cookieSameSite: "None ",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        cookieSameSite: "None ",
+                    }),
+                ],
             });
 
-            assert(CookieConfig.getInstanceOrThrowError().cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
 
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                cookieSameSite: " STRICT",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        cookieSameSite: " STRICT ",
+                    }),
+                ],
             });
 
-            assert(CookieConfig.getInstanceOrThrowError().cookieSameSite === "strict");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "strict");
 
             resetAll();
         }
@@ -77,14 +114,24 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             try {
                 STExpress.init({
-                    hosts: "http://localhost:8080",
-                    cookieSameSite: "random",
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        Session.init({
+                            cookieSameSite: "random ",
+                        }),
+                    ],
                 });
             } catch (err) {
                 if (
-                    !ST.Error.isErrorFromAuth(err) ||
-                    err.errType !== ST.Error.GENERAL_ERROR ||
-                    err.err.message !== 'cookie same site must be one of "strict", "lax", or "none"'
+                    err.type !== STExpress.Error.GENERAL_ERROR ||
+                    err.message !== 'cookie same site must be one of "strict", "lax", or "none"'
                 ) {
                     throw error;
                 }
@@ -96,14 +143,24 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         {
             try {
                 STExpress.init({
-                    hosts: "http://localhost:8080",
-                    cookieSameSite: " ",
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        Session.init({
+                            cookieSameSite: " ",
+                        }),
+                    ],
                 });
             } catch (err) {
                 if (
-                    !ST.Error.isErrorFromAuth(err) ||
-                    err.errType !== ST.Error.GENERAL_ERROR ||
-                    err.err.message !== 'cookie same site must be one of "strict", "lax", or "none"'
+                    err.type !== STExpress.Error.GENERAL_ERROR ||
+                    err.message !== 'cookie same site must be one of "strict", "lax", or "none"'
                 ) {
                     throw error;
                 }
@@ -114,150 +171,195 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                cookieSameSite: "lax",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        cookieSameSite: "lax",
+                    }),
+                ],
             });
 
-            assert(CookieConfig.getInstanceOrThrowError().cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
 
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                cookieSameSite: "none",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        cookieSameSite: "none",
+                    }),
+                ],
             });
 
-            assert(CookieConfig.getInstanceOrThrowError().cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
 
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                cookieSameSite: "strict",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        cookieSameSite: "strict",
+                    }),
+                ],
             });
 
-            assert(CookieConfig.getInstanceOrThrowError().cookieSameSite === "strict");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "strict");
 
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
             });
 
-            assert(CookieConfig.getInstanceOrThrowError().cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
 
             resetAll();
         }
     });
 
     it("testing sessionScope normalisation", async function () {
-        assert(normaliseSessionScopeOrThrowError("api.example.com") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError("http://api.example.com") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError("https://api.example.com") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError("http://api.example.com?hello=1") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError("http://api.example.com/hello") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError("http://api.example.com/") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError("http://api.example.com:8080") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError("http://api.example.com#random2") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError("api.example.com/") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError("api.example.com#random") === ".api.example.com");
-        assert(normaliseSessionScopeOrThrowError(".example.com") === ".example.com");
-        assert(normaliseSessionScopeOrThrowError("api.example.com/?hello=1&bye=2") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "api.example.com") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "http://api.example.com") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "https://api.example.com") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "http://api.example.com?hello=1") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "http://api.example.com/hello") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "http://api.example.com/") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "http://api.example.com:8080") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "http://api.example.com#random2") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "api.example.com/") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", "api.example.com#random") === ".api.example.com");
+        assert(normaliseSessionScopeOrThrowError("", ".example.com") === ".example.com");
+        assert(normaliseSessionScopeOrThrowError("", "api.example.com/?hello=1&bye=2") === ".api.example.com");
         try {
-            normaliseSessionScopeOrThrowError("http://");
+            normaliseSessionScopeOrThrowError("", "http://");
             assert(false);
         } catch (err) {
-            assert(err.err.message === "Please provide a valid sessionScope");
+            assert(err.message === "Please provide a valid sessionScope" && err.rId === "");
         }
     });
 
     it("testing URL path normalisation", async function () {
-        assert(normaliseURLPathOrThrowError("http://api.example.com") === "");
-        assert(normaliseURLPathOrThrowError("https://api.example.com") === "");
-        assert(normaliseURLPathOrThrowError("http://api.example.com?hello=1") === "");
-        assert(normaliseURLPathOrThrowError("http://api.example.com/hello") === "/hello");
-        assert(normaliseURLPathOrThrowError("http://api.example.com/") === "");
-        assert(normaliseURLPathOrThrowError("http://api.example.com:8080") === "");
-        assert(normaliseURLPathOrThrowError("http://api.example.com#random2") === "");
-        assert(normaliseURLPathOrThrowError("api.example.com/") === "");
-        assert(normaliseURLPathOrThrowError("api.example.com#random") === "");
-        assert(normaliseURLPathOrThrowError(".example.com") === "");
-        assert(normaliseURLPathOrThrowError("api.example.com/?hello=1&bye=2") === "");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com") === "");
+        assert(normaliseURLPathOrThrowError("", "https://api.example.com") === "");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com?hello=1") === "");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com/hello") === "/hello");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com/") === "");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com:8080") === "");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com#random2") === "");
+        assert(normaliseURLPathOrThrowError("", "api.example.com/") === "");
+        assert(normaliseURLPathOrThrowError("", "api.example.com#random") === "");
+        assert(normaliseURLPathOrThrowError("", ".example.com") === "");
+        assert(normaliseURLPathOrThrowError("", "api.example.com/?hello=1&bye=2") === "");
 
-        assert(normaliseURLPathOrThrowError("http://api.example.com/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("http://1.2.3.4/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("1.2.3.4/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("https://api.example.com/one/two/") === "/one/two");
-        assert(normaliseURLPathOrThrowError("http://api.example.com/one/two?hello=1") === "/one/two");
-        assert(normaliseURLPathOrThrowError("http://api.example.com/hello/") === "/hello");
-        assert(normaliseURLPathOrThrowError("http://api.example.com/one/two/") === "/one/two");
-        assert(normaliseURLPathOrThrowError("http://api.example.com:8080/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("http://api.example.com/one/two#random2") === "/one/two");
-        assert(normaliseURLPathOrThrowError("api.example.com/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("api.example.com/one/two/#random") === "/one/two");
-        assert(normaliseURLPathOrThrowError(".example.com/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("api.example.com/one/two?hello=1&bye=2") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "http://1.2.3.4/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "1.2.3.4/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "https://api.example.com/one/two/") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com/one/two?hello=1") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com/hello/") === "/hello");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com/one/two/") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com:8080/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "http://api.example.com/one/two#random2") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "api.example.com/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "api.example.com/one/two/#random") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", ".example.com/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "api.example.com/one/two?hello=1&bye=2") === "/one/two");
 
-        assert(normaliseURLPathOrThrowError("/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("one/two/") === "/one/two");
-        assert(normaliseURLPathOrThrowError("/one") === "/one");
-        assert(normaliseURLPathOrThrowError("one") === "/one");
-        assert(normaliseURLPathOrThrowError("one/") === "/one");
-        assert(normaliseURLPathOrThrowError("/one/two/") === "/one/two");
-        assert(normaliseURLPathOrThrowError("/one/two?hello=1") === "/one/two");
-        assert(normaliseURLPathOrThrowError("one/two?hello=1") === "/one/two");
-        assert(normaliseURLPathOrThrowError("/one/two/#random") === "/one/two");
-        assert(normaliseURLPathOrThrowError("one/two#random") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "one/two/") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "/one") === "/one");
+        assert(normaliseURLPathOrThrowError("", "one") === "/one");
+        assert(normaliseURLPathOrThrowError("", "one/") === "/one");
+        assert(normaliseURLPathOrThrowError("", "/one/two/") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "/one/two?hello=1") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "one/two?hello=1") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "/one/two/#random") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "one/two#random") === "/one/two");
 
-        assert(normaliseURLPathOrThrowError("localhost:4000/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("127.0.0.1:4000/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("127.0.0.1/one/two") === "/one/two");
-        assert(normaliseURLPathOrThrowError("https://127.0.0.1:80/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "localhost:4000/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "127.0.0.1:4000/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "127.0.0.1/one/two") === "/one/two");
+        assert(normaliseURLPathOrThrowError("", "https://127.0.0.1:80/one/two") === "/one/two");
     });
 
     it("testing URL domain normalisation", async function () {
-        assert(normaliseURLDomainOrThrowError("http://api.example.com") === "http://api.example.com");
-        assert(normaliseURLDomainOrThrowError("https://api.example.com") === "https://api.example.com");
-        assert(normaliseURLDomainOrThrowError("http://api.example.com?hello=1") === "http://api.example.com");
-        assert(normaliseURLDomainOrThrowError("http://api.example.com/hello") === "http://api.example.com");
-        assert(normaliseURLDomainOrThrowError("http://api.example.com/") === "http://api.example.com");
-        assert(normaliseURLDomainOrThrowError("http://api.example.com:8080") === "http://api.example.com:8080");
-        assert(normaliseURLDomainOrThrowError("http://api.example.com#random2") === "http://api.example.com");
-        assert(normaliseURLDomainOrThrowError("api.example.com/") === "https://api.example.com");
-        assert(normaliseURLDomainOrThrowError("api.example.com") === "https://api.example.com");
-        assert(normaliseURLDomainOrThrowError("api.example.com#random") === "https://api.example.com");
-        assert(normaliseURLDomainOrThrowError(".example.com") === "https://example.com");
-        assert(normaliseURLDomainOrThrowError("api.example.com/?hello=1&bye=2") === "https://api.example.com");
-        assert(normaliseURLDomainOrThrowError("localhost") === "http://localhost");
-        assert(normaliseURLDomainOrThrowError("https://localhost") === "https://localhost");
+        assert(normaliseURLDomainOrThrowError("", "http://api.example.com") === "http://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "https://api.example.com") === "https://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "http://api.example.com?hello=1") === "http://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "http://api.example.com/hello") === "http://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "http://api.example.com/") === "http://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "http://api.example.com:8080") === "http://api.example.com:8080");
+        assert(normaliseURLDomainOrThrowError("", "http://api.example.com#random2") === "http://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "api.example.com/") === "https://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "api.example.com") === "https://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "api.example.com#random") === "https://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", ".example.com") === "https://example.com");
+        assert(normaliseURLDomainOrThrowError("", "api.example.com/?hello=1&bye=2") === "https://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "localhost") === "http://localhost");
+        assert(normaliseURLDomainOrThrowError("", "https://localhost") === "https://localhost");
 
-        assert(normaliseURLDomainOrThrowError("http://api.example.com/one/two") === "http://api.example.com");
-        assert(normaliseURLDomainOrThrowError("http://1.2.3.4/one/two") === "http://1.2.3.4");
-        assert(normaliseURLDomainOrThrowError("https://1.2.3.4/one/two") === "https://1.2.3.4");
-        assert(normaliseURLDomainOrThrowError("1.2.3.4/one/two") === "http://1.2.3.4");
-        assert(normaliseURLDomainOrThrowError("https://api.example.com/one/two/") === "https://api.example.com");
-        assert(normaliseURLDomainOrThrowError("http://api.example.com/one/two?hello=1") === "http://api.example.com");
-        assert(normaliseURLDomainOrThrowError("http://api.example.com/one/two#random2") === "http://api.example.com");
-        assert(normaliseURLDomainOrThrowError("api.example.com/one/two") === "https://api.example.com");
-        assert(normaliseURLDomainOrThrowError("api.example.com/one/two/#random") === "https://api.example.com");
-        assert(normaliseURLDomainOrThrowError(".example.com/one/two") === "https://example.com");
-        assert(normaliseURLDomainOrThrowError("localhost:4000") === "http://localhost:4000");
-        assert(normaliseURLDomainOrThrowError("127.0.0.1:4000") === "http://127.0.0.1:4000");
-        assert(normaliseURLDomainOrThrowError("127.0.0.1") === "http://127.0.0.1");
-        assert(normaliseURLDomainOrThrowError("https://127.0.0.1:80/") === "https://127.0.0.1:80");
+        assert(normaliseURLDomainOrThrowError("", "http://api.example.com/one/two") === "http://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "http://1.2.3.4/one/two") === "http://1.2.3.4");
+        assert(normaliseURLDomainOrThrowError("", "https://1.2.3.4/one/two") === "https://1.2.3.4");
+        assert(normaliseURLDomainOrThrowError("", "1.2.3.4/one/two") === "http://1.2.3.4");
+        assert(normaliseURLDomainOrThrowError("", "https://api.example.com/one/two/") === "https://api.example.com");
+        assert(
+            normaliseURLDomainOrThrowError("", "http://api.example.com/one/two?hello=1") === "http://api.example.com"
+        );
+        assert(
+            normaliseURLDomainOrThrowError("", "http://api.example.com/one/two#random2") === "http://api.example.com"
+        );
+        assert(normaliseURLDomainOrThrowError("", "api.example.com/one/two") === "https://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", "api.example.com/one/two/#random") === "https://api.example.com");
+        assert(normaliseURLDomainOrThrowError("", ".example.com/one/two") === "https://example.com");
+        assert(normaliseURLDomainOrThrowError("", "localhost:4000") === "http://localhost:4000");
+        assert(normaliseURLDomainOrThrowError("", "127.0.0.1:4000") === "http://127.0.0.1:4000");
+        assert(normaliseURLDomainOrThrowError("", "127.0.0.1") === "http://127.0.0.1");
+        assert(normaliseURLDomainOrThrowError("", "https://127.0.0.1:80/") === "https://127.0.0.1:80");
 
         try {
-            normaliseURLDomainOrThrowError("/one/two");
+            normaliseURLDomainOrThrowError("", "/one/two");
             assert(false);
         } catch (err) {
-            assert(err.err.message === "Please provide a valid domain name");
+            assert(err.message === "Please provide a valid domain name" && err.rId === "");
         }
     });
 
@@ -266,72 +368,106 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                apiBasePath: "/custom",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "/custom/a",
+                },
+                recipeList: [Session.init()],
             });
-            assert(CookieConfig.getInstanceOrThrowError().refreshTokenPath === "/custom/session/refresh");
+            assert(SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath === "/custom/a/session/refresh");
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                apiBasePath: "/",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "/",
+                },
+                recipeList: [Session.init()],
             });
-            assert(CookieConfig.getInstanceOrThrowError().refreshTokenPath === "/session/refresh");
+            assert(SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath === "/session/refresh");
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
             });
-            assert(CookieConfig.getInstanceOrThrowError().refreshTokenPath === "/auth/session/refresh");
-            assert(CookieConfig.getInstanceOrThrowError().accessTokenPath === "/");
+            assert(SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath === "/auth/session/refresh");
+            assert(SessionRecipe.getInstanceOrThrowError().config.accessTokenPath === "/");
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                accessTokenPath: "/api/a",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                    apiKey: "haha",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
             });
-            assert(CookieConfig.getInstanceOrThrowError().accessTokenPath === "/api/a");
+            assert(Querier.apiKey === "haha");
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                accessTokenPath: "/api/a/",
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "/custom",
+                },
+                recipeList: [
+                    Session.init({
+                        sessionExpiredStatusCode: 402,
+                    }),
+                ],
             });
-            assert(CookieConfig.getInstanceOrThrowError().accessTokenPath === "/api/a");
+            assert(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode === 402);
             resetAll();
         }
 
         {
             STExpress.init({
-                hosts: "http://localhost:8080",
-                apiKey: "haha",
+                supertokens: {
+                    connectionURI: "http://localhost:8080;try.supertokens.io;try.supertokens.io:8080;localhost:90",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
             });
-            assert(Querier.getInstanceOrThrowError().apiKey === "haha");
-            resetAll();
-        }
-
-        {
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                sessionExpiredStatusCode: 402,
-            });
-            assert(SessionConfig.getInstanceOrThrowError().sessionExpiredStatusCode === 402);
-            resetAll();
-        }
-
-        {
-            STExpress.init({
-                hosts: "http://localhost:8080;try.supertokens.io;try.supertokens.io:8080;localhost:90",
-            });
-            let hosts = Querier.getInstanceOrThrowError().hosts;
+            let hosts = Querier.hosts;
             assert(hosts.length === 4);
 
             assert(hosts[0] === "http://localhost:8080");
@@ -340,5 +476,26 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             assert(hosts[3] === "http://localhost:90");
             resetAll();
         }
+    });
+
+    it("checking for default cookie config", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.accessTokenPath, "/");
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieDomain, undefined);
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "lax");
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSecure, false);
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath, "/auth/session/refresh");
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode, 401);
     });
 });

@@ -22,7 +22,8 @@ const {
     extractInfoFromResponse,
     setKeyValueInConfig,
 } = require("./utils");
-let STExpress = require("../faunadb");
+let SuperTokens = require("../");
+let Session = require("../recipe/session/faunadb");
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -48,22 +49,33 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         await setKeyValueInConfig("access_token_validity", "3");
         await startST();
 
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                    userCollectionName: "users",
+                    accessFaunadbTokenFromFrontend: true,
+                }),
+            ],
+        });
+
         const app = express();
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-                accessFaunadbTokenFromFrontend: true,
-            })
-        );
+        app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+        app.post("/session/verify", Session.verifySession(), async (req, res) => {
             let jwtPayload = req.session.getJWTPayload();
             let token = await req.session.getFaunadbToken();
             if (token === undefined) {
@@ -153,22 +165,33 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     it("getting FDAT from JWT payload", async function () {
         await startST();
 
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                    userCollectionName: "users",
+                    accessFaunadbTokenFromFrontend: true,
+                }),
+            ],
+        });
+
         const app = express();
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-                accessFaunadbTokenFromFrontend: true,
-            })
-        );
+        app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+        app.post("/session/verify", Session.verifySession(), async (req, res) => {
             let jwtPayload = req.session.getJWTPayload();
             let token = await req.session.getFaunadbToken();
             if (token === undefined) {
@@ -262,21 +285,32 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     it("getting FDAT from session data", async function () {
         await startST();
 
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                    userCollectionName: "users",
+                }),
+            ],
+        });
+
         const app = express();
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-            })
-        );
+        app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+        app.post("/session/verify", Session.verifySession(), async (req, res) => {
             let sessionData = await req.session.getSessionData();
             let token = await req.session.getFaunadbToken();
             if (token === undefined) {
@@ -332,40 +366,41 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     //- check for token theft detection
     it("express token theft detection with faunadb", async function () {
         await startST();
-        STExpress.init({
-            hosts: "http://localhost:8080",
-            faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-            userCollectionName: "users",
-            accessFaunadbTokenFromFrontend: true,
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                    userCollectionName: "users",
+                }),
+            ],
         });
-
-        // if version >= 2.3
-        if (
-            maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
-            (await Querier.getInstanceOrThrowError().getAPIVersion())
-        ) {
-            return;
-        }
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
         app.post("/session/verify", async (req, res) => {
-            await STExpress.getSession(req, res, true);
+            await Session.getSession(req, res, true);
             res.status(200).send("");
         });
 
         app.post("/auth/session/refresh", async (req, res) => {
             try {
-                await STExpress.refreshSession(req, res);
+                await Session.refreshSession(req, res);
                 res.status(200).send(JSON.stringify({ success: false }));
             } catch (err) {
                 res.status(200).json({
-                    success:
-                        STExpress.Error.isErrorFromAuth(err) && err.errType === STExpress.Error.TOKEN_THEFT_DETECTED,
+                    success: err.type === Session.Error.TOKEN_THEFT_DETECTED,
                 });
             }
         });
@@ -442,33 +477,36 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         await startST();
         const app = express();
 
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-                accessFaunadbTokenFromFrontend: true,
-            })
-        );
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                    userCollectionName: "users",
+                    accessFaunadbTokenFromFrontend: true,
+                }),
+            ],
+        });
 
-        // if version >= 2.3
-        if (
-            maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
-            (await Querier.getInstanceOrThrowError().getAPIVersion())
-        ) {
-            return;
-        }
+        app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+        app.post("/session/verify", Session.verifySession(), async (req, res) => {
             res.status(200).send("");
         });
 
-        app.use(STExpress.errorHandler());
+        app.use(SuperTokens.errorHandler());
 
         let res = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -531,38 +569,41 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     //check basic usage of session
     it("test basic usage of express sessions with faunadb", async function () {
         await startST();
-        STExpress.init({
-            hosts: "http://localhost:8080",
-            faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-            userCollectionName: "users",
-            accessFaunadbTokenFromFrontend: true,
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                    userCollectionName: "users",
+                    accessFaunadbTokenFromFrontend: true,
+                }),
+            ],
         });
-
-        // if version >= 2.3
-        if (
-            maxVersion(await Querier.getInstanceOrThrowError().getAPIVersion(), "2.3") !==
-            (await Querier.getInstanceOrThrowError().getAPIVersion())
-        ) {
-            return;
-        }
 
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
         app.post("/session/verify", async (req, res) => {
-            await STExpress.getSession(req, res, true);
+            await Session.getSession(req, res, true);
             res.status(200).send("");
         });
         app.post("/auth/session/refresh", async (req, res) => {
-            await STExpress.refreshSession(req, res);
+            await Session.refreshSession(req, res);
             res.status(200).send("");
         });
         app.post("/session/revoke", async (req, res) => {
-            let session = await STExpress.getSession(req, res, true);
+            let session = await Session.getSession(req, res, true);
             await session.revokeSession();
             res.status(200).send("");
         });
@@ -676,30 +717,41 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(
-            STExpress.init({
-                hosts: "http://localhost:8080",
-                faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                userCollectionName: "users",
-            })
-        );
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                    userCollectionName: "users",
+                }),
+            ],
+        });
+
+        app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await STExpress.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
-        app.post("/session/verify", STExpress.middleware(), async (req, res) => {
+        app.post("/session/verify", Session.verifySession(), async (req, res) => {
             res.status(200).send("");
         });
 
-        app.post("/session/revoke", STExpress.middleware(), async (req, res) => {
+        app.post("/session/revoke", Session.verifySession(), async (req, res) => {
             let session = req.session;
             await session.revokeSession();
             res.status(200).send("");
         });
 
-        app.use(STExpress.errorHandler());
+        app.use(SuperTokens.errorHandler());
 
         let res = extractInfoFromResponse(
             await new Promise((resolve) =>
