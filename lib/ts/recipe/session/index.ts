@@ -32,43 +32,43 @@ export default class SessionWrapper {
     }
 
     static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) {
-        SessionRecipe.getInstanceOrThrowError().getSession(req, res, doAntiCsrfCheck);
+        return SessionRecipe.getInstanceOrThrowError().getSession(req, res, doAntiCsrfCheck);
     }
 
     static refreshSession(req: express.Request, res: express.Response) {
-        SessionRecipe.getInstanceOrThrowError().refreshSession(req, res);
+        return SessionRecipe.getInstanceOrThrowError().refreshSession(req, res);
     }
 
     static revokeAllSessionsForUser(userId: string) {
-        SessionRecipe.getInstanceOrThrowError().revokeAllSessionsForUser(userId);
+        return SessionRecipe.getInstanceOrThrowError().revokeAllSessionsForUser(userId);
     }
 
     static getAllSessionHandlesForUser(userId: string) {
-        SessionRecipe.getInstanceOrThrowError().getAllSessionHandlesForUser(userId);
+        return SessionRecipe.getInstanceOrThrowError().getAllSessionHandlesForUser(userId);
     }
 
     static revokeSession(sessionHandle: string) {
-        SessionRecipe.getInstanceOrThrowError().revokeSession(sessionHandle);
+        return SessionRecipe.getInstanceOrThrowError().revokeSession(sessionHandle);
     }
 
     static revokeMultipleSessions(sessionHandles: string[]) {
-        SessionRecipe.getInstanceOrThrowError().revokeMultipleSessions(sessionHandles);
+        return SessionRecipe.getInstanceOrThrowError().revokeMultipleSessions(sessionHandles);
     }
 
     static getSessionData(sessionHandle: string) {
-        SessionRecipe.getInstanceOrThrowError().getSessionData(sessionHandle);
+        return SessionRecipe.getInstanceOrThrowError().getSessionData(sessionHandle);
     }
 
     static updateSessionData(sessionHandle: string, newSessionData: any) {
-        SessionRecipe.getInstanceOrThrowError().updateSessionData(sessionHandle, newSessionData);
+        return SessionRecipe.getInstanceOrThrowError().updateSessionData(sessionHandle, newSessionData);
     }
 
     static getJWTPayload(sessionHandle: string) {
-        SessionRecipe.getInstanceOrThrowError().getJWTPayload(sessionHandle);
+        return SessionRecipe.getInstanceOrThrowError().getJWTPayload(sessionHandle);
     }
 
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-        SessionRecipe.getInstanceOrThrowError().updateJWTPayload(sessionHandle, newJWTPayload);
+        return SessionRecipe.getInstanceOrThrowError().updateJWTPayload(sessionHandle, newJWTPayload);
     }
 
     static auth0Handler(
@@ -85,7 +85,7 @@ export default class SessionWrapper {
             refreshToken: string | undefined
         ) => Promise<void>
     ) {
-        SessionRecipe.getInstanceOrThrowError().auth0Handler(
+        return SessionRecipe.getInstanceOrThrowError().auth0Handler(
             request as any,
             response,
             next,

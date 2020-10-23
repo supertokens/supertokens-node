@@ -395,7 +395,6 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
             res.json(await req.session.getSessionData());
         });
         app.use((err, req, res, next) => {
-            console.log(err);
             res.statusCode = 500;
             res.json({
                 err: err.message,
@@ -476,7 +475,6 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
             res.json(await req.session.getSessionData());
         });
         app.use((err, req, res, next) => {
-            console.log(err);
             res.statusCode = 500;
             res.json({
                 err: err.message,
@@ -563,7 +561,6 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
             res.json(await req.session.getSessionData());
         });
         app.use((err, req, res, next) => {
-            console.log(err);
             res.statusCode = 500;
             res.json({
                 err: err.message,
@@ -635,7 +632,6 @@ describe(`Auth0Handler: ${printPath("[test/auth0Handler.test.js]")}`, function (
             res.json(await req.session.getSessionData());
         });
         app.use((err, req, res, next) => {
-            console.log(err);
             res.statusCode = 500;
             res.json({
                 err: err.message,

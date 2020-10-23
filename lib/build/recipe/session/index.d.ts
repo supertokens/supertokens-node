@@ -7,17 +7,17 @@ export default class SessionWrapper {
     static Error: typeof SuperTokensError;
     static SessionContainer: typeof SessionClass;
     static createNewSession(res: express.Response, userId: string, jwtPayload?: any, sessionData?: any): Promise<SessionClass>;
-    static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): void;
-    static refreshSession(req: express.Request, res: express.Response): void;
-    static revokeAllSessionsForUser(userId: string): void;
-    static getAllSessionHandlesForUser(userId: string): void;
-    static revokeSession(sessionHandle: string): void;
-    static revokeMultipleSessions(sessionHandles: string[]): void;
-    static getSessionData(sessionHandle: string): void;
-    static updateSessionData(sessionHandle: string, newSessionData: any): void;
-    static getJWTPayload(sessionHandle: string): void;
-    static updateJWTPayload(sessionHandle: string, newJWTPayload: any): void;
-    static auth0Handler(request: express.Request, response: express.Response, next: express.NextFunction, domain: string, clientId: string, clientSecret: string, callback?: (userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>): void;
+    static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): Promise<SessionClass>;
+    static refreshSession(req: express.Request, res: express.Response): Promise<SessionClass>;
+    static revokeAllSessionsForUser(userId: string): Promise<string[]>;
+    static getAllSessionHandlesForUser(userId: string): Promise<string[]>;
+    static revokeSession(sessionHandle: string): Promise<boolean>;
+    static revokeMultipleSessions(sessionHandles: string[]): Promise<string[]>;
+    static getSessionData(sessionHandle: string): Promise<any>;
+    static updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
+    static getJWTPayload(sessionHandle: string): Promise<any>;
+    static updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
+    static auth0Handler(request: express.Request, response: express.Response, next: express.NextFunction, domain: string, clientId: string, clientSecret: string, callback?: (userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>): Promise<express.Response | undefined>;
     static middleware: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: express.Response, next: express.NextFunction) => Promise<void>;
 }
 export declare let init: typeof SessionRecipe.init;
