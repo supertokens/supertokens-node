@@ -13,18 +13,7 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("./utils");
-let ST = require("../lib/build/session");
-let STExpress = require("../index");
-let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
-let { CookieConfig } = require("../lib/build/cookieAndHeaders");
-let {
-    normaliseURLPathOrThrowError,
-    normaliseSessionScopeOrThrowError,
-    normaliseURLDomainOrThrowError,
-} = require("../lib/build/utils");
-const { Querier } = require("../lib/build/querier");
-const { SessionConfig } = require("../lib/build/session");
 
 /**
  *

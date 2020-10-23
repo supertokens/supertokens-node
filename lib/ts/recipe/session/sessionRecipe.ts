@@ -14,15 +14,13 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import * as jwt from "jsonwebtoken";
-import { TypeInput, TypeNormalisedInput, SessionRequest, Auth0RequestBody } from "./types";
+import { TypeInput, TypeNormalisedInput } from "./types";
 import STError from "./error";
 import Session from "./sessionClass";
 import { validateAndNormaliseUserInput, attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
 import { HandshakeInfo, NormalisedErrorHandlers } from "./types";
 import * as express from "express";
 import * as SessionFunctions from "./sessionFunctions";
-import * as qs from "querystring";
 import {
     attachAccessTokenToCookie,
     clearSessionFromCookie,
@@ -327,117 +325,5 @@ export default class SessionRecipe extends RecipeModule {
 
     updateJWTPayload = (sessionHandle: string, newJWTPayload: any) => {
         return SessionFunctions.updateJWTPayload(this, sessionHandle, newJWTPayload);
-    };
-
-    auth0Handler = async (
-        request: SessionRequest,
-        response: express.Response,
-        next: express.NextFunction,
-        domain: string,
-        clientId: string,
-        clientSecret: string,
-        callback?: (
-            userId: string,
-            idToken: string,
-            accessToken: string,
-            refreshToken: string | undefined
-        ) => Promise<void>
-    ) => {
-        try {
-            let requestBody: Auth0RequestBody = request.body;
-            if (requestBody.action === "logout") {
-                if (request.session === undefined) {
-                    request.session = await this.getSession(request, response, true);
-                }
-                await request.session.revokeSession();
-                return response.json({});
-            }
-            let authCode = requestBody.code;
-            let redirectURI = requestBody.redirect_uri;
-            if (requestBody.action !== "login") {
-                request.session = await this.getSession(request, response, true);
-            }
-
-            let formData = {};
-            if (authCode === undefined && requestBody.action === "refresh") {
-                let sessionData = await request.session.getSessionData();
-                if (sessionData.refresh_token === undefined) {
-                    response.statusCode = 403;
-                    return response.json({});
-                }
-                formData = {
-                    grant_type: "refresh_token",
-                    client_id: clientId,
-                    client_secret: clientSecret,
-                    refresh_token: sessionData.refresh_token,
-                };
-            } else {
-                formData = {
-                    grant_type: "authorization_code",
-                    client_id: clientId,
-                    client_secret: clientSecret,
-                    code: authCode,
-                    redirect_uri: redirectURI,
-                };
-            }
-            let auth0Response;
-            try {
-                auth0Response = await axios({
-                    method: "post",
-                    url: `https://${domain}/oauth/token`,
-                    data: qs.stringify(formData),
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                });
-            } catch (err) {
-                if (err.response !== undefined && err.response.status < 500) {
-                    response.statusCode = err.response.status;
-                    return response.json({});
-                }
-                throw err;
-            }
-            let idToken = auth0Response.data.id_token;
-            let expiresIn = auth0Response.data.expires_in;
-            let accessToken = auth0Response.data.access_token;
-            let refreshToken = auth0Response.data.refresh_token;
-
-            if (requestBody.action === "login") {
-                let payload = jwt.decode(idToken, { json: true });
-                if (payload === null) {
-                    throw Error("invalid payload while decoding auth0 idToken");
-                }
-                if (callback !== undefined) {
-                    await callback(payload.sub, idToken, accessToken, refreshToken);
-                } else {
-                    await this.createNewSession(
-                        response,
-                        payload.sub,
-                        {},
-                        {
-                            refresh_token: refreshToken,
-                        }
-                    );
-                }
-            } else if (authCode !== undefined) {
-                let sessionData = await request.session.getSessionData();
-                sessionData.refresh_token = refreshToken;
-                await request.session.updateSessionData(sessionData);
-            }
-            return response.json({
-                id_token: idToken,
-                expires_in: expiresIn,
-            });
-        } catch (err) {
-            next(
-                new STError(
-                    {
-                        type: STError.GENERAL_ERROR,
-                        payload: err,
-                    },
-                    this.getRecipeId()
-                )
-            );
-        }
     };
 }

@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { TypeInput, SessionRequest } from "./types";
+import { TypeInput } from "./types";
 import STError from "./error";
 import Session from "./sessionClass";
 import { HandshakeInfo, NormalisedErrorHandlers } from "./types";
@@ -42,5 +42,4 @@ export default class SessionRecipe extends RecipeModule {
     updateSessionData: (sessionHandle: string, newSessionData: any) => Promise<void>;
     getJWTPayload: (sessionHandle: string) => Promise<any>;
     updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
-    auth0Handler: (request: SessionRequest, response: express.Response, next: express.NextFunction, domain: string, clientId: string, clientSecret: string, callback?: ((userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>) | undefined) => Promise<express.Response | undefined>;
 }

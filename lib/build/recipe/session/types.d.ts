@@ -71,14 +71,3 @@ export interface NormalisedErrorHandlers {
     onTryRefreshToken: ErrorHandlerMiddleware;
     onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
 }
-export declare type Auth0RequestBody = {
-    action: "login";
-    code: string;
-    redirect_uri: string;
-} | {
-    action: "refresh";
-    code?: string;
-    redirect_uri?: string;
-} | {
-    action: "logout";
-};

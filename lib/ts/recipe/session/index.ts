@@ -71,31 +71,6 @@ export default class SessionWrapper {
         return SessionRecipe.getInstanceOrThrowError().updateJWTPayload(sessionHandle, newJWTPayload);
     }
 
-    static auth0Handler(
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction,
-        domain: string,
-        clientId: string,
-        clientSecret: string,
-        callback?: (
-            userId: string,
-            idToken: string,
-            accessToken: string,
-            refreshToken: string | undefined
-        ) => Promise<void>
-    ) {
-        return SessionRecipe.getInstanceOrThrowError().auth0Handler(
-            request as any,
-            response,
-            next,
-            domain,
-            clientId,
-            clientSecret,
-            callback
-        );
-    }
-
     static verifySession = (antiCsrfCheck?: boolean) => {
         return originalVerifySession(SessionRecipe.getInstanceOrThrowError(), antiCsrfCheck);
     };
@@ -124,8 +99,6 @@ export let updateSessionData = SessionWrapper.updateSessionData;
 export let getJWTPayload = SessionWrapper.getJWTPayload;
 
 export let updateJWTPayload = SessionWrapper.updateJWTPayload;
-
-export let auth0Handler = SessionWrapper.auth0Handler;
 
 export let verifySession = SessionWrapper.verifySession;
 
