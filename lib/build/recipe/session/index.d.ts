@@ -18,6 +18,7 @@ export default class SessionWrapper {
     static getJWTPayload: (sessionHandle: string) => Promise<any>;
     static updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
     static auth0Handler: (request: import("./types").SessionRequest, response: import("express").Response, next: import("express").NextFunction, domain: string, clientId: string, clientSecret: string, callback?: ((userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>) | undefined) => Promise<import("express").Response | undefined>;
+    static middleware: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: import("express").Response, next: import("express").NextFunction) => Promise<void>;
     static Error: typeof STError;
 }
 export declare let init: typeof SessionRecipe.init;
@@ -34,3 +35,4 @@ export declare let getCORSAllowedHeaders: () => string[];
 export declare let getJWTPayload: (sessionHandle: string) => Promise<any>;
 export declare let updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
 export declare let auth0Handler: (request: import("./types").SessionRequest, response: import("express").Response, next: import("express").NextFunction, domain: string, clientId: string, clientSecret: string, callback?: ((userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>) | undefined) => Promise<import("express").Response | undefined>;
+export declare let middleware: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: import("express").Response, next: import("express").NextFunction) => Promise<void>;

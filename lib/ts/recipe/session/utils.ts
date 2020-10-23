@@ -10,8 +10,9 @@ import * as express from "express";
 import { URL } from "url";
 import { normaliseURLPathOrThrowError } from "../../utils";
 import SessionRecipe from "./sessionRecipe";
+import STError from "./error";
 
-export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
+export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
     sessionScope = sessionScope.trim().toLowerCase();
 
     // first we convert it to a URL so that we can use the URL class
@@ -34,16 +35,22 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
 
         return sessionScope;
     } catch (err) {
-        throw new Error("Please provide a valid sessionScope");
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Please provide a valid sessionScope"),
+            },
+            rId
+        );
     }
 }
 
-export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
+export function validateAndNormaliseUserInput(rId: string, config: TypeInput): TypeNormalisedInput {
     let cookieDomain =
-        config.cookieDomain === undefined ? undefined : normaliseSessionScopeOrThrowError(config.cookieDomain);
+        config.cookieDomain === undefined ? undefined : normaliseSessionScopeOrThrowError(rId, config.cookieDomain);
 
     let cookieSameSite =
-        config.cookieSameSite === undefined ? "lax" : normaliseSameSiteOrThrowError(config.cookieSameSite);
+        config.cookieSameSite === undefined ? "lax" : normaliseSameSiteOrThrowError(rId, config.cookieSameSite);
 
     let cookieSecure = config.cookieSecure === undefined ? false : config.cookieSecure;
 
@@ -70,11 +77,17 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
     };
 }
 
-export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none" {
+export function normaliseSameSiteOrThrowError(rId: string, sameSite: string): "strict" | "lax" | "none" {
     sameSite = sameSite.trim();
     sameSite = sameSite.toLocaleLowerCase();
     if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
-        throw new Error('cookie same site must be one of "strict", "lax", or "none"');
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error('cookie same site must be one of "strict", "lax", or "none"'),
+            },
+            rId
+        );
     }
     return sameSite;
 }

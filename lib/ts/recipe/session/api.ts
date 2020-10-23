@@ -12,18 +12,20 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-
-import { ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions, SessionRequest } from "./types";
-import * as OriginalMiddleware from "../middleware";
+import { Response, NextFunction, Request } from "express";
+import { SessionRequest } from "./types";
 import SessionRecipe from "./sessionRecipe";
 
-export function middleware(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean) {
-    return OriginalMiddleware.middleware(recipeInstance, antiCsrfCheck);
-}
-
-export function errorHandler(
+export async function handleRefreshAPI(
     recipeInstance: SessionRecipe,
-    options?: SuperTokensErrorMiddlewareOptions
-): ErrorHandlerMiddleware {
-    return OriginalMiddleware.errorHandler(recipeInstance, options);
+    request: Request,
+    response: Response,
+    next: NextFunction
+) {
+    try {
+        (request as any).session = await recipeInstance.refreshSession(request, response);
+        return next();
+    } catch (err) {
+        next(err);
+    }
 }

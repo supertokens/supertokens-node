@@ -1,8 +1,10 @@
 import { URL } from "url";
 import STError from "./error";
-import { AppInfo, NormalisedAppinfo } from "./types";
+import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
+import * as express from "express";
+import { HEADER_RID } from "./constants";
 
-export function normaliseURLPathOrThrowError(input: string): string {
+export function normaliseURLPathOrThrowError(rId: string, input: string): string {
     input = input.trim().toLowerCase();
 
     try {
@@ -28,7 +30,7 @@ export function normaliseURLPathOrThrowError(input: string): string {
         !input.startsWith("https://")
     ) {
         input = "http://" + input;
-        return normaliseURLPathOrThrowError(input);
+        return normaliseURLPathOrThrowError(rId, input);
     }
 
     if (input.charAt(0) !== "/") {
@@ -40,13 +42,17 @@ export function normaliseURLPathOrThrowError(input: string): string {
         // test that we can convert this to prevent an infinite loop
         new URL("http://example.com" + input);
 
-        return normaliseURLPathOrThrowError("http://example.com" + input);
+        return normaliseURLPathOrThrowError(rId, "http://example.com" + input);
     } catch (err) {
-        throw new Error("Please provide a valid URL path");
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            rId,
+            payload: new Error("Please provide a valid URL path"),
+        });
     }
 }
 
-export function normaliseURLDomainOrThrowError(input: string): string {
+export function normaliseURLDomainOrThrowError(rId: string, input: string): string {
     function isAnIpAddress(ipaddress: string) {
         return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
             ipaddress
@@ -91,11 +97,15 @@ export function normaliseURLDomainOrThrowError(input: string): string {
         // at this point, it should be a valid URL. So we test that before doing a recursive call
         try {
             new URL(input);
-            return normaliseURLDomainOrThrowError(input);
+            return normaliseURLDomainOrThrowError(rId, input);
         } catch (err) {}
     }
 
-    throw new Error("Please provide a valid domain name");
+    throw new STError({
+        type: STError.GENERAL_ERROR,
+        rId,
+        payload: new Error("Please provide a valid domain name"),
+    });
 }
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
@@ -129,18 +139,37 @@ export function maxVersion(version1: string, version2: string): string {
     return version2;
 }
 
-export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo {
+export function normaliseInputAppInfoOrThrowError(rId: string, appInfo: AppInfo): NormalisedAppinfo {
     return {
         appName: appInfo.appName,
-        websiteDomain: normaliseURLDomainOrThrowError(appInfo.websiteDomain),
-        apiDomain: normaliseURLDomainOrThrowError(appInfo.apiDomain),
+        websiteDomain: normaliseURLDomainOrThrowError(rId, appInfo.websiteDomain),
+        apiDomain: normaliseURLDomainOrThrowError(rId, appInfo.apiDomain),
         apiBasePath:
             appInfo.apiBasePath === undefined
-                ? normaliseURLPathOrThrowError("/auth")
-                : normaliseURLPathOrThrowError(appInfo.apiBasePath),
+                ? normaliseURLPathOrThrowError(rId, "/auth")
+                : normaliseURLPathOrThrowError(rId, appInfo.apiBasePath),
         websiteBasePath:
             appInfo.websiteBasePath === undefined
-                ? normaliseURLPathOrThrowError("/auth")
-                : normaliseURLPathOrThrowError(appInfo.websiteBasePath),
+                ? normaliseURLPathOrThrowError(rId, "/auth")
+                : normaliseURLPathOrThrowError(rId, appInfo.websiteBasePath),
     };
+}
+
+export function getRIDFromRequest(req: express.Request): string | undefined {
+    return getHeader(req, HEADER_RID);
+}
+
+export function normaliseHttpMethod(method: string): HTTPMethod {
+    return method.toLowerCase() as HTTPMethod;
+}
+
+export function getHeader(req: express.Request, key: string): string | undefined {
+    let value = req.headers[key];
+    if (value === undefined) {
+        return undefined;
+    }
+    if (Array.isArray(value)) {
+        return value[0];
+    }
+    return value;
 }

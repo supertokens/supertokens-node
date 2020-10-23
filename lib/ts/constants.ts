@@ -13,24 +13,4 @@
  * under the License.
  */
 
-import SuperTokens from "./supertokens";
-import STError from "./error";
-
-export * from "./error";
-
-// For Express
-export default class SuperTokensWrapper {
-    static init = SuperTokens.init;
-
-    static middleware = SuperTokens.getInstanceOrThrowError().middleware;
-
-    static errorHandler = SuperTokens.getInstanceOrThrowError().errorHandler;
-
-    static Error = STError;
-}
-
-export let init = SuperTokens.init;
-
-export let middleware = SuperTokensWrapper.middleware;
-
-export let errorHandler = SuperTokensWrapper.errorHandler;
+export const HEADER_RID = "rid";

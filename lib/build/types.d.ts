@@ -22,3 +22,10 @@ export declare type TypeInput = {
     recipeList: RecipeListFunction[];
 };
 export declare type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
+export declare type APIHandled = {
+    pathWithoutApiBasePath: string;
+    method: HTTPMethod;
+    id: string;
+    disabled: boolean;
+};
+export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";

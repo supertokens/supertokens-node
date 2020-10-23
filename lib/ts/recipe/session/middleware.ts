@@ -16,43 +16,24 @@ import { Response, NextFunction, Request } from "express";
 import { SessionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions, TypeInput } from "./types";
 import STError from "./error";
 import SessionRecipe from "./sessionRecipe";
-
-// export function autoRefreshMiddleware() {
-//     return async (request: Request, response: Response, next: NextFunction) => {
-//         try {
-//             let path = request.originalUrl.split("?")[0];
-//             let refreshTokenPath = await getRefreshPath();
-//             if (
-//                 (refreshTokenPath === path || `${refreshTokenPath}/` === path || refreshTokenPath === `${path}/`) &&
-//                 request.method.toLowerCase() === "post"
-//             ) {
-//                 await refreshSession(request, response);
-//                 return response.send(JSON.stringify({}));
-//             }
-//             return next();
-//         } catch (err) {
-//             next(err);
-//         }
-//     };
-// }
+import { normaliseHttpMethod, normaliseURLPathOrThrowError } from "../../utils";
+import { handleRefreshAPI } from "./api";
 
 export function middleware(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean) {
     // We know this should be Request but then Type
     return async (request: SessionRequest, response: Response, next: NextFunction) => {
         try {
-            if (request.method.toLowerCase() === "options" || request.method.toLowerCase() === "trace") {
+            let method = normaliseHttpMethod(request.method);
+            if (method === "options" || method === "trace") {
                 return next();
             }
-            let path = request.originalUrl.split("?")[0];
+            let incomingPath = normaliseURLPathOrThrowError(recipeInstance.getRecipeId(), request.originalUrl);
             let refreshTokenPath = recipeInstance.config.refreshTokenPath;
-            if (
-                (refreshTokenPath === path || `${refreshTokenPath}/` === path || refreshTokenPath === `${path}/`) &&
-                request.method.toLowerCase() === "post"
-            ) {
-                request.session = await recipeInstance.refreshSession(request, response);
+            if (incomingPath === refreshTokenPath && method === "post") {
+                return handleRefreshAPI(recipeInstance, request, response, next);
             } else {
                 if (antiCsrfCheck === undefined) {
-                    antiCsrfCheck = request.method.toLowerCase() !== "get";
+                    antiCsrfCheck = method !== "get";
                 }
                 request.session = await recipeInstance.getSession(request, response, antiCsrfCheck);
             }

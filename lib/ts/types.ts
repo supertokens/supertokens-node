@@ -42,3 +42,12 @@ export type TypeInput = {
 };
 
 export type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
+
+export type APIHandled = {
+    pathWithoutApiBasePath: string;
+    method: HTTPMethod;
+    id: string;
+    disabled: boolean;
+};
+
+export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";

@@ -34,7 +34,10 @@ import {
     setFrontTokenInHeaders,
 } from "./cookieAndHeaders";
 import axios from "axios";
-import { NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
+import { normaliseURLPathOrThrowError } from "../../utils";
+import { handleRefreshAPI } from "./api";
+import { REFRESH_API_PATH } from "./constants";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -57,32 +60,22 @@ export default class SessionRecipe extends RecipeModule {
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput) {
         super(recipeId, appInfo);
-        try {
-            let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(config);
+        let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(this.getRecipeId(), config);
 
-            this.config = {
-                accessTokenPath: normalisedInput.accessTokenPath,
-                refreshTokenPath: appInfo.apiBasePath + "/session/refresh",
-                cookieDomain: normalisedInput.cookieDomain,
-                cookieSecure: normalisedInput.cookieSecure,
-                cookieSameSite: normalisedInput.cookieSameSite,
-                sessionExpiredStatusCode: normalisedInput.sessionExpiredStatusCode,
-                sessionRefreshFeature: normalisedInput.sessionRefreshFeature,
-            };
+        this.config = {
+            accessTokenPath: normalisedInput.accessTokenPath,
+            refreshTokenPath: appInfo.apiBasePath + normaliseURLPathOrThrowError(this.getRecipeId(), REFRESH_API_PATH),
+            cookieDomain: normalisedInput.cookieDomain,
+            cookieSecure: normalisedInput.cookieSecure,
+            cookieSameSite: normalisedInput.cookieSameSite,
+            sessionExpiredStatusCode: normalisedInput.sessionExpiredStatusCode,
+            sessionRefreshFeature: normalisedInput.sessionRefreshFeature,
+        };
 
-            // Solving the cold start problem
-            this.getHandshakeInfo().catch((ignored) => {
-                // ignored
-            });
-        } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                },
-                recipeId
-            );
-        }
+        // Solving the cold start problem
+        this.getHandshakeInfo().catch((ignored) => {
+            // ignored
+        });
     }
 
     static getInstanceOrThrowError(): SessionRecipe {
@@ -129,6 +122,23 @@ export default class SessionRecipe extends RecipeModule {
         }
         SessionRecipe.instance = undefined;
     }
+
+    // abstract instance functions below...............
+
+    getAPIsHandled = (): APIHandled[] => {
+        return [
+            {
+                method: "post",
+                pathWithoutApiBasePath: REFRESH_API_PATH,
+                id: "REFRESH",
+                disabled: this.config.sessionRefreshFeature.disableDefaultImplementation,
+            },
+        ];
+    };
+
+    handleAPIRequest = (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        handleRefreshAPI(this, req, res, next);
+    };
 
     // instance functions below...............
 

@@ -21,7 +21,6 @@ export declare function getIdRefreshTokenFromCookie(req: express.Request): strin
 export declare function setAntiCsrfTokenInHeaders(recipeInstance: SessionRecipe, res: express.Response, antiCsrfToken: string): void;
 export declare function setIdRefreshTokenInHeaderAndCookie(recipeInstance: SessionRecipe, res: express.Response, idRefreshToken: string, expiry: number): void;
 export declare function setFrontTokenInHeaders(recipeInstance: SessionRecipe, res: express.Response, userId: string, atExpiry: number, jwtPayload: any): void;
-export declare function getHeader(req: express.Request, key: string): string | undefined;
 export declare function getCORSAllowedHeaders(): string[];
 /**
  *

@@ -1,6 +1,10 @@
-import { AppInfo, NormalisedAppinfo } from "./types";
-export declare function normaliseURLPathOrThrowError(input: string): string;
-export declare function normaliseURLDomainOrThrowError(input: string): string;
+import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
+import * as express from "express";
+export declare function normaliseURLPathOrThrowError(rId: string, input: string): string;
+export declare function normaliseURLDomainOrThrowError(rId: string, input: string): string;
 export declare function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined;
 export declare function maxVersion(version1: string, version2: string): string;
-export declare function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo;
+export declare function normaliseInputAppInfoOrThrowError(rId: string, appInfo: AppInfo): NormalisedAppinfo;
+export declare function getRIDFromRequest(req: express.Request): string | undefined;
+export declare function normaliseHttpMethod(method: string): HTTPMethod;
+export declare function getHeader(req: express.Request, key: string): string | undefined;

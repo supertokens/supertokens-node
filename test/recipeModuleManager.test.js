@@ -31,6 +31,8 @@ const { SessionConfig } = require("../lib/build/session");
  * TODO: Check that querier has been inited when we call supertokens.init
  * TODO: Check that modules have been inited when we call supertokens.init
  * TODO: Test various inputs to routing (if it accepts or not)
+ *          - including when the base path is "/"
+ *          - with and without a rId
  * TODO: Test various inputs to errorHandler (if it accepts or not)
  */
 

@@ -15,6 +15,7 @@
 
 import SessionRecipe from "./sessionRecipe";
 import STError from "./error";
+import { middleware as originalMiddleware } from "./middleware";
 
 export * from "./error";
 export * from "./sessionClass";
@@ -49,6 +50,10 @@ export default class SessionWrapper {
 
     static auth0Handler = SessionRecipe.getInstanceOrThrowError().auth0Handler;
 
+    static middleware = (antiCsrfCheck?: boolean) => {
+        return originalMiddleware(SessionRecipe.getInstanceOrThrowError(), antiCsrfCheck);
+    };
+
     static Error = STError;
 }
 
@@ -79,3 +84,5 @@ export let getJWTPayload = SessionWrapper.getJWTPayload;
 export let updateJWTPayload = SessionWrapper.updateJWTPayload;
 
 export let auth0Handler = SessionWrapper.auth0Handler;
+
+export let middleware = SessionWrapper.middleware;

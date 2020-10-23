@@ -18,6 +18,7 @@ import STError from "../error";
 
 export * from "../error";
 export * from "./sessionClass";
+import { middleware as originalMiddleware } from "../middleware";
 
 // For Express
 export default class SessionWrapper {
@@ -46,6 +47,10 @@ export default class SessionWrapper {
     static getJWTPayload = SessionRecipe.getInstanceOrThrowError().getJWTPayload;
 
     static updateJWTPayload = SessionRecipe.getInstanceOrThrowError().updateJWTPayload;
+
+    static middleware = (antiCsrfCheck?: boolean) => {
+        return originalMiddleware(SessionRecipe.getInstanceOrThrowError(), antiCsrfCheck);
+    };
 
     static Error = STError;
 }

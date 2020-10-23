@@ -3,7 +3,7 @@ import { TypeInput, SessionRequest } from "./types";
 import Session from "./sessionClass";
 import { HandshakeInfo } from "./types";
 import * as express from "express";
-import { NormalisedAppinfo, RecipeListFunction } from "../../types";
+import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -23,6 +23,8 @@ export default class SessionRecipe extends RecipeModule {
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
+    getAPIsHandled: () => APIHandled[];
+    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => void;
     getHandshakeInfo: () => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;

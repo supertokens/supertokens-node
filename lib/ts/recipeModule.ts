@@ -15,7 +15,9 @@ import { Querier } from "./querier";
  */
 
 import STError from "./error";
-import { NormalisedAppinfo } from "./types";
+import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
+import { normaliseURLPathOrThrowError } from "./utils";
+import * as express from "express";
 
 export default abstract class RecipeModule {
     private recipeId: string;
@@ -47,4 +49,30 @@ export default abstract class RecipeModule {
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.rId === this.getRecipeId();
     };
+
+    returnAPIIdIfCanHandleRequest = (path: string, method: HTTPMethod): string | undefined => {
+        let apisHandled = this.getAPIsHandled();
+        for (let i = 0; i < apisHandled.length; i++) {
+            let currAPI = apisHandled[i];
+            if (
+                !currAPI.disabled &&
+                currAPI.method === method &&
+                this.appInfo.apiBasePath +
+                    normaliseURLPathOrThrowError(this.getRecipeId(), currAPI.pathWithoutApiBasePath) ===
+                    path
+            ) {
+                return currAPI.id;
+            }
+        }
+        return undefined;
+    };
+
+    abstract getAPIsHandled(): APIHandled[];
+
+    abstract handleAPIRequest(
+        id: string,
+        req: express.Request,
+        response: express.Response,
+        next: express.NextFunction
+    ): void;
 }

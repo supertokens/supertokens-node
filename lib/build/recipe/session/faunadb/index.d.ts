@@ -17,6 +17,7 @@ export default class SessionWrapper {
     static getCORSAllowedHeaders: () => string[];
     static getJWTPayload: (sessionHandle: string) => Promise<any>;
     static updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
+    static middleware: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: import("express").Response, next: import("express").NextFunction) => Promise<void>;
     static Error: typeof STError;
 }
 export declare let init: typeof SessionRecipe.init;
