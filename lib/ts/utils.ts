@@ -140,6 +140,36 @@ export function maxVersion(version1: string, version2: string): string {
 }
 
 export function normaliseInputAppInfoOrThrowError(rId: string, appInfo: AppInfo): NormalisedAppinfo {
+    if (appInfo === undefined) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Please provide the appInfo object when calling supertokens.init"),
+            rId: "",
+        });
+    }
+    if (appInfo.apiDomain === undefined) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Please provide your apiDomain inside the appInfo object when calling supertokens.init"),
+            rId: "",
+        });
+    }
+    if (appInfo.appName === undefined) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Please provide your appNmae inside the appInfo object when calling supertokens.init"),
+            rId: "",
+        });
+    }
+    if (appInfo.websiteDomain === undefined) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error(
+                "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
+            ),
+            rId: "",
+        });
+    }
     return {
         appName: appInfo.appName,
         websiteDomain: normaliseURLDomainOrThrowError(rId, appInfo.websiteDomain),

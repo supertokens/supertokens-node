@@ -71,12 +71,8 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            try {
-                await Session.createNewSession(res, "277082848991642117", {}, {});
-                res.status(200).send("");
-            } catch (err) {
-                console.log(err);
-            }
+            await Session.createNewSession(res, "277082848991642117", {}, {});
+            res.status(200).send("");
         });
 
         app.post("/session/verify", Session.verifySession(), async (req, res) => {
