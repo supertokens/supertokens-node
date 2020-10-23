@@ -3,6 +3,7 @@ import * as express from "express";
 import { TypeFaunaDBInput } from "./types";
 import Session from "./sessionClass";
 import { NormalisedAppinfo, RecipeListFunction } from "../../../types";
+import OriginalSessionClass from "../sessionClass";
 export declare const FAUNADB_TOKEN_TIME_LAG_MILLI: number;
 export declare const FAUNADB_SESSION_KEY = "faunadbToken";
 export default class SessionRecipe extends OriginalSessionRecipe {
@@ -12,6 +13,9 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         accessFaunadbTokenFromFrontend: boolean;
         userCollectionName: string;
     };
+    superCreateNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<OriginalSessionClass>;
+    superGetSession: (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) => Promise<OriginalSessionClass>;
+    superRefreshSession: (req: express.Request, res: express.Response) => Promise<OriginalSessionClass>;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeFaunaDBInput);
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config: TypeFaunaDBInput): RecipeListFunction;

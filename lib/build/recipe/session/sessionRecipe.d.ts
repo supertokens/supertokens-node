@@ -21,9 +21,9 @@ export default class SessionRecipe extends RecipeModule {
         errorHandlers: NormalisedErrorHandlers;
     };
     handshakeInfo: HandshakeInfo | undefined;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput);
     static getInstanceOrThrowError(): SessionRecipe;
-    static init(config: TypeInput): RecipeListFunction;
+    static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => void;

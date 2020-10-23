@@ -14,45 +14,91 @@
  */
 
 import SessionRecipe from "./sessionRecipe";
-import STError from "./error";
 import { middleware as originalMiddleware } from "./middleware";
-
-export * from "./error";
-export * from "./sessionClass";
+import * as express from "express";
+import SuperTokensError from "./error";
+import SessionClass from "./sessionClass";
 
 // For Express
 export default class SessionWrapper {
     static init = SessionRecipe.init;
 
-    static createNewSession = SessionRecipe.getInstanceOrThrowError().createNewSession;
+    static Error = SuperTokensError;
 
-    static getSession = SessionRecipe.getInstanceOrThrowError().getSession;
+    static SessionContainer = SessionClass;
 
-    static refreshSession = SessionRecipe.getInstanceOrThrowError().refreshSession;
+    static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
+        return SessionRecipe.getInstanceOrThrowError().createNewSession(res, userId, jwtPayload, sessionData);
+    }
 
-    static revokeAllSessionsForUser = SessionRecipe.getInstanceOrThrowError().revokeAllSessionsForUser;
+    static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) {
+        SessionRecipe.getInstanceOrThrowError().getSession(req, res, doAntiCsrfCheck);
+    }
 
-    static getAllSessionHandlesForUser = SessionRecipe.getInstanceOrThrowError().getAllSessionHandlesForUser;
+    static refreshSession(req: express.Request, res: express.Response) {
+        SessionRecipe.getInstanceOrThrowError().refreshSession(req, res);
+    }
 
-    static revokeSession = SessionRecipe.getInstanceOrThrowError().revokeSession;
+    static revokeAllSessionsForUser(userId: string) {
+        SessionRecipe.getInstanceOrThrowError().revokeAllSessionsForUser(userId);
+    }
 
-    static revokeMultipleSessions = SessionRecipe.getInstanceOrThrowError().revokeMultipleSessions;
+    static getAllSessionHandlesForUser(userId: string) {
+        SessionRecipe.getInstanceOrThrowError().getAllSessionHandlesForUser(userId);
+    }
 
-    static getSessionData = SessionRecipe.getInstanceOrThrowError().getSessionData;
+    static revokeSession(sessionHandle: string) {
+        SessionRecipe.getInstanceOrThrowError().revokeSession(sessionHandle);
+    }
 
-    static updateSessionData = SessionRecipe.getInstanceOrThrowError().updateSessionData;
+    static revokeMultipleSessions(sessionHandles: string[]) {
+        SessionRecipe.getInstanceOrThrowError().revokeMultipleSessions(sessionHandles);
+    }
 
-    static getJWTPayload = SessionRecipe.getInstanceOrThrowError().getJWTPayload;
+    static getSessionData(sessionHandle: string) {
+        SessionRecipe.getInstanceOrThrowError().getSessionData(sessionHandle);
+    }
 
-    static updateJWTPayload = SessionRecipe.getInstanceOrThrowError().updateJWTPayload;
+    static updateSessionData(sessionHandle: string, newSessionData: any) {
+        SessionRecipe.getInstanceOrThrowError().updateSessionData(sessionHandle, newSessionData);
+    }
 
-    static auth0Handler = SessionRecipe.getInstanceOrThrowError().auth0Handler;
+    static getJWTPayload(sessionHandle: string) {
+        SessionRecipe.getInstanceOrThrowError().getJWTPayload(sessionHandle);
+    }
+
+    static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
+        SessionRecipe.getInstanceOrThrowError().updateJWTPayload(sessionHandle, newJWTPayload);
+    }
+
+    static auth0Handler(
+        request: express.Request,
+        response: express.Response,
+        next: express.NextFunction,
+        domain: string,
+        clientId: string,
+        clientSecret: string,
+        callback?: (
+            userId: string,
+            idToken: string,
+            accessToken: string,
+            refreshToken: string | undefined
+        ) => Promise<void>
+    ) {
+        SessionRecipe.getInstanceOrThrowError().auth0Handler(
+            request as any,
+            response,
+            next,
+            domain,
+            clientId,
+            clientSecret,
+            callback
+        );
+    }
 
     static middleware = (antiCsrfCheck?: boolean) => {
         return originalMiddleware(SessionRecipe.getInstanceOrThrowError(), antiCsrfCheck);
     };
-
-    static Error = STError;
 }
 
 export let init = SessionWrapper.init;
@@ -82,3 +128,7 @@ export let updateJWTPayload = SessionWrapper.updateJWTPayload;
 export let auth0Handler = SessionWrapper.auth0Handler;
 
 export let middleware = SessionWrapper.middleware;
+
+export let Error = SessionWrapper.Error;
+
+export let SessionContainer = SessionWrapper.SessionContainer;

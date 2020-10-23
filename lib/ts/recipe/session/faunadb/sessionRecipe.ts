@@ -21,6 +21,7 @@ import * as faunadb from "faunadb";
 import Session from "./sessionClass";
 import RecipeModule from "../../../recipeModule";
 import { NormalisedAppinfo, RecipeListFunction } from "../../../types";
+import OriginalSessionClass from "../sessionClass";
 
 export const FAUNADB_TOKEN_TIME_LAG_MILLI = 30 * 1000;
 export const FAUNADB_SESSION_KEY = "faunadbToken";
@@ -37,8 +38,26 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         userCollectionName: string;
     };
 
+    superCreateNewSession: (
+        res: express.Response,
+        userId: string,
+        jwtPayload?: any,
+        sessionData?: any
+    ) => Promise<OriginalSessionClass>;
+
+    superGetSession: (
+        req: express.Request,
+        res: express.Response,
+        doAntiCsrfCheck: boolean
+    ) => Promise<OriginalSessionClass>;
+
+    superRefreshSession: (req: express.Request, res: express.Response) => Promise<OriginalSessionClass>;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeFaunaDBInput) {
         super(recipeId, appInfo, config);
+        this.superCreateNewSession = super.createNewSession;
+        this.superGetSession = super.getSession;
+        this.superRefreshSession = super.refreshSession;
         this.faunaConfig = {
             faunadbSecret: config.faunadbSecret,
             accessFaunadbTokenFromFrontend:
@@ -125,7 +144,7 @@ export default class SessionRecipe extends OriginalSessionRecipe {
         sessionData: any = {}
     ): Promise<Session> => {
         // TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
-        let originalSession = await super.createNewSession(res, userId, jwtPayload, sessionData);
+        let originalSession = await this.superCreateNewSession(res, userId, jwtPayload, sessionData);
         let session = new Session(
             this,
             originalSession.getAccessToken(),
@@ -165,7 +184,7 @@ export default class SessionRecipe extends OriginalSessionRecipe {
     };
 
     getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): Promise<Session> => {
-        let originalSession = await super.getSession(req, res, doAntiCsrfCheck);
+        let originalSession = await this.superGetSession(req, res, doAntiCsrfCheck);
         return new Session(
             this,
             originalSession.getAccessToken(),
@@ -178,7 +197,7 @@ export default class SessionRecipe extends OriginalSessionRecipe {
     };
 
     refreshSession = async (req: express.Request, res: express.Response): Promise<Session> => {
-        let originalSession = await super.refreshSession(req, res);
+        let originalSession = await this.superRefreshSession(req, res);
         let session = new Session(
             this,
             originalSession.getAccessToken(),

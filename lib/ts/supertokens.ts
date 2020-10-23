@@ -69,7 +69,7 @@ export default class SuperTokens {
             throw new STError({
                 type: STError.GENERAL_ERROR,
                 rId: "",
-                message: "calling testing function in non testing env",
+                payload: new Error("calling testing function in non testing env"),
             });
         }
         Querier.reset();

@@ -59,7 +59,7 @@ export default class SessionRecipe extends RecipeModule {
 
     handshakeInfo: HandshakeInfo | undefined = undefined;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput) {
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
         super(recipeId, appInfo);
         let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(this, config);
 
@@ -93,7 +93,7 @@ export default class SessionRecipe extends RecipeModule {
         );
     }
 
-    static init(config: TypeInput): RecipeListFunction {
+    static init(config?: TypeInput): RecipeListFunction {
         return (appInfo) => {
             if (SessionRecipe.instance === undefined) {
                 SessionRecipe.instance = new SessionRecipe("session", appInfo, config);

@@ -14,21 +14,25 @@
  */
 
 import SuperTokens from "./supertokens";
-import STError from "./error";
-
-export * from "./error";
+import SuperTokensError from "./error";
 
 // For Express
 export default class SuperTokensWrapper {
     static init = SuperTokens.init;
 
-    static middleware = SuperTokens.getInstanceOrThrowError().middleware;
+    static Error = SuperTokensError;
 
-    static errorHandler = SuperTokens.getInstanceOrThrowError().errorHandler;
+    static middleware() {
+        return SuperTokens.getInstanceOrThrowError().middleware();
+    }
 
-    static getAllCORSHeaders = SuperTokens.getInstanceOrThrowError().getAllCORSHeaders;
+    static errorHandler() {
+        return SuperTokens.getInstanceOrThrowError().errorHandler();
+    }
 
-    static Error = STError;
+    static getAllCORSHeaders() {
+        return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
+    }
 }
 
 export let init = SuperTokens.init;
@@ -38,3 +42,5 @@ export let middleware = SuperTokensWrapper.middleware;
 export let errorHandler = SuperTokensWrapper.errorHandler;
 
 export let getAllCORSHeaders = SuperTokensWrapper.getAllCORSHeaders;
+
+export let Error = SuperTokensWrapper.Error;

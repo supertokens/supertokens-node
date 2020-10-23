@@ -62,8 +62,9 @@ export class Querier {
             throw new STError({
                 type: STError.GENERAL_ERROR,
                 rId: this.rId,
-                message:
-                    "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions",
+                payload: new Error(
+                    "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions"
+                ),
             });
         }
         Querier.apiVersion = supportedVersion;
@@ -75,7 +76,7 @@ export class Querier {
             throw new STError({
                 type: STError.GENERAL_ERROR,
                 rId: "",
-                message: "calling testing function in non testing env",
+                payload: new Error("calling testing function in non testing env"),
             });
         }
         Querier.initCalled = false;
@@ -86,7 +87,7 @@ export class Querier {
             throw new STError({
                 type: STError.GENERAL_ERROR,
                 rId: this.rId,
-                message: "calling testing function in non testing env",
+                payload: new Error("calling testing function in non testing env"),
             });
         }
         return Querier.hostsAliveForTesting;
@@ -97,7 +98,7 @@ export class Querier {
             throw new STError({
                 type: STError.GENERAL_ERROR,
                 rId,
-                message: "Please call the init function before using SuperTokens",
+                payload: new Error("Please call the supertokens.init function before using SuperTokens"),
             });
         }
         return new Querier(Querier.hosts, rId);
@@ -105,10 +106,12 @@ export class Querier {
 
     static init(hosts: string[], apiKey?: string) {
         if (!Querier.initCalled) {
+            Querier.initCalled = true;
             Querier.hosts = hosts;
             Querier.apiKey = apiKey;
             Querier.apiVersion = undefined;
             Querier.lastTriedIndex = 0;
+            Querier.hostsAliveForTesting = new Set<string>();
         }
     }
 
@@ -221,7 +224,7 @@ export class Querier {
             throw new STError({
                 type: STError.GENERAL_ERROR,
                 rId: this.rId,
-                message: "No SuperTokens core available to query",
+                payload: new Error("No SuperTokens core available to query"),
             });
         }
         let currentHost = this.__hosts[Querier.lastTriedIndex];
@@ -244,21 +247,21 @@ export class Querier {
                 throw new STError({
                     type: STError.GENERAL_ERROR,
                     rId: this.rId,
-                    message:
+                    payload: new Error(
                         "SuperTokens core threw an error for a " +
-                        method +
-                        " request to path: '" +
-                        path +
-                        "' with status code: " +
-                        err.response.status +
-                        " and message: " +
-                        err.response.data,
+                            method +
+                            " request to path: '" +
+                            path +
+                            "' with status code: " +
+                            err.response.status +
+                            " and message: " +
+                            err.response.data
+                    ),
                 });
             } else {
                 throw new STError({
                     type: STError.GENERAL_ERROR,
                     rId: this.rId,
-                    message: "API request failed",
                     payload: err,
                 });
             }

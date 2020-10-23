@@ -46,26 +46,27 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
     }
 }
 
-export function validateAndNormaliseUserInput(recipeInstance: SessionRecipe, config: TypeInput): TypeNormalisedInput {
+export function validateAndNormaliseUserInput(recipeInstance: SessionRecipe, config?: TypeInput): TypeNormalisedInput {
     let cookieDomain =
-        config.cookieDomain === undefined
+        config === undefined || config.cookieDomain === undefined
             ? undefined
             : normaliseSessionScopeOrThrowError(recipeInstance.getRecipeId(), config.cookieDomain);
 
     let cookieSameSite =
-        config.cookieSameSite === undefined
+        config === undefined || config.cookieSameSite === undefined
             ? "lax"
             : normaliseSameSiteOrThrowError(recipeInstance.getRecipeId(), config.cookieSameSite);
 
-    let cookieSecure = config.cookieSecure === undefined ? false : config.cookieSecure;
+    let cookieSecure = config === undefined || config.cookieSecure === undefined ? false : config.cookieSecure;
 
     let sessionExpiredStatusCode =
-        config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
+        config === undefined || config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
 
     let sessionRefreshFeature = {
         disableDefaultImplementation: false,
     };
     if (
+        config !== undefined &&
         config.sessionRefreshFeature !== undefined &&
         config.sessionRefreshFeature.disableDefaultImplementation !== undefined
     ) {
@@ -99,7 +100,7 @@ export function validateAndNormaliseUserInput(recipeInstance: SessionRecipe, con
             return sendUnauthorisedResponse(recipeInstance, message, request, response, next);
         },
     };
-    if (config.errorHandlers !== undefined) {
+    if (config !== undefined && config.errorHandlers !== undefined) {
         if (config.errorHandlers.onTokenTheftDetected !== undefined) {
             errorHandlers.onTokenTheftDetected = config.errorHandlers.onTokenTheftDetected;
         }
