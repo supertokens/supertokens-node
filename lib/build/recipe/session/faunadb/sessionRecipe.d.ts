@@ -7,8 +7,6 @@ import Session from "./sessionClass";
 import RecipeModule from "../../../recipeModule";
 import { NormalisedAppinfo, RecipeListFunction } from "../../../types";
 import OriginalSessionClass from "../sessionClass";
-export declare const FAUNADB_TOKEN_TIME_LAG_MILLI: number;
-export declare const FAUNADB_SESSION_KEY = "faunadbToken";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     parentRecipe: OriginalSessionRecipe;

@@ -14,7 +14,7 @@
  */
 
 import OriginalSessionClass from "../sessionClass";
-import { FAUNADB_SESSION_KEY } from "./sessionRecipe";
+import { FAUNADB_SESSION_KEY } from "./constants";
 import * as express from "express";
 import OriginalSessionRecipe from "../sessionRecipe";
 

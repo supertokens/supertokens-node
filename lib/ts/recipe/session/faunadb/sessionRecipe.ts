@@ -22,9 +22,7 @@ import Session from "./sessionClass";
 import RecipeModule from "../../../recipeModule";
 import { NormalisedAppinfo, RecipeListFunction } from "../../../types";
 import OriginalSessionClass from "../sessionClass";
-
-export const FAUNADB_TOKEN_TIME_LAG_MILLI = 30 * 1000;
-export const FAUNADB_SESSION_KEY = "faunadbToken";
+import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {

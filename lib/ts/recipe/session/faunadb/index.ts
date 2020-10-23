@@ -27,15 +27,20 @@ export default class SessionWrapper {
     static SessionContainer = SessionClass;
 
     static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
-        return SessionRecipe.getInstanceOrThrowError().createNewSession(res, userId, jwtPayload, sessionData);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.createNewSession(
+            res,
+            userId,
+            jwtPayload,
+            sessionData
+        );
     }
 
     static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) {
-        return SessionRecipe.getInstanceOrThrowError().getSession(req, res, doAntiCsrfCheck);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.getSession(req, res, doAntiCsrfCheck);
     }
 
     static refreshSession(req: express.Request, res: express.Response) {
-        return SessionRecipe.getInstanceOrThrowError().refreshSession(req, res);
+        return SessionRecipe.getInstanceOrThrowError().parentRecipe.refreshSession(req, res);
     }
 
     static revokeAllSessionsForUser(userId: string) {
