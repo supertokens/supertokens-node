@@ -13,3 +13,4 @@ addReleaseTag
 frontendDriverInterfaceSupported.json
 coreDriverInterfaceSupported.json
 .github/
+.gitattributes
