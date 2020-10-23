@@ -22,17 +22,17 @@ const {
     extractInfoFromResponse,
     setKeyValueInConfig,
 } = require("./utils");
-let ST = require("../lib/build/session");
-let STExpress = require("../index");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
 const nock = require("nock");
 let { version } = require("../lib/build/version");
 const express = require("express");
 const request = require("supertest");
-let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
-const { maxVersion } = require("../lib/build/utils");
+let SuperTokens = require("../");
+let Session = require("../recipe/session");
+let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
+let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 
 /* TODO:
 - check if output headers and set cookies for create session is fine
@@ -62,19 +62,43 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //- check for token theft detection
     it("token theft detection", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
 
-        let response = await ST.createNewSession("", {}, {});
+        let response = await SessionFunctions.createNewSession(SessionRecipe.getInstanceOrThrowError(), "", {}, {});
 
-        let response2 = await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
+        let response2 = await SessionFunctions.refreshSession(
+            SessionRecipe.getInstanceOrThrowError(),
+            response.refreshToken.token,
+            response.antiCsrfToken
+        );
 
-        await ST.getSession(response2.accessToken.token, response2.antiCsrfToken, true, response2.idRefreshToken.token);
+        await SessionFunctions.getSession(
+            SessionRecipe.getInstanceOrThrowError(),
+            response2.accessToken.token,
+            response2.antiCsrfToken,
+            true,
+            response2.idRefreshToken.token
+        );
 
         try {
-            await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
+            await SessionFunctions.refreshSession(
+                SessionRecipe.getInstanceOrThrowError(),
+                response.refreshToken.token,
+                response.antiCsrfToken
+            );
             throw new Error("should not have come here");
         } catch (err) {
-            if (!ST.Error.isErrorFromAuth(err) || err.errType !== ST.Error.TOKEN_THEFT_DETECTED) {
+            if (err.type !== Session.Error.TOKEN_THEFT_DETECTED) {
                 throw err;
             }
         }
@@ -83,22 +107,44 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     it("token theft detection with API key", async function () {
         await setKeyValueInConfig("api_keys", "shfo3h98308hOIHoei309saiho");
         await startST();
-        ST.init({
-            hosts: "http://localhost:8080",
-            apiKey: "shfo3h98308hOIHoei309saiho",
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+                apiKey: "shfo3h98308hOIHoei309saiho",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
         });
 
-        let response = await ST.createNewSession("", {}, {});
+        let response = await SessionFunctions.createNewSession(SessionRecipe.getInstanceOrThrowError(), "", {}, {});
 
-        let response2 = await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
+        let response2 = await SessionFunctions.refreshSession(
+            SessionRecipe.getInstanceOrThrowError(),
+            response.refreshToken.token,
+            response.antiCsrfToken
+        );
 
-        await ST.getSession(response2.accessToken.token, response2.antiCsrfToken, true, response2.idRefreshToken.token);
+        await SessionFunctions.getSession(
+            SessionRecipe.getInstanceOrThrowError(),
+            response2.accessToken.token,
+            response2.antiCsrfToken,
+            true,
+            response2.idRefreshToken.token
+        );
 
         try {
-            await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
+            await SessionFunctions.refreshSession(
+                SessionRecipe.getInstanceOrThrowError(),
+                response.refreshToken.token,
+                response.antiCsrfToken
+            );
             throw new Error("should not have come here");
         } catch (err) {
-            if (!ST.Error.isErrorFromAuth(err) || err.errType !== ST.Error.TOKEN_THEFT_DETECTED) {
+            if (err.type !== Session.Error.TOKEN_THEFT_DETECTED) {
                 throw err;
             }
         }
@@ -107,22 +153,25 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     it("query without API key", async function () {
         await setKeyValueInConfig("api_keys", "shfo3h98308hOIHoei309saiho");
         await startST();
-        ST.init({
-            hosts: "http://localhost:8080",
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
         });
+
         try {
-            let version = await Querier.getInstanceOrThrowError().getAPIVersion();
-            if (
-                (version !== "2.0" && process.env.INSTALL_PATH.includes("com-")) ||
-                (maxVersion(version, "2.3") === version && process.env.INSTALL_PATH.includes("supertokens-"))
-            ) {
-                throw new Error("should not have come here");
-            }
+            await Querier.getInstanceOrThrowError("").getAPIVersion();
+            throw new Error("should not have come here");
         } catch (err) {
             if (
-                !ST.Error.isErrorFromAuth(err) ||
-                err.errType !== ST.Error.GENERAL_ERROR ||
-                err.err.message !==
+                err.type !== Session.Error.GENERAL_ERROR ||
+                err.message !==
                     "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
             ) {
                 throw err;
@@ -133,9 +182,21 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check basic usage of session
     it("test basic usage of sessions", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
 
-        let response = await ST.createNewSession("", {}, {});
+        let s = SessionRecipe.getInstanceOrThrowError();
+
+        let response = await SessionFunctions.createNewSession(s, "", {}, {});
         assert(response.session !== undefined);
         assert(response.accessToken !== undefined);
         assert(response.refreshToken !== undefined);
@@ -143,11 +204,17 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response.antiCsrfToken !== undefined);
         assert(Object.keys(response).length === 5);
 
-        await ST.getSession(response.accessToken.token, response.antiCsrfToken, true, response.idRefreshToken.token);
+        await SessionFunctions.getSession(
+            s,
+            response.accessToken.token,
+            response.antiCsrfToken,
+            true,
+            response.idRefreshToken.token
+        );
         let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
         assert(verifyState3 === undefined);
 
-        let response2 = await ST.refreshSession(response.refreshToken.token, response.antiCsrfToken);
+        let response2 = await SessionFunctions.refreshSession(s, response.refreshToken.token, response.antiCsrfToken);
         assert(response2.session !== undefined);
         assert(response2.accessToken !== undefined);
         assert(response2.refreshToken !== undefined);
@@ -155,7 +222,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response2.antiCsrfToken !== undefined);
         assert(Object.keys(response2).length === 5);
 
-        let response3 = await ST.getSession(
+        let response3 = await SessionFunctions.getSession(
+            s,
             response2.accessToken.token,
             response2.antiCsrfToken,
             true,
@@ -169,7 +237,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         ProcessState.getInstance().reset();
 
-        let response4 = await ST.getSession(
+        let response4 = await SessionFunctions.getSession(
+            s,
             response3.accessToken.token,
             response2.antiCsrfToken,
             true,
@@ -181,17 +250,31 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response4.accessToken === undefined);
         assert(Object.keys(response4).length === 1);
 
-        let response5 = await ST.revokeSession(response4.session.handle);
+        let response5 = await SessionFunctions.revokeSession(s, response4.session.handle);
         assert(response5 === true);
     });
 
     //check session verify for with / without anti-csrf present
     it("test session verify with anti-csrf present", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
-        let response = await ST.createNewSession("", {}, {});
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
 
-        let response2 = await ST.getSession(
+        let s = SessionRecipe.getInstanceOrThrowError();
+
+        let response = await SessionFunctions.createNewSession(s, "", {}, {});
+
+        let response2 = await SessionFunctions.getSession(
+            s,
             response.accessToken.token,
             response.antiCsrfToken,
             true,
@@ -200,7 +283,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response2.session != undefined);
         assert(Object.keys(response2.session).length === 3);
 
-        let response3 = await ST.getSession(
+        let response3 = await SessionFunctions.getSession(
+            s,
             response.accessToken.token,
             response.antiCsrfToken,
             false,
@@ -213,20 +297,39 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check session verify for with / without anti-csrf present**
     it("test session verify without anti-csrf present", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
-        let response = await ST.createNewSession("", {}, {});
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError();
+
+        let response = await SessionFunctions.createNewSession(s, "", {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false
-        let response2 = await ST.getSession(response.accessToken.token, undefined, false, response.idRefreshToken);
+        let response2 = await SessionFunctions.getSession(
+            s,
+            response.accessToken.token,
+            undefined,
+            false,
+            response.idRefreshToken
+        );
         assert(response2.session != undefined);
         assert(Object.keys(response2.session).length === 3);
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         try {
-            await ST.getSession(response.accessToken.token, undefined, true, response.idRefreshToken);
+            await SessionFunctions.getSession(s, response.accessToken.token, undefined, true, response.idRefreshToken);
             throw new Error("should not have come here");
         } catch (err) {
-            if (!ST.Error.isErrorFromAuth(err) || err.errType !== ST.Error.TRY_REFRESH_TOKEN) {
+            if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
                 throw err;
             }
         }
@@ -235,60 +338,83 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check revoking session(s)
     it("test revoking of sessions", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
-        //create a single session and  revoke using the session handle
-        let res = await ST.createNewSession("someUniqueUserId", {}, {});
-        let res2 = await ST.revokeSession(res.session.handle);
-        assert(res2 === true);
-        const CDI_VERSION = await Querier.getInstanceOrThrowError().getAPIVersion();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
 
-        let res3 = await ST.getAllSessionHandlesForUser("someUniqueUserId");
+        let s = SessionRecipe.getInstanceOrThrowError();
+        //create a single session and  revoke using the session handle
+        let res = await SessionFunctions.createNewSession(s, "someUniqueUserId", {}, {});
+        let res2 = await SessionFunctions.revokeSession(s, res.session.handle);
+        assert(res2 === true);
+
+        let res3 = await SessionFunctions.getAllSessionHandlesForUser(s, "someUniqueUserId");
         assert(res3.length === 0);
 
         //create multiple sessions with the same userID and use revokeAllSessionsForUser to revoke sessions
-        await ST.createNewSession("someUniqueUserId", {}, {});
-        await ST.createNewSession("someUniqueUserId", {}, {});
+        await SessionFunctions.createNewSession(s, "someUniqueUserId", {}, {});
+        await SessionFunctions.createNewSession(s, "someUniqueUserId", {}, {});
 
-        let sessionIdResponse = await ST.getAllSessionHandlesForUser("someUniqueUserId");
+        let sessionIdResponse = await SessionFunctions.getAllSessionHandlesForUser(s, "someUniqueUserId");
         assert(sessionIdResponse.length === 2);
 
-        let response = await ST.revokeAllSessionsForUser("someUniqueUserId");
+        let response = await SessionFunctions.revokeAllSessionsForUser(s, "someUniqueUserId");
         assert(response.length === 2);
 
-        sessionIdResponse = await ST.getAllSessionHandlesForUser("someUniqueUserId");
+        sessionIdResponse = await SessionFunctions.getAllSessionHandlesForUser(s, "someUniqueUserId");
         assert(sessionIdResponse.length === 0);
 
         //revoke a session with a session handle that does not exist
-        let resp = await ST.revokeSession("");
+        let resp = await SessionFunctions.revokeSession(s, "");
         assert(resp === false);
 
         //revoke a session with a userId that does not exist
-        let resp2 = await ST.revokeAllSessionsForUser("random");
+        let resp2 = await SessionFunctions.revokeAllSessionsForUser(s, "random");
         assert(resp2.length === 0);
     });
 
     //check manipulating session data
     it("test manipulating session data", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
-        //adding session data
-        let res = await ST.createNewSession("", {}, {});
-        await ST.updateSessionData(res.session.handle, { key: "value" });
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
 
-        let res2 = await ST.getSessionData(res.session.handle);
+        let s = SessionRecipe.getInstanceOrThrowError();
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "", {}, {});
+        await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value" });
+
+        let res2 = await SessionFunctions.getSessionData(s, res.session.handle);
         assert.deepEqual(res2, { key: "value" });
 
         //changing the value of session data with the same key
-        await ST.updateSessionData(res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value 2" });
 
-        let res3 = await ST.getSessionData(res.session.handle);
+        let res3 = await SessionFunctions.getSessionData(s, res.session.handle);
         assert.deepEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating session data
         try {
-            await ST.updateSessionData("random", { key2: "value2" });
+            await SessionFunctions.updateSessionData(s, "random", { key2: "value2" });
         } catch (error) {
-            if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.UNAUTHORISED) {
+            if (error.type !== Session.Error.UNAUTHORISED) {
                 throw error;
             }
         }
@@ -297,27 +423,39 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     //check manipulating jwt payload
     it("test manipulating jwt payload", async function () {
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError();
         //adding jwt payload
-        let res = await ST.createNewSession("", {}, {});
+        let res = await SessionFunctions.createNewSession(s, "", {}, {});
 
-        await ST.updateJWTPayload(res.session.handle, { key: "value" });
+        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value" });
 
-        let res2 = await ST.getJWTPayload(res.session.handle);
+        let res2 = await SessionFunctions.getJWTPayload(s, res.session.handle);
         assert.deepEqual(res2, { key: "value" });
 
         //changing the value of jwt payload with the same key
-        await ST.updateJWTPayload(res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value 2" });
 
-        let res3 = await ST.getJWTPayload(res.session.handle);
+        let res3 = await SessionFunctions.getJWTPayload(s, res.session.handle);
         assert.deepEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating jwt payload
         try {
-            await ST.updateJWTPayload("random", { key2: "value2" });
+            await SessionFunctions.updateJWTPayload(s, "random", { key2: "value2" });
             throw new Error();
         } catch (error) {
-            if (!ST.Error.isErrorFromAuth(error) || error.errType !== ST.Error.UNAUTHORISED) {
+            if (error.type !== Session.Error.UNAUTHORISED) {
                 throw error;
             }
         }
@@ -327,16 +465,40 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     it("test that when anti-csrf is disabled from ST core not having that in input to verify session is fine", async function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
-        ST.init({ hosts: "http://localhost:8080" });
-        let response = await ST.createNewSession("", {}, {});
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError();
+        let response = await SessionFunctions.createNewSession(s, "", {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false
-        let response2 = await ST.getSession(response.accessToken.token, undefined, false, response.idRefreshToken);
+        let response2 = await SessionFunctions.getSession(
+            s,
+            response.accessToken.token,
+            undefined,
+            false,
+            response.idRefreshToken
+        );
         assert(response2.session != undefined);
         assert(Object.keys(response2.session).length === 3);
 
         //passing anti-csrf token as undefined and anti-csrf check as true
-        let response3 = await ST.getSession(response.accessToken.token, undefined, true, response.idRefreshToken);
+        let response3 = await SessionFunctions.getSession(
+            s,
+            response.accessToken.token,
+            undefined,
+            true,
+            response.idRefreshToken
+        );
         assert(response3.session != undefined);
         assert(Object.keys(response3.session).length === 3);
     });
@@ -345,16 +507,31 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
 
-        ST.init({ hosts: "http://localhost:8080", cookieSameSite: "none" });
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    cookieSameSite: "none",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError();
 
         try {
-            await ST.createNewSession("", {}, {});
+            await SessionFunctions.createNewSession(s, "", {}, {});
             assert(false);
         } catch (err) {
             if (
-                !ST.Error.isErrorFromAuth(err) ||
-                err.errType !== ST.Error.GENERAL_ERROR ||
-                err.err.message !==
+                err.type !== Session.Error.GENERAL_ERROR ||
+                err.message !==
                     'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
             ) {
                 throw error;
@@ -365,14 +542,46 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     it("test that anti-csrf disabled and sameSite lax does now throw an error", async function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
-        ST.init({ hosts: "http://localhost:8080", cookieSameSite: "lax" });
-        await ST.createNewSession("", {}, {});
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    cookieSameSite: "lax",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError();
+        await SessionFunctions.createNewSession(s, "", {}, {});
     });
 
     it("test that anti-csrf disabled and sameSite strict does now throw an error", async function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
-        ST.init({ hosts: "http://localhost:8080", cookieSameSite: "strict" });
-        await ST.createNewSession("", {}, {});
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    cookieSameSite: "strict",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError();
+        await SessionFunctions.createNewSession(s, "", {}, {});
     });
 });

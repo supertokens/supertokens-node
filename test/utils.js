@@ -18,6 +18,7 @@ let fs = require("fs");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 let FaunaDBSessionRecipe = require("../lib/build/recipe/session/faunadb/sessionRecipe").default;
+let { ProcessState } = require("../lib/build/processState");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -165,6 +166,7 @@ module.exports.resetAll = function () {
     SuperTokens.reset();
     SessionRecipe.reset();
     FaunaDBSessionRecipe.reset();
+    ProcessState.getInstance().reset();
 };
 
 module.exports.killAllST = async function () {

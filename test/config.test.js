@@ -16,7 +16,6 @@ const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = re
 let STExpress = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
-let SuperTokens = require("../lib/build/supertokens").default;
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
 let { normaliseURLPathOrThrowError, normaliseURLDomainOrThrowError } = require("../lib/build/utils");
