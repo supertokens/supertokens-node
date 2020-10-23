@@ -34,6 +34,19 @@ let { HandshakeInfo } = require("../lib/build/handshakeInfo");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 const { maxVersion } = require("../lib/build/utils");
 
+/* TODO:
+- check if output headers and set cookies for create session is fine
+- check if output headers and set cookies for refresh session is fine
+- check that if signing key changes, things are still fine
+- check if input cookies are missing, an appropriate error is thrown
+- the opposite of the above condition
+- calling createNewSession twice, should overwrite the first call (in terms of cookies)
+- calling createNewSession in the case of unauthorised error, should create a proper session
+- revoking old session after create new session, should not remove new session's cookies.
+- check that if idRefreshToken is not passed to express, verify throws UNAUTHORISED
+- check that Access-Control-Expose-Headers header is being set properly during create, use and destroy session**** only for express
+*/
+
 describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

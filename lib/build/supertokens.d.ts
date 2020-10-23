@@ -7,4 +7,6 @@ export default class SuperTokens {
     constructor(config: TypeInput);
     static init(config: TypeInput): void;
     static reset(): void;
+    static middleware(): void;
+    static errorHandler(): void;
 }

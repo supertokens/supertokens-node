@@ -14,6 +14,9 @@ export default class SessionRecipe extends RecipeModule {
         cookieSecure: boolean;
         cookieSameSite: "strict" | "lax" | "none";
         sessionExpiredStatusCode: number;
+        sessionRefreshFeature: {
+            disableDefaultImplementation: boolean;
+        };
     };
     handshakeInfo: HandshakeInfo | undefined;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput);

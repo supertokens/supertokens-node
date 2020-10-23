@@ -47,6 +47,9 @@ export declare type TypeNormalisedInput = {
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
+    sessionRefreshFeature: {
+        disableDefaultImplementation: boolean;
+    };
 };
 export interface SessionRequest extends Request {
     session: Session;

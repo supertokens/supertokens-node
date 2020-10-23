@@ -21,6 +21,12 @@ const request = require("supertest");
 let { Querier } = require("../lib/build/querier");
 let { ProcessState } = require("../lib/build/processState");
 
+/**
+ *
+ * TODO: check that disabling default API actually disables it (for session)
+ * TODO: check that disabling default API actually disables it (for emailpassword)
+ */
+
 describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

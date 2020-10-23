@@ -18,6 +18,12 @@ let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
 
+/**
+ *
+ * TODO: Test that if the querier throws an error from a recipe, that recipe's ID is there
+ * TODO: Check that once the API version is there, it doesn't need to query again
+ */
+
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

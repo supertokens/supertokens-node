@@ -129,7 +129,7 @@ export function maxVersion(version1: string, version2: string): string {
     return version2;
 }
 
-export function normaliseInputAppInfo(appInfo: AppInfo): NormalisedAppinfo {
+export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo {
     return {
         appName: appInfo.appName,
         websiteDomain: normaliseURLDomainOrThrowError(appInfo.websiteDomain),

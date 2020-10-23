@@ -48,6 +48,9 @@ export default class SessionRecipe extends RecipeModule {
         cookieSecure: boolean;
         cookieSameSite: "strict" | "lax" | "none";
         sessionExpiredStatusCode: number;
+        sessionRefreshFeature: {
+            disableDefaultImplementation: boolean;
+        };
     };
 
     handshakeInfo: HandshakeInfo | undefined = undefined;
@@ -64,6 +67,7 @@ export default class SessionRecipe extends RecipeModule {
                 cookieSecure: normalisedInput.cookieSecure,
                 cookieSameSite: normalisedInput.cookieSameSite,
                 sessionExpiredStatusCode: normalisedInput.sessionExpiredStatusCode,
+                sessionRefreshFeature: normalisedInput.sessionRefreshFeature,
             };
 
             // Solving the cold start problem

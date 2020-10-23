@@ -37,9 +37,6 @@
     "jsonwebtoken": "8.5.1",
     "validator": "10.11.0"
   },
-  "peerDependencies": {
-    "express": "*"
-  },
   "devDependencies": {
     "cookie-parser": "^1.4.5",
     "@types/cookie": "0.3.3",

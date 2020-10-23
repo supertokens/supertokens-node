@@ -20,6 +20,10 @@ let { ProcessState } = require("../lib/build/processState");
 let { SessionConfig } = require("../lib/build/session");
 let { CookieConfig } = require("../lib/build/cookieAndHeaders");
 
+/**
+ * TODO: test that once the info is loaded, it doesn't query again
+ */
+
 describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

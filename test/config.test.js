@@ -26,6 +26,14 @@ let {
 const { Querier } = require("../lib/build/querier");
 const { SessionConfig } = require("../lib/build/session");
 
+/**
+ * TODO: test various inputs for appInfo
+ * TODO: test using zero, one and two recipe modules
+ * TODO: test config for session module
+ * TODO: test config for faunadb session module
+ * TODO: test config for emailpassword module
+ */
+
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

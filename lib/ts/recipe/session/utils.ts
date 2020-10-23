@@ -57,12 +57,23 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
     let sessionExpiredStatusCode =
         config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
 
+    let sessionRefreshFeature = {
+        disableDefaultImplementation: false,
+    };
+    if (
+        config.sessionRefreshFeature !== undefined &&
+        config.sessionRefreshFeature.disableDefaultImplementation !== undefined
+    ) {
+        sessionRefreshFeature.disableDefaultImplementation = config.sessionRefreshFeature.disableDefaultImplementation;
+    }
+
     return {
         accessTokenPath,
         cookieDomain,
         cookieSameSite,
         cookieSecure,
         sessionExpiredStatusCode,
+        sessionRefreshFeature,
     };
 }
 

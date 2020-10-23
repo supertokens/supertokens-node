@@ -15,7 +15,7 @@
 
 import STError from "./error";
 import { TypeInput, NormalisedAppinfo } from "./types";
-import { normaliseInputAppInfo, normaliseURLDomainOrThrowError } from "./utils";
+import { normaliseInputAppInfoOrThrowError, normaliseURLDomainOrThrowError } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 
@@ -28,12 +28,16 @@ export default class SuperTokens {
 
     constructor(config: TypeInput) {
         try {
-            this.appInfo = normaliseInputAppInfo(config.appInfo);
+            this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
 
             Querier.init(
                 config.supertokens.connectionURI.split(";").map((h) => normaliseURLDomainOrThrowError(h)),
                 config.supertokens.apiKey
             );
+
+            if (config.recipeList === undefined || config.recipeList.length === 0) {
+                throw new Error("Please provide at least one recipe to the supertokens.init function call");
+            }
 
             this.recipeModules = config.recipeList.map((func) => {
                 return func(this.appInfo);
@@ -72,5 +76,13 @@ export default class SuperTokens {
         }
         Querier.reset();
         SuperTokens.instance = undefined;
+    }
+
+    static middleware() {
+        // TODO:
+    }
+
+    static errorHandler() {
+        // TODO:
     }
 }
