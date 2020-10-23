@@ -1,4 +1,3 @@
-import { Querier } from "./querier";
 /* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -14,6 +13,7 @@ import { Querier } from "./querier";
  * under the License.
  */
 
+import { Querier } from "./querier";
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import { normaliseURLPathOrThrowError } from "./utils";
