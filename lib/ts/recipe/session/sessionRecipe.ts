@@ -19,7 +19,7 @@ import { TypeInput, TypeNormalisedInput, SessionRequest, Auth0RequestBody } from
 import STError from "./error";
 import Session from "./sessionClass";
 import { validateAndNormaliseUserInput, attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
-import { HandshakeInfo } from "./types";
+import { HandshakeInfo, NormalisedErrorHandlers } from "./types";
 import * as express from "express";
 import * as SessionFunctions from "./sessionFunctions";
 import * as qs from "querystring";
@@ -54,13 +54,14 @@ export default class SessionRecipe extends RecipeModule {
         sessionRefreshFeature: {
             disableDefaultImplementation: boolean;
         };
+        errorHandlers: NormalisedErrorHandlers;
     };
 
     handshakeInfo: HandshakeInfo | undefined = undefined;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput) {
         super(recipeId, appInfo);
-        let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(this.getRecipeId(), config);
+        let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(this, config);
 
         this.config = {
             accessTokenPath: normalisedInput.accessTokenPath,
@@ -70,6 +71,7 @@ export default class SessionRecipe extends RecipeModule {
             cookieSameSite: normalisedInput.cookieSameSite,
             sessionExpiredStatusCode: normalisedInput.sessionExpiredStatusCode,
             sessionRefreshFeature: normalisedInput.sessionRefreshFeature,
+            errorHandlers: normalisedInput.errorHandlers,
         };
 
         // Solving the cold start problem
@@ -138,6 +140,22 @@ export default class SessionRecipe extends RecipeModule {
 
     handleAPIRequest = (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
         handleRefreshAPI(this, req, res, next);
+    };
+
+    handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {
+        if (err.type === STError.UNAUTHORISED) {
+            return this.config.errorHandlers.onUnauthorised(err.message, request, response, next);
+        } else if (err.type === STError.TRY_REFRESH_TOKEN) {
+            return this.config.errorHandlers.onTryRefreshToken(err.message, request, response, next);
+        } else {
+            return this.config.errorHandlers.onTokenTheftDetected(
+                err.payload.sessionHandle,
+                err.payload.userId,
+                request,
+                response,
+                next
+            );
+        }
     };
 
     // instance functions below...............

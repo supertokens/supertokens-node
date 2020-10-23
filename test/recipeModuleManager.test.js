@@ -33,6 +33,7 @@ const { SessionConfig } = require("../lib/build/session");
  * TODO: Test various inputs to routing (if it accepts or not)
  *          - including when the base path is "/"
  *          - with and without a rId
+ *          - where we do not have to handle it and it skips it (with / without rId)
  * TODO: Test various inputs to errorHandler (if it accepts or not)
  */
 

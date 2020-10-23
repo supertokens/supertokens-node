@@ -1,7 +1,8 @@
 import RecipeModule from "../../recipeModule";
 import { TypeInput, SessionRequest } from "./types";
+import STError from "./error";
 import Session from "./sessionClass";
-import { HandshakeInfo } from "./types";
+import { HandshakeInfo, NormalisedErrorHandlers } from "./types";
 import * as express from "express";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
 export default class SessionRecipe extends RecipeModule {
@@ -17,6 +18,7 @@ export default class SessionRecipe extends RecipeModule {
         sessionRefreshFeature: {
             disableDefaultImplementation: boolean;
         };
+        errorHandlers: NormalisedErrorHandlers;
     };
     handshakeInfo: HandshakeInfo | undefined;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput);
@@ -25,6 +27,7 @@ export default class SessionRecipe extends RecipeModule {
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => void;
+    handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getHandshakeInfo: () => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;

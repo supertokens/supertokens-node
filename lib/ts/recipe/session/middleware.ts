@@ -13,8 +13,7 @@
  * under the License.
  */
 import { Response, NextFunction, Request } from "express";
-import { SessionRequest, ErrorHandlerMiddleware, SuperTokensErrorMiddlewareOptions, TypeInput } from "./types";
-import STError from "./error";
+import { SessionRequest, ErrorHandlerMiddleware, TypeInput } from "./types";
 import SessionRecipe from "./sessionRecipe";
 import { normaliseHttpMethod, normaliseURLPathOrThrowError } from "../../utils";
 import { handleRefreshAPI } from "./api";
@@ -44,53 +43,7 @@ export function middleware(recipeInstance: SessionRecipe, antiCsrfCheck?: boolea
     };
 }
 
-export function errorHandler(
-    recipeInstance: SessionRecipe,
-    options?: SuperTokensErrorMiddlewareOptions
-): ErrorHandlerMiddleware {
-    return (err: any, request: Request, response: Response, next: NextFunction) => {
-        if (recipeInstance.isErrorFromThisRecipe(err)) {
-            if (err.type === STError.UNAUTHORISED) {
-                if (options !== undefined && options.onUnauthorised !== undefined) {
-                    options.onUnauthorised(err.message, request, response, next);
-                } else {
-                    sendUnauthorisedResponse(recipeInstance, err.message, request, response, next);
-                }
-            } else if (err.type === STError.TRY_REFRESH_TOKEN) {
-                if (options !== undefined && options.onTryRefreshToken !== undefined) {
-                    options.onTryRefreshToken(err.message, request, response, next);
-                } else {
-                    sendTryRefreshTokenResponse(recipeInstance, err.message, request, response, next);
-                }
-            } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
-                if (options !== undefined && options.onTokenTheftDetected !== undefined) {
-                    options.onTokenTheftDetected(
-                        err.payload.sessionHandle,
-                        err.payload.userId,
-                        request,
-                        response,
-                        next
-                    );
-                } else {
-                    sendTokenTheftDetectedResponse(
-                        recipeInstance,
-                        err.payload.sessionHandle,
-                        err.payload.userId,
-                        request,
-                        response,
-                        next
-                    );
-                }
-            } else {
-                next(err.payload);
-            }
-        } else {
-            next(err);
-        }
-    };
-}
-
-async function sendTryRefreshTokenResponse(
+export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
     message: string,
     request: Request,
@@ -104,7 +57,7 @@ async function sendTryRefreshTokenResponse(
     }
 }
 
-async function sendUnauthorisedResponse(
+export async function sendUnauthorisedResponse(
     recipeInstance: SessionRecipe,
     message: string,
     request: Request,
@@ -118,7 +71,7 @@ async function sendUnauthorisedResponse(
     }
 }
 
-async function sendTokenTheftDetectedResponse(
+export async function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
     sessionHandle: string,
     userId: string,
@@ -135,7 +88,7 @@ async function sendTokenTheftDetectedResponse(
 }
 
 function sendResponse(response: Response, message: string, statusCode: number) {
-    if (!response.finished) {
+    if (!response.writableEnded) {
         response.statusCode = statusCode;
         response.json({
             message,

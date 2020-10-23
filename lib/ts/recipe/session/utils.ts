@@ -1,4 +1,4 @@
-import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
+import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput, NormalisedErrorHandlers } from "./types";
 import {
     setFrontTokenInHeaders,
     attachAccessTokenToCookie,
@@ -11,6 +11,7 @@ import { URL } from "url";
 import { normaliseURLPathOrThrowError } from "../../utils";
 import SessionRecipe from "./sessionRecipe";
 import STError from "./error";
+import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauthorisedResponse } from "./middleware";
 
 export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
     sessionScope = sessionScope.trim().toLowerCase();
@@ -45,12 +46,16 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
     }
 }
 
-export function validateAndNormaliseUserInput(rId: string, config: TypeInput): TypeNormalisedInput {
+export function validateAndNormaliseUserInput(recipeInstance: SessionRecipe, config: TypeInput): TypeNormalisedInput {
     let cookieDomain =
-        config.cookieDomain === undefined ? undefined : normaliseSessionScopeOrThrowError(rId, config.cookieDomain);
+        config.cookieDomain === undefined
+            ? undefined
+            : normaliseSessionScopeOrThrowError(recipeInstance.getRecipeId(), config.cookieDomain);
 
     let cookieSameSite =
-        config.cookieSameSite === undefined ? "lax" : normaliseSameSiteOrThrowError(rId, config.cookieSameSite);
+        config.cookieSameSite === undefined
+            ? "lax"
+            : normaliseSameSiteOrThrowError(recipeInstance.getRecipeId(), config.cookieSameSite);
 
     let cookieSecure = config.cookieSecure === undefined ? false : config.cookieSecure;
 
@@ -67,6 +72,45 @@ export function validateAndNormaliseUserInput(rId: string, config: TypeInput): T
         sessionRefreshFeature.disableDefaultImplementation = config.sessionRefreshFeature.disableDefaultImplementation;
     }
 
+    let errorHandlers: NormalisedErrorHandlers = {
+        onTokenTheftDetected: (
+            sessionHandle: string,
+            userId: string,
+            request: express.Request,
+            response: express.Response,
+            next: express.NextFunction
+        ) => {
+            return sendTokenTheftDetectedResponse(recipeInstance, sessionHandle, userId, request, response, next);
+        },
+        onTryRefreshToken: (
+            message: string,
+            request: express.Request,
+            response: express.Response,
+            next: express.NextFunction
+        ) => {
+            return sendTryRefreshTokenResponse(recipeInstance, message, request, response, next);
+        },
+        onUnauthorised: (
+            message: string,
+            request: express.Request,
+            response: express.Response,
+            next: express.NextFunction
+        ) => {
+            return sendUnauthorisedResponse(recipeInstance, message, request, response, next);
+        },
+    };
+    if (config.errorHandlers !== undefined) {
+        if (config.errorHandlers.onTokenTheftDetected !== undefined) {
+            errorHandlers.onTokenTheftDetected = config.errorHandlers.onTokenTheftDetected;
+        }
+        if (config.errorHandlers.onTryRefreshToken !== undefined) {
+            errorHandlers.onTryRefreshToken = config.errorHandlers.onTryRefreshToken;
+        }
+        if (config.errorHandlers.onUnauthorised !== undefined) {
+            errorHandlers.onUnauthorised = config.errorHandlers.onUnauthorised;
+        }
+    }
+
     return {
         accessTokenPath: "/",
         cookieDomain,
@@ -74,6 +118,7 @@ export function validateAndNormaliseUserInput(rId: string, config: TypeInput): T
         cookieSecure,
         sessionExpiredStatusCode,
         sessionRefreshFeature,
+        errorHandlers,
     };
 }
 

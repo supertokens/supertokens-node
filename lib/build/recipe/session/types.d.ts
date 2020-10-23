@@ -39,6 +39,7 @@ export declare type TypeInput = {
     sessionRefreshFeature?: {
         disableDefaultImplementation?: boolean;
     };
+    errorHandlers?: ErrorHandlers;
 };
 export declare type TypeNormalisedInput = {
     accessTokenPath: string;
@@ -49,6 +50,7 @@ export declare type TypeNormalisedInput = {
     sessionRefreshFeature: {
         disableDefaultImplementation: boolean;
     };
+    errorHandlers: NormalisedErrorHandlers;
 };
 export interface SessionRequest extends Request {
     session: Session;
@@ -59,10 +61,15 @@ export interface ErrorHandlerMiddleware {
 export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction): void;
 }
-export interface SuperTokensErrorMiddlewareOptions {
+export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTryRefreshToken?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
+}
+export interface NormalisedErrorHandlers {
+    onUnauthorised: ErrorHandlerMiddleware;
+    onTryRefreshToken: ErrorHandlerMiddleware;
+    onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
 }
 export declare type Auth0RequestBody = {
     action: "login";
