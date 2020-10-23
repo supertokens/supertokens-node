@@ -11,4 +11,5 @@ export default class SuperTokens {
     static getInstanceOrThrowError(): SuperTokens;
     middleware: () => (request: express.Request, response: express.Response, next: express.NextFunction) => Promise<void>;
     errorHandler: () => (err: any, request: express.Request, response: express.Response, next: express.NextFunction) => void;
+    getAllCORSHeaders: () => string[];
 }

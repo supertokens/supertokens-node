@@ -42,8 +42,6 @@ export default class SessionWrapper {
 
     static updateSessionData = SessionRecipe.getInstanceOrThrowError().updateSessionData;
 
-    static getCORSAllowedHeaders = SessionRecipe.getInstanceOrThrowError().getCORSAllowedHeaders;
-
     static getJWTPayload = SessionRecipe.getInstanceOrThrowError().getJWTPayload;
 
     static updateJWTPayload = SessionRecipe.getInstanceOrThrowError().updateJWTPayload;
@@ -76,8 +74,6 @@ export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
 export let getSessionData = SessionWrapper.getSessionData;
 
 export let updateSessionData = SessionWrapper.updateSessionData;
-
-export let getCORSAllowedHeaders = SessionWrapper.getCORSAllowedHeaders;
 
 export let getJWTPayload = SessionWrapper.getJWTPayload;
 

@@ -26,6 +26,7 @@ import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import * as express from "express";
 import { URL } from "url";
+import { HEADER_RID } from "./constants";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -157,5 +158,17 @@ export default class SuperTokens {
 
             return next(err);
         };
+    };
+
+    getAllCORSHeaders = (): string[] => {
+        let headerSet = new Set<string>();
+        headerSet.add(HEADER_RID);
+        this.recipeModules.forEach((recipe) => {
+            let headers = recipe.getAllCORSHeaders();
+            headers.forEach((h) => {
+                headerSet.add(h);
+            });
+        });
+        return Array.from(headerSet);
     };
 }

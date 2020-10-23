@@ -26,6 +26,8 @@ export default class SuperTokensWrapper {
 
     static errorHandler = SuperTokens.getInstanceOrThrowError().errorHandler;
 
+    static getAllCORSHeaders = SuperTokens.getInstanceOrThrowError().getAllCORSHeaders;
+
     static Error = STError;
 }
 
@@ -34,3 +36,5 @@ export let init = SuperTokens.init;
 export let middleware = SuperTokensWrapper.middleware;
 
 export let errorHandler = SuperTokensWrapper.errorHandler;
+
+export let getAllCORSHeaders = SuperTokensWrapper.getAllCORSHeaders;

@@ -1,4 +1,4 @@
-import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from './types';
+import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
 import * as express from "express";
 import SessionRecipe from "./sessionRecipe";
 export declare function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string;

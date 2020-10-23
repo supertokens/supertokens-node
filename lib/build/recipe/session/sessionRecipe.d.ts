@@ -28,6 +28,7 @@ export default class SessionRecipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => void;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
+    getAllCORSHeaders: () => string[];
     getHandshakeInfo: () => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
@@ -39,7 +40,6 @@ export default class SessionRecipe extends RecipeModule {
     revokeMultipleSessions: (sessionHandles: string[]) => Promise<string[]>;
     getSessionData: (sessionHandle: string) => Promise<any>;
     updateSessionData: (sessionHandle: string, newSessionData: any) => Promise<void>;
-    getCORSAllowedHeaders: () => string[];
     getJWTPayload: (sessionHandle: string) => Promise<any>;
     updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
     auth0Handler: (request: SessionRequest, response: express.Response, next: express.NextFunction, domain: string, clientId: string, clientSecret: string, callback?: ((userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>) | undefined) => Promise<express.Response | undefined>;

@@ -15,4 +15,5 @@ export default abstract class RecipeModule {
     abstract getAPIsHandled(): APIHandled[];
     abstract handleAPIRequest(id: string, req: express.Request, response: express.Response, next: express.NextFunction): void;
     abstract handleError(error: STError, request: express.Request, response: express.Response, next: express.NextFunction): void;
+    abstract getAllCORSHeaders(): string[];
 }

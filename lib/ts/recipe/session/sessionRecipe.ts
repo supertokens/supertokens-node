@@ -158,6 +158,10 @@ export default class SessionRecipe extends RecipeModule {
         }
     };
 
+    getAllCORSHeaders = (): string[] => {
+        return getCORSAllowedHeadersFromCookiesAndHeaders();
+    };
+
     // instance functions below...............
 
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
@@ -315,10 +319,6 @@ export default class SessionRecipe extends RecipeModule {
 
     updateSessionData = (sessionHandle: string, newSessionData: any) => {
         return SessionFunctions.updateSessionData(this, sessionHandle, newSessionData);
-    };
-
-    getCORSAllowedHeaders = (): string[] => {
-        return getCORSAllowedHeadersFromCookiesAndHeaders();
     };
 
     getJWTPayload = (sessionHandle: string): Promise<any> => {

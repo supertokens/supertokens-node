@@ -82,4 +82,6 @@ export default abstract class RecipeModule {
         response: express.Response,
         next: express.NextFunction
     ): void;
+
+    abstract getAllCORSHeaders(): string[];
 }

@@ -14,7 +14,6 @@ export default class SessionWrapper {
     static revokeMultipleSessions: (sessionHandles: string[]) => Promise<string[]>;
     static getSessionData: (sessionHandle: string) => Promise<any>;
     static updateSessionData: (sessionHandle: string, newSessionData: any) => Promise<void>;
-    static getCORSAllowedHeaders: () => string[];
     static getJWTPayload: (sessionHandle: string) => Promise<any>;
     static updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
     static auth0Handler: (request: import("./types").SessionRequest, response: import("express").Response, next: import("express").NextFunction, domain: string, clientId: string, clientSecret: string, callback?: ((userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>) | undefined) => Promise<import("express").Response | undefined>;
@@ -31,7 +30,6 @@ export declare let revokeSession: (sessionHandle: string) => Promise<boolean>;
 export declare let revokeMultipleSessions: (sessionHandles: string[]) => Promise<string[]>;
 export declare let getSessionData: (sessionHandle: string) => Promise<any>;
 export declare let updateSessionData: (sessionHandle: string, newSessionData: any) => Promise<void>;
-export declare let getCORSAllowedHeaders: () => string[];
 export declare let getJWTPayload: (sessionHandle: string) => Promise<any>;
 export declare let updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
 export declare let auth0Handler: (request: import("./types").SessionRequest, response: import("express").Response, next: import("express").NextFunction, domain: string, clientId: string, clientSecret: string, callback?: ((userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>) | undefined) => Promise<import("express").Response | undefined>;
