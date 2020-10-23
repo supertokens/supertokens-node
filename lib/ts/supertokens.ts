@@ -25,7 +25,6 @@ import {
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import * as express from "express";
-import { URL } from "url";
 import { HEADER_RID } from "./constants";
 
 export default class SuperTokens {
@@ -123,7 +122,7 @@ export default class SuperTokens {
                 }
 
                 // give task to the matched recipe
-                matchedRecipe.handleAPIRequest(id, request, response, next);
+                return matchedRecipe.handleAPIRequest(id, request, response, next);
             } else {
                 // we loop through all recipe modules to find the one with the matching path and method
                 for (let i = 0; i < this.recipeModules.length; i++) {

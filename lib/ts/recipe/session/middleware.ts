@@ -16,7 +16,6 @@ import { Response, NextFunction, Request } from "express";
 import { SessionRequest, ErrorHandlerMiddleware, TypeInput } from "./types";
 import SessionRecipe from "./sessionRecipe";
 import { normaliseHttpMethod, normaliseURLPathOrThrowError } from "../../utils";
-import { handleRefreshAPI } from "./api";
 
 export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean) {
     // We know this should be Request but then Type
@@ -29,7 +28,7 @@ export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boo
             let incomingPath = normaliseURLPathOrThrowError(recipeInstance.getRecipeId(), request.originalUrl);
             let refreshTokenPath = recipeInstance.config.refreshTokenPath;
             if (incomingPath === refreshTokenPath && method === "post") {
-                return handleRefreshAPI(recipeInstance, request, response, next);
+                request.session = await recipeInstance.refreshSession(request, response);
             } else {
                 if (antiCsrfCheck === undefined) {
                     antiCsrfCheck = method !== "get";

@@ -23,13 +23,9 @@ const {
     setKeyValueInConfig,
 } = require("./utils");
 let assert = require("assert");
-const nock = require("nock");
-let { version } = require("../lib/build/version");
 const express = require("express");
 const request = require("supertest");
-let { Querier } = require("../lib/build/querier");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
-let { maxVersion } = require("../lib/build/utils");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 
@@ -88,7 +84,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -100,7 +100,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -123,7 +127,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(res3.body.success, true);
@@ -178,7 +186,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -190,7 +202,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -213,7 +229,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert(res3.status === 401);
@@ -272,7 +292,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -289,7 +313,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
 
@@ -303,7 +331,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -323,7 +355,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     ])
                     .set("anti-csrf", res2.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -341,7 +377,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 ])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
@@ -356,7 +396,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
@@ -413,7 +457,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -430,7 +478,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
 
@@ -444,7 +496,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -464,7 +520,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     ])
                     .set("anti-csrf", res2.antiCsrf)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -482,7 +542,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 ])
                 .set("anti-csrf", res2.antiCsrf)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
@@ -497,7 +561,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", res2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
@@ -547,7 +615,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -558,7 +630,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(res2.body.userId, "id1");
@@ -569,7 +645,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(res3.body.userId, "id1");
@@ -619,7 +699,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -629,7 +713,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/session/verifyAntiCsrfFalse")
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(response2.body.userId, "id1");
@@ -639,7 +727,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(response.body.success, true);
@@ -692,7 +784,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -705,7 +801,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
@@ -722,7 +822,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/usercreate")
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         let userCreateResponse = extractInfoFromResponse(
@@ -731,7 +835,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/usercreate")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -748,7 +856,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", userCreateResponse.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         let sessionHandleResponse = await new Promise((resolve) =>
@@ -756,7 +868,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/session/getSessionsWithUserId1")
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert(sessionHandleResponse.body.length === 0);
@@ -817,7 +933,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -832,7 +952,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
 
@@ -846,7 +970,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
 
@@ -863,7 +991,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         //retrieve the changed session data
@@ -876,7 +1008,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
 
@@ -893,7 +1029,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(invalidSessionResponse.body.success, true);
@@ -959,7 +1099,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -982,7 +1126,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .set("anti-csrf", response.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -1004,7 +1152,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         //check that the jwt payload returned is valid
@@ -1024,7 +1176,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .set("anti-csrf", response.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -1047,7 +1203,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .set("anti-csrf", response2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -1069,7 +1229,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", response2.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
 
@@ -1088,7 +1252,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(invalidSessionResponse.body.success, true);
@@ -1123,7 +1291,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/create")
                 .expect(200)
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(response.headers.testheader, "testValue");
@@ -1178,7 +1350,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/create")
                     .expect(200)
                     .end((err, res) => {
-                        resolve(res);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
                     })
             )
         );
@@ -1188,7 +1364,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/session/verify")
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(res2.body.userId, "id1");
@@ -1198,7 +1378,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/session/verifyAntiCsrfFalse")
                 .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
         assert.deepEqual(res3.body.userId, "id1");
@@ -1236,7 +1420,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             request(app)
                 .post("/session/verify")
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
 
@@ -1285,7 +1473,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             request(app)
                 .post("/auth/session/refresh")
                 .end((err, res) => {
-                    resolve(res);
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
                 })
         );
 

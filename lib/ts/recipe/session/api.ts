@@ -23,8 +23,8 @@ export async function handleRefreshAPI(
     next: NextFunction
 ) {
     try {
-        (request as any).session = await recipeInstance.refreshSession(request, response);
-        return next();
+        await recipeInstance.refreshSession(request, response);
+        return response.send(JSON.stringify({}));
     } catch (err) {
         next(err);
     }
