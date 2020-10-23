@@ -28,7 +28,7 @@ SuperTokens.init({
     appInfo: {
         appName: "SuperTokens",
         apiDomain: "0.0.0.0:" + (process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT),
-        websiteDomain: "https://localhost.org:8080",
+        websiteDomain: "http://localhost.org:8080",
     },
     supertokens: {
         connectionURI: "http://localhost:9000",
