@@ -17,7 +17,7 @@ export default class SessionWrapper {
     static updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
     static getJWTPayload(sessionHandle: string): Promise<any>;
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
-    static middleware: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: express.Response, next: express.NextFunction) => Promise<void>;
+    static verifySession: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: express.Response, next: express.NextFunction) => Promise<void>;
 }
 export declare let init: typeof SessionRecipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
@@ -31,5 +31,6 @@ export declare let getSessionData: typeof SessionWrapper.getSessionData;
 export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
 export declare let getJWTPayload: typeof SessionWrapper.getJWTPayload;
 export declare let updateJWTPayload: typeof SessionWrapper.updateJWTPayload;
+export declare let verifySession: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: express.Response, next: express.NextFunction) => Promise<void>;
 export declare let Error: typeof SuperTokensError;
 export declare let SessionContainer: typeof SessionClass;

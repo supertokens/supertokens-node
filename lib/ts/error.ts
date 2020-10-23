@@ -21,6 +21,7 @@ export default class SuperTokensError {
     public message: string;
     public payload: any;
     public rId: string;
+    private errMagic = SuperTokensError.errMagic;
 
     constructor(
         options:

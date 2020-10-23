@@ -197,7 +197,7 @@ export async function refreshSession(
                 message: "Token theft detected",
                 payload: {
                     userId: response.session.userId,
-                    sessionHandle: response.session.sessionHandle,
+                    sessionHandle: response.session.handle,
                 },
                 type: STError.TOKEN_THEFT_DETECTED,
             },

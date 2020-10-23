@@ -142,85 +142,93 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(cookies.idRefreshTokenDomain === undefined);
     });
 
-    // //- check for token theft detection
-    // it("express token theft detection with auto refresh middleware", async function () {
-    //     await startST();
-    //     const app = express();
+    //- check for token theft detection
+    it("express token theft detection with auto refresh middleware", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
 
-    //     app.use(
-    //         STExpress.init({
-    //             hosts: "http://localhost:8080",
-    //         })
-    //     );
+        const app = express();
 
-    //     app.post("/create", async (req, res) => {
-    //         await STExpress.createNewSession(res, "", {}, {});
-    //         res.status(200).send("");
-    //     });
+        app.use(SuperTokens.middleware());
 
-    //     app.post("/session/verify", STExpress.middleware(), async (req, res) => {
-    //         res.status(200).send("");
-    //     });
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
 
-    //     app.use(STExpress.errorHandler());
+        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+            res.status(200).send("");
+        });
 
-    //     let res = extractInfoFromResponse(
-    //         await new Promise((resolve) =>
-    //             request(app)
-    //                 .post("/create")
-    //                 .expect(200)
-    //                 .end((err, res) => {
-    //                     resolve(res);
-    //                 })
-    //         )
-    //     );
+        app.use(SuperTokens.errorHandler());
 
-    //     let res2 = extractInfoFromResponse(
-    //         await new Promise((resolve) =>
-    //             request(app)
-    //                 .post("/auth/session/refresh")
-    //                 .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-    //                 .set("anti-csrf", res.antiCsrf)
-    //                 .end((err, res) => {
-    //                     resolve(res);
-    //                 })
-    //         )
-    //     );
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
 
-    //     await new Promise((resolve) =>
-    //         request(app)
-    //             .post("/session/verify")
-    //             .set("Cookie", [
-    //                 "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
-    //             ])
-    //             .set("anti-csrf", res2.antiCsrf)
-    //             .end((err, res) => {
-    //                 resolve();
-    //             })
-    //     );
+        let res2 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        resolve(res);
+                    })
+            )
+        );
 
-    //     let res3 = await new Promise((resolve) =>
-    //         request(app)
-    //             .post("/auth/session/refresh")
-    //             .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-    //             .set("anti-csrf", res.antiCsrf)
-    //             .end((err, res) => {
-    //                 resolve(res);
-    //             })
-    //     );
-    //     assert(res3.status === 440 || res3.status === 401);
-    //     assert.deepEqual(res3.text, '{"message":"token theft detected"}');
+        await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", [
+                    "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res2.antiCsrf)
+                .end((err, res) => {
+                    resolve();
+                })
+        );
 
-    //     let cookies = extractInfoFromResponse(res3);
-    //     assert.deepEqual(cookies.antiCsrf, undefined);
-    //     assert.deepEqual(cookies.accessToken, "");
-    //     assert.deepEqual(cookies.refreshToken, "");
-    //     assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
-    //     assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-    //     assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-    //     assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-    //     assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-    // });
+        let res3 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    resolve(res);
+                })
+        );
+        assert(res3.status === 401);
+        assert.deepEqual(res3.text, '{"message":"token theft detected"}');
+
+        let cookies = extractInfoFromResponse(res3);
+        assert.deepEqual(cookies.antiCsrf, undefined);
+        assert.deepEqual(cookies.accessToken, "");
+        assert.deepEqual(cookies.refreshToken, "");
+        assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
+        assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
+        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+    });
 
     // //check basic usage of session
     // it("test basic usage of express sessions", async function () {

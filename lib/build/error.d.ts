@@ -5,6 +5,7 @@ export default class SuperTokensError {
     message: string;
     payload: any;
     rId: string;
+    private errMagic;
     constructor(options: {
         rId: string;
         message: string;

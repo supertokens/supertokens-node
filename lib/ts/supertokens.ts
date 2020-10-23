@@ -91,8 +91,7 @@ export default class SuperTokens {
 
     middleware = () => {
         return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
-            let urlObj = new URL(request.url);
-            let path = normaliseURLPathOrThrowError("", urlObj.pathname);
+            let path = normaliseURLPathOrThrowError("", request.originalUrl);
             let method: HTTPMethod = normaliseHttpMethod(request.method);
 
             // if the prefix of the URL doesn't match the base path, we skip

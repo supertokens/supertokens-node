@@ -14,7 +14,7 @@
  */
 
 import SessionRecipe from "./sessionRecipe";
-import { middleware as originalMiddleware } from "./middleware";
+import { verifySession as originalVerifySession } from "./middleware";
 import * as express from "express";
 import SuperTokensError from "./error";
 import SessionClass from "./sessionClass";
@@ -96,8 +96,8 @@ export default class SessionWrapper {
         );
     }
 
-    static middleware = (antiCsrfCheck?: boolean) => {
-        return originalMiddleware(SessionRecipe.getInstanceOrThrowError(), antiCsrfCheck);
+    static verifySession = (antiCsrfCheck?: boolean) => {
+        return originalVerifySession(SessionRecipe.getInstanceOrThrowError(), antiCsrfCheck);
     };
 }
 
@@ -127,7 +127,7 @@ export let updateJWTPayload = SessionWrapper.updateJWTPayload;
 
 export let auth0Handler = SessionWrapper.auth0Handler;
 
-export let middleware = SessionWrapper.middleware;
+export let verifySession = SessionWrapper.verifySession;
 
 export let Error = SessionWrapper.Error;
 

@@ -18,7 +18,7 @@ export default class SessionWrapper {
     static getJWTPayload(sessionHandle: string): Promise<any>;
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
     static auth0Handler(request: express.Request, response: express.Response, next: express.NextFunction, domain: string, clientId: string, clientSecret: string, callback?: (userId: string, idToken: string, accessToken: string, refreshToken: string | undefined) => Promise<void>): Promise<express.Response | undefined>;
-    static middleware: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: express.Response, next: express.NextFunction) => Promise<void>;
+    static verifySession: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: express.Response, next: express.NextFunction) => Promise<void>;
 }
 export declare let init: typeof SessionRecipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
@@ -33,6 +33,6 @@ export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
 export declare let getJWTPayload: typeof SessionWrapper.getJWTPayload;
 export declare let updateJWTPayload: typeof SessionWrapper.updateJWTPayload;
 export declare let auth0Handler: typeof SessionWrapper.auth0Handler;
-export declare let middleware: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: express.Response, next: express.NextFunction) => Promise<void>;
+export declare let verifySession: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: express.Response, next: express.NextFunction) => Promise<void>;
 export declare let Error: typeof SuperTokensError;
 export declare let SessionContainer: typeof SessionClass;

@@ -18,7 +18,7 @@ import SessionRecipe from "./sessionRecipe";
 import { normaliseHttpMethod, normaliseURLPathOrThrowError } from "../../utils";
 import { handleRefreshAPI } from "./api";
 
-export function middleware(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean) {
+export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean) {
     // We know this should be Request but then Type
     return async (request: SessionRequest, response: Response, next: NextFunction) => {
         try {
