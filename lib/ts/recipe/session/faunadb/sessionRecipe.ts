@@ -165,11 +165,7 @@ export default class SessionRecipe extends RecipeModule {
             return FAUNADB_TOKEN_TIME_LAG_MILLI;
         }
 
-        let accessTokenExpiry = session.getAccessTokenExpiry();
-        if (accessTokenExpiry === undefined) {
-            throw new Error("Should not come here");
-        }
-        let accessTokenLifetime = accessTokenExpiry - Date.now();
+        let accessTokenLifetime = (await this.parentRecipe.getHandshakeInfo()).accessTokenValidity;
 
         let faunaResponse: any = await this.faunaDBClient.query(
             this.q.Create(this.q.Tokens(), {
@@ -194,7 +190,6 @@ export default class SessionRecipe extends RecipeModule {
             originalSession.getHandle(),
             originalSession.getUserId(),
             originalSession.getJWTPayload(),
-            originalSession.getAccessTokenExpiry(), // TODO: remove this field from session once handshake info has access token expiry
             res
         );
         try {
@@ -234,7 +229,6 @@ export default class SessionRecipe extends RecipeModule {
             originalSession.getHandle(),
             originalSession.getUserId(),
             originalSession.getJWTPayload(),
-            originalSession.getAccessTokenExpiry(),
             res
         );
     };
@@ -247,7 +241,6 @@ export default class SessionRecipe extends RecipeModule {
             originalSession.getHandle(),
             originalSession.getUserId(),
             originalSession.getJWTPayload(),
-            originalSession.getAccessTokenExpiry(),
             res
         );
         try {

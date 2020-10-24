@@ -5,8 +5,8 @@ export declare type HandshakeInfo = {
     enableAntiCsrf: boolean;
     accessTokenBlacklistingEnabled: boolean;
     jwtSigningPublicKeyExpiryTime: number;
-    accessTokenVaildity: number;
-    refreshTokenVaildity: number;
+    accessTokenValidity: number;
+    refreshTokenValidity: number;
 };
 export declare type CreateOrRefreshAPIResponse = {
     session: {

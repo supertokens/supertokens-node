@@ -18,6 +18,7 @@ import { getLargestVersionFromIntersection } from "./utils";
 import { cdiSupported } from "./version";
 import STError from "./error";
 import NormalisedURLDomain from "./normalisedURLDomain";
+import NormalisedURLPath from "./normalisedURLPath";
 
 export class Querier {
     private static initCalled = false;
@@ -41,7 +42,7 @@ export class Querier {
             return Querier.apiVersion;
         }
         let response = await this.sendRequestHelper(
-            "/apiversion",
+            new NormalisedURLPath(this.rId, "/apiversion"),
             "GET",
             (url: string) => {
                 let headers: any = {};
@@ -116,7 +117,7 @@ export class Querier {
     }
 
     // path should start with "/"
-    sendPostRequest = async (path: string, body: any): Promise<any> => {
+    sendPostRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
         return this.sendRequestHelper(
             path,
             "POST",
@@ -127,6 +128,12 @@ export class Querier {
                     headers = {
                         ...headers,
                         "api-key": Querier.apiKey,
+                    };
+                }
+                if (path.isARecipePath()) {
+                    headers = {
+                        ...headers,
+                        rid: this.rId,
                     };
                 }
                 return await axios({
@@ -141,7 +148,7 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendDeleteRequest = async (path: string, body: any): Promise<any> => {
+    sendDeleteRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
         return this.sendRequestHelper(
             path,
             "DELETE",
@@ -152,6 +159,12 @@ export class Querier {
                     headers = {
                         ...headers,
                         "api-key": Querier.apiKey,
+                    };
+                }
+                if (path.isARecipePath()) {
+                    headers = {
+                        ...headers,
+                        rid: this.rId,
                     };
                 }
                 return await axios({
@@ -166,7 +179,7 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendGetRequest = async (path: string, params: any): Promise<any> => {
+    sendGetRequest = async (path: NormalisedURLPath, params: any): Promise<any> => {
         return this.sendRequestHelper(
             path,
             "GET",
@@ -179,6 +192,12 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
+                if (path.isARecipePath()) {
+                    headers = {
+                        ...headers,
+                        rid: this.rId,
+                    };
+                }
                 return await axios.get(url, {
                     params,
                     headers,
@@ -189,7 +208,7 @@ export class Querier {
     };
 
     // path should start with "/"
-    sendPutRequest = async (path: string, body: any): Promise<any> => {
+    sendPutRequest = async (path: NormalisedURLPath, body: any): Promise<any> => {
         return this.sendRequestHelper(
             path,
             "PUT",
@@ -200,6 +219,12 @@ export class Querier {
                     headers = {
                         ...headers,
                         "api-key": Querier.apiKey,
+                    };
+                }
+                if (path.isARecipePath()) {
+                    headers = {
+                        ...headers,
+                        rid: this.rId,
                     };
                 }
                 return await axios({
@@ -215,7 +240,7 @@ export class Querier {
 
     // path should start with "/"
     private sendRequestHelper = async (
-        path: string,
+        path: NormalisedURLPath,
         method: string,
         axiosFunction: (url: string) => Promise<any>,
         numberOfTries: number
@@ -231,7 +256,7 @@ export class Querier {
         Querier.lastTriedIndex++;
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
-            let response = await axiosFunction(currentHost + path);
+            let response = await axiosFunction(currentHost + path.getAsStringDangerous());
             if (process.env.TEST_MODE === "testing") {
                 Querier.hostsAliveForTesting.add(currentHost);
             }
@@ -251,7 +276,7 @@ export class Querier {
                         "SuperTokens core threw an error for a " +
                             method +
                             " request to path: '" +
-                            path +
+                            path.getAsStringDangerous() +
                             "' with status code: " +
                             err.response.status +
                             " and message: " +

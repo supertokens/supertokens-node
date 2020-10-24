@@ -17,6 +17,7 @@ import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse } from "./types";
 import SessionRecipe from "./sessionRecipe";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 /**
  * @description call this to "login" a user.
@@ -28,11 +29,13 @@ export async function createNewSession(
     jwtPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
-    let response = await recipeInstance.getQuerier().sendPostRequest("/session", {
-        userId,
-        userDataInJWT: jwtPayload,
-        userDataInDatabase: sessionData,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session"), {
+            userId,
+            userDataInJWT: jwtPayload,
+            userDataInDatabase: sessionData,
+        });
     recipeInstance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
     delete response.status;
     delete response.jwtSigningPublicKey;
@@ -133,11 +136,13 @@ export async function getSession(
 
     ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
 
-    let response = await recipeInstance.getQuerier().sendPostRequest("/session/verify", {
-        accessToken,
-        antiCsrfToken,
-        doAntiCsrfCheck,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/verify"), {
+            accessToken,
+            antiCsrfToken,
+            doAntiCsrfCheck,
+        });
     if (response.status == "OK") {
         recipeInstance.updateJwtSigningPublicKeyInfo(
             response.jwtSigningPublicKey,
@@ -176,10 +181,12 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined
 ): Promise<CreateOrRefreshAPIResponse> {
-    let response = await recipeInstance.getQuerier().sendPostRequest("/session/refresh", {
-        refreshToken,
-        antiCsrfToken,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/refresh"), {
+            refreshToken,
+            antiCsrfToken,
+        });
     if (response.status == "OK") {
         delete response.status;
         return response;
@@ -212,9 +219,11 @@ export async function refreshSession(
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
-    let response = await recipeInstance.getQuerier().sendPostRequest("/session/remove", {
-        userId,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/remove"), {
+            userId,
+        });
     return response.sessionHandlesRevoked;
 }
 
@@ -223,9 +232,11 @@ export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, us
  * @throws AuthError, GENERAL_ERROR
  */
 export async function getAllSessionHandlesForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
-    let response = await recipeInstance.getQuerier().sendGetRequest("/session/user", {
-        userId,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/user"), {
+            userId,
+        });
     return response.sessionHandles;
 }
 
@@ -235,9 +246,11 @@ export async function getAllSessionHandlesForUser(recipeInstance: SessionRecipe,
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeSession(recipeInstance: SessionRecipe, sessionHandle: string): Promise<boolean> {
-    let response = await recipeInstance.getQuerier().sendPostRequest("/session/remove", {
-        sessionHandles: [sessionHandle],
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/remove"), {
+            sessionHandles: [sessionHandle],
+        });
     return response.sessionHandlesRevoked.length === 1;
 }
 
@@ -250,9 +263,11 @@ export async function revokeMultipleSessions(
     recipeInstance: SessionRecipe,
     sessionHandles: string[]
 ): Promise<string[]> {
-    let response = await recipeInstance.getQuerier().sendPostRequest("/session/remove", {
-        sessionHandles,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/remove"), {
+            sessionHandles,
+        });
     return response.sessionHandlesRevoked;
 }
 
@@ -262,9 +277,11 @@ export async function revokeMultipleSessions(
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getSessionData(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
-    let response = await recipeInstance.getQuerier().sendGetRequest("/session/data", {
-        sessionHandle,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/data"), {
+            sessionHandle,
+        });
     if (response.status === "OK") {
         return response.userDataInDatabase;
     } else {
@@ -283,10 +300,12 @@ export async function getSessionData(recipeInstance: SessionRecipe, sessionHandl
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateSessionData(recipeInstance: SessionRecipe, sessionHandle: string, newSessionData: any) {
-    let response = await recipeInstance.getQuerier().sendPutRequest("/session/data", {
-        sessionHandle,
-        userDataInDatabase: newSessionData,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPutRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/data"), {
+            sessionHandle,
+            userDataInDatabase: newSessionData,
+        });
     if (response.status === "UNAUTHORISED") {
         throw new STError(
             {
@@ -303,9 +322,11 @@ export async function updateSessionData(recipeInstance: SessionRecipe, sessionHa
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
-    let response = await recipeInstance.getQuerier().sendGetRequest("/jwt/data", {
-        sessionHandle,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/jwt/data"), {
+            sessionHandle,
+        });
     if (response.status === "OK") {
         return response.userDataInJWT;
     } else {
@@ -323,10 +344,12 @@ export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string, newJWTPayload: any) {
-    let response = await recipeInstance.getQuerier().sendPutRequest("/jwt/data", {
-        sessionHandle,
-        userDataInJWT: newJWTPayload,
-    });
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPutRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/jwt/data"), {
+            sessionHandle,
+            userDataInJWT: newJWTPayload,
+        });
     if (response.status === "UNAUTHORISED") {
         throw new STError(
             {

@@ -5,5 +5,6 @@ export default class NormalisedURLPath {
     appendPath: (rId: string, other: NormalisedURLPath) => NormalisedURLPath;
     getAsStringDangerous: () => string;
     equals: (other: NormalisedURLPath) => boolean;
+    isARecipePath: () => boolean;
 }
 export declare function normaliseURLPathOrThrowError(rId: string, input: string): string;
