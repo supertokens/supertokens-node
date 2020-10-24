@@ -6,10 +6,8 @@ export default class Session {
     private userDataInJWT;
     private res;
     private accessToken;
-    private accessTokenExpiry;
     private recipeInstance;
-    constructor(recipeInstance: SessionRecipe, accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, accessTokenExpiry: number | undefined, res: express.Response);
-    getAccessTokenExpiry: () => number | undefined;
+    constructor(recipeInstance: SessionRecipe, accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response);
     /**
      * @description call this to logout the current user.
      * This only invalidates the refresh token. The access token can still be used after

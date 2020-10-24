@@ -20,8 +20,8 @@ export type HandshakeInfo = {
     enableAntiCsrf: boolean;
     accessTokenBlacklistingEnabled: boolean;
     jwtSigningPublicKeyExpiryTime: number;
-    accessTokenVaildity: number;
-    refreshTokenVaildity: number;
+    accessTokenValidity: number;
+    refreshTokenValidity: number;
 };
 
 export type CreateOrRefreshAPIResponse = {

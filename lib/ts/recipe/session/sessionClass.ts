@@ -17,6 +17,7 @@ import SessionRecipe from "./sessionRecipe";
 import * as SessionFunctions from "./sessionFunctions";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 export default class Session {
     private sessionHandle: string;
@@ -24,7 +25,6 @@ export default class Session {
     private userDataInJWT: any;
     private res: express.Response;
     private accessToken: string;
-    private accessTokenExpiry: number | undefined;
     private recipeInstance: SessionRecipe;
 
     constructor(
@@ -33,7 +33,6 @@ export default class Session {
         sessionHandle: string,
         userId: string,
         userDataInJWT: any,
-        accessTokenExpiry: number | undefined,
         res: express.Response
     ) {
         this.sessionHandle = sessionHandle;
@@ -41,14 +40,8 @@ export default class Session {
         this.userDataInJWT = userDataInJWT;
         this.res = res;
         this.accessToken = accessToken;
-        this.accessTokenExpiry = accessTokenExpiry;
         this.recipeInstance = recipeInstance;
     }
-
-    // TODO: remove when handshakeInfo has accessToken lifetime param
-    getAccessTokenExpiry = () => {
-        return this.accessTokenExpiry;
-    };
 
     /**
      * @description call this to logout the current user.
@@ -112,10 +105,12 @@ export default class Session {
     };
 
     updateJWTPayload = async (newJWTPayload: any) => {
-        let response = await this.recipeInstance.getQuerier().sendPostRequest("/session/regenerate", {
-            accessToken: this.accessToken,
-            userDataInJWT: newJWTPayload,
-        });
+        let response = await this.recipeInstance
+            .getQuerier()
+            .sendPostRequest(new NormalisedURLPath(this.recipeInstance.getRecipeId(), "/recipe/session/regenerate"), {
+                accessToken: this.accessToken,
+                userDataInJWT: newJWTPayload,
+            });
         if (response.status === "UNAUTHORISED") {
             clearSessionFromCookie(this.recipeInstance, this.res);
             throw new STError(

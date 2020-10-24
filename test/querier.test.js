@@ -18,11 +18,13 @@ let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
 let Session = require("../recipe/session");
+const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 
 /**
  *
  * TODO: Test that if the querier throws an error from a recipe, that recipe's ID is there
  * TODO: Check that once the API version is there, it doesn't need to query again
+ * TODO: Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request.
  */
 
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
@@ -51,7 +53,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         });
         try {
             let q = Querier.getInstanceOrThrowError("");
-            await q.sendGetRequest("/", {});
+            await q.sendGetRequest(new NormalisedURLPath("", "/"), {});
             throw new Error();
         } catch (err) {
             if (err.type !== ST.Error.GENERAL_ERROR || err.message !== "No SuperTokens core available to query") {
@@ -76,11 +78,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             recipeList: [Session.init()],
         });
         let q = Querier.getInstanceOrThrowError("");
-        assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");
-        assert.equal(await q.sendDeleteRequest("/hello", {}), "Hello\n");
+        assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
+        assert.equal(await q.sendDeleteRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
-        assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n"); // this will be the 4th API call
+        assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
         assert.equal(hostsAlive.has("http://localhost:8080"), true);
@@ -103,11 +105,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             recipeList: [Session.init()],
         });
         let q = Querier.getInstanceOrThrowError("");
-        assert.equal(await q.sendGetRequest("/hello", {}), "Hello\n");
-        assert.equal(await q.sendPostRequest("/hello", {}), "Hello\n");
+        assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
+        assert.equal(await q.sendPostRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
-        assert.equal(await q.sendPutRequest("/hello", {}), "Hello\n"); // this will be the 4th API call
+        assert.equal(await q.sendPutRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
         assert.equal(hostsAlive.has("http://localhost:8080"), true);

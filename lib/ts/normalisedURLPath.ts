@@ -38,6 +38,10 @@ export default class NormalisedURLPath {
     equals = (other: NormalisedURLPath) => {
         return this.value === other.value;
     };
+
+    isARecipePath = () => {
+        return this.value === "/recipe" || this.value.startsWith("/recipe/");
+    };
 }
 
 export function normaliseURLPathOrThrowError(rId: string, input: string): string {

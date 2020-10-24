@@ -164,14 +164,17 @@ export default class SessionRecipe extends RecipeModule {
 
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
         if (this.handshakeInfo == undefined) {
-            let response = await this.getQuerier().sendPostRequest("/handshake", {});
+            let response = await this.getQuerier().sendPostRequest(
+                new NormalisedURLPath(this.getRecipeId(), "/recipe/handshake"),
+                {}
+            );
             this.handshakeInfo = {
                 jwtSigningPublicKey: response.jwtSigningPublicKey,
                 enableAntiCsrf: response.enableAntiCsrf,
                 accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
                 jwtSigningPublicKeyExpiryTime: response.jwtSigningPublicKeyExpiryTime,
-                accessTokenVaildity: response.accessTokenVaildity,
-                refreshTokenVaildity: response.refreshTokenVaildity,
+                accessTokenValidity: response.accessTokenValidity,
+                refreshTokenValidity: response.refreshTokenValidity,
             };
         }
         return this.handshakeInfo;
@@ -198,7 +201,6 @@ export default class SessionRecipe extends RecipeModule {
             response.session.handle,
             response.session.userId,
             response.session.userDataInJWT,
-            response.accessToken.expiry,
             res
         );
     };
@@ -248,7 +250,6 @@ export default class SessionRecipe extends RecipeModule {
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                response.accessToken !== undefined ? response.accessToken.expiry : undefined,
                 res
             );
         } catch (err) {
@@ -284,7 +285,6 @@ export default class SessionRecipe extends RecipeModule {
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                response.accessToken.expiry,
                 res
             );
         } catch (err) {
