@@ -1,4 +1,6 @@
 import RecipeModule from "./recipeModule";
+import NormalisedURLDomain from "./normalisedURLDomain";
+import NormalisedURLPath from "./normalisedURLPath";
 export declare type AppInfo = {
     appName: string;
     websiteDomain: string;
@@ -8,10 +10,10 @@ export declare type AppInfo = {
 };
 export declare type NormalisedAppinfo = {
     appName: string;
-    websiteDomain: string;
-    apiDomain: string;
-    apiBasePath: string;
-    websiteBasePath: string;
+    websiteDomain: NormalisedURLDomain;
+    apiDomain: NormalisedURLDomain;
+    apiBasePath: NormalisedURLPath;
+    websiteBasePath: NormalisedURLPath;
 };
 export declare type TypeInput = {
     supertokens: {
@@ -23,7 +25,7 @@ export declare type TypeInput = {
 };
 export declare type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
 export declare type APIHandled = {
-    pathWithoutApiBasePath: string;
+    pathWithoutApiBasePath: NormalisedURLPath;
     method: HTTPMethod;
     id: string;
     disabled: boolean;

@@ -18,7 +18,8 @@ let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../lib/build/processState");
-let { normaliseURLPathOrThrowError, normaliseURLDomainOrThrowError } = require("../lib/build/utils");
+let { normaliseURLPathOrThrowError } = require("../lib/build/normalisedURLPath");
+let { normaliseURLDomainOrThrowError } = require("../lib/build/normalisedURLDomain");
 let { normaliseSessionScopeOrThrowError } = require("../lib/build/recipe/session/utils");
 const { Querier } = require("../lib/build/querier");
 
@@ -379,7 +380,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init()],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath === "/custom/a/session/refresh");
+            assert(
+                SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous() ===
+                    "/custom/a/session/refresh"
+            );
             resetAll();
         }
 
@@ -396,7 +400,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init()],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath === "/session/refresh");
+            assert(
+                SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous() ===
+                    "/session/refresh"
+            );
             resetAll();
         }
 
@@ -412,8 +419,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init()],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath === "/auth/session/refresh");
-            assert(SessionRecipe.getInstanceOrThrowError().config.accessTokenPath === "/");
+            assert(
+                SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous() ===
+                    "/auth/session/refresh"
+            );
             resetAll();
         }
 
@@ -470,10 +479,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             let hosts = Querier.hosts;
             assert(hosts.length === 4);
 
-            assert(hosts[0] === "http://localhost:8080");
-            assert(hosts[1] === "https://try.supertokens.io");
-            assert(hosts[2] === "https://try.supertokens.io:8080");
-            assert(hosts[3] === "http://localhost:90");
+            assert(hosts[0].getAsStringDangerous() === "http://localhost:8080");
+            assert(hosts[1].getAsStringDangerous() === "https://try.supertokens.io");
+            assert(hosts[2].getAsStringDangerous() === "https://try.supertokens.io:8080");
+            assert(hosts[3].getAsStringDangerous() === "http://localhost:90");
             resetAll();
         }
     });
@@ -491,11 +500,13 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             },
             recipeList: [Session.init()],
         });
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.accessTokenPath, "/");
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieDomain, undefined);
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "lax");
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSecure, false);
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath, "/auth/session/refresh");
+        assert.equal(
+            SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous(),
+            "/auth/session/refresh"
+        );
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode, 401);
     });
 });

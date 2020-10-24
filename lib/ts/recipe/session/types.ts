@@ -60,7 +60,6 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    accessTokenPath: string;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;

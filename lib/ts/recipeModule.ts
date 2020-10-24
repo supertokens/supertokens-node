@@ -16,8 +16,8 @@
 import { Querier } from "./querier";
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
-import { normaliseURLPathOrThrowError } from "./utils";
 import * as express from "express";
+import NormalisedURLPath from "./normalisedURLPath";
 
 export default abstract class RecipeModule {
     private recipeId: string;
@@ -50,16 +50,14 @@ export default abstract class RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.rId === this.getRecipeId();
     };
 
-    returnAPIIdIfCanHandleRequest = (path: string, method: HTTPMethod): string | undefined => {
+    returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
         let apisHandled = this.getAPIsHandled();
         for (let i = 0; i < apisHandled.length; i++) {
             let currAPI = apisHandled[i];
             if (
                 !currAPI.disabled &&
                 currAPI.method === method &&
-                this.appInfo.apiBasePath +
-                    normaliseURLPathOrThrowError(this.getRecipeId(), currAPI.pathWithoutApiBasePath) ===
-                    path
+                this.appInfo.apiBasePath.appendPath(this.getRecipeId(), currAPI.pathWithoutApiBasePath).equals(path)
             ) {
                 return currAPI.id;
             }

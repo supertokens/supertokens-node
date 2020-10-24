@@ -42,7 +42,6 @@ export declare type TypeInput = {
     errorHandlers?: ErrorHandlers;
 };
 export declare type TypeNormalisedInput = {
-    accessTokenPath: string;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;

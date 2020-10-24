@@ -1,7 +1,5 @@
 import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
 import * as express from "express";
-export declare function normaliseURLPathOrThrowError(rId: string, input: string): string;
-export declare function normaliseURLDomainOrThrowError(rId: string, input: string): string;
 export declare function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined;
 export declare function maxVersion(version1: string, version2: string): string;
 export declare function normaliseInputAppInfoOrThrowError(rId: string, appInfo: AppInfo): NormalisedAppinfo;

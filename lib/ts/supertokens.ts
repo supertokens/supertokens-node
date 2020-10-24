@@ -15,17 +15,13 @@
 
 import STError from "./error";
 import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
-import {
-    normaliseInputAppInfoOrThrowError,
-    normaliseURLDomainOrThrowError,
-    getRIDFromRequest,
-    normaliseURLPathOrThrowError,
-    normaliseHttpMethod,
-} from "./utils";
+import { normaliseInputAppInfoOrThrowError, getRIDFromRequest, normaliseHttpMethod } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import * as express from "express";
 import { HEADER_RID } from "./constants";
+import NormalisedURLDomain from "./normalisedURLDomain";
+import NormalisedURLPath from "./normalisedURLPath";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -38,7 +34,7 @@ export default class SuperTokens {
         this.appInfo = normaliseInputAppInfoOrThrowError("", config.appInfo);
 
         Querier.init(
-            config.supertokens.connectionURI.split(";").map((h) => normaliseURLDomainOrThrowError("", h)),
+            config.supertokens.connectionURI.split(";").map((h) => new NormalisedURLDomain("", h)),
             config.supertokens.apiKey
         );
 
@@ -90,7 +86,7 @@ export default class SuperTokens {
 
     middleware = () => {
         return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
-            let path = normaliseURLPathOrThrowError("", request.originalUrl);
+            let path = new NormalisedURLPath("", request.originalUrl);
             let method: HTTPMethod = normaliseHttpMethod(request.method);
 
             // if the prefix of the URL doesn't match the base path, we skip

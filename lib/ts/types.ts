@@ -14,7 +14,8 @@
  */
 
 import RecipeModule from "./recipeModule";
-import { Querier } from "./querier";
+import NormalisedURLDomain from "./normalisedURLDomain";
+import NormalisedURLPath from "./normalisedURLPath";
 
 export type AppInfo = {
     appName: string;
@@ -26,10 +27,10 @@ export type AppInfo = {
 
 export type NormalisedAppinfo = {
     appName: string;
-    websiteDomain: string;
-    apiDomain: string;
-    apiBasePath: string;
-    websiteBasePath: string;
+    websiteDomain: NormalisedURLDomain;
+    apiDomain: NormalisedURLDomain;
+    apiBasePath: NormalisedURLPath;
+    websiteBasePath: NormalisedURLPath;
 };
 
 export type TypeInput = {
@@ -44,7 +45,7 @@ export type TypeInput = {
 export type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
 
 export type APIHandled = {
-    pathWithoutApiBasePath: string;
+    pathWithoutApiBasePath: NormalisedURLPath;
     method: HTTPMethod;
     id: string;
     disabled: boolean;

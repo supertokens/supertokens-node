@@ -8,7 +8,6 @@ import {
 } from "./cookieAndHeaders";
 import * as express from "express";
 import { URL } from "url";
-import { normaliseURLPathOrThrowError } from "../../utils";
 import SessionRecipe from "./sessionRecipe";
 import STError from "./error";
 import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauthorisedResponse } from "./middleware";
@@ -113,7 +112,6 @@ export function validateAndNormaliseUserInput(recipeInstance: SessionRecipe, con
     }
 
     return {
-        accessTokenPath: "/",
         cookieDomain,
         cookieSameSite,
         cookieSecure,

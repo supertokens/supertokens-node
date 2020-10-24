@@ -15,7 +15,8 @@
 import { Response, NextFunction, Request } from "express";
 import { SessionRequest, ErrorHandlerMiddleware, TypeInput } from "./types";
 import SessionRecipe from "./sessionRecipe";
-import { normaliseHttpMethod, normaliseURLPathOrThrowError } from "../../utils";
+import { normaliseHttpMethod } from "../../utils";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean) {
     // We know this should be Request but then Type
@@ -25,9 +26,9 @@ export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boo
             if (method === "options" || method === "trace") {
                 return next();
             }
-            let incomingPath = normaliseURLPathOrThrowError(recipeInstance.getRecipeId(), request.originalUrl);
+            let incomingPath = new NormalisedURLPath(recipeInstance.getRecipeId(), request.originalUrl);
             let refreshTokenPath = recipeInstance.config.refreshTokenPath;
-            if (incomingPath === refreshTokenPath && method === "post") {
+            if (incomingPath.equals(refreshTokenPath) && method === "post") {
                 request.session = await recipeInstance.refreshSession(request, response);
             } else {
                 if (antiCsrfCheck === undefined) {

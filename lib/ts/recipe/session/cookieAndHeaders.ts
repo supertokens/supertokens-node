@@ -181,9 +181,9 @@ export function setCookie(
     let sameSite = recipeInstance.config.cookieSameSite;
     let path = "";
     if (pathType === "refreshTokenPath") {
-        path = recipeInstance.config.refreshTokenPath;
+        path = recipeInstance.config.refreshTokenPath.getAsStringDangerous();
     } else if (pathType === "accessTokenPath") {
-        path = recipeInstance.config.accessTokenPath;
+        path = "/";
     }
     let httpOnly = recipeInstance.config.cookieSecure;
     let opts = {

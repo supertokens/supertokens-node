@@ -16,22 +16,22 @@ import axios from "axios";
 
 import { getLargestVersionFromIntersection } from "./utils";
 import { cdiSupported } from "./version";
-import { normaliseURLDomainOrThrowError } from "./utils";
 import STError from "./error";
+import NormalisedURLDomain from "./normalisedURLDomain";
 
 export class Querier {
     private static initCalled = false;
-    private static hosts: string[] | undefined = undefined;
+    private static hosts: NormalisedURLDomain[] | undefined = undefined;
     private static apiKey: string | undefined = undefined;
     private static apiVersion: string | undefined = undefined;
 
     private static lastTriedIndex = 0;
     private static hostsAliveForTesting: Set<string> = new Set<string>();
 
-    private __hosts: string[];
+    private __hosts: NormalisedURLDomain[];
     private rId: string;
 
-    private constructor(hosts: string[], rId: string) {
+    private constructor(hosts: NormalisedURLDomain[], rId: string) {
         this.__hosts = hosts;
         this.rId = rId;
     }
@@ -104,7 +104,7 @@ export class Querier {
         return new Querier(Querier.hosts, rId);
     }
 
-    static init(hosts: string[], apiKey?: string) {
+    static init(hosts: NormalisedURLDomain[], apiKey?: string) {
         if (!Querier.initCalled) {
             Querier.initCalled = true;
             Querier.hosts = hosts;
@@ -227,7 +227,7 @@ export class Querier {
                 payload: new Error("No SuperTokens core available to query"),
             });
         }
-        let currentHost = this.__hosts[Querier.lastTriedIndex];
+        let currentHost: string = this.__hosts[Querier.lastTriedIndex].getAsStringDangerous();
         Querier.lastTriedIndex++;
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {

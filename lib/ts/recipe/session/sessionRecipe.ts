@@ -31,11 +31,10 @@ import {
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
     setFrontTokenInHeaders,
 } from "./cookieAndHeaders";
-import axios from "axios";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
-import { normaliseURLPathOrThrowError } from "../../utils";
 import { handleRefreshAPI } from "./api";
 import { REFRESH_API_PATH } from "./constants";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -43,8 +42,7 @@ export default class SessionRecipe extends RecipeModule {
     static RECIPE_ID = "session";
 
     config: {
-        accessTokenPath: string;
-        refreshTokenPath: string;
+        refreshTokenPath: NormalisedURLPath;
         cookieDomain: string | undefined;
         cookieSecure: boolean;
         cookieSameSite: "strict" | "lax" | "none";
@@ -62,8 +60,10 @@ export default class SessionRecipe extends RecipeModule {
         let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(this, config);
 
         this.config = {
-            accessTokenPath: normalisedInput.accessTokenPath,
-            refreshTokenPath: appInfo.apiBasePath + normaliseURLPathOrThrowError(this.getRecipeId(), REFRESH_API_PATH),
+            refreshTokenPath: appInfo.apiBasePath.appendPath(
+                this.getRecipeId(),
+                new NormalisedURLPath(this.getRecipeId(), REFRESH_API_PATH)
+            ),
             cookieDomain: normalisedInput.cookieDomain,
             cookieSecure: normalisedInput.cookieSecure,
             cookieSameSite: normalisedInput.cookieSameSite,
@@ -129,7 +129,7 @@ export default class SessionRecipe extends RecipeModule {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: REFRESH_API_PATH,
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), REFRESH_API_PATH),
                 id: "REFRESH",
                 disabled: this.config.sessionRefreshFeature.disableDefaultImplementation,
             },

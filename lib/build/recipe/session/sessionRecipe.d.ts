@@ -5,12 +5,12 @@ import Session from "./sessionClass";
 import { HandshakeInfo, NormalisedErrorHandlers } from "./types";
 import * as express from "express";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
+import NormalisedURLPath from "../../normalisedURLPath";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     config: {
-        accessTokenPath: string;
-        refreshTokenPath: string;
+        refreshTokenPath: NormalisedURLPath;
         cookieDomain: string | undefined;
         cookieSecure: boolean;
         cookieSameSite: "strict" | "lax" | "none";
