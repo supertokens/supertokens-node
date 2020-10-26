@@ -3,4 +3,4 @@ export default class NormalisedURLDomain {
     constructor(rId: string, url: string);
     getAsStringDangerous: () => string;
 }
-export declare function normaliseURLDomainOrThrowError(rId: string, input: string): string;
+export declare function normaliseURLDomainOrThrowError(rId: string, input: string, ignoreProtocol?: boolean): string;

@@ -28,7 +28,7 @@ export default class NormalisedURLDomain {
     };
 }
 
-export function normaliseURLDomainOrThrowError(rId: string, input: string): string {
+export function normaliseURLDomainOrThrowError(rId: string, input: string, ignoreProtocol = false): string {
     function isAnIpAddress(ipaddress: string) {
         return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
             ipaddress
@@ -42,7 +42,7 @@ export function normaliseURLDomainOrThrowError(rId: string, input: string): stri
             throw new Error("converting to proper URL");
         }
         let urlObj = new URL(input);
-        if (urlObj.protocol === "supertokens:") {
+        if (ignoreProtocol) {
             if (urlObj.hostname.startsWith("localhost") || isAnIpAddress(urlObj.hostname)) {
                 input = "http://" + urlObj.host;
             } else {
@@ -67,13 +67,12 @@ export function normaliseURLDomainOrThrowError(rId: string, input: string): stri
         !input.startsWith("http://") &&
         !input.startsWith("https://")
     ) {
-        // The supertokens:// signifies to the recursive call that the call was made by us.
-        input = "supertokens://" + input;
+        input = "https://" + input;
 
         // at this point, it should be a valid URL. So we test that before doing a recursive call
         try {
             new URL(input);
-            return normaliseURLDomainOrThrowError(rId, input);
+            return normaliseURLDomainOrThrowError(rId, input, true);
         } catch (err) {}
     }
 
