@@ -11,6 +11,9 @@ import { URL } from "url";
 import SessionRecipe from "./sessionRecipe";
 import STError from "./error";
 import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauthorisedResponse } from "./middleware";
+import { REFRESH_API_PATH } from "./constants";
+import NormalisedURLPath from "../../normalisedURLPath";
+import { NormalisedAppinfo } from "../../types";
 
 export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
     sessionScope = sessionScope.trim().toLowerCase();
@@ -45,7 +48,11 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
     }
 }
 
-export function validateAndNormaliseUserInput(recipeInstance: SessionRecipe, config?: TypeInput): TypeNormalisedInput {
+export function validateAndNormaliseUserInput(
+    recipeInstance: SessionRecipe,
+    appInfo: NormalisedAppinfo,
+    config?: TypeInput
+): TypeNormalisedInput {
     let cookieDomain =
         config === undefined || config.cookieDomain === undefined
             ? undefined
@@ -112,6 +119,10 @@ export function validateAndNormaliseUserInput(recipeInstance: SessionRecipe, con
     }
 
     return {
+        refreshTokenPath: appInfo.apiBasePath.appendPath(
+            recipeInstance.getRecipeId(),
+            new NormalisedURLPath(recipeInstance.getRecipeId(), REFRESH_API_PATH)
+        ),
         cookieDomain,
         cookieSameSite,
         cookieSecure,

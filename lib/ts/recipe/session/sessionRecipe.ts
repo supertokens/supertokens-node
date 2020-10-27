@@ -18,7 +18,7 @@ import { TypeInput, TypeNormalisedInput } from "./types";
 import STError from "./error";
 import Session from "./sessionClass";
 import { validateAndNormaliseUserInput, attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
-import { HandshakeInfo, NormalisedErrorHandlers } from "./types";
+import { HandshakeInfo } from "./types";
 import * as express from "express";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -41,29 +41,16 @@ export default class SessionRecipe extends RecipeModule {
     private static instance: SessionRecipe | undefined = undefined;
     static RECIPE_ID = "session";
 
-    config: {
-        refreshTokenPath: NormalisedURLPath;
-        cookieDomain: string | undefined;
-        cookieSecure: boolean;
-        cookieSameSite: "strict" | "lax" | "none";
-        sessionExpiredStatusCode: number;
-        sessionRefreshFeature: {
-            disableDefaultImplementation: boolean;
-        };
-        errorHandlers: NormalisedErrorHandlers;
-    };
+    config: TypeNormalisedInput;
 
     handshakeInfo: HandshakeInfo | undefined = undefined;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
         super(recipeId, appInfo);
-        let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(this, config);
+        let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(this, appInfo, config);
 
         this.config = {
-            refreshTokenPath: appInfo.apiBasePath.appendPath(
-                this.getRecipeId(),
-                new NormalisedURLPath(this.getRecipeId(), REFRESH_API_PATH)
-            ),
+            refreshTokenPath: normalisedInput.refreshTokenPath,
             cookieDomain: normalisedInput.cookieDomain,
             cookieSecure: normalisedInput.cookieSecure,
             cookieSameSite: normalisedInput.cookieSameSite,

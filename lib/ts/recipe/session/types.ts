@@ -14,6 +14,7 @@
  */
 import { Request, Response, NextFunction } from "express";
 import Session from "./sessionClass";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 export type HandshakeInfo = {
     jwtSigningPublicKey: string;
@@ -60,6 +61,7 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
+    refreshTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;
