@@ -19,7 +19,6 @@ export default class SessionError extends STError {
     static UNAUTHORISED: "UNAUTHORISED" = "UNAUTHORISED";
     static TRY_REFRESH_TOKEN: "TRY_REFRESH_TOKEN" = "TRY_REFRESH_TOKEN";
     static TOKEN_THEFT_DETECTED: "TOKEN_THEFT_DETECTED" = "TOKEN_THEFT_DETECTED";
-    static GENERAL_ERROR: "GENERAL_ERROR" = "GENERAL_ERROR";
 
     constructor(
         options:

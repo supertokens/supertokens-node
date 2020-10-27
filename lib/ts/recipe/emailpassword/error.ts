@@ -17,8 +17,6 @@ import STError from "../../error";
 
 export default class SessionError extends STError {
     static EMAIL_ALREADY_EXISTS_ERROR: "EMAIL_ALREADY_EXISTS_ERROR" = "EMAIL_ALREADY_EXISTS_ERROR";
-    static GENERAL_ERROR: "GENERAL_ERROR" = "GENERAL_ERROR";
-    static BAD_INPUT_ERROR: "BAD_INPUT_ERROR" = "BAD_INPUT_ERROR";
     static FIELD_ERROR: "FIELD_ERROR" = "FIELD_ERROR";
 
     constructor(

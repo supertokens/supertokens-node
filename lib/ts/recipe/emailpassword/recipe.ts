@@ -106,12 +106,7 @@ export default class Recipe extends RecipeModule {
         response: express.Response,
         next: express.NextFunction
     ): void => {
-        if (err.type === STError.FIELD_ERROR) {
-            return send200Response(response, {
-                status: "FIELD_ERROR",
-                formFields: err.payload,
-            });
-        } else if (err.type === STError.EMAIL_ALREADY_EXISTS_ERROR) {
+        if (err.type === STError.EMAIL_ALREADY_EXISTS_ERROR) {
             // As per point number 3a in https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
             return this.handleError(
                 new STError(
@@ -131,6 +126,11 @@ export default class Recipe extends RecipeModule {
                 response,
                 next
             );
+        } else {
+            return send200Response(response, {
+                status: "FIELD_ERROR",
+                formFields: err.payload,
+            });
         }
     };
 
