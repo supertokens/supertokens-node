@@ -22,7 +22,7 @@ import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { SIGN_UP_API } from "./constants";
 import { signUp as signUpAPIToCore } from "./coreAPICalls";
-import { signUpAPI } from "./api";
+import { signUpAPI } from "./api/signup";
 import { send200Response } from "../../utils";
 
 export default class Recipe extends RecipeModule {
@@ -100,11 +100,37 @@ export default class Recipe extends RecipeModule {
         }
     };
 
-    handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {
-        if (err.type === STError.EMAIL_ALREADY_EXISTS_ERROR) {
+    handleError = (
+        err: STError,
+        request: express.Request,
+        response: express.Response,
+        next: express.NextFunction
+    ): void => {
+        if (err.type === STError.FIELD_ERROR) {
             return send200Response(response, {
-                status: "EMAIL_ALREADY_EXISTS_ERROR",
+                status: "FIELD_ERROR",
+                formFields: err.payload,
             });
+        } else if (err.type === STError.EMAIL_ALREADY_EXISTS_ERROR) {
+            // As per point number 3a in https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
+            return this.handleError(
+                new STError(
+                    {
+                        type: STError.FIELD_ERROR,
+                        payload: [
+                            {
+                                id: "email",
+                                error: "This email already exists. Please sign in instead.",
+                            },
+                        ],
+                        message: "There was at least one form input error",
+                    },
+                    this.getRecipeId()
+                ),
+                request,
+                response,
+                next
+            );
         }
     };
 

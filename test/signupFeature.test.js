@@ -23,4 +23,6 @@
  *        - Bad input as in not a JSON
  *        - Bad input as in there is no POST body
  *        - Bad input as in a JSON, but wrong structure.
+ *        - Bad input as in everything is fine, except no email field
+ *        - Bad input as in everything is fine, except no password field
  */
