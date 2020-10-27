@@ -15,7 +15,13 @@
 
 import STError from "./error";
 import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
-import { normaliseInputAppInfoOrThrowError, getRIDFromRequest, normaliseHttpMethod } from "./utils";
+import {
+    normaliseInputAppInfoOrThrowError,
+    getRIDFromRequest,
+    normaliseHttpMethod,
+    sendNon200Response,
+    assertThatBodyParserHasBeenUsed,
+} from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import * as express from "express";
@@ -119,6 +125,7 @@ export default class SuperTokens {
 
                 // give task to the matched recipe
                 try {
+                    await assertThatBodyParserHasBeenUsed(matchedRecipe.getRecipeId(), request, response);
                     return await matchedRecipe.handleAPIRequest(id, request, response, next);
                 } catch (err) {
                     return next(err);
@@ -129,6 +136,11 @@ export default class SuperTokens {
                     let id = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
                     if (id !== undefined) {
                         try {
+                            await assertThatBodyParserHasBeenUsed(
+                                this.recipeModules[i].getRecipeId(),
+                                request,
+                                response
+                            );
                             return await this.recipeModules[i].handleAPIRequest(id, request, response, next);
                         } catch (err) {
                             return next(err);
@@ -147,6 +159,10 @@ export default class SuperTokens {
                 // if it's a general error, we extract the actual error and call the user's error handler
                 if (err.type === STError.GENERAL_ERROR) {
                     return next(err.payload);
+                }
+
+                if (err.type === STError.BAD_INPUT_ERROR) {
+                    return sendNon200Response(err.rId, response, err.message, 400);
                 }
 
                 // we loop through all the recipes and pass the error to the one that matches the rId

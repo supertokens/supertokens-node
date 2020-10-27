@@ -244,3 +244,8 @@ export async function defaultEmailValidator(value: string) {
 
     return undefined;
 }
+
+export function normaliseEmail(email: string): string {
+    // TODO: https://github.com/supertokens/supertokens-core/issues/89
+    return email;
+}

@@ -13,9 +13,9 @@
  * under the License.
  */
 import { Response, NextFunction, Request } from "express";
-import { SessionRequest, ErrorHandlerMiddleware, TypeInput } from "./types";
+import { SessionRequest } from "./types";
 import SessionRecipe from "./sessionRecipe";
-import { normaliseHttpMethod } from "../../utils";
+import { normaliseHttpMethod, sendNon200Response } from "../../utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 
 export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean) {
@@ -51,7 +51,12 @@ export async function sendTryRefreshTokenResponse(
     next: NextFunction
 ) {
     try {
-        sendResponse(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
+        sendNon200Response(
+            recipeInstance.getRecipeId(),
+            response,
+            "try refresh token",
+            recipeInstance.config.sessionExpiredStatusCode
+        );
     } catch (err) {
         next(err);
     }
@@ -65,7 +70,12 @@ export async function sendUnauthorisedResponse(
     next: NextFunction
 ) {
     try {
-        sendResponse(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
+        sendNon200Response(
+            recipeInstance.getRecipeId(),
+            response,
+            "unauthorised",
+            recipeInstance.config.sessionExpiredStatusCode
+        );
     } catch (err) {
         next(err);
     }
@@ -81,17 +91,13 @@ export async function sendTokenTheftDetectedResponse(
 ) {
     try {
         await recipeInstance.revokeSession(sessionHandle);
-        sendResponse(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
+        sendNon200Response(
+            recipeInstance.getRecipeId(),
+            response,
+            "token theft detected",
+            recipeInstance.config.sessionExpiredStatusCode
+        );
     } catch (err) {
         next(err);
-    }
-}
-
-function sendResponse(response: Response, message: string, statusCode: number) {
-    if (!response.writableEnded) {
-        response.statusCode = statusCode;
-        response.json({
-            message,
-        });
     }
 }

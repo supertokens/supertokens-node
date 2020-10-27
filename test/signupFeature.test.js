@@ -18,4 +18,9 @@
  * TODO: test signUpAPI for:
  *        - it works when the input is fine (sign up, get user id, get email of that user and check the input email is same as the one used for sign up)
  *        - throws an error in case of duplicate email.
+ * TODO: test normaliseEmail function
+ * TODO: pass a bad input to the /signup API and test that it throws a 400 error.
+ *        - Bad input as in not a JSON
+ *        - Bad input as in there is no POST body
+ *        - Bad input as in a JSON, but wrong structure.
  */

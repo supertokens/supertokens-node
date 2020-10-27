@@ -6,3 +6,6 @@ export declare function normaliseInputAppInfoOrThrowError(rId: string, appInfo: 
 export declare function getRIDFromRequest(req: express.Request): string | undefined;
 export declare function normaliseHttpMethod(method: string): HTTPMethod;
 export declare function getHeader(req: express.Request, key: string): string | undefined;
+export declare function sendNon200Response(rId: string, res: express.Response, message: string, statusCode: number): void;
+export declare function send200Response(res: express.Response, responseJson: any): void;
+export declare function assertThatBodyParserHasBeenUsed(rId: string, req: express.Request, res: express.Response): Promise<void>;

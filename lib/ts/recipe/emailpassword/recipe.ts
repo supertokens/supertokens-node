@@ -23,6 +23,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { SIGN_UP_API } from "./constants";
 import { signUp as signUpAPIToCore } from "./coreAPICalls";
 import { signUpAPI } from "./api";
+import { send200Response } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -101,14 +102,10 @@ export default class Recipe extends RecipeModule {
 
     handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {
         if (err.type === STError.EMAIL_ALREADY_EXISTS_ERROR) {
-            if (!response.writableEnded) {
-                response.statusCode = 200;
-                return response.json({
-                    status: "EMAIL_ALREADY_EXISTS_ERROR",
-                });
-            }
+            return send200Response(response, {
+                status: "EMAIL_ALREADY_EXISTS_ERROR",
+            });
         }
-        // TODO:
     };
 
     getAllCORSHeaders = (): string[] => {

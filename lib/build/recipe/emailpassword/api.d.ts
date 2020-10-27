@@ -1,3 +1,3 @@
 import Recipe from "./recipe";
 import { Request, Response, NextFunction } from "express";
-export declare function signUpAPI(recipeInstance: Recipe, request: Request, response: Response, next: NextFunction): Promise<void>;
+export declare function signUpAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction): Promise<void>;
