@@ -18,7 +18,7 @@ export declare type NormalisedAppinfo = {
 export declare type TypeInput = {
     supertokens: {
         connectionURI: string;
-        apiKey: string;
+        apiKey?: string;
     };
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];

@@ -36,7 +36,7 @@ export type NormalisedAppinfo = {
 export type TypeInput = {
     supertokens: {
         connectionURI: string;
-        apiKey: string;
+        apiKey?: string;
     };
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
