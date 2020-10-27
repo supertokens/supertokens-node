@@ -552,7 +552,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                     resolve(res);
                 })
         );
-        assert(res3.status === 440 || res3.status === 401);
+        assert(res3.status === 401);
         assert.deepEqual(res3.text, '{"message":"token theft detected"}');
 
         let cookies = extractInfoFromResponse(res3);

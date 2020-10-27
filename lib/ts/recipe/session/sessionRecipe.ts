@@ -113,8 +113,8 @@ export default class SessionRecipe extends RecipeModule {
         ];
     };
 
-    handleAPIRequest = (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        handleRefreshAPI(this, req, res, next);
+    handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        await handleRefreshAPI(this, req, res, next);
     };
 
     handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {

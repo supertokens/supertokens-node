@@ -25,6 +25,8 @@ let { ProcessState } = require("../lib/build/processState");
  *          - where we do not have to handle it and it skips it (with / without rId)
  * TODO: Test various inputs to errorHandler (if it accepts or not)
  * TODO: Check that access control allow headers have the right set values for each recipe, including one for rid
+ * TODO: If an error handler in a recipe throws an error, that error next to go to the user's error handler
+ * TODO: Error thrown from APIs implemented by recipes must not go unhandled
  */
 
 describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.js]")}`, function () {

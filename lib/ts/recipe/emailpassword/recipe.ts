@@ -14,11 +14,15 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput } from "./types";
+import { TypeInput, TypeNormalisedInput, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
 import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
+import NormalisedURLPath from "../../normalisedURLPath";
+import { SIGN_UP_API } from "./constants";
+import { signUp as signUpAPIToCore } from "./coreAPICalls";
+import { signUpAPI } from "./api";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -79,24 +83,41 @@ export default class Recipe extends RecipeModule {
     // abstract instance functions below...............
 
     getAPIsHandled = (): APIHandled[] => {
-        // TODO:
-        return [];
+        return [
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_UP_API),
+                id: "SIGN_UP",
+                disabled: this.config.signUpFeature.disableDefaultImplementation,
+            },
+        ];
     };
 
-    handleAPIRequest = (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        // TODO:
+    handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        if (id === "SIGN_UP") {
+            return await signUpAPI(this, req, res, next);
+        }
     };
 
     handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {
+        if (err.type === STError.EMAIL_ALREADY_EXISTS_ERROR) {
+            if (!response.writableEnded) {
+                response.statusCode = 200;
+                return response.json({
+                    status: "EMAIL_ALREADY_EXISTS_ERROR",
+                });
+            }
+        }
         // TODO:
     };
 
     getAllCORSHeaders = (): string[] => {
-        // TODO:
         return [];
     };
 
     // instance functions below...............
 
-    // TODO: feature functions.
+    signUp = async (email: string, password: string): Promise<User> => {
+        return signUpAPIToCore(this, email, password);
+    };
 }

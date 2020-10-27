@@ -12,3 +12,10 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+/**
+ * TODO: check if disableDefaultImplementation is true, the default signup API does not work - you get a 404
+ * TODO: test signUpAPI for:
+ *        - it works when the input is fine (sign up, get user id, get email of that user and check the input email is same as the one used for sign up)
+ *        - throws an error in case of duplicate email.
+ */

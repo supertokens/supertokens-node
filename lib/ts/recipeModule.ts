@@ -72,7 +72,7 @@ export default abstract class RecipeModule {
         req: express.Request,
         response: express.Response,
         next: express.NextFunction
-    ): void;
+    ): Promise<void>;
 
     abstract handleError(
         error: STError,

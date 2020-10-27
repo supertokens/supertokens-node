@@ -118,13 +118,21 @@ export default class SuperTokens {
                 }
 
                 // give task to the matched recipe
-                return matchedRecipe.handleAPIRequest(id, request, response, next);
+                try {
+                    return await matchedRecipe.handleAPIRequest(id, request, response, next);
+                } catch (err) {
+                    return next(err);
+                }
             } else {
                 // we loop through all recipe modules to find the one with the matching path and method
                 for (let i = 0; i < this.recipeModules.length; i++) {
                     let id = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
                     if (id !== undefined) {
-                        return this.recipeModules[i].handleAPIRequest(id, request, response, next);
+                        try {
+                            return await this.recipeModules[i].handleAPIRequest(id, request, response, next);
+                        } catch (err) {
+                            return next(err);
+                        }
                     }
                 }
 
@@ -134,7 +142,7 @@ export default class SuperTokens {
     };
 
     errorHandler = () => {
-        return (err: any, request: express.Request, response: express.Response, next: express.NextFunction) => {
+        return async (err: any, request: express.Request, response: express.Response, next: express.NextFunction) => {
             if (STError.isErrorFromSuperTokens(err)) {
                 // if it's a general error, we extract the actual error and call the user's error handler
                 if (err.type === STError.GENERAL_ERROR) {
@@ -145,7 +153,11 @@ export default class SuperTokens {
                 for (let i = 0; i < this.recipeModules.length; i++) {
                     let rId = this.recipeModules[i].getRecipeId();
                     if (rId === err.rId) {
-                        return this.recipeModules[i].handleError(err, request, response, next);
+                        try {
+                            return this.recipeModules[i].handleError(err, request, response, next);
+                        } catch (error) {
+                            return next(error);
+                        }
                     }
                 }
             }

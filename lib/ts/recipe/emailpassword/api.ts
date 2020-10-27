@@ -13,26 +13,9 @@
  * under the License.
  */
 
-import STError from "../../error";
+import Recipe from "./recipe";
+import { Request, Response, NextFunction } from "express";
 
-export default class SessionError extends STError {
-    static EMAIL_ALREADY_EXISTS_ERROR: "EMAIL_ALREADY_EXISTS_ERROR" = "EMAIL_ALREADY_EXISTS_ERROR";
-
-    constructor(
-        options:
-            | {
-                  type: "EMAIL_ALREADY_EXISTS_ERROR";
-                  message: string;
-              }
-            | {
-                  type: "GENERAL_ERROR";
-                  payload: Error;
-              },
-        recipeId: string
-    ) {
-        super({
-            ...options,
-            rId: recipeId,
-        });
-    }
+export async function signUpAPI(recipeInstance: Recipe, request: Request, response: Response, next: NextFunction) {
+    // TODO:
 }

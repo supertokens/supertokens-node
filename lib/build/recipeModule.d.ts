@@ -14,7 +14,7 @@ export default abstract class RecipeModule {
     isErrorFromThisRecipe: (err: any) => err is STError;
     returnAPIIdIfCanHandleRequest: (path: NormalisedURLPath, method: HTTPMethod) => string | undefined;
     abstract getAPIsHandled(): APIHandled[];
-    abstract handleAPIRequest(id: string, req: express.Request, response: express.Response, next: express.NextFunction): void;
+    abstract handleAPIRequest(id: string, req: express.Request, response: express.Response, next: express.NextFunction): Promise<void>;
     abstract handleError(error: STError, request: express.Request, response: express.Response, next: express.NextFunction): void;
     abstract getAllCORSHeaders(): string[];
 }
