@@ -71,7 +71,7 @@ export default class SessionRecipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction {
         return (appInfo) => {
             if (SessionRecipe.instance === undefined) {
-                SessionRecipe.instance = new SessionRecipe("session", appInfo, config);
+                SessionRecipe.instance = new SessionRecipe(SessionRecipe.RECIPE_ID, appInfo, config);
                 return SessionRecipe.instance;
             } else {
                 throw new STError(

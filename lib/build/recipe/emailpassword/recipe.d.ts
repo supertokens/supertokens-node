@@ -1,6 +1,6 @@
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput } from "./types";
-import { NormalisedAppinfo, APIHandled } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
 import * as express from "express";
 import STError from "./error";
 export default class Recipe extends RecipeModule {
@@ -8,6 +8,9 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput);
+    static getInstanceOrThrowError(): Recipe;
+    static init(config?: TypeInput): RecipeListFunction;
+    static reset(): void;
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => void;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;

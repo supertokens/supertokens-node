@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput } from "./types";
-import { NormalisedAppinfo, APIHandled } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
 import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -31,9 +31,50 @@ export default class Recipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
     }
 
-    // TODO: init function
-    // TODO: getInstanceOrThrowError
-    // TODO: reset
+    static getInstanceOrThrowError(): Recipe {
+        if (Recipe.instance !== undefined) {
+            return Recipe.instance;
+        }
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+            },
+            Recipe.RECIPE_ID
+        );
+    }
+
+    static init(config?: TypeInput): RecipeListFunction {
+        return (appInfo) => {
+            if (Recipe.instance === undefined) {
+                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, config);
+                return Recipe.instance;
+            } else {
+                throw new STError(
+                    {
+                        type: STError.GENERAL_ERROR,
+                        payload: new Error(
+                            "Emailpassword recipe has already been initialised. Please check your code for bugs."
+                        ),
+                    },
+                    Recipe.RECIPE_ID
+                );
+            }
+        };
+    }
+
+    static reset() {
+        if (process.env.TEST_MODE !== "testing") {
+            throw new STError(
+                {
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error("calling testing function in non testing env"),
+                },
+                Recipe.RECIPE_ID
+            );
+        }
+        Recipe.instance = undefined;
+    }
 
     // abstract instance functions below...............
 
