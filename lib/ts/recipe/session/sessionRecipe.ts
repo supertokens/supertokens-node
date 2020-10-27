@@ -47,17 +47,7 @@ export default class SessionRecipe extends RecipeModule {
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
         super(recipeId, appInfo);
-        let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(this, appInfo, config);
-
-        this.config = {
-            refreshTokenPath: normalisedInput.refreshTokenPath,
-            cookieDomain: normalisedInput.cookieDomain,
-            cookieSecure: normalisedInput.cookieSecure,
-            cookieSameSite: normalisedInput.cookieSameSite,
-            sessionExpiredStatusCode: normalisedInput.sessionExpiredStatusCode,
-            sessionRefreshFeature: normalisedInput.sessionRefreshFeature,
-            errorHandlers: normalisedInput.errorHandlers,
-        };
+        this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         // Solving the cold start problem
         this.getHandshakeInfo().catch((ignored) => {

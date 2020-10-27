@@ -29,6 +29,11 @@ const { Querier } = require("../lib/build/querier");
  * TODO: test config for session module
  * TODO: test config for faunadb session module
  * TODO: test config for emailpassword module
+ * TODO: test validateAndNormaliseUserInput for session
+ * TODO: test validateAndNormaliseUserInput for emailpassword
+ *         - No email / passord validators given should add them
+ *         - Giving optional true in email / password field should be ignored
+ *         - Check that the default password and email validators work fine
  */
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {

@@ -14,18 +14,21 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput } from "./types";
+import { TypeInput, TypeNormalisedInput } from "./types";
 import { NormalisedAppinfo, APIHandled } from "../../types";
 import * as express from "express";
 import STError from "./error";
+import { validateAndNormaliseUserInput } from "./utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "email-password";
 
+    config: TypeNormalisedInput;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
         super(recipeId, appInfo);
-        // TODO: load config
+        this.config = validateAndNormaliseUserInput(this, appInfo, config);
     }
 
     // TODO: init function
