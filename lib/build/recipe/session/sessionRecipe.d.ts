@@ -1,25 +1,14 @@
 import RecipeModule from "../../recipeModule";
-import { TypeInput } from "./types";
+import { TypeInput, TypeNormalisedInput } from "./types";
 import STError from "./error";
 import Session from "./sessionClass";
-import { HandshakeInfo, NormalisedErrorHandlers } from "./types";
+import { HandshakeInfo } from "./types";
 import * as express from "express";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
-import NormalisedURLPath from "../../normalisedURLPath";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
-    config: {
-        refreshTokenPath: NormalisedURLPath;
-        cookieDomain: string | undefined;
-        cookieSecure: boolean;
-        cookieSameSite: "strict" | "lax" | "none";
-        sessionExpiredStatusCode: number;
-        sessionRefreshFeature: {
-            disableDefaultImplementation: boolean;
-        };
-        errorHandlers: NormalisedErrorHandlers;
-    };
+    config: TypeNormalisedInput;
     handshakeInfo: HandshakeInfo | undefined;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput);
     static getInstanceOrThrowError(): SessionRecipe;
