@@ -141,7 +141,7 @@ export default class SessionRecipe extends RecipeModule {
     // instance functions below...............
 
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
-        if (this.handshakeInfo == undefined) {
+        if (this.handshakeInfo === undefined) {
             let response = await this.getQuerier().sendPostRequest(
                 new NormalisedURLPath(this.getRecipeId(), "/recipe/handshake"),
                 {}

@@ -24,7 +24,7 @@ let Session = require("../recipe/session");
 /**
  *
  * TODO: check that disabling default API actually disables it (for session)
- * TODO: check that disabling default API actually disables it (for emailpassword)
+ * TODO: (Later) check that disabling default API actually disables it (for emailpassword)
  */
 
 describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
