@@ -118,7 +118,7 @@ export default class Recipe extends RecipeModule {
                                 error: "This email already exists. Please sign in instead.",
                             },
                         ],
-                        message: "There was at least one form input error",
+                        message: "Error in input formFields",
                     },
                     this.getRecipeId()
                 ),

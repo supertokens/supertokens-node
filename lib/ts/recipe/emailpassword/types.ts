@@ -41,20 +41,19 @@ export type TypeInputSignIn = {
 
 export type TypeNormalisedInputSignUp = {
     disableDefaultImplementation: boolean;
-    formFields: {
-        id: string;
-        validate: (value: string) => Promise<string | undefined>;
-        optional: boolean;
-    }[];
+    formFields: NormalisedFormField[];
     handleCustomFormFields: (user: User, formFields: { id: string; value: string }[]) => Promise<void>;
+};
+
+export type NormalisedFormField = {
+    id: string;
+    validate: (value: string) => Promise<string | undefined>;
+    optional: boolean;
 };
 
 export type TypeNormalisedInputSignIn = {
     disableDefaultImplementation: boolean;
-    formFields: {
-        id: "email" | "password";
-        validate: (value: string) => Promise<string | undefined>;
-    }[];
+    formFields: NormalisedFormField[];
 };
 
 export type TypeInputResetPasswordUsingTokenFeature = {
@@ -67,10 +66,7 @@ export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     disableDefaultImplementation: boolean;
     getResetPasswordURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string) => Promise<void>;
-    formFields: {
-        id: "password";
-        validate: (value: string) => Promise<string | undefined>;
-    }[];
+    formFields: NormalisedFormField[];
 };
 
 export type User = {

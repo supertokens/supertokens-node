@@ -19,6 +19,7 @@ import { normaliseEmail } from "../utils";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
 import Session from "../../session";
 import { send200Response } from "../../../utils";
+import { validateFormFieldsOrThrowError } from "./utils";
 
 export async function signUpAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
@@ -27,7 +28,11 @@ export async function signUpAPI(recipeInstance: Recipe, req: Request, res: Respo
     let formFields: {
         id: string;
         value: string;
-    }[] = await validateFormFieldsOrThrowError(recipeInstance, req.body.formFields);
+    }[] = await validateFormFieldsOrThrowError(
+        recipeInstance,
+        recipeInstance.config.signUpFeature.formFields,
+        req.body.formFields
+    );
 
     // step 2
     let email = normaliseEmail(formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value);
@@ -48,19 +53,4 @@ export async function signUpAPI(recipeInstance: Recipe, req: Request, res: Respo
         status: "OK",
         user,
     });
-}
-
-async function validateFormFieldsOrThrowError(
-    recipeInstance: Recipe,
-    formFieldsRaw: any
-): Promise<
-    {
-        id: string;
-        value: string;
-    }[]
-> {
-    // TODO: first syntax validation
-    // TODO: check that email and password exist
-    // TODO: then run validators through them.
-    return [];
 }

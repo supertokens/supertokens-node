@@ -23,6 +23,7 @@ import {
     TypeNormalisedInputSignIn,
     TypeInputResetPasswordUsingTokenFeature,
     TypeNormalisedInputResetPasswordUsingTokenFeature,
+    NormalisedFormField,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
@@ -74,15 +75,13 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let formFields: {
-        id: "password";
-        validate: (value: string) => Promise<string | undefined>;
-    }[] = signUpConfig.formFields
+    let formFields: NormalisedFormField[] = signUpConfig.formFields
         .filter((filter) => filter.id === FORM_FIELD_PASSWORD_ID)
         .map((field) => {
             return {
-                id: field.id as "password",
+                id: field.id,
                 validate: field.validate,
+                optional: false,
             };
         });
 
@@ -115,15 +114,13 @@ function validateAndNormaliseSignInConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let formFields: {
-        id: "email" | "password";
-        validate: (value: string) => Promise<string | undefined>;
-    }[] = signUpConfig.formFields
+    let formFields: NormalisedFormField[] = signUpConfig.formFields
         .filter((filter) => filter.id === FORM_FIELD_EMAIL_ID || filter.id === FORM_FIELD_PASSWORD_ID)
         .map((field) => {
             return {
-                id: field.id as "email" | "password",
+                id: field.id,
                 validate: field.validate,
+                optional: false,
             };
         });
     return {
@@ -142,11 +139,7 @@ function validateAndNormaliseSignupConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let formFields: {
-        id: string;
-        validate: (value: string) => Promise<string | undefined>;
-        optional: boolean;
-    }[] = [];
+    let formFields: NormalisedFormField[] = [];
     if (config !== undefined && config.formFields !== undefined) {
         config.formFields.forEach((field) => {
             if (field.id === FORM_FIELD_PASSWORD_ID) {

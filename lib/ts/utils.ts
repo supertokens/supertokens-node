@@ -125,17 +125,15 @@ export function send200Response(res: express.Response, responseJson: any) {
 }
 
 export async function assertThatBodyParserHasBeenUsed(rId: string, req: express.Request, res: express.Response) {
+    // according to https://github.com/supertokens/supertokens-node/issues/33
     let method = normaliseHttpMethod(req.method);
-
     if (method !== "post" && method !== "put") {
         return;
     }
-
     if (req.body === undefined) {
-        // TODO: based on https://github.com/supertokens/supertokens-core/issues/90
         let jsonParser = bodyParser.json();
-        await new Promise((resolve) => jsonParser(req, res, resolve));
-        if (req.body === undefined) {
+        let err = await new Promise((resolve) => jsonParser(req, res, resolve));
+        if (err !== undefined) {
             throw new STError({
                 type: STError.BAD_INPUT_ERROR,
                 message: "API input error: Please make sure to pass a valid JSON input in thr request body",
