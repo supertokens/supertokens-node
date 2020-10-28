@@ -15,10 +15,10 @@ export declare type TypeInputSignUp = {
         validate?: (value: string) => Promise<string | undefined>;
         optional?: boolean;
     }[];
-    postSignUpCallback?: (user: User, formFields: {
+    handleCustomFormFields?: (user: User, formFields: {
         id: string;
         value: string;
-    }) => Promise<void>;
+    }[]) => Promise<void>;
 };
 export declare type TypeInputSignIn = {
     disableDefaultImplementation?: boolean;
@@ -30,10 +30,10 @@ export declare type TypeNormalisedInputSignUp = {
         validate: (value: string) => Promise<string | undefined>;
         optional: boolean;
     }[];
-    postSignUpCallback: (user: User, formFields: {
+    handleCustomFormFields: (user: User, formFields: {
         id: string;
         value: string;
-    }) => Promise<void>;
+    }[]) => Promise<void>;
 };
 export declare type TypeNormalisedInputSignIn = {
     disableDefaultImplementation: boolean;

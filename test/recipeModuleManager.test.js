@@ -27,6 +27,8 @@ let { ProcessState } = require("../lib/build/processState");
  * TODO: Check that access control allow headers have the right set values for each recipe, including one for rid
  * TODO: If an error handler in a recipe throws an error, that error next to go to the user's error handler
  * TODO: Error thrown from APIs implemented by recipes must not go unhandled
+ * TODO: Disable a default route /auth/signin, and then implement your own /auth/signin API and check that that gets called
+ * TODO: If a recipe has a callback and a user implements it, but throws a normal error from it, then we need to make sure that that error is caught only by their error handler
  */
 
 describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.js]")}`, function () {

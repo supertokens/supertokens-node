@@ -15,12 +15,8 @@
 
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-import { send200Response } from "../../../utils";
 import { normaliseEmail } from "../utils";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
-import EmailPasswordError from "../error";
-import STError from "../../../error";
-import { User } from "../types";
 
 export async function signUpAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
@@ -39,7 +35,10 @@ export async function signUpAPI(recipeInstance: Recipe, req: Request, res: Respo
     let user = await recipeInstance.signUp(email, password);
 
     // set 4
-    // TODO: Call the postSignUpCallback function with await.
+    await recipeInstance.config.signUpFeature.handleCustomFormFields(
+        user,
+        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID)
+    );
 
     // step 5
     // TODO: Create a new session using the Session recipe and return OK

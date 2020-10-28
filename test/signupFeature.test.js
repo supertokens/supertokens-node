@@ -25,4 +25,8 @@
  *        - Bad input as in a JSON, but wrong structure.
  *        - Bad input as in everything is fine, except no email field
  *        - Bad input as in everything is fine, except no password field
+ * TODO: providing the handleCustomFormFields should work:
+ *        - If not provided by the user, it should not result in an error
+ *        - If provided by the user, and custom fields are there, only those should be sent
+ *        - If provided by the user, and no custom fields are there, then the formFields param must sbe empty
  */

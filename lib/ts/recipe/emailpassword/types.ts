@@ -32,7 +32,7 @@ export type TypeInputSignUp = {
         validate?: (value: string) => Promise<string | undefined>;
         optional?: boolean;
     }[];
-    postSignUpCallback?: (user: User, formFields: { id: string; value: string }) => Promise<void>;
+    handleCustomFormFields?: (user: User, formFields: { id: string; value: string }[]) => Promise<void>;
 };
 
 export type TypeInputSignIn = {
@@ -46,7 +46,7 @@ export type TypeNormalisedInputSignUp = {
         validate: (value: string) => Promise<string | undefined>;
         optional: boolean;
     }[];
-    postSignUpCallback: (user: User, formFields: { id: string; value: string }) => Promise<void>;
+    handleCustomFormFields: (user: User, formFields: { id: string; value: string }[]) => Promise<void>;
 };
 
 export type TypeNormalisedInputSignIn = {
