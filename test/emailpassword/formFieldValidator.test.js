@@ -13,9 +13,9 @@
  * under the License.
  */
 
-let { defaultPasswordValidator, defaultEmailValidator } = require("../lib/build/recipe/emailpassword/utils");
+let { defaultPasswordValidator, defaultEmailValidator } = require("../../lib/build/recipe/emailpassword/utils");
 let assert = require("assert");
-const { printPath } = require("./utils");
+const { printPath } = require("../utils");
 
 describe(`formFieldValidatos: ${printPath("[test/formFieldValidator.test.js]")}`, function () {
     it("checking email validator", async function () {

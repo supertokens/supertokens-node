@@ -127,7 +127,7 @@ export function send200Response(res: express.Response, responseJson: any) {
 export async function assertThatBodyParserHasBeenUsed(rId: string, req: express.Request, res: express.Response) {
     let method = normaliseHttpMethod(req.method);
 
-    if (method === "get") {
+    if (method !== "post" && method !== "put") {
         return;
     }
 

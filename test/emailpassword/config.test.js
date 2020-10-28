@@ -12,23 +12,23 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("./utils");
-let STExpress = require("../");
-let Session = require("../recipe/session");
-let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+let STExpress = require("../../");
+let Session = require("../../recipe/session");
+let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
-let { ProcessState } = require("../lib/build/processState");
-let { normaliseURLPathOrThrowError } = require("../lib/build/normalisedURLPath");
-let { normaliseURLDomainOrThrowError } = require("../lib/build/normalisedURLDomain");
-let { normaliseSessionScopeOrThrowError } = require("../lib/build/recipe/session/utils");
-const { Querier } = require("../lib/build/querier");
+let { ProcessState } = require("../../lib/build/processState");
+let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
+let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
+let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
+const { Querier } = require("../../lib/build/querier");
 
 /**
- * TODO: test various inputs for appInfo
- * TODO: test using zero, one and two recipe modules
- * TODO: test config for session module
- * TODO: test config for faunadb session module
- * TODO: test validateAndNormaliseUserInput for session
+ * TODO: test config for emailpassword module
+ * TODO: test validateAndNormaliseUserInput for emailpassword
+ *         - No email / passord validators given should add them
+ *         - Giving optional true in email / password field should be ignored
+ *         - Check that the default password and email validators work fine
  */
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {

@@ -29,4 +29,5 @@
  *        - If not provided by the user, it should not result in an error
  *        - If provided by the user, and custom fields are there, only those should be sent
  *        - If provided by the user, and no custom fields are there, then the formFields param must sbe empty
+ * TODO: Make sure that a successful sign up yields a session
  */
