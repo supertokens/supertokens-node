@@ -31,7 +31,7 @@ export default class SessionWrapper {
         return SessionRecipe.getInstanceOrThrowError().createNewSession(res, userId, jwtPayload, sessionData);
     }
 
-    static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) {
+    static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean) {
         return SessionRecipe.getInstanceOrThrowError().getSession(req, res, doAntiCsrfCheck);
     }
 

@@ -21,7 +21,7 @@ export default class SessionRecipe extends RecipeModule {
     getHandshakeInfo: () => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
-    getSession: (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) => Promise<Session>;
+    getSession: (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean | undefined) => Promise<Session>;
     refreshSession: (req: express.Request, res: express.Response) => Promise<Session>;
     revokeAllSessionsForUser: (userId: string) => Promise<string[]>;
     getAllSessionHandlesForUser: (userId: string) => Promise<string[]>;

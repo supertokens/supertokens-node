@@ -35,6 +35,7 @@ import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
 import { handleRefreshAPI } from "./api";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { normaliseHttpMethod } from "../../utils";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -182,7 +183,7 @@ export default class SessionRecipe extends RecipeModule {
         );
     };
 
-    getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): Promise<Session> => {
+    getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean): Promise<Session> => {
         let idRefreshToken = getIdRefreshTokenFromCookie(req);
         if (idRefreshToken === undefined) {
             // we do not clear cookies here because of a
@@ -209,6 +210,11 @@ export default class SessionRecipe extends RecipeModule {
         }
         try {
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
+
+            if (doAntiCsrfCheck === undefined) {
+                doAntiCsrfCheck = normaliseHttpMethod(req.method) !== "get";
+            }
+
             let response = await SessionFunctions.getSession(this, accessToken, antiCsrfToken, doAntiCsrfCheck);
             if (response.accessToken !== undefined) {
                 setFrontTokenInHeaders(

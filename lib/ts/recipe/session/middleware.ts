@@ -31,9 +31,6 @@ export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boo
             if (incomingPath.equals(refreshTokenPath) && method === "post") {
                 request.session = await recipeInstance.refreshSession(request, response);
             } else {
-                if (antiCsrfCheck === undefined) {
-                    antiCsrfCheck = method !== "get";
-                }
                 request.session = await recipeInstance.getSession(request, response, antiCsrfCheck);
             }
             return next();

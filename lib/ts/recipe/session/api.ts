@@ -14,6 +14,7 @@
  */
 import { Response, NextFunction, Request } from "express";
 import SessionRecipe from "./sessionRecipe";
+import { send200Response } from "../../utils";
 
 export async function handleRefreshAPI(
     recipeInstance: SessionRecipe,
@@ -22,5 +23,5 @@ export async function handleRefreshAPI(
     next: NextFunction
 ) {
     await recipeInstance.refreshSession(request, response);
-    return response.send(JSON.stringify({}));
+    send200Response(response, {});
 }
