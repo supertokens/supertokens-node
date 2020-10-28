@@ -13,8 +13,8 @@
  * under the License.
  */
 import { Response, NextFunction, Request } from "express";
-import { SessionRequest } from "./types";
 import SessionRecipe from "./sessionRecipe";
+import { send200Response } from "../../utils";
 
 export async function handleRefreshAPI(
     recipeInstance: SessionRecipe,
@@ -22,10 +22,6 @@ export async function handleRefreshAPI(
     response: Response,
     next: NextFunction
 ) {
-    try {
-        await recipeInstance.refreshSession(request, response);
-        return response.send(JSON.stringify({}));
-    } catch (err) {
-        next(err);
-    }
+    await recipeInstance.refreshSession(request, response);
+    send200Response(response, {});
 }

@@ -12,7 +12,6 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import * as validator from "validator";
 
 import STError from "./error";
 import { verifyJWTAndGetPayload } from "./jwt";
@@ -88,7 +87,7 @@ function sanitizeStringInput(field: any): string | undefined {
         return undefined;
     }
     try {
-        let result = validator.trim(field);
+        let result = field.trim();
         return result;
     } catch (err) {}
     return undefined;

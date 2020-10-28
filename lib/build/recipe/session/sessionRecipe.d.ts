@@ -15,13 +15,13 @@ export default class SessionRecipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => void;
+    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
     getHandshakeInfo: () => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
-    getSession: (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) => Promise<Session>;
+    getSession: (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean | undefined) => Promise<Session>;
     refreshSession: (req: express.Request, res: express.Response) => Promise<Session>;
     revokeAllSessionsForUser: (userId: string) => Promise<string[]>;
     getAllSessionHandlesForUser: (userId: string) => Promise<string[]>;

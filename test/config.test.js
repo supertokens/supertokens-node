@@ -28,7 +28,7 @@ const { Querier } = require("../lib/build/querier");
  * TODO: test using zero, one and two recipe modules
  * TODO: test config for session module
  * TODO: test config for faunadb session module
- * TODO: test config for emailpassword module
+ * TODO: test validateAndNormaliseUserInput for session
  */
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {

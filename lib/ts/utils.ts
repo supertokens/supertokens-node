@@ -4,6 +4,7 @@ import * as express from "express";
 import { HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
+import * as bodyParser from "body-parser";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -99,4 +100,45 @@ export function getHeader(req: express.Request, key: string): string | undefined
         return value[0];
     }
     return value;
+}
+
+export function sendNon200Response(rId: string, res: express.Response, message: string, statusCode: number) {
+    if (statusCode < 300) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            rId,
+            payload: new Error("Calling sendNon200Response with status code < 300"),
+        });
+    }
+    if (!res.writableEnded) {
+        res.statusCode = statusCode;
+        res.json({
+            message,
+        });
+    }
+}
+
+export function send200Response(res: express.Response, responseJson: any) {
+    if (!res.writableEnded) {
+        res.status(200).json(responseJson);
+    }
+}
+
+export async function assertThatBodyParserHasBeenUsed(rId: string, req: express.Request, res: express.Response) {
+    // according to https://github.com/supertokens/supertokens-node/issues/33
+    let method = normaliseHttpMethod(req.method);
+    if (method !== "post" && method !== "put") {
+        return;
+    }
+    if (req.body === undefined) {
+        let jsonParser = bodyParser.json();
+        let err = await new Promise((resolve) => jsonParser(req, res, resolve));
+        if (err !== undefined) {
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message: "API input error: Please make sure to pass a valid JSON input in thr request body",
+                rId,
+            });
+        }
+    }
 }

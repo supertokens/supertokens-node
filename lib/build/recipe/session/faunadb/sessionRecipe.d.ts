@@ -25,7 +25,7 @@ export default class SessionRecipe extends RecipeModule {
     static init(config: TypeFaunaDBInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => import("../../../types").APIHandled[];
-    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => void;
+    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
     getFDAT: (session: Session) => Promise<any>;

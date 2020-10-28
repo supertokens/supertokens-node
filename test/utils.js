@@ -17,6 +17,7 @@ const nock = require("nock");
 let fs = require("fs");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 let FaunaDBSessionRecipe = require("../lib/build/recipe/session/faunadb/sessionRecipe").default;
 let { ProcessState } = require("../lib/build/processState");
 
@@ -165,6 +166,7 @@ module.exports.stopST = async function (pid) {
 module.exports.resetAll = function () {
     SuperTokens.reset();
     SessionRecipe.reset();
+    EmailPasswordRecipe.reset();
     FaunaDBSessionRecipe.reset();
     ProcessState.getInstance().reset();
 };

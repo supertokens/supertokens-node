@@ -35,6 +35,7 @@ import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
 import { handleRefreshAPI } from "./api";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { normaliseHttpMethod } from "../../utils";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -47,17 +48,7 @@ export default class SessionRecipe extends RecipeModule {
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
         super(recipeId, appInfo);
-        let normalisedInput: TypeNormalisedInput = validateAndNormaliseUserInput(this, appInfo, config);
-
-        this.config = {
-            refreshTokenPath: normalisedInput.refreshTokenPath,
-            cookieDomain: normalisedInput.cookieDomain,
-            cookieSecure: normalisedInput.cookieSecure,
-            cookieSameSite: normalisedInput.cookieSameSite,
-            sessionExpiredStatusCode: normalisedInput.sessionExpiredStatusCode,
-            sessionRefreshFeature: normalisedInput.sessionRefreshFeature,
-            errorHandlers: normalisedInput.errorHandlers,
-        };
+        this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         // Solving the cold start problem
         this.getHandshakeInfo().catch((ignored) => {
@@ -81,7 +72,7 @@ export default class SessionRecipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction {
         return (appInfo) => {
             if (SessionRecipe.instance === undefined) {
-                SessionRecipe.instance = new SessionRecipe("session", appInfo, config);
+                SessionRecipe.instance = new SessionRecipe(SessionRecipe.RECIPE_ID, appInfo, config);
                 return SessionRecipe.instance;
             } else {
                 throw new STError(
@@ -123,8 +114,8 @@ export default class SessionRecipe extends RecipeModule {
         ];
     };
 
-    handleAPIRequest = (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        handleRefreshAPI(this, req, res, next);
+    handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+        await handleRefreshAPI(this, req, res, next);
     };
 
     handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {
@@ -192,7 +183,7 @@ export default class SessionRecipe extends RecipeModule {
         );
     };
 
-    getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): Promise<Session> => {
+    getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean): Promise<Session> => {
         let idRefreshToken = getIdRefreshTokenFromCookie(req);
         if (idRefreshToken === undefined) {
             // we do not clear cookies here because of a
@@ -219,6 +210,11 @@ export default class SessionRecipe extends RecipeModule {
         }
         try {
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
+
+            if (doAntiCsrfCheck === undefined) {
+                doAntiCsrfCheck = normaliseHttpMethod(req.method) !== "get";
+            }
+
             let response = await SessionFunctions.getSession(this, accessToken, antiCsrfToken, doAntiCsrfCheck);
             if (response.accessToken !== undefined) {
                 setFrontTokenInHeaders(

@@ -29,6 +29,10 @@ let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 
+/**
+ * TODO: check if disableDefaultImplementation is true, the default refresh API does not work - you get a 404
+ */
+
 describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
