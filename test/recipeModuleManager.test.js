@@ -29,6 +29,7 @@ let { ProcessState } = require("../lib/build/processState");
  * TODO: Error thrown from APIs implemented by recipes must not go unhandled
  * TODO: Disable a default route /auth/signin, and then implement your own /auth/signin API and check that that gets called
  * TODO: If a recipe has a callback and a user implements it, but throws a normal error from it, then we need to make sure that that error is caught only by their error handler
+ * TODO: Test getAllCORSHeaders
  */
 
 describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.js]")}`, function () {

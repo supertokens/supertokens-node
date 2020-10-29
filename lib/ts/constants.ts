@@ -14,3 +14,4 @@
  */
 
 export const HEADER_RID = "rid";
+export const HEADER_FDI = "fdi-version";

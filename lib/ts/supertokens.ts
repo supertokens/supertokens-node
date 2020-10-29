@@ -25,7 +25,7 @@ import {
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import * as express from "express";
-import { HEADER_RID } from "./constants";
+import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 
@@ -185,6 +185,7 @@ export default class SuperTokens {
     getAllCORSHeaders = (): string[] => {
         let headerSet = new Set<string>();
         headerSet.add(HEADER_RID);
+        headerSet.add(HEADER_FDI);
         this.recipeModules.forEach((recipe) => {
             let headers = recipe.getAllCORSHeaders();
             headers.forEach((h) => {
