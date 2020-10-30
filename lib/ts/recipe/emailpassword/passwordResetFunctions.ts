@@ -18,10 +18,18 @@ import { NormalisedAppinfo } from "../../types";
 
 export function getResetPasswordURL(appInfo: NormalisedAppinfo) {
     return async (ignored: User): Promise<string> => {
-        return appInfo.websiteDomain.getAsStringDangerous() + appInfo.websiteBasePath.getAsStringDangerous();
+        // according to https://github.com/supertokens/supertokens-auth-react/issues/6
+        return (
+            appInfo.websiteDomain.getAsStringDangerous() +
+            appInfo.websiteBasePath.getAsStringDangerous() +
+            "/reset-password"
+        );
     };
 }
 
-export async function createAndSendCustomEmail(user: User, passwordResetURLWithToken: string) {
-    // TODO:
+export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
+    return async (user: User, passwordResetURLWithToken: string) => {
+        // related issue: https://github.com/supertokens/supertokens-node/issues/38
+        // TODO: Call our API with email, appName, passwordResetURLWithToken
+    };
 }

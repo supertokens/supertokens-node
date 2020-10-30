@@ -15,7 +15,6 @@
 
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-import { normaliseEmail } from "../utils";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
 import Session from "../../session";
 import { send200Response } from "../../../utils";
@@ -34,8 +33,7 @@ export default async function signInAPI(recipeInstance: Recipe, req: Request, re
         req.body.formFields
     );
 
-    // step 2
-    let email = normaliseEmail(formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value);
+    let email = formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value;
     let password = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
 
     // step 3. Errors for this are caught by the error handler

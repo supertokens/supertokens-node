@@ -15,13 +15,13 @@
 
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
-import Session from "../../session";
+import { FORM_FIELD_PASSWORD_ID } from "../constants";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
+import STError from "../error";
 
-export default async function signUpAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
+export default async function passwordReset(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
+    // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
     // step 1
     let formFields: {
@@ -29,26 +29,37 @@ export default async function signUpAPI(recipeInstance: Recipe, req: Request, re
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         recipeInstance,
-        recipeInstance.config.signUpFeature.formFields,
+        recipeInstance.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
         req.body.formFields
     );
 
-    let email = formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value;
-    let password = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
+    let newPassword = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
 
-    // step 2. Errors for this are caught by the error handler
-    let user = await recipeInstance.signUp(email, password);
+    let token = req.body.token;
+    if (typeof token === undefined) {
+        throw new STError(
+            {
+                type: STError.BAD_INPUT_ERROR,
+                message: "Please provide the password reset token",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+    if (typeof token !== "string") {
+        throw new STError(
+            {
+                type: STError.BAD_INPUT_ERROR,
+                message: "The password reset token must be a string",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
 
-    // set 3
-    await recipeInstance.config.signUpFeature.handleCustomFormFields(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID)
-    );
+    // step 2
+    await recipeInstance.resetPasswordUsingToken(token, newPassword);
 
-    // step 4
-    await Session.createNewSession(res, user.id);
+    // step 3
     return send200Response(res, {
         status: "OK",
-        user,
     });
 }

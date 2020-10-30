@@ -100,8 +100,6 @@ while IFS='"' read -ra ADDR; do
     done
 done <<< "$codeversion"
 
-echo $codeversion
-
 if [ $version != $codeversion ]
 then
     RED='\033[0;31m'

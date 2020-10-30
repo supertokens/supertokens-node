@@ -20,15 +20,19 @@ import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { SIGN_UP_API, SIGN_IN_API } from "./constants";
+import { SIGN_UP_API, SIGN_IN_API, GENERATE_PASSWORD_RESET_TOKEN_API, PASSWORD_RESET_API } from "./constants";
 import {
     signUp as signUpAPIToCore,
     signIn as signInAPIToCore,
     getUserById as getUserByIdFromCore,
     getUserByEmail as getUserByEmailFromCore,
+    createResetPasswordToken as createResetPasswordTokenFromCore,
+    resetPasswordUsingToken as resetPasswordUsingTokenToCore,
 } from "./coreAPICalls";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
+import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
+import passwordResetAPI from "./api/passwordReset";
 import { send200Response } from "../../utils";
 
 export default class Recipe extends RecipeModule {
@@ -94,23 +98,39 @@ export default class Recipe extends RecipeModule {
             {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_UP_API),
-                id: "SIGN_UP",
+                id: SIGN_UP_API,
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_IN_API),
-                id: "SIGN_IN",
+                id: SIGN_IN_API,
                 disabled: this.config.signInFeature.disableDefaultImplementation,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), GENERATE_PASSWORD_RESET_TOKEN_API),
+                id: GENERATE_PASSWORD_RESET_TOKEN_API,
+                disabled: this.config.resetPasswordUsingTokenFeature.disableDefaultImplementation,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), PASSWORD_RESET_API),
+                id: PASSWORD_RESET_API,
+                disabled: this.config.resetPasswordUsingTokenFeature.disableDefaultImplementation,
             },
         ];
     };
 
     handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        if (id === "SIGN_UP") {
+        if (id === SIGN_UP_API) {
             return await signUpAPI(this, req, res, next);
-        } else if (id === "SIGN_IN") {
+        } else if (id === SIGN_IN_API) {
             return await signInAPI(this, req, res, next);
+        } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
+            return await generatePasswordResetTokenAPI(this, req, res, next);
+        } else {
+            return await passwordResetAPI(this, req, res, next);
         }
     };
 
@@ -144,11 +164,17 @@ export default class Recipe extends RecipeModule {
             return send200Response(response, {
                 status: "WRONG_CREDENTIAL_ERROR",
             });
-        } else {
+        } else if (err.type === STError.FIELD_ERROR) {
             return send200Response(response, {
                 status: "FIELD_ERROR",
                 formFields: err.payload,
             });
+        } else if (err.type === STError.RESET_PASSWORD_INVALID_TOKEN_ERROR) {
+            return send200Response(response, {
+                status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+            });
+        } else {
+            return next(err);
         }
     };
 
@@ -172,5 +198,13 @@ export default class Recipe extends RecipeModule {
 
     getUserByEmail = async (email: string): Promise<User | undefined> => {
         return getUserByEmailFromCore(this, email);
+    };
+
+    createResetPasswordToken = async (userId: string): Promise<string> => {
+        return createResetPasswordTokenFromCore(this, userId);
+    };
+
+    resetPasswordUsingToken = async (token: string, newPassword: string) => {
+        return resetPasswordUsingTokenToCore(this, token, newPassword);
     };
 }

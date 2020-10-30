@@ -26,11 +26,12 @@
  * TODO: Make sure that a successful sign in yields a session
  * TODO: formField validation testing:
  *        - Provide custom email validators to sign up and make sure they are applied to sign in
- *        - Provide custom password validators to sign up and make sure they are applied to sign in
- *        - Test password field validation error
+ *        - Provide custom password validators to sign up and make sure they are applied to sign in. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
+ *        - Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
  *        - Test email field validation error
  *        - Input formFields has no email field
  *        - Input formFields has no password field
+ *        - Provide invalid (wrong syntax) email and wrong password, and you should get form field error
  * TODO: Test getUserByEmail
  *        - User does not exist
  *        - User exists
