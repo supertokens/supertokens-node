@@ -110,3 +110,28 @@ export async function createResetPasswordToken(recipeInstance: Recipe, userId: s
         );
     }
 }
+
+export async function resetPasswordUsingToken(
+    recipeInstance: Recipe,
+    token: string,
+    newPassword: string
+): Promise<void> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/password/reset"), {
+            method: "token",
+            token,
+            newPassword,
+        });
+    if (response.status == "OK") {
+        return response.token;
+    } else {
+        throw new STError(
+            {
+                type: STError.RESET_PASSWORD_INVALID_TOKEN_ERROR,
+                message: "Failed to reset password as the the token has expired or is invalid",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+}

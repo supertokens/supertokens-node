@@ -18,8 +18,14 @@
  *        - check that getResetPasswordURL works fine
  *        - check that createAndSendCustomEmail works fine
  * TODO: generate token API:
+ *        - Call the createResetPasswordToken function with valid input
+ *        - Call the createResetPasswordToken with unknown userId and test error thrown
  *        - password validation checks
  *        - non existent email should return "OK" with a pause > 300MS
  *        - check that the generated password reset link is correct
  *        - check if that if the getResetPasswordURL function is given by the user, that is called
+ * TODO: password reset API:
+ *        - Call the resetPasswordUsingToken function with valid input
+ *        - Call the resetPasswordUsingToken with an invalid token and see the error
+ *        -
  */
