@@ -1,5 +1,6 @@
 export declare enum PROCESS_STATE {
-    CALLING_SERVICE_IN_VERIFY = 0
+    CALLING_SERVICE_IN_VERIFY = 0,
+    CALLING_SERVICE_IN_GET_HANDSHAKE_INFO = 1
 }
 export declare class ProcessState {
     history: PROCESS_STATE[];

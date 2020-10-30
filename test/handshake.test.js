@@ -17,7 +17,7 @@ let ST = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
-let { ProcessState } = require("../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 
 /**
  * TODO: test that once the info is loaded, it doesn't query again
@@ -33,6 +33,32 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+    // * TODO: test that once the info is loaded, it doesn't query again
+
+    it("test that once the info is loaded, it doesn't querry again", async function () {
+        await startST();
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+        await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO, 2000);
+        assert(verifyState !== undefined);
+
+        ProcessState.getInstance().reset();
+
+        await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+        verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO, 2000);
+        assert(verifyState === undefined);
+
     });
 
     it("core not available", async function () {

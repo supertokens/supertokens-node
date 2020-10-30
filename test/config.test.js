@@ -23,7 +23,7 @@ let { normaliseURLDomainOrThrowError } = require("../lib/build/normalisedURLDoma
 let { normaliseSessionScopeOrThrowError } = require("../lib/build/recipe/session/utils");
 const { Querier } = require("../lib/build/querier");
 let SuperTokens = require("../lib/build/supertokens").default;
-let EmailPassword = require("../lib/build/recipe/emailpassword")
+let EmailPassword = require("../lib/build/recipe/emailpassword");
 
 /**
  * TODO: test various inputs for appInfo
@@ -60,12 +60,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init()],
             });
-            assert(
-                SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/auth"
-            );
-            assert(
-                SuperTokens.getInstanceOrThrowError().appInfo.websiteBasePath.getAsStringDangerous() === "/auth"
-            );
+            assert(SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/auth");
+            assert(SuperTokens.getInstanceOrThrowError().appInfo.websiteBasePath.getAsStringDangerous() === "/auth");
 
             resetAll();
         }
@@ -85,13 +81,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert(
-                SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/test"
-            );
-            assert(
-                SuperTokens.getInstanceOrThrowError().appInfo.websiteBasePath.getAsStringDangerous() ===
-                "/test1"
-            );
+            assert(SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/test");
+            assert(SuperTokens.getInstanceOrThrowError().appInfo.websiteBasePath.getAsStringDangerous() === "/test1");
 
             resetAll();
         }
@@ -116,7 +107,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||
                     err.message !==
-                    "Please provide your apiDomain inside the appInfo object when calling supertokens.init"
+                        "Please provide your apiDomain inside the appInfo object when calling supertokens.init"
                 ) {
                     throw err;
                 }
@@ -141,7 +132,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||
                     err.message !==
-                    "Please provide your appName inside the appInfo object when calling supertokens.init"
+                        "Please provide your appName inside the appInfo object when calling supertokens.init"
                 ) {
                     throw err;
                 }
@@ -166,7 +157,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||
                     err.message !==
-                    "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
+                        "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
                 ) {
                     throw err;
                 }
@@ -248,18 +239,22 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({
-                cookieDomain: "testDomain",
-                sessionExpiredStatusCode: 111,
-                sessionRefreshFeature: {
-                    disableDefaultImplementation: true
-                },
-                cookieSecure: true
-            })],
+            recipeList: [
+                Session.init({
+                    cookieDomain: "testDomain",
+                    sessionExpiredStatusCode: 111,
+                    sessionRefreshFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                    cookieSecure: true,
+                }),
+            ],
         });
         assert(SessionRecipe.getInstanceOrThrowError().config.cookieDomain === ".testdomain");
         assert(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode === 111);
-        assert(SessionRecipe.getInstanceOrThrowError().config.sessionRefreshFeature.disableDefaultImplementation === true);
+        assert(
+            SessionRecipe.getInstanceOrThrowError().config.sessionRefreshFeature.disableDefaultImplementation === true
+        );
         assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
     });
 
@@ -602,7 +597,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
             assert(
                 SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous() ===
-                "/custom/a/session/refresh"
+                    "/custom/a/session/refresh"
             );
             resetAll();
         }
@@ -622,7 +617,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
             assert(
                 SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous() ===
-                "/session/refresh"
+                    "/session/refresh"
             );
             resetAll();
         }
@@ -641,7 +636,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             });
             assert(
                 SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous() ===
-                "/auth/session/refresh"
+                    "/auth/session/refresh"
             );
             resetAll();
         }

@@ -15,6 +15,7 @@
 
 export enum PROCESS_STATE {
     CALLING_SERVICE_IN_VERIFY,
+    CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
 }
 
 export class ProcessState {
