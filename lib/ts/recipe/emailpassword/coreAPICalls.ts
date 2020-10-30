@@ -65,7 +65,7 @@ export async function signIn(recipeInstance: Recipe, email: string, password: st
 export async function getUserById(recipeInstance: Recipe, userId: string): Promise<User | undefined> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
             userId,
         });
     if (response.status == "OK") {
@@ -80,7 +80,7 @@ export async function getUserById(recipeInstance: Recipe, userId: string): Promi
 export async function getUserByEmail(recipeInstance: Recipe, email: string): Promise<User | undefined> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
             email,
         });
     if (response.status == "OK") {
