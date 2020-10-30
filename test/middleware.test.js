@@ -20,6 +20,7 @@ let { Querier } = require("../lib/build/querier");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
+let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 
 /**
  *
@@ -37,6 +38,32 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    //  * TODO: check that disabling default API actually disables it (for session)
+
+    it("test disabling default API actually disables it", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    sessionRefreshFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                }),
+            ],
+        });
+
+        let apisHandled = await SessionRecipe.getInstanceOrThrowError().getAPIsHandled();
+        assert(apisHandled[0].disabled === true);
     });
 
     it("test session verify middleware", async function () {

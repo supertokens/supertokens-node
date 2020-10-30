@@ -16,7 +16,7 @@ const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./u
 let ST = require("../");
 let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
-let { ProcessState } = require("../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let Session = require("../recipe/session");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 
@@ -37,6 +37,59 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    // * TODO: Test that if the querier throws an error from a recipe, that recipe's ID is there
+
+    it("test that if the querier throws an error from a recipe, that recipe's ID is there", async function () {
+        await startST();
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080;http://localhost:8081/",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+        try {
+            await Session.getAllSessionHandlesForUser();
+        } catch (err) {
+            if (err.type !== ST.Error.GENERAL_ERROR || err.rId !== "session") {
+                throw err;
+            }
+        }
+    });
+
+    // * TODO: Check that once the API version is there, it doesn't need to query again
+
+    it("test that if that once API version is there, it doesn't need to query again", async function () {
+        await startST();
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080;http://localhost:8081/",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+        let q = Querier.getInstanceOrThrowError("");
+        await q.getAPIVersion();
+
+        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION, 2000)
+        assert(verifyState !== undefined)
+
+        ProcessState.getInstance().reset()
+
+        await q.getAPIVersion();
+        verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION, 2000)
+        assert(verifyState === undefined)
+
     });
 
     it("core not available", async function () {

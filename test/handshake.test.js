@@ -50,15 +50,20 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
             recipeList: [Session.init()],
         });
         await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO, 2000);
+        let verifyState = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
+            2000
+        );
         assert(verifyState !== undefined);
 
         ProcessState.getInstance().reset();
 
         await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
-        verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO, 2000);
+        verifyState = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
+            2000
+        );
         assert(verifyState === undefined);
-
     });
 
     it("core not available", async function () {
