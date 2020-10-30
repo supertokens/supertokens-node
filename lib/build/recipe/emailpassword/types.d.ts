@@ -49,7 +49,8 @@ export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     disableDefaultImplementation: boolean;
     getResetPasswordURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string) => Promise<void>;
-    formFields: NormalisedFormField[];
+    formFieldsForGenerateTokenForm: NormalisedFormField[];
+    formFieldsForPasswordResetForm: NormalisedFormField[];
 };
 export declare type User = {
     id: string;

@@ -20,8 +20,8 @@ import Session from "../../session";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 
-export default async function signUpAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
+export default async function signInAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
+    // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
 
     // step 1
     let formFields: {
@@ -29,23 +29,17 @@ export default async function signUpAPI(recipeInstance: Recipe, req: Request, re
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         recipeInstance,
-        recipeInstance.config.signUpFeature.formFields,
+        recipeInstance.config.signInFeature.formFields,
         req.body.formFields
     );
 
     let email = formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value;
     let password = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
 
-    // step 2. Errors for this are caught by the error handler
-    let user = await recipeInstance.signUp(email, password);
+    // step 3. Errors for this are caught by the error handler
+    let user = await recipeInstance.signIn(email, password);
 
-    // set 3
-    await recipeInstance.config.signUpFeature.handleCustomFormFields(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID)
-    );
-
-    // step 4
+    // step 4.
     await Session.createNewSession(res, user.id);
     return send200Response(res, {
         status: "OK",

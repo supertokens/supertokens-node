@@ -39,3 +39,99 @@ export async function signUp(recipeInstance: Recipe, email: string, password: st
         );
     }
 }
+
+export async function signIn(recipeInstance: Recipe, email: string, password: string): Promise<User> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/signin"), {
+            email,
+            password,
+        });
+    if (response.status == "OK") {
+        return {
+            ...response.user,
+        };
+    } else {
+        throw new STError(
+            {
+                message: "Sign in failed because of incorrect email & password combination",
+                type: STError.WRONG_CREDENTIAL_ERROR,
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+}
+
+export async function getUserById(recipeInstance: Recipe, userId: string): Promise<User | undefined> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
+            userId,
+        });
+    if (response.status == "OK") {
+        return {
+            ...response.user,
+        };
+    } else {
+        return undefined;
+    }
+}
+
+export async function getUserByEmail(recipeInstance: Recipe, email: string): Promise<User | undefined> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
+            email,
+        });
+    if (response.status == "OK") {
+        return {
+            ...response.user,
+        };
+    } else {
+        return undefined;
+    }
+}
+
+export async function createResetPasswordToken(recipeInstance: Recipe, userId: string): Promise<string> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/password/reset/token"), {
+            userId,
+        });
+    if (response.status == "OK") {
+        return response.token;
+    } else {
+        throw new STError(
+            {
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Failed to generated password reset token as the user ID is unknown",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+}
+
+export async function resetPasswordUsingToken(
+    recipeInstance: Recipe,
+    token: string,
+    newPassword: string
+): Promise<void> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/password/reset"), {
+            method: "token",
+            token,
+            newPassword,
+        });
+    if (response.status == "OK") {
+        return response.token;
+    } else {
+        throw new STError(
+            {
+                type: STError.RESET_PASSWORD_INVALID_TOKEN_ERROR,
+                message: "Failed to reset password as the the token has expired or is invalid",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+}
