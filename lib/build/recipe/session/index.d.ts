@@ -5,7 +5,6 @@ import SessionClass from "./sessionClass";
 export default class SessionWrapper {
     static init: typeof SessionRecipe.init;
     static Error: typeof SuperTokensError;
-    static SessionContainer: typeof SessionClass;
     static createNewSession(res: express.Response, userId: string, jwtPayload?: any, sessionData?: any): Promise<SessionClass>;
     static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean): Promise<SessionClass>;
     static refreshSession(req: express.Request, res: express.Response): Promise<SessionClass>;
@@ -33,4 +32,4 @@ export declare let getJWTPayload: typeof SessionWrapper.getJWTPayload;
 export declare let updateJWTPayload: typeof SessionWrapper.updateJWTPayload;
 export declare let verifySession: (antiCsrfCheck?: boolean | undefined) => (request: import("./types").SessionRequest, response: express.Response, next: express.NextFunction) => Promise<void>;
 export declare let Error: typeof SuperTokensError;
-export declare let SessionContainer: typeof SessionClass;
+export declare type SessionContainer = SessionClass;

@@ -25,8 +25,6 @@ export default class SessionWrapper {
 
     static Error = SuperTokensError;
 
-    static SessionContainer = SessionClass;
-
     static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
         return SessionRecipe.getInstanceOrThrowError().createNewSession(res, userId, jwtPayload, sessionData);
     }
@@ -104,4 +102,4 @@ export let verifySession = SessionWrapper.verifySession;
 
 export let Error = SessionWrapper.Error;
 
-export let SessionContainer = SessionWrapper.SessionContainer;
+export type SessionContainer = SessionClass;
