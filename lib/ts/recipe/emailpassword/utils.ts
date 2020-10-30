@@ -75,8 +75,18 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let formFields: NormalisedFormField[] = signUpConfig.formFields
+    let formFieldsForPasswordResetForm: NormalisedFormField[] = signUpConfig.formFields
         .filter((filter) => filter.id === FORM_FIELD_PASSWORD_ID)
+        .map((field) => {
+            return {
+                id: field.id,
+                validate: field.validate,
+                optional: false,
+            };
+        });
+
+    let formFieldsForGenerateTokenForm: NormalisedFormField[] = signUpConfig.formFields
+        .filter((filter) => filter.id === FORM_FIELD_EMAIL_ID)
         .map((field) => {
             return {
                 id: field.id,
@@ -97,7 +107,8 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
 
     return {
         disableDefaultImplementation,
-        formFields,
+        formFieldsForPasswordResetForm,
+        formFieldsForGenerateTokenForm,
         getResetPasswordURL,
         createAndSendCustomEmail,
     };

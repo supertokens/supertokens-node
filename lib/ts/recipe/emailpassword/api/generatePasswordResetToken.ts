@@ -34,7 +34,7 @@ export default async function generatePasswordResetToken(
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         recipeInstance,
-        recipeInstance.config.resetPasswordUsingTokenFeature.formFields,
+        recipeInstance.config.resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm,
         req.body.formFields
     );
 
@@ -65,7 +65,11 @@ export default async function generatePasswordResetToken(
 
     // step 4
     let passwordResetLink =
-        (await recipeInstance.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user)) + "?token=" + token;
+        (await recipeInstance.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user)) +
+        "?token=" +
+        token +
+        "&rid=" +
+        recipeInstance.getRecipeId();
 
     // step 5 & 6
     await recipeInstance.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(user, passwordResetLink);

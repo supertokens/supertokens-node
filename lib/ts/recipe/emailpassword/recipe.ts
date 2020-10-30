@@ -32,6 +32,7 @@ import {
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
 import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
+import passwordResetAPI from "./api/passwordReset";
 import { send200Response } from "../../utils";
 
 export default class Recipe extends RecipeModule {
@@ -129,7 +130,7 @@ export default class Recipe extends RecipeModule {
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
             return await generatePasswordResetTokenAPI(this, req, res, next);
         } else {
-            // TODO: PASSWORD_RESET_API
+            return await passwordResetAPI(this, req, res, next);
         }
     };
 

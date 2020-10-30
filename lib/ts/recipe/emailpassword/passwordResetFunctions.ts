@@ -29,6 +29,7 @@ export function getResetPasswordURL(appInfo: NormalisedAppinfo) {
 
 export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (user: User, passwordResetURLWithToken: string) => {
+        // related issue: https://github.com/supertokens/supertokens-node/issues/38
         // TODO: Call our API with email, appName, passwordResetURLWithToken
     };
 }
