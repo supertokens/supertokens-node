@@ -92,7 +92,7 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
 
     let createAndSendCustomEmail =
         config === undefined || config.createAndSendCustomEmail === undefined
-            ? defaultCreateAndSendCustomEmail
+            ? defaultCreateAndSendCustomEmail(appInfo)
             : config.createAndSendCustomEmail;
 
     return {

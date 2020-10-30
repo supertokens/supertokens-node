@@ -15,8 +15,7 @@
 
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
-import Session from "../../session";
+import { FORM_FIELD_EMAIL_ID } from "../constants";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
@@ -68,8 +67,12 @@ export default async function generatePasswordResetToken(
     let passwordResetLink =
         (await recipeInstance.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user)) + "?token=" + token;
 
-    // step 5
-    // TODO:
+    // step 5 & 6
+    await recipeInstance.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(user, passwordResetLink);
+
+    return send200Response(res, {
+        status: "OK",
+    });
 }
 
 async function pauseForRandomTime() {

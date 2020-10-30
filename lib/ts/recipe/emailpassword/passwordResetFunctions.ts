@@ -27,6 +27,8 @@ export function getResetPasswordURL(appInfo: NormalisedAppinfo) {
     };
 }
 
-export async function createAndSendCustomEmail(user: User, passwordResetURLWithToken: string) {
-    // TODO:
+export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
+    return async (user: User, passwordResetURLWithToken: string) => {
+        // TODO: Call our API with email, appName, passwordResetURLWithToken
+    };
 }
