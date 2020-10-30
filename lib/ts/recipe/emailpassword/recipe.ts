@@ -26,6 +26,7 @@ import {
     signIn as signInAPIToCore,
     getUserById as getUserByIdFromCore,
     getUserByEmail as getUserByEmailFromCore,
+    createResetPasswordToken as createResetPasswordTokenFromCore,
 } from "./coreAPICalls";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
@@ -144,11 +145,13 @@ export default class Recipe extends RecipeModule {
             return send200Response(response, {
                 status: "WRONG_CREDENTIAL_ERROR",
             });
-        } else {
+        } else if (err.type === STError.FIELD_ERROR) {
             return send200Response(response, {
                 status: "FIELD_ERROR",
                 formFields: err.payload,
             });
+        } else {
+            return next(err);
         }
     };
 
@@ -172,5 +175,9 @@ export default class Recipe extends RecipeModule {
 
     getUserByEmail = async (email: string): Promise<User | undefined> => {
         return getUserByEmailFromCore(this, email);
+    };
+
+    createResetPasswordToken = async (userId: string): Promise<string> => {
+        return createResetPasswordTokenFromCore(this, userId);
     };
 }

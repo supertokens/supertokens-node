@@ -91,3 +91,22 @@ export async function getUserByEmail(recipeInstance: Recipe, email: string): Pro
         return undefined;
     }
 }
+
+export async function createResetPasswordToken(recipeInstance: Recipe, userId: string): Promise<string> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/password/reset/token"), {
+            userId,
+        });
+    if (response.status == "OK") {
+        return response.token;
+    } else {
+        throw new STError(
+            {
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Failed to generated password reset token as the user ID is unknown",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+}

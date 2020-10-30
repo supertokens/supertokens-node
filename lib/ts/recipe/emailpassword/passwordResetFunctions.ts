@@ -18,7 +18,12 @@ import { NormalisedAppinfo } from "../../types";
 
 export function getResetPasswordURL(appInfo: NormalisedAppinfo) {
     return async (ignored: User): Promise<string> => {
-        return appInfo.websiteDomain.getAsStringDangerous() + appInfo.websiteBasePath.getAsStringDangerous();
+        // according to https://github.com/supertokens/supertokens-auth-react/issues/6
+        return (
+            appInfo.websiteDomain.getAsStringDangerous() +
+            appInfo.websiteBasePath.getAsStringDangerous() +
+            "/reset-password"
+        );
     };
 }
 

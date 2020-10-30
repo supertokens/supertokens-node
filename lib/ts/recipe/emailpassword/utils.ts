@@ -119,7 +119,8 @@ function validateAndNormaliseSignInConfig(
         .map((field) => {
             return {
                 id: field.id,
-                validate: field.validate,
+                // see issue: https://github.com/supertokens/supertokens-node/issues/36
+                validate: field.id === FORM_FIELD_EMAIL_ID ? field.validate : defaultValidator,
                 optional: false,
             };
         });
@@ -192,7 +193,7 @@ function validateAndNormaliseSignupConfig(
     };
 }
 
-async function defaultValidator(value: string) {
+async function defaultValidator(value: string): Promise<string | undefined> {
     return undefined;
 }
 
@@ -236,9 +237,4 @@ export async function defaultEmailValidator(value: string) {
     }
 
     return undefined;
-}
-
-export function normaliseEmail(email: string): string {
-    // TODO: https://github.com/supertokens/supertokens-core/issues/89
-    return email;
 }

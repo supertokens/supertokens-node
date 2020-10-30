@@ -19,9 +19,15 @@ import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
 import Session from "../../session";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
+import STError from "../error";
 
-export default async function signUpAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
-    // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
+export default async function generatePasswordResetToken(
+    recipeInstance: Recipe,
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
+    // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
     // step 1
     let formFields: {
@@ -29,26 +35,43 @@ export default async function signUpAPI(recipeInstance: Recipe, req: Request, re
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         recipeInstance,
-        recipeInstance.config.signUpFeature.formFields,
+        recipeInstance.config.resetPasswordUsingTokenFeature.formFields,
         req.body.formFields
     );
 
     let email = formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value;
-    let password = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
 
-    // step 2. Errors for this are caught by the error handler
-    let user = await recipeInstance.signUp(email, password);
+    // step 2.
+    let user = await recipeInstance.getUserByEmail(email);
+    if (user === undefined) {
+        await pauseForRandomTime();
+        return send200Response(res, {
+            status: "OK",
+        });
+    }
 
-    // set 3
-    await recipeInstance.config.signUpFeature.handleCustomFormFields(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID)
-    );
+    // step 3
+    let token: string;
+    try {
+        token = await recipeInstance.createResetPasswordToken(user.id);
+    } catch (err) {
+        if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNKNOWN_USER_ID_ERROR) {
+            await pauseForRandomTime();
+            return send200Response(res, {
+                status: "OK",
+            });
+        }
+        throw err;
+    }
 
     // step 4
-    await Session.createNewSession(res, user.id);
-    return send200Response(res, {
-        status: "OK",
-        user,
-    });
+    let passwordResetLink =
+        (await recipeInstance.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user)) + "?token=" + token;
+
+    // step 5
+    // TODO:
+}
+
+async function pauseForRandomTime() {
+    await new Promise((resolve) => setTimeout(resolve, 300 + Math.random() * 500));
 }

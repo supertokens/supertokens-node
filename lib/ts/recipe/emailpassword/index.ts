@@ -37,6 +37,10 @@ export default class Wrapper {
     static getUserByEmail(email: string) {
         return Recipe.getInstanceOrThrowError().getUserByEmail(email);
     }
+
+    static createResetPasswordToken(userId: string) {
+        return Recipe.getInstanceOrThrowError().createResetPasswordToken(userId);
+    }
 }
 
 export let init = Wrapper.init;
@@ -50,3 +54,5 @@ export let signIn = Wrapper.signIn;
 export let getUserById = Wrapper.getUserById;
 
 export let getUserByEmail = Wrapper.getUserByEmail;
+
+export let createResetPasswordToken = Wrapper.createResetPasswordToken;

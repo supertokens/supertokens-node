@@ -19,4 +19,5 @@ export default class Recipe extends RecipeModule {
     signIn: (email: string, password: string) => Promise<User>;
     getUserById: (userId: string) => Promise<User | undefined>;
     getUserByEmail: (email: string) => Promise<User | undefined>;
+    createResetPasswordToken: (userId: string) => Promise<string>;
 }

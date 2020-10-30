@@ -276,6 +276,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     it("testing URL path normalisation", async function () {
+        assert(normaliseURLPathOrThrowError("", "") === "");
         assert(normaliseURLPathOrThrowError("", "http://api.example.com") === "");
         assert(normaliseURLPathOrThrowError("", "https://api.example.com") === "");
         assert(normaliseURLPathOrThrowError("", "http://api.example.com?hello=1") === "");
@@ -357,6 +358,13 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
         try {
             normaliseURLDomainOrThrowError("", "/one/two");
+            assert(false);
+        } catch (err) {
+            assert(err.message === "Please provide a valid domain name" && err.rId === "");
+        }
+
+        try {
+            normaliseURLDomainOrThrowError("", "");
             assert(false);
         } catch (err) {
             assert(err.message === "Please provide a valid domain name" && err.rId === "");

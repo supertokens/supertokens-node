@@ -17,4 +17,9 @@
  * TODO: in passwordResetFunctions.ts:
  *        - check that getResetPasswordURL works fine
  *        - check that createAndSendCustomEmail works fine
+ * TODO: generate token API:
+ *        - password validation checks
+ *        - non existent email should return "OK" with a pause > 300MS
+ *        - check that the generated password reset link is correct
+ *        - check if that if the getResetPasswordURL function is given by the user, that is called
  */
