@@ -4,3 +4,4 @@ export declare const SIGN_UP_API = "/signup";
 export declare const SIGN_IN_API = "/signin";
 export declare const GENERATE_PASSWORD_RESET_TOKEN_API = "/user/password/reset/token";
 export declare const PASSWORD_RESET_API = "/user/password/reset";
+export declare const SIGN_OUT_API = "/signout";

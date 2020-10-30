@@ -43,24 +43,12 @@ export default class Session {
         this.recipeInstance = recipeInstance;
     }
 
-    /**
-     * @description call this to logout the current user.
-     * This only invalidates the refresh token. The access token can still be used after
-     * @sideEffect may clear cookies from response.
-     * @throw AuthError GENERAL_ERROR
-     */
     revokeSession = async () => {
         if (await SessionFunctions.revokeSession(this.recipeInstance, this.sessionHandle)) {
             clearSessionFromCookie(this.recipeInstance, this.res);
         }
     };
 
-    /**
-     * @description: this function reads from the database every time. It provides no locking mechanism in case other processes are updating session data for this session as well, so please take of that by yourself.
-     * @returns session data as provided by the user earlier
-     * @sideEffect may clear cookies from response.
-     * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
-     */
     getSessionData = async (): Promise<any> => {
         try {
             return await SessionFunctions.getSessionData(this.recipeInstance, this.sessionHandle);
@@ -72,11 +60,6 @@ export default class Session {
         }
     };
 
-    /**
-     * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
-     * @sideEffect may clear cookies from response.
-     * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
-     */
     updateSessionData = async (newSessionData: any) => {
         try {
             await SessionFunctions.updateSessionData(this.recipeInstance, this.sessionHandle, newSessionData);

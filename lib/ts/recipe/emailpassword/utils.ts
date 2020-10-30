@@ -27,6 +27,7 @@ import {
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
+import { TypeNormalisedInputSignOutFeature, TypeInputSignOutFeature } from "./types";
 import {
     getResetPasswordURL as defaultGetResetPasswordURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomEmail,
@@ -57,10 +58,32 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.resetPasswordUsingTokenFeature
     );
 
+    let signOutFeature = validateAndNormaliseSignOutConfig(
+        recipeInstance,
+        appInfo,
+        config === undefined ? undefined : config.signOutFeature
+    );
+
     return {
         signUpFeature,
         signInFeature,
         resetPasswordUsingTokenFeature,
+        signOutFeature,
+    };
+}
+
+function validateAndNormaliseSignOutConfig(
+    recipeInstance: Recipe,
+    appInfo: NormalisedAppinfo,
+    config?: TypeInputSignOutFeature
+): TypeNormalisedInputSignOutFeature {
+    let disableDefaultImplementation =
+        config === undefined || config.disableDefaultImplementation === undefined
+            ? false
+            : config.disableDefaultImplementation;
+
+    return {
+        disableDefaultImplementation,
     };
 }
 

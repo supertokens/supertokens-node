@@ -17,12 +17,14 @@ export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
+    signOutFeature?: TypeInputSignOutFeature;
 };
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
+    signOutFeature: TypeNormalisedInputSignOutFeature;
 };
 
 export type TypeInputSignUp = {
@@ -68,6 +70,14 @@ export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string) => Promise<void>;
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
+};
+
+export type TypeInputSignOutFeature = {
+    disableDefaultImplementation?: boolean;
+};
+
+export type TypeNormalisedInputSignOutFeature = {
+    disableDefaultImplementation: boolean;
 };
 
 export type User = {

@@ -20,7 +20,13 @@ import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { SIGN_UP_API, SIGN_IN_API, GENERATE_PASSWORD_RESET_TOKEN_API, PASSWORD_RESET_API } from "./constants";
+import {
+    SIGN_UP_API,
+    SIGN_IN_API,
+    GENERATE_PASSWORD_RESET_TOKEN_API,
+    PASSWORD_RESET_API,
+    SIGN_OUT_API,
+} from "./constants";
 import {
     signUp as signUpAPIToCore,
     signIn as signInAPIToCore,
@@ -33,6 +39,7 @@ import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
 import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
 import passwordResetAPI from "./api/passwordReset";
+import signOutAPI from "./api/signout";
 import { send200Response } from "../../utils";
 
 export default class Recipe extends RecipeModule {
@@ -119,6 +126,12 @@ export default class Recipe extends RecipeModule {
                 id: PASSWORD_RESET_API,
                 disabled: this.config.resetPasswordUsingTokenFeature.disableDefaultImplementation,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_OUT_API),
+                id: SIGN_OUT_API,
+                disabled: this.config.signOutFeature.disableDefaultImplementation,
+            },
         ];
     };
 
@@ -129,6 +142,8 @@ export default class Recipe extends RecipeModule {
             return await signInAPI(this, req, res, next);
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
             return await generatePasswordResetTokenAPI(this, req, res, next);
+        } else if (id === SIGN_OUT_API) {
+            return await signOutAPI(this, req, res, next);
         } else {
             return await passwordResetAPI(this, req, res, next);
         }

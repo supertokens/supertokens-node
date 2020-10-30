@@ -2,11 +2,13 @@ export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
+    signOutFeature?: TypeInputSignOutFeature;
 };
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
+    signOutFeature: TypeNormalisedInputSignOutFeature;
 };
 export declare type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
@@ -51,6 +53,12 @@ export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string) => Promise<void>;
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
+};
+export declare type TypeInputSignOutFeature = {
+    disableDefaultImplementation?: boolean;
+};
+export declare type TypeNormalisedInputSignOutFeature = {
+    disableDefaultImplementation: boolean;
 };
 export declare type User = {
     id: string;
