@@ -18,3 +18,5 @@ export const FORM_FIELD_PASSWORD_ID = "password";
 export const FORM_FIELD_EMAIL_ID = "email";
 
 export const SIGN_UP_API = "/signup";
+
+export const SIGN_IN_API = "/signin";

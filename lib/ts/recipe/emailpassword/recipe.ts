@@ -20,9 +20,15 @@ import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { SIGN_UP_API } from "./constants";
-import { signUp as signUpAPIToCore } from "./coreAPICalls";
-import { signUpAPI } from "./api/signup";
+import { SIGN_UP_API, SIGN_IN_API } from "./constants";
+import {
+    signUp as signUpAPIToCore,
+    signIn as signInAPIToCore,
+    getUserById as getUserByIdFromCore,
+    getUserByEmail as getUserByEmailFromCore,
+} from "./coreAPICalls";
+import signUpAPI from "./api/signup";
+import signInAPI from "./api/signin";
 import { send200Response } from "../../utils";
 
 export default class Recipe extends RecipeModule {
@@ -91,12 +97,20 @@ export default class Recipe extends RecipeModule {
                 id: "SIGN_UP",
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_IN_API),
+                id: "SIGN_IN",
+                disabled: this.config.signInFeature.disableDefaultImplementation,
+            },
         ];
     };
 
     handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
         if (id === "SIGN_UP") {
             return await signUpAPI(this, req, res, next);
+        } else if (id === "SIGN_IN") {
+            return await signInAPI(this, req, res, next);
         }
     };
 
@@ -126,6 +140,10 @@ export default class Recipe extends RecipeModule {
                 response,
                 next
             );
+        } else if (err.type === STError.WRONG_CREDENTIAL_ERROR) {
+            return send200Response(response, {
+                status: "WRONG_CREDENTIAL_ERROR",
+            });
         } else {
             return send200Response(response, {
                 status: "FIELD_ERROR",
@@ -142,5 +160,17 @@ export default class Recipe extends RecipeModule {
 
     signUp = async (email: string, password: string): Promise<User> => {
         return signUpAPIToCore(this, email, password);
+    };
+
+    signIn = async (email: string, password: string): Promise<User> => {
+        return signInAPIToCore(this, email, password);
+    };
+
+    getUserById = async (userId: string): Promise<User | undefined> => {
+        return getUserByIdFromCore(this, userId);
+    };
+
+    getUserByEmail = async (email: string): Promise<User | undefined> => {
+        return getUserByEmailFromCore(this, email);
     };
 }
