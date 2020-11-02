@@ -28,6 +28,8 @@ const request = require("supertest");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
+let { Querier } = require("../lib/build/querier");
+const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 
 /**
  * TODO: check if disableDefaultImplementation is true, the default refresh API does not work - you get a 404
@@ -44,6 +46,69 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await killAllST();
         await cleanST();
     });
+
+    //  * TODO: check if disableDefaultImplementation is true, the default refresh API does not work - you get a 404
+    it("test that if disableDefaultImplementation is true the default refresh API does not work", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init(
+                {
+                    sessionRefreshFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                }
+            )],
+        });
+        const app = express();
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        )
+
+        assert(res2.status === 404)
+
+    });
+
 
     //- check for token theft detection
     it("express token theft detection", async function () {
@@ -853,9 +918,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/session/revokeUserid")
                 .set("Cookie", [
                     "sAccessToken=" +
-                        userCreateResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        userCreateResponse.idRefreshTokenFromCookie,
+                    userCreateResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    userCreateResponse.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", userCreateResponse.antiCsrf)
                 .expect(200)
@@ -1123,9 +1188,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/updateJWTPayload")
                     .set("Cookie", [
                         "sAccessToken=" +
-                            response.accessToken +
-                            ";sIdRefreshToken=" +
-                            response.idRefreshTokenFromCookie,
+                        response.accessToken +
+                        ";sIdRefreshToken=" +
+                        response.idRefreshTokenFromCookie,
                     ])
                     .set("anti-csrf", response.antiCsrf)
                     .expect(200)
@@ -1149,9 +1214,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/getJWTPayload")
                 .set("Cookie", [
                     "sAccessToken=" +
-                        updatedResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        response.idRefreshTokenFromCookie,
+                    updatedResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    response.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
@@ -1173,9 +1238,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/auth/session/refresh")
                     .set("Cookie", [
                         "sRefreshToken=" +
-                            response.refreshToken +
-                            ";sIdRefreshToken=" +
-                            response.idRefreshTokenFromCookie,
+                        response.refreshToken +
+                        ";sIdRefreshToken=" +
+                        response.idRefreshTokenFromCookie,
                     ])
                     .set("anti-csrf", response.antiCsrf)
                     .expect(200)
@@ -1200,9 +1265,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     .post("/updateJWTPayload2")
                     .set("Cookie", [
                         "sAccessToken=" +
-                            response2.accessToken +
-                            ";sIdRefreshToken=" +
-                            response2.idRefreshTokenFromCookie,
+                        response2.accessToken +
+                        ";sIdRefreshToken=" +
+                        response2.idRefreshTokenFromCookie,
                     ])
                     .set("anti-csrf", response2.antiCsrf)
                     .expect(200)
@@ -1226,9 +1291,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/getJWTPayload")
                 .set("Cookie", [
                     "sAccessToken=" +
-                        updatedResponse2.accessToken +
-                        ";sIdRefreshToken=" +
-                        response2.idRefreshTokenFromCookie,
+                    updatedResponse2.accessToken +
+                    ";sIdRefreshToken=" +
+                    response2.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", response2.antiCsrf)
                 .expect(200)
@@ -1249,9 +1314,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 .post("/updateJWTPayloadInvalidSessionHandle")
                 .set("Cookie", [
                     "sAccessToken=" +
-                        updatedResponse2.accessToken +
-                        ";sIdRefreshToken=" +
-                        response.idRefreshTokenFromCookie,
+                    updatedResponse2.accessToken +
+                    ";sIdRefreshToken=" +
+                    response.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", response.antiCsrf)
                 .expect(200)
