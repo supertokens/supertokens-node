@@ -14,6 +14,9 @@
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("./utils");
 let { ProcessState } = require("../lib/build/processState");
+let ST = require("../");
+let Session = require("../recipe/session");
+let { Querier } = require("../lib/build/querier");
 
 /**
  *
@@ -43,4 +46,29 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await killAllST();
         await cleanST();
     });
+
+    // * TODO: Check that querier has been inited when we call supertokens.init
+    it("test that querier has been initiated when we call supertokens.init", async function () {
+        await startST();
+
+        try {
+            await Querier.getInstanceOrThrowError()
+            throw new Error("Should not come here")
+        } catch (err) { }
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        })
+
+        await Querier.getInstanceOrThrowError()
+    });
+
 });
