@@ -59,6 +59,170 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await cleanST();
     });
 
+    //- check if output headers and set cookies for create session is fine
+    it("test that output headers and set cookie for create session is fine", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+
+        const app = express();
+
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send('');
+        });
+
+        app.use(SuperTokens.errorHandler());
+
+        let res = await new Promise((resolve) =>
+            request(app)
+                .post("/create")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        )
+        assert(res.header['front-token'] !== undefined)
+        assert(res.header['access-control-expose-headers'] === 'front-token, id-refresh-token, anti-csrf')
+        assert(res.header['id-refresh-token'] !== undefined)
+        assert(res.header['anti-csrf'] !== undefined)
+    });
+
+    //- check if output headers and set cookies for refresh session is fine
+    it("test that output headers and set cookie for refresh session is fine", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+
+        const app = express();
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/auth/session/refresh", async (req, res) => {
+
+            await Session.refreshSession(req, res);
+            res.status(200).send('');
+        });
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        )
+        assert(res2.header['front-token'] !== undefined)
+        assert(res2.header['access-control-expose-headers'] === 'front-token, id-refresh-token, anti-csrf')
+        assert(res2.header['id-refresh-token'] !== undefined)
+        assert(res2.header['anti-csrf'] !== undefined)
+    });
+
+    //- check if input cookies are missing, an appropriate error is thrown
+    it("test that if input cookies are missing, an appropriate error is thrown", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+
+        const app = express();
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/auth/session/refresh", async (req, res) => {
+            await Session.refreshSession(req, res);
+            res.status(200).send('');
+        });
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        )
+        assert(res2.status === 500)
+    });
+
     //- check for token theft detection
     it("token theft detection", async function () {
         await startST();
@@ -172,7 +336,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             if (
                 err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                    "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
+                "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
             ) {
                 throw err;
             }
@@ -532,7 +696,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             if (
                 err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                    'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
+                'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
             ) {
                 throw error;
             }
