@@ -17,6 +17,8 @@ let { ProcessState } = require("../lib/build/processState");
 let ST = require("../");
 let Session = require("../recipe/session");
 let { Querier } = require("../lib/build/querier");
+let RecipeModule = require("../lib/build/recipeModule").default;
+let NormalisedURLPath = require("../lib/build/normalisedURLPath").default;
 
 /**
  *
@@ -73,3 +75,116 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await Querier.getInstanceOrThrowError();
     });
 });
+
+class TestRecipe extends RecipeModule {
+    static instance = undefined;
+
+    constructor(recipeId, appInfo) {
+        super(recipeId, appInfo);
+    }
+
+    static init() {
+        return (appInfo) => {
+            if (TestRecipe.instance === undefined) {
+                TestRecipe.instance = new TestRecipe("testRecipe", appInfo);
+                return TestRecipe.instance;
+            } else {
+                throw new Error("already initialised");
+            }
+        };
+    }
+
+    getAPIsHandled = () => {
+        return [
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/"),
+                id: "/",
+                disabled: false,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/hello"),
+                id: "/hello",
+                disabled: false,
+            },
+        ];
+    };
+
+    handleAPIRequest = async (id, req, res, next) => {
+        if (id === "/") {
+            res.status(200).send("success TestRecipe /");
+            return;
+        } else if (id === "/hello") {
+            res.status(200).send("success TestRecipe /hello");
+            return;
+        }
+    };
+
+    handleError = (err, request, response, next) => {};
+
+    getAllCORSHeaders = () => {
+        return [];
+    };
+}
+
+class TestRecipe1 extends RecipeModule {
+    static instance = undefined;
+
+    constructor(recipeId, appInfo) {
+        super(recipeId, appInfo);
+    }
+
+    static init() {
+        return (appInfo) => {
+            if (TestRecipe1.instance === undefined) {
+                TestRecipe1.instance = new TestRecipe1("testRecipe1", appInfo);
+                return TestRecipe1.instance;
+            } else {
+                throw new Error("already initialised");
+            }
+        };
+    }
+
+    getAPIsHandled = () => {
+        return [
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/"),
+                id: "/",
+                disabled: false,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/hello"),
+                id: "/hello",
+                disabled: false,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/hello1"),
+                id: "/hello1",
+                disabled: false,
+            },
+        ];
+    };
+
+    handleAPIRequest = async (id, req, res, next) => {
+        if (id === "/") {
+            res.status(200).send("success TestRecipe1 /");
+            return;
+        } else if (id === "/hello") {
+            res.status(200).send("success TestRecipe1 /hello");
+            return;
+        } else if (id === "/hello1") {
+            res.status(200).send("success TestRecipe1 /hello1");
+            return;
+        }
+    };
+
+    handleError = (err, request, response, next) => {};
+
+    getAllCORSHeaders = () => {
+        return [];
+    };
+}
