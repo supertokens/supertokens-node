@@ -18,7 +18,7 @@ let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let Session = require("../recipe/session");
-let nock = require('nock')
+let nock = require("nock");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 
 /**
@@ -82,15 +82,20 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         let q = Querier.getInstanceOrThrowError("");
         await q.getAPIVersion();
 
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION, 2000)
-        assert(verifyState !== undefined)
+        let verifyState = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION,
+            2000
+        );
+        assert(verifyState !== undefined);
 
-        ProcessState.getInstance().reset()
+        ProcessState.getInstance().reset();
 
         await q.getAPIVersion();
-        verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION, 2000)
-        assert(verifyState === undefined)
-
+        verifyState = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION,
+            2000
+        );
+        assert(verifyState === undefined);
     });
 
     // * TODO: Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request.
@@ -105,32 +110,32 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [
-                Session.init(),
-            ],
+            recipeList: [Session.init()],
         });
 
         let querier = Querier.getInstanceOrThrowError();
 
-        nock('http://localhost:8080', {
+        nock("http://localhost:8080", {
             reqheaders: {
-                'rid': () => true,
+                rid: () => true,
             },
-            allowUnmocked: true
-        }).get('/recipe/*').reply(200, '')
+            allowUnmocked: true,
+        })
+            .get("/recipe/*")
+            .reply(200, "");
 
         try {
-            await querier.sendGetRequest(new NormalisedURLPath("", "/recipe"), {})
+            await querier.sendGetRequest(new NormalisedURLPath("", "/recipe"), {});
         } catch (err) {
-            if(err.message.startsWith("SuperTokens core threw an error for a GET request to path: '/recipe")){
+            if (err.message.startsWith("SuperTokens core threw an error for a GET request to path: '/recipe")) {
                 throw err;
             }
         }
 
         try {
-            await querier.sendGetRequest(new NormalisedURLPath("", "/recipe/test"), {})
+            await querier.sendGetRequest(new NormalisedURLPath("", "/recipe/test"), {});
         } catch (err) {
-            if(err.message.startsWith("SuperTokens core threw an error for a GET request to path: '/recipe")){
+            if (err.message.startsWith("SuperTokens core threw an error for a GET request to path: '/recipe")) {
                 throw err;
             }
         }

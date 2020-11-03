@@ -15,6 +15,7 @@
 import Recipe from "../recipe";
 import { NormalisedFormField } from "../types";
 import STError from "../error";
+import { FORM_FIELD_EMAIL_ID } from "../constants";
 
 export async function validateFormFieldsOrThrowError(
     recipeInstance: Recipe,
@@ -54,8 +55,21 @@ export async function validateFormFieldsOrThrowError(
         formFields.push(curr);
     }
 
+    // we trim the email: https://github.com/supertokens/supertokens-core/issues/99
+    formFields = formFields.map((field) => {
+        if (field.id === FORM_FIELD_EMAIL_ID) {
+            return {
+                ...field,
+                value: field.value.trim(),
+            };
+        }
+        return field;
+    });
+
     // then run validators through them-----------------------
     await validateFormOrThrowError(recipeInstance, formFields, configFormFields);
+
+    // TODO: normalise email as per https://github.com/supertokens/supertokens-core/issues/89
 
     return formFields;
 }

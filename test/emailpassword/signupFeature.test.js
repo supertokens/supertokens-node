@@ -42,4 +42,5 @@
  *        - Test custom field validation error (one and two custom fields)
  *        - Test password field validation error
  *        - Test email field validation error
+ *        - Make sure that the input email is trimmed
  */

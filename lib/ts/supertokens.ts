@@ -124,33 +124,40 @@ export default class SuperTokens {
                 }
 
                 // give task to the matched recipe
-                try {
-                    await assertThatBodyParserHasBeenUsed(matchedRecipe.getRecipeId(), request, response);
-                    return await matchedRecipe.handleAPIRequest(id, request, response, next);
-                } catch (err) {
-                    return next(err);
-                }
+                return await this.handleAPI(matchedRecipe, id, request, response, next);
             } else {
                 // we loop through all recipe modules to find the one with the matching path and method
                 for (let i = 0; i < this.recipeModules.length; i++) {
                     let id = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
                     if (id !== undefined) {
-                        try {
-                            await assertThatBodyParserHasBeenUsed(
-                                this.recipeModules[i].getRecipeId(),
-                                request,
-                                response
-                            );
-                            return await this.recipeModules[i].handleAPIRequest(id, request, response, next);
-                        } catch (err) {
-                            return next(err);
-                        }
+                        return await this.handleAPI(this.recipeModules[i], id, request, response, next);
                     }
                 }
-
                 return next();
             }
         };
+    };
+
+    handleAPI = async (
+        matchedRecipe: RecipeModule,
+        id: string,
+        request: express.Request,
+        response: express.Response,
+        next: express.NextFunction
+    ) => {
+        try {
+            await assertThatBodyParserHasBeenUsed(matchedRecipe.getRecipeId(), request, response);
+            return await matchedRecipe.handleAPIRequest(id, request, response, next);
+        } catch (err) {
+            if (!STError.isErrorFromSuperTokens(err)) {
+                err = new STError({
+                    type: STError.GENERAL_ERROR,
+                    payload: err,
+                    rId: matchedRecipe.getRecipeId(),
+                });
+            }
+            return next(err);
+        }
     };
 
     errorHandler = () => {

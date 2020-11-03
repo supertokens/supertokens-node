@@ -33,6 +33,8 @@ let { Querier } = require("../lib/build/querier");
  * TODO: Disable a default route /auth/signin, and then implement your own /auth/signin API and check that that gets called
  * TODO: If a recipe has a callback and a user implements it, but throws a normal error from it, then we need to make sure that that error is caught only by their error handler
  * TODO: Test getAllCORSHeaders
+ * TODO: Make a custom validator throw an error and check that it's transformed into a general error, and then in user's error handler, it's a normal error again
+ *
  */
 
 describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.js]")}`, function () {
@@ -52,9 +54,9 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await startST();
 
         try {
-            await Querier.getInstanceOrThrowError()
-            throw new Error("Should not come here")
-        } catch (err) { }
+            await Querier.getInstanceOrThrowError();
+            throw new Error("Should not come here");
+        } catch (err) {}
 
         ST.init({
             supertokens: {
@@ -66,9 +68,8 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 websiteDomain: "supertokens.io",
             },
             recipeList: [Session.init()],
-        })
+        });
 
-        await Querier.getInstanceOrThrowError()
+        await Querier.getInstanceOrThrowError();
     });
-
 });

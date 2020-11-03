@@ -80,7 +80,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
-            res.status(200).send('');
+            res.status(200).send("");
         });
 
         app.use(SuperTokens.errorHandler());
@@ -96,11 +96,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                         resolve(res);
                     }
                 })
-        )
-        assert(res.header['front-token'] !== undefined)
-        assert(res.header['access-control-expose-headers'] === 'front-token, id-refresh-token, anti-csrf')
-        assert(res.header['id-refresh-token'] !== undefined)
-        assert(res.header['anti-csrf'] !== undefined)
+        );
+        assert(res.header["front-token"] !== undefined);
+        assert(res.header["access-control-expose-headers"] === "front-token, id-refresh-token, anti-csrf");
+        assert(res.header["id-refresh-token"] !== undefined);
+        assert(res.header["anti-csrf"] !== undefined);
     });
 
     //- check if output headers and set cookies for refresh session is fine
@@ -127,9 +127,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         app.post("/auth/session/refresh", async (req, res) => {
-
             await Session.refreshSession(req, res);
-            res.status(200).send('');
+            res.status(200).send("");
         });
 
         let res = extractInfoFromResponse(
@@ -159,11 +158,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                         resolve(res);
                     }
                 })
-        )
-        assert(res2.header['front-token'] !== undefined)
-        assert(res2.header['access-control-expose-headers'] === 'front-token, id-refresh-token, anti-csrf')
-        assert(res2.header['id-refresh-token'] !== undefined)
-        assert(res2.header['anti-csrf'] !== undefined)
+        );
+        assert(res2.header["front-token"] !== undefined);
+        assert(res2.header["access-control-expose-headers"] === "front-token, id-refresh-token, anti-csrf");
+        assert(res2.header["id-refresh-token"] !== undefined);
+        assert(res2.header["anti-csrf"] !== undefined);
     });
 
     //- check if input cookies are missing, an appropriate error is thrown
@@ -191,7 +190,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         app.post("/auth/session/refresh", async (req, res) => {
             await Session.refreshSession(req, res);
-            res.status(200).send('');
+            res.status(200).send("");
         });
 
         let res = extractInfoFromResponse(
@@ -219,8 +218,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                         resolve(res);
                     }
                 })
-        )
-        assert(res2.status === 500)
+        );
+        assert(res2.status === 500);
     });
 
     //- check for token theft detection
@@ -336,7 +335,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             if (
                 err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
+                    "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
             ) {
                 throw err;
             }
@@ -696,7 +695,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             if (
                 err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
+                    'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
             ) {
                 throw error;
             }

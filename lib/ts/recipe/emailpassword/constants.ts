@@ -24,3 +24,5 @@ export const SIGN_IN_API = "/signin";
 export const GENERATE_PASSWORD_RESET_TOKEN_API = "/user/password/reset/token";
 
 export const PASSWORD_RESET_API = "/user/password/reset";
+
+export const SIGN_OUT_API = "/signout";
