@@ -19,6 +19,7 @@ let Session = require("../recipe/session");
 let { Querier } = require("../lib/build/querier");
 let RecipeModule = require("../lib/build/recipeModule").default;
 let NormalisedURLPath = require("../lib/build/normalisedURLPath").default;
+let STError = require("../lib/build/error").default;
 
 /**
  *
@@ -29,13 +30,13 @@ let NormalisedURLPath = require("../lib/build/normalisedURLPath").default;
  *          - with and without a rId
  *          - where we do not have to handle it and it skips it (with / without rId)
  * TODO: Test various inputs to errorHandler (if it accepts or not)
- * TODO: Check that access control allow headers have the right set values for each recipe, including one for rid
+ * TODO: (later) Check that access control allow headers have the right set values for each recipe, including one for rid
  * TODO: If an error handler in a recipe throws an error, that error next to go to the user's error handler
  * TODO: Error thrown from APIs implemented by recipes must not go unhandled
- * TODO: Disable a default route /auth/signin, and then implement your own /auth/signin API and check that that gets called
- * TODO: If a recipe has a callback and a user implements it, but throws a normal error from it, then we need to make sure that that error is caught only by their error handler
+ * TODO: Disable a default route, and then implement your own API and check that that gets called
+ * TODO: (later) If a recipe has a callback and a user implements it, but throws a normal error from it, then we need to make sure that that error is caught only by their error handler
  * TODO: Test getAllCORSHeaders
- * TODO: Make a custom validator throw an error and check that it's transformed into a general error, and then in user's error handler, it's a normal error again
+ * TODO: (later) Make a custom validator throw an error and check that it's transformed into a general error, and then in user's error handler, it's a normal error again
  *
  */
 
@@ -108,6 +109,24 @@ class TestRecipe extends RecipeModule {
                 id: "/hello",
                 disabled: false,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error"),
+                id: "/error",
+                disabled: false,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error/general"),
+                id: "/error/general",
+                disabled: false,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error/badinput"),
+                id: "/error/badinput",
+                disabled: false,
+            },
         ];
     };
 
@@ -118,10 +137,34 @@ class TestRecipe extends RecipeModule {
         } else if (id === "/hello") {
             res.status(200).send("success TestRecipe /hello");
             return;
+        } else if (id === "/error") {
+            throw new STError({
+                rId: this.getRecipeId(),
+                message: "error from TestRecipe /error ",
+                payload: undefined,
+                type: "ERROR_FROM_TEST_RECIPE",
+            });
+        } else if (id === "/error/general") {
+            throw new STError({
+                rId: this.getRecipeId(),
+                payload: new Error("General error from TestRecipe"),
+                type: STError.GENERAL_ERROR,
+            });
+        } else if (id === "/error/badinput") {
+            throw new STError({
+                rId: this.getRecipeId(),
+                message: "Bad input error from TestRecipe",
+                payload: undefined,
+                type: STError.BAD_INPUT_ERROR,
+            });
         }
     };
 
-    handleError = (err, request, response, next) => {};
+    handleError = (err, request, response, next) => {
+        if (err.type === "ERROR_FROM_TEST_RECIPE") {
+            response.status(200).send(err.message);
+        }
+    };
 
     getAllCORSHeaders = () => {
         return [];
@@ -166,6 +209,12 @@ class TestRecipe1 extends RecipeModule {
                 id: "/hello1",
                 disabled: false,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error"),
+                id: "/error",
+                disabled: false,
+            },
         ];
     };
 
@@ -179,12 +228,23 @@ class TestRecipe1 extends RecipeModule {
         } else if (id === "/hello1") {
             res.status(200).send("success TestRecipe1 /hello1");
             return;
+        } else if (id === "/error") {
+            throw new STError({
+                rId: this.getRecipeId(),
+                message: "error from TestRecipe1 /error ",
+                payload: undefined,
+                type: "ERROR_FROM_TEST_RECIPE1",
+            });
         }
     };
 
-    handleError = (err, request, response, next) => {};
+    handleError = (err, request, response, next) => {
+        if (err.type === "ERROR_FROM_TEST_RECIPE1") {
+            response.status(200).send(err.message);
+        }
+    };
 
     getAllCORSHeaders = () => {
-        return [];
+        return ["test-recipe-1"];
     };
 }
