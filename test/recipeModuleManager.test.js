@@ -20,22 +20,28 @@ let { Querier } = require("../lib/build/querier");
 let RecipeModule = require("../lib/build/recipeModule").default;
 let NormalisedURLPath = require("../lib/build/normalisedURLPath").default;
 let STError = require("../lib/build/error").default;
+let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+let EmailPassword = require("../recipe/emailpassword");
+let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+const express = require("express");
+const assert = require("assert");
+const request = require("supertest");
 
 /**
  *
  * TODO: Check that querier has been inited when we call supertokens.init (done)
- * TODO: Check that modules have been inited when we call supertokens.init
- * TODO: Test various inputs to routing (if it accepts or not)
+ * TODO: Check that modules have been inited when we call supertokens.init (done)
+ * TODO: Test various inputs to routing (if it accepts or not) (done)
  *          - including when the base path is "/"
  *          - with and without a rId
  *          - where we do not have to handle it and it skips it (with / without rId)
- * TODO: Test various inputs to errorHandler (if it accepts or not)
+ * TODO: Test various inputs to errorHandler (if it accepts or not) (done)
  * TODO: (later) Check that access control allow headers have the right set values for each recipe, including one for rid
- * TODO: If an error handler in a recipe throws an error, that error next to go to the user's error handler
- * TODO: Error thrown from APIs implemented by recipes must not go unhandled
- * TODO: Disable a default route, and then implement your own API and check that that gets called
+ * TODO: If an error handler in a recipe throws an error, that error next to go to the user's error handler (done)
+ * TODO: Error thrown from APIs implemented by recipes must not go unhandled (done)
+ * TODO: Disable a default route, and then implement your own API and check that that gets called(done)
  * TODO: (later) If a recipe has a callback and a user implements it, but throws a normal error from it, then we need to make sure that that error is caught only by their error handler
- * TODO: Test getAllCORSHeaders
+ * TODO: Test getAllCORSHeaders(done)
  * TODO: (later) Make a custom validator throw an error and check that it's transformed into a general error, and then in user's error handler, it's a normal error again
  *
  */
@@ -74,6 +80,456 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         });
 
         await Querier.getInstanceOrThrowError();
+    });
+
+    // TODO: Check that modules have been inited when we call supertokens.init
+    it("test that modules have been initiated when we call supertokens.init", async function () {
+        await startST();
+
+        try {
+            await SessionRecipe.getInstanceOrThrowError();
+            await EmailPasswordRecipe.getInstanceOrThrowError();
+            throw new Error("Should not come here");
+        } catch (err) {}
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init(), EmailPassword.init()],
+        });
+        await SessionRecipe.getInstanceOrThrowError();
+        await EmailPasswordRecipe.getInstanceOrThrowError();
+    });
+
+    /* 
+        TODO: Test various inputs to routing (if it accepts or not)
+        - including when the base path is "/"
+        - with and without a rId
+        - where we do not have to handle it and it skips it (with / without rId)
+    */
+    it("test various inputs to routing with default base path", async function () {
+        await startST();
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [TestRecipe.init()],
+        });
+        const app = express();
+
+        app.post("/auth/user-api", async (req, res) => {
+            res.status(200).json({ message: "success" });
+        });
+
+        app.use(ST.middleware());
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.text);
+                    }
+                })
+        );
+        assert(r1 === "success TestRecipe /");
+
+        r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/")
+                .set("rid", "testRecipe")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.text);
+                    }
+                })
+        );
+        assert(r1 === "success TestRecipe /");
+
+        r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user-api")
+                .set("rid", "testRecipe")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+        assert(r1.message === "success");
+
+        r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user-api")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+        assert(r1.message === "success");
+    });
+
+    /*
+        TODO: Test various inputs to routing (if it accepts or not)
+        - including when the base path is "/"
+        - with and without a rId
+        - where we do not have to handle it and it skips it (with / without rId)
+    */
+
+    it("test various inputs to routing when bass path is /", async function () {
+        await startST();
+        {
+            ST.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "/",
+                },
+                recipeList: [TestRecipe.init()],
+            });
+            const app = express();
+
+            app.post("/user-api", async (req, res) => {
+                res.status(200).json({ message: "success" });
+            });
+
+            app.use(ST.middleware());
+
+            let r1 = await new Promise((resolve) =>
+                request(app)
+                    .post("/")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res.text);
+                        }
+                    })
+            );
+            assert(r1 === "success TestRecipe /");
+
+            r1 = await new Promise((resolve) =>
+                request(app)
+                    .post("/")
+                    .set("rid", "testRecipe")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res.text);
+                        }
+                    })
+            );
+            assert(r1 === "success TestRecipe /");
+
+            r1 = await new Promise((resolve) =>
+                request(app)
+                    .post("/user-api")
+                    .set("rid", "testRecipe")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res.body);
+                        }
+                    })
+            );
+            assert(r1.message === "success");
+
+            r1 = await new Promise((resolve) =>
+                request(app)
+                    .post("/user-api")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res.body);
+                        }
+                    })
+            );
+            assert(r1.message === "success");
+
+            resetAll();
+        }
+    });
+
+    it("test routing with multiple recipes", async function () {
+        await startST();
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [TestRecipe.init(), TestRecipe1.init()],
+        });
+
+        const app = express();
+
+        app.use(ST.middleware());
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/hello")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(r1.text === "success TestRecipe /hello" || r1.text === "success TestRecipe1 /hello");
+
+        r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/hello")
+                .set("rid", "testRecipe1")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(r1.text === "success TestRecipe1 /hello");
+    });
+
+    //  TODO: Test various inputs to errorHandler (if it accepts or not)
+    it("test various inputs to errorHandler", async function () {
+        await startST();
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [TestRecipe.init(), TestRecipe1.init()],
+        });
+
+        const app = express();
+
+        app.use(ST.middleware());
+        app.use(ST.errorHandler());
+        app.use((err, request, response, next) => {
+            if (err.message == "General error from TestRecipe") {
+                response.status(200).send("General error handled in user error handler");
+            } else {
+                response.status(500).send("Invalid error");
+            }
+        });
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/error/general")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.text);
+                    }
+                })
+        );
+        assert(r1 === "General error handled in user error handler");
+
+        r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/error/badinput")
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(r1.status === 400);
+        assert(r1.body.message === "Bad input error from TestRecipe");
+    });
+
+    // TODO: Error thrown from APIs implemented by recipes must not go unhandled
+    it("Error thrown from APIs implemented by recipes must not go unhandled", async function () {
+        await startST();
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [TestRecipe.init()],
+        });
+
+        const app = express();
+
+        app.use(ST.middleware());
+        app.use(ST.errorHandler());
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/error")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.text);
+                    }
+                })
+        );
+        assert(r1 === "error from TestRecipe /error ");
+    });
+
+    // TODO: Disable a default route, and then implement your own API and check that that gets called
+    it("test if you diable a default route, and then implement your own API, your own api is called", async function () {
+        await startST();
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [TestRecipe1.init()],
+        });
+
+        const app = express();
+
+        app.use(ST.middleware());
+
+        app.post("/auth/default-route-disabled", async (req, res) => {
+            res.status(200).json({ message: "user defined api" });
+        });
+
+        app.use(ST.errorHandler());
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/default-route-disabled")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r1 === "user defined api");
+    });
+
+    // TODO: If an error handler in a recipe throws an error, that error next to go to the user's error handler
+    it("test if the error handler in a recipe throws an error, it goes to the user's error handler", async function () {
+        await startST();
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [TestRecipe1.init()],
+        });
+
+        const app = express();
+
+        app.use(ST.middleware());
+        app.use(ST.errorHandler());
+        app.use((err, request, response, next) => {
+            if (err.message === "error from inside recipe error handler") {
+                response.status(200).send("user error handler");
+            } else {
+                response.status(500).send("invalid error");
+            }
+        });
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/error/throw-error")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.text);
+                    }
+                })
+        );
+        assert(r1 === "user error handler");
+    });
+
+    // TODO: Test getAllCORSHeaders
+    it("test the getAllCORSHeaders function", async function () {
+        await startST();
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [TestRecipe1.init()],
+        });
+        let headers = await ST.getAllCORSHeaders();
+        assert(headers.length === 3);
+        assert(headers.includes("rid") && headers.includes("fdi-version") && headers.includes("test-recipe-1"));
     });
 });
 
@@ -127,6 +583,12 @@ class TestRecipe extends RecipeModule {
                 id: "/error/badinput",
                 disabled: false,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error/throw-error"),
+                id: "/error/throw-error",
+                disabled: false,
+            },
         ];
     };
 
@@ -157,12 +619,21 @@ class TestRecipe extends RecipeModule {
                 payload: undefined,
                 type: STError.BAD_INPUT_ERROR,
             });
+        } else if (id === "/error/throw-error") {
+            throw new STError({
+                rId: this.getRecipeId(),
+                message: "Error thrown from recipe error",
+                payload: undefined,
+                type: "ERROR_FROM_TEST_RECIPE_ERROR_HANDLER",
+            });
         }
     };
 
     handleError = (err, request, response, next) => {
         if (err.type === "ERROR_FROM_TEST_RECIPE") {
             response.status(200).send(err.message);
+        } else if (err.type === "ERROR_FROM_TEST_RECIPE_ERROR_HANDLER") {
+            throw new Error("error from inside recipe error handler");
         }
     };
 
@@ -215,6 +686,12 @@ class TestRecipe1 extends RecipeModule {
                 id: "/error",
                 disabled: false,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/default-route-disabled"),
+                id: "/default-route-disabled",
+                disabled: true,
+            },
         ];
     };
 
@@ -235,6 +712,9 @@ class TestRecipe1 extends RecipeModule {
                 payload: undefined,
                 type: "ERROR_FROM_TEST_RECIPE1",
             });
+        } else if (id === "/default-route-disabled") {
+            res.status(200).send("default route used");
+            return;
         }
     };
 
