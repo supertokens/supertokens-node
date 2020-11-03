@@ -20,7 +20,7 @@ let { Querier } = require("../lib/build/querier");
 
 /**
  *
- * TODO: Check that querier has been inited when we call supertokens.init
+ * TODO: Check that querier has been inited when we call supertokens.init (done)
  * TODO: Check that modules have been inited when we call supertokens.init
  * TODO: Test various inputs to routing (if it accepts or not)
  *          - including when the base path is "/"

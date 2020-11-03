@@ -23,9 +23,9 @@ const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath")
 
 /**
  *
- * TODO: Test that if the querier throws an error from a recipe, that recipe's ID is there
- * TODO: Check that once the API version is there, it doesn't need to query again
- * TODO: Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request.
+ * TODO: Test that if the querier throws an error from a recipe, that recipe's ID is there (done)
+ * TODO: Check that once the API version is there, it doesn't need to query again (done)
+ * TODO: Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request. (done)
  */
 
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {

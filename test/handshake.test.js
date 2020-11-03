@@ -20,7 +20,7 @@ let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 
 /**
- * TODO: test that once the info is loaded, it doesn't query again
+ * TODO: test that once the info is loaded, it doesn't query again (done)
  */
 
 describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
@@ -34,8 +34,8 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
         await killAllST();
         await cleanST();
     });
-    // * TODO: test that once the info is loaded, it doesn't query again
 
+    // * TODO: test that once the info is loaded, it doesn't query again
     it("test that once the info is loaded, it doesn't querry again", async function () {
         await startST();
         ST.init({

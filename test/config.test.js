@@ -26,9 +26,9 @@ let SuperTokens = require("../lib/build/supertokens").default;
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 
 /**
- * TODO: test various inputs for appInfo
- * TODO: test using zero, one and two recipe modules
- * TODO: test config for session module
+ * TODO: test various inputs for appInfo (done)
+ * TODO: test using zero, one and two recipe modules (done)
+ * TODO: test config for session module (done)
  * TODO: (Later) test config for faunadb session module
  */
 
@@ -44,7 +44,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         await cleanST();
     });
 
-    //* TODO: test various inputs for appInfo
+    // * TODO: test various inputs for appInfo
     it("test values for optional inputs for appInfo", async function () {
         await startST();
 
