@@ -25,7 +25,7 @@ export async function signUp(recipeInstance: Recipe, email: string, password: st
             email,
             password,
         });
-    if (response.status == "OK") {
+    if (response.status === "OK") {
         return {
             ...response.user,
         };
@@ -47,7 +47,7 @@ export async function signIn(recipeInstance: Recipe, email: string, password: st
             email,
             password,
         });
-    if (response.status == "OK") {
+    if (response.status === "OK") {
         return {
             ...response.user,
         };
@@ -68,7 +68,7 @@ export async function getUserById(recipeInstance: Recipe, userId: string): Promi
         .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
             userId,
         });
-    if (response.status == "OK") {
+    if (response.status === "OK") {
         return {
             ...response.user,
         };
@@ -83,7 +83,7 @@ export async function getUserByEmail(recipeInstance: Recipe, email: string): Pro
         .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
             email,
         });
-    if (response.status == "OK") {
+    if (response.status === "OK") {
         return {
             ...response.user,
         };
@@ -98,7 +98,7 @@ export async function createResetPasswordToken(recipeInstance: Recipe, userId: s
         .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/password/reset/token"), {
             userId,
         });
-    if (response.status == "OK") {
+    if (response.status === "OK") {
         return response.token;
     } else {
         throw new STError(
@@ -111,11 +111,7 @@ export async function createResetPasswordToken(recipeInstance: Recipe, userId: s
     }
 }
 
-export async function resetPasswordUsingToken(
-    recipeInstance: Recipe,
-    token: string,
-    newPassword: string
-): Promise<void> {
+export async function resetPasswordUsingToken(recipeInstance: Recipe, token: string, newPassword: string) {
     let response = await recipeInstance
         .getQuerier()
         .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/password/reset"), {
@@ -123,9 +119,7 @@ export async function resetPasswordUsingToken(
             token,
             newPassword,
         });
-    if (response.status == "OK") {
-        return response.token;
-    } else {
+    if (response.status !== "OK") {
         throw new STError(
             {
                 type: STError.RESET_PASSWORD_INVALID_TOKEN_ERROR,

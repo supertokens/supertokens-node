@@ -14,24 +14,21 @@
  */
 
 /**
- * TODO: in passwordResetFunctions.ts:
- *        - check that getResetPasswordURL works fine
- *        - check that createAndSendCustomEmail works fine
+ * TODO: (later) in passwordResetFunctions.ts:
+ *        - (later) check that getResetPasswordURL works fine
+ *        - (later) check that createAndSendCustomEmail works fine
  * TODO: generate token API:
- *        - Call the createResetPasswordToken function with valid input
- *        - Call the createResetPasswordToken with unknown userId and test error thrown
- *        - password validation checks
+ *        - (later) Call the createResetPasswordToken function with valid input
+ *        - (later) Call the createResetPasswordToken with unknown userId and test error thrown
+ *        - email validation checks
  *        - non existent email should return "OK" with a pause > 300MS
  *        - check that the generated password reset link is correct
- *        - check if that if the getResetPasswordURL function is given by the user, that is called
- *        - check that the password link has a token and a rid
  * TODO: password reset API:
- *        - Call the resetPasswordUsingToken function with valid input
- *        - Call the resetPasswordUsingToken with an invalid token and see the error
+ *        - (later) Call the resetPasswordUsingToken function with valid input
+ *        - (later) Call the resetPasswordUsingToken with an invalid token and see the error
+ *        - password validation checks
  *        - token is missing from input
- *        - token is not of type string from input
+ *        - (later) token is not of type string from input
  *        - invalid token in input
- *        - password is invalid in input
- *        - password is missing in input
  *        - input is valid, check that password has changed (call sign in)
  */
