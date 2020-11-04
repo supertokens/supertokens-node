@@ -55,7 +55,7 @@ export async function signIn(recipeInstance: Recipe, email: string, password: st
         throw new STError(
             {
                 message: "Sign in failed because of incorrect email & password combination",
-                type: STError.WRONG_CREDENTIAL_ERROR,
+                type: STError.WRONG_CREDENTIALS_ERROR,
             },
             recipeInstance.getRecipeId()
         );
