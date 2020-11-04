@@ -64,7 +64,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         try {
             await Querier.getInstanceOrThrowError();
-            throw new Error("Should not come here");
+            assert(false);
         } catch (err) {}
 
         ST.init({
@@ -89,7 +89,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         try {
             await SessionRecipe.getInstanceOrThrowError();
             await EmailPasswordRecipe.getInstanceOrThrowError();
-            throw new Error("Should not come here");
+            assert(false);
         } catch (err) {}
 
         ST.init({
