@@ -31,10 +31,10 @@ export type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
     formFields?: {
         id: string;
-        validate?: (value: string) => Promise<string | undefined>;
+        validate?: (value: any) => Promise<string | undefined>;
         optional?: boolean;
     }[];
-    handleCustomFormFields?: (user: User, formFields: { id: string; value: string }[]) => Promise<void>;
+    handleCustomFormFields?: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
 };
 
 export type TypeInputSignIn = {
@@ -44,12 +44,12 @@ export type TypeInputSignIn = {
 export type TypeNormalisedInputSignUp = {
     disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
-    handleCustomFormFields: (user: User, formFields: { id: string; value: string }[]) => Promise<void>;
+    handleCustomFormFields: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
 };
 
 export type NormalisedFormField = {
     id: string;
-    validate: (value: string) => Promise<string | undefined>;
+    validate: (value: any) => Promise<string | undefined>;
     optional: boolean;
 };
 

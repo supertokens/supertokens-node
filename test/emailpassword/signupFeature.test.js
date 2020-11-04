@@ -43,4 +43,5 @@
  *        - Test password field validation error
  *        - Test email field validation error
  *        - Make sure that the input email is trimmed
+ *        - Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handleCustomFormFields as that type
  */

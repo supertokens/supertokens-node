@@ -14,12 +14,12 @@ export declare type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
     formFields?: {
         id: string;
-        validate?: (value: string) => Promise<string | undefined>;
+        validate?: (value: any) => Promise<string | undefined>;
         optional?: boolean;
     }[];
     handleCustomFormFields?: (user: User, formFields: {
         id: string;
-        value: string;
+        value: any;
     }[]) => Promise<void>;
 };
 export declare type TypeInputSignIn = {
@@ -30,12 +30,12 @@ export declare type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
     handleCustomFormFields: (user: User, formFields: {
         id: string;
-        value: string;
+        value: any;
     }[]) => Promise<void>;
 };
 export declare type NormalisedFormField = {
     id: string;
-    validate: (value: string) => Promise<string | undefined>;
+    validate: (value: any) => Promise<string | undefined>;
     optional: boolean;
 };
 export declare type TypeNormalisedInputSignIn = {
