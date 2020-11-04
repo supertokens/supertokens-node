@@ -175,9 +175,9 @@ export default class Recipe extends RecipeModule {
                 response,
                 next
             );
-        } else if (err.type === STError.WRONG_CREDENTIAL_ERROR) {
+        } else if (err.type === STError.WRONG_CREDENTIALS_ERROR) {
             return send200Response(response, {
-                status: "WRONG_CREDENTIAL_ERROR",
+                status: "WRONG_CREDENTIALS_ERROR",
             });
         } else if (err.type === STError.FIELD_ERROR) {
             return send200Response(response, {
