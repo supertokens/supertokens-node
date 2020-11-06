@@ -145,9 +145,6 @@ export function validateAndNormaliseUserInput(
         if (config.errorHandlers.onTokenTheftDetected !== undefined) {
             errorHandlers.onTokenTheftDetected = config.errorHandlers.onTokenTheftDetected;
         }
-        if (config.errorHandlers.onTryRefreshToken !== undefined) {
-            errorHandlers.onTryRefreshToken = config.errorHandlers.onTryRefreshToken;
-        }
         if (config.errorHandlers.onUnauthorised !== undefined) {
             errorHandlers.onUnauthorised = config.errorHandlers.onUnauthorised;
         }
