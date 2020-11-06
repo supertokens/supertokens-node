@@ -43,7 +43,6 @@ export default async function generatePasswordResetToken(
     // step 2.
     let user = await recipeInstance.getUserByEmail(email);
     if (user === undefined) {
-        await pauseForRandomTime();
         return send200Response(res, {
             status: "OK",
         });
@@ -55,7 +54,6 @@ export default async function generatePasswordResetToken(
         token = await recipeInstance.createResetPasswordToken(user.id);
     } catch (err) {
         if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNKNOWN_USER_ID_ERROR) {
-            await pauseForRandomTime();
             return send200Response(res, {
                 status: "OK",
             });
@@ -80,8 +78,4 @@ export default async function generatePasswordResetToken(
     try {
         await recipeInstance.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(user, passwordResetLink);
     } catch (ignored) {}
-}
-
-async function pauseForRandomTime() {
-    await new Promise((resolve) => setTimeout(resolve, 300 + Math.random() * 500));
 }
