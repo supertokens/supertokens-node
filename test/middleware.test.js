@@ -53,12 +53,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             recipeList: [
                 Session.init({
                     errorHandlers: {
-                        onTryRefreshToken: (err, req, res, next) => {
-                            res.statusCode = 401;
-                            return res.json({
-                                message: "try refresh token",
-                            });
-                        },
                         onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
                             res.statusCode = 403;
                             return res.json({
@@ -304,12 +298,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             recipeList: [
                 Session.init({
                     errorHandlers: {
-                        onTryRefreshToken: (err, req, res, next) => {
-                            res.statusCode = 401;
-                            return res.json({
-                                message: "try refresh token",
-                            });
-                        },
                         onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
                             res.statusCode = 403;
                             return res.json({
@@ -563,12 +551,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     cookieSecure: true,
                     cookieSameSite: "strict",
                     errorHandlers: {
-                        onTryRefreshToken: (err, req, res, next) => {
-                            res.statusCode = 401;
-                            return res.json({
-                                message: "try refresh token",
-                            });
-                        },
                         onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
                             res.statusCode = 403;
                             return res.json({
@@ -825,12 +807,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     cookieSecure: true,
                     cookieSameSite: "strict",
                     errorHandlers: {
-                        onTryRefreshToken: (err, req, res, next) => {
-                            res.statusCode = 401;
-                            return res.json({
-                                message: "try refresh token",
-                            });
-                        },
                         onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
                             res.statusCode = 403;
                             return res.json({

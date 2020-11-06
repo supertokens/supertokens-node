@@ -64,7 +64,6 @@ export interface TokenTheftErrorHandlerMiddleware {
 }
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
-    onTryRefreshToken?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
 }
 export interface NormalisedErrorHandlers {

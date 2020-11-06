@@ -71,12 +71,15 @@ export default async function generatePasswordResetToken(
         "&rid=" +
         recipeInstance.getRecipeId();
 
-    // step 5 & 6
-    await recipeInstance.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(user, passwordResetLink);
-
-    return send200Response(res, {
+    // step 5
+    send200Response(res, {
         status: "OK",
     });
+
+    // step 6 & 7
+    try {
+        await recipeInstance.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(user, passwordResetLink);
+    } catch (ignored) {}
 }
 
 async function pauseForRandomTime() {

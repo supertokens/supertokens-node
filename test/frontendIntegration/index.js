@@ -36,9 +36,6 @@ SuperTokens.init({
     recipeList: [
         Session.init({
             errorHandlers: {
-                onTryRefreshToken: (err, req, res) => {
-                    res.status(401).send();
-                },
                 onUnauthorised: (err, req, res) => {
                     res.status(401).send();
                 },
