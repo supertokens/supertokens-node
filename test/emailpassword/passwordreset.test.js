@@ -190,7 +190,7 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
                             let ridInfo = passwordResetURLWithToken.split("?")[1].split("&")[1];
                             assert(resetURL === "https://supertokens.io/auth/reset-password");
                             assert(tokenInfo.startsWith("token="));
-                            assert(ridInfo.startsWith("rid=email-password"));
+                            assert(ridInfo.startsWith("rid=emailpassword"));
                         },
                     },
                 }),
@@ -381,7 +381,7 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
             await emailpassword.signIn("test@gmail.com", "testPass");
             assert(false);
         } catch (err) {
-            if (err.type !== "WRONG_CREDENTIAL_ERROR") {
+            if (err.type !== "WRONG_CREDENTIALS_ERROR") {
                 throw err;
             }
         }

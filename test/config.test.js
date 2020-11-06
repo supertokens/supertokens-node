@@ -250,7 +250,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 }),
             ],
         });
-        assert(SessionRecipe.getInstanceOrThrowError().config.cookieDomain === ".testdomain");
+        assert(SessionRecipe.getInstanceOrThrowError().config.cookieDomain === "testdomain");
         assert(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode === 111);
         assert(
             SessionRecipe.getInstanceOrThrowError().config.sessionRefreshFeature.disableDefaultImplementation === true
