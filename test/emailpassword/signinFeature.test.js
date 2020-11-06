@@ -13,6 +13,23 @@
  * under the License.
  */
 
+const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+let STExpress = require("../../");
+let Session = require("../../recipe/session");
+let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
+let assert = require("assert");
+let { ProcessState } = require("../../lib/build/processState");
+let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
+let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
+let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
+const { Querier } = require("../../lib/build/querier");
+let EmailPassword = require("../../recipe/emailpassword");
+let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
+let utils = require("../../lib/build/recipe/emailpassword/utils");
+const express = require("express");
+const request = require("supertest");
+const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
+
 /**
  * TODO: check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
  * TODO: test signInAPI for:
@@ -39,3 +56,88 @@
  *        - User does not exist
  *        - User exists
  */
+
+describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function () {
+    beforeEach(async function () {
+        await killAllST();
+        await setupST();
+        ProcessState.getInstance().reset();
+    });
+
+    after(async function () {
+        await killAllST();
+        await cleanST();
+    });
+
+    // TODO: check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
+    it("test that disableDefaultImplementation is true, the default signin API does not work", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signInFeature: {
+                        disableDefaultImplementation: false,
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/recipe/signin")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.status);
+                    }
+                })
+        );
+        assert(response === 404);
+    });
+
+    /*
+     * TODO: pass a bad input to the /signin API and test that it throws a 400 error.
+     *        - Not a JSON
+     *        - No POST body
+     *        - Input is JSON, but wrong structure.
+     */
+    it("test bad input to /signin API", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+        let querier = Querier.getInstanceOrThrowError();
+        querier.rId = "email-password";
+        try {
+            await querier.sendPostRequest(new NormalisedURLPath("email-password", "/recipe/signin"), "random");
+            assert(false);
+        } catch (err) {
+            assert(err.message.includes("status code: 400"));
+            assert(err.message.includes("Invalid Json Input"));
+        }
+    });
+});
