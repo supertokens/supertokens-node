@@ -46,7 +46,7 @@ export async function validateFormFieldsOrThrowError(
         if (typeof curr !== "object" || curr === null) {
             throw newBadRequestError(recipeInstance, "All elements of formFields must be an object");
         }
-        if (typeof curr.id !== "string" || typeof curr.value !== "string") {
+        if (typeof curr.id !== "string" || curr.value === undefined) {
             throw newBadRequestError(
                 recipeInstance,
                 "All elements of formFields must contain an 'id' and 'value' field"

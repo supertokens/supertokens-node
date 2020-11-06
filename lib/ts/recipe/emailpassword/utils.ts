@@ -227,16 +227,20 @@ function validateAndNormaliseSignupConfig(
     };
 }
 
-async function defaultValidator(value: string): Promise<string | undefined> {
+async function defaultValidator(value: any): Promise<string | undefined> {
     return undefined;
 }
 
-async function defaultHandleCustomFormFields(user: User, formFields: { id: string; value: string }[]) {}
+async function defaultHandleCustomFormFields(user: User, formFields: { id: string; value: any }[]) {}
 
-export async function defaultPasswordValidator(value: string) {
+export async function defaultPasswordValidator(value: any) {
     // length >= 8 && < 100
     // must have a number and a character
     // as per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
+
+    if (typeof value !== "string") {
+        return "Development bug: Please make sure the password field yields a string";
+    }
 
     if (value.length < 8) {
         return "Password must contain at least 8 characters, including a number";
@@ -257,10 +261,14 @@ export async function defaultPasswordValidator(value: string) {
     return undefined;
 }
 
-export async function defaultEmailValidator(value: string) {
+export async function defaultEmailValidator(value: any) {
     // We check if the email syntax is correct
     // As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
     // Regex from https://stackoverflow.com/a/46181/3867175
+
+    if (typeof value !== "string") {
+        return "Development bug: Please make sure the email field yields a string";
+    }
 
     if (
         value.match(

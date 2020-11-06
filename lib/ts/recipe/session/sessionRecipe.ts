@@ -124,7 +124,7 @@ export default class SessionRecipe extends RecipeModule {
             return this.config.errorHandlers.onUnauthorised(err.message, request, response, next);
         } else if (err.type === STError.TRY_REFRESH_TOKEN) {
             return this.config.errorHandlers.onTryRefreshToken(err.message, request, response, next);
-        } else {
+        } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
             return this.config.errorHandlers.onTokenTheftDetected(
                 err.payload.sessionHandle,
                 err.payload.userId,
@@ -132,6 +132,8 @@ export default class SessionRecipe extends RecipeModule {
                 response,
                 next
             );
+        } else {
+            return next(err);
         }
     };
 
