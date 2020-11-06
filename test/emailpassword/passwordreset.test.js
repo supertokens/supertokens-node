@@ -38,7 +38,6 @@ const request = require("supertest");
  *        - (later) Call the createResetPasswordToken function with valid input
  *        - (later) Call the createResetPasswordToken with unknown userId and test error thrown
  *        - email validation checks (done)
- *        - non existent email should return "OK" with a pause > 300MS (done)
  *        - check that the generated password reset link is correct (done)
  * TODO: password reset API:
  *        - (later) Call the resetPasswordUsingToken function with valid input
@@ -119,55 +118,6 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
                 })
         );
         assert(response === "FIELD_ERROR");
-    });
-
-    it("test that non existant email should return OK with a pause >300MS in generate token API", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init()],
-        });
-        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.post("/reset-password", async (req, res) => {
-            req.body = {
-                formFields: [
-                    {
-                        id: "email",
-                        value: "random@gmail.com",
-                        validate: (value) => {
-                            return value;
-                        },
-                    },
-                ],
-            };
-            await generatePasswordResetToken(emailpassword, req, res);
-        });
-        let beforeRequestTimeStamp = new Date().getTime();
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/reset-password")
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res.status);
-                    }
-                })
-        );
-        assert(response === 200);
-        assert(new Date().getTime() - beforeRequestTimeStamp >= 300);
     });
 
     it("test that generated password link is correct", async function () {
