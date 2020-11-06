@@ -69,8 +69,6 @@ export async function validateFormFieldsOrThrowError(
     // then run validators through them-----------------------
     await validateFormOrThrowError(recipeInstance, formFields, configFormFields);
 
-    // TODO: normalise email as per https://github.com/supertokens/supertokens-core/issues/89
-
     return formFields;
 }
 
