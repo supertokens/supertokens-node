@@ -84,7 +84,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
             recipeList: [
                 EmailPassword.init({
                     signInFeature: {
-                        disableDefaultImplementation: false,
+                        disableDefaultImplementation: true,
                     },
                 }),
             ],
@@ -95,7 +95,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         app.use(STExpress.middleware());
         let response = await new Promise((resolve) =>
             request(app)
-                .post("/auth/recipe/signin")
+                .post("/auth/signin")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -108,12 +108,13 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
     });
 
     /*
-     * TODO: pass a bad input to the /signin API and test that it throws a 400 error.
-     *        - Not a JSON
-     *        - No POST body
-     *        - Input is JSON, but wrong structure.
+     * TODO: test signInAPI for:
+     *        - it works when the input is fine (sign up, and then sign in and check you get the user's info)
+     *        - throws an error if the email does not match
+     *        - throws an error if the password is incorrect
      */
-    it("test bad input to /signin API", async function () {
+
+    it("test singinAPI works when input is fine", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -127,17 +128,145 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
             recipeList: [EmailPassword.init()],
         });
 
-        const app = express();
+        let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
+        await emailpassword.signUp("test@gmail.com", "testPass");
 
-        app.use(STExpress.middleware());
-        let querier = Querier.getInstanceOrThrowError();
-        querier.rId = "email-password";
+        let userInfo = await emailpassword.signIn("test@gmail.com", "testPass");
+        assert(userInfo.id !== undefined);
+        assert(userInfo.email !== undefined);
+    });
+
+    it("test singinAPI throws an error when email does not match", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
+        await emailpassword.signUp("test@gmail.com", "testPass");
+
         try {
-            await querier.sendPostRequest(new NormalisedURLPath("email-password", "/recipe/signin"), "random");
+            await emailpassword.signIn("test1@gmail.com", "testPass");
+            assert(false);
+        } catch (err) {
+            if (err.type !== "WRONG_CREDENTIALS_ERROR") {
+                throw err;
+            }
+        }
+    });
+
+    it("test singinAPI throws an error if password is incorrect", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
+        await emailpassword.signUp("test@gmail.com", "testPass");
+
+        try {
+            await emailpassword.signIn("test@gmail.com", "testPass1");
+            assert(false);
+        } catch (err) {
+            if (err.type !== "WRONG_CREDENTIALS_ERROR") {
+                throw err;
+            }
+        }
+    });
+
+    /*
+     * TODO: pass a bad input to the /signin API and test that it throws a 400 error.
+     *        - Not a JSON
+     *        - No POST body
+     *        - Input is JSON, but wrong structure.
+     */
+    it("test bad input, not a JSON to /signin API", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        let querier = Querier.getInstanceOrThrowError();
+        querier.rId = "emailpassword";
+        try {
+            await querier.sendPostRequest(new NormalisedURLPath("", "/recipe/signin"), "random");
             assert(false);
         } catch (err) {
             assert(err.message.includes("status code: 400"));
-            assert(err.message.includes("Invalid Json Input"));
+        }
+    });
+
+    it("test bad input, no POST body to /signin API", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        let querier = Querier.getInstanceOrThrowError();
+        querier.rId = "emailpassword";
+        try {
+            await querier.sendPostRequest(new NormalisedURLPath("", "/recipe/signin"), {});
+            assert(false);
+        } catch (err) {
+            assert(err.message.includes("status code: 400"));
+        }
+    });
+
+    it("test bad input, input is Json but incorrect structure to /signin API", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+
+        let querier = Querier.getInstanceOrThrowError();
+        querier.rId = "emailpassword";
+        try {
+            await querier.sendPostRequest(new NormalisedURLPath("", "/recipe/signin"), {
+                randomKey: "randomValue",
+            });
+            assert(false);
+        } catch (err) {
+            assert(err.message.includes("status code: 400"));
         }
     });
 });
