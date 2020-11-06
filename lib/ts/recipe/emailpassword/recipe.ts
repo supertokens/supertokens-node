@@ -44,7 +44,7 @@ import { send200Response } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "email-password";
+    static RECIPE_ID = "emailpassword";
 
     config: TypeNormalisedInput;
 
