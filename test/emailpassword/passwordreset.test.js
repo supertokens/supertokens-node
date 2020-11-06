@@ -37,7 +37,7 @@ const request = require("supertest");
  * TODO: generate token API:
  *        - (later) Call the createResetPasswordToken function with valid input
  *        - (later) Call the createResetPasswordToken with unknown userId and test error thrown
- *        - email validation checks
+ *        - email validation checks (done)
  *        - non existent email should return "OK" with a pause > 300MS
  *        - check that the generated password reset link is correct
  * TODO: password reset API:
@@ -106,26 +106,6 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
             }
         });
 
-        app.post("/reset-password-valid-email", async (req, res) => {
-            req.body = {
-                formFields: [
-                    {
-                        id: "email",
-                        value: "random@gmail.com",
-                        validate: (value) => {
-                            return value;
-                        },
-                    },
-                ],
-            };
-            try {
-                await generatePasswordResetToken(emailpassword, req, res);
-                res.status(200).send("Incorrect response");
-            } catch (err) {
-                res.status(200).send(err);
-            }
-        });
-
         let response = await new Promise((resolve) =>
             request(app)
                 .post("/reset-password-invalid-email")
@@ -139,120 +119,117 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
                 })
         );
         assert(response === "FIELD_ERROR");
+    });
 
-        response = await new Promise((resolve) =>
+    it("test that non existant email should return OK with a pause >300MS in generate token API", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.post("/reset-password", async (req, res) => {
+            req.body = {
+                formFields: [
+                    {
+                        id: "email",
+                        value: "random@gmail.com",
+                        validate: (value) => {
+                            return value;
+                        },
+                    },
+                ],
+            };
+            await generatePasswordResetToken(emailpassword, req, res);
+        });
+        let beforeRequestTimeStamp = new Date().getTime();
+        let response = await new Promise((resolve) =>
             request(app)
-                .post("/reset-password-valid-email")
+                .post("/reset-password")
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(res.body.type);
+                        resolve(res.status);
                     }
                 })
         );
-        assert(response !== "FIELD_ERROR");
+        assert(response === 200);
+        assert(new Date().getTime() - beforeRequestTimeStamp >= 300);
     });
 
-    // it("test that non existant email should return OK with a pause >300MS in generate token API", async function () {
-    //     await startST();
-    //     STExpress.init({
-    //         supertokens: {
-    //             connectionURI: "http://localhost:8080",
-    //         },
-    //         appInfo: {
-    //             apiDomain: "api.supertokens.io",
-    //             appName: "SuperTokens",
-    //             websiteDomain: "supertokens.io",
-    //         },
-    //         recipeList: [EmailPassword.init()],
-    //     });
-    //     let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError()
-    //     const app = express();
+    it("test that generated password link is correct", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    resetPasswordUsingTokenFeature: {
+                        createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
+                            let resetURL = passwordResetURLWithToken.split("?")[0];
+                            let tokenInfo = passwordResetURLWithToken.split("?")[1].split("&")[0];
+                            let ridInfo = passwordResetURLWithToken.split("?")[1].split("&")[1];
+                            assert(resetURL === "https://supertokens.io/auth/reset-password");
+                            assert(tokenInfo.startsWith("token="));
+                            assert(ridInfo.startsWith("rid=email-password"));
+                        },
+                    },
+                }),
+            ],
+        });
+        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
+        const app = express();
 
-    //     app.use(STExpress.middleware());
+        app.use(STExpress.middleware());
 
-    //     app.post("/reset-password", async (req, res) => {
+        await emailpassword.signUp("random@gmail.com", "testpass");
 
-    //         req.body = {
-    //             formFields: [{
-    //                 id: 'email',
-    //                 value: 'random@gmail.com',
-    //                 validate: (value) => { return value }
-    //             }]
-    //         }
-    //         await generatePasswordResetToken(emailpassword, req, res)
-
-    //     });
-    //     let beforeRequestTimeStamp = new Date().getTime()
-    //     await new Promise((resolve) =>
-    //         request(app)
-    //             .post("/reset-password")
-    //             .expect(200)
-    //             .end((err, res) => {
-    //                 if (err) {
-    //                     resolve(undefined);
-    //                 } else {
-    //                     resolve(res.body);
-    //                 }
-    //             })
-    //     );
-
-    //     assert((new Date().getTime() - beforeRequestTimeStamp) >= 300)
-    // });
-
-    // it("test that generated password link is correct", async function () {
-    //     await startST();
-    //     STExpress.init({
-    //         supertokens: {
-    //             connectionURI: "http://localhost:8080",
-    //         },
-    //         appInfo: {
-    //             apiDomain: "api.supertokens.io",
-    //             appName: "SuperTokens",
-    //             websiteDomain: "supertokens.io",
-    //         },
-    //         recipeList: [EmailPassword.init({
-    //             resetPasswordUsingTokenFeature: {
-    //                 createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
-    //                     // check correct syntax for generated link
-    //                     console.log(passwordResetURLWithToken)
-    //                 }
-    //             }
-    //         })],
-    //     });
-    //     let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError()
-    //     const app = express();
-
-    //     app.use(STExpress.middleware());
-
-    //     app.post("/reset-password", async (req, res) => {
-
-    //         req.body = {
-    //             formFields: [{
-    //                 id: 'email',
-    //                 value: 'random@gmail.com',
-    //                 validate: (value) => { return value }
-    //             }]
-    //         }
-    //         await generatePasswordResetToken(emailpassword, req, res)
-
-    //     });
-    //     await new Promise((resolve) =>
-    //         request(app)
-    //             .post("/reset-password")
-    //             .expect(200)
-    //             .end((err, res) => {
-    //                 if (err) {
-    //                     resolve(undefined);
-    //                 } else {
-    //                     resolve(res.body);
-    //                 }
-    //             })
-    //     );
-
-    // });
+        app.post("/reset-password", async (req, res) => {
+            req.body = {
+                formFields: [
+                    {
+                        id: "email",
+                        value: "random@gmail.com",
+                        validate: (value) => {
+                            return value;
+                        },
+                    },
+                ],
+            };
+            await generatePasswordResetToken(emailpassword, req, res);
+        });
+        await new Promise((resolve) =>
+            request(app)
+                .post("/reset-password")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+    });
 
     /*
      * TODO: password reset API:
@@ -336,24 +313,79 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
         assert(response !== "FIELD_ERROR");
     });
 
-    // it("test token missing from input", async function () {
-    //     await startST();
-    //     STExpress.init({
-    //         supertokens: {
-    //             connectionURI: "http://localhost:8080",
-    //         },
-    //         appInfo: {
-    //             apiDomain: "api.supertokens.io",
-    //             appName: "SuperTokens",
-    //             websiteDomain: "supertokens.io",
-    //         },
-    //         recipeList: [EmailPassword.init()],
-    //     });
-    //     let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError()
-    //     try {
-    //         await emailpassword.resetPasswordUsingToken(undefined,"newpass")
-    //     } catch (error) {
-    //         console.log(error)
-    //     }
-    // });
+    it("test token missing from input", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
+        try {
+            await emailpassword.resetPasswordUsingToken(undefined, "newpass");
+        } catch (error) {
+            assert(error.message.includes("status code: 400 and message: Field name 'token' is invalid in JSON input"));
+        }
+    });
+
+    it("test invalid token input", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
+        try {
+            await emailpassword.resetPasswordUsingToken("invalidToken", "newpass");
+            assert(false);
+        } catch (error) {
+            assert(error.type === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
+        }
+    });
+
+    it("test valid token input and passoword has changed", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init()],
+        });
+        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
+
+        let userID = await emailpassword.signUp("test@gmail.com", "testPass");
+
+        let resetToken = await emailpassword.createResetPasswordToken(userID.id);
+
+        await emailpassword.resetPasswordUsingToken(resetToken, "testPass1");
+
+        try {
+            await emailpassword.signIn("test@gmail.com", "testPass");
+            assert(false);
+        } catch (err) {
+            if (err.type !== "WRONG_CREDENTIAL_ERROR") {
+                throw err;
+            }
+        }
+
+        await emailpassword.signIn("test@gmail.com", "testPass1");
+    });
 });
