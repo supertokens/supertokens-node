@@ -80,44 +80,36 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
             },
             recipeList: [EmailPassword.init()],
         });
-        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
         const app = express();
 
         app.use(STExpress.middleware());
 
-        app.post("/reset-password-invalid-email", async (req, res) => {
-            req.body = {
-                formFields: [
-                    {
-                        id: "email",
-                        value: "random",
-                        validate: (value) => {
-                            return value;
-                        },
-                    },
-                ],
-            };
-            try {
-                await generatePasswordResetToken(emailpassword, req, res);
-                res.status(200).send("Incorrect response");
-            } catch (err) {
-                res.status(200).send(err);
-            }
-        });
+        app.use(STExpress.errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
-                .post("/reset-password-invalid-email")
+                .post("/auth/user/password/reset/token")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "random",
+                        },
+                    ],
+                })
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(res.body.type);
+                        resolve(res);
                     }
                 })
         );
-        assert(response === "FIELD_ERROR");
+        assert(response.body.status === "FIELD_ERROR");
+        assert(response.body.formFields.length === 1);
+        assert(response.body.formFields[0].error === "Email is invalid");
+        assert(response.body.formFields[0].id === "email");
     });
 
     it("test that generated password link is correct", async function () {

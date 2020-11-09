@@ -57,6 +57,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         });
         try {
             await Session.getAllSessionHandlesForUser();
+            assert(false);
         } catch (err) {
             if (err.type !== ST.Error.GENERAL_ERROR || err.rId !== "session") {
                 throw err;
@@ -126,6 +127,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
         try {
             await querier.sendGetRequest(new NormalisedURLPath("", "/recipe"), {});
+            assert(false);
         } catch (err) {
             if (err.message.startsWith("SuperTokens core threw an error for a GET request to path: '/recipe")) {
                 throw err;
@@ -134,6 +136,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
         try {
             await querier.sendGetRequest(new NormalisedURLPath("", "/recipe/test"), {});
+            assert(false);
         } catch (err) {
             if (err.message.startsWith("SuperTokens core threw an error for a GET request to path: '/recipe")) {
                 throw err;

@@ -635,6 +635,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //passing invalid session handle when updating session data
         try {
             await SessionFunctions.updateSessionData(s, "random", { key2: "value2" });
+            assert(false);
         } catch (error) {
             if (error.type !== Session.Error.UNAUTHORISED) {
                 throw error;

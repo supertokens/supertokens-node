@@ -24,6 +24,7 @@ let { normaliseSessionScopeOrThrowError } = require("../lib/build/recipe/session
 const { Querier } = require("../lib/build/querier");
 let SuperTokens = require("../lib/build/supertokens").default;
 let EmailPassword = require("../lib/build/recipe/emailpassword");
+let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 
 /**
  * TODO: test various inputs for appInfo (done)
@@ -103,6 +104,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     },
                     recipeList: [Session.init()],
                 });
+                assert(false);
             } catch (err) {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||
@@ -128,6 +130,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     },
                     recipeList: [Session.init()],
                 });
+                assert(false);
             } catch (err) {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||
@@ -153,6 +156,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     },
                     recipeList: [Session.init()],
                 });
+                assert(false);
             } catch (err) {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||
@@ -183,6 +187,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                         websiteDomain: "supertokens.io",
                     },
                 });
+                assert(false);
             } catch (err) {
                 if (err.message !== "Please provide at least one recipe to the supertokens.init function call") {
                     throw err;
@@ -204,7 +209,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init()],
             });
-
+            SessionRecipe.getInstanceOrThrowError();
             assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 1);
             resetAll();
         }
@@ -221,7 +226,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init(), EmailPassword.init()],
             });
-
+            SessionRecipe.getInstanceOrThrowError();
+            EmailPasswordRecipe.getInstanceOrThrowError();
             assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2);
             resetAll();
         }
@@ -344,6 +350,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                         }),
                     ],
                 });
+                assert(false);
             } catch (err) {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||
@@ -373,6 +380,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                         }),
                     ],
                 });
+                assert(false);
             } catch (err) {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||

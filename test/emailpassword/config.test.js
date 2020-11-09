@@ -61,7 +61,22 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         });
 
         let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
-        assert(emailpassword.config.signUpFeature.formFields.length === 2);
+
+        let signUpFeature = emailpassword.config.signUpFeature;
+        assert(signUpFeature.formFields.length === 2);
+        assert(signUpFeature.formFields.filter((f) => f.id === "email")[0].optional === false);
+        assert(signUpFeature.formFields.filter((f) => f.id === "password")[0].optional === false);
+        assert(signUpFeature.formFields.filter((f) => f.id === "email")[0].validate !== undefined);
+        assert(signUpFeature.formFields.filter((f) => f.id === "password")[0].validate !== undefined);
+
+        let signInFeature = emailpassword.config.signInFeature;
+        assert(signInFeature.formFields.length === 2);
+        assert(signInFeature.formFields.filter((f) => f.id === "email")[0].optional === false);
+        assert(signInFeature.formFields.filter((f) => f.id === "password")[0].optional === false);
+        assert(signInFeature.formFields.filter((f) => f.id === "email")[0].validate !== undefined);
+        assert(signInFeature.formFields.filter((f) => f.id === "password")[0].validate !== undefined);
+
+        assert(emailpassword.config.signOutFeature.disableDefaultImplementation === false);
 
         let resetPasswordUsingTokenFeature = emailpassword.config.resetPasswordUsingTokenFeature;
 
@@ -217,11 +232,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert((await defaultEmailValidator("aaaaa")) === "Email is invalid");
         assert((await defaultEmailValidator("aaaaaa@aaaaaa")) === "Email is invalid");
         assert((await defaultEmailValidator("random  User   @randomMail.com")) === "Email is invalid");
-        try {
-            await defaultEmailValidator();
-            assert(false);
-        } catch (error) {}
         assert((await defaultEmailValidator("*@*")) === "Email is invalid");
+        await defaultEmailValidator();
 
         let defaultPasswordValidator = formFields.filter((f) => f.id === "password")[0].validate;
         assert(
@@ -230,9 +242,6 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         );
         assert((await defaultPasswordValidator("aaaaaaaaa")) === "Password must contain at least one number");
         assert((await defaultPasswordValidator("1234*-56*789")) === "Password must contain at least one alphabet");
-        try {
-            await defaultPasswordValidator();
-            assert(false);
-        } catch (error) {}
+        await defaultPasswordValidator();
     });
 });
