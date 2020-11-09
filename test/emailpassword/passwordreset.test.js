@@ -143,31 +143,27 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
 
         app.use(STExpress.middleware());
 
+        app.use(STExpress.errorHandler());
+
         await emailpassword.signUp("random@gmail.com", "testpass");
 
-        app.post("/reset-password", async (req, res) => {
-            req.body = {
-                formFields: [
-                    {
-                        id: "email",
-                        value: "random@gmail.com",
-                        validate: (value) => {
-                            return value;
-                        },
-                    },
-                ],
-            };
-            await generatePasswordResetToken(emailpassword, req, res);
-        });
         await new Promise((resolve) =>
             request(app)
-                .post("/reset-password")
+                .post("/auth/user/password/reset")
                 .expect(200)
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(res.body);
+                        resolve(res);
                     }
                 })
         );
@@ -193,66 +189,59 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
             },
             recipeList: [EmailPassword.init()],
         });
-        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
         const app = express();
 
         app.use(STExpress.middleware());
 
-        app.post("/reset-password-invalid-password", async (req, res) => {
-            req.body = {
-                formFields: [
-                    {
-                        id: "password",
-                        value: "random",
-                        validate: (value) => {
-                            return value;
-                        },
-                    },
-                ],
-            };
-
-            try {
-                await passwordReset(emailpassword, req, res);
-                res.status(200).send("Incorrect response");
-            } catch (err) {
-                res.status(200).send(err);
-            }
-        });
-
-        app.post("/reset-password-valid-password", async (req, res) => {
-            req.body = {
-                formFields: [
-                    {
-                        id: "password",
-                        value: "random123",
-                        validate: (value) => {
-                            return value;
-                        },
-                    },
-                ],
-            };
-
-            try {
-                await passwordReset(emailpassword, req, res);
-                res.status(200).send("Incorrect response");
-            } catch (err) {
-                res.status(200).send(err);
-            }
-        });
+        app.use(STExpress.errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
-                .post("/reset-password-valid-password")
+                .post("/auth/user/password/reset")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "invalid",
+                        },
+                    ],
+                    token: "randomToken",
+                })
                 .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(res.body.type);
+                        resolve(JSON.parse(res.text));
                     }
                 })
         );
-        assert(response !== "FIELD_ERROR");
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields[0].error === "Password must contain at least 8 characters, including a number");
+        assert(response.formFields[0].id === "password");
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                    ],
+                    token: "randomToken",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.status !== "FIELD_ERROR");
     });
 
     it("test token missing from input", async function () {
@@ -268,12 +257,33 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
             },
             recipeList: [EmailPassword.init()],
         });
-        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
-        try {
-            await emailpassword.resetPasswordUsingToken(undefined, "newpass");
-        } catch (error) {
-            assert(error.message.includes("status code: 400 and message: Field name 'token' is invalid in JSON input"));
-        }
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                    ],
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.message === "Please provide the password reset token");
     });
 
     it("test invalid token input", async function () {
@@ -289,13 +299,34 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
             },
             recipeList: [EmailPassword.init()],
         });
-        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
-        try {
-            await emailpassword.resetPasswordUsingToken("invalidToken", "newpass");
-            assert(false);
-        } catch (error) {
-            assert(error.type === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
-        }
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                    ],
+                    token: "invalidToken",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.message === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
     });
 
     it("test valid token input and passoword has changed", async function () {
