@@ -331,6 +331,8 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
 
     it("test valid token input and passoword has changed", async function () {
         await startST();
+
+        let token = "";
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -340,25 +342,143 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init()],
+            recipeList: [
+                EmailPassword.init({
+                    resetPasswordUsingTokenFeature: {
+                        createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
+                            token = passwordResetURLWithToken.split("?")[1].split("&")[0].split("=")[1];
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
-        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
 
-        let userID = await emailpassword.signUp("test@gmail.com", "testPass");
+        const app = express();
 
-        let resetToken = await emailpassword.createResetPasswordToken(userID.id);
+        app.use(STExpress.middleware());
 
-        await emailpassword.resetPasswordUsingToken(resetToken, "testPass1");
+        app.use(STExpress.errorHandler());
 
-        try {
-            await emailpassword.signIn("test@gmail.com", "testPass");
-            assert(false);
-        } catch (err) {
-            if (err.type !== "WRONG_CREDENTIALS_ERROR") {
-                throw err;
-            }
-        }
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset/token")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
 
-        await emailpassword.signIn("test@gmail.com", "testPass1");
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass12345",
+                        },
+                    ],
+                    token,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        let failureResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(failureResponse.status === "WRONG_CREDENTIALS_ERROR");
+
+        let successResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass12345",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(successResponse.status === "OK");
+        assert(successResponse.user.id !== undefined);
+        assert(successResponse.user.email !== undefined);
     });
 });
