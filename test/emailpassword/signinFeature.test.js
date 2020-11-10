@@ -512,7 +512,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        console.log(err);
                         resolve(undefined);
                     } else {
                         resolve(JSON.parse(res.text));
@@ -591,7 +590,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        console.log(err);
                         resolve(undefined);
                     } else {
                         resolve(JSON.parse(res.text));
