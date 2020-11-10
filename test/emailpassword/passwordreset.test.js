@@ -114,6 +114,10 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
 
     it("test that generated password link is correct", async function () {
         await startST();
+
+        let resetURL = "";
+        let tokenInfo = "";
+        let ridInfo = "";
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -127,38 +131,37 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
                 EmailPassword.init({
                     resetPasswordUsingTokenFeature: {
                         createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
-                            let resetURL = passwordResetURLWithToken.split("?")[0];
-                            let tokenInfo = passwordResetURLWithToken.split("?")[1].split("&")[0];
-                            let ridInfo = passwordResetURLWithToken.split("?")[1].split("&")[1];
-                            assert(resetURL === "https://supertokens.io/auth/reset-password");
-                            assert(tokenInfo.startsWith("token="));
-                            assert(ridInfo.startsWith("rid=emailpassword"));
+                            resetURL = passwordResetURLWithToken.split("?")[0];
+                            tokenInfo = passwordResetURLWithToken.split("?")[1].split("&")[0];
+                            ridInfo = passwordResetURLWithToken.split("?")[1].split("&")[1];
                         },
                     },
                 }),
+                Session.init(),
             ],
         });
-        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
         const app = express();
 
         app.use(STExpress.middleware());
 
         app.use(STExpress.errorHandler());
 
-        await emailpassword.signUp("random@gmail.com", "testpass");
-
         await new Promise((resolve) =>
             request(app)
-                .post("/auth/user/password/reset")
-                .expect(200)
+                .post("/auth/signup")
                 .send({
                     formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
                         {
                             id: "email",
                             value: "random@gmail.com",
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -167,6 +170,29 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
                     }
                 })
         );
+        await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/password/reset/token")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(resetURL === "https://supertokens.io/auth/reset-password");
+        assert(tokenInfo.startsWith("token="));
+        assert(ridInfo.startsWith("rid=emailpassword"));
     });
 
     /*

@@ -234,7 +234,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert((await defaultEmailValidator("random  User   @randomMail.com")) === "Email is invalid");
         assert((await defaultEmailValidator("*@*")) === "Email is invalid");
         assert((await defaultEmailValidator("validmail@gmail.com")) === undefined);
-        assert((await defaultEmailValidator()) !== undefined);
+        assert((await defaultEmailValidator()) === "Development bug: Please make sure the email field yields a string");
 
         let defaultPasswordValidator = formFields.filter((f) => f.id === "password")[0].validate;
         assert(
@@ -244,6 +244,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert((await defaultPasswordValidator("aaaaaaaaa")) === "Password must contain at least one number");
         assert((await defaultPasswordValidator("1234*-56*789")) === "Password must contain at least one alphabet");
         assert((await defaultPasswordValidator("validPass123")) === undefined);
-        assert((await defaultPasswordValidator()) !== undefined);
+        assert(
+            (await defaultPasswordValidator()) ===
+                "Development bug: Please make sure the password field yields a string"
+        );
     });
 });
