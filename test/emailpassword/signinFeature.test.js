@@ -70,6 +70,14 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
     });
 
     // TODO: check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
+    /*
+    Failure condition:
+        EmailPassword.init({
+            signInFeature: {
+                disableDefaultImplementation: true,
+            },
+        })
+    */
     it("test that disableDefaultImplementation is true, the default signin API does not work", async function () {
         await startST();
         STExpress.init({
@@ -128,7 +136,10 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
      *        - throws an error if the email does not match
      *        - throws an error if the password is incorrect
      */
-
+    /*
+    Failure condition:
+    Setting  invalid email or password values in the request body when sending a request to /signin 
+    */
     it("test singinAPI works when input is fine", async function () {
         await startST();
         STExpress.init({
@@ -202,6 +213,9 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(userInfo.email === "random@gmail.com");
     });
 
+    /*
+    Setting the email value in form field as random@gmail.com causes the test to fail
+    */
     it("test singinAPI throws an error when email does not match", async function () {
         await startST();
         STExpress.init({
@@ -273,7 +287,9 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         );
         assert(invalidEmailResponse.status === "WRONG_CREDENTIALS_ERROR");
     });
-
+    /*
+    passing the correct password "validpass123" causes the test to fail
+    */
     it("test singinAPI throws an error if password is incorrect", async function () {
         await startST();
         STExpress.init({
@@ -352,6 +368,22 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
      *        - No POST body
      *        - Input is JSON, but wrong structure.
      */
+    /*
+    Failure condition:
+    setting valid JSON body to /singin API
+    .send({
+        formFields: [
+            {
+                d: "password",
+                value: "validpass123",
+            },
+            {
+                id: "email",
+                value: "random@gmail.com",
+            },
+        ],
+    })
+    */
     it("test bad input, not a JSON to /signin API", async function () {
         await startST();
         STExpress.init({
@@ -404,7 +436,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                 .expect(400)
                 .end((err, res) => {
                     if (err) {
-                        console.log(err);
                         resolve(undefined);
                     } else {
                         resolve(JSON.parse(res.text));
@@ -414,6 +445,22 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(badInputResponse.message === "Missing input param: formFields");
     });
 
+    /*
+    Failure condition:
+    setting valid JSON body to /singin API
+    .send({
+        formFields: [
+            {
+                d: "password",
+                value: "validpass123",
+            },
+            {
+                id: "email",
+                value: "random@gmail.com",
+            },
+        ],
+    })
+    */
     it("test bad input, no POST body to /signin API", async function () {
         await startST();
         STExpress.init({
@@ -475,6 +522,22 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(badInputResponse.message === "Missing input param: formFields");
     });
 
+    /*
+    Failure condition:
+    setting valid JSON body to /singin API
+    .send({
+        formFields: [
+            {
+                d: "password",
+                value: "validpass123",
+            },
+            {
+                id: "email",
+                value: "random@gmail.com",
+            },
+        ],
+    })
+    */
     it("test bad input, input is Json but incorrect structure to /signin API", async function () {
         await startST();
         STExpress.init({
@@ -522,7 +585,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         let badInputResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signin")
-                .set({
+                .send({
                     randomKey: "randomValue",
                 })
                 .expect(400)
