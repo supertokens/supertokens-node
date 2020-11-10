@@ -160,30 +160,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let userInfo = await new Promise((resolve) =>
             request(app)
@@ -236,30 +213,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let invalidEmailResponse = await new Promise((resolve) =>
             request(app)
@@ -310,30 +264,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let invalidPasswordResponse = await new Promise((resolve) =>
             request(app)
@@ -371,18 +302,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
     /*
     Failure condition:
     setting valid JSON body to /singin API
-    .send({
-        formFields: [
-            {
-                d: "password",
-                value: "validpass123",
-            },
-            {
-                id: "email",
-                value: "random@gmail.com",
-            },
-        ],
-    })
     */
     it("test bad input, not a JSON to /signin API", async function () {
         await startST();
@@ -404,30 +323,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let badInputResponse = await new Promise((resolve) =>
             request(app)
@@ -481,30 +377,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let badInputResponse = await new Promise((resolve) =>
             request(app)
@@ -524,18 +397,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
     /*
     Failure condition:
     setting valid JSON body to /singin API
-    .send({
-        formFields: [
-            {
-                d: "password",
-                value: "validpass123",
-            },
-            {
-                id: "email",
-                value: "random@gmail.com",
-            },
-        ],
-    })
     */
     it("test bad input, input is Json but incorrect structure to /signin API", async function () {
         await startST();
@@ -556,30 +417,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let badInputResponse = await new Promise((resolve) =>
             request(app)
@@ -622,30 +460,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -726,30 +541,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "testrandom@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "testrandom@gmail.com", "validpass123");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -822,30 +614,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "valid",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "valid");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -898,30 +667,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -974,30 +720,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -1050,30 +773,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -1120,30 +820,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -1193,30 +870,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -1277,30 +931,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
         let userInfo = await emailpassword.getUserByEmail("random@gmail.com");
 
         assert(userInfo.email === "random@gmail.com");
@@ -1338,33 +969,38 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        let userInfo = await emailpassword.getUserById(response.user.id);
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+
+        let userID = JSON.parse(response.text).user.id;
+        let userInfo = await emailpassword.getUserById(userID);
 
         assert(userInfo.email === "random@gmail.com");
         assert(userInfo.id !== undefined);
     });
 });
+
+let signUPRequest = async function (app, email, password) {
+    return new Promise((resolve) =>
+        request(app)
+            .post("/auth/signup")
+            .send({
+                formFields: [
+                    {
+                        id: "password",
+                        value: password,
+                    },
+                    {
+                        id: "email",
+                        value: email,
+                    },
+                ],
+            })
+            .end((err, res) => {
+                if (err) {
+                    resolve(undefined);
+                } else {
+                    resolve(res);
+                }
+            })
+    );
+};
