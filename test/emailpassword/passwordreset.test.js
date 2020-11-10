@@ -352,7 +352,7 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
                     }
                 })
         );
-        assert(response.message === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
+        assert(response.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR");
     });
 
     it("test valid token input and passoword has changed", async function () {
