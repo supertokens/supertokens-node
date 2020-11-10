@@ -13,7 +13,7 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
@@ -978,29 +978,3 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(userInfo.id !== undefined);
     });
 });
-
-let signUPRequest = async function (app, email, password) {
-    return new Promise((resolve) =>
-        request(app)
-            .post("/auth/signup")
-            .send({
-                formFields: [
-                    {
-                        id: "password",
-                        value: password,
-                    },
-                    {
-                        id: "email",
-                        value: email,
-                    },
-                ],
-            })
-            .end((err, res) => {
-                if (err) {
-                    resolve(undefined);
-                } else {
-                    resolve(res);
-                }
-            })
-    );
-};
