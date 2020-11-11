@@ -72,11 +72,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
     // TODO: check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
     /*
     Failure condition:
-        EmailPassword.init({
-            signInFeature: {
-                disableDefaultImplementation: true,
-            },
-        })
+    Set  disableDefaultImplementation to false in the signInFeature
     */
     it("test that disableDefaultImplementation is true, the default signin API does not work", async function () {
         await startST();

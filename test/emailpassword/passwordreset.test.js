@@ -13,7 +13,7 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
@@ -146,30 +146,8 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        await signUPRequest(app, "random@gmail.com", "validpass123");
+
         await new Promise((resolve) =>
             request(app)
                 .post("/auth/user/password/reset/token")
@@ -386,30 +364,9 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        let userInfo = JSON.parse(response.text).user;
+
         await new Promise((resolve) =>
             request(app)
                 .post("/auth/user/password/reset/token")
@@ -504,7 +461,7 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
                 })
         );
         assert(successResponse.status === "OK");
-        assert(successResponse.user.id !== undefined);
-        assert(successResponse.user.email !== undefined);
+        assert(successResponse.user.id === userInfo.id);
+        assert(successResponse.user.email === userInfo.email);
     });
 });
