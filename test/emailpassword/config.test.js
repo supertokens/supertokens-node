@@ -39,6 +39,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     });
 
     //  TODO: test config for emailpassword module
+    // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test default config for emailpassword module", async function () {
         await startST();
         STExpress.init({
@@ -80,6 +81,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm[0].id === "password");
     });
 
+    // Failure condition: passing data of invalid type/ syntax to the module
     it("test config for emailpassword module", async function () {
         await startST();
         STExpress.init({

@@ -44,6 +44,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     });
 
     //  * TODO: check if disableDefaultImplementation is true, the default refresh API does not work - you get a 404
+    //Failure condition: if disableDefaultImplementation is false, the test will fail
     it("test that if disableDefaultImplementation is true the default refresh API does not work", async function () {
         await startST();
         SuperTokens.init({

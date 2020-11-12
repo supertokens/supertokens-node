@@ -48,6 +48,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     });
 
     // * TODO: Check that querier has been inited when we call supertokens.init
+    // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that querier has been initiated when we call supertokens.init", async function () {
         await startST();
 
@@ -76,6 +77,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     });
 
     // TODO: Check that modules have been inited when we call supertokens.init
+    // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that modules have been initiated when we call supertokens.init", async function () {
         await startST();
 
@@ -118,6 +120,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         - with and without a rId
         - where we do not have to handle it and it skips it (with / without rId)
     */
+    //Failure condition: Tests will fail is using the incorrect base path
     it("test various inputs to routing with default base path", async function () {
         await startST();
         ST.init({
@@ -204,7 +207,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         - with and without a rId
         - where we do not have to handle it and it skips it (with / without rId)
     */
-
+    //Failure condition: Tests will fail is using the wrong base path
     it("test various inputs to routing when base path is /", async function () {
         await startST();
         {
@@ -290,6 +293,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         }
     });
 
+    //Failure condition: Tests will fail if the incorrect rid header value is set when sending a request the path
     it("test routing with multiple recipes", async function () {
         await startST();
 
@@ -470,6 +474,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     });
 
     // TODO: Disable a default route, and then implement your own API and check that that gets called
+    // Failure condition: in testRecipe1 if the disabled value for the /default-route-disabled is set to false, the test will fail
     it("test if you diable a default route, and then implement your own API, your own api is called", async function () {
         await startST();
 
