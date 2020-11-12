@@ -19,10 +19,6 @@ let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 
-/**
- * TODO: test that once the info is loaded, it doesn't query again (done)
- */
-
 describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

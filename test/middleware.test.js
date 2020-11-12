@@ -24,7 +24,6 @@ let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default
 
 /**
  *
- * TODO: check that disabling default API actually disables it (for session) (done)
  * TODO: (Later) check that disabling default API actually disables it (for emailpassword)
  */
 

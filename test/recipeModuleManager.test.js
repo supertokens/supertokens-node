@@ -28,20 +28,8 @@ const assert = require("assert");
 const request = require("supertest");
 
 /**
- *
- * TODO: Check that querier has been inited when we call supertokens.init (done)
- * TODO: Check that modules have been inited when we call supertokens.init (done)
- * TODO: Test various inputs to routing (if it accepts or not) (done)
- *          - including when the base path is "/"
- *          - with and without a rId
- *          - where we do not have to handle it and it skips it (with / without rId)
- * TODO: Test various inputs to errorHandler (if it accepts or not) (done)
  * TODO: (later) Check that access control allow headers have the right set values for each recipe, including one for rid
- * TODO: If an error handler in a recipe throws an error, that error next to go to the user's error handler (done)
- * TODO: Error thrown from APIs implemented by recipes must not go unhandled (done)
- * TODO: Disable a default route, and then implement your own API and check that that gets called(done)
  * TODO: (later) If a recipe has a callback and a user implements it, but throws a normal error from it, then we need to make sure that that error is caught only by their error handler
- * TODO: Test getAllCORSHeaders(done)
  * TODO: (later) Make a custom validator throw an error and check that it's transformed into a general error, and then in user's error handler, it's a normal error again
  *
  */

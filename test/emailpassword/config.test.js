@@ -25,13 +25,6 @@ const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let utils = require("../../lib/build/recipe/emailpassword/utils");
-/**
- * TODO: test config for emailpassword module (done)
- * TODO: test validateAndNormaliseUserInput for emailpassword (done)
- *         - No email / passord validators given should add them
- *         - Giving optional true in email / password field should be ignored
- *         - Check that the default password and email validators work fine
- */
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {

@@ -37,16 +37,10 @@ const request = require("supertest");
  * TODO: generate token API:
  *        - (later) Call the createResetPasswordToken function with valid input
  *        - (later) Call the createResetPasswordToken with unknown userId and test error thrown
- *        - email validation checks (done)
- *        - check that the generated password reset link is correct (done)
  * TODO: password reset API:
  *        - (later) Call the resetPasswordUsingToken function with valid input
  *        - (later) Call the resetPasswordUsingToken with an invalid token and see the error
- *        - password validation checks (done)
- *        - token is missing from input (done)
  *        - (later) token is not of type string from input
- *        - invalid token in input (done)
- *        - input is valid, check that password has changed (call sign in) (done)
  */
 
 describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function () {
