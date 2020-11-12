@@ -146,7 +146,8 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
 
         await new Promise((resolve) =>
             request(app)
