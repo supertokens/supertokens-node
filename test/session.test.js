@@ -97,10 +97,22 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                     }
                 })
         );
-        assert(res.header["front-token"] !== undefined);
         assert(res.header["access-control-expose-headers"] === "front-token, id-refresh-token, anti-csrf");
-        assert(res.header["id-refresh-token"] !== undefined);
-        assert(res.header["anti-csrf"] !== undefined);
+
+        let cookies = extractInfoFromResponse(res);
+        assert(cookies.accessToken !== undefined);
+        assert(cookies.refreshToken !== undefined);
+        assert(cookies.antiCsrf !== undefined);
+        assert(cookies.idRefreshTokenFromHeader !== undefined);
+        assert(cookies.idRefreshTokenFromCookie !== undefined);
+        assert(cookies.accessTokenExpiry !== undefined);
+        assert(cookies.refreshTokenExpiry !== undefined);
+        assert(cookies.idRefreshTokenExpiry !== undefined);
+        assert(cookies.refreshToken !== undefined);
+        assert(cookies.accessTokenDomain === undefined);
+        assert(cookies.refreshTokenDomain === undefined);
+        assert(cookies.idRefreshTokenDomain === undefined);
+        assert(cookies.frontToken !== undefined);
     });
 
     //- check if output headers and set cookies for refresh session is fine
@@ -120,14 +132,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         const app = express();
         app.use(SuperTokens.middleware());
+        app.use(SuperTokens.errorHandler());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/auth/session/refresh", async (req, res) => {
-            await Session.refreshSession(req, res);
             res.status(200).send("");
         });
 
@@ -159,10 +167,22 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                     }
                 })
         );
-        assert(res2.header["front-token"] !== undefined);
         assert(res2.header["access-control-expose-headers"] === "front-token, id-refresh-token, anti-csrf");
-        assert(res2.header["id-refresh-token"] !== undefined);
-        assert(res2.header["anti-csrf"] !== undefined);
+
+        let cookies = extractInfoFromResponse(res2);
+        assert(cookies.accessToken !== undefined);
+        assert(cookies.refreshToken !== undefined);
+        assert(cookies.antiCsrf !== undefined);
+        assert(cookies.idRefreshTokenFromHeader !== undefined);
+        assert(cookies.idRefreshTokenFromCookie !== undefined);
+        assert(cookies.accessTokenExpiry !== undefined);
+        assert(cookies.refreshTokenExpiry !== undefined);
+        assert(cookies.idRefreshTokenExpiry !== undefined);
+        assert(cookies.refreshToken !== undefined);
+        assert(cookies.accessTokenDomain === undefined);
+        assert(cookies.refreshTokenDomain === undefined);
+        assert(cookies.idRefreshTokenDomain === undefined);
+        assert(cookies.frontToken !== undefined);
     });
 
     // check if input cookies are missing, an appropriate error is thrown
@@ -182,30 +202,24 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         const app = express();
         app.use(SuperTokens.middleware());
+        app.use(SuperTokens.errorHandler());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
 
-        app.post("/auth/session/refresh", async (req, res) => {
-            await Session.refreshSession(req, res);
-            res.status(200).send("");
-        });
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res);
-                        }
-                    })
-            )
+        await new Promise((resolve) =>
+            request(app)
+                .post("/create")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
         );
 
         let res2 = await new Promise((resolve) =>
@@ -219,7 +233,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                     }
                 })
         );
-        assert(res2.status === 500);
+        assert(res2.status === 401);
+        assert(JSON.parse(res2.text).message === "unauthorised");
     });
 
     //- check if input cookies are there, no error is thrown
@@ -242,11 +257,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/auth/session/refresh", async (req, res) => {
-            await Session.refreshSession(req, res);
             res.status(200).send("");
         });
 
