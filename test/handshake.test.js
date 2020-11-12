@@ -49,7 +49,9 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
             },
             recipeList: [Session.init()],
         });
-        await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+
+        let sessionRecipeInstance = SessionRecipe.getInstanceOrThrowError();
+        await sessionRecipeInstance.getHandshakeInfo();
         let verifyState = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
             2000
@@ -58,7 +60,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
 
         ProcessState.getInstance().reset();
 
-        await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+        await sessionRecipeInstance.getHandshakeInfo();
         verifyState = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
             2000

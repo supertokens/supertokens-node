@@ -145,6 +145,7 @@ export default class SessionRecipe extends RecipeModule {
 
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined) {
+            ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.getQuerier().sendPostRequest(
                 new NormalisedURLPath(this.getRecipeId(), "/recipe/handshake"),
                 {}
@@ -157,7 +158,6 @@ export default class SessionRecipe extends RecipeModule {
                 accessTokenValidity: response.accessTokenValidity,
                 refreshTokenValidity: response.refreshTokenValidity,
             };
-            ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
         }
         return this.handshakeInfo;
     };
