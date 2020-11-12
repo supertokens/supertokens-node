@@ -51,6 +51,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await killAllST();
         await setupST();
         ProcessState.getInstance().reset();
+        resetTestRecipies();
     });
 
     after(async function () {
@@ -65,7 +66,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         try {
             await Querier.getInstanceOrThrowError();
             assert(false);
-        } catch (err) {}
+        } catch (err) {
+            if (err.type !== ST.Error.GENERAL_ERROR) {
+                throw err;
+            }
+        }
 
         ST.init({
             supertokens: {
@@ -88,9 +93,21 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         try {
             await SessionRecipe.getInstanceOrThrowError();
+            assert(false);
+        } catch (err) {
+            if (err.type !== ST.Error.GENERAL_ERROR || err.rId !== "session") {
+                throw err;
+            }
+        }
+
+        try {
             await EmailPasswordRecipe.getInstanceOrThrowError();
             assert(false);
-        } catch (err) {}
+        } catch (err) {
+            if (err.type !== ST.Error.GENERAL_ERROR || err.rId !== "emailpassword") {
+                throw err;
+            }
+        }
 
         ST.init({
             supertokens: {
@@ -128,11 +145,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         });
         const app = express();
 
+        app.use(ST.middleware());
+
         app.post("/auth/user-api", async (req, res) => {
             res.status(200).json({ message: "success" });
         });
-
-        app.use(ST.middleware());
 
         let r1 = await new Promise((resolve) =>
             request(app)
@@ -200,7 +217,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         - where we do not have to handle it and it skips it (with / without rId)
     */
 
-    it("test various inputs to routing when bass path is /", async function () {
+    it("test various inputs to routing when base path is /", async function () {
         await startST();
         {
             ST.init({
@@ -216,12 +233,12 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 recipeList: [TestRecipe.init()],
             });
             const app = express();
+            app.use(ST.middleware());
+            app.use(ST.errorHandler());
 
             app.post("/user-api", async (req, res) => {
                 res.status(200).json({ message: "success" });
             });
-
-            app.use(ST.middleware());
 
             let r1 = await new Promise((resolve) =>
                 request(app)
@@ -332,6 +349,21 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 })
         );
         assert(r1.text === "success TestRecipe1 /hello");
+
+        r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/hello")
+                .set("rid", "testRecipe")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(r1.text === "success TestRecipe /hello");
     });
 
     //  TODO: Test various inputs to errorHandler (if it accepts or not)
@@ -412,6 +444,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         app.use(ST.middleware());
         app.use(ST.errorHandler());
+        app.use((err, req, res, next) => {
+            if (err.message === "error thrown in api") {
+                res.status(200).send(JSON.stringify({ message: "success" }));
+            } else {
+                res.status(200).send(JSON.stringify({ message: "failure" }));
+            }
+        });
 
         let r1 = await new Promise((resolve) =>
             request(app)
@@ -426,6 +465,20 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 })
         );
         assert(r1 === "error from TestRecipe /error ");
+
+        r1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/error/api-error")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.text);
+                    }
+                })
+        );
+        assert(JSON.parse(r1).message === "success");
     });
 
     // TODO: Disable a default route, and then implement your own API and check that that gets called
@@ -482,7 +535,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [TestRecipe1.init()],
+            recipeList: [TestRecipe.init()],
         });
 
         const app = express();
@@ -525,11 +578,14 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [TestRecipe1.init()],
+            recipeList: [TestRecipe1.init(), TestRecipe2.init(), TestRecipe3.init(), TestRecipe3Duplicate.init()],
         });
         let headers = await ST.getAllCORSHeaders();
-        assert(headers.length === 3);
-        assert(headers.includes("rid") && headers.includes("fdi-version") && headers.includes("test-recipe-1"));
+        assert(headers.length === 5);
+        assert(headers.includes("rid") && headers.includes("fdi-version"));
+        assert(
+            headers.includes("test-recipe-1") && headers.includes("test-recipe-2") && headers.includes("test-recipe-3")
+        );
     });
 });
 
@@ -569,6 +625,12 @@ class TestRecipe extends RecipeModule {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error"),
                 id: "/error",
+                disabled: false,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error/api-error"),
+                id: "/error/api-error",
                 disabled: false,
             },
             {
@@ -626,6 +688,8 @@ class TestRecipe extends RecipeModule {
                 payload: undefined,
                 type: "ERROR_FROM_TEST_RECIPE_ERROR_HANDLER",
             });
+        } else if (id === "/error/api-error") {
+            throw new Error("error thrown in api");
         }
     };
 
@@ -639,6 +703,10 @@ class TestRecipe extends RecipeModule {
 
     getAllCORSHeaders = () => {
         return [];
+    };
+
+    static reset = () => {
+        this.instance = undefined;
     };
 }
 
@@ -727,4 +795,97 @@ class TestRecipe1 extends RecipeModule {
     getAllCORSHeaders = () => {
         return ["test-recipe-1"];
     };
+
+    static reset = () => {
+        this.instance = undefined;
+    };
 }
+
+class TestRecipe2 extends RecipeModule {
+    static instance = undefined;
+
+    constructor(recipeId, appInfo) {
+        super(recipeId, appInfo);
+    }
+
+    static init() {
+        return (appInfo) => {
+            if (TestRecipe2.instance === undefined) {
+                TestRecipe2.instance = new TestRecipe2("testRecipe2", appInfo);
+                return TestRecipe2.instance;
+            } else {
+                throw new Error("already initialised");
+            }
+        };
+    }
+
+    getAllCORSHeaders = () => {
+        return ["test-recipe-2"];
+    };
+
+    static reset = () => {
+        this.instance = undefined;
+    };
+}
+
+class TestRecipe3 extends RecipeModule {
+    static instance = undefined;
+
+    constructor(recipeId, appInfo) {
+        super(recipeId, appInfo);
+    }
+
+    static init() {
+        return (appInfo) => {
+            if (TestRecipe3.instance === undefined) {
+                TestRecipe3.instance = new TestRecipe3("testRecipe3", appInfo);
+                return TestRecipe3.instance;
+            } else {
+                throw new Error("already initialised");
+            }
+        };
+    }
+
+    getAllCORSHeaders = () => {
+        return ["test-recipe-3"];
+    };
+
+    static reset = () => {
+        this.instance = undefined;
+    };
+}
+
+class TestRecipe3Duplicate extends RecipeModule {
+    static instance = undefined;
+
+    constructor(recipeId, appInfo) {
+        super(recipeId, appInfo);
+    }
+
+    static init() {
+        return (appInfo) => {
+            if (TestRecipe3Duplicate.instance === undefined) {
+                TestRecipe3Duplicate.instance = new TestRecipe3("testRecipe3Duplicate", appInfo);
+                return TestRecipe3Duplicate.instance;
+            } else {
+                throw new Error("already initialised");
+            }
+        };
+    }
+
+    getAllCORSHeaders = () => {
+        return ["test-recipe-3"];
+    };
+
+    static reset = () => {
+        this.instance = undefined;
+    };
+}
+
+let resetTestRecipies = () => {
+    TestRecipe.reset();
+    TestRecipe1.reset();
+    TestRecipe2.reset();
+    TestRecipe3.reset();
+    TestRecipe3Duplicate.reset();
+};
