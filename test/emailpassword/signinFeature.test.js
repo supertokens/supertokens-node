@@ -13,7 +13,17 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    signUPRequest,
+    extractInfoFromResponse,
+} = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
@@ -156,7 +166,9 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        let signUpUserInfo = JSON.parse(response.text).user;
 
         let userInfo = await new Promise((resolve) =>
             request(app)
@@ -182,8 +194,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                     }
                 })
         );
-        assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
+        assert(userInfo.id === signUpUserInfo.id);
+        assert(userInfo.email === signUpUserInfo.email);
     });
 
     /*
@@ -209,7 +221,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let invalidEmailResponse = await new Promise((resolve) =>
             request(app)
@@ -260,7 +273,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let invalidPasswordResponse = await new Promise((resolve) =>
             request(app)
@@ -319,7 +333,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let badInputResponse = await new Promise((resolve) =>
             request(app)
@@ -339,19 +354,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
     /*
     Failure condition:
-    setting valid JSON body to /singin API
-    .send({
-        formFields: [
-            {
-                d: "password",
-                value: "validpass123",
-            },
-            {
-                id: "email",
-                value: "random@gmail.com",
-            },
-        ],
-    })
+    setting valid formFields JSON body to /singin API
     */
     it("test bad input, no POST body to /signin API", async function () {
         await startST();
@@ -373,7 +376,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let badInputResponse = await new Promise((resolve) =>
             request(app)
@@ -413,7 +417,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let badInputResponse = await new Promise((resolve) =>
             request(app)
@@ -456,7 +461,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -478,18 +484,31 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(JSON.parse(res.text));
+                        resolve(res);
                     }
                 })
         );
-        assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
+
+        let cookies = extractInfoFromResponse(response);
+        assert(cookies.accessToken !== undefined);
+        assert(cookies.refreshToken !== undefined);
+        assert(cookies.antiCsrf !== undefined);
+        assert(cookies.idRefreshTokenFromHeader !== undefined);
+        assert(cookies.idRefreshTokenFromCookie !== undefined);
+        assert(cookies.accessTokenExpiry !== undefined);
+        assert(cookies.refreshTokenExpiry !== undefined);
+        assert(cookies.idRefreshTokenExpiry !== undefined);
+        assert(cookies.refreshToken !== undefined);
+        assert(cookies.accessTokenDomain === undefined);
+        assert(cookies.refreshTokenDomain === undefined);
+        assert(cookies.idRefreshTokenDomain === undefined);
+        assert(cookies.frontToken !== undefined);
     });
 
     /*
      * TODO: formField validation testing:
      *        - Provide custom email validators to sign up and make sure they are applied to sign in
-     *        - Provide custom password validators to sign up and make sure they are applied to sign in. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
+     *        - Provide custom password validators to sign up and make sure they are not applied to sign in.
      *        - Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
      *        - Test email field validation error
      *        - Input formFields has no email field
@@ -537,7 +556,9 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "testrandom@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "testrandom@gmail.com", "validpass123");
+
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -568,7 +589,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(response.formFields[0].id === "email");
     });
 
-    //- Provide custom password validators to sign up and make sure they are applied to sign in. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
+    //- Provide custom password validators to sign up and make sure they are not applied to sign in.
 
     /*
     sending the correct password "valid" will cause the test to fail
@@ -576,6 +597,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
     it("test custom password validators to sign up and make sure they are applied to sign in", async function () {
         await startST();
 
+        let validatorCtr = 0;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -595,6 +617,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                                     if (value.length <= 5) {
                                         return undefined;
                                     }
+                                    validatorCtr++;
                                     return "password is greater than 5 characters";
                                 },
                             },
@@ -610,9 +633,10 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "valid");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "valid");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
-        let response = await new Promise((resolve) =>
+        await new Promise((resolve) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -636,7 +660,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                     resolve(JSON.parse(res.text));
                 })
         );
-        assert(response.status === "WRONG_CREDENTIALS_ERROR");
+        assert(validatorCtr !== 1);
     });
 
     // Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
@@ -663,7 +687,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -716,7 +741,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -769,7 +795,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -816,7 +843,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -866,7 +894,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -879,7 +908,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                         },
                         {
                             id: "email",
-                            value: "randomgmail",
+                            value: "randomgmail.com",
                         },
                     ],
                 })
@@ -927,11 +956,12 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpUserInfo = JSON.parse(signUpResponse.text).user;
         let userInfo = await emailpassword.getUserByEmail("random@gmail.com");
 
-        assert(userInfo.email === "random@gmail.com");
-        assert(userInfo.id !== undefined);
+        assert(userInfo.email === signUpUserInfo.email);
+        assert(userInfo.id === signUpUserInfo.id);
     });
 
     /*
@@ -965,12 +995,11 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         app.use(STExpress.errorHandler());
 
-        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpUserInfo = JSON.parse(signUpResponse.text).user;
+        let userInfo = await emailpassword.getUserById(signUpUserInfo.id);
 
-        let userID = JSON.parse(response.text).user.id;
-        let userInfo = await emailpassword.getUserById(userID);
-
-        assert(userInfo.email === "random@gmail.com");
-        assert(userInfo.id !== undefined);
+        assert(userInfo.email === signUpUserInfo.email);
+        assert(userInfo.id === signUpUserInfo.id);
     });
 });
