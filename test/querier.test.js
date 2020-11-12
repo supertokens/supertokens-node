@@ -20,6 +20,8 @@ let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let Session = require("../recipe/session");
 let nock = require("nock");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
+let EmailPassword = require("../recipe/emailpassword");
+let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 
 /**
  *
@@ -53,13 +55,21 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [Session.init(), EmailPassword.init()],
         });
         try {
             await Session.getAllSessionHandlesForUser();
             assert(false);
         } catch (err) {
             if (err.type !== ST.Error.GENERAL_ERROR || err.rId !== "session") {
+                throw err;
+            }
+        }
+
+        try {
+            await EmailPassword.getUserByEmail();
+        } catch (err) {
+            if (err.type !== ST.Error.GENERAL_ERROR || err.rId !== "emailpassword") {
                 throw err;
             }
         }
