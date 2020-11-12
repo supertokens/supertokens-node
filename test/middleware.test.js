@@ -62,8 +62,23 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             ],
         });
 
-        let apisHandled = await SessionRecipe.getInstanceOrThrowError().getAPIsHandled();
-        assert(apisHandled[0].disabled === true);
+        const app = express();
+
+        app.use(SuperTokens.middleware());
+        app.use(SuperTokens.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 404);
     });
 
     it("test session verify middleware", async function () {
