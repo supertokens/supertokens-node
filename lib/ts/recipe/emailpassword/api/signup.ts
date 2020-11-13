@@ -40,7 +40,7 @@ export default async function signUpAPI(recipeInstance: Recipe, req: Request, re
     let user = await recipeInstance.signUp(email, password);
 
     // set 3
-    await recipeInstance.config.signUpFeature.handleCustomFormFields(
+    await recipeInstance.config.signUpFeature.handleCustomFormFieldsPostSignUp(
         user,
         formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID)
     );
