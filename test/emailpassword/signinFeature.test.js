@@ -597,7 +597,8 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
     it("test custom password validators to sign up and make sure they are applied to sign in", async function () {
         await startST();
 
-        let validatorCtr = 0;
+        let failsValidatorCtr = 0;
+        let passesValidatorCtr = 0;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -615,9 +616,10 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                                 id: "password",
                                 validate: (value) => {
                                     if (value.length <= 5) {
+                                        passesValidatorCtr++;
                                         return undefined;
                                     }
-                                    validatorCtr++;
+                                    failsValidatorCtr++;
                                     return "password is greater than 5 characters";
                                 },
                             },
@@ -635,8 +637,10 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "valid");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(passesValidatorCtr === 1);
+        assert(failsValidatorCtr === 0);
 
-        await new Promise((resolve) =>
+        let response = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signin")
                 .send({
@@ -660,7 +664,10 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                     resolve(JSON.parse(res.text));
                 })
         );
-        assert(validatorCtr !== 1);
+
+        assert(response.status === "WRONG_CREDENTIALS_ERROR");
+        assert(failsValidatorCtr === 0);
+        assert(passesValidatorCtr === 1);
     });
 
     // Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
@@ -922,6 +929,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
                 })
         );
         assert(response.status === "FIELD_ERROR");
+        assert(response.formFields.length === 1);
         assert(response.formFields[0].error === "Email is invalid");
         assert(response.formFields[0].id === "email");
     });

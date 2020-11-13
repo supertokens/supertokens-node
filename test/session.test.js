@@ -129,12 +129,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         const app = express();
         app.use(SuperTokens.middleware());
-        app.use(SuperTokens.errorHandler());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
+
+        app.use(SuperTokens.errorHandler());
 
         let res = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -200,12 +201,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         const app = express();
         app.use(SuperTokens.middleware());
-        app.use(SuperTokens.errorHandler());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
+
+        app.use(SuperTokens.errorHandler());
 
         await new Promise((resolve) =>
             request(app)

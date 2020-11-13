@@ -225,11 +225,12 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             });
             const app = express();
             app.use(ST.middleware());
-            app.use(ST.errorHandler());
 
             app.post("/user-api", async (req, res) => {
                 res.status(200).json({ message: "success" });
             });
+
+            app.use(ST.errorHandler());
 
             let r1 = await new Promise((resolve) =>
                 request(app)

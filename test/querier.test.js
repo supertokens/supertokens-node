@@ -61,6 +61,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
         try {
             await EmailPassword.getUserByEmail();
+            assert(false);
         } catch (err) {
             if (err.type !== ST.Error.GENERAL_ERROR || err.rId !== "emailpassword") {
                 throw err;
@@ -117,34 +118,40 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             recipeList: [Session.init()],
         });
 
-        let querier = Querier.getInstanceOrThrowError();
+        let querier = Querier.getInstanceOrThrowError("test");
 
         nock("http://localhost:8080", {
-            reqheaders: {
-                rid: () => true,
-            },
             allowUnmocked: true,
         })
-            .get("/recipe/*")
-            .reply(200, "");
+            .get("/recipe")
+            .reply(200, function (uri, requestBody) {
+                return this.req.headers;
+            });
 
-        try {
-            await querier.sendGetRequest(new NormalisedURLPath("", "/recipe"), {});
-            assert(false);
-        } catch (err) {
-            if (err.message.startsWith("SuperTokens core threw an error for a GET request to path: '/recipe")) {
-                throw err;
-            }
-        }
+        let response = await querier.sendGetRequest(new NormalisedURLPath("", "/recipe"), {});
+        assert(response.rid === "test");
 
-        try {
-            await querier.sendGetRequest(new NormalisedURLPath("", "/recipe/test"), {});
-            assert(false);
-        } catch (err) {
-            if (err.message.startsWith("SuperTokens core threw an error for a GET request to path: '/recipe")) {
-                throw err;
-            }
-        }
+        nock("http://localhost:8080", {
+            allowUnmocked: true,
+        })
+            .get("/recipe/random")
+            .reply(200, function (uri, requestBody) {
+                return this.req.headers;
+            });
+
+        let response2 = await querier.sendGetRequest(new NormalisedURLPath("", "/recipe/random"), {});
+        assert(response2.rid === "test");
+
+        nock("http://localhost:8080", {
+            allowUnmocked: true,
+        })
+            .get("/test")
+            .reply(200, function (uri, requestBody) {
+                return this.req.headers;
+            });
+
+        let response3 = await querier.sendGetRequest(new NormalisedURLPath("", "/test"), {});
+        assert(response3.rid === undefined);
     });
 
     it("core not available", async function () {
