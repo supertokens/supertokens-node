@@ -215,15 +215,15 @@ function validateAndNormaliseSignupConfig(
         });
     }
 
-    let handleCustomFormFields: (
+    let handleCustomFormFieldsPostSignUp: (
         user: User,
         formFields: { id: string; value: string }[]
-    ) => Promise<void> = defaultHandleCustomFormFields;
+    ) => Promise<void> = defaulthandleCustomFormFieldsPostSignUp;
 
     return {
         disableDefaultImplementation,
         formFields,
-        handleCustomFormFields,
+        handleCustomFormFieldsPostSignUp,
     };
 }
 
@@ -231,7 +231,7 @@ async function defaultValidator(value: any): Promise<string | undefined> {
     return undefined;
 }
 
-async function defaultHandleCustomFormFields(user: User, formFields: { id: string; value: any }[]) {}
+async function defaulthandleCustomFormFieldsPostSignUp(user: User, formFields: { id: string; value: any }[]) {}
 
 export async function defaultPasswordValidator(value: any) {
     // length >= 8 && < 100

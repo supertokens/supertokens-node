@@ -25,7 +25,7 @@
  *        - formFields is not an array
  *        - formFields does not exist
  *        - formField elements have no id or no value field
- * TODO: providing the handleCustomFormFields should work:
+ * TODO: providing the handleCustomFormFieldsPostSignUp should work:
  *        - If not provided by the user, it should not result in an error
  *        - If provided by the user, and custom fields are there, only those should be sent
  *        - If provided by the user, and no custom fields are there, then the formFields param must sbe empty
@@ -43,5 +43,5 @@
  *        - Test password field validation error
  *        - Test email field validation error
  *        - Make sure that the input email is trimmed
- *        - Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handleCustomFormFields as that type
+ *        - Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handleCustomFormFieldsPostSignUp as that type
  */

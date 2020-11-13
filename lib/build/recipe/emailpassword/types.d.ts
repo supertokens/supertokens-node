@@ -17,7 +17,7 @@ export declare type TypeInputSignUp = {
         validate?: (value: any) => Promise<string | undefined>;
         optional?: boolean;
     }[];
-    handleCustomFormFields?: (user: User, formFields: {
+    handleCustomFormFieldsPostSignUp?: (user: User, formFields: {
         id: string;
         value: any;
     }[]) => Promise<void>;
@@ -28,7 +28,7 @@ export declare type TypeInputSignIn = {
 export declare type TypeNormalisedInputSignUp = {
     disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
-    handleCustomFormFields: (user: User, formFields: {
+    handleCustomFormFieldsPostSignUp: (user: User, formFields: {
         id: string;
         value: any;
     }[]) => Promise<void>;
