@@ -40,6 +40,33 @@ const express = require("express");
 const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 
+/**
+ * TODO: check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
+ * TODO: test signInAPI for:
+ *        - it works when the input is fine (sign up, and then sign in and check you get the user's info)
+ *        - throws an error if the email does not match
+ *        - throws an error if the password is incorrect
+ * TODO: pass a bad input to the /signin API and test that it throws a 400 error.
+ *        - Not a JSON
+ *        - No POST body
+ *        - Input is JSON, but wrong structure.
+ * TODO: Make sure that a successful sign in yields a session
+ * TODO: formField validation testing:
+ *        - Provide custom email validators to sign up and make sure they are applied to sign in
+ *        - Provide custom password validators to sign up and make sure they are applied to sign in. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
+ *        - Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
+ *        - Test email field validation error
+ *        - Input formFields has no email field
+ *        - Input formFields has no password field
+ *        - Provide invalid (wrong syntax) email and wrong password, and you should get form field error
+ * TODO: Test getUserByEmail
+ *        - User does not exist
+ *        - User exists
+ * TODO: Test getUserById
+ *        - User does not exist
+ *        - User exists
+ */
+
 describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -52,7 +79,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         await cleanST();
     });
 
-    // TODO: check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
     /*
     Failure condition:
     Set  disableDefaultImplementation to false in the signInFeature
@@ -109,12 +135,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(response.status === 404);
     });
 
-    /*
-     * TODO: test signInAPI for:
-     *        - it works when the input is fine (sign up, and then sign in and check you get the user's info)
-     *        - throws an error if the email does not match
-     *        - throws an error if the password is incorrect
-     */
     /*
     Failure condition:
     Setting  invalid email or password values in the request body when sending a request to /signin 
@@ -223,6 +243,7 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         );
         assert(invalidEmailResponse.status === "WRONG_CREDENTIALS_ERROR");
     });
+
     /*
     passing the correct password "validpass123" causes the test to fail
     */
@@ -276,12 +297,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(invalidPasswordResponse.status === "WRONG_CREDENTIALS_ERROR");
     });
 
-    /*
-     * TODO: pass a bad input to the /signin API and test that it throws a 400 error.
-     *        - Not a JSON
-     *        - No POST body
-     *        - Input is JSON, but wrong structure.
-     */
     /*
     Failure condition:
     setting valid JSON body to /singin API
@@ -411,7 +426,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(badInputResponse.message === "Missing input param: formFields");
     });
 
-    // * TODO: Make sure that a successful sign in yields a session
     /*
     Passing invalid credentials to the /signin API fails the test
     */
@@ -477,17 +491,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(cookies.idRefreshTokenDomain === undefined);
         assert(cookies.frontToken !== undefined);
     });
-
-    /*
-     * TODO: formField validation testing:
-     *        - Provide custom email validators to sign up and make sure they are applied to sign in
-     *        - Provide custom password validators to sign up and make sure they are not applied to sign in.
-     *        - Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
-     *        - Test email field validation error
-     *        - Input formFields has no email field
-     *        - Input formFields has no password field
-     *        - Provide invalid (wrong syntax) email and wrong password, and you should get form field error
-     */
 
     /*
     having the email start with "test" (requierment of the custom validator) will cause the test to fail
@@ -561,8 +564,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(response.formFields[0].error === "email does not start with test");
         assert(response.formFields[0].id === "email");
     });
-
-    //- Provide custom password validators to sign up and make sure they are not applied to sign in.
 
     /*
     sending the correct password "valid" will cause the test to fail
@@ -643,7 +644,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(passesValidatorCtr === 1);
     });
 
-    // Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
     /*
     sending the correct password to the /signin API will cause the test to fail
     */
@@ -696,8 +696,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         );
         assert(response.status === "WRONG_CREDENTIALS_ERROR");
     });
-
-    //- Test email field validation error
 
     //sending the correct email to the /signin API will cause the test to fail
 
@@ -753,7 +751,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(response.formFields[0].id === "email");
     });
 
-    //- Input formFields has no email field
     //passing the email field in formFields will cause the test to fail
     it("test formFields has no email field", async function () {
         await startST();
@@ -801,7 +798,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(response.message === "Are you sending too many / too few formFields?");
     });
 
-    //Input formFields has no password field
     //passing the password field in formFields will cause the test to fail
     it("test formFields has no password field", async function () {
         await startST();
@@ -848,8 +844,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         );
         assert(response.message === "Are you sending too many / too few formFields?");
     });
-
-    //Provide invalid (wrong syntax) email and wrong password, and you should get form field error
 
     /*
     passing email with valid syntax and correct password will cause the test to fail
@@ -907,11 +901,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(response.formFields[0].id === "email");
     });
 
-    /*
-     * TODO: Test getUserByEmail
-     *    - User does not exist
-     *    - User exists
-     */
     it("test getUserByEmail when user does not exist", async function () {
         await startST();
 
@@ -944,12 +933,6 @@ describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function
         assert(userInfo.email === signUpUserInfo.email);
         assert(userInfo.id === signUpUserInfo.id);
     });
-
-    /*
-     * TODO: Test getUserById
-     *        - User does not exist
-     *        - User exists
-     */
 
     it("test getUserById when user does not exist", async function () {
         await startST();

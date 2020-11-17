@@ -28,8 +28,20 @@ const assert = require("assert");
 const request = require("supertest");
 
 /**
+ *
+ * TODO: Check that querier has been inited when we call supertokens.init (done)
+ * TODO: Check that modules have been inited when we call supertokens.init (done)
+ * TODO: Test various inputs to routing (if it accepts or not) (done)
+ *          - including when the base path is "/"
+ *          - with and without a rId
+ *          - where we do not have to handle it and it skips it (with / without rId)
+ * TODO: Test various inputs to errorHandler (if it accepts or not) (done)
  * TODO: (later) Check that access control allow headers have the right set values for each recipe, including one for rid
+ * TODO: If an error handler in a recipe throws an error, that error next to go to the user's error handler (done)
+ * TODO: Error thrown from APIs implemented by recipes must not go unhandled (done)
+ * TODO: Disable a default route, and then implement your own API and check that that gets called(done)
  * TODO: (later) If a recipe has a callback and a user implements it, but throws a normal error from it, then we need to make sure that that error is caught only by their error handler
+ * TODO: Test getAllCORSHeaders(done)
  * TODO: (later) Make a custom validator throw an error and check that it's transformed into a general error, and then in user's error handler, it's a normal error again
  *
  */
@@ -47,7 +59,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await cleanST();
     });
 
-    // * TODO: Check that querier has been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that querier has been initiated when we call supertokens.init", async function () {
         await startST();
@@ -76,7 +87,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await Querier.getInstanceOrThrowError();
     });
 
-    // TODO: Check that modules have been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that modules have been initiated when we call supertokens.init", async function () {
         await startST();
@@ -114,12 +124,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await EmailPasswordRecipe.getInstanceOrThrowError();
     });
 
-    /* 
-        TODO: Test various inputs to routing (if it accepts or not)
-        - including when the base path is "/"
-        - with and without a rId
-        - where we do not have to handle it and it skips it (with / without rId)
-    */
     //Failure condition: Tests will fail is using the incorrect base path
     it("test various inputs to routing with default base path", async function () {
         await startST();
@@ -201,12 +205,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(r1.message === "success");
     });
 
-    /*
-        TODO: Test various inputs to routing (if it accepts or not)
-        - including when the base path is "/"
-        - with and without a rId
-        - where we do not have to handle it and it skips it (with / without rId)
-    */
     //Failure condition: Tests will fail is using the wrong base path
     it("test various inputs to routing when base path is /", async function () {
         await startST();
@@ -359,7 +357,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(r1.text === "success TestRecipe /hello");
     });
 
-    //  TODO: Test various inputs to errorHandler (if it accepts or not)
     it("test various inputs to errorHandler", async function () {
         await startST();
 
@@ -417,7 +414,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(r1.body.message === "Bad input error from TestRecipe");
     });
 
-    // TODO: Error thrown from APIs implemented by recipes must not go unhandled
     it("Error thrown from APIs implemented by recipes must not go unhandled", async function () {
         await startST();
 
@@ -474,7 +470,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(JSON.parse(r1).message === "success");
     });
 
-    // TODO: Disable a default route, and then implement your own API and check that that gets called
     // Failure condition: in testRecipe1 if the disabled value for the /default-route-disabled is set to false, the test will fail
     it("test if you diable a default route, and then implement your own API, your own api is called", async function () {
         await startST();
@@ -516,7 +511,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(r1 === "user defined api");
     });
 
-    // TODO: If an error handler in a recipe throws an error, that error next to go to the user's error handler
     it("test if the error handler in a recipe throws an error, it goes to the user's error handler", async function () {
         await startST();
 
@@ -559,7 +553,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(r1 === "user error handler");
     });
 
-    // TODO: Test getAllCORSHeaders
     it("test the getAllCORSHeaders function", async function () {
         await startST();
 

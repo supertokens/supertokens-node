@@ -35,7 +35,10 @@ let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 
 /* TODO:
+- check if output headers and set cookies for create session is fine (done)
+- check if output headers and set cookies for refresh session is fine (done)
 - check that if signing key changes, things are still fine
+- check if input cookies are missing, an appropriate error is thrown (done)
 - the opposite of the above condition
 - calling createNewSession twice, should overwrite the first call (in terms of cookies)
 - calling createNewSession in the case of unauthorised error, should create a proper session
@@ -56,7 +59,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await cleanST();
     });
 
-    //- TODO check if output headers and set cookies for create session is fine
     it("test that output headers and set cookie for create session is fine", async function () {
         await startST();
         SuperTokens.init({
@@ -112,7 +114,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(cookies.frontToken !== undefined);
     });
 
-    //- check if output headers and set cookies for refresh session is fine
     it("test that output headers and set cookie for refresh session is fine", async function () {
         await startST();
         SuperTokens.init({
@@ -183,7 +184,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(cookies.frontToken !== undefined);
     });
 
-    // TODO check if input cookies are missing, an appropriate error is thrown
     // Failure condition: if valid cookies are set in the refresh call the test will fail
     it("test that if input cookies are missing, an appropriate error is thrown", async function () {
         await startST();
@@ -237,7 +237,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(JSON.parse(res2.text).message === "unauthorised");
     });
 
-    //- TODO check if input cookies are there, no error is thrown
     // Failure condition: if cookies are no set in the refresh call the test will fail
     it("test that if input cookies are there, no error is thrown", async function () {
         await startST();

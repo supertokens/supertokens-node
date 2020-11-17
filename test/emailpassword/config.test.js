@@ -25,6 +25,13 @@ const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let utils = require("../../lib/build/recipe/emailpassword/utils");
+/**
+ * TODO: test config for emailpassword module (done)
+ * TODO: test validateAndNormaliseUserInput for emailpassword (done)
+ *         - No email / passord validators given should add them
+ *         - Giving optional true in email / password field should be ignored
+ *         - Check that the default password and email validators work fine
+ */
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
@@ -38,7 +45,6 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         await cleanST();
     });
 
-    //  TODO: test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test default config for emailpassword module", async function () {
         await startST();
@@ -134,12 +140,6 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert(emailpassword.config.signOutFeature.disableDefaultImplementation);
     });
 
-    /*
-     * TODO: test validateAndNormaliseUserInput for emailpassword
-     *         - No email / passord validators given should add them
-     *         - Giving optional true in email / password field should be ignored
-     *         - Check that the default password and email validators work fine
-     */
     it("test that no email/password validators given should add them", async function () {
         await startST();
         STExpress.init({

@@ -23,6 +23,13 @@ const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath")
 let EmailPassword = require("../recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 
+/**
+ *
+ * TODO: Test that if the querier throws an error from a recipe, that recipe's ID is there (done)
+ * TODO: Check that once the API version is there, it doesn't need to query again (done)
+ * TODO: Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request. (done)
+ */
+
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -34,8 +41,6 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await killAllST();
         await cleanST();
     });
-
-    // * TODO: Test that if the querier throws an error from a recipe, that recipe's ID is there
 
     it("test that if the querier throws an error from a recipe, that recipe's ID is there", async function () {
         await startST();
@@ -69,8 +74,6 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         }
     });
 
-    // * TODO: Check that once the API version is there, it doesn't need to query again
-
     it("test that if that once API version is there, it doesn't need to query again", async function () {
         await startST();
         ST.init({
@@ -103,7 +106,6 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert(verifyState === undefined);
     });
 
-    // * TODO: Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request.
     it("test that rid is added to the header if it's a recipe request", async function () {
         await startST();
         ST.init({
