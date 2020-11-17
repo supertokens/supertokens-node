@@ -504,6 +504,208 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
         assert(cookies.frontToken !== undefined);
     });
 
+    /*
+     * TODO: providing the handleCustomFormFieldsPostSignUp should work:
+     *        - If not provided by the user, it should not result in an error
+     *        - If provided by the user, and custom fields are there, only those should be sent
+     *        - If provided by the user, and no custom fields are there, then the formFields param must sbe empty
+     */
+
+    //If not provided by the user, it should not result in an error
+
+    it("test that if not provided by the user, it should not result in an error", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "testField",
+                            },
+                        ],
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                        {
+                            id: "testField",
+                            value: "testValue",
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(response.user.id !== undefined);
+        assert(response.user.email === "random@gmail.com");
+    });
+
+    //- If provided by the user, and custom fields are there, only those should be sent
+    it("test that if provided by the user, and custom fields are there, only those are sent", async function () {
+        await startST();
+
+        let customFormFields = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "testField",
+                            },
+                        ],
+                        handleCustomFormFieldsPostSignUp: (user, formFields) => {
+                            customFormFields = formFields;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                        {
+                            id: "testField",
+                            value: "testValue",
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(customFormFields.length === 1);
+        assert(customFormFields[0].id === "testField");
+        assert(customFormFields[0].value === "testValue");
+    });
+
+    //If provided by the user, and no custom fields are there, then the formFields param must sbe empty
+    it("test that if provided by the user, and no custom fields are there, then formFields must be empty", async function () {
+        await startST();
+
+        let customFormFields = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        handleCustomFormFieldsPostSignUp: (user, formFields) => {
+                            customFormFields = formFields;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(customFormFields.length === 0);
+    });
+
     /* TODO: formField validation testing:
      *        - Provide formFields in config but not in input to signup and see error about it being missing
      *        - Good test case without optional
@@ -1194,5 +1396,74 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
         assert(response.status === "OK");
         assert(response.user.id !== undefined);
         assert(response.user.email === "random@gmail.com");
+    });
+
+    // Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handleCustomFormFieldsPostSignUp as that type
+    it("test that non string value in formFields array and it passes through the signup API and it is sent to the handleCustomFormFieldsPostSignUp", async function () {
+        await startST();
+
+        let customFormFields = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "testField",
+                            },
+                        ],
+                        handleCustomFormFieldsPostSignUp: (user, formFields) => {
+                            customFormFields = formFields;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                        {
+                            id: "testField",
+                            value: { key: "value" },
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.status === "OK");
+        assert(customFormFields.length === 1);
+        assert(customFormFields[0].id === "testField");
+        assert(customFormFields[0].value.key === "value");
     });
 });
