@@ -13,6 +13,34 @@
  * under the License.
  */
 
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    signUPRequest,
+    extractInfoFromResponse,
+    setKeyValueInConfig,
+} = require("../utils");
+let STExpress = require("../../");
+let Session = require("../../recipe/session");
+let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
+let assert = require("assert");
+let { ProcessState } = require("../../lib/build/processState");
+let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
+let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
+let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
+const { Querier } = require("../../lib/build/querier");
+let EmailPassword = require("../../recipe/emailpassword");
+let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
+let utils = require("../../lib/build/recipe/emailpassword/utils");
+const express = require("express");
+const request = require("supertest");
+const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
+
 /**
  * TODO: Test the default route and it should revoke the session (with clearing the cookies)
  * TODO: Disable default route and test that that API returns 404
@@ -20,3 +48,297 @@
  * TODO: Call the API without an expired access token session, and it should return TRY_REFRESH_TOKEN
  * TODO: Call the API with an expired access and refresh token, and it should return "OK" (with clearing the cookies).
  */
+
+describe(`signoutFeature: ${printPath("[test/signoutFeature.test.js]")}`, function () {
+    beforeEach(async function () {
+        await killAllST();
+        await setupST();
+        ProcessState.getInstance().reset();
+    });
+
+    after(async function () {
+        await killAllST();
+        await cleanST();
+    });
+
+    // * TODO: Test the default route and it should revoke the session (with clearing the cookies)
+    it("test the default route and it should revoke the session", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+
+        let res = extractInfoFromResponse(response);
+
+        let response2 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signout")
+                    .set("Cookie", [
+                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+        assert(response2.antiCsrf === undefined);
+        assert(response2.accessToken === "");
+        assert(response2.refreshToken === "");
+        assert(response2.idRefreshTokenFromHeader === "remove");
+        assert(response2.idRefreshTokenFromCookie === "");
+        assert(response2.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(response2.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(response2.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(response2.accessTokenDomain === undefined);
+        assert(response2.refreshTokenDomain === undefined);
+        assert(response2.idRefreshTokenDomain === undefined);
+        assert(response2.frontToken === undefined);
+    });
+
+    // Disable default route and test that that API returns 404
+    it("test that diabling default route and calling the API returns 404", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signOutFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signout")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 404);
+    });
+
+    // Call the API without a session and it should return "OK"
+    it("test that calling the API without a session should return OK", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signout")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.header["set-cookie"] === undefined);
+    });
+
+    // Call the API without an expired access token session, and it should return TRY_REFRESH_TOKEN
+    it("test that calling the API wiithout the access token session, and it should return TRY_REFRESH_TOKEN", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+
+        let res = extractInfoFromResponse(response);
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signout")
+                .set("Cookie", ["sAccessToken=" + "" + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response2.status === 401);
+        assert(JSON.parse(response2.text).message === "try refresh token");
+    });
+
+    //Call the API with an expired access and refresh token, and it should return "OK" (with clearing the cookies).
+    it("test that signout API reutrns try refresh token, refresh session and signout should return OK", async function () {
+        await setKeyValueInConfig("access_token_validity", 2);
+        await setKeyValueInConfig("refresh_token_validity", 2);
+
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+
+        let res = extractInfoFromResponse(response);
+
+        await new Promise((r) => setTimeout(r, 5000));
+
+        let signOutResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signout")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(signOutResponse.status === 401);
+        assert(JSON.parse(signOutResponse.text).message === "try refresh token");
+
+        let refreshedResponse = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .expect(200)
+                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        signOutResponse = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signout")
+                    .set("Cookie", [
+                        "sAccessToken=" +
+                            refreshedResponse.accessToken +
+                            ";sIdRefreshToken=" +
+                            refreshedResponse.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", refreshedResponse.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(signOutResponse.antiCsrf === undefined);
+        assert(signOutResponse.accessToken === "");
+        assert(signOutResponse.refreshToken === "");
+        assert(signOutResponse.idRefreshTokenFromHeader === "remove");
+        assert(signOutResponse.idRefreshTokenFromCookie === "");
+        assert(signOutResponse.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(signOutResponse.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(signOutResponse.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(signOutResponse.accessTokenDomain === undefined);
+        assert(signOutResponse.refreshTokenDomain === undefined);
+        assert(signOutResponse.idRefreshTokenDomain === undefined);
+    });
+});

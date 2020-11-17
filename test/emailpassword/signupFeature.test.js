@@ -182,7 +182,7 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
         assert(responseInfo.status === "FIELD_ERROR");
         assert(responseInfo.formFields.length === 1);
         assert(responseInfo.formFields[0].id === "email");
-        assert(responseInfo.formFields[0].error === "This email already exists. Please sign in instead.'");
+        assert(responseInfo.formFields[0].error === "This email already exists. Please sign in instead.");
     });
 
     it("test signUpAPI throws an error for email and password with invalid syntax", async function () {
@@ -465,84 +465,6 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
         );
         assert(badInputResponse.message === "All elements of formFields must contain an 'id' and 'value' field");
     });
-
-    /*
-     * TODO: providing the handleCustomFormFieldsPostSignUp should work:
-     *        - If not provided by the user, it should not result in an error
-     *        - If provided by the user, and custom fields are there, only those should be sent
-     *        - If provided by the user, and no custom fields are there, then the formFields param must sbe empty
-     * */
-    // it("test handleCustomFormFieldsPostSignUp if not provided by the user, it should not result in an error", async function () {
-    //     await startST();
-
-    //     STExpress.init({
-    //         supertokens: {
-    //             connectionURI: "http://localhost:8080",
-    //         },
-    //         appInfo: {
-    //             apiDomain: "api.supertokens.io",
-    //             appName: "SuperTokens",
-    //             websiteDomain: "supertokens.io",
-    //         },
-    //         recipeList: [
-    //             EmailPassword.init({
-    //                 signUpFeature: {
-    //                     formFields: [
-    //                         {
-    //                             id: "email",
-    //                         },
-    //                         {
-    //                             id: "password",
-    //                         },
-    //                         {
-    //                             id: "testID",
-    //                             optional: true,
-
-    //                         }
-    //                     ],
-    //                     handleCustomFormFieldsPostSignUp: (user, formFields) => {
-    //                     }
-    //                 },
-    //             }),
-    //             Session.init(),
-    //         ],
-    //     });
-
-    //     const app = express();
-
-    //     app.use(STExpress.middleware());
-
-    //     app.use(STExpress.errorHandler());
-
-    //     let response = await new Promise((resolve) =>
-    //         request(app)
-    //             .post("/auth/signup")
-    //             .send({
-    //                 formFields: [
-    //                     {
-    //                         id: "password",
-    //                         value: "validpass123",
-    //                     },
-    //                     {
-    //                         id: "email",
-    //                         value: "random@gmail.com",
-    //                     },
-    //                     {
-    //                         id: "testID",
-    //                         value: "testValue"
-    //                     }
-    //                 ],
-    //             })
-    //             .end((err, res) => {
-    //                 if (err) {
-    //                     resolve(undefined);
-    //                 } else {
-    //                     resolve(JSON.parse(res.text));
-    //                 }
-    //             })
-    //     );
-    //     console.log(response);
-    // });
 
     //* TODO: Make sure that a successful sign up yields a session
     it("test that a successful signup yields a session", async function () {
