@@ -215,10 +215,10 @@ function validateAndNormaliseSignupConfig(
         });
     }
 
-    let handleCustomFormFieldsPostSignUp: (
-        user: User,
-        formFields: { id: string; value: string }[]
-    ) => Promise<void> = defaulthandleCustomFormFieldsPostSignUp;
+    let handleCustomFormFieldsPostSignUp: (user: User, formFields: { id: string; value: string }[]) => Promise<void> =
+        config === undefined || config.handleCustomFormFieldsPostSignUp === undefined
+            ? defaultHandleCustomFormFieldsPostSignUp
+            : config.handleCustomFormFieldsPostSignUp;
 
     return {
         disableDefaultImplementation,
@@ -231,7 +231,7 @@ async function defaultValidator(value: any): Promise<string | undefined> {
     return undefined;
 }
 
-async function defaulthandleCustomFormFieldsPostSignUp(user: User, formFields: { id: string; value: any }[]) {}
+async function defaultHandleCustomFormFieldsPostSignUp(user: User, formFields: { id: string; value: any }[]) {}
 
 export async function defaultPasswordValidator(value: any) {
     // length >= 8 && < 100
