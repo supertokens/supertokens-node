@@ -579,8 +579,6 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 });
 
 class TestRecipe extends RecipeModule {
-    static instance;
-
     constructor(recipeId, appInfo) {
         super(recipeId, appInfo);
     }
@@ -700,8 +698,6 @@ class TestRecipe extends RecipeModule {
 }
 
 class TestRecipe1 extends RecipeModule {
-    static instance;
-
     constructor(recipeId, appInfo) {
         super(recipeId, appInfo);
     }
@@ -791,8 +787,6 @@ class TestRecipe1 extends RecipeModule {
 }
 
 class TestRecipe2 extends RecipeModule {
-    static instance;
-
     constructor(recipeId, appInfo) {
         super(recipeId, appInfo);
     }
@@ -818,8 +812,6 @@ class TestRecipe2 extends RecipeModule {
 }
 
 class TestRecipe3 extends RecipeModule {
-    static instance;
-
     constructor(recipeId, appInfo) {
         super(recipeId, appInfo);
     }
@@ -845,8 +837,6 @@ class TestRecipe3 extends RecipeModule {
 }
 
 class TestRecipe3Duplicate extends RecipeModule {
-    static instance;
-
     constructor(recipeId, appInfo) {
         super(recipeId, appInfo);
     }
