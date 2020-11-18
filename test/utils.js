@@ -202,7 +202,7 @@ module.exports.startST = async function (host = "localhost", port = 8080) {
                 }
             });
         let startTime = Date.now();
-        while (Date.now() - startTime < 10000) {
+        while (Date.now() - startTime < 30000) {
             let pidsAfter = await getListOfPids();
             if (pidsAfter.length <= pidsBefore.length) {
                 await new Promise((r) => setTimeout(r, 100));
