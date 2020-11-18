@@ -594,7 +594,7 @@ class TestRecipe extends RecipeModule {
         };
     }
 
-    getAPIsHandled = () => {
+    getAPIsHandled() {
         return [
             {
                 method: "post",
@@ -639,9 +639,9 @@ class TestRecipe extends RecipeModule {
                 disabled: false,
             },
         ];
-    };
+    }
 
-    handleAPIRequest = async (id, req, res, next) => {
+    async handleAPIRequest(id, req, res, next) {
         if (id === "/") {
             res.status(200).send("success TestRecipe /");
             return;
@@ -678,15 +678,15 @@ class TestRecipe extends RecipeModule {
         } else if (id === "/error/api-error") {
             throw new Error("error thrown in api");
         }
-    };
+    }
 
-    handleError = (err, request, response, next) => {
+    handleError(err, request, response, next) {
         if (err.type === "ERROR_FROM_TEST_RECIPE") {
             response.status(200).send(err.message);
         } else if (err.type === "ERROR_FROM_TEST_RECIPE_ERROR_HANDLER") {
             throw new Error("error from inside recipe error handler");
         }
-    };
+    }
 
     getAllCORSHeaders = () => {
         return [];
@@ -713,7 +713,7 @@ class TestRecipe1 extends RecipeModule {
         };
     }
 
-    getAPIsHandled = () => {
+    getAPIsHandled() {
         return [
             {
                 method: "post",
@@ -746,9 +746,9 @@ class TestRecipe1 extends RecipeModule {
                 disabled: true,
             },
         ];
-    };
+    }
 
-    handleAPIRequest = async (id, req, res, next) => {
+    async handleAPIRequest(id, req, res, next) {
         if (id === "/") {
             res.status(200).send("success TestRecipe1 /");
             return;
@@ -769,21 +769,21 @@ class TestRecipe1 extends RecipeModule {
             res.status(200).send("default route used");
             return;
         }
-    };
+    }
 
-    handleError = (err, request, response, next) => {
+    handleError(err, request, response, next) {
         if (err.type === "ERROR_FROM_TEST_RECIPE1") {
             response.status(200).send(err.message);
         }
-    };
+    }
 
-    getAllCORSHeaders = () => {
+    getAllCORSHeaders() {
         return ["test-recipe-1"];
-    };
+    }
 
-    static reset = () => {
+    static reset() {
         this.instance = undefined;
-    };
+    }
 }
 
 class TestRecipe2 extends RecipeModule {
@@ -802,13 +802,13 @@ class TestRecipe2 extends RecipeModule {
         };
     }
 
-    getAllCORSHeaders = () => {
+    getAllCORSHeaders() {
         return ["test-recipe-2"];
-    };
+    }
 
-    static reset = () => {
+    static reset() {
         this.instance = undefined;
-    };
+    }
 }
 
 class TestRecipe3 extends RecipeModule {
@@ -827,13 +827,13 @@ class TestRecipe3 extends RecipeModule {
         };
     }
 
-    getAllCORSHeaders = () => {
+    getAllCORSHeaders() {
         return ["test-recipe-3"];
-    };
+    }
 
-    static reset = () => {
+    static reset() {
         this.instance = undefined;
-    };
+    }
 }
 
 class TestRecipe3Duplicate extends RecipeModule {
@@ -852,19 +852,19 @@ class TestRecipe3Duplicate extends RecipeModule {
         };
     }
 
-    getAllCORSHeaders = () => {
+    getAllCORSHeaders() {
         return ["test-recipe-3"];
-    };
+    }
 
-    static reset = () => {
+    static reset() {
         this.instance = undefined;
-    };
+    }
 }
 
-let resetTestRecipies = () => {
+function resetTestRecipies() {
     TestRecipe.reset();
     TestRecipe1.reset();
     TestRecipe2.reset();
     TestRecipe3.reset();
     TestRecipe3Duplicate.reset();
-};
+}
