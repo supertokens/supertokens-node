@@ -61,7 +61,7 @@ describe(`signoutFeature: ${printPath("[test/signoutFeature.test.js]")}`, functi
         await cleanST();
     });
 
-    // * TODO: Test the default route and it should revoke the session (with clearing the cookies)
+    // Test the default route and it should revoke the session (with clearing the cookies)
     it("test the default route and it should revoke the session", async function () {
         await startST();
 
@@ -96,6 +96,7 @@ describe(`signoutFeature: ${printPath("[test/signoutFeature.test.js]")}`, functi
                         "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
                     ])
                     .set("anti-csrf", res.antiCsrf)
+                    .expect(200)
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -120,7 +121,7 @@ describe(`signoutFeature: ${printPath("[test/signoutFeature.test.js]")}`, functi
     });
 
     // Disable default route and test that that API returns 404
-    it("test that diabling default route and calling the API returns 404", async function () {
+    it("test that disabling default route and calling the API returns 404", async function () {
         await startST();
 
         STExpress.init({
@@ -187,6 +188,7 @@ describe(`signoutFeature: ${printPath("[test/signoutFeature.test.js]")}`, functi
         let response = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -199,54 +201,9 @@ describe(`signoutFeature: ${printPath("[test/signoutFeature.test.js]")}`, functi
         assert(response.header["set-cookie"] === undefined);
     });
 
-    // Call the API without an expired access token session, and it should return TRY_REFRESH_TOKEN
-    it("test that calling the API wiithout the access token session, and it should return TRY_REFRESH_TOKEN", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(JSON.parse(response.text).status === "OK");
-
-        let res = extractInfoFromResponse(response);
-
-        let response2 = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signout")
-                .set("Cookie", ["sAccessToken=" + "" + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .set("anti-csrf", res.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert(response2.status === 401);
-        assert(JSON.parse(response2.text).message === "try refresh token");
-    });
-
-    //Call the API with an expired access and refresh token, and it should return "OK" (with clearing the cookies).
+    //Call the API with an expired access token, refresh, and call the API again to get OK and clear cookies
     it("test that signout API reutrns try refresh token, refresh session and signout should return OK", async function () {
         await setKeyValueInConfig("access_token_validity", 2);
-        await setKeyValueInConfig("refresh_token_validity", 2);
 
         await startST();
 

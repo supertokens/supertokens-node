@@ -42,6 +42,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await cleanST();
     });
 
+    // Test that if the querier throws an error from a recipe, that recipe's ID is there
     it("test that if the querier throws an error from a recipe, that recipe's ID is there", async function () {
         await startST();
         ST.init({
@@ -74,6 +75,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         }
     });
 
+    // Check that once the API version is there, it doesn't need to query again
     it("test that if that once API version is there, it doesn't need to query again", async function () {
         await startST();
         ST.init({
@@ -106,6 +108,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert(verifyState === undefined);
     });
 
+    // Check that rid is added to the header iff it's a "/recipe" || "/recipe/*" request.
     it("test that rid is added to the header if it's a recipe request", async function () {
         await startST();
         ST.init({

@@ -61,6 +61,12 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
         await cleanST();
     });
 
+    /*
+     * generate token API:
+     *      - email validation checks
+     *      - non existent email should return "OK" with a pause > 300MS
+     *      - check that the generated password reset link is correct
+     */
     it("test email validation checks in generate token API", async function () {
         await startST();
         STExpress.init({
@@ -168,6 +174,13 @@ describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function
         assert(ridInfo.startsWith("rid=emailpassword"));
     });
 
+    /*
+     * password reset API:
+     *        - password validation checks
+     *        - token is missing from input
+     *        - invalid token in input
+     *        - input is valid, check that password has changed (call sign in)
+     */
     it("test password validation", async function () {
         await startST();
         STExpress.init({

@@ -59,6 +59,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await cleanST();
     });
 
+    // check if output headers and set cookies for create session is fine
     it("test that output headers and set cookie for create session is fine", async function () {
         await startST();
         SuperTokens.init({
@@ -114,6 +115,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(cookies.frontToken !== undefined);
     });
 
+    // check if output headers and set cookies for refresh session is fine
     it("test that output headers and set cookie for refresh session is fine", async function () {
         await startST();
         SuperTokens.init({
@@ -184,6 +186,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(cookies.frontToken !== undefined);
     });
 
+    // check if input cookies are missing, an appropriate error is thrown
     // Failure condition: if valid cookies are set in the refresh call the test will fail
     it("test that if input cookies are missing, an appropriate error is thrown", async function () {
         await startST();
@@ -237,6 +240,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(JSON.parse(res2.text).message === "unauthorised");
     });
 
+    // check if input cookies are there, no error is thrown
     // Failure condition: if cookies are no set in the refresh call the test will fail
     it("test that if input cookies are there, no error is thrown", async function () {
         await startST();

@@ -45,6 +45,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         await cleanST();
     });
 
+    // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test default config for emailpassword module", async function () {
         await startST();
@@ -140,6 +141,12 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert(emailpassword.config.signOutFeature.disableDefaultImplementation);
     });
 
+    /*
+     * test validateAndNormaliseUserInput for emailpassword
+     *         - No email / passord validators given should add them
+     *         - Giving optional true in email / password field should be ignored
+     *         - Check that the default password and email validators work fine
+     */
     it("test that no email/password validators given should add them", async function () {
         await startST();
         STExpress.init({

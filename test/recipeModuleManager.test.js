@@ -59,6 +59,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await cleanST();
     });
 
+    // Check that querier has been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that querier has been initiated when we call supertokens.init", async function () {
         await startST();
@@ -87,6 +88,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await Querier.getInstanceOrThrowError();
     });
 
+    // Check that modules have been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that modules have been initiated when we call supertokens.init", async function () {
         await startST();
@@ -123,6 +125,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await SessionRecipe.getInstanceOrThrowError();
         await EmailPasswordRecipe.getInstanceOrThrowError();
     });
+
+    /* 
+        Test various inputs to routing (if it accepts or not)
+        - including when the base path is "/"
+        - with and without a rId
+        - where we do not have to handle it and it skips it (with / without rId)
+    */
 
     //Failure condition: Tests will fail is using the incorrect base path
     it("test various inputs to routing with default base path", async function () {
@@ -357,6 +366,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(r1.text === "success TestRecipe /hello");
     });
 
+    // Test various inputs to errorHandler (if it accepts or not)
     it("test various inputs to errorHandler", async function () {
         await startST();
 
@@ -414,7 +424,8 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(r1.body.message === "Bad input error from TestRecipe");
     });
 
-    it("Error thrown from APIs implemented by recipes must not go unhandled", async function () {
+    // Error thrown from APIs implemented by recipes must not go unhandled
+    it("test that error thrown from APIs implemented by recipes must not go unhandled", async function () {
         await startST();
 
         ST.init({
@@ -470,6 +481,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(JSON.parse(r1).message === "success");
     });
 
+    // Disable a default route, and then implement your own API and check that that gets called
     // Failure condition: in testRecipe1 if the disabled value for the /default-route-disabled is set to false, the test will fail
     it("test if you diable a default route, and then implement your own API, your own api is called", async function () {
         await startST();
@@ -511,6 +523,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(r1 === "user defined api");
     });
 
+    // If an error handler in a recipe throws an error, that error next to go to the user's error handler
     it("test if the error handler in a recipe throws an error, it goes to the user's error handler", async function () {
         await startST();
 
@@ -553,6 +566,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         assert(r1 === "user error handler");
     });
 
+    // Test getAllCORSHeaders
     it("test the getAllCORSHeaders function", async function () {
         await startST();
 

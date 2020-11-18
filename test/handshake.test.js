@@ -35,6 +35,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
         await cleanST();
     });
 
+    // test that once the info is loaded, it doesn't query again
     it("test that once the info is loaded, it doesn't querry again", async function () {
         await startST();
         ST.init({

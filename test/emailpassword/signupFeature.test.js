@@ -84,7 +84,7 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
         await cleanST();
     });
 
-    // * TODO: check if disableDefaultImplementation is true, the default signup API does not work - you get a 404
+    // * check if disableDefaultImplementation is true, the default signup API does not work - you get a 404
     it("test that if disableDefaultImplementation is true, the default signup API does not work", async function () {
         await startST();
 
@@ -118,10 +118,10 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
     });
 
     /*
-    TODO: test signUpAPI for:
-    *        - it works when the input is fine (sign up, get user id, get email of that user and check the input email is same as the one used for sign up)
-    *        - throws an error in case of duplicate email.
-    */
+     * test signUpAPI for:
+     *        - it works when the input is fine (sign up, get user id, get email of that user and check the input email is same as the one used for sign up)
+     *        - throws an error in case of duplicate email.
+     */
 
     it("test signUpAPI works when input is fine", async function () {
         await startST();
@@ -218,7 +218,7 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
         );
     });
 
-    /* TODO: pass a bad input to the /signup API and test that it throws a 400 error.
+    /* pass a bad input to the /signup API and test that it throws a 400 error.
      *        - Not a JSON
      *        - No POST body
      *        - Input is JSON, but wrong structure.
@@ -379,47 +379,6 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
         assert(badInputResponse.message === "formFields must be an array");
     });
 
-    it("test bad input, formFields is not an array in /signup API", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let badInputResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: {
-                        randomKey: "randomValue",
-                    },
-                })
-                .expect(400)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(badInputResponse.message === "formFields must be an array");
-    });
-
     it("test bad input, formField elements have no id or no value field in /signup API", async function () {
         await startST();
 
@@ -466,7 +425,7 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
         assert(badInputResponse.message === "All elements of formFields must contain an 'id' and 'value' field");
     });
 
-    //* TODO: Make sure that a successful sign up yields a session
+    //* Make sure that a successful sign up yields a session
     it("test that a successful signup yields a session", async function () {
         await startST();
         STExpress.init({
@@ -505,7 +464,7 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
     });
 
     /*
-     * TODO: providing the handleCustomFormFieldsPostSignUp should work:
+     * providing the handleCustomFormFieldsPostSignUp should work:
      *        - If not provided by the user, it should not result in an error
      *        - If provided by the user, and custom fields are there, only those should be sent
      *        - If provided by the user, and no custom fields are there, then the formFields param must sbe empty
@@ -706,7 +665,7 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
         assert(customFormFields.length === 0);
     });
 
-    /* TODO: formField validation testing:
+    /* formField validation testing:
      *        - Provide formFields in config but not in input to signup and see error about it being missing
      *        - Good test case without optional
      *        - Bad test case without optional (something is missing, and it's not optional)
@@ -935,6 +894,7 @@ describe(`signupFeature: ${printPath("[test/signupFeature.test.js]")}`, function
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);

@@ -45,6 +45,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         await cleanST();
     });
 
+    // test various inputs for appInfo
     // Failure condition: passing data of invalid type/ syntax to appInfo
     it("test values for optional inputs for appInfo", async function () {
         await startST();
@@ -171,6 +172,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         }
     });
 
+    // test using zero, one and two recipe modules
     // Failure condition: initial supertokens with the incorrect number of modules as specified in the checks
     it("test using zero, one and two recipe modules", async function () {
         await startST();
@@ -233,6 +235,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         }
     });
 
+    // test config for session module
     // Failure condition: passing data of invalid type/ syntax to the modules config
     it("test config for session module", async function () {
         await startST();
