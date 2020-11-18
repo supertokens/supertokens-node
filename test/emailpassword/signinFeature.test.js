@@ -196,7 +196,6 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         app.use(STExpress.errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
-        console.log(signUpResponse);
         assert(JSON.parse(signUpResponse.text).status === "OK");
 
         let invalidEmailResponse = await new Promise((resolve) =>
