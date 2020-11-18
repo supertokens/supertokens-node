@@ -1,4 +1,4 @@
-spec: test/emailpassword/signinFeature.test.js
+spec: test/**/*.test.js
 exit: true
 slow: 10000
 timeout: 20000
