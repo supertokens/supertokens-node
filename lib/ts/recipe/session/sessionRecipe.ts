@@ -36,6 +36,7 @@ import { handleRefreshAPI } from "./api";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { normaliseHttpMethod } from "../../utils";
+import { PROCESS_STATE, ProcessState } from "../../processState";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -144,6 +145,7 @@ export default class SessionRecipe extends RecipeModule {
 
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined) {
+            ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.getQuerier().sendPostRequest(
                 new NormalisedURLPath(this.getRecipeId(), "/recipe/handshake"),
                 {}

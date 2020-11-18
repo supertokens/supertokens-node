@@ -22,11 +22,14 @@ let { normaliseURLPathOrThrowError } = require("../lib/build/normalisedURLPath")
 let { normaliseURLDomainOrThrowError } = require("../lib/build/normalisedURLDomain");
 let { normaliseSessionScopeOrThrowError } = require("../lib/build/recipe/session/utils");
 const { Querier } = require("../lib/build/querier");
+let SuperTokens = require("../lib/build/supertokens").default;
+let EmailPassword = require("../lib/build/recipe/emailpassword");
+let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 
 /**
- * TODO: test various inputs for appInfo
- * TODO: test using zero, one and two recipe modules
- * TODO: test config for session module
+ * TODO: test various inputs for appInfo (done)
+ * TODO: test using zero, one and two recipe modules (done)
+ * TODO: test config for session module (done)
  * TODO: (Later) test config for faunadb session module
  */
 
@@ -40,6 +43,228 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    // test various inputs for appInfo
+    // Failure condition: passing data of invalid type/ syntax to appInfo
+    it("test values for optional inputs for appInfo", async function () {
+        await startST();
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+            assert(SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/auth");
+            assert(SuperTokens.getInstanceOrThrowError().appInfo.websiteBasePath.getAsStringDangerous() === "/auth");
+
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/test");
+            assert(SuperTokens.getInstanceOrThrowError().appInfo.websiteBasePath.getAsStringDangerous() === "/test1");
+
+            resetAll();
+        }
+    });
+
+    it("test values for compulsory inputs for appInfo", async function () {
+        await startST();
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [Session.init()],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== STExpress.Error.GENERAL_ERROR ||
+                    err.message !==
+                        "Please provide your apiDomain inside the appInfo object when calling supertokens.init"
+                ) {
+                    throw err;
+                }
+            }
+
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [Session.init()],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== STExpress.Error.GENERAL_ERROR ||
+                    err.message !==
+                        "Please provide your appName inside the appInfo object when calling supertokens.init"
+                ) {
+                    throw err;
+                }
+            }
+
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                    },
+                    recipeList: [Session.init()],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== STExpress.Error.GENERAL_ERROR ||
+                    err.message !==
+                        "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
+                ) {
+                    throw err;
+                }
+            }
+
+            resetAll();
+        }
+    });
+
+    // test using zero, one and two recipe modules
+    // Failure condition: initial supertokens with the incorrect number of modules as specified in the checks
+    it("test using zero, one and two recipe modules", async function () {
+        await startST();
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                });
+                assert(false);
+            } catch (err) {
+                if (err.message !== "Please provide at least one recipe to the supertokens.init function call") {
+                    throw err;
+                }
+            }
+
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+            SessionRecipe.getInstanceOrThrowError();
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 1);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init(), EmailPassword.init()],
+            });
+            SessionRecipe.getInstanceOrThrowError();
+            EmailPasswordRecipe.getInstanceOrThrowError();
+            assert(SuperTokens.getInstanceOrThrowError().recipeModules.length === 2);
+            resetAll();
+        }
+    });
+
+    // test config for session module
+    // Failure condition: passing data of invalid type/ syntax to the modules config
+    it("test config for session module", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    cookieDomain: "testDomain",
+                    sessionExpiredStatusCode: 111,
+                    sessionRefreshFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                    cookieSecure: true,
+                }),
+            ],
+        });
+        assert(SessionRecipe.getInstanceOrThrowError().config.cookieDomain === "testdomain");
+        assert(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode === 111);
+        assert(
+            SessionRecipe.getInstanceOrThrowError().config.sessionRefreshFeature.disableDefaultImplementation === true
+        );
+        assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
     });
 
     it("various sameSite values", async function () {
@@ -128,6 +353,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                         }),
                     ],
                 });
+                assert(false);
             } catch (err) {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||
@@ -157,6 +383,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                         }),
                     ],
                 });
+                assert(false);
             } catch (err) {
                 if (
                     err.type !== STExpress.Error.GENERAL_ERROR ||

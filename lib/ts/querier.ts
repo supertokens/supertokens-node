@@ -19,6 +19,7 @@ import { cdiSupported } from "./version";
 import STError from "./error";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
+import { PROCESS_STATE, ProcessState } from "./processState";
 
 export class Querier {
     private static initCalled = false;
@@ -41,6 +42,7 @@ export class Querier {
         if (Querier.apiVersion !== undefined) {
             return Querier.apiVersion;
         }
+        ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
         let response = await this.sendRequestHelper(
             new NormalisedURLPath(this.rId, "/apiversion"),
             "GET",

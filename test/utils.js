@@ -14,6 +14,7 @@
  */
 const { exec } = require("child_process");
 const nock = require("nock");
+const request = require("supertest");
 let fs = require("fs");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
@@ -289,4 +290,30 @@ module.exports.constants = {
     AUTH0_CLIENT_SECRET: "46n7WEAScmrHXukA_w6v1C8uYlVXPvAqEwu5eAyJRD5Wu951BHhiuE_0cQpW5GiV",
     TEST_ID_TOKEN:
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+};
+
+module.exports.signUPRequest = async function (app, email, password) {
+    return new Promise((resolve) =>
+        request(app)
+            .post("/auth/signup")
+            .send({
+                formFields: [
+                    {
+                        id: "password",
+                        value: password,
+                    },
+                    {
+                        id: "email",
+                        value: email,
+                    },
+                ],
+            })
+            .end((err, res) => {
+                if (err) {
+                    resolve(undefined);
+                } else {
+                    resolve(res);
+                }
+            })
+    );
 };

@@ -20,10 +20,10 @@ let { Querier } = require("../lib/build/querier");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
+let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 
 /**
- *
- * TODO: check that disabling default API actually disables it (for session)
+ * TODO: check that disabling default API actually disables it (for session) (done)
  * TODO: (Later) check that disabling default API actually disables it (for emailpassword)
  */
 
@@ -37,6 +37,47 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    // check that disabling default API actually disables it (for session)
+    //Failure condition: setting the sessionRefreshFeatures disableDefaultImplementation to false will cause the test to fail
+    it("test disabling default API actually disables it", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    sessionRefreshFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(SuperTokens.middleware());
+        app.use(SuperTokens.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 404);
     });
 
     it("test session verify middleware", async function () {

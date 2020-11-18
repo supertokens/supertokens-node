@@ -36,7 +36,7 @@ export default async function passwordReset(recipeInstance: Recipe, req: Request
     let newPassword = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
 
     let token = req.body.token;
-    if (typeof token === undefined) {
+    if (token === undefined) {
         throw new STError(
             {
                 type: STError.BAD_INPUT_ERROR,

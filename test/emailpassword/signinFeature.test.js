@@ -13,6 +13,33 @@
  * under the License.
  */
 
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    signUPRequest,
+    extractInfoFromResponse,
+} = require("../utils");
+let STExpress = require("../../");
+let Session = require("../../recipe/session");
+let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
+let assert = require("assert");
+let { ProcessState } = require("../../lib/build/processState");
+let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
+let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
+let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
+const { Querier } = require("../../lib/build/querier");
+let EmailPassword = require("../../recipe/emailpassword");
+let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
+let utils = require("../../lib/build/recipe/emailpassword/utils");
+const express = require("express");
+const request = require("supertest");
+const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
+
 /**
  * TODO: check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
  * TODO: test signInAPI for:
@@ -39,3 +66,946 @@
  *        - User does not exist
  *        - User exists
  */
+
+describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function () {
+    beforeEach(async function () {
+        await killAllST();
+        await setupST();
+        ProcessState.getInstance().reset();
+    });
+
+    after(async function () {
+        await killAllST();
+        await cleanST();
+    });
+
+    // check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
+    /*
+    Failure condition:
+    Set  disableDefaultImplementation to false in the signInFeature
+    */
+    it("test that disableDefaultImplementation is true, the default signin API does not work", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signInFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 404);
+    });
+
+    /*
+     * test signInAPI for:
+     *        - it works when the input is fine (sign up, and then sign in and check you get the user's info)
+     *        - throws an error if the email does not match
+     *        - throws an error if the password is incorrect
+     */
+
+    /*
+    Failure condition:
+    Setting  invalid email or password values in the request body when sending a request to /signin 
+    */
+    it("test singinAPI works when input is fine", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        let signUpUserInfo = JSON.parse(response.text).user;
+
+        let userInfo = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text).user);
+                    }
+                })
+        );
+        assert(userInfo.id === signUpUserInfo.id);
+        assert(userInfo.email === signUpUserInfo.email);
+    });
+
+    /*
+    Setting the email value in form field as random@gmail.com causes the test to fail
+    */
+    it("test singinAPI throws an error when email does not match", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let invalidEmailResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "ran@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(invalidEmailResponse.status === "WRONG_CREDENTIALS_ERROR");
+    });
+
+    // throws an error if the password is incorrect
+    /*
+    passing the correct password "validpass123" causes the test to fail
+    */
+    it("test singinAPI throws an error if password is incorrect", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let invalidPasswordResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass12345",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(invalidPasswordResponse.status === "WRONG_CREDENTIALS_ERROR");
+    });
+
+    /*
+     * pass a bad input to the /signin API and test that it throws a 400 error.
+     *        - Not a JSON
+     *        - No POST body
+     *        - Input is JSON, but wrong structure.
+     */
+    /*
+    Failure condition:
+    setting valid JSON body to /singin API
+    */
+    it("test bad input, not a JSON to /signin API", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let badInputResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send("hello")
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(badInputResponse.message === "Missing input param: formFields");
+    });
+
+    /*
+    Failure condition:
+    setting valid formFields JSON body to /singin API
+    */
+    it("test bad input, no POST body to /signin API", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let badInputResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(badInputResponse.message === "Missing input param: formFields");
+    });
+
+    /*
+    Failure condition:
+    setting valid JSON body to /singin API
+    */
+    it("test bad input, input is Json but incorrect structure to /signin API", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let badInputResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    randomKey: "randomValue",
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(badInputResponse.message === "Missing input param: formFields");
+    });
+
+    // Make sure that a successful sign in yields a session
+    /*
+    Passing invalid credentials to the /signin API fails the test
+    */
+    it("test that a successfull signin yields a session", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let cookies = extractInfoFromResponse(response);
+        assert(cookies.accessToken !== undefined);
+        assert(cookies.refreshToken !== undefined);
+        assert(cookies.antiCsrf !== undefined);
+        assert(cookies.idRefreshTokenFromHeader !== undefined);
+        assert(cookies.idRefreshTokenFromCookie !== undefined);
+        assert(cookies.accessTokenExpiry !== undefined);
+        assert(cookies.refreshTokenExpiry !== undefined);
+        assert(cookies.idRefreshTokenExpiry !== undefined);
+        assert(cookies.refreshToken !== undefined);
+        assert(cookies.accessTokenDomain === undefined);
+        assert(cookies.refreshTokenDomain === undefined);
+        assert(cookies.idRefreshTokenDomain === undefined);
+        assert(cookies.frontToken !== undefined);
+    });
+
+    /*
+     * formField validation testing:
+     *        - Provide custom email validators to sign up and make sure they are applied to sign in
+     *        - Provide custom password validators to sign up and make sure they are not applied to sign in.
+     *        - Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
+     *        - Test email field validation error
+     *        - Input formFields has no email field
+     *        - Input formFields has no password field
+     *        - Provide invalid (wrong syntax) email and wrong password, and you should get form field error
+     */
+    /*
+    having the email start with "test" (requierment of the custom validator) will cause the test to fail
+    */
+    it("test custom email validators to sign up and make sure they are applied to sign in", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "email",
+                                validate: (value) => {
+                                    if (value.startsWith("test")) {
+                                        return undefined;
+                                    }
+                                    return "email does not start with test";
+                                },
+                            },
+                        ],
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "testrandom@gmail.com", "validpass123");
+
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                    }
+                    resolve(JSON.parse(res.text));
+                })
+        );
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields[0].error === "email does not start with test");
+        assert(response.formFields[0].id === "email");
+    });
+
+    //- Provide custom password validators to sign up and make sure they are not applied to sign in.
+    /*
+    sending the correct password "valid" will cause the test to fail
+    */
+    it("test custom password validators to sign up and make sure they are applied to sign in", async function () {
+        await startST();
+
+        let failsValidatorCtr = 0;
+        let passesValidatorCtr = 0;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "password",
+                                validate: (value) => {
+                                    if (value.length <= 5) {
+                                        passesValidatorCtr++;
+                                        return undefined;
+                                    }
+                                    failsValidatorCtr++;
+                                    return "password is greater than 5 characters";
+                                },
+                            },
+                        ],
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "valid");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(passesValidatorCtr === 1);
+        assert(failsValidatorCtr === 0);
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "invalid",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                    }
+                    resolve(JSON.parse(res.text));
+                })
+        );
+
+        assert(response.status === "WRONG_CREDENTIALS_ERROR");
+        assert(failsValidatorCtr === 0);
+        assert(passesValidatorCtr === 1);
+    });
+
+    // Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
+    /*
+    sending the correct password to the /signin API will cause the test to fail
+    */
+    it("test password field validation error", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "invalidpass",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                    }
+                    resolve(JSON.parse(res.text));
+                })
+        );
+        assert(response.status === "WRONG_CREDENTIALS_ERROR");
+    });
+
+    // Test email field validation error
+    //sending the correct email to the /signin API will cause the test to fail
+
+    it("test email field validation error", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "randomgmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                    }
+                    resolve(JSON.parse(res.text));
+                })
+        );
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields[0].error === "Email is invalid");
+        assert(response.formFields[0].id === "email");
+    });
+
+    // Input formFields has no email field
+    //passing the email field in formFields will cause the test to fail
+    it("test formFields has no email field", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                    ],
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                    }
+                    resolve(JSON.parse(res.text));
+                })
+        );
+        assert(response.message === "Are you sending too many / too few formFields?");
+    });
+
+    // Input formFields has no password field
+    //passing the password field in formFields will cause the test to fail
+    it("test formFields has no password field", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(400)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                    }
+                    resolve(JSON.parse(res.text));
+                })
+        );
+        assert(response.message === "Are you sending too many / too few formFields?");
+    });
+
+    // Provide invalid (wrong syntax) email and wrong password, and you should get form field error
+    /*
+    passing email with valid syntax and correct password will cause the test to fail
+    */
+    it("test invalid email and wrong password", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "invalid",
+                        },
+                        {
+                            id: "email",
+                            value: "randomgmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                    }
+                    resolve(JSON.parse(res.text));
+                })
+        );
+        assert(response.status === "FIELD_ERROR");
+        assert(response.formFields.length === 1);
+        assert(response.formFields[0].error === "Email is invalid");
+        assert(response.formFields[0].id === "email");
+    });
+
+    /*
+     * Test getUserByEmail
+     *    - User does not exist
+     *    - User exists
+     */
+    it("test getUserByEmail when user does not exist", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
+
+        assert((await emailpassword.getUserByEmail("random@gmail.com")) === undefined);
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpUserInfo = JSON.parse(signUpResponse.text).user;
+        let userInfo = await emailpassword.getUserByEmail("random@gmail.com");
+
+        assert(userInfo.email === signUpUserInfo.email);
+        assert(userInfo.id === signUpUserInfo.id);
+    });
+
+    /*
+     * Test getUserById
+     *        - User does not exist
+     *        - User exists
+     */
+    it("test getUserById when user does not exist", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
+
+        assert((await emailpassword.getUserById("randomID")) === undefined);
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        let signUpUserInfo = JSON.parse(signUpResponse.text).user;
+        let userInfo = await emailpassword.getUserById(signUpUserInfo.id);
+
+        assert(userInfo.email === signUpUserInfo.email);
+        assert(userInfo.id === signUpUserInfo.id);
+    });
+});

@@ -28,9 +28,11 @@ const request = require("supertest");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
+let { Querier } = require("../lib/build/querier");
+const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 
 /**
- * TODO: check if disableDefaultImplementation is true, the default refresh API does not work - you get a 404
+ * TODO: check if disableDefaultImplementation is true, the default refresh API does not work - you get a 404 (done)
  */
 
 describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
@@ -43,6 +45,67 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    // check if disableDefaultImplementation is true, the default refresh API does not work - you get a 404
+    //Failure condition: if disableDefaultImplementation is false, the test will fail
+    it("test that if disableDefaultImplementation is true the default refresh API does not work", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    sessionRefreshFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                }),
+            ],
+        });
+        const app = express();
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/session/refresh")
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(res2.status === 404);
     });
 
     //- check for token theft detection

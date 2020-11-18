@@ -55,7 +55,7 @@ export function normaliseInputAppInfoOrThrowError(rId: string, appInfo: AppInfo)
     if (appInfo.appName === undefined) {
         throw new STError({
             type: STError.GENERAL_ERROR,
-            payload: new Error("Please provide your appNmae inside the appInfo object when calling supertokens.init"),
+            payload: new Error("Please provide your appName inside the appInfo object when calling supertokens.init"),
             rId: "",
         });
     }
