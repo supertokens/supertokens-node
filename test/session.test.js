@@ -35,10 +35,7 @@ let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 
 /* TODO:
-- check if output headers and set cookies for create session is fine (done)
-- check if output headers and set cookies for refresh session is fine (done)
 - check that if signing key changes, things are still fine
-- check if input cookies are missing, an appropriate error is thrown (done)
 - the opposite of the above condition
 - calling createNewSession twice, should overwrite the first call (in terms of cookies)
 - calling createNewSession in the case of unauthorised error, should create a proper session

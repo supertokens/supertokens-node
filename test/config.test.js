@@ -27,9 +27,6 @@ let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 
 /**
- * TODO: test various inputs for appInfo (done)
- * TODO: test using zero, one and two recipe modules (done)
- * TODO: test config for session module (done)
  * TODO: (Later) test config for faunadb session module
  */
 

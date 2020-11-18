@@ -41,14 +41,6 @@ const express = require("express");
 const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 
-/**
- * TODO: Test the default route and it should revoke the session (with clearing the cookies)
- * TODO: Disable default route and test that that API returns 404
- * TODO: Call the API without a session and it should return "OK"
- * TODO: Call the API without an expired access token session, and it should return TRY_REFRESH_TOKEN
- * TODO: Call the API with an expired access and refresh token, and it should return "OK" (with clearing the cookies).
- */
-
 describe(`signoutFeature: ${printPath("[test/signoutFeature.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

@@ -40,33 +40,6 @@ const express = require("express");
 const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 
-/**
- * TODO: check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
- * TODO: test signInAPI for:
- *        - it works when the input is fine (sign up, and then sign in and check you get the user's info)
- *        - throws an error if the email does not match
- *        - throws an error if the password is incorrect
- * TODO: pass a bad input to the /signin API and test that it throws a 400 error.
- *        - Not a JSON
- *        - No POST body
- *        - Input is JSON, but wrong structure.
- * TODO: Make sure that a successful sign in yields a session
- * TODO: formField validation testing:
- *        - Provide custom email validators to sign up and make sure they are applied to sign in
- *        - Provide custom password validators to sign up and make sure they are applied to sign in. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
- *        - Test password field validation error. The result should not be a FORM_FIELD_ERROR, but should be WRONG_CREDENTIALS_ERROR
- *        - Test email field validation error
- *        - Input formFields has no email field
- *        - Input formFields has no password field
- *        - Provide invalid (wrong syntax) email and wrong password, and you should get form field error
- * TODO: Test getUserByEmail
- *        - User does not exist
- *        - User exists
- * TODO: Test getUserById
- *        - User does not exist
- *        - User exists
- */
-
 describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
