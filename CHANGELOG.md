@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2020-11-18
+### Added
+- EmailPassword login features
+   - https://github.com/supertokens/supertokens-node/pull/29
+
+### Changed
+- Restructures sessions to be its own recipe
+- Other changes:
+   - https://github.com/supertokens/supertokens-node/pull/24
+   - https://github.com/supertokens/supertokens-node/pull/25
+   - https://github.com/supertokens/supertokens-node/pull/45
+
 ## [2.5.0] - 2020-09-19
 ### Added
 - FaunaDB integration
