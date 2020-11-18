@@ -688,13 +688,13 @@ class TestRecipe extends RecipeModule {
         }
     }
 
-    getAllCORSHeaders = () => {
+    getAllCORSHeaders() {
         return [];
-    };
+    }
 
-    static reset = () => {
+    static reset() {
         this.instance = undefined;
-    };
+    }
 }
 
 class TestRecipe1 extends RecipeModule {
