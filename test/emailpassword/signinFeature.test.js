@@ -40,7 +40,7 @@ const express = require("express");
 const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 
-describe(`signinFeature: ${printPath("[test/signinFeature.test.js]")}`, function () {
+describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

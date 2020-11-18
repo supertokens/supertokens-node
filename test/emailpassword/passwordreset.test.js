@@ -43,7 +43,7 @@ const request = require("supertest");
  *        - (later) token is not of type string from input
  */
 
-describe(`passwordreset: ${printPath("[test/passwordreset.test.js]")}`, function () {
+describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

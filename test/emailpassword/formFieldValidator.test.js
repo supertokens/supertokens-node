@@ -17,7 +17,7 @@ let { defaultPasswordValidator, defaultEmailValidator } = require("../../lib/bui
 let assert = require("assert");
 const { printPath } = require("../utils");
 
-describe(`formFieldValidator: ${printPath("[test/formFieldValidator.test.js]")}`, function () {
+describe(`formFieldValidator: ${printPath("[test/emailpassword/formFieldValidator.test.js]")}`, function () {
     it("checking email validator", async function () {
         assert((await defaultEmailValidator("test@supertokens.io")) === undefined);
         assert((await defaultEmailValidator("nsdafa@gmail.com")) === undefined);

@@ -26,7 +26,7 @@ let EmailPassword = require("../../recipe/emailpassword");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let utils = require("../../lib/build/recipe/emailpassword/utils");
 
-describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
+describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

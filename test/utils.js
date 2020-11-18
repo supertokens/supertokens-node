@@ -293,7 +293,7 @@ module.exports.constants = {
 };
 
 module.exports.signUPRequest = async function (app, email, password) {
-    return new Promise((resolve) =>
+    return new Promise(function (resolve) {
         request(app)
             .post("/auth/signup")
             .send({
@@ -314,6 +314,6 @@ module.exports.signUPRequest = async function (app, email, password) {
                 } else {
                     resolve(res);
                 }
-            })
-    );
+            });
+    });
 };
