@@ -26,6 +26,7 @@ import {
     GENERATE_PASSWORD_RESET_TOKEN_API,
     PASSWORD_RESET_API,
     SIGN_OUT_API,
+    EMAIL_EXISTS_API,
 } from "./constants";
 import {
     signUp as signUpAPIToCore,
@@ -41,6 +42,7 @@ import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
 import passwordResetAPI from "./api/passwordReset";
 import signOutAPI from "./api/signout";
 import { send200Response } from "../../utils";
+import emailExistsAPI from "./api/emailExists";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -132,6 +134,12 @@ export default class Recipe extends RecipeModule {
                 id: SIGN_OUT_API,
                 disabled: this.config.signOutFeature.disableDefaultImplementation,
             },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), EMAIL_EXISTS_API),
+                id: EMAIL_EXISTS_API,
+                disabled: this.config.signUpFeature.disableDefaultImplementation,
+            },
         ];
     };
 
@@ -144,8 +152,10 @@ export default class Recipe extends RecipeModule {
             return await generatePasswordResetTokenAPI(this, req, res, next);
         } else if (id === SIGN_OUT_API) {
             return await signOutAPI(this, req, res, next);
-        } else {
+        } else if (id === PASSWORD_RESET_API) {
             return await passwordResetAPI(this, req, res, next);
+        } else {
+            return await emailExistsAPI(this, req, res, next);
         }
     };
 

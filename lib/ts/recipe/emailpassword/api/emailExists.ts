@@ -1,4 +1,3 @@
-"use strict";
 /* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,13 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FORM_FIELD_PASSWORD_ID = "password";
-exports.FORM_FIELD_EMAIL_ID = "email";
-exports.SIGN_UP_API = "/signup";
-exports.SIGN_IN_API = "/signin";
-exports.GENERATE_PASSWORD_RESET_TOKEN_API = "/user/password/reset/token";
-exports.PASSWORD_RESET_API = "/user/password/reset";
-exports.SIGN_OUT_API = "/signout";
-exports.EMAIL_EXISTS_API = "/email/exists";
-//# sourceMappingURL=constants.js.map
+
+import Recipe from "../recipe";
+import { Request, Response, NextFunction } from "express";
+import { FORM_FIELD_PASSWORD_ID } from "../constants";
+import { send200Response } from "../../../utils";
+import { validateFormFieldsOrThrowError } from "./utils";
+import STError from "../error";
+
+export default async function emailExists(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
+    // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
+    // TODO:
+}
