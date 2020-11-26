@@ -127,18 +127,29 @@ export function send200Response(res: express.Response, responseJson: any) {
 export async function assertThatBodyParserHasBeenUsed(rId: string, req: express.Request, res: express.Response) {
     // according to https://github.com/supertokens/supertokens-node/issues/33
     let method = normaliseHttpMethod(req.method);
-    if (method !== "post" && method !== "put") {
-        return;
-    }
-    if (req.body === undefined) {
-        let jsonParser = bodyParser.json();
-        let err = await new Promise((resolve) => jsonParser(req, res, resolve));
-        if (err !== undefined) {
-            throw new STError({
-                type: STError.BAD_INPUT_ERROR,
-                message: "API input error: Please make sure to pass a valid JSON input in thr request body",
-                rId,
-            });
+    if (method === "post" || method === "put") {
+        if (req.body === undefined) {
+            let jsonParser = bodyParser.json();
+            let err = await new Promise((resolve) => jsonParser(req, res, resolve));
+            if (err !== undefined) {
+                throw new STError({
+                    type: STError.BAD_INPUT_ERROR,
+                    message: "API input error: Please make sure to pass a valid JSON input in thr request body",
+                    rId,
+                });
+            }
+        }
+    } else if (method === "delete" || method === "get") {
+        if (req.query === undefined) {
+            let parser = bodyParser.urlencoded({ extended: true });
+            let err = await new Promise((resolve) => parser(req, res, resolve));
+            if (err !== undefined) {
+                throw new STError({
+                    type: STError.BAD_INPUT_ERROR,
+                    message: "API input error: Please make sure to pass valid URL query params",
+                    rId,
+                });
+            }
         }
     }
 }
