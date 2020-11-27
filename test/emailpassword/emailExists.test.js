@@ -96,7 +96,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         assert(Object.keys(response).length === 2);
         assert(response.status === "OK");
-        assert(response.exists);
+        assert(response.exists === true);
     });
 
     //email does not exist
@@ -138,7 +138,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         assert(Object.keys(response).length === 2);
         assert(response.status === "OK");
-        assert(!response.exists);
+        assert(response.exists === false);
     });
 
     //pass an invalid (syntactically) email and check that you get exists: false
@@ -184,7 +184,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         assert(Object.keys(response).length === 2);
         assert(response.status === "OK");
-        assert(!response.exists);
+        assert(response.exists === false);
     });
 
     //pass an unnormalised email, and check that you get exists true
@@ -230,7 +230,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         assert(Object.keys(response).length === 2);
         assert(response.status === "OK");
-        assert(response.exists);
+        assert(response.exists === true);
     });
 
     //do not pass email
