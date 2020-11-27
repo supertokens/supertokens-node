@@ -27,4 +27,4 @@ export const PASSWORD_RESET_API = "/user/password/reset";
 
 export const SIGN_OUT_API = "/signout";
 
-export const EMAIL_EXISTS_API = "/email/exists";
+export const SIGNUP_EMAIL_EXISTS_API = "/signup/email/exists";

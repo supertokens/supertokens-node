@@ -26,7 +26,7 @@ import {
     GENERATE_PASSWORD_RESET_TOKEN_API,
     PASSWORD_RESET_API,
     SIGN_OUT_API,
-    EMAIL_EXISTS_API,
+    SIGNUP_EMAIL_EXISTS_API,
 } from "./constants";
 import {
     signUp as signUpAPIToCore,
@@ -136,8 +136,8 @@ export default class Recipe extends RecipeModule {
             },
             {
                 method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), EMAIL_EXISTS_API),
-                id: EMAIL_EXISTS_API,
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGNUP_EMAIL_EXISTS_API),
+                id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
         ];

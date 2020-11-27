@@ -80,7 +80,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         let response = await new Promise((resolve) =>
             request(app)
-                .get("/auth/email/exists")
+                .get("/auth/signup/email/exists")
                 .query({
                     email: "random@gmail.com",
                 })
@@ -122,7 +122,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         let response = await new Promise((resolve) =>
             request(app)
-                .get("/auth/email/exists")
+                .get("/auth/signup/email/exists")
                 .query({
                     email: "random@gmail.com",
                 })
@@ -168,7 +168,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         let response = await new Promise((resolve) =>
             request(app)
-                .get("/auth/email/exists")
+                .get("/auth/signup/email/exists")
                 .query({
                     email: "randomgmail.com",
                 })
@@ -214,7 +214,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         let response = await new Promise((resolve) =>
             request(app)
-                .get("/auth/email/exists")
+                .get("/auth/signup/email/exists")
                 .query({
                     email: "RaNdOm@gmail.com",
                 })
@@ -256,7 +256,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         let response = await new Promise((resolve) =>
             request(app)
-                .get("/auth/email/exists")
+                .get("/auth/signup/email/exists")
                 .query()
                 .expect(400)
                 .end((err, res) => {
@@ -297,7 +297,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         let response = await new Promise((resolve) =>
             request(app)
-                .get("/auth/email/exists")
+                .get("/auth/signup/email/exists")
                 .query({
                     email: ["test1", "test2"],
                 })
