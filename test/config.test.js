@@ -560,6 +560,12 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert(normaliseURLPathOrThrowError("", "127.0.0.1:4000/one/two") === "/one/two");
         assert(normaliseURLPathOrThrowError("", "127.0.0.1/one/two") === "/one/two");
         assert(normaliseURLPathOrThrowError("", "https://127.0.0.1:80/one/two") === "/one/two");
+
+        assert(
+            normaliseURLPathOrThrowError("", "/auth/email/exists?email=john.doe%40gmail.com") === "/auth/email/exists"
+        );
+        assert(normaliseURLPathOrThrowError("", "exists") === "/exists");
+        assert(normaliseURLPathOrThrowError("", "exists?email=john.doe%40gmail.com") === "/exists");
     });
 
     it("testing URL domain normalisation", async function () {

@@ -65,7 +65,7 @@ export function normaliseURLPathOrThrowError(rId: string, input: string): string
     // If the input contains a . it means they have given a domain name.
     // So we try assuming that they have given a domain name + path
     if (
-        (input.indexOf(".") !== -1 || input.startsWith("localhost")) &&
+        (domainGiven(input) || input.startsWith("localhost")) &&
         !input.startsWith("http://") &&
         !input.startsWith("https://")
     ) {
@@ -90,4 +90,23 @@ export function normaliseURLPathOrThrowError(rId: string, input: string): string
             payload: new Error("Please provide a valid URL path"),
         });
     }
+}
+
+function domainGiven(input: string): boolean {
+    // If no dot, return false.
+    if (input.indexOf(".") === -1) {
+        return false;
+    }
+
+    try {
+        let url = new URL(input);
+        return url.hostname.indexOf(".") !== -1;
+    } catch (ignored) {}
+
+    try {
+        let url = new URL("http://" + input);
+        return url.hostname.indexOf(".") !== -1;
+    } catch (ignored) {}
+
+    return false;
 }
