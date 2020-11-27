@@ -142,6 +142,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
 
         await new Promise((resolve) =>
             request(app)
@@ -360,6 +361,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         app.use(STExpress.errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
         let userInfo = JSON.parse(response.text).user;
 
         await new Promise((resolve) =>

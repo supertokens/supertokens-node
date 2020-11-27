@@ -77,6 +77,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
 
         let res = extractInfoFromResponse(response);
 
@@ -190,6 +191,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                 })
         );
         assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
         assert(response.header["set-cookie"] === undefined);
     });
 
@@ -219,6 +221,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
 
         let res = extractInfoFromResponse(response);
 
@@ -247,6 +250,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                     .expect(200)
                     .set("Cookie", ["sRefreshToken=" + res.refreshToken])
                     .set("anti-csrf", res.antiCsrf)
+                    .expect(200)
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -268,6 +272,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                             refreshedResponse.idRefreshTokenFromCookie,
                     ])
                     .set("anti-csrf", refreshedResponse.antiCsrf)
+                    .expect(200)
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);

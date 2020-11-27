@@ -142,6 +142,8 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
         let signUpUserInfo = JSON.parse(response.text).user;
 
         let userInfo = await new Promise((resolve) =>
@@ -197,6 +199,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let invalidEmailResponse = await new Promise((resolve) =>
             request(app)
@@ -251,6 +254,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let invalidPasswordResponse = await new Promise((resolve) =>
             request(app)
@@ -311,6 +315,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let badInputResponse = await new Promise((resolve) =>
             request(app)
@@ -354,6 +359,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let badInputResponse = await new Promise((resolve) =>
             request(app)
@@ -395,6 +401,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let badInputResponse = await new Promise((resolve) =>
             request(app)
@@ -439,6 +446,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -534,6 +542,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         let signUpResponse = await signUPRequest(app, "testrandom@gmail.com", "validpass123");
 
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -611,6 +620,8 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "valid");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
+
         assert(passesValidatorCtr === 1);
         assert(failsValidatorCtr === 0);
 
@@ -670,6 +681,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -723,6 +735,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -777,6 +790,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -825,6 +839,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -875,6 +890,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -937,6 +953,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         app.use(STExpress.errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
+
         let signUpUserInfo = JSON.parse(signUpResponse.text).user;
         let userInfo = await emailpassword.getUserByEmail("random@gmail.com");
 
@@ -975,6 +994,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         app.use(STExpress.errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
+
         let signUpUserInfo = JSON.parse(signUpResponse.text).user;
         let userInfo = await emailpassword.getUserById(signUpUserInfo.id);
 
