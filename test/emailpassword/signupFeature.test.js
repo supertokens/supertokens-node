@@ -112,6 +112,9 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         app.use(STExpress.errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
         assert(userInfo.email === "random@gmail.com");
@@ -139,11 +142,15 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         app.use(STExpress.errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
         let userInfo = JSON.parse(response.text).user;
         assert(userInfo.id !== undefined);
         assert(userInfo.email === "random@gmail.com");
 
         response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(response.status === 200);
         let responseInfo = JSON.parse(response.text);
 
         assert(responseInfo.status === "FIELD_ERROR");
@@ -174,6 +181,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         app.use(STExpress.errorHandler());
 
         let response = await signUPRequest(app, "randomgmail.com", "invalidpass");
+        assert(response.status === 200);
         let responseInfo = JSON.parse(response.text);
 
         assert(responseInfo.status === "FIELD_ERROR");
@@ -413,6 +421,8 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         app.use(STExpress.errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+        assert(signUpResponse.status === 200);
 
         let cookies = extractInfoFromResponse(signUpResponse);
         assert(cookies.accessToken !== undefined);
@@ -489,6 +499,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -558,6 +569,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -619,6 +631,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -678,6 +691,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         app.use(STExpress.errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(response.status === 400);
 
         assert(JSON.parse(response.text).message === "Are you sending too many / too few formFields?");
     });
@@ -732,6 +746,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -796,6 +811,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -907,6 +923,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(400)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -949,6 +966,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(400)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1014,6 +1032,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(400)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1083,6 +1102,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1165,6 +1185,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1214,6 +1235,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1263,6 +1285,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1312,6 +1335,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -1380,6 +1404,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         },
                     ],
                 })
+                .expect(200)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
