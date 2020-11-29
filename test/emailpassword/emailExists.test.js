@@ -53,6 +53,52 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         await cleanST();
     });
 
+    // disable the email exists API, and check that calling it returns a 404.
+    it("test that if disableDefaultImplementation is true, the default email exists API does not work", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists")
+                .query({
+                    email: "random@gmail.com",
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(response.status === 404);
+    });
+
     // email exists
     it("test good input, email exists", async function () {
         await startST();
