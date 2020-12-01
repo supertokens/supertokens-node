@@ -48,6 +48,7 @@ cd ../
 git clone git@github.com:supertokens/supertokens-auth-react.git
 cd supertokens-auth-react
 git checkout $2
+npm i -d
 cd ../supertokens-auth-react/test/server/
 npm i -d
 npm i git+https://github.com:supertokens/supertokens-node.git#$3
