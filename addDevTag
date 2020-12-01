@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# check if we need to merge master into this branch------------
+if [[ $(git log master ^HEAD) ]]; then
+    echo "You need to merge master into this branch. Exiting"
+    exit 1
+fi
+
+
 # get version------------
 version=`cat package.json | grep -e '"version":'`
 while IFS='"' read -ra ADDR; do
@@ -63,6 +70,16 @@ then
     NC='\033[0m'
     printf "${RED}The released version of this tag already exists${NC}\n"
     exit 1
+fi
+
+# add an empty commit if the user has not given a commit hash so that we are sure it's built------------
+if [ $# -eq 0 ]
+then
+    npm run build-pretty
+    git add --all
+    git commit --allow-empty -m"adding dev-v$version tag to this commit to ensure building"
+    git push
+	commit_hash=`git log --pretty=format:'%H' -n 1`
 fi
 
 

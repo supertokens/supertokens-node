@@ -137,14 +137,14 @@ then
   if [[ $branch_name == "(unnamed branch)" ]]
   then
     echo "git checkout -b forrelease"
-    echo "git merge -s ours master"
+    echo "git merge master"
     echo "git checkout master"
     echo "git merge forrelease"
     echo "git push"
     echo "git checkout forrelease"
     exit 1
   else
-    echo "git merge -s ours master"
+    echo "git merge master"
     echo "git checkout master"
     echo "git merge $branch_name"
     echo "git push"
@@ -160,14 +160,14 @@ then
   if [[ $branch_name == "(unnamed branch)" ]]
   then
     git checkout -b forrelease
-    git merge -s ours master
+    git merge master
     git checkout master
     git merge forrelease
     git push
     git checkout forrelease
     echo "Done! Please delete this branch"
   else
-    git merge -s ours master
+    git merge master
     git checkout master
     git merge $branch_name
     git push
