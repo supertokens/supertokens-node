@@ -134,6 +134,37 @@ while [ $i -lt $frontendDriverLength ]; do
         echo "test failed... exiting!"
         exit 1
     fi
+
+    rm -rf ../../supertokens-root
+
+    frontendAuthReactVersionXY=`curl -s -X GET \
+    "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion" \
+    -H 'api-version: 0'`
+    if [[ `echo $frontendAuthReactVersionXY | jq .frontend` == "null" ]]
+    then
+        echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: auth-react gave response: $frontend. Please make sure all relevant cores have been pushed."
+        exit 1
+    fi
+    frontendAuthReactVersionXY=$(echo $frontendAuthReactVersionXY | jq .frontend | tr -d '"')
+
+    frontendAuthReactInfo=`curl -s -X GET \
+    "https://api.supertokens.io/0/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendAuthReactVersionXY&name=auth-react" \
+    -H 'api-version: 0'`
+    if [[ `echo $frontendAuthReactInfo | jq .tag` == "null" ]]
+    then
+        echo "fetching latest X.Y.Z version for frontend, X.Y version: $frontendAuthReactVersionXY gave response: $frontendAuthReactInfo"
+        exit 1
+    fi
+    frontendAuthReactTag=$(echo $frontendAuthReactInfo | jq .tag | tr -d '"')
+    frontendAuthReactVersion=$(echo $frontendAuthReactInfo | jq .version | tr -d '"')
+
+    ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
+    if [[ $? -ne 0 ]]
+    then
+        echo "test failed... exiting!"
+        exit 1
+    fi
+
     someFrontendTestsRan=true
     rm -rf ../../supertokens-root
 done
