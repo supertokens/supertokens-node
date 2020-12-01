@@ -135,12 +135,14 @@ while [ $i -lt $frontendDriverLength ]; do
         exit 1
     fi
 
+    rm -rf ../../supertokens-root
+
     frontendAuthReactVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion" \
     -H 'api-version: 0'`
     if [[ `echo $frontendAuthReactVersionXY | jq .frontend` == "null" ]]
     then
-        echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: webiste gave response: $frontend. Please make sure all relevant cores have been pushed."
+        echo "fetching latest X.Y version for frontend given frontend-driver-interface X.Y version: $frontendDriverVersion, name: auth-react gave response: $frontend. Please make sure all relevant cores have been pushed."
         exit 1
     fi
     frontendAuthReactVersionXY=$(echo $frontendAuthReactVersionXY | jq .frontend | tr -d '"')

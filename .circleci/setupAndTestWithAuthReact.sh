@@ -50,7 +50,7 @@ cd supertokens-auth-react
 git checkout $2
 cd ../supertokens-auth-react/test/server/
 npm i -d
-npm i git+https://github.com:supertokens/supertokens-node.git#$2
+npm i git+https://github.com:supertokens/supertokens-node.git#$3
 cd ../react-test-app/
 npm i -d
 cd ../../
@@ -62,5 +62,3 @@ then
 fi
 rm -rf ./test/server/node_modules/supertokens-node
 git checkout HEAD -- ./test/server/package.json
-kill -15 $pid
-kill -15 $pid2
