@@ -27,6 +27,7 @@ let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe")
 let utils = require("../../lib/build/recipe/emailpassword/utils");
 const request = require("supertest");
 const express = require("express");
+let bodyParser = require("body-parser");
 
 /*
 TODO:
@@ -357,5 +358,103 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                 })
         );
         assert(response.message === "Please provide the email as a GET param");
+    });
+
+    // email exists
+    it("test good input, email exists, with bodyParser applied before", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(bodyParser.urlencoded({ extended: true }));
+        app.use(bodyParser.json());
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
+        assert(signUpResponse.status === 200);
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists")
+                .query({
+                    email: "random@gmail.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(Object.keys(response).length === 2);
+        assert(response.status === "OK");
+        assert(response.exists === true);
+    });
+
+    // email exists
+    it("test good input, email exists, with bodyParser applied after", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(bodyParser.urlencoded({ extended: true }));
+        app.use(bodyParser.json());
+
+        app.use(STExpress.errorHandler());
+
+        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
+        assert(signUpResponse.status === 200);
+        assert(JSON.parse(signUpResponse.text).status === "OK");
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists")
+                .query({
+                    email: "random@gmail.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(Object.keys(response).length === 2);
+        assert(response.status === "OK");
+        assert(response.exists === true);
     });
 });
