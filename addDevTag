@@ -20,6 +20,28 @@ while IFS='"' read -ra ADDR; do
     done
 done <<< "$version"
 
+versionLock=`head -n 3 package-lock.json | grep -e '"version":'`
+
+while IFS='"' read -ra ADDR; do
+    counter=0
+    for i in "${ADDR[@]}"; do
+        if [ $counter == 3 ]
+        then
+            versionLock=$i
+        fi
+        counter=$(($counter+1))
+    done
+done <<< "$versionLock"
+
+# check if package and package-lock versions are similar.-----------
+if ! [[ $version == $versionLock ]]
+then
+    RED='\033[0;31m'
+    NC='\033[0m' # No Color
+    printf "${RED}Difference between package-lock and package version. Please run npm install. Stopping process${NC}\n"
+    exit 1
+fi
+
 branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 branch_name="(unnamed branch)"     # detached HEAD
 
