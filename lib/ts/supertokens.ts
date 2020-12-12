@@ -56,12 +56,6 @@ export default class SuperTokens {
     static init(config: TypeInput) {
         if (SuperTokens.instance === undefined) {
             SuperTokens.instance = new SuperTokens(config);
-        } else {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                rId: "",
-                payload: new Error("SuperTokens has already been initialised. Please check your code for bugs."),
-            });
         }
     }
 

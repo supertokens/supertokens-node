@@ -47,6 +47,34 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await cleanST();
     });
 
+    it("calling init multiple times", async function () {
+        await startST();
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init(), EmailPassword.init()],
+        });
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init(), EmailPassword.init()],
+        });
+    });
+
     // Check that querier has been inited when we call supertokens.init
     // Failure condition: initalizing supertoknes before the the first try catch will fail the test
     it("test that querier has been initiated when we call supertokens.init", async function () {
