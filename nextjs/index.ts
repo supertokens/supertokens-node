@@ -13,4 +13,4 @@
  * under the License.
  */
 
-export * from '../lib/ts/helpers/nextjs';
+export * from '../lib/ts/nextjs';

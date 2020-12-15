@@ -13,17 +13,17 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("../../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
 let assert = require("assert");
 const httpMocks = require("node-mocks-http");
-let { ProcessState } = require("../../../lib/build/processState");
-let SuperTokens = require("../../../lib/build/supertokens").default;
-const Session = require("../../../lib/build/recipe/session");
-const EmailPassword = require("../../../lib/build/recipe/emailpassword");
-const supertokensMiddleware = require("../../../lib/build/helpers/nextjs").default;
+let { ProcessState } = require("../lib/build/processState");
+let SuperTokens = require("../lib/build/supertokens").default;
+const Session = require("../lib/build/recipe/session");
+const EmailPassword = require("../lib/build/recipe/emailpassword");
+const supertokensMiddleware = require("../lib/build/nextjs").supertokensMiddleware;
 const noOp = () => {};
 
-describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
+describe.only(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
     before(async function () {
         await killAllST();
         await setupST();
@@ -44,7 +44,6 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
     });
 
     after(async function () {
-        await stopST();
         await killAllST();
         await cleanST();
     });
