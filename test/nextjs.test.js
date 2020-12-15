@@ -23,7 +23,7 @@ const EmailPassword = require("../lib/build/recipe/emailpassword");
 const supertokensMiddleware = require("../lib/build/nextjs").supertokensMiddleware;
 const noOp = () => {};
 
-describe.only(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
+describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
     before(async function () {
         await killAllST();
         await setupST();
