@@ -1,2 +1,2 @@
-export declare const version = "3.1.1";
+export declare const version = "3.2.0";
 export declare const cdiSupported: string[];

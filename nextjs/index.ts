@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -14,6 +12,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-exports.version = "3.2.0";
-exports.cdiSupported = ["2.4"];
-//# sourceMappingURL=version.js.map
+
+export * from '../lib/ts/nextjs';
