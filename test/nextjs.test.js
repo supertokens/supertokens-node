@@ -20,7 +20,7 @@ let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../lib/build/supertokens").default;
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
-const supertokensMiddleware = require("../lib/build/nextjs").supertokensMiddleware;
+const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
 const noOp = () => {};
 
 describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
@@ -82,7 +82,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             return done();
         });
 
-        supertokensMiddleware(request, response, noOp);
+        superTokensMiddleware(request, response, noOp);
     });
 
     it("Sign In", function (done) {
@@ -119,7 +119,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             return done();
         });
 
-        supertokensMiddleware(request, response, noOp);
+        superTokensMiddleware(request, response, noOp);
     });
 
     it("Reset Password Send Email", function (done) {
@@ -148,7 +148,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             return done();
         });
 
-        supertokensMiddleware(request, response, noOp);
+        superTokensMiddleware(request, response, noOp);
     });
 
     it("Reset Password Send Email", function (done) {
@@ -178,7 +178,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             return done();
         });
 
-        supertokensMiddleware(request, response, noOp);
+        superTokensMiddleware(request, response, noOp);
     });
 
     it("does Email Exist with existing email", function (done) {
@@ -202,7 +202,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             return done();
         });
 
-        supertokensMiddleware(request, response, noOp);
+        superTokensMiddleware(request, response, noOp);
     });
 
     it("does Email Exist with unknown email", function (done) {
@@ -226,6 +226,6 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             return done();
         });
 
-        supertokensMiddleware(request, response, noOp);
+        superTokensMiddleware(request, response, noOp);
     });
 });

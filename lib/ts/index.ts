@@ -35,7 +35,7 @@ export default class SuperTokensWrapper {
     }
 }
 
-export let init = SuperTokens.init;
+export let init = SuperTokensWrapper.init;
 
 export let middleware = SuperTokensWrapper.middleware;
 

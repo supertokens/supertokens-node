@@ -15,7 +15,7 @@
 import SuperTokens from ".";
 
 export default class NextJS {
-    static supertokensMiddleware = async function (request: any, response: any): Promise<any> {
+    static superTokensMiddleware(request: any, response: any): Promise<any> {
         request = new Proxy(request, {
             get(target, name: string) {
                 if (name === `originalUrl`) {
@@ -46,11 +46,12 @@ export default class NextJS {
 
                         resolve();
                     });
+                    return;
                 }
                 return resolve();
             });
         });
-    };
+    }
 }
 
-export const supertokensMiddleware = NextJS.supertokensMiddleware;
+export let superTokensMiddleware = NextJS.superTokensMiddleware;
