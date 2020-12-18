@@ -16,26 +16,6 @@ import SuperTokens from ".";
 
 export default class NextJS {
     static superTokensMiddleware(request: any, response: any): Promise<any> {
-        request = new Proxy(request, {
-            get(target, name: string) {
-                if (name === `originalUrl`) {
-                    return target.url;
-                }
-
-                return target[name];
-            },
-        });
-
-        response = new Proxy(response, {
-            get(target, name) {
-                if (name === `header`) {
-                    return target.setHeader;
-                }
-
-                return target[name];
-            },
-        });
-
         return new Promise((resolve, reject) => {
             SuperTokens.middleware()(request, response, async (middlewareError: any) => {
                 if (middlewareError !== undefined) {

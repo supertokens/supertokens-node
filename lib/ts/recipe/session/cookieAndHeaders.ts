@@ -135,13 +135,27 @@ function setHeader(
     try {
         let existingHeaders = res.getHeaders();
         let existingValue = existingHeaders[key.toLowerCase()];
+
+        // we have the res.header for compatibility with nextJS
         if (existingValue === undefined) {
-            res.header(key, value);
+            if (res.header !== undefined) {
+                res.header(key, value);
+            } else {
+                res.setHeader(key, value);
+            }
         } else if (allowDuplicateKey) {
-            res.header(key, existingValue + ", " + value);
+            if (res.header !== undefined) {
+                res.header(key, existingValue + ", " + value);
+            } else {
+                res.setHeader(key, existingValue + ", " + value);
+            }
         } else {
             // we overwrite the current one with the new one
-            res.header(key, value);
+            if (res.header !== undefined) {
+                res.header(key, value);
+            } else {
+                res.setHeader(key, value);
+            }
         }
     } catch (err) {
         throw new STError(
