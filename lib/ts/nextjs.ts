@@ -13,25 +13,49 @@
  * under the License.
  */
 import SuperTokens from ".";
+import Session from "./recipe/session";
+
+function next(
+    request: any,
+    response: any,
+    resolve: (value?: any) => void,
+    reject: (reason?: any) => void
+): (middlewareError: any) => void {
+    return async function (middlewareError: any) {
+        if (middlewareError !== undefined) {
+            SuperTokens.errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
+                if (errorHandlerError !== undefined) {
+                    reject(errorHandlerError);
+                }
+
+                return resolve();
+            });
+            return;
+        }
+
+        return resolve();
+    };
+}
 
 export default class NextJS {
     static superTokensMiddleware(request: any, response: any): Promise<any> {
         return new Promise((resolve, reject) => {
-            SuperTokens.middleware()(request, response, async (middlewareError: any) => {
-                if (middlewareError !== undefined) {
-                    SuperTokens.errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
-                        if (errorHandlerError !== undefined) {
-                            return reject(errorHandlerError);
-                        }
+            return SuperTokens.middleware()(request, response, next(request, response, resolve, reject));
+        });
+    }
 
-                        resolve();
-                    });
-                    return;
-                }
-                return resolve();
-            });
+    static superTokensVerifySession(request: any, response: any): Promise<any> {
+        return new Promise((resolve, reject) => {
+            //  When called from getServerSideProps, we want to resolve and use req.session afterwards to check for existing session.
+            if (response.json === undefined) {
+                response.json = () => {
+                    return resolve();
+                };
+            }
+            return Session.verifySession()(request, response, next(request, response, resolve, reject));
         });
     }
 }
 
 export let superTokensMiddleware = NextJS.superTokensMiddleware;
+export let superTokensVerifySession = NextJS.superTokensVerifySession;

@@ -13,7 +13,7 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
+const { printPath, setupST, startST, killAllST, cleanST } = require("./utils");
 let assert = require("assert");
 const httpMocks = require("node-mocks-http");
 let { ProcessState } = require("../lib/build/processState");
@@ -21,9 +21,10 @@ let SuperTokens = require("../lib/build/supertokens").default;
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
+const superTokensVerifySession = require("../lib/build/nextjs").superTokensVerifySession;
 const noOp = () => {};
 
-describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
+describe.only(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
     before(async function () {
         await killAllST();
         await setupST();
@@ -86,7 +87,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
     });
 
     it("Sign In", function (done) {
-        const request = httpMocks.createRequest({
+        const loginRequest = httpMocks.createRequest({
             method: "POST",
             headers: {
                 rid: "emailpassword",
@@ -106,20 +107,48 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             },
         });
 
-        const response = httpMocks.createResponse({
+        const loginResponse = httpMocks.createResponse({
             eventEmitter: require("events").EventEmitter,
         });
 
-        response.on("end", () => {
-            assert.deepStrictEqual(response._getJSONData().status, "OK");
-            assert.deepStrictEqual(response._getJSONData().user.email, "john.doe@supertokens.io");
-            assert(response._getHeaders()["front-token"] !== undefined);
-            assert(response._getHeaders()["set-cookie"][0].startsWith("sAccessToken="));
-            assert(response._getHeaders()["set-cookie"][1].startsWith("sRefreshToken="));
-            return done();
+        loginResponse.on("end", async () => {
+            assert.deepStrictEqual(loginResponse._getJSONData().status, "OK");
+            assert.deepStrictEqual(loginResponse._getJSONData().user.email, "john.doe@supertokens.io");
+            assert(loginResponse._getHeaders()["front-token"] !== undefined);
+            assert(loginResponse._getHeaders()["set-cookie"][0].startsWith("sAccessToken=") !== undefined);
+            assert(loginResponse._getHeaders()["set-cookie"][1].startsWith("sRefreshToken=") !== undefined);
+
+            // Verify if session exists next middleware tests:
+
+            // Case 1: Successful => add session to request object.
+            const getUserRequestWithSession = httpMocks.createRequest({
+                method: "GET",
+                cookies: getSessionCookiesFromResponse(loginResponse),
+                url: "/api/user/",
+            });
+            const getUserResponseWithSession = httpMocks.createResponse({});
+            await superTokensVerifySession(getUserRequestWithSession, getUserResponseWithSession);
+            assert(getUserRequestWithSession.session !== undefined);
+
+            // Case 2: Unauthenticated => return 401.
+            const getUserRequestWithoutSession = httpMocks.createRequest({
+                method: "GET",
+                url: "/api/user/",
+            });
+
+            const getUserResponseWithoutSession = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            getUserResponseWithoutSession.on("end", () => {
+                assert.strictEqual(getUserResponseWithoutSession.statusCode, 401);
+                return done();
+            });
+
+            superTokensVerifySession(getUserRequestWithoutSession, getUserResponseWithoutSession);
         });
 
-        superTokensMiddleware(request, response, noOp);
+        superTokensMiddleware(loginRequest, loginResponse, noOp);
     });
 
     it("Reset Password Send Email", function (done) {
@@ -133,7 +162,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 formFields: [
                     {
                         id: "email",
-                        value: "john.do@supertokens.io",
+                        value: "john.doe@supertokens.io",
                     },
                 ],
             },
@@ -229,3 +258,17 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
         superTokensMiddleware(request, response, noOp);
     });
 });
+
+function getSessionCookiesFromResponse(response) {
+    return {
+        sAccessToken: decodeURIComponent(
+            response._getHeaders()["set-cookie"][0].split("sAccessToken=")[1].split(";")[0]
+        ),
+        sRefreshToken: decodeURIComponent(
+            response._getHeaders()["set-cookie"][1].split("sRefreshToken=")[1].split(";")[0]
+        ),
+        sIdRefreshToken: decodeURIComponent(
+            response._getHeaders()["set-cookie"][2].split("sIdRefreshToken=")[1].split(";")[0]
+        ),
+    };
+}
