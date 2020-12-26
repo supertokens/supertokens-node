@@ -9,6 +9,7 @@ jobs:
       - checkout
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
       - run: npm publish
+      - slack/status
   test:
     docker:
       - image: rishabhpoddar/supertokens_website_sdk_testing
