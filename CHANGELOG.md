@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2021-01-07
+### Added
+- Email verification feature
+
 ## [3.2.2] - 2020-12-18
 ### Fixed
 - Removes the need for Proxy in NextJS so that if a session is created manually by the user, it still works

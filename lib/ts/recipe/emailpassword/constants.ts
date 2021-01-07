@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -22,6 +22,10 @@ export const SIGN_UP_API = "/signup";
 export const SIGN_IN_API = "/signin";
 
 export const GENERATE_PASSWORD_RESET_TOKEN_API = "/user/password/reset/token";
+
+export const GENERATE_EMAIL_VERIFY_TOKEN_API = "/user/email/verify/token";
+
+export const EMAIL_VERIFY_API = "/user/email/verify";
 
 export const PASSWORD_RESET_API = "/user/password/reset";
 
