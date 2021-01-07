@@ -35,17 +35,20 @@ const request = require("supertest");
  *        - (later) check that getEmailVerificationURL works fine
  *        - (later) check that createAndSendCustomEmail works fine
  * TODO: generate token API:
- *        - (later) Call the createEmailVerificationToken function with valid input, email not verified
- *        - (later) Call the createEmailVerificationToken function with valid input, email verified and test error
- *        - (later) Call the createEmailVerificationToken with no session and test error thrown
+ *        - Call the API with valid input, email not verified
+ *        - Call the API with valid input, email verified and test error
+ *        - Call the API with no session and see the output (should be 401)
+ *        - Call the API with an expired access token and see that try refresh token is returned
+ *        - Provide your own email callback and make sure that is called
  * TODO: email verify API:
  *        POST:
- *          - (later) Call the verifyEmailUsingToken function with valid input
- *          - (later) Call the verifyEmailUsingToken with an invalid token and see the error
- *          - (later) token is not of type string from input
+ *          - Call the API with valid input
+ *          - Call the API with an invalid token and see the error
+ *          - token is not of type string from input
  *        GET:
- *          - (later) Call the isEmailVerified function with valid input
- *          - (later) Call the isEmailVerified with no session and see the error
+ *          - Call the API with valid input
+ *          - Call the API with no session and see the error
+ *          - Call the API with an expired access token and see that try refresh token is returned
  */
 
 describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`, function () {
