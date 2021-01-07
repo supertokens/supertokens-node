@@ -44,12 +44,16 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
             );
         }
 
-        await recipeInstance.verifyEmailUsingToken(token);
+        let user = await recipeInstance.verifyEmailUsingToken(token);
 
         // step 2
-        return send200Response(res, {
+        send200Response(res, {
             status: "OK",
         });
+
+        try {
+            await recipeInstance.config.emailVerificationFeature.handlePostEmailVerification(user);
+        } catch (ignored) {}
     } else {
         // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 

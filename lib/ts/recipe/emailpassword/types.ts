@@ -33,12 +33,14 @@ export type TypeInputEmailVerificationFeature = {
     disableDefaultImplementation?: boolean;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 
 export type TypeNormalisedInputEmailVerificationFeature = {
     disableDefaultImplementation: boolean;
     getEmailVerificationURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    handlePostEmailVerification: (user: User) => Promise<void>;
 };
 
 export type TypeInputSignUp = {

@@ -146,7 +146,11 @@ export async function verifyEmailUsingToken(recipeInstance: Recipe, token: strin
             method: "token",
             token,
         });
-    if (response.status !== "OK") {
+    if (response.status === "OK") {
+        return {
+            ...response.user,
+        };
+    } else {
         throw new STError(
             {
                 type: STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR,

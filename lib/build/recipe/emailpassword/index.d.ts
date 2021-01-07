@@ -10,7 +10,7 @@ export default class Wrapper {
     static createResetPasswordToken(userId: string): Promise<string>;
     static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
     static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<void>;
+    static verifyEmailUsingToken(token: string): Promise<any>;
     static isEmailVerified(userId: string): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;

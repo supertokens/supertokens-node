@@ -45,6 +45,7 @@ const request = require("supertest");
  *          - Call the API with valid input
  *          - Call the API with an invalid token and see the error
  *          - token is not of type string from input
+ *          - provide a handlePostEmailVerification callback and make sure it's called on success verification
  *        GET:
  *          - Call the API with valid input
  *          - Call the API with no session and see the error

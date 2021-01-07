@@ -6,6 +6,6 @@ export declare function getUserById(recipeInstance: Recipe, userId: string): Pro
 export declare function getUserByEmail(recipeInstance: Recipe, email: string): Promise<User | undefined>;
 export declare function createResetPasswordToken(recipeInstance: Recipe, userId: string): Promise<string>;
 export declare function createEmailVerificationToken(recipeInstance: Recipe, userId: string): Promise<string>;
-export declare function verifyEmailUsingToken(recipeInstance: Recipe, token: string): Promise<void>;
+export declare function verifyEmailUsingToken(recipeInstance: Recipe, token: string): Promise<any>;
 export declare function isEmailVerified(recipeInstance: Recipe, userId: string): Promise<boolean>;
 export declare function resetPasswordUsingToken(recipeInstance: Recipe, token: string, newPassword: string): Promise<void>;

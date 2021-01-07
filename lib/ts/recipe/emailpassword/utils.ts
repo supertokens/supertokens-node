@@ -170,10 +170,16 @@ function validateAndNormaliseEmailVerificationConfig(
             ? defaultCreateAndSendCustomVerificationEmail(appInfo)
             : config.createAndSendCustomEmail;
 
+    let handlePostEmailVerification =
+        config === undefined || config.handlePostEmailVerification === undefined
+            ? async (user: User) => {}
+            : config.handlePostEmailVerification;
+
     return {
         disableDefaultImplementation,
         getEmailVerificationURL,
         createAndSendCustomEmail,
+        handlePostEmailVerification,
     };
 }
 
