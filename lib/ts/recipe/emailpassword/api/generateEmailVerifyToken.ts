@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -29,9 +29,18 @@ export default async function generateEmailVerifyToken(
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
     // step 1.
-    await Session.verifySession()(req as SessionRequest, res, next);
+    await new Promise((resolve, reject) =>
+        Session.verifySession()(req as SessionRequest, res, (err: any) => {
+            if (err !== undefined) {
+                reject(err);
+            } else {
+                resolve();
+            }
+        })
+    );
     let session = (req as SessionRequest).session;
     let userId = session.getUserId();
+
     let user = await recipeInstance.getUserById(userId);
     if (user === undefined) {
         throw new STError(
@@ -52,14 +61,6 @@ export default async function generateEmailVerifyToken(
             return send200Response(res, {
                 status: "OK",
             });
-        } else if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNKNOWN_USER_ID_ERROR) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Failed to generated email verification token as the user ID is unknown",
-                },
-                recipeInstance.getRecipeId()
-            );
         }
         throw err;
     }

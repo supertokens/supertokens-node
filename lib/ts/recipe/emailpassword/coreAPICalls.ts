@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -120,7 +120,7 @@ export async function createEmailVerificationToken(recipeInstance: Recipe, userI
     if (response.status === "OK") {
         return response.token;
     } else {
-        if (response.status === STError.EMAIL_ALREADY_VERIFIED_ERROR) {
+        if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
             throw new STError(
                 {
                     type: STError.EMAIL_ALREADY_VERIFIED_ERROR,
@@ -168,8 +168,8 @@ export async function isEmailVerified(recipeInstance: Recipe, userId: string): P
     } else {
         throw new STError(
             {
-                type: STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR,
-                message: "Failed to verify email as the the token has expired or is invalid",
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "User ID not found",
             },
             recipeInstance.getRecipeId()
         );

@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -226,6 +226,10 @@ export default class Recipe extends RecipeModule {
         } else if (err.type === STError.RESET_PASSWORD_INVALID_TOKEN_ERROR) {
             return send200Response(response, {
                 status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+            });
+        } else if (err.type === STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR) {
+            return send200Response(response, {
+                status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",
             });
         } else {
             return next(err);

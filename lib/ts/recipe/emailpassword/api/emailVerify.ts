@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -15,16 +15,14 @@
 
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-import { FORM_FIELD_PASSWORD_ID } from "../constants";
-import { send200Response } from "../../../utils";
-import { validateFormFieldsOrThrowError } from "./utils";
+import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
 import Session from "../../session";
 import { SessionRequest } from "../../session/types";
-import { isEmailVerified } from "../coreAPICalls";
 
 export default async function emailVerify(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
-    if (req.method === "post") {
+    if (normaliseHttpMethod(req.method) === "post") {
+        // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
         // step 1
         let token = req.body.token;
         if (token === undefined) {
@@ -56,17 +54,25 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
         // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
         // step 1.
-        await Session.verifySession()(req as SessionRequest, res, next);
+        await new Promise((resolve, reject) =>
+            Session.verifySession()(req as SessionRequest, res, (err: any) => {
+                if (err !== undefined) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            })
+        );
         let session = (req as SessionRequest).session;
         let userId = session.getUserId();
 
         // step 2.
-        let exists = await recipeInstance.isEmailVerified(userId);
+        let isVerified = await recipeInstance.isEmailVerified(userId);
 
         // step 3
         return send200Response(res, {
             status: "OK",
-            exists,
+            isVerified,
         });
     }
 }
