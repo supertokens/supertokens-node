@@ -45,6 +45,18 @@ export default class Wrapper {
     static resetPasswordUsingToken(token: string, newPassword: string) {
         return Recipe.getInstanceOrThrowError().resetPasswordUsingToken(token, newPassword);
     }
+
+    static createEmailVerificationToken(userId: string) {
+        return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
+    }
+
+    static verifyEmailUsingToken(token: string) {
+        return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
+    }
+
+    static isEmailVerified(userId: string) {
+        return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
+    }
 }
 
 export let init = Wrapper.init;
@@ -62,3 +74,9 @@ export let getUserByEmail = Wrapper.getUserByEmail;
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 
 export let resetPasswordUsingToken = Wrapper.resetPasswordUsingToken;
+
+export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
+
+export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
+
+export let isEmailVerified = Wrapper.isEmailVerified;

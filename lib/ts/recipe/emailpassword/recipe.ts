@@ -262,6 +262,10 @@ export default class Recipe extends RecipeModule {
         return createResetPasswordTokenFromCore(this, userId);
     };
 
+    resetPasswordUsingToken = async (token: string, newPassword: string) => {
+        return resetPasswordUsingTokenToCore(this, token, newPassword);
+    };
+
     createEmailVerificationToken = async (userId: string): Promise<string> => {
         return createEmailVerificationTokenFromCore(this, userId);
     };
@@ -272,9 +276,5 @@ export default class Recipe extends RecipeModule {
 
     isEmailVerified = async (userId: string) => {
         return isEmailVerifiedFromCore(this, userId);
-    };
-
-    resetPasswordUsingToken = async (token: string, newPassword: string) => {
-        return resetPasswordUsingTokenToCore(this, token, newPassword);
     };
 }
