@@ -3,12 +3,24 @@ export declare type TypeInput = {
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     signOutFeature?: TypeInputSignOutFeature;
+    emailVerificationFeature?: TypeInputEmailVerificationFeature;
 };
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     signOutFeature: TypeNormalisedInputSignOutFeature;
+    emailVerificationFeature: TypeNormalisedInputEmailVerificationFeature;
+};
+export declare type TypeInputEmailVerificationFeature = {
+    disableDefaultImplementation?: boolean;
+    getEmailVerificationURL?: (user: User) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+};
+export declare type TypeNormalisedInputEmailVerificationFeature = {
+    disableDefaultImplementation: boolean;
+    getEmailVerificationURL: (user: User) => Promise<string>;
+    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
 };
 export declare type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;

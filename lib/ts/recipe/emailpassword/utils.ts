@@ -24,14 +24,20 @@ import {
     TypeInputResetPasswordUsingTokenFeature,
     TypeNormalisedInputResetPasswordUsingTokenFeature,
     NormalisedFormField,
+    TypeInputEmailVerificationFeature,
+    TypeNormalisedInputEmailVerificationFeature,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
 import { TypeNormalisedInputSignOutFeature, TypeInputSignOutFeature } from "./types";
 import {
     getResetPasswordURL as defaultGetResetPasswordURL,
-    createAndSendCustomEmail as defaultCreateAndSendCustomEmail,
+    createAndSendCustomEmail as defaultCreateAndSendCustomPasswordResetEmail,
 } from "./passwordResetFunctions";
+import {
+    getEmailVerificationURL as defaultGetEmailVerificationURL,
+    createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
+} from "./emailVerificationFunctions";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -64,11 +70,18 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.signOutFeature
     );
 
+    let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(
+        recipeInstance,
+        appInfo,
+        config === undefined ? undefined : config.emailVerificationFeature
+    );
+
     return {
         signUpFeature,
         signInFeature,
         resetPasswordUsingTokenFeature,
         signOutFeature,
+        emailVerificationFeature,
     };
 }
 
@@ -125,7 +138,7 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
 
     let createAndSendCustomEmail =
         config === undefined || config.createAndSendCustomEmail === undefined
-            ? defaultCreateAndSendCustomEmail(appInfo)
+            ? defaultCreateAndSendCustomPasswordResetEmail(appInfo)
             : config.createAndSendCustomEmail;
 
     return {
@@ -133,6 +146,33 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
         formFieldsForPasswordResetForm,
         formFieldsForGenerateTokenForm,
         getResetPasswordURL,
+        createAndSendCustomEmail,
+    };
+}
+
+function validateAndNormaliseEmailVerificationConfig(
+    recipeInstance: Recipe,
+    appInfo: NormalisedAppinfo,
+    config?: TypeInputEmailVerificationFeature
+): TypeNormalisedInputEmailVerificationFeature {
+    let disableDefaultImplementation =
+        config === undefined || config.disableDefaultImplementation === undefined
+            ? false
+            : config.disableDefaultImplementation;
+
+    let getEmailVerificationURL =
+        config === undefined || config.getEmailVerificationURL === undefined
+            ? defaultGetEmailVerificationURL(appInfo)
+            : config.getEmailVerificationURL;
+
+    let createAndSendCustomEmail =
+        config === undefined || config.createAndSendCustomEmail === undefined
+            ? defaultCreateAndSendCustomVerificationEmail(appInfo)
+            : config.createAndSendCustomEmail;
+
+    return {
+        disableDefaultImplementation,
+        getEmailVerificationURL,
         createAndSendCustomEmail,
     };
 }

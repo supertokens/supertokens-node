@@ -18,6 +18,7 @@ export type TypeInput = {
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     signOutFeature?: TypeInputSignOutFeature;
+    emailVerificationFeature?: TypeInputEmailVerificationFeature;
 };
 
 export type TypeNormalisedInput = {
@@ -25,6 +26,19 @@ export type TypeNormalisedInput = {
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     signOutFeature: TypeNormalisedInputSignOutFeature;
+    emailVerificationFeature: TypeNormalisedInputEmailVerificationFeature;
+};
+
+export type TypeInputEmailVerificationFeature = {
+    disableDefaultImplementation?: boolean;
+    getEmailVerificationURL?: (user: User) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+};
+
+export type TypeNormalisedInputEmailVerificationFeature = {
+    disableDefaultImplementation: boolean;
+    getEmailVerificationURL: (user: User) => Promise<string>;
+    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
 };
 
 export type TypeInputSignUp = {

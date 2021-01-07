@@ -79,6 +79,10 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
         assert(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm[0].id === "email");
         assert(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm.length === 1);
         assert(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm[0].id === "password");
+
+        let emailVerificationFeature = emailpassword.config.emailVerificationFeature;
+
+        assert(emailVerificationFeature.disableDefaultImplementation === false);
     });
 
     // Failure condition: passing data of invalid type/ syntax to the module
