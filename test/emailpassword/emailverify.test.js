@@ -13,7 +13,17 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    signUPRequest,
+    extractInfoFromResponse,
+} = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
@@ -62,5 +72,172 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    /*
+    generate token API:
+        - Call the API with valid input, email not verified
+        - Call the API with valid input, email verified and test error
+        - Call the API with no session and see the output (should be 401)
+        - Call the API with an expired access token and see that try refresh token is returned
+        - Provide your own email callback and make sure that is called
+    */
+
+    // Call the API with valid input, email not verified
+    it("test the generate token api with valid input, email not verified", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify/token")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                    infoFromResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    infoFromResponse.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", infoFromResponse.antiCsrf)
+                .send({
+                    userId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(JSON.parse(response.text).status === "OK");
+    });
+
+    //Call the API with valid input, email verified and test error
+    it("test the generate token api with valid input, email verified and test error", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        let verifyToken = await EmailPassword.createEmailVerificationToken(userId);
+        await EmailPassword.verifyEmailUsingToken(verifyToken);
+
+        // doesnt throw error when asking to generate the verify token with verified email.
+        response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify/token")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                    infoFromResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    infoFromResponse.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", infoFromResponse.antiCsrf)
+                .send({
+                    userId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(JSON.parse(response.text).status === "OK");
+    });
+
+    // Call the API with no session and see the output
+    it("test the generate token api with valid input, no session and check output", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify/token")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                    "randmAccessToken" +
+                    ";sIdRefreshToken=" +
+                    "randomRefreshToken",
+                ])
+                .set("anti-csrf", "randomAntiCsrf")
+                .send({
+                    userId: "randomUserId",
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        
+        assert(response.status === 401)
+        assert(JSON.parse(response.text).message === "try refresh token")
+
     });
 });
