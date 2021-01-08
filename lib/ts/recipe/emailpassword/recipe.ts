@@ -231,6 +231,10 @@ export default class Recipe extends RecipeModule {
             return send200Response(response, {
                 status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",
             });
+        } else if (err.type === STError.EMAIL_ALREADY_VERIFIED_ERROR) {
+            return send200Response(response, {
+                status: "EMAIL_ALREADY_VERIFIED_ERROR",
+            });
         } else {
             return next(err);
         }
