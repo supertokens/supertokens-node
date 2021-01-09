@@ -23,6 +23,7 @@ const {
     resetAll,
     signUPRequest,
     extractInfoFromResponse,
+    setKeyValueInConfig,
 } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
@@ -233,5 +234,66 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response.status === 401);
         assert(JSON.parse(response.text).message === "try refresh token");
+    });
+
+    // Call the API with an expired access token and see that try refresh token is returned
+    it("test the generate token api with an expired access token and see that try refresh token is returned", async function () {
+        await setKeyValueInConfig("access_token_validity", 2);
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        await new Promise((r) => setTimeout(r, 5000));
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify/token")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                        infoFromResponse.accessToken +
+                        ";sIdRefreshToken=" +
+                        infoFromResponse.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", infoFromResponse.antiCsrf)
+                .send({
+                    userId,
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        console.log(JSON.parse(response2.text));
+        console.log(response2.status);
+
+        // assert(response.status === 401);
+        // assert(JSON.parse(response.text).message === "try refresh token");
     });
 });
