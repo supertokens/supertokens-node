@@ -77,4 +77,5 @@ export declare type TypeNormalisedInputSignOutFeature = {
 export declare type User = {
     id: string;
     email: string;
+    timeJoined: number;
 };

@@ -99,4 +99,5 @@ export type TypeNormalisedInputSignOutFeature = {
 export type User = {
     id: string;
     email: string;
+    timeJoined: number;
 };
