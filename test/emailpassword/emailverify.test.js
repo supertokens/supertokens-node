@@ -117,9 +117,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify/token")
                 .set("Cookie", [
                     "sAccessToken=" +
-                        infoFromResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        infoFromResponse.idRefreshTokenFromCookie,
+                    infoFromResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    infoFromResponse.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", infoFromResponse.antiCsrf)
                 .send({
@@ -173,9 +173,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify/token")
                 .set("Cookie", [
                     "sAccessToken=" +
-                        infoFromResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        infoFromResponse.idRefreshTokenFromCookie,
+                    infoFromResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    infoFromResponse.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", infoFromResponse.antiCsrf)
                 .send({
@@ -273,9 +273,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify/token")
                 .set("Cookie", [
                     "sAccessToken=" +
-                        infoFromResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        infoFromResponse.idRefreshTokenFromCookie,
+                    infoFromResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    infoFromResponse.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", infoFromResponse.antiCsrf)
                 .send({
@@ -292,6 +292,47 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response2.status === 401);
         assert(JSON.parse(response2.text).message === "try refresh token");
+
+        let refreshedResponse = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .expect(200)
+                    .set("Cookie", ["sRefreshToken=" + infoFromResponse.refreshToken])
+                    .set("anti-csrf", infoFromResponse.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+        let response3 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify/token")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                    refreshedResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    refreshedResponse.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", refreshedResponse.antiCsrf)
+                .send({
+                    userId,
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response3.status === 200)
+        assert(JSON.parse(response3.text).status === "OK")
     });
 
     // Provide your own email callback and make sure that is called
@@ -339,9 +380,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify/token")
                 .set("Cookie", [
                     "sAccessToken=" +
-                        infoFromResponse.accessToken +
-                        ";sIdRefreshToken=" +
-                        infoFromResponse.idRefreshTokenFromCookie,
+                    infoFromResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    infoFromResponse.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", infoFromResponse.antiCsrf)
                 .send({
@@ -360,4 +401,18 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(userInfo.email === "test@gmail.com")
         assert(emailToken !== null)
     });
+
+    /*
+    email verify API:
+        POST:
+          - Call the API with valid input
+          - Call the API with an invalid token and see the error
+          - token is not of type string from input
+          - provide a handlePostEmailVerification callback and make sure it's called on success verification
+        GET:
+          - Call the API with valid input
+          - Call the API with no session and see the error
+          - Call the API with an expired access token and see that try refresh token is returned
+    */
+
 });
