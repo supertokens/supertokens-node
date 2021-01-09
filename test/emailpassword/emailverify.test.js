@@ -409,5 +409,111 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     });
 
     // token is not of type string from input
+    it("test the email verify API with token of not type string", async function () {
+        await startST();
 
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify")
+                .send({
+                    method: "token",
+                    token: 2000
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 400)
+        assert(JSON.parse(response.text).message === "The email verification token must be a string")
+    });
+
+    // provide a handlePostEmailVerification callback and make sure it's called on success verification
+    it("test that the handlePostEmailVerification callback is called on successfull verification, if given", async function () {
+        await startST();
+
+        let userInfoFromCallback = null
+        let token = null
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init({
+                emailVerificationFeature: {
+                    handlePostEmailVerification: (user) => {
+                        userInfoFromCallback = user
+                    },
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0]
+                    }
+                }
+            }), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        response = await await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        assert(JSON.parse(response.text).status === "OK");
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify")
+                .send({
+                    method: "token",
+                    token
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(JSON.parse(response2.text).status === "OK")
+        
+        assert(userInfoFromCallback.id === userId)
+        assert(userInfoFromCallback.email === "test@gmail.com")
+    });
 });
