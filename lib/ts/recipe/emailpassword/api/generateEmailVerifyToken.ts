@@ -53,17 +53,7 @@ export default async function generateEmailVerifyToken(
     }
 
     // step 2
-    let token: string;
-    try {
-        token = await recipeInstance.createEmailVerificationToken(user.id);
-    } catch (err) {
-        if (STError.isErrorFromSuperTokens(err) && err.type === STError.EMAIL_ALREADY_VERIFIED_ERROR) {
-            return send200Response(res, {
-                status: "OK",
-            });
-        }
-        throw err;
-    }
+    let token = await recipeInstance.createEmailVerificationToken(user.id);
 
     // step 3
     let emailVerifyLink =
