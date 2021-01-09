@@ -512,8 +512,221 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert(JSON.parse(response2.text).status === "OK")
-        
+
         assert(userInfoFromCallback.id === userId)
         assert(userInfoFromCallback.email === "test@gmail.com")
+    });
+
+    // Call the API with valid input
+    it("test the email verify with valid input, using the get method", async function () {
+        await startST();
+
+        let token = null
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init({
+                emailVerificationFeature: {
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0]
+                    }
+                }
+            }), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        response = await await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        assert(JSON.parse(response.text).status === "OK");
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify")
+                .send({
+                    method: "token",
+                    token
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(JSON.parse(response2.text).status === "OK")
+       
+        let response3 = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/user/email/verify")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                    infoFromResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    infoFromResponse.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", infoFromResponse.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(JSON.parse(response3.text).status === "OK")
+        assert(JSON.parse(response3.text).isVerified)        
+    });
+
+    // Call the API with no session and see the error
+    it("test the email verify with no session, using the get method", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+       
+        let response = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/user/email/verify")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                    "randomAccessToken" +
+                    ";sIdRefreshToken=" +
+                    "randomRefreshToken",
+                ])
+                .set("anti-csrf", "randomAntiCsrfToken")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        
+        assert(response.status === 401)
+        assert(JSON.parse(response.text).message === "try refresh token")        
+    });
+
+    // Call the API with an expired access token and see that try refresh token is returned
+    it("test the email verify with an expired access token, using the get method", async function () {
+        await setKeyValueInConfig("access_token_validity", 2);
+        await startST();
+
+        let token = null
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init({
+                emailVerificationFeature: {
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0]
+                    }
+                }
+            }), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        response = await await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        assert(JSON.parse(response.text).status === "OK");
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify")
+                .send({
+                    method: "token",
+                    token
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(JSON.parse(response2.text).status === "OK")
+
+        await new Promise((r) => setTimeout(r, 5000));
+       
+        let response3 = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/user/email/verify")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                    infoFromResponse.accessToken +
+                    ";sIdRefreshToken=" +
+                    infoFromResponse.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", infoFromResponse.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response3.status === 401)
+        assert(JSON.parse(response3.text).message === "try refresh token")        
     });
 });
