@@ -130,7 +130,7 @@ module.exports.setupST = async function () {
     let installationPath = process.env.INSTALL_PATH;
     try {
         await module.exports.executeCommand("cd " + installationPath + " && cp temp/licenseKey ./licenseKey");
-    } catch (ignore) { }
+    } catch (ignore) {}
     await module.exports.executeCommand("cd " + installationPath + " && cp temp/config.yaml ./config.yaml");
     await module.exports.setKeyValueInConfig("enable_anti_csrf", "true");
 };
@@ -139,7 +139,7 @@ module.exports.cleanST = async function () {
     let installationPath = process.env.INSTALL_PATH;
     try {
         await module.exports.executeCommand("cd " + installationPath + " && rm licenseKey");
-    } catch (ignore) { }
+    } catch (ignore) {}
     await module.exports.executeCommand("cd " + installationPath + " && rm config.yaml");
     await module.exports.executeCommand("cd " + installationPath + " && rm -rf .webserver-temp-*");
     await module.exports.executeCommand("cd " + installationPath + " && rm -rf .started");
@@ -189,11 +189,11 @@ module.exports.startST = async function (host = "localhost", port = 8080) {
         module.exports
             .executeCommand(
                 "cd " +
-                installationPath +
-                ` && java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=` +
-                host +
-                " port=" +
-                port
+                    installationPath +
+                    ` && java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=` +
+                    host +
+                    " port=" +
+                    port
             )
             .catch((err) => {
                 if (!returned) {
@@ -247,7 +247,7 @@ async function getListOfPids() {
             let pid = (await module.exports.executeCommand("cd " + installationPath + " && cat .started/" + item))
                 .stdout;
             result.push(pid);
-        } catch (err) { }
+        } catch (err) {}
     }
     return result;
 }
@@ -322,12 +322,7 @@ module.exports.emailVerifyTokenRequest = async function (app, accessToken, idRef
     return new Promise(function (resolve) {
         request(app)
             .post("/auth/user/email/verify/token")
-            .set("Cookie", [
-                "sAccessToken=" +
-                accessToken +
-                ";sIdRefreshToken=" +
-                idRefreshTokenFromCookie,
-            ])
+            .set("Cookie", ["sAccessToken=" + accessToken + ";sIdRefreshToken=" + idRefreshTokenFromCookie])
             .set("anti-csrf", antiCsrf)
             .send({
                 userId,

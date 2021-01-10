@@ -24,7 +24,7 @@ const {
     signUPRequest,
     extractInfoFromResponse,
     setKeyValueInConfig,
-    emailVerifyTokenRequest
+    emailVerifyTokenRequest,
 } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
@@ -113,8 +113,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        response = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
 
         assert(JSON.parse(response.text).status === "OK");
     });
@@ -150,11 +155,16 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let verifyToken = await EmailPassword.createEmailVerificationToken(userId);
         await EmailPassword.verifyEmailUsingToken(verifyToken);
 
-        response = await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        response = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
 
-        assert(JSON.parse(response.text).status === "EMAIL_ALREADY_VERIFIED_ERROR")
-        assert(response.status === 200)
+        assert(JSON.parse(response.text).status === "EMAIL_ALREADY_VERIFIED_ERROR");
+        assert(response.status === 200);
     });
 
     // Call the API with no session and see the output
@@ -178,8 +188,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         app.use(STExpress.errorHandler());
 
-        let response = await emailVerifyTokenRequest(app, "randomAccessToken",
-            "randomRefreshToken", "randomAntiCsrf", "randomUserId")
+        let response = await emailVerifyTokenRequest(
+            app,
+            "randomAccessToken",
+            "randomRefreshToken",
+            "randomAntiCsrf",
+            "randomUserId"
+        );
 
         assert(response.status === 401);
         assert(JSON.parse(response.text).message === "try refresh token");
@@ -217,8 +232,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         await new Promise((r) => setTimeout(r, 5000));
 
-        let response2 = await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        let response2 = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
 
         assert(response2.status === 401);
         assert(JSON.parse(response2.text).message === "try refresh token");
@@ -241,19 +261,24 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             )
         );
 
-        let response3 = response = await emailVerifyTokenRequest(app, refreshedResponse.accessToken,
-            refreshedResponse.idRefreshTokenFromCookie, refreshedResponse.antiCsrf, userId)
+        let response3 = (response = await emailVerifyTokenRequest(
+            app,
+            refreshedResponse.accessToken,
+            refreshedResponse.idRefreshTokenFromCookie,
+            refreshedResponse.antiCsrf,
+            userId
+        ));
 
-        assert(response3.status === 200)
-        assert(JSON.parse(response3.text).status === "OK")
+        assert(response3.status === 200);
+        assert(JSON.parse(response3.text).status === "OK");
     });
 
     // Provide your own email callback and make sure that is called
     it("test that providing your own email callback and make sure it is called", async function () {
         await startST();
 
-        let userInfo = null
-        let emailToken = null
+        let userInfo = null;
+        let emailToken = null;
 
         STExpress.init({
             supertokens: {
@@ -264,14 +289,17 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init({
-                emailVerificationFeature: {
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        userInfo = user
-                        emailToken = emailVerificationURLWithToken
-                    }
-                }
-            }), Session.init()],
+            recipeList: [
+                EmailPassword.init({
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            userInfo = user;
+                            emailToken = emailVerificationURLWithToken;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         const app = express();
@@ -287,13 +315,18 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let response2 = await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        let response2 = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
 
-        assert(response2.status === 200)
-        assert(userInfo.id === userId)
-        assert(userInfo.email === "test@gmail.com")
-        assert(emailToken !== null)
+        assert(response2.status === 200);
+        assert(userInfo.id === userId);
+        assert(userInfo.email === "test@gmail.com");
+        assert(emailToken !== null);
     });
 
     /*
@@ -311,7 +344,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     it("test the email verify API with valid input", async function () {
         await startST();
 
-        let token = null
+        let token = null;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -321,13 +354,16 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init({
-                emailVerificationFeature: {
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0]
-                    }
-                }
-            }), Session.init()],
+            recipeList: [
+                EmailPassword.init({
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         const app = express();
@@ -343,8 +379,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        response = await await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
         assert(JSON.parse(response.text).status === "OK");
 
         let response2 = await new Promise((resolve) =>
@@ -352,7 +393,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify")
                 .send({
                     method: "token",
-                    token
+                    token,
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -364,7 +405,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
         );
 
-        assert(JSON.parse(response2.text).status === "OK")
+        assert(JSON.parse(response2.text).status === "OK");
     });
 
     // Call the API with an invalid token and see the error
@@ -394,7 +435,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify")
                 .send({
                     method: "token",
-                    token: "randomToken"
+                    token: "randomToken",
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -405,7 +446,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     }
                 })
         );
-        assert(JSON.parse(response.text).status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR")
+        assert(JSON.parse(response.text).status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR");
     });
 
     // token is not of type string from input
@@ -435,7 +476,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify")
                 .send({
                     method: "token",
-                    token: 2000
+                    token: 2000,
                 })
                 .end((err, res) => {
                     if (err) {
@@ -445,16 +486,16 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     }
                 })
         );
-        assert(response.status === 400)
-        assert(JSON.parse(response.text).message === "The email verification token must be a string")
+        assert(response.status === 400);
+        assert(JSON.parse(response.text).message === "The email verification token must be a string");
     });
 
     // provide a handlePostEmailVerification callback and make sure it's called on success verification
     it("test that the handlePostEmailVerification callback is called on successfull verification, if given", async function () {
         await startST();
 
-        let userInfoFromCallback = null
-        let token = null
+        let userInfoFromCallback = null;
+        let token = null;
 
         STExpress.init({
             supertokens: {
@@ -465,16 +506,19 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init({
-                emailVerificationFeature: {
-                    handlePostEmailVerification: (user) => {
-                        userInfoFromCallback = user
+            recipeList: [
+                EmailPassword.init({
+                    emailVerificationFeature: {
+                        handlePostEmailVerification: (user) => {
+                            userInfoFromCallback = user;
+                        },
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
                     },
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0]
-                    }
-                }
-            }), Session.init()],
+                }),
+                Session.init(),
+            ],
         });
 
         const app = express();
@@ -490,8 +534,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        response = await await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
         assert(JSON.parse(response.text).status === "OK");
 
         let response2 = await new Promise((resolve) =>
@@ -499,7 +548,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify")
                 .send({
                     method: "token",
-                    token
+                    token,
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -511,17 +560,17 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
         );
 
-        assert(JSON.parse(response2.text).status === "OK")
+        assert(JSON.parse(response2.text).status === "OK");
 
-        assert(userInfoFromCallback.id === userId)
-        assert(userInfoFromCallback.email === "test@gmail.com")
+        assert(userInfoFromCallback.id === userId);
+        assert(userInfoFromCallback.email === "test@gmail.com");
     });
 
     // Call the API with valid input
     it("test the email verify with valid input, using the get method", async function () {
         await startST();
 
-        let token = null
+        let token = null;
 
         STExpress.init({
             supertokens: {
@@ -532,13 +581,16 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init({
-                emailVerificationFeature: {
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0]
-                    }
-                }
-            }), Session.init()],
+            recipeList: [
+                EmailPassword.init({
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         const app = express();
@@ -554,8 +606,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        response = await await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
         assert(JSON.parse(response.text).status === "OK");
 
         let response2 = await new Promise((resolve) =>
@@ -563,7 +620,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify")
                 .send({
                     method: "token",
-                    token
+                    token,
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -575,16 +632,16 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
         );
 
-        assert(JSON.parse(response2.text).status === "OK")
-       
+        assert(JSON.parse(response2.text).status === "OK");
+
         let response3 = await new Promise((resolve) =>
             request(app)
                 .get("/auth/user/email/verify")
                 .set("Cookie", [
                     "sAccessToken=" +
-                    infoFromResponse.accessToken +
-                    ";sIdRefreshToken=" +
-                    infoFromResponse.idRefreshTokenFromCookie,
+                        infoFromResponse.accessToken +
+                        ";sIdRefreshToken=" +
+                        infoFromResponse.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", infoFromResponse.antiCsrf)
                 .expect(200)
@@ -596,8 +653,8 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     }
                 })
         );
-        assert(JSON.parse(response3.text).status === "OK")
-        assert(JSON.parse(response3.text).isVerified)        
+        assert(JSON.parse(response3.text).status === "OK");
+        assert(JSON.parse(response3.text).isVerified);
     });
 
     // Call the API with no session and see the error
@@ -621,16 +678,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         app.use(STExpress.middleware());
 
         app.use(STExpress.errorHandler());
-       
+
         let response = await new Promise((resolve) =>
             request(app)
                 .get("/auth/user/email/verify")
-                .set("Cookie", [
-                    "sAccessToken=" +
-                    "randomAccessToken" +
-                    ";sIdRefreshToken=" +
-                    "randomRefreshToken",
-                ])
+                .set("Cookie", ["sAccessToken=" + "randomAccessToken" + ";sIdRefreshToken=" + "randomRefreshToken"])
                 .set("anti-csrf", "randomAntiCsrfToken")
                 .end((err, res) => {
                     if (err) {
@@ -640,9 +692,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     }
                 })
         );
-        
-        assert(response.status === 401)
-        assert(JSON.parse(response.text).message === "try refresh token")        
+
+        assert(response.status === 401);
+        assert(JSON.parse(response.text).message === "try refresh token");
     });
 
     // Call the API with an expired access token and see that try refresh token is returned
@@ -650,7 +702,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         await setKeyValueInConfig("access_token_validity", 2);
         await startST();
 
-        let token = null
+        let token = null;
 
         STExpress.init({
             supertokens: {
@@ -661,13 +713,16 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init({
-                emailVerificationFeature: {
-                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0]
-                    }
-                }
-            }), Session.init()],
+            recipeList: [
+                EmailPassword.init({
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         const app = express();
@@ -683,8 +738,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await await emailVerifyTokenRequest(app, infoFromResponse.accessToken,
-            infoFromResponse.idRefreshTokenFromCookie, infoFromResponse.antiCsrf, userId)
+        response = await await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
         assert(JSON.parse(response.text).status === "OK");
 
         let response2 = await new Promise((resolve) =>
@@ -692,7 +752,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 .post("/auth/user/email/verify")
                 .send({
                     method: "token",
-                    token
+                    token,
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -704,18 +764,18 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
         );
 
-        assert(JSON.parse(response2.text).status === "OK")
+        assert(JSON.parse(response2.text).status === "OK");
 
         await new Promise((r) => setTimeout(r, 5000));
-       
+
         let response3 = await new Promise((resolve) =>
             request(app)
                 .get("/auth/user/email/verify")
                 .set("Cookie", [
                     "sAccessToken=" +
-                    infoFromResponse.accessToken +
-                    ";sIdRefreshToken=" +
-                    infoFromResponse.idRefreshTokenFromCookie,
+                        infoFromResponse.accessToken +
+                        ";sIdRefreshToken=" +
+                        infoFromResponse.idRefreshTokenFromCookie,
                 ])
                 .set("anti-csrf", infoFromResponse.antiCsrf)
                 .end((err, res) => {
@@ -726,7 +786,47 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     }
                 })
         );
-        assert(response3.status === 401)
-        assert(JSON.parse(response3.text).message === "try refresh token")        
+        assert(response3.status === 401);
+        assert(JSON.parse(response3.text).message === "try refresh token");
+
+        let refreshedResponse = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .expect(200)
+                    .set("Cookie", ["sRefreshToken=" + infoFromResponse.refreshToken])
+                    .set("anti-csrf", infoFromResponse.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let response4 = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/user/email/verify")
+                .set("Cookie", [
+                    "sAccessToken=" +
+                        refreshedResponse.accessToken +
+                        ";sIdRefreshToken=" +
+                        refreshedResponse.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", refreshedResponse.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(JSON.parse(response4.text).status === "OK");
+        assert(JSON.parse(response4.text).isVerified);
     });
 });
