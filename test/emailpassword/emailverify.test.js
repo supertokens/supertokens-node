@@ -188,16 +188,20 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         app.use(STExpress.errorHandler());
 
-        let response = await emailVerifyTokenRequest(
-            app,
-            "randomAccessToken",
-            "randomRefreshToken",
-            "randomAntiCsrf",
-            "randomUserId"
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify/token")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
         );
 
         assert(response.status === 401);
-        assert(JSON.parse(response.text).message === "try refresh token");
+        assert(JSON.parse(response.text).message === "unauthorised");
     });
 
     // Call the API with an expired access token and see that try refresh token is returned
@@ -379,7 +383,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await await emailVerifyTokenRequest(
+        response = await emailVerifyTokenRequest(
             app,
             infoFromResponse.accessToken,
             infoFromResponse.idRefreshTokenFromCookie,
@@ -534,7 +538,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await await emailVerifyTokenRequest(
+        response = await emailVerifyTokenRequest(
             app,
             infoFromResponse.accessToken,
             infoFromResponse.idRefreshTokenFromCookie,
@@ -606,7 +610,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await await emailVerifyTokenRequest(
+        response = await emailVerifyTokenRequest(
             app,
             infoFromResponse.accessToken,
             infoFromResponse.idRefreshTokenFromCookie,
@@ -654,7 +658,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
         );
         assert(JSON.parse(response3.text).status === "OK");
-        assert(JSON.parse(response3.text).isVerified);
+        assert(JSON.parse(response3.text).isVerified === true);
     });
 
     // Call the API with no session and see the error
@@ -682,8 +686,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let response = await new Promise((resolve) =>
             request(app)
                 .get("/auth/user/email/verify")
-                .set("Cookie", ["sAccessToken=" + "randomAccessToken" + ";sIdRefreshToken=" + "randomRefreshToken"])
-                .set("anti-csrf", "randomAntiCsrfToken")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -694,7 +696,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert(response.status === 401);
-        assert(JSON.parse(response.text).message === "try refresh token");
+        assert(JSON.parse(response.text).message === "unauthorised");
     });
 
     // Call the API with an expired access token and see that try refresh token is returned
@@ -738,7 +740,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        response = await await emailVerifyTokenRequest(
+        response = await emailVerifyTokenRequest(
             app,
             infoFromResponse.accessToken,
             infoFromResponse.idRefreshTokenFromCookie,
@@ -827,6 +829,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
         );
         assert(JSON.parse(response4.text).status === "OK");
-        assert(JSON.parse(response4.text).isVerified);
+        assert(JSON.parse(response4.text).isVerified === true);
     });
 });
