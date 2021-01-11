@@ -122,6 +122,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert(JSON.parse(response.text).status === "OK");
+        assert(Object.keys(JSON.parse(response.text)).length === 1);
     });
 
     //Call the API with valid input, email verified and test error
@@ -165,6 +166,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(JSON.parse(response.text).status === "EMAIL_ALREADY_VERIFIED_ERROR");
         assert(response.status === 200);
+        assert(Object.keys(JSON.parse(response.text)).length === 1);
     });
 
     // Call the API with no session and see the output
@@ -202,6 +204,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response.status === 401);
         assert(JSON.parse(response.text).message === "unauthorised");
+        assert(Object.keys(JSON.parse(response.text)).length === 1);
     });
 
     // Call the API with an expired access token and see that try refresh token is returned
@@ -246,6 +249,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response2.status === 401);
         assert(JSON.parse(response2.text).message === "try refresh token");
+        assert(Object.keys(JSON.parse(response2.text)).length === 1);
 
         let refreshedResponse = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -275,6 +279,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response3.status === 200);
         assert(JSON.parse(response3.text).status === "OK");
+        assert(Object.keys(JSON.parse(response3.text)).length === 1);
     });
 
     // Provide your own email callback and make sure that is called
@@ -328,6 +333,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert(response2.status === 200);
+
+        assert(JSON.parse(response2.text).status === "OK");
+        assert(Object.keys(JSON.parse(response2.text)).length === 1);
+
         assert(userInfo.id === userId);
         assert(userInfo.email === "test@gmail.com");
         assert(emailToken !== null);
@@ -391,6 +400,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             userId
         );
         assert(JSON.parse(response.text).status === "OK");
+        assert(Object.keys(JSON.parse(response.text)).length === 1);
 
         let response2 = await new Promise((resolve) =>
             request(app)
@@ -410,6 +420,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert(JSON.parse(response2.text).status === "OK");
+        assert(Object.keys(JSON.parse(response2.text)).length === 1);
     });
 
     // Call the API with an invalid token and see the error
@@ -451,6 +462,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
         );
         assert(JSON.parse(response.text).status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR");
+        assert(Object.keys(JSON.parse(response.text)).length === 1);
     });
 
     // token is not of type string from input
@@ -492,6 +504,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
         assert(response.status === 400);
         assert(JSON.parse(response.text).message === "The email verification token must be a string");
+        assert(Object.keys(JSON.parse(response.text)).length === 1);
     });
 
     // provide a handlePostEmailVerification callback and make sure it's called on success verification
@@ -565,6 +578,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
 
         assert(JSON.parse(response2.text).status === "OK");
+        assert(Object.keys(JSON.parse(response2.text)).length === 1);
 
         assert(userInfoFromCallback.id === userId);
         assert(userInfoFromCallback.email === "test@gmail.com");
@@ -659,6 +673,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
         assert(JSON.parse(response3.text).status === "OK");
         assert(JSON.parse(response3.text).isVerified === true);
+        assert(Object.keys(JSON.parse(response3.text)).length === 2);
     });
 
     // Call the API with no session and see the error
@@ -697,6 +712,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(response.status === 401);
         assert(JSON.parse(response.text).message === "unauthorised");
+        assert(Object.keys(JSON.parse(response.text)).length === 1);
     });
 
     // Call the API with an expired access token and see that try refresh token is returned
@@ -790,6 +806,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
         assert(response3.status === 401);
         assert(JSON.parse(response3.text).message === "try refresh token");
+        assert(Object.keys(JSON.parse(response3.text)).length === 1);
 
         let refreshedResponse = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -830,5 +847,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         );
         assert(JSON.parse(response4.text).status === "OK");
         assert(JSON.parse(response4.text).isVerified === true);
+        assert(Object.keys(JSON.parse(response.text)).length === 1);
     });
 });
