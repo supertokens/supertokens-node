@@ -21,7 +21,7 @@ let SuperTokens = require("../lib/build/").default;
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
-const useSuperTokensFromNextJs = require("../lib/build/nextjs").useSuperTokensFromNextJs;
+const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
 
 describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
     describe("Backward compatbility superTokensMiddleware", function () {
@@ -231,7 +231,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
         });
     });
 
-    describe("with useSuperTokensFromNextJs", function () {
+    describe("with superTokensNextWrapper", function () {
         before(async function () {
             await killAllST();
             await setupST();
@@ -290,7 +290,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 return done();
             });
 
-            useSuperTokensFromNextJs(
+            superTokensNextWrapper(
                 async (next) => {
                     return SuperTokens.middleware()(request, response, next);
                 },
@@ -341,7 +341,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 });
                 const getUserResponseWithSession = httpMocks.createResponse({});
 
-                await useSuperTokensFromNextJs(
+                await superTokensNextWrapper(
                     (next) => {
                         Session.verifySession()(getUserRequestWithSession, getUserResponseWithSession, next);
                     },
@@ -366,7 +366,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                     return done();
                 });
 
-                useSuperTokensFromNextJs(
+                superTokensNextWrapper(
                     (next) => {
                         Session.verifySession()(getUserRequestWithoutSession, getUserResponseWithoutSession, next);
                     },
@@ -375,7 +375,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 );
             });
 
-            useSuperTokensFromNextJs(
+            superTokensNextWrapper(
                 async (next) => {
                     return SuperTokens.middleware()(loginRequest, loginResponse, next);
                 },
@@ -410,7 +410,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 return done();
             });
 
-            useSuperTokensFromNextJs(
+            superTokensNextWrapper(
                 async (next) => {
                     return SuperTokens.middleware()(request, response, next);
                 },
@@ -446,7 +446,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 return done();
             });
 
-            useSuperTokensFromNextJs(
+            superTokensNextWrapper(
                 async (next) => {
                     return SuperTokens.middleware()(request, response, next);
                 },
@@ -476,7 +476,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 return done();
             });
 
-            useSuperTokensFromNextJs(
+            superTokensNextWrapper(
                 async (next) => {
                     return SuperTokens.middleware()(request, response, next);
                 },
@@ -506,7 +506,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 return done();
             });
 
-            useSuperTokensFromNextJs(
+            superTokensNextWrapper(
                 async (next) => {
                     return SuperTokens.middleware()(request, response, next);
                 },
@@ -530,7 +530,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 return done();
             });
 
-            useSuperTokensFromNextJs(
+            superTokensNextWrapper(
                 (next) => {
                     Session.verifySession()(request, response, next);
                 },

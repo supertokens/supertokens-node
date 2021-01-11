@@ -36,7 +36,7 @@ function next(
 }
 
 export default class NextJS {
-    static async useSuperTokensFromNextJs(
+    static async superTokensNextWrapper(
         middleware: (next: (middlewareError: any) => void) => Promise<void>,
         request: any,
         response: any
@@ -55,4 +55,4 @@ export default class NextJS {
 }
 
 export let superTokensMiddleware = NextJS.superTokensMiddleware;
-export let useSuperTokensFromNextJs = NextJS.useSuperTokensFromNextJs;
+export let superTokensNextWrapper = NextJS.superTokensNextWrapper;
