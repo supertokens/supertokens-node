@@ -14,24 +14,45 @@
  */
 import SuperTokens from ".";
 
-export default class NextJS {
-    static superTokensMiddleware(request: any, response: any): Promise<any> {
-        return new Promise((resolve, reject) => {
-            SuperTokens.middleware()(request, response, async (middlewareError: any) => {
-                if (middlewareError !== undefined) {
-                    SuperTokens.errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
-                        if (errorHandlerError !== undefined) {
-                            return reject(errorHandlerError);
-                        }
+function next(
+    request: any,
+    response: any,
+    resolve: (value?: any) => void,
+    reject: (reason?: any) => void
+): (middlewareError: any) => Promise<void> {
+    return async function (middlewareError: any) {
+        if (middlewareError === undefined) {
+            return resolve();
+        }
 
-                        resolve();
-                    });
-                    return;
-                }
-                return resolve();
-            });
+        return SuperTokens.errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
+            if (errorHandlerError !== undefined) {
+                return reject(errorHandlerError);
+            }
+
+            return resolve();
+        });
+    };
+}
+
+export default class NextJS {
+    static async useSuperTokensFromNextJs(
+        middleware: (next: (middlewareError: any) => void) => Promise<void>,
+        request: any,
+        response: any
+    ): Promise<void> {
+        return new Promise((resolve: any, reject: any) => {
+            return middleware(next(request, response, resolve, reject));
+        });
+    }
+
+    /* Backward compatibility */
+    static superTokensMiddleware(request: any, response: any): Promise<any> {
+        return new Promise((resolve: any, reject: any) => {
+            return SuperTokens.middleware()(request, response, next(request, response, resolve, reject));
         });
     }
 }
 
 export let superTokensMiddleware = NextJS.superTokensMiddleware;
+export let useSuperTokensFromNextJs = NextJS.useSuperTokensFromNextJs;
