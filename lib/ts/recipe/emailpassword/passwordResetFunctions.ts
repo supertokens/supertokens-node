@@ -31,6 +31,9 @@ export function getResetPasswordURL(appInfo: NormalisedAppinfo) {
 export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (user: User, passwordResetURLWithToken: string) => {
         // related issue: https://github.com/supertokens/supertokens-node/issues/38
+        if (process.env.TEST_MODE === "testing") {
+            return;
+        }
         try {
             await axios({
                 method: "POST",
