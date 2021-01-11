@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -31,6 +31,9 @@ export function getResetPasswordURL(appInfo: NormalisedAppinfo) {
 export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (user: User, passwordResetURLWithToken: string) => {
         // related issue: https://github.com/supertokens/supertokens-node/issues/38
+        if (process.env.TEST_MODE === "testing") {
+            return;
+        }
         try {
             await axios({
                 method: "POST",

@@ -21,4 +21,7 @@ export default class Recipe extends RecipeModule {
     getUserByEmail: (email: string) => Promise<User | undefined>;
     createResetPasswordToken: (userId: string) => Promise<string>;
     resetPasswordUsingToken: (token: string, newPassword: string) => Promise<void>;
+    createEmailVerificationToken: (userId: string) => Promise<string>;
+    verifyEmailUsingToken: (token: string) => Promise<any>;
+    isEmailVerified: (userId: string) => Promise<boolean>;
 }

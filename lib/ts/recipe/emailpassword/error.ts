@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -17,12 +17,15 @@ import STError from "../../error";
 
 export default class SessionError extends STError {
     static EMAIL_ALREADY_EXISTS_ERROR: "EMAIL_ALREADY_EXISTS_ERROR" = "EMAIL_ALREADY_EXISTS_ERROR";
+    static EMAIL_ALREADY_VERIFIED_ERROR: "EMAIL_ALREADY_VERIFIED_ERROR" = "EMAIL_ALREADY_VERIFIED_ERROR";
     static FIELD_ERROR: "FIELD_ERROR" = "FIELD_ERROR";
     static WRONG_CREDENTIALS_ERROR: "WRONG_CREDENTIALS_ERROR" = "WRONG_CREDENTIALS_ERROR";
     static UNKNOWN_USER_ID_ERROR: "UNKNOWN_USER_ID_ERROR" = "UNKNOWN_USER_ID_ERROR";
     static UNKNOWN_EMAIL_ERROR: "UNKNOWN_EMAIL_ERROR" = "UNKNOWN_EMAIL_ERROR";
     static RESET_PASSWORD_INVALID_TOKEN_ERROR: "RESET_PASSWORD_INVALID_TOKEN_ERROR" =
         "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    static EMAIL_VERIFICATION_INVALID_TOKEN_ERROR: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" =
+        "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
 
     constructor(
         options:
@@ -32,7 +35,9 @@ export default class SessionError extends STError {
                       | "WRONG_CREDENTIALS_ERROR"
                       | "UNKNOWN_USER_ID_ERROR"
                       | "UNKNOWN_EMAIL_ERROR"
-                      | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+                      | "RESET_PASSWORD_INVALID_TOKEN_ERROR"
+                      | "EMAIL_ALREADY_VERIFIED_ERROR"
+                      | "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
                   message: string;
               }
             | {

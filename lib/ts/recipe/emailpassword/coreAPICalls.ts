@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -105,6 +105,75 @@ export async function createResetPasswordToken(recipeInstance: Recipe, userId: s
             {
                 type: STError.UNKNOWN_USER_ID_ERROR,
                 message: "Failed to generated password reset token as the user ID is unknown",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+}
+
+export async function createEmailVerificationToken(recipeInstance: Recipe, userId: string): Promise<string> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/email/verify/token"), {
+            userId,
+        });
+    if (response.status === "OK") {
+        return response.token;
+    } else {
+        if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+            throw new STError(
+                {
+                    type: STError.EMAIL_ALREADY_VERIFIED_ERROR,
+                    message: "Failed to generated email verification token as the user ID is unknown",
+                },
+                recipeInstance.getRecipeId()
+            );
+        }
+        throw new STError(
+            {
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Failed to generated email verification token as the user ID is unknown",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+}
+
+export async function verifyEmailUsingToken(recipeInstance: Recipe, token: string) {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/email/verify"), {
+            method: "token",
+            token,
+        });
+    if (response.status === "OK") {
+        return {
+            ...response.user,
+        };
+    } else {
+        throw new STError(
+            {
+                type: STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR,
+                message: "Failed to verify email as the the token has expired or is invalid",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+}
+
+export async function isEmailVerified(recipeInstance: Recipe, userId: string): Promise<boolean> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/email/verify"), {
+            userId,
+        });
+    if (response.status === "OK") {
+        return response.isVerified;
+    } else {
+        throw new STError(
+            {
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "User ID not found",
             },
             recipeInstance.getRecipeId()
         );

@@ -1,4 +1,4 @@
-/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -18,6 +18,7 @@ export type TypeInput = {
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     signOutFeature?: TypeInputSignOutFeature;
+    emailVerificationFeature?: TypeInputEmailVerificationFeature;
 };
 
 export type TypeNormalisedInput = {
@@ -25,6 +26,21 @@ export type TypeNormalisedInput = {
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     signOutFeature: TypeNormalisedInputSignOutFeature;
+    emailVerificationFeature: TypeNormalisedInputEmailVerificationFeature;
+};
+
+export type TypeInputEmailVerificationFeature = {
+    disableDefaultImplementation?: boolean;
+    getEmailVerificationURL?: (user: User) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    handlePostEmailVerification?: (user: User) => Promise<void>;
+};
+
+export type TypeNormalisedInputEmailVerificationFeature = {
+    disableDefaultImplementation: boolean;
+    getEmailVerificationURL: (user: User) => Promise<string>;
+    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    handlePostEmailVerification: (user: User) => Promise<void>;
 };
 
 export type TypeInputSignUp = {
@@ -83,4 +99,5 @@ export type TypeNormalisedInputSignOutFeature = {
 export type User = {
     id: string;
     email: string;
+    timeJoined: number;
 };

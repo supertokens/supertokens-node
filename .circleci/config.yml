@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  slack: circleci/slack@3.4.2
 jobs:
   publish:
     docker:
@@ -7,6 +9,7 @@ jobs:
       - checkout
       - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
       - run: npm publish
+      - slack/status
   test:
     docker:
       - image: rishabhpoddar/supertokens_website_sdk_testing
@@ -18,18 +21,23 @@ jobs:
       - run: apt-get install lsof
       - run: npm i -d
       - run: (cd .circleci/ && ./doTests.sh)
+      - slack/status
 
 workflows:
   version: 2
   tagged-build:
     jobs:
       - publish:
+          context:
+            - slack-notification
           filters:
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
             branches:
               ignore: /.*/
       - test:
+          context:
+            - slack-notification
           filters:
             tags:
               only: /dev-v[0-9]+(\.[0-9]+)*/
