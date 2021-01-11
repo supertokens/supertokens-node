@@ -29,6 +29,9 @@ export function getEmailVerificationURL(appInfo: NormalisedAppinfo) {
 
 export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (user: User, emailVerifyURLWithToken: string) => {
+        if (process.env.TEST_MODE === "testing") {
+            return;
+        }
         try {
             await axios({
                 method: "POST",

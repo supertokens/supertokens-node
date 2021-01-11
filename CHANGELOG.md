@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Email verification feature
 - Change to User object to include timeJoined
+- Sends emails to our APIs only if not testing mode
 
 ## [3.2.2] - 2020-12-18
 ### Fixed
