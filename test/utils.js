@@ -317,3 +317,22 @@ module.exports.signUPRequest = async function (app, email, password) {
             });
     });
 };
+
+module.exports.emailVerifyTokenRequest = async function (app, accessToken, idRefreshTokenFromCookie, antiCsrf, userId) {
+    return new Promise(function (resolve) {
+        request(app)
+            .post("/auth/user/email/verify/token")
+            .set("Cookie", ["sAccessToken=" + accessToken + ";sIdRefreshToken=" + idRefreshTokenFromCookie])
+            .set("anti-csrf", antiCsrf)
+            .send({
+                userId,
+            })
+            .end((err, res) => {
+                if (err) {
+                    resolve(undefined);
+                } else {
+                    resolve(res);
+                }
+            });
+    });
+};
