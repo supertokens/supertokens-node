@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change to User object to include timeJoined
 - Sends emails to our APIs only if not testing mode
 
+### Fixed
+- Bump axios from 0.19 to 0.21 to fix Critical Dependency
+
+
 ## [3.2.2] - 2020-12-18
 ### Fixed
 - Removes the need for Proxy in NextJS so that if a session is created manually by the user, it still works
