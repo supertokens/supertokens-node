@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, User } from "./types";
+import { TypeGetUsersQueryParams, TypeInput, TypeNormalisedInput, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -40,6 +40,8 @@ import {
     createEmailVerificationToken as createEmailVerificationTokenFromCore,
     verifyEmailUsingToken as verifyEmailUsingTokenFromCore,
     isEmailVerified as isEmailVerifiedFromCore,
+    getUsersCount as getUsersCountCore,
+    getUsers as getUsersCore,
 } from "./coreAPICalls";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
@@ -280,5 +282,13 @@ export default class Recipe extends RecipeModule {
 
     isEmailVerified = async (userId: string) => {
         return isEmailVerifiedFromCore(this, userId);
+    };
+
+    getUsers = async (params: TypeGetUsersQueryParams) => {
+        return getUsersCore(this, params);
+    };
+
+    getUsersCount = async () => {
+        return getUsersCountCore(this);
     };
 }
