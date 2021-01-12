@@ -17,215 +17,540 @@ const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./u
 let assert = require("assert");
 const httpMocks = require("node-mocks-http");
 let { ProcessState } = require("../lib/build/processState");
-let SuperTokens = require("../lib/build/supertokens").default;
+let SuperTokens = require("../lib/build/").default;
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
-const noOp = () => {};
+const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
 
 describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
-    before(async function () {
-        await killAllST();
-        await setupST();
-        await startST();
-        ProcessState.getInstance().reset();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                apiBasePath: "/api/auth",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+    describe("Backward compatbility superTokensMiddleware", function () {
+        before(async function () {
+            await killAllST();
+            await setupST();
+            await startST();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("Sign Up", function (done) {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/signup/",
+                body: {
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "john.doe@supertokens.io",
+                        },
+                        {
+                            id: "password",
+                            value: "P@sSW0rd",
+                        },
+                    ],
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().status, "OK");
+                assert.deepStrictEqual(response._getJSONData().user.email, "john.doe@supertokens.io");
+                assert(response._getHeaders()["front-token"] !== undefined);
+                assert(response._getHeaders()["set-cookie"][0].startsWith("sAccessToken="));
+                assert(response._getHeaders()["set-cookie"][1].startsWith("sRefreshToken="));
+                return done();
+            });
+
+            superTokensMiddleware(request, response);
+        });
+
+        it("Sign In", function (done) {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/signin/",
+                body: {
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "john.doe@supertokens.io",
+                        },
+                        {
+                            id: "password",
+                            value: "P@sSW0rd",
+                        },
+                    ],
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().status, "OK");
+                assert.deepStrictEqual(response._getJSONData().user.email, "john.doe@supertokens.io");
+                assert(response._getHeaders()["front-token"] !== undefined);
+                assert(response._getHeaders()["set-cookie"][0].startsWith("sAccessToken="));
+                assert(response._getHeaders()["set-cookie"][1].startsWith("sRefreshToken="));
+                return done();
+            });
+
+            superTokensMiddleware(request, response);
+        });
+
+        it("Reset Password Send Email", function (done) {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/user/password/reset/token",
+                body: {
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "john.do@supertokens.io",
+                        },
+                    ],
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().status, "OK");
+                return done();
+            });
+
+            superTokensMiddleware(request, response);
+        });
+
+        it("Reset Password Send Email", function (done) {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/user/password/reset/",
+                body: {
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "NewP@sSW0rd",
+                        },
+                    ],
+                    token: "RandomToken",
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().status, "RESET_PASSWORD_INVALID_TOKEN_ERROR");
+                return done();
+            });
+
+            superTokensMiddleware(request, response);
+        });
+
+        it("does Email Exist with existing email", function (done) {
+            const request = httpMocks.createRequest({
+                method: "GET",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/signup/email/exists",
+                query: {
+                    email: "john.doe@supertokens.io",
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData(), { status: "OK", exists: true });
+                return done();
+            });
+
+            superTokensMiddleware(request, response);
+        });
+
+        it("does Email Exist with unknown email", function (done) {
+            const request = httpMocks.createRequest({
+                method: "GET",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/signup/email/exists",
+                query: {
+                    email: "unknown@supertokens.io",
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().exists, false);
+                return done();
+            });
+
+            superTokensMiddleware(request, response);
         });
     });
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+    describe("with superTokensNextWrapper", function () {
+        before(async function () {
+            await killAllST();
+            await setupST();
+            await startST();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
+        });
 
-    it("Sign Up", function (done) {
-        const request = httpMocks.createRequest({
-            method: "POST",
-            headers: {
-                rid: "emailpassword",
-            },
-            url: "/api/auth/signup/",
-            body: {
-                formFields: [
-                    {
-                        id: "email",
-                        value: "john.doe@supertokens.io",
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("Sign Up", function (done) {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/signup/",
+                body: {
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "john.doe@supertokens.io",
+                        },
+                        {
+                            id: "password",
+                            value: "P@sSW0rd",
+                        },
+                    ],
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().status, "OK");
+                assert.deepStrictEqual(response._getJSONData().user.email, "john.doe@supertokens.io");
+                assert(response._getHeaders()["front-token"] !== undefined);
+                assert(response._getHeaders()["set-cookie"][0].startsWith("sAccessToken="));
+                assert(response._getHeaders()["set-cookie"][1].startsWith("sRefreshToken="));
+                return done();
+            });
+
+            superTokensNextWrapper(
+                async (next) => {
+                    return SuperTokens.middleware()(request, response, next);
+                },
+                request,
+                response
+            );
+        });
+
+        it("Sign In", function (done) {
+            const loginRequest = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/signin/",
+                body: {
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "john.doe@supertokens.io",
+                        },
+                        {
+                            id: "password",
+                            value: "P@sSW0rd",
+                        },
+                    ],
+                },
+            });
+
+            const loginResponse = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            loginResponse.on("end", async () => {
+                assert.deepStrictEqual(loginResponse._getJSONData().status, "OK");
+                assert.deepStrictEqual(loginResponse._getJSONData().user.email, "john.doe@supertokens.io");
+                assert(loginResponse._getHeaders()["front-token"] !== undefined);
+                assert(loginResponse._getHeaders()["set-cookie"][0].startsWith("sAccessToken=") !== undefined);
+                assert(loginResponse._getHeaders()["set-cookie"][1].startsWith("sRefreshToken=") !== undefined);
+
+                // Verify if session exists next middleware tests:
+
+                // Case 1: Successful => add session to request object.
+                const getUserRequestWithSession = httpMocks.createRequest({
+                    method: "GET",
+                    cookies: getSessionCookiesFromResponse(loginResponse),
+                    url: "/api/user/",
+                });
+                const getUserResponseWithSession = httpMocks.createResponse({});
+
+                await superTokensNextWrapper(
+                    (next) => {
+                        Session.verifySession()(getUserRequestWithSession, getUserResponseWithSession, next);
                     },
-                    {
-                        id: "password",
-                        value: "P@sSW0rd",
+                    getUserRequestWithSession,
+                    getUserResponseWithSession
+                );
+
+                assert(getUserRequestWithSession.session !== undefined);
+
+                // Case 2: Unauthenticated => return 401.
+                const getUserRequestWithoutSession = httpMocks.createRequest({
+                    method: "GET",
+                    url: "/api/user/",
+                });
+
+                const getUserResponseWithoutSession = httpMocks.createResponse({
+                    eventEmitter: require("events").EventEmitter,
+                });
+
+                getUserResponseWithoutSession.on("end", () => {
+                    assert.strictEqual(getUserResponseWithoutSession.statusCode, 401);
+                    return done();
+                });
+
+                superTokensNextWrapper(
+                    (next) => {
+                        Session.verifySession()(getUserRequestWithoutSession, getUserResponseWithoutSession, next);
                     },
-                ],
-            },
+                    getUserRequestWithoutSession,
+                    getUserResponseWithoutSession
+                );
+            });
+
+            superTokensNextWrapper(
+                async (next) => {
+                    return SuperTokens.middleware()(loginRequest, loginResponse, next);
+                },
+                loginRequest,
+                loginResponse
+            );
         });
 
-        const response = httpMocks.createResponse({
-            eventEmitter: require("events").EventEmitter,
+        it("Reset Password Send Email", function (done) {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/user/password/reset/token",
+                body: {
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "john.doe@supertokens.io",
+                        },
+                    ],
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().status, "OK");
+                return done();
+            });
+
+            superTokensNextWrapper(
+                async (next) => {
+                    return SuperTokens.middleware()(request, response, next);
+                },
+                request,
+                response
+            );
         });
 
-        response.on("end", () => {
-            assert.deepStrictEqual(response._getJSONData().status, "OK");
-            assert.deepStrictEqual(response._getJSONData().user.email, "john.doe@supertokens.io");
-            assert(response._getHeaders()["front-token"] !== undefined);
-            assert(response._getHeaders()["set-cookie"][0].startsWith("sAccessToken="));
-            assert(response._getHeaders()["set-cookie"][1].startsWith("sRefreshToken="));
-            return done();
+        it("Reset Password Send Email", function (done) {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/user/password/reset/",
+                body: {
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "NewP@sSW0rd",
+                        },
+                    ],
+                    token: "RandomToken",
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().status, "RESET_PASSWORD_INVALID_TOKEN_ERROR");
+                return done();
+            });
+
+            superTokensNextWrapper(
+                async (next) => {
+                    return SuperTokens.middleware()(request, response, next);
+                },
+                request,
+                response
+            );
         });
 
-        superTokensMiddleware(request, response, noOp);
-    });
+        it("does Email Exist with existing email", function (done) {
+            const request = httpMocks.createRequest({
+                method: "GET",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/signup/email/exists",
+                query: {
+                    email: "john.doe@supertokens.io",
+                },
+            });
 
-    it("Sign In", function (done) {
-        const request = httpMocks.createRequest({
-            method: "POST",
-            headers: {
-                rid: "emailpassword",
-            },
-            url: "/api/auth/signin/",
-            body: {
-                formFields: [
-                    {
-                        id: "email",
-                        value: "john.doe@supertokens.io",
-                    },
-                    {
-                        id: "password",
-                        value: "P@sSW0rd",
-                    },
-                ],
-            },
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData(), { status: "OK", exists: true });
+                return done();
+            });
+
+            superTokensNextWrapper(
+                async (next) => {
+                    return SuperTokens.middleware()(request, response, next);
+                },
+                request,
+                response
+            );
         });
 
-        const response = httpMocks.createResponse({
-            eventEmitter: require("events").EventEmitter,
+        it("does Email Exist with unknown email", function (done) {
+            const request = httpMocks.createRequest({
+                method: "GET",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/signup/email/exists",
+                query: {
+                    email: "unknown@supertokens.io",
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().exists, false);
+                return done();
+            });
+
+            superTokensNextWrapper(
+                async (next) => {
+                    return SuperTokens.middleware()(request, response, next);
+                },
+                request,
+                response
+            );
         });
 
-        response.on("end", () => {
-            assert.deepStrictEqual(response._getJSONData().status, "OK");
-            assert.deepStrictEqual(response._getJSONData().user.email, "john.doe@supertokens.io");
-            assert(response._getHeaders()["front-token"] !== undefined);
-            assert(response._getHeaders()["set-cookie"][0].startsWith("sAccessToken="));
-            assert(response._getHeaders()["set-cookie"][1].startsWith("sRefreshToken="));
-            return done();
+        it("Verify session successfully when session is present", function (done) {
+            const request = httpMocks.createRequest({
+                method: "GET",
+                url: "/api/auth/user/info",
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getStatusCode(), 401);
+                return done();
+            });
+
+            superTokensNextWrapper(
+                (next) => {
+                    Session.verifySession()(request, response, next);
+                },
+                request,
+                response
+            );
         });
-
-        superTokensMiddleware(request, response, noOp);
-    });
-
-    it("Reset Password Send Email", function (done) {
-        const request = httpMocks.createRequest({
-            method: "POST",
-            headers: {
-                rid: "emailpassword",
-            },
-            url: "/api/auth/user/password/reset/token",
-            body: {
-                formFields: [
-                    {
-                        id: "email",
-                        value: "john.do@supertokens.io",
-                    },
-                ],
-            },
-        });
-
-        const response = httpMocks.createResponse({
-            eventEmitter: require("events").EventEmitter,
-        });
-
-        response.on("end", () => {
-            assert.deepStrictEqual(response._getJSONData().status, "OK");
-            return done();
-        });
-
-        superTokensMiddleware(request, response, noOp);
-    });
-
-    it("Reset Password Send Email", function (done) {
-        const request = httpMocks.createRequest({
-            method: "POST",
-            headers: {
-                rid: "emailpassword",
-            },
-            url: "/api/auth/user/password/reset/",
-            body: {
-                formFields: [
-                    {
-                        id: "password",
-                        value: "NewP@sSW0rd",
-                    },
-                ],
-                token: "RandomToken",
-            },
-        });
-
-        const response = httpMocks.createResponse({
-            eventEmitter: require("events").EventEmitter,
-        });
-
-        response.on("end", () => {
-            assert.deepStrictEqual(response._getJSONData().status, "RESET_PASSWORD_INVALID_TOKEN_ERROR");
-            return done();
-        });
-
-        superTokensMiddleware(request, response, noOp);
-    });
-
-    it("does Email Exist with existing email", function (done) {
-        const request = httpMocks.createRequest({
-            method: "GET",
-            headers: {
-                rid: "emailpassword",
-            },
-            url: "/api/auth/signup/email/exists",
-            query: {
-                email: "john.doe@supertokens.io",
-            },
-        });
-
-        const response = httpMocks.createResponse({
-            eventEmitter: require("events").EventEmitter,
-        });
-
-        response.on("end", () => {
-            assert.deepStrictEqual(response._getJSONData(), { status: "OK", exists: true });
-            return done();
-        });
-
-        superTokensMiddleware(request, response, noOp);
-    });
-
-    it("does Email Exist with unknown email", function (done) {
-        const request = httpMocks.createRequest({
-            method: "GET",
-            headers: {
-                rid: "emailpassword",
-            },
-            url: "/api/auth/signup/email/exists",
-            query: {
-                email: "unknown@supertokens.io",
-            },
-        });
-
-        const response = httpMocks.createResponse({
-            eventEmitter: require("events").EventEmitter,
-        });
-
-        response.on("end", () => {
-            assert.deepStrictEqual(response._getJSONData().exists, false);
-            return done();
-        });
-
-        superTokensMiddleware(request, response, noOp);
     });
 });
+
+function getSessionCookiesFromResponse(response) {
+    return {
+        sAccessToken: decodeURIComponent(
+            response._getHeaders()["set-cookie"][0].split("sAccessToken=")[1].split(";")[0]
+        ),
+        sRefreshToken: decodeURIComponent(
+            response._getHeaders()["set-cookie"][1].split("sRefreshToken=")[1].split(";")[0]
+        ),
+        sIdRefreshToken: decodeURIComponent(
+            response._getHeaders()["set-cookie"][2].split("sIdRefreshToken=")[1].split(";")[0]
+        ),
+    };
+}

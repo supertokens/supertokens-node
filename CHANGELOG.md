@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [3.3.0] - 2021-01-09
 ### Added
 - Email verification feature
-- Change to User object to include timeJoined
+- Change the User object to include timeJoined
 - Sends emails to our APIs only if not testing mode
+- Add superTokensNextWrapper generic express middleware wrapper
 
 ### Fixed
 - Bump axios from 0.19 to 0.21 to fix Critical Dependency
