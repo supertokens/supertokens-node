@@ -93,7 +93,7 @@ export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
 
-export let getUsersOldestFirst = Wrapper.getUserByEmail;
+export let getUsersOldestFirst = Wrapper.getUsersOldestFirst;
 
 export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
 

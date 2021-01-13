@@ -101,14 +101,3 @@ export type User = {
     email: string;
     timeJoined: number;
 };
-
-export type TypeGetUsersQueryParams = {
-    limit?: number;
-    paginationToken?: string;
-    timeJoinedOrder?: "ASC" | "DESC";
-};
-
-export type TypeGetUsersResponse = {
-    users: User[];
-    nextPaginationToken?: string;
-};

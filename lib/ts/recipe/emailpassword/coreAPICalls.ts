@@ -15,7 +15,7 @@
 
 import Recipe from "./recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { TypeGetUsersQueryParams, TypeGetUsersResponse, User } from "./types";
+import { User } from "./types";
 import STError from "./error";
 
 export async function signUp(recipeInstance: Recipe, email: string, password: string): Promise<User> {
@@ -201,11 +201,20 @@ export async function resetPasswordUsingToken(recipeInstance: Recipe, token: str
 
 export async function getUsers(
     recipeInstance: Recipe,
-    inputParams: TypeGetUsersQueryParams
-): Promise<TypeGetUsersResponse> {
+    timeJoinedOrder: "ASC" | "DESC",
+    limit?: number,
+    paginationToken?: string
+): Promise<{
+    users: User[];
+    nextPaginationToken?: string;
+}> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/users"), inputParams);
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/users"), {
+            timeJoinedOrder,
+            limit,
+            paginationToken,
+        });
     return {
         users: response.users,
         nextPaginationToken: response.nextPaginationToken,

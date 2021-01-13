@@ -24,7 +24,13 @@ export default class Recipe extends RecipeModule {
     createEmailVerificationToken: (userId: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<any>;
     isEmailVerified: (userId: string) => Promise<boolean>;
-    getUsersOldestFirst: (limit?: number | undefined, nextPaginationToken?: string | undefined) => Promise<import("./types").TypeGetUsersResponse>;
-    getUsersNewestFirst: (limit?: number | undefined, nextPaginationToken?: string | undefined) => Promise<import("./types").TypeGetUsersResponse>;
+    getUsersOldestFirst: (limit?: number | undefined, nextPaginationToken?: string | undefined) => Promise<{
+        users: User[];
+        nextPaginationToken?: string | undefined;
+    }>;
+    getUsersNewestFirst: (limit?: number | undefined, nextPaginationToken?: string | undefined) => Promise<{
+        users: User[];
+        nextPaginationToken?: string | undefined;
+    }>;
     getUserCount: () => Promise<number>;
 }

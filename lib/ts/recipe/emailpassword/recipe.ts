@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeGetUsersQueryParams, TypeInput, TypeNormalisedInput, User } from "./types";
+import { TypeInput, TypeNormalisedInput, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -285,19 +285,11 @@ export default class Recipe extends RecipeModule {
     };
 
     getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
-        return getUsersCore(this, {
-            limit,
-            paginationToken: nextPaginationToken,
-            timeJoinedOrder: "ASC",
-        });
+        return getUsersCore(this, "ASC", limit, nextPaginationToken);
     };
 
     getUsersNewestFirst = async (limit?: number, nextPaginationToken?: string) => {
-        return getUsersCore(this, {
-            limit,
-            paginationToken: nextPaginationToken,
-            timeJoinedOrder: "DESC",
-        });
+        return getUsersCore(this, "DESC", limit, nextPaginationToken);
     };
 
     getUserCount = async () => {

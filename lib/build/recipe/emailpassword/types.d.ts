@@ -79,12 +79,3 @@ export declare type User = {
     email: string;
     timeJoined: number;
 };
-export declare type TypeGetUsersQueryParams = {
-    limit?: number;
-    paginationToken?: string;
-    timeJoinedOrder?: "ASC" | "DESC";
-};
-export declare type TypeGetUsersResponse = {
-    users: User[];
-    nextPaginationToken?: string;
-};
