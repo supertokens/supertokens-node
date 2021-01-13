@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change the User object to include timeJoined
 - Sends emails to our APIs only if not testing mode
 - Add superTokensNextWrapper generic express middleware wrapper
-- getUsersNewestFirst, getUsersOldestFirst and getUsersCount functions
+- getUsersNewestFirst, getUsersOldestFirst and getUserCount functions
 
 ### Fixed
 - Bump axios from 0.19 to 0.21 to fix Critical Dependency
