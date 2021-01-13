@@ -16,9 +16,11 @@ const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = re
 
 /*
 TODO:
-- getUsers(), 
-   - test with different input params
-- getUsersCount():
+- getUsersOldestFirst(), 
+   - test with different input params, and make sure the results are obtained in ASC order
+- getUsersNewestFirst(), 
+   - test with different input params, and make sure the results are obtained in DESC order
+- getUserCount():
    - call this function with no user in db and verify it returns 0
    - add few users in db and verify that the count returned equals to the no. of users added
 */

@@ -284,11 +284,23 @@ export default class Recipe extends RecipeModule {
         return isEmailVerifiedFromCore(this, userId);
     };
 
-    getUsers = async (params: TypeGetUsersQueryParams) => {
-        return getUsersCore(this, params);
+    getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
+        return getUsersCore(this, {
+            limit,
+            paginationToken: nextPaginationToken,
+            timeJoinedOrder: "ASC",
+        });
     };
 
-    getUsersCount = async () => {
+    getUsersNewestFirst = async (limit?: number, nextPaginationToken?: string) => {
+        return getUsersCore(this, {
+            limit,
+            paginationToken: nextPaginationToken,
+            timeJoinedOrder: "DESC",
+        });
+    };
+
+    getUserCount = async () => {
         return getUsersCountCore(this);
     };
 }

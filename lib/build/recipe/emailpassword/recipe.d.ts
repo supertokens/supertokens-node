@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { TypeGetUsersQueryParams, TypeInput, TypeNormalisedInput, User } from "./types";
+import { TypeInput, TypeNormalisedInput, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -24,6 +24,7 @@ export default class Recipe extends RecipeModule {
     createEmailVerificationToken: (userId: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<any>;
     isEmailVerified: (userId: string) => Promise<boolean>;
-    getUsers: (params: TypeGetUsersQueryParams) => Promise<import("./types").TypeGetUsersResponse>;
-    getUsersCount: () => Promise<number>;
+    getUsersOldestFirst: (limit?: number | undefined, nextPaginationToken?: string | undefined) => Promise<import("./types").TypeGetUsersResponse>;
+    getUsersNewestFirst: (limit?: number | undefined, nextPaginationToken?: string | undefined) => Promise<import("./types").TypeGetUsersResponse>;
+    getUserCount: () => Promise<number>;
 }
