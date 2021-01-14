@@ -198,3 +198,32 @@ export async function resetPasswordUsingToken(recipeInstance: Recipe, token: str
         );
     }
 }
+
+export async function getUsers(
+    recipeInstance: Recipe,
+    timeJoinedOrder: "ASC" | "DESC",
+    limit?: number,
+    paginationToken?: string
+): Promise<{
+    users: User[];
+    nextPaginationToken?: string;
+}> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/users"), {
+            timeJoinedOrder,
+            limit,
+            paginationToken,
+        });
+    return {
+        users: response.users,
+        nextPaginationToken: response.nextPaginationToken,
+    };
+}
+
+export async function getUsersCount(recipeInstance: Recipe): Promise<number> {
+    let response = await recipeInstance
+        .getQuerier()
+        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/users/count"), {});
+    return Number(response.count);
+}

@@ -9,3 +9,8 @@ export declare function createEmailVerificationToken(recipeInstance: Recipe, use
 export declare function verifyEmailUsingToken(recipeInstance: Recipe, token: string): Promise<any>;
 export declare function isEmailVerified(recipeInstance: Recipe, userId: string): Promise<boolean>;
 export declare function resetPasswordUsingToken(recipeInstance: Recipe, token: string, newPassword: string): Promise<void>;
+export declare function getUsers(recipeInstance: Recipe, timeJoinedOrder: "ASC" | "DESC", limit?: number, paginationToken?: string): Promise<{
+    users: User[];
+    nextPaginationToken?: string;
+}>;
+export declare function getUsersCount(recipeInstance: Recipe): Promise<number>;

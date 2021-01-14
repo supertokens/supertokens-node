@@ -40,6 +40,8 @@ import {
     createEmailVerificationToken as createEmailVerificationTokenFromCore,
     verifyEmailUsingToken as verifyEmailUsingTokenFromCore,
     isEmailVerified as isEmailVerifiedFromCore,
+    getUsersCount as getUsersCountCore,
+    getUsers as getUsersCore,
 } from "./coreAPICalls";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
@@ -280,5 +282,17 @@ export default class Recipe extends RecipeModule {
 
     isEmailVerified = async (userId: string) => {
         return isEmailVerifiedFromCore(this, userId);
+    };
+
+    getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
+        return getUsersCore(this, "ASC", limit, nextPaginationToken);
+    };
+
+    getUsersNewestFirst = async (limit?: number, nextPaginationToken?: string) => {
+        return getUsersCore(this, "DESC", limit, nextPaginationToken);
+    };
+
+    getUserCount = async () => {
+        return getUsersCountCore(this);
     };
 }

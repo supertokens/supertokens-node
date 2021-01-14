@@ -9,6 +9,15 @@ export default class Wrapper {
     static getUserByEmail(email: string): Promise<import("./types").User | undefined>;
     static createResetPasswordToken(userId: string): Promise<string>;
     static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+    static getUsersOldestFirst(limit?: number, nextPaginationToken?: string): Promise<{
+        users: import("./types").User[];
+        nextPaginationToken?: string | undefined;
+    }>;
+    static getUsersNewestFirst(limit?: number, nextPaginationToken?: string): Promise<{
+        users: import("./types").User[];
+        nextPaginationToken?: string | undefined;
+    }>;
+    static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<any>;
     static isEmailVerified(userId: string): Promise<boolean>;
@@ -24,3 +33,6 @@ export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingTok
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
+export declare let getUsersOldestFirst: typeof Wrapper.getUsersOldestFirst;
+export declare let getUsersNewestFirst: typeof Wrapper.getUsersNewestFirst;
+export declare let getUserCount: typeof Wrapper.getUserCount;

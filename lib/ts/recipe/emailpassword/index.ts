@@ -46,6 +46,18 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().resetPasswordUsingToken(token, newPassword);
     }
 
+    static getUsersOldestFirst(limit?: number, nextPaginationToken?: string) {
+        return Recipe.getInstanceOrThrowError().getUsersOldestFirst(limit, nextPaginationToken);
+    }
+
+    static getUsersNewestFirst(limit?: number, nextPaginationToken?: string) {
+        return Recipe.getInstanceOrThrowError().getUsersNewestFirst(limit, nextPaginationToken);
+    }
+
+    static getUserCount() {
+        return Recipe.getInstanceOrThrowError().getUserCount();
+    }
+
     static createEmailVerificationToken(userId: string) {
         return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
     }
@@ -80,3 +92,9 @@ export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
 export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
+
+export let getUsersOldestFirst = Wrapper.getUsersOldestFirst;
+
+export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
+
+export let getUserCount = Wrapper.getUserCount;
