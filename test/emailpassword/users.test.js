@@ -12,18 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST, signUPRequest } = require("../utils");
+const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/recipe/emailpassword");
+let assert = require("assert");
+let { ProcessState } = require("../../lib/build/processState");
+let STExpress = require("../../");
+let Session = require("../../recipe/session");
+let EmailPassword = require("../../recipe/emailpassword");
 
-/*
-TODO:
-- getUsersOldestFirst(), 
-   - test with different input params, and make sure the results are obtained in ASC order
-- getUsersNewestFirst(), 
-   - test with different input params, and make sure the results are obtained in DESC order
-- getUserCount():
-   - call this function with no user in db and verify it returns 0
-   - add few users in db and verify that the count returned equals to the no. of users added
-*/
 describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -34,5 +30,162 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    it("test getUsersOldestFirst", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const express = require("express");
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        await signUPRequest(app, "test@gmail.com", "testPass123");
+        await signUPRequest(app, "test1@gmail.com", "testPass123");
+        await signUPRequest(app, "test2@gmail.com", "testPass123");
+        await signUPRequest(app, "test3@gmail.com", "testPass123");
+        await signUPRequest(app, "test4@gmail.com", "testPass123");
+
+        let users = await getUsersOldestFirst();
+        assert.strictEqual(users.users.length, 5);
+        assert.strictEqual(users.nextPaginationToken, undefined);
+
+        users = await getUsersOldestFirst(1);
+        assert.strictEqual(users.users.length, 1);
+        assert.strictEqual(users.users[0].email, "test@gmail.com");
+        assert.strictEqual(typeof users.nextPaginationToken, "string");
+
+        users = await getUsersOldestFirst(1, users.nextPaginationToken);
+        assert.strictEqual(users.users.length, 1);
+        assert.strictEqual(users.users[0].email, "test1@gmail.com");
+        assert.strictEqual(typeof users.nextPaginationToken, "string");
+
+        users = await getUsersOldestFirst(5, users.nextPaginationToken);
+        assert.strictEqual(users.users.length, 3);
+        assert.strictEqual(users.nextPaginationToken, undefined);
+
+        try {
+            await getUsersOldestFirst(10, "invalid-pagination-token");
+            assert(false);
+        } catch (err) {
+            assert(true);
+        }
+
+        try {
+            await getUsersOldestFirst(-1);
+            assert(false);
+        } catch (err) {
+            assert(true);
+        }
+    });
+
+    it("test getUsersNewestFirst", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        const express = require("express");
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        await signUPRequest(app, "test@gmail.com", "testPass123");
+        await signUPRequest(app, "test1@gmail.com", "testPass123");
+        await signUPRequest(app, "test2@gmail.com", "testPass123");
+        await signUPRequest(app, "test3@gmail.com", "testPass123");
+        await signUPRequest(app, "test4@gmail.com", "testPass123");
+
+        let users = await getUsersNewestFirst();
+        assert.strictEqual(users.users.length, 5);
+        assert.strictEqual(users.nextPaginationToken, undefined);
+
+        users = await getUsersNewestFirst(1);
+        assert.strictEqual(users.users.length, 1);
+        assert.strictEqual(users.users[0].email, "test4@gmail.com");
+        assert.strictEqual(typeof users.nextPaginationToken, "string");
+
+        users = await getUsersNewestFirst(1, users.nextPaginationToken);
+        assert.strictEqual(users.users.length, 1);
+        assert.strictEqual(users.users[0].email, "test3@gmail.com");
+        assert.strictEqual(typeof users.nextPaginationToken, "string");
+
+        users = await getUsersNewestFirst(5, users.nextPaginationToken);
+        assert.strictEqual(users.users.length, 3);
+        assert.strictEqual(users.nextPaginationToken, undefined);
+
+        try {
+            await getUsersNewestFirst(10, "invalid-pagination-token");
+            assert(false);
+        } catch (err) {
+            assert(true);
+        }
+
+        try {
+            await getUsersNewestFirst(-1);
+            assert(false);
+        } catch (err) {
+            assert(true);
+        }
+    });
+
+    it("test getUserCount", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        let userCount = await getUserCount();
+        assert.strictEqual(userCount, 0);
+
+        const express = require("express");
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        await signUPRequest(app, "test@gmail.com", "testPass123");
+        userCount = await getUserCount();
+        assert.strictEqual(userCount, 1);
+
+        await signUPRequest(app, "test1@gmail.com", "testPass123");
+        await signUPRequest(app, "test2@gmail.com", "testPass123");
+        await signUPRequest(app, "test3@gmail.com", "testPass123");
+        await signUPRequest(app, "test4@gmail.com", "testPass123");
+
+        userCount = await getUserCount();
+        assert.strictEqual(userCount, 5);
     });
 });
