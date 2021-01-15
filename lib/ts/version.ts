@@ -14,4 +14,4 @@
  */
 export const version = "3.3.0";
 
-export const cdiSupported = ["2.5"];
+export const cdiSupported = ["2.4", "2.5"];
