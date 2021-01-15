@@ -28,17 +28,11 @@ const {
 } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
-let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
-let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
-const { Querier } = require("../../lib/build/querier");
+let { maxVersion } = require("../../lib/build/utils");
+let { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
-let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
-let generatePasswordResetToken = require("../../lib/build/recipe/emailpassword/api/generatePasswordResetToken").default;
-let passwordReset = require("../../lib/build/recipe/emailpassword/api/passwordReset").default;
 const express = require("express");
 const request = require("supertest");
 
@@ -84,6 +78,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
+
         const app = express();
 
         app.use(STExpress.middleware());
@@ -123,6 +122,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             },
             recipeList: [EmailPassword.init(), Session.init()],
         });
+
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
 
         const app = express();
 
@@ -168,6 +172,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
+
         const app = express();
 
         app.use(STExpress.middleware());
@@ -207,6 +216,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             },
             recipeList: [EmailPassword.init(), Session.init()],
         });
+
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
 
         const app = express();
 
@@ -295,6 +309,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
+
         const app = express();
 
         app.use(STExpress.middleware());
@@ -363,6 +382,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
+
         const app = express();
 
         app.use(STExpress.middleware());
@@ -423,6 +447,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
+
         const app = express();
 
         app.use(STExpress.middleware());
@@ -464,6 +493,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             },
             recipeList: [EmailPassword.init(), Session.init()],
         });
+
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
 
         const app = express();
 
@@ -521,6 +555,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 Session.init(),
             ],
         });
+
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
 
         const app = express();
 
@@ -594,6 +633,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 Session.init(),
             ],
         });
+
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
 
         const app = express();
 
@@ -676,6 +720,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
+
         const app = express();
 
         app.use(STExpress.middleware());
@@ -726,6 +775,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 Session.init(),
             ],
         });
+
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
 
         const app = express();
 

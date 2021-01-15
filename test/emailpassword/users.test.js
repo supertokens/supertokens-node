@@ -19,6 +19,8 @@ let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
+let { maxVersion } = require("../../lib/build/utils");
+let { Querier } = require("../../lib/build/querier");
 
 describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, function () {
     beforeEach(async function () {
@@ -45,6 +47,11 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
             },
             recipeList: [EmailPassword.init(), Session.init()],
         });
+
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
 
         const express = require("express");
         const app = express();
@@ -81,14 +88,18 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
             await getUsersOldestFirst(10, "invalid-pagination-token");
             assert(false);
         } catch (err) {
-            assert(true);
+            if (!err.message.includes("invalid pagination token")) {
+                throw err;
+            }
         }
 
         try {
             await getUsersOldestFirst(-1);
             assert(false);
         } catch (err) {
-            assert(true);
+            if (!err.message.includes("limit must a positive integer with max value 1000")) {
+                throw err;
+            }
         }
     });
 
@@ -105,6 +116,11 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
             },
             recipeList: [EmailPassword.init(), Session.init()],
         });
+
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
 
         const express = require("express");
         const app = express();
@@ -138,17 +154,21 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         assert.strictEqual(users.nextPaginationToken, undefined);
 
         try {
-            await getUsersNewestFirst(10, "invalid-pagination-token");
+            await getUsersOldestFirst(10, "invalid-pagination-token");
             assert(false);
         } catch (err) {
-            assert(true);
+            if (!err.message.includes("invalid pagination token")) {
+                throw err;
+            }
         }
 
         try {
-            await getUsersNewestFirst(-1);
+            await getUsersOldestFirst(-1);
             assert(false);
         } catch (err) {
-            assert(true);
+            if (!err.message.includes("limit must a positive integer with max value 1000")) {
+                throw err;
+            }
         }
     });
 
@@ -165,6 +185,11 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
             },
             recipeList: [EmailPassword.init(), Session.init()],
         });
+
+        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
+            return;
+        }
 
         let userCount = await getUserCount();
         assert.strictEqual(userCount, 0);
