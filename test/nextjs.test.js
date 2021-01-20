@@ -123,7 +123,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             superTokensMiddleware(request, response);
         });
 
-        it("Reset Password Send Email", function (done) {
+        it("Reset Password - Send Email", function (done) {
             const request = httpMocks.createRequest({
                 method: "POST",
                 headers: {
@@ -152,7 +152,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             superTokensMiddleware(request, response);
         });
 
-        it("Reset Password Send Email", function (done) {
+        it("Reset Password - Create new password", function (done) {
             const request = httpMocks.createRequest({
                 method: "POST",
                 headers: {
@@ -343,7 +343,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
 
                 await superTokensNextWrapper(
                     (next) => {
-                        Session.verifySession()(getUserRequestWithSession, getUserResponseWithSession, next);
+                        return Session.verifySession()(getUserRequestWithSession, getUserResponseWithSession, next);
                     },
                     getUserRequestWithSession,
                     getUserResponseWithSession
@@ -368,7 +368,11 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
 
                 superTokensNextWrapper(
                     (next) => {
-                        Session.verifySession()(getUserRequestWithoutSession, getUserResponseWithoutSession, next);
+                        return Session.verifySession()(
+                            getUserRequestWithoutSession,
+                            getUserResponseWithoutSession,
+                            next
+                        );
                     },
                     getUserRequestWithoutSession,
                     getUserResponseWithoutSession
@@ -384,7 +388,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             );
         });
 
-        it("Reset Password Send Email", function (done) {
+        it("Reset Password - Send Email", function (done) {
             const request = httpMocks.createRequest({
                 method: "POST",
                 headers: {
@@ -419,7 +423,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             );
         });
 
-        it("Reset Password Send Email", function (done) {
+        it("Reset Password - Create new password", function (done) {
             const request = httpMocks.createRequest({
                 method: "POST",
                 headers: {
@@ -531,12 +535,59 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             });
 
             superTokensNextWrapper(
-                (next) => {
-                    Session.verifySession()(request, response, next);
+                async (next) => {
+                    return await Session.verifySession()(request, response, next);
                 },
                 request,
                 response
             );
+        });
+
+        it("Verify session successfully when session is present (check if it continues after)", async function () {
+            const request = httpMocks.createRequest({
+                method: "GET",
+                url: "/api/auth/user/info",
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            const error = await superTokensNextWrapper(
+                async (next) => {
+                    return await Session.verifySession()(request, response, next);
+                },
+                request,
+                response
+            );
+            // Must continue if no error.
+            assert.deepStrictEqual(error, undefined);
+        });
+
+        it("Create new session", async function () {
+            const request = httpMocks.createRequest({
+                method: "GET",
+                url: "/anything",
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getStatusCode(), 401);
+                return done();
+            });
+
+            const session = await superTokensNextWrapper(
+                async () => {
+                    return await Session.createNewSession(response, "1", {}, {});
+                },
+                request,
+                response
+            );
+            assert.notDeepStrictEqual(session, undefined);
+            assert.deepStrictEqual(session.userId, "1");
         });
     });
 });
