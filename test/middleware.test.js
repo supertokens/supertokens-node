@@ -297,14 +297,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.antiCsrf, undefined);
+        assert.deepStrictEqual(res4.accessToken, "");
+        assert.deepStrictEqual(res4.refreshToken, "");
+        assert.deepStrictEqual(res4.idRefreshTokenFromHeader, "remove");
+        assert.deepStrictEqual(res4.idRefreshTokenFromCookie, "");
+        assert.deepStrictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
 
         let r5 = await new Promise((resolve) =>
             request(app)
@@ -546,14 +546,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.antiCsrf, undefined);
+        assert.deepStrictEqual(res4.accessToken, "");
+        assert.deepStrictEqual(res4.refreshToken, "");
+        assert.deepStrictEqual(res4.idRefreshTokenFromHeader, "remove");
+        assert.deepStrictEqual(res4.idRefreshTokenFromCookie, "");
+        assert.deepStrictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
 
         let r5 = await new Promise((resolve) =>
             request(app)
@@ -801,14 +801,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.antiCsrf, undefined);
+        assert.deepStrictEqual(res4.accessToken, "");
+        assert.deepStrictEqual(res4.refreshToken, "");
+        assert.deepStrictEqual(res4.idRefreshTokenFromHeader, "remove");
+        assert.deepStrictEqual(res4.idRefreshTokenFromCookie, "");
+        assert.deepStrictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
 
         let r5 = await new Promise((resolve) =>
             request(app)
@@ -1056,14 +1056,14 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
-        assert.deepEqual(res4.antiCsrf, undefined);
-        assert.deepEqual(res4.accessToken, "");
-        assert.deepEqual(res4.refreshToken, "");
-        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
-        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.antiCsrf, undefined);
+        assert.deepStrictEqual(res4.accessToken, "");
+        assert.deepStrictEqual(res4.refreshToken, "");
+        assert.deepStrictEqual(res4.idRefreshTokenFromHeader, "remove");
+        assert.deepStrictEqual(res4.idRefreshTokenFromCookie, "");
+        assert.deepStrictEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
 
         let r5 = await new Promise((resolve) =>
             request(app)

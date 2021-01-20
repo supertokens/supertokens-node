@@ -16,7 +16,6 @@ const {
     printPath,
     setupST,
     startST,
-    stopST,
     killAllST,
     cleanST,
     extractInfoFromResponse,
@@ -449,17 +448,17 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                     resolve(res);
                 })
         );
-        assert.deepEqual(res3.body.success, true);
+        assert.deepStrictEqual(res3.body.success, true);
 
         let cookies = extractInfoFromResponse(res3);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, "");
-        assert.deepEqual(cookies.refreshToken, "");
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.antiCsrf, undefined);
+        assert.deepStrictEqual(cookies.accessToken, "");
+        assert.deepStrictEqual(cookies.refreshToken, "");
+        assert.deepStrictEqual(cookies.idRefreshTokenFromHeader, "remove");
+        assert.deepStrictEqual(cookies.idRefreshTokenFromCookie, "");
+        assert.deepStrictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
         if (maxVersion(currCDIVersion, "2.1") === "2.1") {
             assert(cookies.accessTokenDomain === "localhost" || cookies.accessTokenDomain === "supertokens.io");
@@ -553,17 +552,17 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 })
         );
         assert(res3.status === 401);
-        assert.deepEqual(res3.text, '{"message":"token theft detected"}');
+        assert.deepStrictEqual(res3.text, '{"message":"token theft detected"}');
 
         let cookies = extractInfoFromResponse(res3);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, "");
-        assert.deepEqual(cookies.refreshToken, "");
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.antiCsrf, undefined);
+        assert.deepStrictEqual(cookies.accessToken, "");
+        assert.deepStrictEqual(cookies.refreshToken, "");
+        assert.deepStrictEqual(cookies.idRefreshTokenFromHeader, "remove");
+        assert.deepStrictEqual(cookies.idRefreshTokenFromCookie, "");
+        assert.deepStrictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
     });
 
     //check basic usage of session

@@ -197,17 +197,17 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res3.body.success, true);
+        assert.deepStrictEqual(res3.body.success, true);
 
         let cookies = extractInfoFromResponse(res3);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, "");
-        assert.deepEqual(cookies.refreshToken, "");
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.antiCsrf, undefined);
+        assert.deepStrictEqual(cookies.accessToken, "");
+        assert.deepStrictEqual(cookies.refreshToken, "");
+        assert.deepStrictEqual(cookies.idRefreshTokenFromHeader, "remove");
+        assert.deepStrictEqual(cookies.idRefreshTokenFromCookie, "");
+        assert.deepStrictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert(cookies.accessTokenDomain === undefined);
         assert(cookies.refreshTokenDomain === undefined);
         assert(cookies.idRefreshTokenDomain === undefined);
@@ -300,17 +300,17 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
         assert(res3.status === 401);
-        assert.deepEqual(res3.text, '{"message":"token theft detected"}');
+        assert.deepStrictEqual(res3.text, '{"message":"token theft detected"}');
 
         let cookies = extractInfoFromResponse(res3);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, "");
-        assert.deepEqual(cookies.refreshToken, "");
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, "remove");
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, "");
-        assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.antiCsrf, undefined);
+        assert.deepStrictEqual(cookies.accessToken, "");
+        assert.deepStrictEqual(cookies.refreshToken, "");
+        assert.deepStrictEqual(cookies.idRefreshTokenFromHeader, "remove");
+        assert.deepStrictEqual(cookies.idRefreshTokenFromCookie, "");
+        assert.deepStrictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepStrictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
     });
 
     //check basic usage of session
@@ -700,7 +700,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res2.body.userId, "id1");
+        assert.deepStrictEqual(res2.body.userId, "id1");
 
         let res3 = await new Promise((resolve) =>
             request(app)
@@ -715,7 +715,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res3.body.userId, "id1");
+        assert.deepStrictEqual(res3.body.userId, "id1");
     });
 
     // check session verify for with / without anti-csrf present
@@ -783,7 +783,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(response2.body.userId, "id1");
+        assert.deepStrictEqual(response2.body.userId, "id1");
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -797,7 +797,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(response.body.success, true);
+        assert.deepStrictEqual(response.body.success, true);
     });
 
     //check revoking session(s)**
@@ -1042,7 +1042,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check that the session data returned is valid
-        assert.deepEqual(response2.body.key, "value");
+        assert.deepStrictEqual(response2.body.key, "value");
 
         // change the value of the inserted session data
         await new Promise((resolve) =>
@@ -1080,7 +1080,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check the value of the retrieved
-        assert.deepEqual(response2.body.key, "value2");
+        assert.deepStrictEqual(response2.body.key, "value2");
 
         //invalid session handle when updating the session data
         let invalidSessionResponse = await new Promise((resolve) =>
@@ -1099,7 +1099,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(invalidSessionResponse.body.success, true);
+        assert.deepStrictEqual(invalidSessionResponse.body.success, true);
     });
 
     //check manipulating jwt payload
@@ -1173,7 +1173,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         let frontendInfo = JSON.parse(new Buffer.from(response.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepEqual(frontendInfo.up, {});
+        assert.deepStrictEqual(frontendInfo.up, {});
 
         //call the updateJWTPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
@@ -1200,7 +1200,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepEqual(frontendInfo.up, { key: "value" });
+        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
 
         //call the getJWTPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
@@ -1223,7 +1223,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
         //check that the jwt payload returned is valid
-        assert.deepEqual(response2.body.key, "value");
+        assert.deepStrictEqual(response2.body.key, "value");
 
         // refresh session
         response2 = extractInfoFromResponse(
@@ -1250,7 +1250,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         frontendInfo = JSON.parse(new Buffer.from(response2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepEqual(frontendInfo.up, { key: "value" });
+        assert.deepStrictEqual(frontendInfo.up, { key: "value" });
 
         // change the value of the inserted jwt payload
         let updatedResponse2 = extractInfoFromResponse(
@@ -1277,7 +1277,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepEqual(frontendInfo.up, { key: "value2" });
+        assert.deepStrictEqual(frontendInfo.up, { key: "value2" });
 
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
@@ -1301,7 +1301,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check the value of the retrieved
-        assert.deepEqual(response2.body.key, "value2");
+        assert.deepStrictEqual(response2.body.key, "value2");
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await new Promise((resolve) =>
             request(app)
@@ -1322,7 +1322,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(invalidSessionResponse.body.success, true);
+        assert.deepStrictEqual(invalidSessionResponse.body.success, true);
     });
 
     // test with existing header params being there and that the lib appends to those and not overrides those
@@ -1361,8 +1361,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(response.headers.testheader, "testValue");
-        assert.deepEqual(
+        assert.deepStrictEqual(response.headers.testheader, "testValue");
+        assert.deepStrictEqual(
             response.headers["access-control-expose-headers"],
             "customValue, front-token, id-refresh-token, anti-csrf"
         );
@@ -1434,7 +1434,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res2.body.userId, "id1");
+        assert.deepStrictEqual(res2.body.userId, "id1");
 
         let res3 = await new Promise((resolve) =>
             request(app)
@@ -1448,7 +1448,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     }
                 })
         );
-        assert.deepEqual(res3.body.userId, "id1");
+        assert.deepStrictEqual(res3.body.userId, "id1");
     });
 
     it("test that getSession does not clear cookies if a session does not exist in the first place", async function () {
@@ -1491,17 +1491,17 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
 
-        assert.deepEqual(res.body.success, true);
+        assert.deepStrictEqual(res.body.success, true);
 
         let cookies = extractInfoFromResponse(res);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, undefined);
-        assert.deepEqual(cookies.refreshToken, undefined);
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, undefined);
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, undefined);
-        assert.deepEqual(cookies.accessTokenExpiry, undefined);
-        assert.deepEqual(cookies.idRefreshTokenExpiry, undefined);
-        assert.deepEqual(cookies.refreshTokenExpiry, undefined);
+        assert.deepStrictEqual(cookies.antiCsrf, undefined);
+        assert.deepStrictEqual(cookies.accessToken, undefined);
+        assert.deepStrictEqual(cookies.refreshToken, undefined);
+        assert.deepStrictEqual(cookies.idRefreshTokenFromHeader, undefined);
+        assert.deepStrictEqual(cookies.idRefreshTokenFromCookie, undefined);
+        assert.deepStrictEqual(cookies.accessTokenExpiry, undefined);
+        assert.deepStrictEqual(cookies.idRefreshTokenExpiry, undefined);
+        assert.deepStrictEqual(cookies.refreshTokenExpiry, undefined);
     });
 
     it("test that refreshSession does not clear cookies if a session does not exist in the first place", async function () {
@@ -1544,16 +1544,16 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
 
-        assert.deepEqual(res.body.success, true);
+        assert.deepStrictEqual(res.body.success, true);
 
         let cookies = extractInfoFromResponse(res);
-        assert.deepEqual(cookies.antiCsrf, undefined);
-        assert.deepEqual(cookies.accessToken, undefined);
-        assert.deepEqual(cookies.refreshToken, undefined);
-        assert.deepEqual(cookies.idRefreshTokenFromHeader, undefined);
-        assert.deepEqual(cookies.idRefreshTokenFromCookie, undefined);
-        assert.deepEqual(cookies.accessTokenExpiry, undefined);
-        assert.deepEqual(cookies.idRefreshTokenExpiry, undefined);
-        assert.deepEqual(cookies.refreshTokenExpiry, undefined);
+        assert.deepStrictEqual(cookies.antiCsrf, undefined);
+        assert.deepStrictEqual(cookies.accessToken, undefined);
+        assert.deepStrictEqual(cookies.refreshToken, undefined);
+        assert.deepStrictEqual(cookies.idRefreshTokenFromHeader, undefined);
+        assert.deepStrictEqual(cookies.idRefreshTokenFromCookie, undefined);
+        assert.deepStrictEqual(cookies.accessTokenExpiry, undefined);
+        assert.deepStrictEqual(cookies.idRefreshTokenExpiry, undefined);
+        assert.deepStrictEqual(cookies.refreshTokenExpiry, undefined);
     });
 });

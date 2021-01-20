@@ -12,27 +12,28 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
-let STExpress = require("../../");
-let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
-let assert = require("assert");
-let { ProcessState } = require("../../lib/build/processState");
-let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
-let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
-let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
-const { Querier } = require("../../lib/build/querier");
-let EmailPassword = require("../../recipe/emailpassword");
-let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
-let utils = require("../../lib/build/recipe/emailpassword/utils");
+const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const STExpress = require("../../");
+const SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
+const assert = require("assert");
+const { ProcessState } = require("../../lib/build/processState");
+const EmailPassword = require("../../recipe/emailpassword");
+const SuperTokens = require("../../lib/build/supertokens").default;
+const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 
 describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, function () {
-    beforeEach(async function () {
+    before(async function () {
         await killAllST();
         await setupST();
-        ProcessState.getInstance().reset();
+        await startST();
     });
 
+    beforeEach(async function () {
+        ProcessState.getInstance().reset();
+        SuperTokens.reset();
+        SessionRecipe.reset();
+        EmailPasswordRecipe.reset();
+    });
     after(async function () {
         await killAllST();
         await cleanST();
@@ -41,7 +42,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
     // test config for emailpassword module
     // Failure condition: passing custom data or data of invalid type/ syntax to the module
     it("test default config for emailpassword module", async function () {
-        await startST();
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -87,7 +87,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
 
     // Failure condition: passing data of invalid type/ syntax to the module
     it("test config for emailpassword module", async function () {
-        await startST();
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -123,12 +122,12 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
             ],
         });
 
-        let emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
+        const emailpassword = await EmailPasswordRecipe.getInstanceOrThrowError();
 
-        let formFields = emailpassword.config.signUpFeature.formFields;
-        assert(formFields.length === 3);
+        const formFields = emailpassword.config.signUpFeature.formFields;
+        assert.deepStrictEqual(formFields.length, 3);
 
-        let testFormField = await emailpassword.config.signUpFeature.formFields.filter((f) => f.id === "test")[0];
+        const testFormField = await emailpassword.config.signUpFeature.formFields.filter((f) => f.id === "test")[0];
         assert(testFormField !== undefined);
         assert(testFormField.optional === false);
         assert(testFormField.validate("") === "test");
@@ -145,7 +144,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
      *         - Check that the default password and email validators work fine
      */
     it("test that no email/password validators given should add them", async function () {
-        await startST();
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -177,7 +175,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
     });
 
     it("test that giving optional true in email / password field should be ignored", async function () {
-        await startST();
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -212,7 +209,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
 
     //Check that the default password and email validators work fine
     it("test that default password and email validators work fine", async function () {
-        await startST();
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
