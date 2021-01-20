@@ -13,39 +13,45 @@
  * under the License.
  */
 import SuperTokens from ".";
-
 function next(
     request: any,
     response: any,
     resolve: (value?: any) => void,
     reject: (reason?: any) => void
-): (middlewareError: any) => Promise<void> {
-    return async function (middlewareError: any) {
+): (middlewareError?: any) => Promise<any> {
+    return async function (middlewareError?: any) {
         if (middlewareError === undefined) {
             return resolve();
         }
-
-        return SuperTokens.errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
+        SuperTokens.errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
             if (errorHandlerError !== undefined) {
                 return reject(errorHandlerError);
             }
 
-            return resolve();
+            // do nothing, error handler does not resolve the promise.
         });
     };
 }
-
 export default class NextJS {
     static async superTokensNextWrapper(
-        middleware: (next: (middlewareError: any) => void) => Promise<void>,
+        middleware: (next: (middlewareError?: any) => void) => Promise<unknown>,
         request: any,
         response: any
-    ): Promise<void> {
-        return new Promise((resolve: any, reject: any) => {
-            return middleware(next(request, response, resolve, reject));
+    ): Promise<unknown> {
+        return new Promise(async (resolve: any, reject: any) => {
+            try {
+                const result = await middleware(next(request, response, resolve, reject));
+                return resolve(result);
+            } catch (err) {
+                SuperTokens.errorHandler()(err, request, response, (errorHandlerError: any) => {
+                    if (errorHandlerError !== undefined) {
+                        return reject(errorHandlerError);
+                    }
+                    // do nothing, error handler does not resolve the promise.
+                });
+            }
         });
     }
-
     /* Backward compatibility */
     static superTokensMiddleware(request: any, response: any): Promise<any> {
         return new Promise((resolve: any, reject: any) => {
@@ -53,6 +59,5 @@ export default class NextJS {
         });
     }
 }
-
 export let superTokensMiddleware = NextJS.superTokensMiddleware;
 export let superTokensNextWrapper = NextJS.superTokensNextWrapper;
