@@ -739,6 +739,27 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             assert(hosts[3].getAsStringDangerous() === "http://localhost:90");
             resetAll();
         }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "/",
+                },
+                recipeList: [
+                    Session.init({
+                        enableAntiCsrf: true,
+                    }),
+                ],
+            });
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            resetAll();
+        }
     });
 
     it("checking for default cookie config", async function () {

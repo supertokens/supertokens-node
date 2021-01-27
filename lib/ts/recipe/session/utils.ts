@@ -114,6 +114,8 @@ export function validateAndNormaliseUserInput(
         sessionRefreshFeature.disableDefaultImplementation = config.sessionRefreshFeature.disableDefaultImplementation;
     }
 
+    let enableAntiCsrf = config === undefined || config.enableAntiCsrf === undefined ? false : config.enableAntiCsrf;
+
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: (
             sessionHandle: string,
@@ -161,6 +163,7 @@ export function validateAndNormaliseUserInput(
         sessionExpiredStatusCode,
         sessionRefreshFeature,
         errorHandlers,
+        enableAntiCsrf,
     };
 }
 
