@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.4.0] - 2021-01-28
+### Changed
+- enableAntiCsrf as config parameter in session recipe
+- enableAntiCsrf boolean in session create,verify and refresh APIs if CDI version is 2.6
+- cookieSecure to true by default if the apiDomain has https
+- if the apiDomain and websiteDomain values are different (no common top level domain), then cookieSameSite will be set to none by default, else set it to lax
+
 ## [3.3.1] - 2021-01-20
 ### Changed
 - Update superTokensNextWrapper to add a return value.
