@@ -59,7 +59,12 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init(), EmailPassword.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+                EmailPassword.init(),
+            ],
         });
 
         ST.init({
@@ -71,7 +76,12 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init(), EmailPassword.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+                EmailPassword.init(),
+            ],
         });
     });
 
@@ -98,7 +108,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         await Querier.getInstanceOrThrowError();
@@ -136,7 +150,12 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init(), EmailPassword.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+                EmailPassword.init(),
+            ],
         });
         await SessionRecipe.getInstanceOrThrowError();
         await EmailPasswordRecipe.getInstanceOrThrowError();

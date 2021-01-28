@@ -61,6 +61,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     sessionRefreshFeature: {
                         disableDefaultImplementation: true,
                     },
+                    enableAntiCsrf: true,
                 }),
             ],
         });
@@ -116,7 +117,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -225,7 +230,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -325,7 +334,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -490,7 +503,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 websiteDomain: "supertokens.io",
                 apiBasePath: "/",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -653,7 +670,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -730,7 +751,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -812,7 +837,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
         const app = express();
         app.post("/create", async (req, res) => {
@@ -953,7 +982,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -1114,7 +1147,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
         const app = express();
         app.post("/create", async (req, res) => {
@@ -1337,7 +1374,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
         const app = express();
         app.post("/create", async (req, res) => {
@@ -1389,7 +1430,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: false,
+                }),
+            ],
         });
 
         const app = express();
@@ -1462,7 +1507,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -1515,7 +1564,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();

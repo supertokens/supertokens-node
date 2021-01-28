@@ -18,6 +18,7 @@ let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
+const { maxVersion } = require("../lib/build/utils");
 
 describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     beforeEach(async function () {
@@ -101,7 +102,10 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
         });
         let info = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
         assert.equal(typeof info.jwtSigningPublicKey, "string");
-        assert.equal(info.enableAntiCsrf, true);
+        let cdiVersion = await SessionRecipe.getInstanceOrThrowError().getQuerier().getAPIVersion();
+        if (maxVersion(cdiVersion, "2.6") !== cdiVersion) {
+            assert.strictEqual(info.enableAntiCsrf, true);
+        }
         assert.equal(info.accessTokenBlacklistingEnabled, false);
         assert.equal(typeof info.jwtSigningPublicKeyExpiryTime, "number");
         assert.equal(info.accessTokenValidity, 3600 * 1000);

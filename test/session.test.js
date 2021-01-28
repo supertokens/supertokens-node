@@ -68,7 +68,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -124,7 +128,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -196,7 +204,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -250,7 +262,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -304,7 +320,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let response = await SessionFunctions.createNewSession(SessionRecipe.getInstanceOrThrowError(), "", {}, {});
@@ -350,7 +370,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let response = await SessionFunctions.createNewSession(SessionRecipe.getInstanceOrThrowError(), "", {}, {});
@@ -395,7 +419,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         try {
@@ -424,7 +452,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -499,7 +531,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -539,7 +575,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -580,7 +620,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -626,7 +670,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -666,7 +714,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -708,7 +760,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: false,
+                }),
+            ],
         });
 
         let s = SessionRecipe.getInstanceOrThrowError();
@@ -753,6 +809,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             recipeList: [
                 Session.init({
                     cookieSameSite: "none",
+                    enableAntiCsrf: false,
                 }),
             ],
         });
@@ -788,6 +845,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             recipeList: [
                 Session.init({
                     cookieSameSite: "lax",
+                    enableAntiCsrf: false,
                 }),
             ],
         });
@@ -811,6 +869,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             recipeList: [
                 Session.init({
                     cookieSameSite: "strict",
+                    enableAntiCsrf: false,
                 }),
             ],
         });

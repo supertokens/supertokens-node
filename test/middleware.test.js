@@ -55,6 +55,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 Session.init({
                     sessionRefreshFeature: {
                         disableDefaultImplementation: true,
+                        enableAntiCsrf: true,
                     },
                 }),
             ],
@@ -100,6 +101,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
+                    enableAntiCsrf: true,
                 }),
             ],
         });
@@ -337,6 +339,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    enableAntiCsrf: true,
                     errorHandlers: {
                         onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
                             res.statusCode = 403;
@@ -598,6 +601,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
+                    enableAntiCsrf: true,
                 }),
             ],
         });
@@ -854,6 +858,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
+                    enableAntiCsrf: true,
                 }),
             ],
         });

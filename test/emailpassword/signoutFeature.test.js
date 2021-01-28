@@ -66,7 +66,12 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();
@@ -210,7 +215,12 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         const app = express();

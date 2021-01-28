@@ -75,7 +75,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
@@ -120,7 +125,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
@@ -169,7 +179,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
@@ -214,7 +229,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
@@ -305,7 +325,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
             ],
         });
 
@@ -378,7 +400,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
             ],
         });
 
@@ -444,7 +468,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
@@ -491,7 +520,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
@@ -552,7 +586,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
             ],
         });
 
@@ -630,7 +666,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
             ],
         });
 
@@ -717,7 +755,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
@@ -772,7 +815,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                         },
                     },
                 }),
-                Session.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
             ],
         });
 

@@ -436,7 +436,12 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
         const app = express();
 

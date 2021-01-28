@@ -47,7 +47,12 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init(), EmailPassword.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+                EmailPassword.init(),
+            ],
         });
         try {
             await Session.getAllSessionHandlesForUser();
@@ -80,7 +85,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
         let q = Querier.getInstanceOrThrowError("");
         await q.getAPIVersion();
@@ -113,7 +122,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
 
         let querier = Querier.getInstanceOrThrowError("test");
@@ -162,7 +175,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
         try {
             let q = Querier.getInstanceOrThrowError("");
@@ -188,7 +205,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
         let q = Querier.getInstanceOrThrowError("");
         assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
@@ -215,7 +236,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init()],
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
         });
         let q = Querier.getInstanceOrThrowError("");
         assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
