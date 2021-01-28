@@ -205,12 +205,3 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
         setAntiCsrfTokenInHeaders(recipeInstance, res, response.antiCsrfToken);
     }
 }
-
-export async function getEnableAntiCsrfBoolean(recipeInstance: SessionRecipe): Promise<boolean> {
-    let handShakeInfo = await recipeInstance.getHandshakeInfo();
-    let cdiVersion = await recipeInstance.getQuerier().getAPIVersion();
-    if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
-        return recipeInstance.config.enableAntiCsrf;
-    }
-    return handShakeInfo.enableAntiCsrf;
-}
