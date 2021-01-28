@@ -760,6 +760,46 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
             resetAll();
         }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "https://api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
+
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "http://api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
+
+            resetAll();
+        }
     });
 
     it("checking for default cookie config", async function () {

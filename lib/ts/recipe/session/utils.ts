@@ -99,7 +99,8 @@ export function validateAndNormaliseUserInput(
             ? "lax"
             : normaliseSameSiteOrThrowError(recipeInstance.getRecipeId(), config.cookieSameSite);
 
-    let cookieSecure = config === undefined || config.cookieSecure === undefined ? false : config.cookieSecure;
+    let cookieSecure = appInfo.apiDomain.getAsStringDangerous().startsWith("https") ? true : false;
+    cookieSecure = config === undefined || config.cookieSecure === undefined ? cookieSecure : config.cookieSecure;
 
     let sessionExpiredStatusCode =
         config === undefined || config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
