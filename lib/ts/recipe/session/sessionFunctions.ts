@@ -18,6 +18,7 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse } from "./types";
 import SessionRecipe from "./sessionRecipe";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { getEnableAntiCsrfBoolean } from "./utils";
 
 /**
  * @description call this to "login" a user.
@@ -84,13 +85,13 @@ export async function getSession(
                 recipeInstance,
                 accessToken,
                 handShakeInfo.jwtSigningPublicKey,
-                handShakeInfo.enableAntiCsrf && doAntiCsrfCheck
+                (await getEnableAntiCsrfBoolean(recipeInstance)) && doAntiCsrfCheck
             );
             let sessionHandle = accessTokenInfo.sessionHandle;
 
             // anti-csrf check
             if (
-                handShakeInfo.enableAntiCsrf &&
+                (await getEnableAntiCsrfBoolean(recipeInstance)) &&
                 doAntiCsrfCheck &&
                 (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken)
             ) {

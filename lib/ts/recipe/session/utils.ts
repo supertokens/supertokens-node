@@ -29,6 +29,7 @@ import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauth
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
+import { maxVersion } from "../../utils";
 
 export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -203,4 +204,13 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(recipeInstance, res, response.antiCsrfToken);
     }
+}
+
+export async function getEnableAntiCsrfBoolean(recipeInstance: SessionRecipe): Promise<boolean> {
+    let handShakeInfo = await recipeInstance.getHandshakeInfo();
+    let cdiVersion = await recipeInstance.getQuerier().getAPIVersion();
+    if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
+        return recipeInstance.config.enableAntiCsrf;
+    }
+    return handShakeInfo.enableAntiCsrf;
 }
