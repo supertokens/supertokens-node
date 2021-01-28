@@ -29,7 +29,7 @@ import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauth
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
-import { maxVersion } from "../../utils";
+import * as psl from "psl";
 
 export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -84,6 +84,20 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
     return noDotNormalised;
 }
 
+export function getTopLevelDomain(url: string): string | null {
+    function isAnIpAddress(ipaddress: string) {
+        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
+            ipaddress
+        );
+    }
+    let urlObj = new URL(url);
+    if (urlObj.hostname.startsWith("localhost") || isAnIpAddress(urlObj.hostname)) {
+        return urlObj.hostname;
+    }
+    let parsedURL = psl.parse(urlObj.hostname) as psl.ParsedDomain;
+    return parsedURL.domain;
+}
+
 export function validateAndNormaliseUserInput(
     recipeInstance: SessionRecipe,
     appInfo: NormalisedAppinfo,
@@ -94,9 +108,14 @@ export function validateAndNormaliseUserInput(
             ? undefined
             : normaliseSessionScopeOrThrowError(recipeInstance.getRecipeId(), config.cookieDomain);
 
-    let cookieSameSite =
+    let topLevelAPIDomain = getTopLevelDomain(appInfo.apiDomain.getAsStringDangerous());
+    let topLevelWebsiteDomain = getTopLevelDomain(appInfo.websiteDomain.getAsStringDangerous());
+
+    let cookieSameSite: "strict" | "lax" | "none" =
+        topLevelAPIDomain !== null && topLevelAPIDomain !== topLevelWebsiteDomain ? "none" : "lax";
+    cookieSameSite =
         config === undefined || config.cookieSameSite === undefined
-            ? "lax"
+            ? cookieSameSite
             : normaliseSameSiteOrThrowError(recipeInstance.getRecipeId(), config.cookieSameSite);
 
     let cookieSecure = appInfo.apiDomain.getAsStringDangerous().startsWith("https") ? true : false;
@@ -116,7 +135,9 @@ export function validateAndNormaliseUserInput(
         sessionRefreshFeature.disableDefaultImplementation = config.sessionRefreshFeature.disableDefaultImplementation;
     }
 
-    let enableAntiCsrf = config === undefined || config.enableAntiCsrf === undefined ? false : config.enableAntiCsrf;
+    let enableAntiCsrf = cookieSameSite === "none" ? true : false;
+    enableAntiCsrf =
+        config === undefined || config.enableAntiCsrf === undefined ? enableAntiCsrf : config.enableAntiCsrf;
 
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: (
@@ -152,6 +173,16 @@ export function validateAndNormaliseUserInput(
         if (config.errorHandlers.onUnauthorised !== undefined) {
             errorHandlers.onUnauthorised = config.errorHandlers.onUnauthorised;
         }
+    }
+
+    if (cookieSameSite === "none" && !enableAntiCsrf) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error('enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'),
+            },
+            recipeInstance.getRecipeId()
+        );
     }
 
     return {
