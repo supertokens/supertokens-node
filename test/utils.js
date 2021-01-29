@@ -74,6 +74,9 @@ module.exports.extractInfoFromResponse = function (res) {
     let accessTokenDomain = undefined;
     let refreshTokenDomain = undefined;
     let idRefreshTokenDomain = undefined;
+    let accessTokenHttpOnly = false;
+    let idRefreshTokenHttpOnly = false;
+    let refreshTokenHttpOnly = false;
     let frontToken = res.headers["front-token"];
     let cookies = res.headers["set-cookie"];
     cookies = cookies === undefined ? [] : cookies;
@@ -88,6 +91,7 @@ module.exports.extractInfoFromResponse = function (res) {
             if (i.split(";")[1].includes("Domain=")) {
                 accessTokenDomain = i.split(";")[1].split("=")[1];
             }
+            accessTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
         } else if (i.split(";")[0].split("=")[0] === "sRefreshToken") {
             refreshToken = i.split(";")[0].split("=")[1];
             if (i.split(";")[2].includes("Expires=")) {
@@ -98,6 +102,7 @@ module.exports.extractInfoFromResponse = function (res) {
             if (i.split(";")[1].includes("Domain=")) {
                 refreshTokenDomain = i.split(";")[1].split("=")[1];
             }
+            refreshTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
         } else {
             idRefreshTokenFromCookie = i.split(";")[0].split("=")[1];
             if (i.split(";")[2].includes("Expires=")) {
@@ -108,6 +113,7 @@ module.exports.extractInfoFromResponse = function (res) {
             if (i.split(";")[1].includes("Domain=")) {
                 idRefreshTokenDomain = i.split(";")[1].split("=")[1];
             }
+            idRefreshTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
         }
     });
     return {
@@ -123,6 +129,9 @@ module.exports.extractInfoFromResponse = function (res) {
         refreshTokenDomain,
         idRefreshTokenDomain,
         frontToken,
+        accessTokenHttpOnly,
+        refreshTokenHttpOnly,
+        idRefreshTokenHttpOnly,
     };
 };
 

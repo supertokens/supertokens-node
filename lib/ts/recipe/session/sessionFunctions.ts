@@ -18,6 +18,7 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse } from "./types";
 import SessionRecipe from "./sessionRecipe";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { maxVersion } from "../../utils";
 
 /**
  * @description call this to "login" a user.
@@ -29,29 +30,30 @@ export async function createNewSession(
     jwtPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
+    let requestBody: {
+        userId: string;
+        userDataInJWT: any;
+        userDataInDatabase: any;
+        enableAntiCsrf?: boolean;
+    } = {
+        userId,
+        userDataInJWT: jwtPayload,
+        userDataInDatabase: sessionData,
+    };
+
+    let cdiVersion = await recipeInstance.getQuerier().getAPIVersion();
+    if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
+        let handShakeInfo = await recipeInstance.getHandshakeInfo();
+        requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
+    }
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session"), {
-            userId,
-            userDataInJWT: jwtPayload,
-            userDataInDatabase: sessionData,
-        });
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session"), requestBody);
     recipeInstance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
     delete response.status;
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
-    // we check if sameSite is none, antiCsrfTokens is being sent - this is a security check
-    if (recipeInstance.config.cookieSameSite === "none" && response.antiCsrfToken === undefined) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error(
-                    'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
-                ),
-            },
-            recipeInstance.getRecipeId()
-        );
-    }
+
     return response;
 }
 
@@ -136,14 +138,26 @@ export async function getSession(
 
     ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
 
+    let requestBody: {
+        accessToken: string;
+        antiCsrfToken?: string;
+        doAntiCsrfCheck: boolean;
+        enableAntiCsrf?: boolean;
+    } = {
+        accessToken,
+        antiCsrfToken,
+        doAntiCsrfCheck,
+    };
+
+    let cdiVersion = await recipeInstance.getQuerier().getAPIVersion();
+    if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
+        requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
+    }
+
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/verify"), {
-            accessToken,
-            antiCsrfToken,
-            doAntiCsrfCheck,
-        });
-    if (response.status == "OK") {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/verify"), requestBody);
+    if (response.status === "OK") {
         recipeInstance.updateJwtSigningPublicKeyInfo(
             response.jwtSigningPublicKey,
             response.jwtSigningPublicKeyExpiryTime
@@ -152,7 +166,7 @@ export async function getSession(
         delete response.jwtSigningPublicKey;
         delete response.jwtSigningPublicKeyExpiryTime;
         return response;
-    } else if (response.status == "UNAUTHORISED") {
+    } else if (response.status === "UNAUTHORISED") {
         throw new STError(
             {
                 message: response.message,
@@ -181,16 +195,27 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined
 ): Promise<CreateOrRefreshAPIResponse> {
+    let requestBody: {
+        refreshToken: string;
+        antiCsrfToken?: string;
+        enableAntiCsrf?: boolean;
+    } = {
+        refreshToken,
+        antiCsrfToken,
+    };
+
+    let cdiVersion = await recipeInstance.getQuerier().getAPIVersion();
+    if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
+        let handShakeInfo = await recipeInstance.getHandshakeInfo();
+        requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
+    }
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/refresh"), {
-            refreshToken,
-            antiCsrfToken,
-        });
-    if (response.status == "OK") {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/refresh"), requestBody);
+    if (response.status === "OK") {
         delete response.status;
         return response;
-    } else if (response.status == "UNAUTHORISED") {
+    } else if (response.status === "UNAUTHORISED") {
         throw new STError(
             {
                 message: response.message,

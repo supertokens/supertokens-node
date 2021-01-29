@@ -40,7 +40,12 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                     apiBasePath: "/api/auth",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init(), Session.init()],
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        enableAntiCsrf: true,
+                    }),
+                ],
             });
         });
 

@@ -15,6 +15,7 @@
 
 import { URL } from "url";
 import STError from "./error";
+import { isAnIpAddress } from "./utils";
 
 export default class NormalisedURLDomain {
     private value: string;
@@ -29,12 +30,6 @@ export default class NormalisedURLDomain {
 }
 
 export function normaliseURLDomainOrThrowError(rId: string, input: string, ignoreProtocol = false): string {
-    function isAnIpAddress(ipaddress: string) {
-        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
-            ipaddress
-        );
-    }
-
     input = input.trim().toLowerCase();
 
     try {

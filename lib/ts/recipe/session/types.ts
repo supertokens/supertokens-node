@@ -58,6 +58,7 @@ export type TypeInput = {
         disableDefaultImplementation?: boolean;
     };
     errorHandlers?: ErrorHandlers;
+    enableAntiCsrf?: boolean;
 };
 
 export type TypeNormalisedInput = {
@@ -70,6 +71,7 @@ export type TypeNormalisedInput = {
         disableDefaultImplementation: boolean;
     };
     errorHandlers: NormalisedErrorHandlers;
+    enableAntiCsrf: boolean;
 };
 
 export interface SessionRequest extends Request {

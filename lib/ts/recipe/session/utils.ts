@@ -29,6 +29,8 @@ import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauth
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
+import * as psl from "psl";
+import { isAnIpAddress } from "../../utils";
 
 export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -64,12 +66,6 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
         }
     }
 
-    function isAnIpAddress(ipaddress: string) {
-        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
-            ipaddress
-        );
-    }
-
     let noDotNormalised = helper(sessionScope);
 
     if (noDotNormalised === "localhost" || isAnIpAddress(noDotNormalised)) {
@@ -83,6 +79,25 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
     return noDotNormalised;
 }
 
+export function getTopLevelDomain(url: string, recipeInstance: SessionRecipe): string {
+    let urlObj = new URL(url);
+    let hostname = urlObj.hostname;
+    if (hostname.startsWith("localhost") || isAnIpAddress(hostname)) {
+        return hostname;
+    }
+    let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
+    if (parsedURL.domain === null) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Please make sure that the apiDomain and websiteDomain have correct values"),
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+    return parsedURL.domain;
+}
+
 export function validateAndNormaliseUserInput(
     recipeInstance: SessionRecipe,
     appInfo: NormalisedAppinfo,
@@ -93,12 +108,19 @@ export function validateAndNormaliseUserInput(
             ? undefined
             : normaliseSessionScopeOrThrowError(recipeInstance.getRecipeId(), config.cookieDomain);
 
-    let cookieSameSite =
+    let topLevelAPIDomain = getTopLevelDomain(appInfo.apiDomain.getAsStringDangerous(), recipeInstance);
+    let topLevelWebsiteDomain = getTopLevelDomain(appInfo.websiteDomain.getAsStringDangerous(), recipeInstance);
+
+    let cookieSameSite: "strict" | "lax" | "none" = topLevelAPIDomain !== topLevelWebsiteDomain ? "none" : "lax";
+    cookieSameSite =
         config === undefined || config.cookieSameSite === undefined
-            ? "lax"
+            ? cookieSameSite
             : normaliseSameSiteOrThrowError(recipeInstance.getRecipeId(), config.cookieSameSite);
 
-    let cookieSecure = config === undefined || config.cookieSecure === undefined ? false : config.cookieSecure;
+    let cookieSecure =
+        config === undefined || config.cookieSecure === undefined
+            ? appInfo.apiDomain.getAsStringDangerous().startsWith("https")
+            : config.cookieSecure;
 
     let sessionExpiredStatusCode =
         config === undefined || config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
@@ -113,6 +135,9 @@ export function validateAndNormaliseUserInput(
     ) {
         sessionRefreshFeature.disableDefaultImplementation = config.sessionRefreshFeature.disableDefaultImplementation;
     }
+
+    let enableAntiCsrf =
+        config === undefined || config.enableAntiCsrf === undefined ? cookieSameSite === "none" : config.enableAntiCsrf;
 
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: (
@@ -150,6 +175,18 @@ export function validateAndNormaliseUserInput(
         }
     }
 
+    if (cookieSameSite === "none" && !enableAntiCsrf) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error(
+                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'
+                ),
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+
     return {
         refreshTokenPath: appInfo.apiBasePath.appendPath(
             recipeInstance.getRecipeId(),
@@ -161,6 +198,7 @@ export function validateAndNormaliseUserInput(
         sessionExpiredStatusCode,
         sessionRefreshFeature,
         errorHandlers,
+        enableAntiCsrf,
     };
 }
 

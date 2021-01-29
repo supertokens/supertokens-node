@@ -35,7 +35,7 @@ import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
 import { handleRefreshAPI } from "./api";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { normaliseHttpMethod } from "../../utils";
+import { maxVersion, normaliseHttpMethod } from "../../utils";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 
 // For Express
@@ -150,9 +150,14 @@ export default class SessionRecipe extends RecipeModule {
                 new NormalisedURLPath(this.getRecipeId(), "/recipe/handshake"),
                 {}
             );
+            let enableAntiCsrf = response.enableAntiCsrf;
+            let cdiVersion = await this.getQuerier().getAPIVersion();
+            if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
+                enableAntiCsrf = this.config.enableAntiCsrf;
+            }
             this.handshakeInfo = {
                 jwtSigningPublicKey: response.jwtSigningPublicKey,
-                enableAntiCsrf: response.enableAntiCsrf,
+                enableAntiCsrf,
                 accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
                 jwtSigningPublicKeyExpiryTime: response.jwtSigningPublicKeyExpiryTime,
                 accessTokenValidity: response.accessTokenValidity,

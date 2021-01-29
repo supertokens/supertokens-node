@@ -9,3 +9,4 @@ export declare function getHeader(req: express.Request, key: string): string | u
 export declare function sendNon200Response(rId: string, res: express.Response, message: string, statusCode: number): void;
 export declare function send200Response(res: express.Response, responseJson: any): void;
 export declare function assertThatBodyParserHasBeenUsed(rId: string, req: express.Request, res: express.Response): Promise<void>;
+export declare function isAnIpAddress(ipaddress: string): boolean;

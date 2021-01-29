@@ -41,6 +41,7 @@ export declare type TypeInput = {
         disableDefaultImplementation?: boolean;
     };
     errorHandlers?: ErrorHandlers;
+    enableAntiCsrf?: boolean;
 };
 export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
@@ -52,6 +53,7 @@ export declare type TypeNormalisedInput = {
         disableDefaultImplementation: boolean;
     };
     errorHandlers: NormalisedErrorHandlers;
+    enableAntiCsrf: boolean;
 };
 export interface SessionRequest extends Request {
     session: Session;

@@ -25,6 +25,7 @@ const { Querier } = require("../lib/build/querier");
 let SuperTokens = require("../lib/build/supertokens").default;
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+const { getTopLevelDomain } = require("../lib/build/recipe/session/utils");
 
 /**
  * TODO: (Later) test config for faunadb session module
@@ -739,6 +740,231 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             assert(hosts[3].getAsStringDangerous() === "http://localhost:90");
             resetAll();
         }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "/",
+                },
+                recipeList: [
+                    Session.init({
+                        enableAntiCsrf: true,
+                    }),
+                ],
+            });
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "https://api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
+
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "http://api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.com",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.co.uk",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.co.uk",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "127.0.0.1:3000",
+                    appName: "SuperTokens",
+                    websiteDomain: "127.0.0.1:9000",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "127.0.0.1:3000",
+                    appName: "SuperTokens",
+                    websiteDomain: "127.0.0.1:9000",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [
+                    Session.init({
+                        enableAntiCsrf: true,
+                    }),
+                ],
+            });
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "127.0.0.1:3000",
+                    appName: "SuperTokens",
+                    websiteDomain: "127.0.0.1:9000",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "127.0.0.1:3000",
+                        appName: "SuperTokens",
+                        websiteDomain: "127.0.0.2:9000",
+                        apiBasePath: "test/",
+                        websiteBasePath: "test1/",
+                    },
+                    recipeList: [
+                        Session.init({
+                            enableAntiCsrf: false,
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.message !==
+                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
     });
 
     it("checking for default cookie config", async function () {
@@ -756,11 +982,27 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         });
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieDomain, undefined);
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "lax");
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSecure, false);
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSecure, true);
         assert.equal(
             SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous(),
             "/auth/session/refresh"
         );
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode, 401);
+    });
+
+    it("testing getTopLevelDomain function", async function () {
+        assert.strictEqual(getTopLevelDomain("http://a.b.test.com"), "test.com");
+        assert.strictEqual(getTopLevelDomain("https://a.b.test.com"), "test.com");
+        assert.strictEqual(getTopLevelDomain("http://a.b.test.co.uk"), "test.co.uk");
+        assert.strictEqual(getTopLevelDomain("http://a.b.test.co.uk"), "test.co.uk");
+        assert.strictEqual(getTopLevelDomain("http://test.com"), "test.com");
+        assert.strictEqual(getTopLevelDomain("https://test.com"), "test.com");
+        assert.strictEqual(getTopLevelDomain("http://localhost"), "localhost");
+        assert.strictEqual(getTopLevelDomain("http://localhost.org"), "localhost.org");
+        assert.strictEqual(getTopLevelDomain("http://8.8.8.8"), "8.8.8.8");
+        assert.strictEqual(getTopLevelDomain("http://8.8.8.8:8080"), "8.8.8.8");
+        assert.strictEqual(getTopLevelDomain("http://localhost:3000"), "localhost");
+        assert.strictEqual(getTopLevelDomain("http://test.com:3567"), "test.com");
+        assert.strictEqual(getTopLevelDomain("https://test.com:3567"), "test.com");
     });
 });

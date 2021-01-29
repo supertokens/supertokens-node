@@ -56,6 +56,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     sessionRefreshFeature: {
                         disableDefaultImplementation: true,
                     },
+                    enableAntiCsrf: true,
                 }),
             ],
         });
@@ -100,6 +101,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
+                    enableAntiCsrf: true,
                 }),
             ],
         });
@@ -337,6 +339,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    enableAntiCsrf: true,
                     errorHandlers: {
                         onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
                             res.statusCode = 403;
@@ -598,6 +601,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
+                    enableAntiCsrf: true,
                 }),
             ],
         });
@@ -854,6 +858,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
+                    enableAntiCsrf: true,
                 }),
             ],
         });
@@ -896,6 +901,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     })
             )
         );
+
+        assert(res1.accessTokenHttpOnly);
+        assert(res1.idRefreshTokenHttpOnly);
+        assert(res1.refreshTokenHttpOnly);
 
         let r1 = await new Promise((resolve) =>
             request(app)
