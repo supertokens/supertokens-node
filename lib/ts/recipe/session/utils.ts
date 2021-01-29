@@ -79,11 +79,12 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
     return noDotNormalised;
 }
 
-export function getTopLevelDomain(url: string, recipeInstance: SessionRecipe): string {
+export function getTopLevelDomainForSameSiteResolution(url: string, recipeInstance: SessionRecipe): string {
     let urlObj = new URL(url);
     let hostname = urlObj.hostname;
-    if (hostname.startsWith("localhost") || isAnIpAddress(hostname)) {
-        return hostname;
+    if (hostname.startsWith("localhost") || hostname.startsWith("localhost.org") || isAnIpAddress(hostname)) {
+        // we treat these as the same TLDs since we can use sameSite lax for all of them.
+        return "localhost";
     }
     let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
     if (parsedURL.domain === null) {
@@ -108,8 +109,14 @@ export function validateAndNormaliseUserInput(
             ? undefined
             : normaliseSessionScopeOrThrowError(recipeInstance.getRecipeId(), config.cookieDomain);
 
-    let topLevelAPIDomain = getTopLevelDomain(appInfo.apiDomain.getAsStringDangerous(), recipeInstance);
-    let topLevelWebsiteDomain = getTopLevelDomain(appInfo.websiteDomain.getAsStringDangerous(), recipeInstance);
+    let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(
+        appInfo.apiDomain.getAsStringDangerous(),
+        recipeInstance
+    );
+    let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(
+        appInfo.websiteDomain.getAsStringDangerous(),
+        recipeInstance
+    );
 
     let cookieSameSite: "strict" | "lax" | "none" = topLevelAPIDomain !== topLevelWebsiteDomain ? "none" : "lax";
     cookieSameSite =
@@ -190,22 +197,14 @@ export function validateAndNormaliseUserInput(
     if (
         cookieSameSite === "none" &&
         !cookieSecure &&
-        !(
-            topLevelAPIDomain === "localhost" ||
-            topLevelAPIDomain === "localhost.org" ||
-            isAnIpAddress(topLevelAPIDomain)
-        ) &&
-        !(
-            topLevelWebsiteDomain === "localhost" ||
-            topLevelWebsiteDomain === "localhost.org" ||
-            isAnIpAddress(topLevelWebsiteDomain)
-        )
+        !(topLevelAPIDomain === "localhost" || isAnIpAddress(topLevelAPIDomain)) &&
+        !(topLevelWebsiteDomain === "localhost" || isAnIpAddress(topLevelWebsiteDomain))
     ) {
         throw new STError(
             {
                 type: STError.GENERAL_ERROR,
                 payload: new Error(
-                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain."
+                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
                 ),
             },
             recipeInstance.getRecipeId()

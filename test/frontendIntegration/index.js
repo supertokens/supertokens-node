@@ -40,6 +40,7 @@ SuperTokens.init({
                     res.status(401).send();
                 },
             },
+            enableAntiCsrf: true,
         }),
     ],
 });

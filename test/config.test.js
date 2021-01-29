@@ -25,7 +25,7 @@ const { Querier } = require("../lib/build/querier");
 let SuperTokens = require("../lib/build/supertokens").default;
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
-const { getTopLevelDomain } = require("../lib/build/recipe/session/utils");
+const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/recipe/session/utils");
 
 /**
  * TODO: (Later) test config for faunadb session module
@@ -944,7 +944,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     appInfo: {
                         apiDomain: "127.0.0.1:3000",
                         appName: "SuperTokens",
-                        websiteDomain: "127.0.0.2:9000",
+                        websiteDomain: "google.com",
                         apiBasePath: "test/",
                         websiteBasePath: "test1/",
                     },
@@ -975,7 +975,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     appInfo: {
                         apiDomain: "http://api.test.com:3000",
                         appName: "SuperTokens",
-                        websiteDomain: "127.0.0.2:9000",
+                        websiteDomain: "google.com",
                         apiBasePath: "test/",
                         websiteBasePath: "test1/",
                     },
@@ -985,7 +985,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             } catch (err) {
                 if (
                     err.message !==
-                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain."
+                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
                 ) {
                     throw err;
                 }
@@ -1002,7 +1002,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     appInfo: {
                         apiDomain: "https://api.test.com:3000",
                         appName: "SuperTokens",
-                        websiteDomain: "127.0.0.2:9000",
+                        websiteDomain: "google.com",
                         apiBasePath: "test/",
                         websiteBasePath: "test1/",
                     },
@@ -1016,7 +1016,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             } catch (err) {
                 if (
                     err.message !==
-                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain."
+                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
                 ) {
                     throw err;
                 }
@@ -1048,19 +1048,19 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode, 401);
     });
 
-    it("testing getTopLevelDomain function", async function () {
-        assert.strictEqual(getTopLevelDomain("http://a.b.test.com"), "test.com");
-        assert.strictEqual(getTopLevelDomain("https://a.b.test.com"), "test.com");
-        assert.strictEqual(getTopLevelDomain("http://a.b.test.co.uk"), "test.co.uk");
-        assert.strictEqual(getTopLevelDomain("http://a.b.test.co.uk"), "test.co.uk");
-        assert.strictEqual(getTopLevelDomain("http://test.com"), "test.com");
-        assert.strictEqual(getTopLevelDomain("https://test.com"), "test.com");
-        assert.strictEqual(getTopLevelDomain("http://localhost"), "localhost");
-        assert.strictEqual(getTopLevelDomain("http://localhost.org"), "localhost.org");
-        assert.strictEqual(getTopLevelDomain("http://8.8.8.8"), "8.8.8.8");
-        assert.strictEqual(getTopLevelDomain("http://8.8.8.8:8080"), "8.8.8.8");
-        assert.strictEqual(getTopLevelDomain("http://localhost:3000"), "localhost");
-        assert.strictEqual(getTopLevelDomain("http://test.com:3567"), "test.com");
-        assert.strictEqual(getTopLevelDomain("https://test.com:3567"), "test.com");
+    it("testing getTopLevelDomainForSameSiteResolution function", async function () {
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://a.b.test.com"), "test.com");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://a.b.test.com"), "test.com");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://a.b.test.co.uk"), "test.co.uk");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://a.b.test.co.uk"), "test.co.uk");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://test.com"), "test.com");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://test.com"), "test.com");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://localhost"), "localhost");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://localhost.org"), "localhost");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://8.8.8.8"), "localhost");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://8.8.8.8:8080"), "localhost");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://localhost:3000"), "localhost");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://test.com:3567"), "test.com");
+        assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://test.com:3567"), "test.com");
     });
 });
