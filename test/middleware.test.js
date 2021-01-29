@@ -55,8 +55,8 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 Session.init({
                     sessionRefreshFeature: {
                         disableDefaultImplementation: true,
-                        enableAntiCsrf: true,
                     },
+                    enableAntiCsrf: true,
                 }),
             ],
         });

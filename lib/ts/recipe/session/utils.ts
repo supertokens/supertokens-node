@@ -118,8 +118,10 @@ export function validateAndNormaliseUserInput(
             ? cookieSameSite
             : normaliseSameSiteOrThrowError(recipeInstance.getRecipeId(), config.cookieSameSite);
 
-    let cookieSecure = appInfo.apiDomain.getAsStringDangerous().startsWith("https") ? true : false;
-    cookieSecure = config === undefined || config.cookieSecure === undefined ? cookieSecure : config.cookieSecure;
+    let cookieSecure =
+        config === undefined || config.cookieSecure === undefined
+            ? appInfo.apiDomain.getAsStringDangerous().startsWith("https")
+            : config.cookieSecure;
 
     let sessionExpiredStatusCode =
         config === undefined || config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
@@ -135,9 +137,8 @@ export function validateAndNormaliseUserInput(
         sessionRefreshFeature.disableDefaultImplementation = config.sessionRefreshFeature.disableDefaultImplementation;
     }
 
-    let enableAntiCsrf = cookieSameSite === "none" ? true : false;
-    enableAntiCsrf =
-        config === undefined || config.enableAntiCsrf === undefined ? enableAntiCsrf : config.enableAntiCsrf;
+    let enableAntiCsrf =
+        config === undefined || config.enableAntiCsrf === undefined ? cookieSameSite === "none" : config.enableAntiCsrf;
 
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: (

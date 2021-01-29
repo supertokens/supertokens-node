@@ -196,7 +196,7 @@ export function setCookie(
     } else if (pathType === "accessTokenPath") {
         path = "/";
     }
-    let httpOnly = recipeInstance.config.cookieSecure;
+    let httpOnly = true;
     let opts = {
         domain,
         secure,

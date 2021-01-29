@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - enableAntiCsrf boolean in session create,verify and refresh APIs if CDI version is 2.6
 - cookieSecure to true by default if the apiDomain has https
 - if the apiDomain and websiteDomain values are different (no common top level domain), then cookieSameSite will be set to none by default, else set it to lax
+- Fixed https://github.com/supertokens/supertokens-node/issues/63
+
+## [3.3.2] - 2021-01-29
+### Fixed
+- Always sets httpOnly flag to be true for session cookies regardless of if secure flag is on or off.
 
 ## [3.3.1] - 2021-01-20
 ### Changed
