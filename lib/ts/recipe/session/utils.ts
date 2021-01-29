@@ -30,6 +30,7 @@ import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
+import { isAnIpAddress } from "../../utils";
 
 export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -65,12 +66,6 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
         }
     }
 
-    function isAnIpAddress(ipaddress: string) {
-        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
-            ipaddress
-        );
-    }
-
     let noDotNormalised = helper(sessionScope);
 
     if (noDotNormalised === "localhost" || isAnIpAddress(noDotNormalised)) {
@@ -84,17 +79,22 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
     return noDotNormalised;
 }
 
-export function getTopLevelDomain(url: string): string | null {
-    function isAnIpAddress(ipaddress: string) {
-        return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
-            ipaddress
+export function getTopLevelDomain(url: string, recipeInstance: SessionRecipe): string {
+    let urlObj = new URL(url);
+    let hostname = urlObj.hostname;
+    if (hostname.startsWith("localhost") || isAnIpAddress(hostname)) {
+        return hostname;
+    }
+    let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
+    if (parsedURL.domain === null) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Please make sure that the apiDomain and websiteDomain have correct values"),
+            },
+            recipeInstance.getRecipeId()
         );
     }
-    let urlObj = new URL(url);
-    if (urlObj.hostname.startsWith("localhost") || isAnIpAddress(urlObj.hostname)) {
-        return urlObj.hostname;
-    }
-    let parsedURL = psl.parse(urlObj.hostname) as psl.ParsedDomain;
     return parsedURL.domain;
 }
 
@@ -108,11 +108,10 @@ export function validateAndNormaliseUserInput(
             ? undefined
             : normaliseSessionScopeOrThrowError(recipeInstance.getRecipeId(), config.cookieDomain);
 
-    let topLevelAPIDomain = getTopLevelDomain(appInfo.apiDomain.getAsStringDangerous());
-    let topLevelWebsiteDomain = getTopLevelDomain(appInfo.websiteDomain.getAsStringDangerous());
+    let topLevelAPIDomain = getTopLevelDomain(appInfo.apiDomain.getAsStringDangerous(), recipeInstance);
+    let topLevelWebsiteDomain = getTopLevelDomain(appInfo.websiteDomain.getAsStringDangerous(), recipeInstance);
 
-    let cookieSameSite: "strict" | "lax" | "none" =
-        topLevelAPIDomain !== null && topLevelAPIDomain !== topLevelWebsiteDomain ? "none" : "lax";
+    let cookieSameSite: "strict" | "lax" | "none" = topLevelAPIDomain !== topLevelWebsiteDomain ? "none" : "lax";
     cookieSameSite =
         config === undefined || config.cookieSameSite === undefined
             ? cookieSameSite
@@ -180,7 +179,9 @@ export function validateAndNormaliseUserInput(
         throw new STError(
             {
                 type: STError.GENERAL_ERROR,
-                payload: new Error('enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'),
+                payload: new Error(
+                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'
+                ),
             },
             recipeInstance.getRecipeId()
         );
