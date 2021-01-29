@@ -939,7 +939,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
                 assert(false);
             } catch (err) {
-                if (err.message !== 'enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".') {
+                if (
+                    err.message !==
+                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none"'
+                ) {
                     throw err;
                 }
             }
@@ -962,7 +965,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         });
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieDomain, undefined);
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "lax");
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSecure, false);
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.cookieSecure, true);
         assert.equal(
             SessionRecipe.getInstanceOrThrowError().config.refreshTokenPath.getAsStringDangerous(),
             "/auth/session/refresh"

@@ -797,22 +797,25 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
 
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({
-                    cookieSameSite: "none",
-                    enableAntiCsrf: false,
-                }),
-            ],
-        });
+        try {
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        cookieSameSite: "none",
+                        enableAntiCsrf: false,
+                    }),
+                ],
+            });
+            assert(false);
+        } catch (err) {}
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
@@ -823,9 +826,9 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             if (
                 err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                    'Security error: Cookie same site is "none" and anti-CSRF protection is disabled! Please either: \n- Change cookie same site to "lax" or to "strict". or \n- Enable anti-CSRF protection in the core by setting enable_anti_csrf to true.'
+                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none"'
             ) {
-                throw error;
+                throw err;
             }
         }
     });

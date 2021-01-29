@@ -902,6 +902,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             )
         );
 
+        assert(res1.accessTokenHttpOnly);
+        assert(res1.idRefreshTokenHttpOnly);
+        assert(res1.refreshTokenHttpOnly);
+
         let r1 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/id")
