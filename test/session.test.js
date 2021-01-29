@@ -815,18 +815,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 ],
             });
             assert(false);
-        } catch (err) {}
-
-        let s = SessionRecipe.getInstanceOrThrowError();
-
-        try {
-            await SessionFunctions.createNewSession(s, "", {}, {});
-            assert(false);
         } catch (err) {
             if (
                 err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none"'
+                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'
             ) {
                 throw err;
             }

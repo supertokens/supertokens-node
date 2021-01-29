@@ -759,6 +759,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 ],
             });
             assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
 
@@ -777,6 +779,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
 
             resetAll();
@@ -797,8 +801,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
-
             resetAll();
         }
 
@@ -817,7 +822,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
 
@@ -836,7 +843,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
 
@@ -855,7 +864,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
 
@@ -874,7 +885,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite, "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
         }
 
@@ -897,6 +910,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 ],
             });
             assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
         }
 
@@ -915,6 +930,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
             assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
         }
 
@@ -941,7 +958,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             } catch (err) {
                 if (
                     err.message !==
-                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none"'
+                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'
                 ) {
                     throw err;
                 }
