@@ -56,7 +56,7 @@ while [ $i -lt $coreDriverLength ]; do
     coreFree=$(echo $coreFree | jq .core | tr -d '"')
 
     someTestsRan=true
-    ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
+    # ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
@@ -129,7 +129,7 @@ while [ $i -lt $frontendDriverLength ]; do
     nodeTag=$(echo $nodeInfo | jq .tag | tr -d '"')
 
     someFrontendTestsRan=true
-    ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
+    # ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"

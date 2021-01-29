@@ -30,7 +30,7 @@ fi
 pluginInterfaceTag=$(echo $pluginInterfaceInfo | jq .tag | tr -d '"')
 pluginInterfaceVersion=$(echo $pluginInterfaceInfo | jq .version | tr -d '"')
 
-echo "Testing with frontend auth-react: $2, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
+echo "Testing with frontend auth-react: $2, node tag: $3, FREE core: $coreVersion, plugin-interface: $pluginInterfaceVersion"
 
 cd ../../
 git clone git@github.com:supertokens/supertokens-root.git
