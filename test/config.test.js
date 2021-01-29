@@ -965,6 +965,64 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             }
             resetAll();
         }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "http://api.test.com:3000",
+                        appName: "SuperTokens",
+                        websiteDomain: "127.0.0.2:9000",
+                        apiBasePath: "test/",
+                        websiteBasePath: "test1/",
+                    },
+                    recipeList: [Session.init()],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.message !==
+                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain."
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "https://api.test.com:3000",
+                        appName: "SuperTokens",
+                        websiteDomain: "127.0.0.2:9000",
+                        apiBasePath: "test/",
+                        websiteBasePath: "test1/",
+                    },
+                    recipeList: [
+                        Session.init({
+                            cookieSecure: false,
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.message !==
+                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain."
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
     });
 
     it("checking for default cookie config", async function () {
