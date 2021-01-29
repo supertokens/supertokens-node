@@ -187,6 +187,18 @@ export function validateAndNormaliseUserInput(
         );
     }
 
+    if (cookieSameSite === "none" && !cookieSecure) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error(
+                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain."
+                ),
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+
     return {
         refreshTokenPath: appInfo.apiBasePath.appendPath(
             recipeInstance.getRecipeId(),
