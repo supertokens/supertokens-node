@@ -187,7 +187,20 @@ export function validateAndNormaliseUserInput(
         );
     }
 
-    if (cookieSameSite === "none" && !cookieSecure) {
+    if (
+        cookieSameSite === "none" &&
+        !cookieSecure &&
+        !(
+            topLevelAPIDomain === "localhost" ||
+            topLevelAPIDomain === "localhost.org" ||
+            isAnIpAddress(topLevelAPIDomain)
+        ) &&
+        !(
+            topLevelWebsiteDomain === "localhost" ||
+            topLevelWebsiteDomain === "localhost.org" ||
+            isAnIpAddress(topLevelWebsiteDomain)
+        )
+    ) {
         throw new STError(
             {
                 type: STError.GENERAL_ERROR,
