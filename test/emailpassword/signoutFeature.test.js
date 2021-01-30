@@ -17,240 +17,137 @@ const {
     printPath,
     setupST,
     startST,
-    stopST,
     killAllST,
     cleanST,
-    resetAll,
     signUPRequest,
     extractInfoFromResponse,
     setKeyValueInConfig,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
-let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
-let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
-const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
-let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
-let utils = require("../../lib/build/recipe/emailpassword/utils");
 const express = require("express");
 const request = require("supertest");
-const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 
 describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.js]")}`, function () {
-    beforeEach(async function () {
-        await killAllST();
-        await setupST();
-        ProcessState.getInstance().reset();
-    });
+    describe("With default implementation enabled", function () {
+        let app, extractedSignUpInfo;
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+        before(async function () {
+            await killAllST();
+            await setupST();
+            await setKeyValueInConfig("access_token_validity", 1);
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init()],
+            });
 
-    // Test the default route and it should revoke the session (with clearing the cookies)
-    it("test the default route and it should revoke the session", async function () {
-        await startST();
+            app = express();
 
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+            app.use(STExpress.middleware());
+
+            app.use(STExpress.errorHandler());
+
+            const signUPResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
+            assert.deepStrictEqual(JSON.parse(signUPResponse.text).status, "OK");
+            assert.deepStrictEqual(signUPResponse.status, 200);
+            extractedSignUpInfo = extractInfoFromResponse(signUPResponse);
         });
 
-        const app = express();
+        beforeEach(async function () {
+            ProcessState.getInstance().reset();
+        });
 
-        app.use(STExpress.middleware());
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
 
-        app.use(STExpress.errorHandler());
+        // Test the default route and it should revoke the session (with clearing the cookies)
+        it("test the default route and it should revoke the session", async function () {
+            const extractedSignOutInfo = extractInfoFromResponse(
+                await new Promise((resolve) =>
+                    request(app)
+                        .post("/auth/signout")
+                        .set("Cookie", [
+                            "sAccessToken=" +
+                                extractedSignUpInfo.accessToken +
+                                ";sIdRefreshToken=" +
+                                extractedSignUpInfo.idRefreshTokenFromCookie,
+                        ])
+                        .set("anti-csrf", extractedSignUpInfo.antiCsrf)
+                        .expect(200)
+                        .end((err, res) => {
+                            assert.deepStrictEqual(err, null);
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(res);
+                            }
+                        })
+                )
+            );
+            assert.deepStrictEqual(extractedSignOutInfo.antiCsrf, undefined);
+            assert.deepStrictEqual(extractedSignOutInfo.accessToken, "");
+            assert.deepStrictEqual(extractedSignOutInfo.refreshToken, "");
+            assert.deepStrictEqual(extractedSignOutInfo.idRefreshTokenFromHeader, "remove");
+            assert.deepStrictEqual(extractedSignOutInfo.idRefreshTokenFromCookie, "");
+            assert.deepStrictEqual(extractedSignOutInfo.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+            assert.deepStrictEqual(extractedSignOutInfo.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+            assert.deepStrictEqual(extractedSignOutInfo.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+            assert.deepStrictEqual(extractedSignOutInfo.accessTokenDomain, undefined);
+            assert.deepStrictEqual(extractedSignOutInfo.refreshTokenDomain, undefined);
+            assert.deepStrictEqual(extractedSignOutInfo.idRefreshTokenDomain, undefined);
+            assert.deepStrictEqual(extractedSignOutInfo.frontToken, undefined);
+        });
 
-        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(JSON.parse(response.text).status === "OK");
-        assert(response.status === 200);
-
-        let res = extractInfoFromResponse(response);
-
-        let response2 = extractInfoFromResponse(
-            await new Promise((resolve) =>
+        // Call the API without a session and it should return "OK"
+        it("test that calling the API without a session should return OK", async function () {
+            const response = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signout")
-                    .set("Cookie", [
-                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
-                    .set("anti-csrf", res.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
+                        assert.deepStrictEqual(err, null);
                         if (err) {
                             resolve(undefined);
                         } else {
                             resolve(res);
                         }
                     })
-            )
-        );
-        assert(response2.antiCsrf === undefined);
-        assert(response2.accessToken === "");
-        assert(response2.refreshToken === "");
-        assert(response2.idRefreshTokenFromHeader === "remove");
-        assert(response2.idRefreshTokenFromCookie === "");
-        assert(response2.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response2.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response2.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response2.accessTokenDomain === undefined);
-        assert(response2.refreshTokenDomain === undefined);
-        assert(response2.idRefreshTokenDomain === undefined);
-        assert(response2.frontToken === undefined);
-    });
-
-    // Disable default route and test that that API returns 404
-    it("test that disabling default route and calling the API returns 404", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signOutFeature: {
-                        disableDefaultImplementation: true,
-                    },
-                }),
-                Session.init(),
-            ],
+            );
+            assert.deepStrictEqual(JSON.parse(response.text).status, "OK");
+            assert.deepStrictEqual(response.status, 200);
+            assert.deepStrictEqual(response.header["set-cookie"], undefined);
         });
 
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signout")
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert(response.status === 404);
-    });
-
-    // Call the API without a session and it should return "OK"
-    it("test that calling the API without a session should return OK", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signout")
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert(JSON.parse(response.text).status === "OK");
-        assert(response.status === 200);
-        assert(response.header["set-cookie"] === undefined);
-    });
-
-    //Call the API with an expired access token, refresh, and call the API again to get OK and clear cookies
-    it("test that signout API reutrns try refresh token, refresh session and signout should return OK", async function () {
-        await setKeyValueInConfig("access_token_validity", 2);
-
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(JSON.parse(response.text).status === "OK");
-        assert(response.status === 200);
-
-        let res = extractInfoFromResponse(response);
-
-        await new Promise((r) => setTimeout(r, 5000));
-
-        let signOutResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signout")
-                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
-                .set("anti-csrf", res.antiCsrf)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-        assert(signOutResponse.status === 401);
-        assert(JSON.parse(signOutResponse.text).message === "try refresh token");
-
-        let refreshedResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+        it("test that signout API returns try refresh token, refresh session and signout should return OK", async function () {
+            // Sign In.
+            const signInAPIResponse = await new Promise((resolve) =>
                 request(app)
-                    .post("/auth/session/refresh")
-                    .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
-                    .set("anti-csrf", res.antiCsrf)
-                    .expect(200)
+                    .post("/auth/signin")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                        ],
+                    })
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -258,21 +155,136 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                             resolve(res);
                         }
                     })
-            )
-        );
+            );
 
-        signOutResponse = extractInfoFromResponse(
-            await new Promise((resolve) =>
+            const extractedSignInInfo = extractInfoFromResponse(signInAPIResponse);
+
+            // Wait until token expiry.
+            await new Promise((r) => setTimeout(r, 1100));
+
+            let signOutResponse = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signout")
                     .set("Cookie", [
                         "sAccessToken=" +
-                            refreshedResponse.accessToken +
+                            extractedSignInInfo.accessToken +
                             ";sIdRefreshToken=" +
-                            refreshedResponse.idRefreshTokenFromCookie,
+                            extractedSignInInfo.idRefreshTokenFromCookie,
                     ])
-                    .set("anti-csrf", refreshedResponse.antiCsrf)
-                    .expect(200)
+                    .set("anti-csrf", extractedSignInInfo.antiCsrf)
+                    .end((err, res) => {
+                        assert.deepStrictEqual(err, null);
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.deepStrictEqual(signOutResponse.status, 401);
+            assert.deepStrictEqual(JSON.parse(signOutResponse.text).message, "try refresh token");
+
+            const refreshedResponse = extractInfoFromResponse(
+                await new Promise((resolve) =>
+                    request(app)
+                        .post("/auth/session/refresh")
+                        .expect(200)
+                        .set("Cookie", ["sRefreshToken=" + extractedSignInInfo.refreshToken])
+                        .set("anti-csrf", extractedSignInInfo.antiCsrf)
+                        .expect(200)
+                        .end((err, res) => {
+                            assert.deepStrictEqual(err, null);
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(res);
+                            }
+                        })
+                )
+            );
+
+            signOutResponse = extractInfoFromResponse(
+                await new Promise((resolve) =>
+                    request(app)
+                        .post("/auth/signout")
+                        .set("Cookie", [
+                            "sAccessToken=" +
+                                refreshedResponse.accessToken +
+                                ";sIdRefreshToken=" +
+                                refreshedResponse.idRefreshTokenFromCookie,
+                        ])
+                        .set("anti-csrf", refreshedResponse.antiCsrf)
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(res);
+                            }
+                        })
+                )
+            );
+
+            assert.deepStrictEqual(signOutResponse.antiCsrf, undefined);
+            assert.deepStrictEqual(signOutResponse.accessToken, "");
+            assert.deepStrictEqual(signOutResponse.refreshToken, "");
+            assert.deepStrictEqual(signOutResponse.idRefreshTokenFromHeader, "remove");
+            assert.deepStrictEqual(signOutResponse.idRefreshTokenFromCookie, "");
+            assert.deepStrictEqual(signOutResponse.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+            assert.deepStrictEqual(signOutResponse.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+            assert.deepStrictEqual(signOutResponse.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+            assert.deepStrictEqual(signOutResponse.accessTokenDomain, undefined);
+            assert.deepStrictEqual(signOutResponse.refreshTokenDomain, undefined);
+            assert.deepStrictEqual(signOutResponse.idRefreshTokenDomain, undefined);
+        });
+    });
+
+    describe("With default implementation disabled", function () {
+        let app;
+
+        before(async function () {
+            await killAllST();
+            await setupST();
+            await setKeyValueInConfig("access_token_validity", 1);
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        signOutFeature: {
+                            disableDefaultImplementation: true,
+                        },
+                    }),
+                    Session.init(),
+                ],
+            });
+
+            app = express();
+            app.use(STExpress.middleware());
+            app.use(STExpress.errorHandler());
+        });
+
+        beforeEach(async function () {
+            ProcessState.getInstance().reset();
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        // Disable default route and test that that API returns 404
+        it("test that disabling default route and calling the API returns 404", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signout")
                     .end((err, res) => {
                         if (err) {
                             resolve(undefined);
@@ -280,19 +292,8 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                             resolve(res);
                         }
                     })
-            )
-        );
-
-        assert(signOutResponse.antiCsrf === undefined);
-        assert(signOutResponse.accessToken === "");
-        assert(signOutResponse.refreshToken === "");
-        assert(signOutResponse.idRefreshTokenFromHeader === "remove");
-        assert(signOutResponse.idRefreshTokenFromCookie === "");
-        assert(signOutResponse.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(signOutResponse.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(signOutResponse.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(signOutResponse.accessTokenDomain === undefined);
-        assert(signOutResponse.refreshTokenDomain === undefined);
-        assert(signOutResponse.idRefreshTokenDomain === undefined);
+            );
+            assert.deepStrictEqual(response.status, 404);
+        });
     });
 });

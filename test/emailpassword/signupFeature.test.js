@@ -12,637 +12,672 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const {
-    printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
-    resetAll,
-    signUPRequest,
-    extractInfoFromResponse,
-} = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, signUPRequest, extractInfoFromResponse } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
-let { normaliseURLDomainOrThrowError } = require("../../lib/build/normalisedURLDomain");
-let { normaliseSessionScopeOrThrowError } = require("../../lib/build/recipe/session/utils");
-const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
-let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
-let utils = require("../../lib/build/recipe/emailpassword/utils");
 const express = require("express");
 const request = require("supertest");
-const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
 
 describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]")}`, function () {
-    beforeEach(async function () {
-        await killAllST();
-        await setupST();
-        ProcessState.getInstance().reset();
-    });
+    describe("With default implementation enabled", function () {
+        let app, customFormFieldsPostSignUp;
 
-    after(async function () {
-        await killAllST();
-        await cleanST();
-    });
+        before(async function () {
+            await killAllST();
+            await setupST();
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        signUpFeature: {
+                            handleCustomFormFieldsPostSignUp: (user, formFields) => {
+                                customFormFieldsPostSignUp = formFields;
+                            },
+                        },
+                    }),
+                    Session.init(),
+                ],
+            });
 
-    // * check if disableDefaultImplementation is true, the default signup API does not work - you get a 404
-    it("test that if disableDefaultImplementation is true, the default signup API does not work", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        disableDefaultImplementation: true,
-                    },
-                }),
-                Session.init(),
-            ],
+            app = express();
+            app.use(STExpress.middleware());
+            app.use(STExpress.errorHandler());
         });
 
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(response.status === 404);
-    });
-
-    /*
-     * test signUpAPI for:
-     *        - it works when the input is fine (sign up, get user id, get email of that user and check the input email is same as the one used for sign up)
-     *        - throws an error in case of duplicate email.
-     */
-
-    it("test signUpAPI works when input is fine", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+        beforeEach(async function () {
+            ProcessState.getInstance().reset();
         });
 
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(JSON.parse(response.text).status === "OK");
-        assert(response.status === 200);
-
-        let userInfo = JSON.parse(response.text).user;
-        assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
-    });
-
-    it("test signUpAPI throws an error in case of a duplicate email", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+        after(async function () {
+            await killAllST();
+            await cleanST();
         });
 
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(JSON.parse(response.text).status === "OK");
-        assert(response.status === 200);
-
-        let userInfo = JSON.parse(response.text).user;
-        assert(userInfo.id !== undefined);
-        assert(userInfo.email === "random@gmail.com");
-
-        response = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(response.status === 200);
-        let responseInfo = JSON.parse(response.text);
-
-        assert(responseInfo.status === "FIELD_ERROR");
-        assert(responseInfo.formFields.length === 1);
-        assert(responseInfo.formFields[0].id === "email");
-        assert(responseInfo.formFields[0].error === "This email already exists. Please sign in instead.");
-    });
-
-    it("test signUpAPI throws an error for email and password with invalid syntax", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+        afterEach(async function () {
+            customFormFieldsPostSignUp = undefined;
         });
 
-        const app = express();
+        /*
+         * test signUpAPI for:
+         *        - it works when the input is fine (sign up, get user id, get email of that user and check the input email is same as the one used for sign up)
+         *        - throws an error in case of duplicate email.
+         */
 
-        app.use(STExpress.middleware());
+        it("test signUpAPI works when input is fine", async function () {
+            const response = await signUPRequest(app, "random@gmail.com", "validpass123");
+            assert.deepStrictEqual(JSON.parse(response.text).status, "OK");
+            assert.deepStrictEqual(response.status, 200);
 
-        app.use(STExpress.errorHandler());
+            const userInfo = JSON.parse(response.text).user;
+            assert.notDeepStrictEqual(userInfo.id, undefined);
+            assert.deepStrictEqual(userInfo.email, "random@gmail.com");
+        });
 
-        let response = await signUPRequest(app, "randomgmail.com", "invalidpass");
-        assert(response.status === 200);
-        let responseInfo = JSON.parse(response.text);
+        it("test signUpAPI throws an error in case of a duplicate email", async function () {
+            let response = await signUPRequest(app, "random2@gmail.com", "validpass123");
+            assert.deepStrictEqual(JSON.parse(response.text).status, "OK");
+            assert.deepStrictEqual(response.status, 200);
 
-        assert(responseInfo.status === "FIELD_ERROR");
-        assert(responseInfo.formFields.length === 2);
-        assert(responseInfo.formFields.filter((f) => f.id === "email")[0].error === "Email is invalid");
-        assert(
-            responseInfo.formFields.filter((f) => f.id === "password")[0].error ===
+            let userInfo = JSON.parse(response.text).user;
+            assert.notDeepStrictEqual(userInfo.id, undefined);
+            assert.deepStrictEqual(userInfo.email, "random2@gmail.com");
+
+            response = await signUPRequest(app, "random2@gmail.com", "validpass123");
+            assert.deepStrictEqual(response.status, 200);
+            const responseInfo = JSON.parse(response.text);
+
+            assert.deepStrictEqual(responseInfo.status, "FIELD_ERROR");
+            assert.deepStrictEqual(responseInfo.formFields.length, 1);
+            assert.deepStrictEqual(responseInfo.formFields[0].id, "email");
+            assert.deepStrictEqual(
+                responseInfo.formFields[0].error,
+                "This email already exists. Please sign in instead."
+            );
+        });
+
+        it("test signUpAPI throws an error for email and password with invalid syntax", async function () {
+            const response = await signUPRequest(app, "randomgmail.com", "invalidpass");
+            assert.deepStrictEqual(response.status, 200);
+            const responseInfo = JSON.parse(response.text);
+
+            assert.deepStrictEqual(responseInfo.status, "FIELD_ERROR");
+            assert.deepStrictEqual(responseInfo.formFields.length, 2);
+            assert.deepStrictEqual(
+                responseInfo.formFields.filter((f) => f.id === "email")[0].error,
+                "Email is invalid"
+            );
+            assert.deepStrictEqual(
+                responseInfo.formFields.filter((f) => f.id === "password")[0].error,
                 "Password must contain at least one number"
-        );
-    });
-
-    /* pass a bad input to the /signup API and test that it throws a 400 error.
-     *        - Not a JSON
-     *        - No POST body
-     *        - Input is JSON, but wrong structure.
-     *        - formFields is not an array
-     *        - formFields does not exist
-     *        - formField elements have no id or no value field
-     * */
-    it("test bad input, not a JSON to /signup API", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+            );
         });
 
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let badInputResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send("hello")
-                .expect(400)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(badInputResponse.message === "Missing input param: formFields");
-    });
-
-    it("test bad input, no POST body to /signup API", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+        /* pass a bad input to the /signup API and test that it throws a 400 error.
+         *        - Not a JSON
+         *        - No POST body
+         *        - Input is JSON, but wrong structure.
+         *        - formFields is not an array
+         *        - formFields does not exist
+         *        - formField elements have no id or no value field
+         * */
+        it("test bad input, not a JSON to /signup API", async function () {
+            const badInputResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send("hello")
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(badInputResponse.message, "Missing input param: formFields");
         });
 
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let badInputResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .expect(400)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(badInputResponse.message === "Missing input param: formFields");
-    });
-
-    it("test bad input, Input is JSON, but wrong structure to /signup API", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+        it("test bad input, no POST body to /signup API", async function () {
+            const badInputResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(badInputResponse.message, "Missing input param: formFields");
         });
 
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let badInputResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    randomKey: "randomValue",
-                })
-                .expect(400)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(badInputResponse.message === "Missing input param: formFields");
-    });
-
-    it("test bad input, formFields is not an array in /signup API", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let badInputResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: {
+        it("test bad input, Input is JSON, but wrong structure to /signup API", async function () {
+            const badInputResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
                         randomKey: "randomValue",
-                    },
-                })
-                .expect(400)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(badInputResponse.message === "formFields must be an array");
-    });
-
-    it("test bad input, formField elements have no id or no value field in /signup API", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+                    })
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(badInputResponse.message, "Missing input param: formFields");
         });
 
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let badInputResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
+        it("test bad input, formFields is not an array in /signup API", async function () {
+            const badInputResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: {
                             randomKey: "randomValue",
                         },
-                        {
-                            randomKey2: "randomValue2",
-                        },
-                    ],
-                })
-                .expect(400)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(badInputResponse.message === "All elements of formFields must contain an 'id' and 'value' field");
-    });
-
-    //* Make sure that a successful sign up yields a session
-    it("test that a successful signup yields a session", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+                    })
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(badInputResponse.message, "formFields must be an array");
         });
-        const app = express();
 
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(JSON.parse(signUpResponse.text).status === "OK");
-        assert(signUpResponse.status === 200);
-
-        let cookies = extractInfoFromResponse(signUpResponse);
-        assert(cookies.accessToken !== undefined);
-        assert(cookies.refreshToken !== undefined);
-        assert(cookies.antiCsrf !== undefined);
-        assert(cookies.idRefreshTokenFromHeader !== undefined);
-        assert(cookies.idRefreshTokenFromCookie !== undefined);
-        assert(cookies.accessTokenExpiry !== undefined);
-        assert(cookies.refreshTokenExpiry !== undefined);
-        assert(cookies.idRefreshTokenExpiry !== undefined);
-        assert(cookies.refreshToken !== undefined);
-        assert(cookies.accessTokenDomain === undefined);
-        assert(cookies.refreshTokenDomain === undefined);
-        assert(cookies.idRefreshTokenDomain === undefined);
-        assert(cookies.frontToken !== undefined);
-    });
-
-    /*
-     * providing the handleCustomFormFieldsPostSignUp should work:
-     *        - If not provided by the user, it should not result in an error
-     *        - If provided by the user, and custom fields are there, only those should be sent
-     *        - If provided by the user, and no custom fields are there, then the formFields param must sbe empty
-     */
-
-    //If not provided by the user, it should not result in an error
-
-    it("test that if not provided by the user, it should not result in an error", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
+        it("test bad input, formField elements have no id or no value field in /signup API", async function () {
+            const badInputResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
                         formFields: [
                             {
-                                id: "testField",
+                                randomKey: "randomValue",
+                            },
+                            {
+                                randomKey2: "randomValue2",
                             },
                         ],
-                    },
-                }),
-                Session.init(),
-            ],
+                    })
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(
+                badInputResponse.message,
+                "All elements of formFields must contain an 'id' and 'value' field"
+            );
         });
-        const app = express();
 
-        app.use(STExpress.middleware());
+        //* Make sure that a successful sign up yields a session
+        it("test that a successful signup yields a session", async function () {
+            const signUpResponse = await signUPRequest(app, "random3@gmail.com", "validpass123");
+            assert.deepStrictEqual(JSON.parse(signUpResponse.text).status, "OK");
+            assert.deepStrictEqual(signUpResponse.status, 200);
 
-        app.use(STExpress.errorHandler());
+            let cookies = extractInfoFromResponse(signUpResponse);
+            assert.notDeepStrictEqual(cookies.accessToken, undefined);
+            assert.notDeepStrictEqual(cookies.refreshToken, undefined);
+            assert.notDeepStrictEqual(cookies.antiCsrf, undefined);
+            assert.notDeepStrictEqual(cookies.idRefreshTokenFromHeader, undefined);
+            assert.notDeepStrictEqual(cookies.idRefreshTokenFromCookie, undefined);
+            assert.notDeepStrictEqual(cookies.accessTokenExpiry, undefined);
+            assert.notDeepStrictEqual(cookies.refreshTokenExpiry, undefined);
+            assert.notDeepStrictEqual(cookies.idRefreshTokenExpiry, undefined);
+            assert.notDeepStrictEqual(cookies.refreshToken, undefined);
+            assert.deepStrictEqual(cookies.accessTokenDomain, undefined);
+            assert.deepStrictEqual(cookies.refreshTokenDomain, undefined);
+            assert.deepStrictEqual(cookies.idRefreshTokenDomain, undefined);
+            assert.notDeepStrictEqual(cookies.frontToken, undefined);
+        });
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                        {
-                            id: "testField",
-                            value: "testValue",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-
-        assert(response.status === "OK");
-        assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
-    });
-
-    //- If provided by the user, and custom fields are there, only those should be sent
-    it("test that if provided by the user, and custom fields are there, only those are sent", async function () {
-        await startST();
-
-        let customFormFields = "";
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
+        //If provided by the user, and no custom fields are there, then the formFields param must sbe empty
+        it("test that if provided by the user, and no custom fields are there, then formFields must be empty", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
                         formFields: [
                             {
-                                id: "testField",
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random5@gmail.com",
                             },
                         ],
-                        handleCustomFormFieldsPostSignUp: (user, formFields) => {
-                            customFormFields = formFields;
-                        },
-                    },
-                }),
-                Session.init(),
-            ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(response.status, "OK");
+            assert.deepStrictEqual(customFormFieldsPostSignUp.length, 0);
         });
-        const app = express();
 
-        app.use(STExpress.middleware());
+        //- Input formFields has no email field (and not in config)
+        it("test input formFields has no email field", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                        ],
+                    })
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(response.message, "Are you sending too many / too few formFields?");
+        });
 
-        app.use(STExpress.errorHandler());
+        // Input formFields has no password field (and not in config
+        it("test inut formFields has no password field", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                        ],
+                    })
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(response.message, "Are you sending too many / too few formFields?");
+        });
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                        {
-                            id: "testField",
-                            value: "testValue",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
+        it("test signup password field validation error", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "invalid",
+                            },
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(response.status, "FIELD_ERROR");
+            assert.deepStrictEqual(response.formFields.length, 1);
+            assert.deepStrictEqual(
+                response.formFields[0].error,
+                "Password must contain at least 8 characters, including a number"
+            );
+            assert.deepStrictEqual(response.formFields[0].id, "password");
+        });
 
-        assert(response.status === "OK");
-        assert(customFormFields.length === 1);
-        assert(customFormFields[0].id === "testField");
-        assert(customFormFields[0].value === "testValue");
+        //Test email field validation error
+        it("test signup email field validation error", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "randomgmail.com",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(response.status, "FIELD_ERROR");
+            assert.deepStrictEqual(response.formFields.length, 1);
+            assert.deepStrictEqual(response.formFields[0].error, "Email is invalid");
+            assert.deepStrictEqual(response.formFields[0].id, "email");
+        });
+
+        //Make sure that the input email is trimmed
+        it("test that input email is trimmed", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "      random10213@gmail.com    ",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(response.status, "OK");
+            assert.notDeepStrictEqual(response.user.id, undefined);
+            assert.deepStrictEqual(response.user.email, "random10213@gmail.com");
+        });
     });
 
-    //If provided by the user, and no custom fields are there, then the formFields param must sbe empty
-    it("test that if provided by the user, and no custom fields are there, then formFields must be empty", async function () {
-        await startST();
+    describe("With custom form fields", function () {
+        let app, customFormFieldsPostSignUp;
 
-        let customFormFields = "";
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        handleCustomFormFieldsPostSignUp: (user, formFields) => {
-                            customFormFields = formFields;
+        before(async function () {
+            await killAllST();
+            await setupST();
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        signUpFeature: {
+                            formFields: [
+                                {
+                                    id: "testField",
+                                },
+                            ],
+                            handleCustomFormFieldsPostSignUp: (user, formFields) => {
+                                customFormFieldsPostSignUp = formFields;
+                            },
                         },
-                    },
-                }),
-                Session.init(),
-            ],
+                    }),
+                    Session.init(),
+                ],
+            });
+
+            app = express();
+            app.use(STExpress.middleware());
+            app.use(STExpress.errorHandler());
         });
-        const app = express();
 
-        app.use(STExpress.middleware());
+        beforeEach(async function () {
+            ProcessState.getInstance().reset();
+        });
 
-        app.use(STExpress.errorHandler());
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
 
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
+        afterEach(async function () {
+            customFormFieldsPostSignUp = undefined;
+        });
 
-        assert(response.status === "OK");
-        assert(customFormFields.length === 0);
+        /*
+         * providing the handleCustomFormFieldsPostSignUp should work:
+         *        - If not provided by the user, it should not result in an error
+         *        - If provided by the user, and custom fields are there, those should be sent
+         *        - If provided by the user, and no custom fields are there, then the formFields param must sbe empty
+         */
+
+        //If not provided by the user, it should not result in an error
+        it("test that if not provided by the user, it should not result in an error", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                            {
+                                id: "testField",
+                                value: "testValue",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(response.status, "OK");
+            assert.notDeepStrictEqual(response.user.id, undefined);
+            assert.deepStrictEqual(response.user.email, "random@gmail.com");
+        });
+
+        //- If provided by the user, and custom fields are there, those should be sent
+        it("test that if provided by the user, and custom fields are there, those are sent", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random@2gmail.com",
+                            },
+                            {
+                                id: "testField",
+                                value: "testValue",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(response.status, "OK");
+            assert.deepStrictEqual(customFormFieldsPostSignUp.length, 1);
+            assert.deepStrictEqual(customFormFieldsPostSignUp[0].id, "testField");
+            assert.deepStrictEqual(customFormFieldsPostSignUp[0].value, "testValue");
+        });
+
+        it("test formFields added in config but not in inout to signup, check error about it being missing", async function () {
+            const response = await signUPRequest(app, "random@gmail.com", "validpass123");
+            assert.deepStrictEqual(response.status, 400);
+            assert.deepStrictEqual(JSON.parse(response.text).message, "Are you sending too many / too few formFields?");
+        });
+
+        //- Good test case without optional
+        it("test valid formFields without optional", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random5@gmail.com",
+                            },
+                            {
+                                id: "testField",
+                                value: "testValue",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(response.status, "OK");
+            assert.notDeepStrictEqual(response.user.id, undefined);
+            assert.deepStrictEqual(response.user.email, "random5@gmail.com");
+        });
+
+        //- Bad test case without optional (something is missing, and it's not optional)
+        it("test bad case input to signup without optional", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                            {
+                                id: "testField",
+                                value: "",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(response.status, "FIELD_ERROR");
+            assert.deepStrictEqual(response.formFields.length, 1);
+            assert.deepStrictEqual(response.formFields[0].error, "Field is not optional");
+            assert.deepStrictEqual(response.formFields[0].id, "testField");
+        });
+
+        // Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handleCustomFormFieldsPostSignUp as that type
+        it("test that non string value in formFields array and it passes through the signup API and it is sent to the handleCustomFormFieldsPostSignUp", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random1423@gmail.com",
+                            },
+                            {
+                                id: "testField",
+                                value: { key: "value" },
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(response.status, "OK");
+            assert.deepStrictEqual(customFormFieldsPostSignUp.length, 1);
+            assert.deepStrictEqual(customFormFieldsPostSignUp[0].id, "testField");
+            assert.deepStrictEqual(customFormFieldsPostSignUp[0].value.key, "value");
+        });
     });
 
     /* formField validation testing:
@@ -660,762 +695,310 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
      *        - Make sure that the input email is trimmed
      *        - Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handleCustomFormFieldsPostSignUp as that type
      */
-    it("test formFields added in config but not in inout to signup, check error about it being missing", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        formFields: [
-                            {
-                                id: "testField",
-                            },
-                        ],
-                    },
-                }),
-                Session.init(),
-            ],
-        });
-        const app = express();
 
-        app.use(STExpress.middleware());
+    describe("With optional custom form fields", function () {
+        let app;
 
-        app.use(STExpress.errorHandler());
-
-        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
-        assert(response.status === 400);
-
-        assert(JSON.parse(response.text).message === "Are you sending too many / too few formFields?");
-    });
-
-    //- Good test case without optional
-    it("test valid formFields without optional", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        formFields: [
-                            {
-                                id: "testField",
-                            },
-                        ],
-                    },
-                }),
-                Session.init(),
-            ],
-        });
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                        {
-                            id: "testField",
-                            value: "testValue",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-
-        assert(response.status === "OK");
-        assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
-    });
-
-    //- Bad test case without optional (something is missing, and it's not optional)
-    it("test bad case input to signup without optional", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        formFields: [
-                            {
-                                id: "testField",
-                            },
-                        ],
-                    },
-                }),
-                Session.init(),
-            ],
-        });
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                        {
-                            id: "testField",
-                            value: "",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(response.status === "FIELD_ERROR");
-        assert(response.formFields.length === 1);
-        assert(response.formFields[0].error === "Field is not optional");
-        assert(response.formFields[0].id === "testField");
-    });
-
-    //- Good test case with optionals
-    it("test good case input to signup with optional", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        formFields: [
-                            {
-                                id: "testField",
-                                optional: true,
-                            },
-                        ],
-                    },
-                }),
-                Session.init(),
-            ],
-        });
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                        {
-                            id: "testField",
-                            value: "",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-
-        assert(response.status === "OK");
-        assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
-    });
-
-    //- Input formFields has no email field (and not in config)
-    it("test input formFields has no email field", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                    ],
-                })
-                .expect(400)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(response.message === "Are you sending too many / too few formFields?");
-    });
-
-    // Input formFields has no password field (and not in config
-    it("test inut formFields has no password field", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
-        });
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(400)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(response.message === "Are you sending too many / too few formFields?");
-    });
-
-    // Input form field has different number of custom fields than in config form fields)
-    it("test input form field has a different number of custom fields than in config form fields", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        formFields: [
-                            {
-                                id: "testField",
-                                optional: true,
-                            },
-                            {
-                                id: "testField2",
-                            },
-                        ],
-                    },
-                }),
-                Session.init(),
-            ],
-        });
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                        {
-                            id: "testField",
-                            value: "",
-                        },
-                    ],
-                })
-                .expect(400)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(response.message === "Are you sending too many / too few formFields?");
-    });
-
-    // Input form field has same number of custom fields as in config form field, but some ids mismatch
-    it("test input form field has the same number of custom fields than in config form fields, but ids mismatch", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        formFields: [
-                            {
-                                id: "testField",
-                                optional: true,
-                            },
-                            {
-                                id: "testField2",
-                            },
-                        ],
-                    },
-                }),
-                Session.init(),
-            ],
-        });
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                        {
-                            id: "testField",
-                            value: "",
-                        },
-                        {
-                            id: "testField3",
-                            value: "",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-
-        assert(response.status === "FIELD_ERROR");
-        assert(response.formFields.length === 1);
-        assert(response.formFields[0].error === "Field is not optional");
-        assert(response.formFields[0].id === "testField2");
-    });
-
-    // Test custom field validation error (one and two custom fields)
-    it("test custom field validation error", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        formFields: [
-                            {
-                                id: "testField",
-                                validate: (value) => {
-                                    if (value.length <= 5) {
-                                        return "testField validation error";
-                                    }
+        before(async function () {
+            await killAllST();
+            await setupST();
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        signUpFeature: {
+                            formFields: [
+                                {
+                                    id: "testField",
+                                    optional: true,
                                 },
+                            ],
+                        },
+                    }),
+                    Session.init(),
+                ],
+            });
+
+            app = express();
+            app.use(STExpress.middleware());
+            app.use(STExpress.errorHandler());
+        });
+
+        beforeEach(async function () {
+            ProcessState.getInstance().reset();
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("test good case input to signup with optional", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random6@gmail.com",
+                            },
+                            {
+                                id: "testField",
+                                value: "",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(response.status, "OK");
+            assert.notDeepStrictEqual(response.user.id, undefined);
+            assert.deepStrictEqual(response.user.email, "random6@gmail.com");
+        });
+    });
+
+    describe("With one optional and one required custom form fields", function () {
+        let app;
+
+        before(async function () {
+            await killAllST();
+            await setupST();
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        signUpFeature: {
+                            formFields: [
+                                {
+                                    id: "testField",
+                                    optional: true,
+                                    validate: (value) => {
+                                        if (value.length > 0 && value.length <= 5) {
+                                            return "testField validation error";
+                                        }
+                                    },
+                                },
+                                {
+                                    id: "testField2",
+                                    validate: (value) => {
+                                        if (value.length <= 5) {
+                                            return "testField2 validation error";
+                                        }
+                                    },
+                                },
+                            ],
+                        },
+                    }),
+                    Session.init(),
+                ],
+            });
+
+            app = express();
+            app.use(STExpress.middleware());
+            app.use(STExpress.errorHandler());
+        });
+
+        beforeEach(async function () {
+            ProcessState.getInstance().reset();
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("test input form field has a different number of custom fields than in config form fields", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                            {
+                                id: "testField",
+                                value: "",
+                            },
+                        ],
+                    })
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(response.message, "Are you sending too many / too few formFields?");
+        });
+
+        // Input form field has same number of custom fields as in config form field, but some ids mismatch
+        it("test input form field has the same number of custom fields than in config form fields, but ids mismatch", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                            {
+                                id: "testField",
+                                value: "",
+                            },
+                            {
+                                id: "testField3",
+                                value: "",
+                            },
+                        ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(response.status, "FIELD_ERROR");
+            assert.deepStrictEqual(response.formFields.length, 1);
+            assert.deepStrictEqual(response.formFields[0].error, "Field is not optional");
+            assert.deepStrictEqual(response.formFields[0].id, "testField2");
+        });
+
+        // Test custom field validation error (one and two custom fields)
+        it("test custom field validation error", async function () {
+            const response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "password",
+                                value: "validpass123",
+                            },
+                            {
+                                id: "email",
+                                value: "random@gmail.com",
+                            },
+                            {
+                                id: "testField",
+                                value: "test",
                             },
                             {
                                 id: "testField2",
-                                validate: (value) => {
-                                    if (value.length <= 5) {
-                                        return "testField2 validation error";
-                                    }
-                                },
+                                value: "test",
                             },
                         ],
-                    },
-                }),
-                Session.init(),
-            ],
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert.deepStrictEqual(response.status, "FIELD_ERROR");
+            assert.deepStrictEqual(response.formFields.length, 2);
+            assert.deepStrictEqual(
+                response.formFields.filter((f) => f.id === "testField")[0].error,
+                "testField validation error"
+            );
+            assert.deepStrictEqual(
+                response.formFields.filter((f) => f.id === "testField2")[0].error,
+                "testField2 validation error"
+            );
         });
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                        {
-                            id: "testField",
-                            value: "test",
-                        },
-                        {
-                            id: "testField2",
-                            value: "test",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(response.status === "FIELD_ERROR");
-        assert(response.formFields.length === 2);
-        assert(response.formFields.filter((f) => f.id === "testField")[0].error === "testField validation error");
-        assert(response.formFields.filter((f) => f.id === "testField2")[0].error === "testField2 validation error");
     });
 
-    //Test password field validation error
-    it("test signup password field validation error", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+    describe("With one optional and one required custom form fields", function () {
+        let app;
+
+        before(async function () {
+            await killAllST();
+            await setupST();
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        signUpFeature: {
+                            disableDefaultImplementation: true,
+                        },
+                    }),
+                    Session.init(),
+                ],
+            });
+
+            app = express();
+            app.use(STExpress.middleware());
+            app.use(STExpress.errorHandler());
         });
-        const app = express();
 
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "invalid",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(response.status === "FIELD_ERROR");
-        assert(response.formFields.length === 1);
-        assert(response.formFields[0].error === "Password must contain at least 8 characters, including a number");
-        assert(response.formFields[0].id === "password");
-    });
-
-    //Test email field validation error
-    it("test signup email field validation error", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+        beforeEach(async function () {
+            ProcessState.getInstance().reset();
         });
-        const app = express();
 
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "randomgmail.com",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(response.status === "FIELD_ERROR");
-        assert(response.formFields.length === 1);
-        assert(response.formFields[0].error === "Email is invalid");
-        assert(response.formFields[0].id === "email");
-    });
-
-    //Make sure that the input email is trimmed
-    it("test that input email is trimmed", async function () {
-        await startST();
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [EmailPassword.init(), Session.init()],
+        after(async function () {
+            await killAllST();
+            await cleanST();
         });
-        const app = express();
 
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "      random@gmail.com    ",
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(response.status === "OK");
-        assert(response.user.id !== undefined);
-        assert(response.user.email === "random@gmail.com");
-    });
-
-    // Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handleCustomFormFieldsPostSignUp as that type
-    it("test that non string value in formFields array and it passes through the signup API and it is sent to the handleCustomFormFieldsPostSignUp", async function () {
-        await startST();
-
-        let customFormFields = "";
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                EmailPassword.init({
-                    signUpFeature: {
-                        formFields: [
-                            {
-                                id: "testField",
-                            },
-                        ],
-                        handleCustomFormFieldsPostSignUp: (user, formFields) => {
-                            customFormFields = formFields;
-                        },
-                    },
-                }),
-                Session.init(),
-            ],
+        // * check if disableDefaultImplementation is true, the default signup API does not work - you get a 404
+        it("test that if disableDefaultImplementation is true, the default signup API does not work", async function () {
+            const response = await signUPRequest(app, "random@gmail.com", "validpass123");
+            assert.deepStrictEqual(response.status, 404);
         });
-        const app = express();
-
-        app.use(STExpress.middleware());
-
-        app.use(STExpress.errorHandler());
-
-        let response = await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signup")
-                .send({
-                    formFields: [
-                        {
-                            id: "password",
-                            value: "validpass123",
-                        },
-                        {
-                            id: "email",
-                            value: "random@gmail.com",
-                        },
-                        {
-                            id: "testField",
-                            value: { key: "value" },
-                        },
-                    ],
-                })
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(JSON.parse(res.text));
-                    }
-                })
-        );
-        assert(response.status === "OK");
-        assert(customFormFields.length === 1);
-        assert(customFormFields[0].id === "testField");
-        assert(customFormFields[0].value.key === "value");
     });
 });
