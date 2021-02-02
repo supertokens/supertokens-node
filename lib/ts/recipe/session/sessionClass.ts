@@ -88,6 +88,7 @@ export default class Session {
     };
 
     updateJWTPayload = async (newJWTPayload: any) => {
+        newJWTPayload = newJWTPayload === null ? {} : newJWTPayload;
         let response = await this.recipeInstance
             .getQuerier()
             .sendPostRequest(new NormalisedURLPath(this.recipeInstance.getRecipeId(), "/recipe/session/regenerate"), {
