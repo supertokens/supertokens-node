@@ -826,6 +826,37 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         }
     });
 
+    it("test that additional property throws an error", async function () {
+        await startST();
+
+        try {
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init({
+                        a: "b",
+                    }),
+                ],
+            });
+            assert(false);
+        } catch (err) {
+            if (
+                err.type !== Session.Error.GENERAL_ERROR ||
+                err.message !==
+                    'Supertokens Recipe Config Schema Error: is not allowed to have the additional property "a"'
+            ) {
+                throw err;
+            }
+        }
+    });
+
     it("test that anti-csrf disabled and sameSite lax does now throw an error", async function () {
         await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();

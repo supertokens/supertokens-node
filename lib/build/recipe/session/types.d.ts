@@ -43,6 +43,48 @@ export declare type TypeInput = {
     errorHandlers?: ErrorHandlers;
     enableAntiCsrf?: boolean;
 };
+export declare const InputSchema: {
+    type: string;
+    properties: {
+        cookieSecure: {
+            type: string;
+        };
+        cookieSameSite: {
+            type: string;
+        };
+        sessionExpiredStatusCode: {
+            type: string;
+        };
+        cookieDomain: {
+            type: string;
+        };
+        sessionRefreshFeature: {
+            type: string;
+            properties: {
+                disableDefaultImplementation: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
+        errorHandlers: {
+            type: string;
+        };
+        enableAntiCsrf: {
+            type: string;
+        };
+        faunadbSecret: {
+            type: string;
+        };
+        userCollectionName: {
+            type: string;
+        };
+        accessFaunadbTokenFromFrontend: {
+            type: string;
+        };
+    };
+    additionalProperties: boolean;
+};
 export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;

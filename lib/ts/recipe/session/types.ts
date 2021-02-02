@@ -61,6 +61,43 @@ export type TypeInput = {
     enableAntiCsrf?: boolean;
 };
 
+const TypeString = {
+    type: "string",
+};
+
+const TypeBoolean = {
+    type: "boolean",
+};
+
+const TypeNumber = {
+    type: "number",
+};
+
+export const InputSchema = {
+    type: "object",
+    properties: {
+        cookieSecure: TypeBoolean,
+        cookieSameSite: TypeString,
+        sessionExpiredStatusCode: TypeNumber,
+        cookieDomain: TypeString,
+        sessionRefreshFeature: {
+            type: "object",
+            properties: {
+                disableDefaultImplementation: TypeBoolean,
+            },
+            additionalProperties: false,
+        },
+        errorHandlers: {
+            type: "any",
+        },
+        enableAntiCsrf: TypeBoolean,
+        faunadbSecret: TypeString,
+        userCollectionName: TypeString,
+        accessFaunadbTokenFromFrontend: TypeBoolean,
+    },
+    additionalProperties: false,
+};
+
 export type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
     cookieDomain: string | undefined;

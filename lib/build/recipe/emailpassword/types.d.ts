@@ -1,3 +1,91 @@
+export declare const InputSchema: {
+    type: string;
+    properties: {
+        signUpFeature: {
+            type: string;
+            properties: {
+                disableDefaultImplementation: {
+                    type: string;
+                };
+                formFields: {
+                    type: string;
+                    items: {
+                        type: string;
+                        properties: {
+                            id: {
+                                type: string;
+                            };
+                            validate: {
+                                type: string;
+                            };
+                            optional: {
+                                type: string;
+                            };
+                        };
+                        required: string[];
+                        additionalProperties: boolean;
+                    };
+                };
+                handleCustomFormFieldsPostSignUp: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
+        signInFeature: {
+            type: string;
+            properties: {
+                disableDefaultImplementation: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
+        resetPasswordUsingTokenFeature: {
+            type: string;
+            properties: {
+                disableDefaultImplementation: {
+                    type: string;
+                };
+                getResetPasswordURL: {
+                    type: string;
+                };
+                createAndSendCustomEmail: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
+        signOutFeature: {
+            type: string;
+            properties: {
+                disableDefaultImplementation: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
+        emailVerificationFeature: {
+            type: string;
+            properties: {
+                disableDefaultImplementation: {
+                    type: string;
+                };
+                getEmailVerificationURL: {
+                    type: string;
+                };
+                createAndSendCustomEmail: {
+                    type: string;
+                };
+                handlePostEmailVerification: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
+    };
+    additionalProperties: boolean;
+};
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;

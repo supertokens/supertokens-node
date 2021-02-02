@@ -13,6 +13,91 @@
  * under the License.
  */
 
+const TypeString = {
+    type: "string",
+};
+
+const TypeBoolean = {
+    type: "boolean",
+};
+
+const TypeAny = {
+    type: "any",
+};
+
+const InputSignUpSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+        formFields: {
+            type: "array",
+            items: {
+                type: "object",
+                properties: {
+                    id: TypeString,
+                    validate: TypeAny,
+                    optional: TypeBoolean,
+                },
+                required: ["id"],
+                additionalProperties: false,
+            },
+        },
+        handleCustomFormFieldsPostSignUp: {
+            type: "any",
+        },
+    },
+    additionalProperties: false,
+};
+
+const InputSignInSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+    },
+    additionalProperties: false,
+};
+
+const InputSignOutSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+    },
+    additionalProperties: false,
+};
+
+const InputResetPasswordUsingTokenFeatureSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+        getResetPasswordURL: TypeAny,
+        createAndSendCustomEmail: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+const InputEmailVerificationFeatureSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+        getEmailVerificationURL: TypeAny,
+        createAndSendCustomEmail: TypeAny,
+        handlePostEmailVerification: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export const InputSchema = {
+    type: "object",
+    properties: {
+        signUpFeature: InputSignUpSchema,
+        signInFeature: InputSignInSchema,
+        resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
+        signOutFeature: InputSignOutSchema,
+        emailVerificationFeature: InputEmailVerificationFeatureSchema,
+    },
+    additionalProperties: false,
+};
+
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;

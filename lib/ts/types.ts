@@ -42,6 +42,42 @@ export type TypeInput = {
     recipeList: RecipeListFunction[];
 };
 
+const TypeString = {
+    type: "string",
+};
+
+export const InputSchema = {
+    type: "object",
+    properties: {
+        supertokens: {
+            type: "object",
+            properties: {
+                connectionURI: TypeString,
+                apiKey: TypeString,
+            },
+            required: ["connectionURI"],
+            additionalProperties: false,
+        },
+        appInfo: {
+            type: "object",
+            properties: {
+                appName: TypeString,
+                websiteDomain: TypeString,
+                apiDomain: TypeString,
+                apiBasePath: TypeString,
+                websiteBasePath: TypeString,
+            },
+            required: ["appName", "websiteDomain", "apiDomain"],
+            additionalProperties: false,
+        },
+        recipeList: {
+            type: "array",
+        },
+    },
+    required: ["supertokens", "appInfo", "recipeList"],
+    additionalProperties: false,
+};
+
 export type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
 
 export type APIHandled = {

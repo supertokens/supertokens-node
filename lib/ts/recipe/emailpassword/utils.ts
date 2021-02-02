@@ -26,6 +26,7 @@ import {
     NormalisedFormField,
     TypeInputEmailVerificationFeature,
     TypeNormalisedInputEmailVerificationFeature,
+    InputSchema,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
@@ -38,12 +39,29 @@ import {
     getEmailVerificationURL as defaultGetEmailVerificationURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
 } from "./emailVerificationFunctions";
+import { validate } from "jsonschema";
+import STError from "./error";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
+    let inputValidation = validate(config, InputSchema);
+    if (inputValidation.errors.length > 0) {
+        let path = inputValidation.errors[0].path.join(".");
+        if (path !== "") {
+            path += " ";
+        }
+        let errorMessage = `${path}${inputValidation.errors[0].message}`;
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error(`EmailPassword Recipe Config Schema Error: ${errorMessage}`),
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
     let signUpFeature = validateAndNormaliseSignupConfig(
         recipeInstance,
         appInfo,

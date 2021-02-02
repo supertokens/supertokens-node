@@ -13,7 +13,13 @@
  * under the License.
  */
 
-import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput, NormalisedErrorHandlers } from "./types";
+import {
+    CreateOrRefreshAPIResponse,
+    TypeInput,
+    TypeNormalisedInput,
+    NormalisedErrorHandlers,
+    InputSchema,
+} from "./types";
 import {
     setFrontTokenInHeaders,
     attachAccessTokenToCookie,
@@ -31,6 +37,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress } from "../../utils";
+import { validate } from "jsonschema";
 
 export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -104,6 +111,21 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
+    let inputValidation = validate(config, InputSchema);
+    if (inputValidation.errors.length > 0) {
+        let path = inputValidation.errors[0].path.join(".");
+        if (path !== "") {
+            path += " ";
+        }
+        let errorMessage = `${path}${inputValidation.errors[0].message}`;
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error(`Supertokens Recipe Config Schema Error: ${errorMessage}`),
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
     let cookieDomain =
         config === undefined || config.cookieDomain === undefined
             ? undefined
