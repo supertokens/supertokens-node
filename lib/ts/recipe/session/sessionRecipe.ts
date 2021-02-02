@@ -150,11 +150,7 @@ export default class SessionRecipe extends RecipeModule {
                 new NormalisedURLPath(this.getRecipeId(), "/recipe/handshake"),
                 {}
             );
-            let enableAntiCsrf = response.enableAntiCsrf;
-            let cdiVersion = await this.getQuerier().getAPIVersion();
-            if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
-                enableAntiCsrf = this.config.enableAntiCsrf;
-            }
+            let enableAntiCsrf = this.config.enableAntiCsrf;
             this.handshakeInfo = {
                 jwtSigningPublicKey: response.jwtSigningPublicKey,
                 enableAntiCsrf,
