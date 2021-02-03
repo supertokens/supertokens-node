@@ -59,7 +59,7 @@ export default class Recipe extends RecipeModule {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.emailVerificationRecipe = new EmailVerificationRecipe(
-            Recipe.RECIPE_ID,
+            recipeId,
             appInfo,
             this.config.emailVerificationFeature
         );
