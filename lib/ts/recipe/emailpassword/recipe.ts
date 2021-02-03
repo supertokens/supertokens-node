@@ -27,8 +27,6 @@ import {
     PASSWORD_RESET_API,
     SIGN_OUT_API,
     SIGNUP_EMAIL_EXISTS_API,
-    GENERATE_EMAIL_VERIFY_TOKEN_API,
-    EMAIL_VERIFY_API,
 } from "./constants";
 import {
     signUp as signUpAPIToCore,
@@ -37,9 +35,6 @@ import {
     getUserByEmail as getUserByEmailFromCore,
     createResetPasswordToken as createResetPasswordTokenFromCore,
     resetPasswordUsingToken as resetPasswordUsingTokenToCore,
-    createEmailVerificationToken as createEmailVerificationTokenFromCore,
-    verifyEmailUsingToken as verifyEmailUsingTokenFromCore,
-    isEmailVerified as isEmailVerifiedFromCore,
     getUsersCount as getUsersCountCore,
     getUsers as getUsersCore,
 } from "./coreAPICalls";
@@ -50,8 +45,6 @@ import passwordResetAPI from "./api/passwordReset";
 import signOutAPI from "./api/signout";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
-import generateEmailVerifyTokenAPI from "./api/generateEmailVerifyToken";
-import emailVerifyAPI from "./api/emailVerify";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -149,24 +142,6 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
-            {
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), GENERATE_EMAIL_VERIFY_TOKEN_API),
-                id: GENERATE_EMAIL_VERIFY_TOKEN_API,
-                disabled: this.config.emailVerificationFeature.disableDefaultImplementation,
-            },
-            {
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), EMAIL_VERIFY_API),
-                id: EMAIL_VERIFY_API,
-                disabled: this.config.emailVerificationFeature.disableDefaultImplementation,
-            },
-            {
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), EMAIL_VERIFY_API),
-                id: EMAIL_VERIFY_API,
-                disabled: this.config.emailVerificationFeature.disableDefaultImplementation,
-            },
         ];
     };
 
@@ -181,10 +156,6 @@ export default class Recipe extends RecipeModule {
             return await signOutAPI(this, req, res, next);
         } else if (id === PASSWORD_RESET_API) {
             return await passwordResetAPI(this, req, res, next);
-        } else if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
-            return await generateEmailVerifyTokenAPI(this, req, res, next);
-        } else if (id === EMAIL_VERIFY_API) {
-            return await emailVerifyAPI(this, req, res, next);
         } else {
             return await emailExistsAPI(this, req, res, next);
         }
@@ -229,14 +200,6 @@ export default class Recipe extends RecipeModule {
             return send200Response(response, {
                 status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
             });
-        } else if (err.type === STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR) {
-            return send200Response(response, {
-                status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",
-            });
-        } else if (err.type === STError.EMAIL_ALREADY_VERIFIED_ERROR) {
-            return send200Response(response, {
-                status: "EMAIL_ALREADY_VERIFIED_ERROR",
-            });
         } else {
             return next(err);
         }
@@ -273,15 +236,16 @@ export default class Recipe extends RecipeModule {
     };
 
     createEmailVerificationToken = async (userId: string): Promise<string> => {
-        return createEmailVerificationTokenFromCore(this, userId);
+        // TODO:
+        return "";
     };
 
     verifyEmailUsingToken = async (token: string) => {
-        return verifyEmailUsingTokenFromCore(this, token);
+        // TODO:
     };
 
     isEmailVerified = async (userId: string) => {
-        return isEmailVerifiedFromCore(this, userId);
+        // TODO:
     };
 
     getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {

@@ -37,7 +37,7 @@ import {
 import {
     getEmailVerificationURL as defaultGetEmailVerificationURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
-} from "./emailVerificationFunctions";
+} from "../emailverification/emailVerificationFunctions";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,

@@ -19,8 +19,8 @@ export default class Wrapper {
     }>;
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<any>;
-    static isEmailVerified(userId: string): Promise<boolean>;
+    static verifyEmailUsingToken(token: string): Promise<void>;
+    static isEmailVerified(userId: string): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
