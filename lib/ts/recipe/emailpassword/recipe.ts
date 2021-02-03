@@ -45,6 +45,7 @@ import passwordResetAPI from "./api/passwordReset";
 import signOutAPI from "./api/signout";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
+import EmailVerificationRecipe from "../emailverification/recipe";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -52,10 +53,31 @@ export default class Recipe extends RecipeModule {
 
     config: TypeNormalisedInput;
 
+    emailVerificationRecipe: EmailVerificationRecipe;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
+        this.emailVerificationRecipe = new EmailVerificationRecipe(
+            Recipe.RECIPE_ID,
+            appInfo,
+            this.config.emailVerificationFeature
+        );
     }
+
+    getEmailForUserId = async (userId: string) => {
+        let userInfo = await this.getUserById(userId);
+        if (userInfo === undefined) {
+            throw new STError(
+                {
+                    type: STError.UNKNOWN_USER_ID_ERROR,
+                    message: "Unknown User ID provided",
+                },
+                this.getRecipeId()
+            );
+        }
+        return userInfo.email;
+    };
 
     static getInstanceOrThrowError(): Recipe {
         if (Recipe.instance !== undefined) {
@@ -142,6 +164,7 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
+            ...this.emailVerificationRecipe.getAPIsHandled(),
         ];
     };
 
@@ -156,8 +179,10 @@ export default class Recipe extends RecipeModule {
             return await signOutAPI(this, req, res, next);
         } else if (id === PASSWORD_RESET_API) {
             return await passwordResetAPI(this, req, res, next);
-        } else {
+        } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this, req, res, next);
+        } else {
+            return this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
         }
     };
 
@@ -201,12 +226,12 @@ export default class Recipe extends RecipeModule {
                 status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
             });
         } else {
-            return next(err);
+            return this.emailVerificationRecipe.handleError(err, request, response, next);
         }
     };
 
     getAllCORSHeaders = (): string[] => {
-        return [];
+        return [...this.emailVerificationRecipe.getAllCORSHeaders()];
     };
 
     // instance functions below...............
@@ -236,16 +261,15 @@ export default class Recipe extends RecipeModule {
     };
 
     createEmailVerificationToken = async (userId: string): Promise<string> => {
-        // TODO:
-        return "";
+        return this.emailVerificationRecipe.createEmailVerificationToken(userId, await this.getEmailForUserId(userId));
     };
 
     verifyEmailUsingToken = async (token: string) => {
-        // TODO:
+        return this.emailVerificationRecipe.verifyEmailUsingToken(token);
     };
 
     isEmailVerified = async (userId: string) => {
-        // TODO:
+        return this.emailVerificationRecipe.isEmailVerified(userId, await this.getEmailForUserId(userId));
     };
 
     getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
