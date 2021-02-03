@@ -25,7 +25,7 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
         // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
         // step 1
         let token = req.body.token;
-        if (token === undefined) {
+        if (token === undefined || token === null) {
             throw new STError(
                 {
                     type: STError.BAD_INPUT_ERROR,
@@ -52,7 +52,7 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
         });
 
         try {
-            await recipeInstance.config.emailVerificationFeature.handlePostEmailVerification(user);
+            await recipeInstance.config.handlePostEmailVerification(user);
         } catch (ignored) {}
     } else {
         // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
@@ -70,8 +70,10 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
         let session = (req as SessionRequest).session;
         let userId = session.getUserId();
 
+        let email = await recipeInstance.config.getEmailForUserId(userId);
+
         // step 2.
-        let isVerified = await recipeInstance.isEmailVerified(userId);
+        let isVerified = await recipeInstance.isEmailVerified(userId, email);
 
         // step 3
         return send200Response(res, {

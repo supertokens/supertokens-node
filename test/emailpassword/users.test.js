@@ -48,11 +48,6 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
-
         const express = require("express");
         const app = express();
 
@@ -117,11 +112,6 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
-
         const express = require("express");
         const app = express();
 
@@ -185,11 +175,6 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
             },
             recipeList: [EmailPassword.init(), Session.init()],
         });
-
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
 
         let userCount = await getUserCount();
         assert.strictEqual(userCount, 0);

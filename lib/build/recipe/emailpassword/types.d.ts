@@ -1,3 +1,4 @@
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
@@ -10,19 +11,13 @@ export declare type TypeNormalisedInput = {
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     signOutFeature: TypeNormalisedInputSignOutFeature;
-    emailVerificationFeature: TypeNormalisedInputEmailVerificationFeature;
+    emailVerificationFeature: TypeNormalisedInputEmailVerification;
 };
 export declare type TypeInputEmailVerificationFeature = {
     disableDefaultImplementation?: boolean;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
-};
-export declare type TypeNormalisedInputEmailVerificationFeature = {
-    disableDefaultImplementation: boolean;
-    getEmailVerificationURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification: (user: User) => Promise<void>;
 };
 export declare type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;

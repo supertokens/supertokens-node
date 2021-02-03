@@ -41,11 +41,8 @@ export async function createNewSession(
         userDataInDatabase: sessionData,
     };
 
-    let cdiVersion = await recipeInstance.getQuerier().getAPIVersion();
-    if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
-        let handShakeInfo = await recipeInstance.getHandshakeInfo();
-        requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
-    }
+    let handShakeInfo = await recipeInstance.getHandshakeInfo();
+    requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
     let response = await recipeInstance
         .getQuerier()
         .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session"), requestBody);
@@ -147,12 +144,8 @@ export async function getSession(
         accessToken,
         antiCsrfToken,
         doAntiCsrfCheck,
+        enableAntiCsrf: handShakeInfo.enableAntiCsrf,
     };
-
-    let cdiVersion = await recipeInstance.getQuerier().getAPIVersion();
-    if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
-        requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
-    }
 
     let response = await recipeInstance
         .getQuerier()
@@ -204,11 +197,9 @@ export async function refreshSession(
         antiCsrfToken,
     };
 
-    let cdiVersion = await recipeInstance.getQuerier().getAPIVersion();
-    if (maxVersion(cdiVersion, "2.6") === cdiVersion) {
-        let handShakeInfo = await recipeInstance.getHandshakeInfo();
-        requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
-    }
+    let handShakeInfo = await recipeInstance.getHandshakeInfo();
+    requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
+
     let response = await recipeInstance
         .getQuerier()
         .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/refresh"), requestBody);

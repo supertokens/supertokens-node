@@ -13,6 +13,8 @@
  * under the License.
  */
 
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
@@ -26,7 +28,7 @@ export type TypeNormalisedInput = {
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     signOutFeature: TypeNormalisedInputSignOutFeature;
-    emailVerificationFeature: TypeNormalisedInputEmailVerificationFeature;
+    emailVerificationFeature: TypeNormalisedInputEmailVerification;
 };
 
 export type TypeInputEmailVerificationFeature = {
@@ -34,13 +36,6 @@ export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
-};
-
-export type TypeNormalisedInputEmailVerificationFeature = {
-    disableDefaultImplementation: boolean;
-    getEmailVerificationURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification: (user: User) => Promise<void>;
 };
 
 export type TypeInputSignUp = {

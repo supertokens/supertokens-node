@@ -27,8 +27,6 @@ import {
     PASSWORD_RESET_API,
     SIGN_OUT_API,
     SIGNUP_EMAIL_EXISTS_API,
-    GENERATE_EMAIL_VERIFY_TOKEN_API,
-    EMAIL_VERIFY_API,
 } from "./constants";
 import {
     signUp as signUpAPIToCore,
@@ -37,9 +35,6 @@ import {
     getUserByEmail as getUserByEmailFromCore,
     createResetPasswordToken as createResetPasswordTokenFromCore,
     resetPasswordUsingToken as resetPasswordUsingTokenToCore,
-    createEmailVerificationToken as createEmailVerificationTokenFromCore,
-    verifyEmailUsingToken as verifyEmailUsingTokenFromCore,
-    isEmailVerified as isEmailVerifiedFromCore,
     getUsersCount as getUsersCountCore,
     getUsers as getUsersCore,
 } from "./coreAPICalls";
@@ -50,8 +45,7 @@ import passwordResetAPI from "./api/passwordReset";
 import signOutAPI from "./api/signout";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
-import generateEmailVerifyTokenAPI from "./api/generateEmailVerifyToken";
-import emailVerifyAPI from "./api/emailVerify";
+import EmailVerificationRecipe from "../emailverification/recipe";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -59,10 +53,31 @@ export default class Recipe extends RecipeModule {
 
     config: TypeNormalisedInput;
 
+    emailVerificationRecipe: EmailVerificationRecipe;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
+        this.emailVerificationRecipe = new EmailVerificationRecipe(
+            Recipe.RECIPE_ID,
+            appInfo,
+            this.config.emailVerificationFeature
+        );
     }
+
+    getEmailForUserId = async (userId: string) => {
+        let userInfo = await this.getUserById(userId);
+        if (userInfo === undefined) {
+            throw new STError(
+                {
+                    type: STError.UNKNOWN_USER_ID_ERROR,
+                    message: "Unknown User ID provided",
+                },
+                this.getRecipeId()
+            );
+        }
+        return userInfo.email;
+    };
 
     static getInstanceOrThrowError(): Recipe {
         if (Recipe.instance !== undefined) {
@@ -149,24 +164,7 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
-            {
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), GENERATE_EMAIL_VERIFY_TOKEN_API),
-                id: GENERATE_EMAIL_VERIFY_TOKEN_API,
-                disabled: this.config.emailVerificationFeature.disableDefaultImplementation,
-            },
-            {
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), EMAIL_VERIFY_API),
-                id: EMAIL_VERIFY_API,
-                disabled: this.config.emailVerificationFeature.disableDefaultImplementation,
-            },
-            {
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), EMAIL_VERIFY_API),
-                id: EMAIL_VERIFY_API,
-                disabled: this.config.emailVerificationFeature.disableDefaultImplementation,
-            },
+            ...this.emailVerificationRecipe.getAPIsHandled(),
         ];
     };
 
@@ -181,12 +179,10 @@ export default class Recipe extends RecipeModule {
             return await signOutAPI(this, req, res, next);
         } else if (id === PASSWORD_RESET_API) {
             return await passwordResetAPI(this, req, res, next);
-        } else if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
-            return await generateEmailVerifyTokenAPI(this, req, res, next);
-        } else if (id === EMAIL_VERIFY_API) {
-            return await emailVerifyAPI(this, req, res, next);
-        } else {
+        } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this, req, res, next);
+        } else {
+            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
         }
     };
 
@@ -229,21 +225,13 @@ export default class Recipe extends RecipeModule {
             return send200Response(response, {
                 status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
             });
-        } else if (err.type === STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR) {
-            return send200Response(response, {
-                status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",
-            });
-        } else if (err.type === STError.EMAIL_ALREADY_VERIFIED_ERROR) {
-            return send200Response(response, {
-                status: "EMAIL_ALREADY_VERIFIED_ERROR",
-            });
         } else {
-            return next(err);
+            return this.emailVerificationRecipe.handleError(err, request, response, next);
         }
     };
 
     getAllCORSHeaders = (): string[] => {
-        return [];
+        return [...this.emailVerificationRecipe.getAllCORSHeaders()];
     };
 
     // instance functions below...............
@@ -273,15 +261,15 @@ export default class Recipe extends RecipeModule {
     };
 
     createEmailVerificationToken = async (userId: string): Promise<string> => {
-        return createEmailVerificationTokenFromCore(this, userId);
+        return this.emailVerificationRecipe.createEmailVerificationToken(userId, await this.getEmailForUserId(userId));
     };
 
     verifyEmailUsingToken = async (token: string) => {
-        return verifyEmailUsingTokenFromCore(this, token);
+        return this.emailVerificationRecipe.verifyEmailUsingToken(token);
     };
 
     isEmailVerified = async (userId: string) => {
-        return isEmailVerifiedFromCore(this, userId);
+        return this.emailVerificationRecipe.isEmailVerified(userId, await this.getEmailForUserId(userId));
     };
 
     getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
