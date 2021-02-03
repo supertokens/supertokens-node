@@ -679,27 +679,17 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
         //adding session data
-        let res = await SessionFunctions.createNewSession(s, "", {}, null);
-
-        let res2 = await SessionFunctions.getSessionData(s, res.session.handle);
-        assert.deepStrictEqual(res2, {});
-
+        let res = await SessionFunctions.createNewSession(s, "", {}, {});
         await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value" });
 
-        let res3 = await SessionFunctions.getSessionData(s, res.session.handle);
-        assert.deepStrictEqual(res3, { key: "value" });
+        let res2 = await SessionFunctions.getSessionData(s, res.session.handle);
+        assert.deepEqual(res2, { key: "value" });
 
         //changing the value of session data with the same key
         await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value 2" });
 
-        let res4 = await SessionFunctions.getSessionData(s, res.session.handle);
-        assert.deepStrictEqual(res4, { key: "value 2" });
-
-        //changing the value of session data to null
-        await SessionFunctions.updateSessionData(s, res.session.handle, null);
-
-        let res5 = await SessionFunctions.getSessionData(s, res.session.handle);
-        assert.deepStrictEqual(res5, {});
+        let res3 = await SessionFunctions.getSessionData(s, res.session.handle);
+        assert.deepEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating session data
         try {
@@ -712,8 +702,98 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         }
     });
 
+    it("test null and undefined values passed for session data", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError();
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "", {}, null);
+
+        let res2 = await SessionFunctions.getSessionData(s, res.session.handle);
+        assert.deepStrictEqual(res2, {});
+
+        await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value" });
+
+        let res3 = await SessionFunctions.getSessionData(s, res.session.handle);
+        assert.deepStrictEqual(res3, { key: "value" });
+
+        await SessionFunctions.updateSessionData(s, res.session.handle, undefined);
+
+        let res4 = await SessionFunctions.getSessionData(s, res.session.handle);
+        assert.deepStrictEqual(res4, {});
+
+        await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value 2" });
+
+        let res5 = await SessionFunctions.getSessionData(s, res.session.handle);
+        assert.deepStrictEqual(res5, { key: "value 2" });
+
+        await SessionFunctions.updateSessionData(s, res.session.handle, null);
+
+        let res6 = await SessionFunctions.getSessionData(s, res.session.handle);
+        assert.deepStrictEqual(res6, {});
+    });
+
     //check manipulating jwt payload
     it("test manipulating jwt payload", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    enableAntiCsrf: true,
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError();
+        //adding jwt payload
+        let res = await SessionFunctions.createNewSession(s, "", {}, {});
+
+        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value" });
+
+        let res2 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        assert.deepEqual(res2, { key: "value" });
+
+        //changing the value of jwt payload with the same key
+        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value 2" });
+
+        let res3 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        assert.deepEqual(res3, { key: "value 2" });
+
+        //passing invalid session handle when updating jwt payload
+        try {
+            await SessionFunctions.updateJWTPayload(s, "random", { key2: "value2" });
+            throw new Error();
+        } catch (error) {
+            if (error.type !== Session.Error.UNAUTHORISED) {
+                throw error;
+            }
+        }
+    });
+
+    it("test null and undefined values passed for jwt payload", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -743,27 +823,20 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res3 = await SessionFunctions.getJWTPayload(s, res.session.handle);
         assert.deepStrictEqual(res3, { key: "value" });
 
-        //changing the value of jwt payload with the same key
+        await SessionFunctions.updateJWTPayload(s, res.session.handle);
+
+        let res4 = await SessionFunctions.getJWTPayload(s, res.session.handle, undefined);
+        assert.deepStrictEqual(res4, {});
+
         await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value 2" });
 
-        let res4 = await SessionFunctions.getJWTPayload(s, res.session.handle);
-        assert.deepStrictEqual(res4, { key: "value 2" });
+        let res5 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        assert.deepStrictEqual(res5, { key: "value 2" });
 
-        //changing the value of jwt payload to null
         await SessionFunctions.updateJWTPayload(s, res.session.handle, null);
 
-        let res5 = await SessionFunctions.getJWTPayload(s, res.session.handle);
-        assert.deepStrictEqual(res5, {});
-
-        //passing invalid session handle when updating jwt payload
-        try {
-            await SessionFunctions.updateJWTPayload(s, "random", { key2: "value2" });
-            throw new Error();
-        } catch (error) {
-            if (error.type !== Session.Error.UNAUTHORISED) {
-                throw error;
-            }
-        }
+        let res6 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        assert.deepStrictEqual(res6, {});
     });
 
     //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
@@ -869,7 +942,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             if (
                 err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                    'Supertokens Recipe Config Schema Error: is not allowed to have the additional property "a"'
+                    'Config schema error in session recipe: root object is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
             ) {
                 throw err;
             }

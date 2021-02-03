@@ -36,8 +36,7 @@ import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
-import { isAnIpAddress } from "../../utils";
-import { validate } from "jsonschema";
+import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 
 export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -111,21 +110,7 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    let inputValidation = validate(config, InputSchema);
-    if (inputValidation.errors.length > 0) {
-        let path = inputValidation.errors[0].path.join(".");
-        if (path !== "") {
-            path += " ";
-        }
-        let errorMessage = `${path}${inputValidation.errors[0].message}`;
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error(`Supertokens Recipe Config Schema Error: ${errorMessage}`),
-            },
-            recipeInstance.getRecipeId()
-        );
-    }
+    validateTheStructureOfUserInput(config, InputSchema, "session recipe", recipeInstance.getRecipeId());
     let cookieDomain =
         config === undefined || config.cookieDomain === undefined
             ? undefined

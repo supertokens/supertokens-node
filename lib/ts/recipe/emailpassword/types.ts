@@ -25,6 +25,16 @@ const TypeAny = {
     type: "any",
 };
 
+export type TypeInputSignUp = {
+    disableDefaultImplementation?: boolean;
+    formFields?: {
+        id: string;
+        validate?: (value: any) => Promise<string | undefined>;
+        optional?: boolean;
+    }[];
+    handleCustomFormFieldsPostSignUp?: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
+};
+
 const InputSignUpSchema = {
     type: "object",
     properties: {
@@ -42,11 +52,25 @@ const InputSignUpSchema = {
                 additionalProperties: false,
             },
         },
-        handleCustomFormFieldsPostSignUp: {
-            type: "any",
-        },
+        handleCustomFormFieldsPostSignUp: TypeAny,
     },
     additionalProperties: false,
+};
+
+export type NormalisedFormField = {
+    id: string;
+    validate: (value: any) => Promise<string | undefined>;
+    optional: boolean;
+};
+
+export type TypeNormalisedInputSignUp = {
+    disableDefaultImplementation: boolean;
+    formFields: NormalisedFormField[];
+    handleCustomFormFieldsPostSignUp: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
+};
+
+export type TypeInputSignIn = {
+    disableDefaultImplementation?: boolean;
 };
 
 const InputSignInSchema = {
@@ -57,12 +81,31 @@ const InputSignInSchema = {
     additionalProperties: false,
 };
 
+export type TypeNormalisedInputSignIn = {
+    disableDefaultImplementation: boolean;
+    formFields: NormalisedFormField[];
+};
+
+export type TypeInputSignOutFeature = {
+    disableDefaultImplementation?: boolean;
+};
+
 const InputSignOutSchema = {
     type: "object",
     properties: {
         disableDefaultImplementation: TypeBoolean,
     },
     additionalProperties: false,
+};
+
+export type TypeNormalisedInputSignOutFeature = {
+    disableDefaultImplementation: boolean;
+};
+
+export type TypeInputResetPasswordUsingTokenFeature = {
+    disableDefaultImplementation?: boolean;
+    getResetPasswordURL?: (user: User) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string) => Promise<void>;
 };
 
 const InputResetPasswordUsingTokenFeatureSchema = {
@@ -75,6 +118,21 @@ const InputResetPasswordUsingTokenFeatureSchema = {
     additionalProperties: false,
 };
 
+export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
+    disableDefaultImplementation: boolean;
+    getResetPasswordURL: (user: User) => Promise<string>;
+    createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string) => Promise<void>;
+    formFieldsForGenerateTokenForm: NormalisedFormField[];
+    formFieldsForPasswordResetForm: NormalisedFormField[];
+};
+
+export type TypeInputEmailVerificationFeature = {
+    disableDefaultImplementation?: boolean;
+    getEmailVerificationURL?: (user: User) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    handlePostEmailVerification?: (user: User) => Promise<void>;
+};
+
 const InputEmailVerificationFeatureSchema = {
     type: "object",
     properties: {
@@ -84,6 +142,21 @@ const InputEmailVerificationFeatureSchema = {
         handlePostEmailVerification: TypeAny,
     },
     additionalProperties: false,
+};
+
+export type TypeNormalisedInputEmailVerificationFeature = {
+    disableDefaultImplementation: boolean;
+    getEmailVerificationURL: (user: User) => Promise<string>;
+    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    handlePostEmailVerification: (user: User) => Promise<void>;
+};
+
+export type TypeInput = {
+    signUpFeature?: TypeInputSignUp;
+    signInFeature?: TypeInputSignIn;
+    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
+    signOutFeature?: TypeInputSignOutFeature;
+    emailVerificationFeature?: TypeInputEmailVerificationFeature;
 };
 
 export const InputSchema = {
@@ -98,87 +171,12 @@ export const InputSchema = {
     additionalProperties: false,
 };
 
-export type TypeInput = {
-    signUpFeature?: TypeInputSignUp;
-    signInFeature?: TypeInputSignIn;
-    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
-    signOutFeature?: TypeInputSignOutFeature;
-    emailVerificationFeature?: TypeInputEmailVerificationFeature;
-};
-
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerificationFeature;
-};
-
-export type TypeInputEmailVerificationFeature = {
-    disableDefaultImplementation?: boolean;
-    getEmailVerificationURL?: (user: User) => Promise<string>;
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
-};
-
-export type TypeNormalisedInputEmailVerificationFeature = {
-    disableDefaultImplementation: boolean;
-    getEmailVerificationURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification: (user: User) => Promise<void>;
-};
-
-export type TypeInputSignUp = {
-    disableDefaultImplementation?: boolean;
-    formFields?: {
-        id: string;
-        validate?: (value: any) => Promise<string | undefined>;
-        optional?: boolean;
-    }[];
-    handleCustomFormFieldsPostSignUp?: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
-};
-
-export type TypeInputSignIn = {
-    disableDefaultImplementation?: boolean;
-};
-
-export type TypeNormalisedInputSignUp = {
-    disableDefaultImplementation: boolean;
-    formFields: NormalisedFormField[];
-    handleCustomFormFieldsPostSignUp: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
-};
-
-export type NormalisedFormField = {
-    id: string;
-    validate: (value: any) => Promise<string | undefined>;
-    optional: boolean;
-};
-
-export type TypeNormalisedInputSignIn = {
-    disableDefaultImplementation: boolean;
-    formFields: NormalisedFormField[];
-};
-
-export type TypeInputResetPasswordUsingTokenFeature = {
-    disableDefaultImplementation?: boolean;
-    getResetPasswordURL?: (user: User) => Promise<string>;
-    createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string) => Promise<void>;
-};
-
-export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
-    disableDefaultImplementation: boolean;
-    getResetPasswordURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string) => Promise<void>;
-    formFieldsForGenerateTokenForm: NormalisedFormField[];
-    formFieldsForPasswordResetForm: NormalisedFormField[];
-};
-
-export type TypeInputSignOutFeature = {
-    disableDefaultImplementation?: boolean;
-};
-
-export type TypeNormalisedInputSignOutFeature = {
-    disableDefaultImplementation: boolean;
 };
 
 export type User = {

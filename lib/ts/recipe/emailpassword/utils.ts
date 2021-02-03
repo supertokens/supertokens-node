@@ -41,27 +41,14 @@ import {
 } from "./emailVerificationFunctions";
 import { validate } from "jsonschema";
 import STError from "./error";
+import { validateTheStructureOfUserInput } from "../../utils";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    let inputValidation = validate(config, InputSchema);
-    if (inputValidation.errors.length > 0) {
-        let path = inputValidation.errors[0].path.join(".");
-        if (path !== "") {
-            path += " ";
-        }
-        let errorMessage = `${path}${inputValidation.errors[0].message}`;
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error(`EmailPassword Recipe Config Schema Error: ${errorMessage}`),
-            },
-            recipeInstance.getRecipeId()
-        );
-    }
+    validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe", recipeInstance.getRecipeId());
     let signUpFeature = validateAndNormaliseSignupConfig(
         recipeInstance,
         appInfo,

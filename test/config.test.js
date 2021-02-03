@@ -105,7 +105,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
                 assert(false);
             } catch (err) {
-                if (err.message !== 'Config Schema Error: appInfo requires property "apiDomain"') {
+                if (err.message !== 'Config schema error in init function: appInfo requires property "apiDomain"') {
                     throw err;
                 }
             }
@@ -127,7 +127,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
                 assert(false);
             } catch (err) {
-                if (err.message !== 'Config Schema Error: appInfo requires property "appName"') {
+                if (err.message !== 'Config schema error in init function: appInfo requires property "appName"') {
                     throw err;
                 }
             }
@@ -149,7 +149,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
                 assert(false);
             } catch (err) {
-                if (err.message !== 'Config Schema Error: appInfo requires property "websiteDomain"') {
+                if (err.message !== 'Config schema error in init function: appInfo requires property "websiteDomain"') {
                     throw err;
                 }
             }
@@ -1033,7 +1033,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     recipeList: [Session.init()],
                 });
             } catch (err) {
-                if (err.message !== 'Config Schema Error: is not allowed to have the additional property "aProperty"') {
+                if (
+                    err.message !==
+                    'Config schema error in init function: root object is not allowed to have the additional property "aProperty". Did you mean to set this on the frontend side?'
+                ) {
                     throw err;
                 }
             }
@@ -1054,7 +1057,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     recipeList: [Session.init()],
                 });
             } catch (err) {
-                if (err.message !== 'Config Schema Error: supertokens requires property "connectionURI"') {
+                if (
+                    err.message !==
+                    'Config schema error in init function: supertokens requires property "connectionURI"'
+                ) {
                     throw err;
                 }
             }
@@ -1077,7 +1083,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     recipeList: [Session.init()],
                 });
             } catch (err) {
-                if (err.message !== "Config Schema Error: supertokens.connectionURI is not of a type(s) string") {
+                if (
+                    err.message !==
+                    "Config schema error in init function: supertokens.connectionURI is not of a type(s) string"
+                ) {
                     throw err;
                 }
             }
@@ -1103,7 +1112,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             } catch (err) {
                 if (
                     err.message !==
-                    'Config Schema Error: supertokens is not allowed to have the additional property "a"'
+                    'Config schema error in init function: supertokens is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
                 ) {
                     throw err;
                 }
@@ -1126,7 +1135,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     recipeList: [Session.init()],
                 });
             } catch (err) {
-                if (err.message !== 'Config Schema Error: appInfo requires property "apiDomain"') {
+                if (err.message !== 'Config schema error in init function: appInfo requires property "apiDomain"') {
                     throw err;
                 }
             }
@@ -1148,7 +1157,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     recipeList: [Session.init()],
                 });
             } catch (err) {
-                if (err.message !== 'Config Schema Error: appInfo requires property "appName"') {
+                if (err.message !== 'Config schema error in init function: appInfo requires property "appName"') {
                     throw err;
                 }
             }
@@ -1170,7 +1179,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     },
                 });
             } catch (err) {
-                if (err.message !== 'Config Schema Error: requires property "recipeList"') {
+                if (
+                    err.message !== 'Config schema error in init function: root object requires property "recipeList"'
+                ) {
                     throw err;
                 }
             }

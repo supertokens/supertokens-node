@@ -30,8 +30,8 @@ export async function createNewSession(
     jwtPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
-    jwtPayload = jwtPayload === null ? {} : jwtPayload;
-    sessionData = sessionData === null ? {} : sessionData;
+    jwtPayload = jwtPayload === null || jwtPayload === undefined ? {} : jwtPayload;
+    sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
     let requestBody: {
         userId: string;
         userDataInJWT: any;
@@ -327,7 +327,7 @@ export async function getSessionData(recipeInstance: SessionRecipe, sessionHandl
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateSessionData(recipeInstance: SessionRecipe, sessionHandle: string, newSessionData: any) {
-    newSessionData = newSessionData === null ? {} : newSessionData;
+    newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
     let response = await recipeInstance
         .getQuerier()
         .sendPutRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/data"), {
@@ -372,7 +372,7 @@ export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function updateJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string, newJWTPayload: any) {
-    newJWTPayload = newJWTPayload === null ? {} : newJWTPayload;
+    newJWTPayload = newJWTPayload === null || newJWTPayload === undefined ? {} : newJWTPayload;
     let response = await recipeInstance
         .getQuerier()
         .sendPutRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/jwt/data"), {

@@ -49,18 +49,6 @@ export type CreateOrRefreshAPIResponse = {
     antiCsrfToken: string | undefined;
 };
 
-export type TypeInput = {
-    cookieSecure?: boolean;
-    cookieSameSite?: "strict" | "lax" | "none";
-    sessionExpiredStatusCode?: number;
-    cookieDomain?: string;
-    sessionRefreshFeature?: {
-        disableDefaultImplementation?: boolean;
-    };
-    errorHandlers?: ErrorHandlers;
-    enableAntiCsrf?: boolean;
-};
-
 const TypeString = {
     type: "string",
 };
@@ -71,6 +59,18 @@ const TypeBoolean = {
 
 const TypeNumber = {
     type: "number",
+};
+
+export type TypeInput = {
+    cookieSecure?: boolean;
+    cookieSameSite?: "strict" | "lax" | "none";
+    sessionExpiredStatusCode?: number;
+    cookieDomain?: string;
+    sessionRefreshFeature?: {
+        disableDefaultImplementation?: boolean;
+    };
+    errorHandlers?: ErrorHandlers;
+    enableAntiCsrf?: boolean;
 };
 
 export const InputSchema = {

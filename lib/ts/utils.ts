@@ -1,10 +1,12 @@
 import STError from "./error";
-import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
+import { AppInfo, NormalisedAppinfo, HTTPMethod, TypeInput } from "./types";
 import * as express from "express";
 import { HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import * as bodyParser from "body-parser";
+import { validate } from "jsonschema";
+import SuperTokensError from "./error";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -158,4 +160,32 @@ export function isAnIpAddress(ipaddress: string) {
     return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
         ipaddress
     );
+}
+
+export function validateTheStructureOfUserInput(
+    config: any,
+    inputSchema: any,
+    configRoot: string,
+    recipeId: string = ""
+) {
+    let inputValidation = validate(config, inputSchema);
+    if (inputValidation.errors.length > 0) {
+        let path = inputValidation.errors[0].path.join(".");
+        if (path !== "") {
+            path += " ";
+        }
+        let errorMessage = `${path}${inputValidation.errors[0].message}`;
+        if (errorMessage.startsWith("requires") || errorMessage.startsWith("is not allowed")) {
+            errorMessage = `root object ${errorMessage}`;
+        }
+        if (errorMessage.includes("is not allowed to have the additional property")) {
+            errorMessage = `${errorMessage}. Did you mean to set this on the frontend side?`;
+        }
+        errorMessage = `Config schema error in ${configRoot}: ${errorMessage}`;
+        throw new SuperTokensError({
+            rId: recipeId,
+            payload: new Error(errorMessage),
+            type: "GENERAL_ERROR",
+        });
+    }
 }
