@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput } from "./types";
+import { TypeInput, TypeNormalisedInput, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -16,6 +16,6 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
     createEmailVerificationToken: (userId: string, email: string) => Promise<string>;
-    verifyEmailUsingToken: (token: string) => Promise<any>;
+    verifyEmailUsingToken: (token: string) => Promise<User>;
     isEmailVerified: (userId: string, email: string) => Promise<boolean>;
 }

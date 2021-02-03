@@ -4,7 +4,7 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static createEmailVerificationToken(userId: string, email: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<any>;
+    static verifyEmailUsingToken(token: string): Promise<import("./types").User>;
     static isEmailVerified(userId: string, email: string): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;

@@ -182,7 +182,7 @@ export default class Recipe extends RecipeModule {
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this, req, res, next);
         } else {
-            return this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
+            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
         }
     };
 

@@ -102,13 +102,13 @@ function validateAndNormaliseEmailVerificationConfig(
                             if (userInfo === undefined || config.createAndSendCustomEmail === undefined) {
                                 throw new STError(
                                     {
-                                        type: STError.GENERAL_ERROR,
-                                        payload: new Error("Should not come here"),
+                                        type: STError.UNKNOWN_USER_ID_ERROR,
+                                        message: "User ID unknown",
                                     },
                                     recipeInstance.getRecipeId()
                                 );
                             }
-                            return config.createAndSendCustomEmail(userInfo, link);
+                            return await config.createAndSendCustomEmail(userInfo, link);
                         },
               getEmailVerificationURL:
                   config.getEmailVerificationURL === undefined
@@ -118,13 +118,13 @@ function validateAndNormaliseEmailVerificationConfig(
                             if (userInfo === undefined || config.getEmailVerificationURL === undefined) {
                                 throw new STError(
                                     {
-                                        type: STError.GENERAL_ERROR,
-                                        payload: new Error("Should not come here"),
+                                        type: STError.UNKNOWN_USER_ID_ERROR,
+                                        message: "User ID unknown",
                                     },
                                     recipeInstance.getRecipeId()
                                 );
                             }
-                            return config.getEmailVerificationURL(userInfo);
+                            return await config.getEmailVerificationURL(userInfo);
                         },
               handlePostEmailVerification:
                   config.handlePostEmailVerification === undefined
@@ -134,13 +134,13 @@ function validateAndNormaliseEmailVerificationConfig(
                             if (userInfo === undefined || config.handlePostEmailVerification === undefined) {
                                 throw new STError(
                                     {
-                                        type: STError.GENERAL_ERROR,
-                                        payload: new Error("Should not come here"),
+                                        type: STError.UNKNOWN_USER_ID_ERROR,
+                                        message: "User ID unknown",
                                     },
                                     recipeInstance.getRecipeId()
                                 );
                             }
-                            return config.handlePostEmailVerification(userInfo);
+                            return await config.handlePostEmailVerification(userInfo);
                         },
           };
 }

@@ -114,7 +114,7 @@ export default class Recipe extends RecipeModule {
     handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
             return await generateEmailVerifyTokenAPI(this, req, res, next);
-        } else if (id === EMAIL_VERIFY_API) {
+        } else {
             return await emailVerifyAPI(this, req, res, next);
         }
     };

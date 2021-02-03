@@ -42,7 +42,7 @@ export async function createEmailVerificationToken(
     }
 }
 
-export async function verifyEmailUsingToken(recipeInstance: Recipe, token: string) {
+export async function verifyEmailUsingToken(recipeInstance: Recipe, token: string): Promise<User> {
     let response = await recipeInstance
         .getQuerier()
         .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/email/verify"), {
@@ -51,7 +51,8 @@ export async function verifyEmailUsingToken(recipeInstance: Recipe, token: strin
         });
     if (response.status === "OK") {
         return {
-            ...response.user,
+            id: response.userId,
+            email: response.email,
         };
     } else {
         throw new STError(
