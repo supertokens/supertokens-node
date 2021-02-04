@@ -23,6 +23,51 @@ export declare type TypeInput = {
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
 };
+export declare const InputSchema: {
+    type: string;
+    properties: {
+        supertokens: {
+            type: string;
+            properties: {
+                connectionURI: {
+                    type: string;
+                };
+                apiKey: {
+                    type: string;
+                };
+            };
+            required: string[];
+            additionalProperties: boolean;
+        };
+        appInfo: {
+            type: string;
+            properties: {
+                appName: {
+                    type: string;
+                };
+                websiteDomain: {
+                    type: string;
+                };
+                apiDomain: {
+                    type: string;
+                };
+                apiBasePath: {
+                    type: string;
+                };
+                websiteBasePath: {
+                    type: string;
+                };
+            };
+            required: string[];
+            additionalProperties: boolean;
+        };
+        recipeList: {
+            type: string;
+        };
+    };
+    required: string[];
+    additionalProperties: boolean;
+};
 export declare type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
 export declare type APIHandled = {
     pathWithoutApiBasePath: NormalisedURLPath;

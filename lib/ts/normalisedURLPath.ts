@@ -14,6 +14,7 @@
  */
 
 import { URL } from "url";
+import SuperTokensError from "./error";
 import STError from "./error";
 
 export default class NormalisedURLPath {

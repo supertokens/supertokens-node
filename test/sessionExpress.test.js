@@ -1007,7 +1007,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.post("/updateSessionData2", async (req, res) => {
             let session = await Session.getSession(req, res, true);
-            await session.updateSessionData({ key: "value2" });
+            await session.updateSessionData(null);
             res.status(200).send("");
         });
 
@@ -1113,7 +1113,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check the value of the retrieved
-        assert.deepEqual(response2.body.key, "value2");
+        assert.deepStrictEqual(response2.body, {});
 
         //invalid session handle when updating the session data
         let invalidSessionResponse = await new Promise((resolve) =>
@@ -1178,7 +1178,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.post("/updateJWTPayload2", async (req, res) => {
             let session = await Session.getSession(req, res, true);
-            await session.updateJWTPayload({ key: "value2" });
+            await session.updateJWTPayload(null);
             res.status(200).send("");
         });
 
@@ -1314,7 +1314,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         frontendInfo = JSON.parse(new Buffer.from(updatedResponse2.frontToken, "base64").toString());
         assert(frontendInfo.uid === "user1");
-        assert.deepEqual(frontendInfo.up, { key: "value2" });
+        assert.deepStrictEqual(frontendInfo.up, {});
 
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
@@ -1338,7 +1338,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
 
         //check the value of the retrieved
-        assert.deepEqual(response2.body.key, "value2");
+        assert.deepStrictEqual(response2.body, {});
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await new Promise((resolve) =>
             request(app)

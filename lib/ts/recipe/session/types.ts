@@ -49,6 +49,36 @@ export type CreateOrRefreshAPIResponse = {
     antiCsrfToken: string | undefined;
 };
 
+const TypeString = {
+    type: "string",
+};
+
+const TypeBoolean = {
+    type: "boolean",
+};
+
+const TypeNumber = {
+    type: "number",
+};
+
+const TypeAny = {
+    type: "any",
+};
+
+export const InputSchemaErrorHandlers = {
+    type: "object",
+    properties: {
+        onUnauthorised: TypeAny,
+        onTokenTheftDetected: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export interface ErrorHandlers {
+    onUnauthorised?: ErrorHandlerMiddleware;
+    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
+}
+
 export type TypeInput = {
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
@@ -59,6 +89,29 @@ export type TypeInput = {
     };
     errorHandlers?: ErrorHandlers;
     enableAntiCsrf?: boolean;
+};
+
+export const InputSchema = {
+    type: "object",
+    properties: {
+        cookieSecure: TypeBoolean,
+        cookieSameSite: TypeString,
+        sessionExpiredStatusCode: TypeNumber,
+        cookieDomain: TypeString,
+        sessionRefreshFeature: {
+            type: "object",
+            properties: {
+                disableDefaultImplementation: TypeBoolean,
+            },
+            additionalProperties: false,
+        },
+        errorHandlers: InputSchemaErrorHandlers,
+        enableAntiCsrf: TypeBoolean,
+        faunadbSecret: TypeString,
+        userCollectionName: TypeString,
+        accessFaunadbTokenFromFrontend: TypeBoolean,
+    },
+    additionalProperties: false,
 };
 
 export type TypeNormalisedInput = {
@@ -84,11 +137,6 @@ export interface ErrorHandlerMiddleware {
 
 export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction): void;
-}
-
-export interface ErrorHandlers {
-    onUnauthorised?: ErrorHandlerMiddleware;
-    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
 }
 
 export interface NormalisedErrorHandlers {

@@ -25,6 +25,7 @@ import {
     TypeNormalisedInputResetPasswordUsingTokenFeature,
     NormalisedFormField,
     TypeInputEmailVerificationFeature,
+    InputSchema,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
@@ -34,6 +35,7 @@ import {
     getResetPasswordURL as defaultGetResetPasswordURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomPasswordResetEmail,
 } from "./passwordResetFunctions";
+import { validateTheStructureOfUserInput } from "../../utils";
 import STError from "./error";
 
 export function validateAndNormaliseUserInput(
@@ -41,6 +43,7 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
+    validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe", recipeInstance.getRecipeId());
     let signUpFeature = validateAndNormaliseSignupConfig(
         recipeInstance,
         appInfo,

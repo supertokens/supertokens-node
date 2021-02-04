@@ -248,4 +248,341 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                 "Development bug: Please make sure the password field yields a string"
         );
     });
+
+    it("test that additional property throws an error", async function () {
+        await startST();
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            a: "b",
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        'Config schema error in emailpassword recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            signInFeature: {
+                                disableDefaultImplementation: false,
+                                a: true,
+                            },
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        'Config schema error in emailpassword recipe: signInFeature is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            signInFeature: {
+                                disableDefaultImplementation: false,
+                                a: true,
+                            },
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        'Config schema error in emailpassword recipe: signInFeature is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            signOutFeature: {
+                                b: true,
+                            },
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        'Config schema error in emailpassword recipe: signOutFeature is not allowed to have the additional property "b". Did you mean to set this on the frontend side?'
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            signUpFeature: {
+                                c: "test",
+                            },
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        'Config schema error in emailpassword recipe: signUpFeature is not allowed to have the additional property "c". Did you mean to set this on the frontend side?'
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            emailVerificationFeature: {
+                                e: "test",
+                            },
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        'Config schema error in emailpassword recipe: emailVerificationFeature is not allowed to have the additional property "e". Did you mean to set this on the frontend side?'
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            resetPasswordUsingTokenFeature: {
+                                r: false,
+                            },
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        'Config schema error in emailpassword recipe: resetPasswordUsingTokenFeature is not allowed to have the additional property "r". Did you mean to set this on the frontend side?'
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+    });
+
+    it("test signUpForm formFields", async function () {
+        await startST();
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            signUpFeature: {
+                                formFields: "",
+                            },
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        "Config schema error in emailpassword recipe: signUpFeature.formFields is not of a type(s) array"
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            signUpFeature: {
+                                formFields: [
+                                    {
+                                        id: 0,
+                                    },
+                                ],
+                            },
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        "Config schema error in emailpassword recipe: signUpFeature.formFields.0.id is not of a type(s) string"
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+
+        {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        EmailPassword.init({
+                            signUpFeature: {
+                                formFields: [
+                                    {
+                                        id: "",
+                                        a: 0,
+                                    },
+                                ],
+                            },
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (
+                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
+                    err.message !==
+                        'Config schema error in emailpassword recipe: signUpFeature.formFields.0 is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
+                ) {
+                    throw err;
+                }
+            }
+            resetAll();
+        }
+    });
 });

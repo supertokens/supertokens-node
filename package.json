@@ -35,6 +35,7 @@
     "axios": "0.21.1",
     "body-parser": "1.19.0",
     "cookie": "0.4.0",
+    "jsonschema": "1.4.0",
     "jsonwebtoken": "8.5.1",
     "psl": "1.8.0"
   },

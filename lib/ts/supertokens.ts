@@ -14,13 +14,14 @@
  */
 
 import STError from "./error";
-import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, InputSchema } from "./types";
 import {
     normaliseInputAppInfoOrThrowError,
     getRIDFromRequest,
     normaliseHttpMethod,
     sendNon200Response,
     assertThatBodyParserHasBeenUsed,
+    validateTheStructureOfUserInput,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -28,6 +29,7 @@ import * as express from "express";
 import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
+import SuperTokensError from "./error";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -37,6 +39,7 @@ export default class SuperTokens {
     recipeModules: RecipeModule[];
 
     constructor(config: TypeInput) {
+        validateTheStructureOfUserInput(config, InputSchema, "init function");
         this.appInfo = normaliseInputAppInfoOrThrowError("", config.appInfo);
 
         Querier.init(
@@ -45,7 +48,11 @@ export default class SuperTokens {
         );
 
         if (config.recipeList === undefined || config.recipeList.length === 0) {
-            throw new Error("Please provide at least one recipe to the supertokens.init function call");
+            throw new SuperTokensError({
+                rId: "",
+                type: "GENERAL_ERROR",
+                payload: new Error("Please provide at least one recipe to the supertokens.init function call"),
+            });
         }
 
         this.recipeModules = config.recipeList.map((func) => {

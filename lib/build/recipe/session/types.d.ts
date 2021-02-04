@@ -32,6 +32,22 @@ export declare type CreateOrRefreshAPIResponse = {
     };
     antiCsrfToken: string | undefined;
 };
+export declare const InputSchemaErrorHandlers: {
+    type: string;
+    properties: {
+        onUnauthorised: {
+            type: string;
+        };
+        onTokenTheftDetected: {
+            type: string;
+        };
+    };
+    additionalProperties: boolean;
+};
+export interface ErrorHandlers {
+    onUnauthorised?: ErrorHandlerMiddleware;
+    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
+}
 export declare type TypeInput = {
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
@@ -42,6 +58,57 @@ export declare type TypeInput = {
     };
     errorHandlers?: ErrorHandlers;
     enableAntiCsrf?: boolean;
+};
+export declare const InputSchema: {
+    type: string;
+    properties: {
+        cookieSecure: {
+            type: string;
+        };
+        cookieSameSite: {
+            type: string;
+        };
+        sessionExpiredStatusCode: {
+            type: string;
+        };
+        cookieDomain: {
+            type: string;
+        };
+        sessionRefreshFeature: {
+            type: string;
+            properties: {
+                disableDefaultImplementation: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
+        errorHandlers: {
+            type: string;
+            properties: {
+                onUnauthorised: {
+                    type: string;
+                };
+                onTokenTheftDetected: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
+        enableAntiCsrf: {
+            type: string;
+        };
+        faunadbSecret: {
+            type: string;
+        };
+        userCollectionName: {
+            type: string;
+        };
+        accessFaunadbTokenFromFrontend: {
+            type: string;
+        };
+    };
+    additionalProperties: boolean;
 };
 export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;
@@ -63,10 +130,6 @@ export interface ErrorHandlerMiddleware {
 }
 export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction): void;
-}
-export interface ErrorHandlers {
-    onUnauthorised?: ErrorHandlerMiddleware;
-    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
 }
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
