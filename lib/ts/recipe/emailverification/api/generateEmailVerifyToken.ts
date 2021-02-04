@@ -15,8 +15,7 @@
 
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-import { send200Response, sendNon200Response } from "../../../utils";
-import STError from "../error";
+import { send200Response } from "../../../utils";
 import Session from "../../session";
 import { SessionRequest } from "../../session/types";
 
@@ -41,23 +40,14 @@ export default async function generateEmailVerifyToken(
     let session = (req as SessionRequest).session;
     let userId = session.getUserId();
 
-    let user = await recipeInstance.getUserById(userId);
-    if (user === undefined) {
-        throw new STError(
-            {
-                type: STError.UNKNOWN_USER_ID_ERROR,
-                message: "Failed to generated email verification token as the user ID is unknown",
-            },
-            recipeInstance.getRecipeId()
-        );
-    }
+    let email = await recipeInstance.config.getEmailForUserId(userId);
 
     // step 2
-    let token = await recipeInstance.createEmailVerificationToken(user.id);
+    let token = await recipeInstance.createEmailVerificationToken(userId, email);
 
     // step 3
     let emailVerifyLink =
-        (await recipeInstance.config.emailVerificationFeature.getEmailVerificationURL(user)) +
+        (await recipeInstance.config.getEmailVerificationURL({ id: userId, email })) +
         "?token=" +
         token +
         "&rid=" +
@@ -70,6 +60,6 @@ export default async function generateEmailVerifyToken(
 
     // step 5 & 6
     try {
-        await recipeInstance.config.emailVerificationFeature.createAndSendCustomEmail(user, emailVerifyLink);
+        await recipeInstance.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink);
     } catch (ignored) {}
 }

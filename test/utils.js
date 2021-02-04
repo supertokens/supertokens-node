@@ -328,7 +328,7 @@ module.exports.signUPRequest = async function (app, email, password) {
 };
 
 module.exports.emailVerifyTokenRequest = async function (app, accessToken, idRefreshTokenFromCookie, antiCsrf, userId) {
-    return new Promise(function (resolve) {
+    let result = await new Promise(function (resolve) {
         request(app)
             .post("/auth/user/email/verify/token")
             .set("Cookie", ["sAccessToken=" + accessToken + ";sIdRefreshToken=" + idRefreshTokenFromCookie])
@@ -344,4 +344,9 @@ module.exports.emailVerifyTokenRequest = async function (app, accessToken, idRef
                 }
             });
     });
+
+    // wait for the callback to be called...
+    await new Promise((res) => setTimeout(res, 500));
+
+    return result;
 };

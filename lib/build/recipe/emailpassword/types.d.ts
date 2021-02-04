@@ -1,3 +1,17 @@
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+export declare type TypeNormalisedInput = {
+    signUpFeature: TypeNormalisedInputSignUp;
+    signInFeature: TypeNormalisedInputSignIn;
+    resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
+    signOutFeature: TypeNormalisedInputSignOutFeature;
+    emailVerificationFeature: TypeNormalisedInputEmailVerification;
+};
+export declare type TypeInputEmailVerificationFeature = {
+    disableDefaultImplementation?: boolean;
+    getEmailVerificationURL?: (user: User) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    handlePostEmailVerification?: (user: User) => Promise<void>;
+};
 export declare type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
     formFields?: {
@@ -48,17 +62,16 @@ export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
-export declare type TypeInputEmailVerificationFeature = {
-    disableDefaultImplementation?: boolean;
-    getEmailVerificationURL?: (user: User) => Promise<string>;
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
-};
 export declare type TypeNormalisedInputEmailVerificationFeature = {
     disableDefaultImplementation: boolean;
     getEmailVerificationURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification: (user: User) => Promise<void>;
+};
+export declare type User = {
+    id: string;
+    email: string;
+    timeJoined: number;
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
@@ -154,16 +167,4 @@ export declare const InputSchema: {
         };
     };
     additionalProperties: boolean;
-};
-export declare type TypeNormalisedInput = {
-    signUpFeature: TypeNormalisedInputSignUp;
-    signInFeature: TypeNormalisedInputSignIn;
-    resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
-    signOutFeature: TypeNormalisedInputSignOutFeature;
-    emailVerificationFeature: TypeNormalisedInputEmailVerificationFeature;
-};
-export declare type User = {
-    id: string;
-    email: string;
-    timeJoined: number;
 };

@@ -1,4 +1,3 @@
-"use strict";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,13 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FORM_FIELD_PASSWORD_ID = "password";
-exports.FORM_FIELD_EMAIL_ID = "email";
-exports.SIGN_UP_API = "/signup";
-exports.SIGN_IN_API = "/signin";
-exports.GENERATE_PASSWORD_RESET_TOKEN_API = "/user/password/reset/token";
-exports.PASSWORD_RESET_API = "/user/password/reset";
-exports.SIGN_OUT_API = "/signout";
-exports.SIGNUP_EMAIL_EXISTS_API = "/signup/email/exists";
-//# sourceMappingURL=constants.js.map
+
+export const GENERATE_EMAIL_VERIFY_TOKEN_API = "/user/email/verify/token";
+
+export const EMAIL_VERIFY_API = "/user/email/verify";

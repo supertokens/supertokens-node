@@ -4,10 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+<<<<<<< HEAD
 ## [4.0.0] - 2021-02-02
 ### Changed
 - using jsonschema to validate user config input (https://github.com/supertokens/supertokens-node/issues/73)
 - Fixed https://github.com/supertokens/supertokens-node/issues/77
+=======
+## [4.0.0] - TODO
+### Changed
+- Extracts email verification into its own recipe
+>>>>>>> 4.0
 
 ## [3.4.0] - 2021-01-28
 ### Changed

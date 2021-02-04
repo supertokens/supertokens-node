@@ -83,11 +83,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
-
         const app = express();
 
         app.use(STExpress.middleware());
@@ -132,11 +127,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 }),
             ],
         });
-
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
 
         const app = express();
 
@@ -187,11 +177,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
-
         const app = express();
 
         app.use(STExpress.middleware());
@@ -236,11 +221,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 }),
             ],
         });
-
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
 
         const app = express();
 
@@ -331,11 +311,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
-
         const app = express();
 
         app.use(STExpress.middleware());
@@ -406,11 +381,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
-
         const app = express();
 
         app.use(STExpress.middleware());
@@ -476,11 +446,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
-
         const app = express();
 
         app.use(STExpress.middleware());
@@ -527,11 +492,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 }),
             ],
         });
-
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
 
         const app = express();
 
@@ -592,11 +552,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
-
         const app = express();
 
         app.use(STExpress.middleware());
@@ -639,6 +594,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response2.text).status === "OK");
         assert(Object.keys(JSON.parse(response2.text)).length === 1);
 
+        // wait for the callback to be called...
+        await new Promise((res) => setTimeout(res, 500));
+
         assert(userInfoFromCallback.id === userId);
         assert(userInfoFromCallback.email === "test@gmail.com");
     });
@@ -671,11 +629,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 }),
             ],
         });
-
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
 
         const app = express();
 
@@ -763,11 +716,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
-
         const app = express();
 
         app.use(STExpress.middleware());
@@ -820,11 +768,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 }),
             ],
         });
-
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
-        if (maxVersion(currCDIVersion, "2.4") === "2.4") {
-            return;
-        }
 
         const app = express();
 

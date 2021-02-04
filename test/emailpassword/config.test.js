@@ -82,7 +82,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
 
         let emailVerificationFeature = emailpassword.config.emailVerificationFeature;
 
-        assert(emailVerificationFeature.disableDefaultImplementation === false);
+        assert(emailVerificationFeature.disableDefaultImplementation === undefined);
     });
 
     // Failure condition: passing data of invalid type/ syntax to the module

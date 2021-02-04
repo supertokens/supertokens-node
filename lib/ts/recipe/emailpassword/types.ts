@@ -13,6 +13,8 @@
  * under the License.
  */
 
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+
 const TypeString = {
     type: "string",
 };
@@ -23,6 +25,32 @@ const TypeBoolean = {
 
 const TypeAny = {
     type: "any",
+};
+
+export type TypeNormalisedInput = {
+    signUpFeature: TypeNormalisedInputSignUp;
+    signInFeature: TypeNormalisedInputSignIn;
+    resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
+    signOutFeature: TypeNormalisedInputSignOutFeature;
+    emailVerificationFeature: TypeNormalisedInputEmailVerification;
+};
+
+const InputEmailVerificationFeatureSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+        getEmailVerificationURL: TypeAny,
+        createAndSendCustomEmail: TypeAny,
+        handlePostEmailVerification: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export type TypeInputEmailVerificationFeature = {
+    disableDefaultImplementation?: boolean;
+    getEmailVerificationURL?: (user: User) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 
 export type TypeInputSignUp = {
@@ -126,29 +154,17 @@ export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
 
-export type TypeInputEmailVerificationFeature = {
-    disableDefaultImplementation?: boolean;
-    getEmailVerificationURL?: (user: User) => Promise<string>;
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
-};
-
-const InputEmailVerificationFeatureSchema = {
-    type: "object",
-    properties: {
-        disableDefaultImplementation: TypeBoolean,
-        getEmailVerificationURL: TypeAny,
-        createAndSendCustomEmail: TypeAny,
-        handlePostEmailVerification: TypeAny,
-    },
-    additionalProperties: false,
-};
-
 export type TypeNormalisedInputEmailVerificationFeature = {
     disableDefaultImplementation: boolean;
     getEmailVerificationURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification: (user: User) => Promise<void>;
+};
+
+export type User = {
+    id: string;
+    email: string;
+    timeJoined: number;
 };
 
 export type TypeInput = {
@@ -169,18 +185,4 @@ export const InputSchema = {
         emailVerificationFeature: InputEmailVerificationFeatureSchema,
     },
     additionalProperties: false,
-};
-
-export type TypeNormalisedInput = {
-    signUpFeature: TypeNormalisedInputSignUp;
-    signInFeature: TypeNormalisedInputSignIn;
-    resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
-    signOutFeature: TypeNormalisedInputSignOutFeature;
-    emailVerificationFeature: TypeNormalisedInputEmailVerificationFeature;
-};
-
-export type User = {
-    id: string;
-    email: string;
-    timeJoined: number;
 };
