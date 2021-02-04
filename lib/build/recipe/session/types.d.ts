@@ -32,6 +32,22 @@ export declare type CreateOrRefreshAPIResponse = {
     };
     antiCsrfToken: string | undefined;
 };
+export declare const InputSchemaErrorHandlers: {
+    type: string;
+    properties: {
+        onUnauthorised: {
+            type: string;
+        };
+        onTokenTheftDetected: {
+            type: string;
+        };
+    };
+    additionalProperties: boolean;
+};
+export interface ErrorHandlers {
+    onUnauthorised?: ErrorHandlerMiddleware;
+    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
+}
 export declare type TypeInput = {
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
@@ -69,6 +85,15 @@ export declare const InputSchema: {
         };
         errorHandlers: {
             type: string;
+            properties: {
+                onUnauthorised: {
+                    type: string;
+                };
+                onTokenTheftDetected: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
         };
         enableAntiCsrf: {
             type: string;
@@ -105,10 +130,6 @@ export interface ErrorHandlerMiddleware {
 }
 export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction): void;
-}
-export interface ErrorHandlers {
-    onUnauthorised?: ErrorHandlerMiddleware;
-    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
 }
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;

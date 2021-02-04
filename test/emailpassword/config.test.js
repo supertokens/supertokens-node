@@ -274,7 +274,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                 if (
                     err.type !== EmailPassword.Error.GENERAL_ERROR ||
                     err.message !==
-                        'Config schema error in emailpassword recipe: root object is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
+                        'Config schema error in emailpassword recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
                 ) {
                     throw err;
                 }

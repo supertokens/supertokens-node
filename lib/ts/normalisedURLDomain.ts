@@ -35,11 +35,7 @@ export function normaliseURLDomainOrThrowError(rId: string, input: string, ignor
 
     try {
         if (!input.startsWith("http://") && !input.startsWith("https://") && !input.startsWith("supertokens://")) {
-            throw new SuperTokensError({
-                rId: "",
-                type: "GENERAL_ERROR",
-                payload: new Error("converting to proper URL"),
-            });
+            throw new Error("converting to proper URL");
         }
         let urlObj = new URL(input);
         if (ignoreProtocol) {

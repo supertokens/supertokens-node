@@ -1035,7 +1035,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             } catch (err) {
                 if (
                     err.message !==
-                    'Config schema error in init function: root object is not allowed to have the additional property "aProperty". Did you mean to set this on the frontend side?'
+                    'Config schema error in init function: input config is not allowed to have the additional property "aProperty". Did you mean to set this on the frontend side?'
                 ) {
                     throw err;
                 }
@@ -1180,7 +1180,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
             } catch (err) {
                 if (
-                    err.message !== 'Config schema error in init function: root object requires property "recipeList"'
+                    err.message !== 'Config schema error in init function: input config requires property "recipeList"'
                 ) {
                     throw err;
                 }

@@ -176,7 +176,7 @@ export function validateTheStructureOfUserInput(
         }
         let errorMessage = `${path}${inputValidation.errors[0].message}`;
         if (errorMessage.startsWith("requires") || errorMessage.startsWith("is not allowed")) {
-            errorMessage = `root object ${errorMessage}`;
+            errorMessage = `input config ${errorMessage}`;
         }
         if (errorMessage.includes("is not allowed to have the additional property")) {
             errorMessage = `${errorMessage}. Did you mean to set this on the frontend side?`;

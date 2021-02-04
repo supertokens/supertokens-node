@@ -61,6 +61,24 @@ const TypeNumber = {
     type: "number",
 };
 
+const TypeAny = {
+    type: "any",
+};
+
+export const InputSchemaErrorHandlers = {
+    type: "object",
+    properties: {
+        onUnauthorised: TypeAny,
+        onTokenTheftDetected: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export interface ErrorHandlers {
+    onUnauthorised?: ErrorHandlerMiddleware;
+    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
+}
+
 export type TypeInput = {
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
@@ -87,9 +105,7 @@ export const InputSchema = {
             },
             additionalProperties: false,
         },
-        errorHandlers: {
-            type: "any",
-        },
+        errorHandlers: InputSchemaErrorHandlers,
         enableAntiCsrf: TypeBoolean,
         faunadbSecret: TypeString,
         userCollectionName: TypeString,
@@ -121,11 +137,6 @@ export interface ErrorHandlerMiddleware {
 
 export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction): void;
-}
-
-export interface ErrorHandlers {
-    onUnauthorised?: ErrorHandlerMiddleware;
-    onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
 }
 
 export interface NormalisedErrorHandlers {
