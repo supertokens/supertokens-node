@@ -13,6 +13,7 @@ jobs:
   test:
     docker:
       - image: rishabhpoddar/supertokens_website_sdk_testing
+    resource_class: large
     steps:
       - add_ssh_keys:
           fingerprints:
