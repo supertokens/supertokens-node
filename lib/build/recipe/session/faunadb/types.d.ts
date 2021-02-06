@@ -1,11 +1,12 @@
 export * from "../types";
 import * as OriginalTypes from "../types";
-export declare type TypeFaunaDBInput = ({
+import { Client } from "faunadb";
+declare type FaunaDBClientConfig = {
     faunadbSecret: string;
-    accessFaunadbTokenFromFrontend?: boolean;
-    userCollectionName: string;
 } | {
+    faunadbClient: Client;
+};
+export declare type TypeFaunaDBInput = {
     accessFaunadbTokenFromFrontend?: boolean;
     userCollectionName: string;
-    faunadbClient: any;
-}) & OriginalTypes.TypeInput;
+} & FaunaDBClientConfig & OriginalTypes.TypeInput;
