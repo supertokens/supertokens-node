@@ -11,7 +11,6 @@ export default class SessionRecipe extends RecipeModule {
     private static instance;
     parentRecipe: OriginalSessionRecipe;
     config: {
-        faunadbSecret: string;
         accessFaunadbTokenFromFrontend: boolean;
         userCollectionName: string;
     };

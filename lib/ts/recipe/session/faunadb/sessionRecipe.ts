@@ -31,7 +31,6 @@ export default class SessionRecipe extends RecipeModule {
     parentRecipe: OriginalSessionRecipe;
 
     config: {
-        faunadbSecret: string;
         accessFaunadbTokenFromFrontend: boolean;
         userCollectionName: string;
     };
@@ -70,24 +69,27 @@ export default class SessionRecipe extends RecipeModule {
         this.parentRecipe.refreshSession = this.refreshSession;
 
         this.config = {
-            faunadbSecret: config.faunadbSecret,
             accessFaunadbTokenFromFrontend:
                 config.accessFaunadbTokenFromFrontend === undefined ? false : config.accessFaunadbTokenFromFrontend,
             userCollectionName: config.userCollectionName,
         };
 
-        try {
-            this.faunaDBClient = new faunadb.Client({
-                secret: this.config.faunadbSecret,
-            });
-        } catch (err) {
-            throw new STError(
-                {
-                    payload: err,
-                    type: STError.GENERAL_ERROR,
-                },
-                this.getRecipeId()
-            );
+        if ((config as any).faunadbSecret !== undefined) {
+            try {
+                this.faunaDBClient = new faunadb.Client({
+                    secret: (config as any).faunadbSecret,
+                });
+            } catch (err) {
+                throw new STError(
+                    {
+                        payload: err,
+                        type: STError.GENERAL_ERROR,
+                    },
+                    this.getRecipeId()
+                );
+            }
+        } else {
+            this.faunaDBClient = (config as any).faunadbClient;
         }
     }
 
