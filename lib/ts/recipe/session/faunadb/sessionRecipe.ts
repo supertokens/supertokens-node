@@ -74,10 +74,10 @@ export default class SessionRecipe extends RecipeModule {
             userCollectionName: config.userCollectionName,
         };
 
-        if ((config as any).faunadbSecret !== undefined) {
+        if ("faunadbSecret" in config) {
             try {
                 this.faunaDBClient = new faunadb.Client({
-                    secret: (config as any).faunadbSecret,
+                    secret: config.faunadbSecret,
                 });
             } catch (err) {
                 throw new STError(
@@ -89,7 +89,7 @@ export default class SessionRecipe extends RecipeModule {
                 );
             }
         } else {
-            this.faunaDBClient = (config as any).faunadbClient;
+            this.faunaDBClient = config.faunadbClient;
         }
     }
 
