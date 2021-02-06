@@ -107,6 +107,9 @@ export declare const InputSchema: {
         accessFaunadbTokenFromFrontend: {
             type: string;
         };
+        faunadbClient: {
+            type: string;
+        };
     };
     additionalProperties: boolean;
 };

@@ -110,6 +110,7 @@ export const InputSchema = {
         faunadbSecret: TypeString,
         userCollectionName: TypeString,
         accessFaunadbTokenFromFrontend: TypeBoolean,
+        faunadbClient: TypeAny,
     },
     additionalProperties: false,
 };
