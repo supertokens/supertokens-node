@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed https://github.com/supertokens/supertokens-node/issues/77
 - Extracts email verification into its own recipe
 
-## [3.4.1] - 2021-06-02
+## [3.4.2] - 2021-01-09
+## Added
+- Telemetry as per https://github.com/supertokens/supertokens-node/issues/85
+
+## [3.4.1] - 2021-02-06
 ## Added
 - Allow users to pass FaunaDB client directly when using Session.init
 - Fixes https://github.com/supertokens/supertokens-node/issues/83

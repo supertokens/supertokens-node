@@ -22,6 +22,7 @@ export declare type TypeInput = {
     };
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
+    telemetry?: boolean;
 };
 export declare const InputSchema: {
     type: string;
@@ -62,6 +63,9 @@ export declare const InputSchema: {
             additionalProperties: boolean;
         };
         recipeList: {
+            type: string;
+        };
+        telemetry: {
             type: string;
         };
     };

@@ -15,6 +15,7 @@
 
 import STError from "./error";
 import { TypeInput, NormalisedAppinfo, HTTPMethod, InputSchema } from "./types";
+import axios from "axios";
 import {
     normaliseInputAppInfoOrThrowError,
     getRIDFromRequest,
@@ -58,7 +59,29 @@ export default class SuperTokens {
         this.recipeModules = config.recipeList.map((func) => {
             return func(this.appInfo);
         });
+
+        let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
+
+        if (telemetry) {
+            this.sendTelemetry();
+        }
     }
+
+    sendTelemetry = async () => {
+        try {
+            await axios({
+                method: "POST",
+                url: "https://api.supertokens.io/0/st/telemetry",
+                data: {
+                    appName: this.appInfo.appName,
+                    websiteDomain: this.appInfo.websiteDomain.getAsStringDangerous(),
+                },
+                headers: {
+                    "api-version": 1,
+                },
+            });
+        } catch (ignored) {}
+    };
 
     static init(config: TypeInput) {
         if (SuperTokens.instance === undefined) {

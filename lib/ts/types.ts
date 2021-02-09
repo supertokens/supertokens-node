@@ -40,10 +40,15 @@ export type TypeInput = {
     };
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
+    telemetry?: boolean;
 };
 
 const TypeString = {
     type: "string",
+};
+
+const TypeBoolean = {
+    type: "boolean",
 };
 
 export const InputSchema = {
@@ -73,6 +78,7 @@ export const InputSchema = {
         recipeList: {
             type: "array",
         },
+        telemetry: TypeBoolean,
     },
     required: ["supertokens", "appInfo", "recipeList"],
     additionalProperties: false,
