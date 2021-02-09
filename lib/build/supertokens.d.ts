@@ -6,6 +6,7 @@ export default class SuperTokens {
     appInfo: NormalisedAppinfo;
     recipeModules: RecipeModule[];
     constructor(config: TypeInput);
+    sendTelemetry: () => Promise<void>;
     static init(config: TypeInput): void;
     static reset(): void;
     static getInstanceOrThrowError(): SuperTokens;

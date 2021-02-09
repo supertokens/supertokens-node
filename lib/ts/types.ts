@@ -40,6 +40,7 @@ export type TypeInput = {
     };
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
+    telemetry?: boolean;
 };
 
 export type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;

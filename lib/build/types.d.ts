@@ -22,6 +22,7 @@ export declare type TypeInput = {
     };
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
+    telemetry?: boolean;
 };
 export declare type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
 export declare type APIHandled = {
