@@ -178,9 +178,9 @@ function validateAndNormaliseEmailVerificationConfig(
           };
 }
 
-export function getRedirectionURI(recipeInstance: Recipe, provider: string) {
+export function getRedirectionURI(recipeInstance: Recipe, providerId: string) {
     // TODO: might change when we support multi-tenancy
-    let websiteDomain = recipeInstance.getAppInfo().websiteDomain;
-    let websiteBasePath = recipeInstance.getAppInfo().websiteBasePath;
-    return `${websiteDomain}${websiteBasePath}/callback/${provider}`;
+    let websiteDomain = recipeInstance.getAppInfo().websiteDomain.getAsStringDangerous();
+    let websiteBasePath = recipeInstance.getAppInfo().websiteBasePath.getAsStringDangerous();
+    return `${websiteDomain}${websiteBasePath}/callback/${providerId}`;
 }
