@@ -26,22 +26,21 @@ const TypeAny = {
 
 export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
 
+export type TypeProviderGetResponse = {
+    accessTokenAPI: {
+        url: string;
+        params: { [key: string]: string }; // Will be merged with our object
+    };
+    authorisationRedirect: {
+        url: string;
+        params: { [key: string]: string };
+    };
+    getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
+};
+
 export type TypeProvider = {
     id: string;
-    get: (
-        redirectURI: string,
-        authCodeFromRequest: string | undefined
-    ) => {
-        accessTokenAPI: {
-            url: string;
-            params: { [key: string]: string }; // Will be merged with our object
-        };
-        authorizationRedirect: {
-            url: string;
-            params: { [key: string]: string };
-        };
-        getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
-    };
+    get: (redirectURI: string, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
 };
 
 export type User = {
@@ -82,7 +81,7 @@ export type TypeNormalisedInputEmailVerificationFeature = {
 
 export type TypeInputSignInAndUp = {
     disableDefaultImplementation?: boolean;
-    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
+    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
     providers: TypeProvider[];
 };
 
@@ -95,7 +94,7 @@ const InputSignInAndUpSchema = {
         },
         handlePostSignUpIn: TypeAny,
     },
-    required: ["providers", "handlePostSignUpIn"],
+    required: ["providers"],
     additionalProperties: false,
 };
 

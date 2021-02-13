@@ -19,15 +19,18 @@ import Recipe from "./recipe";
 import STError from "./error";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import {
-    InputSchema,
+    User,
     TypeInput,
-    TypeInputEmailVerificationFeature,
+    InputSchema,
     TypeNormalisedInput,
-    TypeNormalisedInputSignOutFeature,
-    TypeInputSignOutFeature,
-    TypeNormalisedInputSignInAndUp,
     TypeInputSignInAndUp,
+    TypeInputSignOutFeature,
+    TypeInputEmailVerificationFeature,
+    TypeNormalisedInputSignOutFeature,
+    TypeNormalisedInputSignInAndUp,
 } from "./types";
+
+async function defaultHandlePostSignUpIn(user: User, formFields: { id: string; value: any }[]) {}
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -55,31 +58,13 @@ export function validateAndNormaliseUserInput(
 function validateAndNormaliseSignInAndUpConfig(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
-    config?: TypeInputSignInAndUp
+    config: TypeInputSignInAndUp
 ): TypeNormalisedInputSignInAndUp {
-    if (config === undefined) {
-        throw new STError(
-            {
-                type: "BAD_INPUT_ERROR",
-                message: "thirdparty recipe requires atleast signInAndUpFeature config to be passed",
-            },
-            recipeInstance.getRecipeId()
-        );
-    }
     let disableDefaultImplementation =
         config.disableDefaultImplementation === undefined ? false : config.disableDefaultImplementation;
 
-    let handlePostSignUpIn = config.handlePostSignUpIn;
-
-    if (handlePostSignUpIn === undefined) {
-        throw new STError(
-            {
-                type: "BAD_INPUT_ERROR",
-                message: "thirdparty recipe requires signInAndUpFeature.handlePostSignUpIn config to be passed",
-            },
-            recipeInstance.getRecipeId()
-        );
-    }
+    let handlePostSignUpIn =
+        config.handlePostSignUpIn === undefined ? defaultHandlePostSignUpIn : config.handlePostSignUpIn;
 
     let providers = config.providers;
 
@@ -182,5 +167,7 @@ export function getRedirectionURI(recipeInstance: Recipe, providerId: string) {
     // TODO: might change when we support multi-tenancy
     let websiteDomain = recipeInstance.getAppInfo().websiteDomain.getAsStringDangerous();
     let websiteBasePath = recipeInstance.getAppInfo().websiteBasePath.getAsStringDangerous();
-    return `${websiteDomain}${websiteBasePath}/callback/${providerId}`;
+    // adding trailing backslash to counter issue with facebook redirect_uri as suggested in stackoverflow post:
+    // https://stackoverflow.com/questions/4386691/facebook-error-error-validating-verification-code
+    return `${websiteDomain}${websiteBasePath}/callback/${providerId}/`;
 }

@@ -42,7 +42,10 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
         throw new STError(
             {
                 type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the code in request body",
+                message:
+                    "The third party provider " +
+                    thirdPartyId +
+                    " seems to not be configured on the backend. Please checkout your frontend and backend configs.",
             },
             recipeInstance.getRecipeId()
         );
@@ -60,10 +63,11 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
     }
 
     let redirectURI = getRedirectionURI(recipeInstance, provider.id);
-    let providerInfo = provider.get(redirectURI, code);
     let userInfo: UserInfo;
+    let accessTokenAPIResponse: any;
     try {
-        let accessTokenAPIResponse = await axios.default({
+        let providerInfo = provider.get(redirectURI, code);
+        accessTokenAPIResponse = await axios.default({
             method: "post",
             url: providerInfo.accessTokenAPI.url,
             data: qs.stringify(providerInfo.accessTokenAPI.params),
@@ -87,12 +91,14 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
         throw new STError(
             {
                 type: "NO_EMAIL_GIVEN_BY_PROVIDER",
-                message: `sign in/up successful but provider ${provider.id} returned no email info for the user.`,
+                message: `Provider ${provider.id} returned no email info for the user.`,
             },
             recipeInstance.getRecipeId()
         );
     }
     let user = await recipeInstance.signInUp(provider.id, userInfo.id, emailInfo);
+
+    await recipeInstance.config.signInAndUpFeature.handlePostSignUpIn(user.user, accessTokenAPIResponse.data);
 
     await Session.createNewSession(res, user.user.id);
     return send200Response(res, {

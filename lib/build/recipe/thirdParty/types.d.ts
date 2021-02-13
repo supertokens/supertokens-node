@@ -6,23 +6,24 @@ export declare type UserInfo = {
         isVerified: boolean;
     };
 };
+export declare type TypeProviderGetResponse = {
+    accessTokenAPI: {
+        url: string;
+        params: {
+            [key: string]: string;
+        };
+    };
+    authorisationRedirect: {
+        url: string;
+        params: {
+            [key: string]: string;
+        };
+    };
+    getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
+};
 export declare type TypeProvider = {
     id: string;
-    get: (redirectURI: string, authCodeFromRequest: string | undefined) => {
-        accessTokenAPI: {
-            url: string;
-            params: {
-                [key: string]: string;
-            };
-        };
-        authorizationRedirect: {
-            url: string;
-            params: {
-                [key: string]: string;
-            };
-        };
-        getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
-    };
+    get: (redirectURI: string, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
 };
 export declare type User = {
     id: string;
@@ -47,7 +48,7 @@ export declare type TypeNormalisedInputEmailVerificationFeature = {
 };
 export declare type TypeInputSignInAndUp = {
     disableDefaultImplementation?: boolean;
-    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
+    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
     providers: TypeProvider[];
 };
 export declare type TypeNormalisedInputSignInAndUp = {

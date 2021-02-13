@@ -18,6 +18,8 @@ import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { getRedirectionURI } from "../utils";
+import { URLSearchParams } from "url";
+import { TypeProviderGetResponse } from "../types";
 
 export default async function authorisationUrlAPI(
     recipeInstance: Recipe,
@@ -43,25 +45,30 @@ export default async function authorisationUrlAPI(
         throw new STError(
             {
                 type: STError.BAD_INPUT_ERROR,
-                message: "This provider is yet not supported",
+                message:
+                    "The third party provider " +
+                    thirdPartyId +
+                    " seems to not be configured on the backend. Please checkout your frontend and backend configs.",
             },
             recipeInstance.getRecipeId()
         );
     }
 
     let redirectURI = getRedirectionURI(recipeInstance, provider.id);
-    let providerInfo = provider.get(redirectURI, undefined);
-    let paramsString = "";
-
-    let urlQueryParams = Object.keys(providerInfo.authorizationRedirect.params);
-    for (let i = 0; i < urlQueryParams.length; i++) {
-        if (i !== 0) {
-            paramsString += "&";
-        }
-        paramsString += `${urlQueryParams[i]}=${encodeURIComponent(
-            providerInfo.authorizationRedirect.params[urlQueryParams[i]]
-        )}`;
+    let providerInfo: TypeProviderGetResponse;
+    try {
+        providerInfo = provider.get(redirectURI, undefined);
+    } catch (err) {
+        throw new STError(
+            {
+                type: "GENERAL_ERROR",
+                payload: err,
+            },
+            recipeInstance.getRecipeId()
+        );
     }
+    let paramsString = new URLSearchParams(providerInfo.authorisationRedirect.params).toString();
+
     let url = `${redirectURI}?${paramsString}`;
 
     return send200Response(res, {
