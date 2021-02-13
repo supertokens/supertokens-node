@@ -42,10 +42,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
         throw new STError(
             {
                 type: STError.BAD_INPUT_ERROR,
-                message:
-                    "The third party provider " +
-                    thirdPartyId +
-                    " seems to not be configured on the backend. Please checkout your frontend and backend configs.",
+                message: "Please provide the code in request body",
             },
             recipeInstance.getRecipeId()
         );
@@ -56,7 +53,10 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
         throw new STError(
             {
                 type: STError.BAD_INPUT_ERROR,
-                message: "This provider is yet not supported",
+                message:
+                    "The third party provider " +
+                    thirdPartyId +
+                    " seems to not be configured on the backend. Please checkout your frontend and backend configs.",
             },
             recipeInstance.getRecipeId()
         );
