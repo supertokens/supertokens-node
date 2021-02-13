@@ -1,7 +1,29 @@
-import ThirdPartyRecipe from "./recipe";
-import ThirdPartyProvider from "./providers";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-export declare type ProviderListFunction = (recipe: ThirdPartyRecipe) => ThirdPartyProvider;
+export declare type UserInfo = {
+    id: string;
+    email?: {
+        id: string;
+        isVerified: boolean;
+    };
+};
+export declare type TypeProvider = {
+    id: string;
+    get: (redirectURI: string, authCodeFromRequest: string | undefined) => {
+        accessTokenAPI: {
+            url: string;
+            params: {
+                [key: string]: string;
+            };
+        };
+        authorizationRedirect: {
+            url: string;
+            params: {
+                [key: string]: string;
+            };
+        };
+        getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
+    };
+};
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -26,12 +48,12 @@ export declare type TypeNormalisedInputEmailVerificationFeature = {
 export declare type TypeInputSignInAndUp = {
     disableDefaultImplementation?: boolean;
     handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
-    providers: ProviderListFunction[];
+    providers: TypeProvider[];
 };
 export declare type TypeNormalisedInputSignInAndUp = {
     disableDefaultImplementation: boolean;
     handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
-    providers: ProviderListFunction[];
+    providers: TypeProvider[];
 };
 export declare type TypeInputSignOutFeature = {
     disableDefaultImplementation?: boolean;

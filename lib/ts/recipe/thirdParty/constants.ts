@@ -1,4 +1,3 @@
-"use strict";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,14 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-const error_1 = require("../../error");
-class ThirdPartyError extends error_1.default {
-    constructor(options, recipeId) {
-        super(Object.assign(Object.assign({}, options), { rId: recipeId }));
-    }
-}
-exports.default = ThirdPartyError;
-ThirdPartyError.UNKNOWN_USER_ID_ERROR = "UNKNOWN_USER_ID_ERROR";
-ThirdPartyError.NO_EMAIL_GIVEN_BY_PROVIDER = "NO_EMAIL_GIVEN_BY_PROVIDER";
-//# sourceMappingURL=error.js.map
+
+export const AUTHORISATION_API = "/authorisationurl";
+
+export const SIGN_OUT_API = "/signout";
+
+export const SIGN_IN_UP_API = "/signinup";

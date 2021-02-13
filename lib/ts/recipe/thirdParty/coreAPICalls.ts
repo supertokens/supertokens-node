@@ -25,7 +25,7 @@ export async function signInUp(
         id: string;
         isVerified: boolean;
     }
-): Promise<{ isNewUser: boolean; user: User } | undefined> {
+): Promise<{ createdNewUser: boolean; user: User }> {
     let response = await recipeInstance
         .getQuerier()
         .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/signinup"), {
@@ -34,7 +34,7 @@ export async function signInUp(
             email,
         });
     return {
-        isNewUser: response.createdNewUser,
+        createdNewUser: response.createdNewUser,
         user: response.user,
     };
 }

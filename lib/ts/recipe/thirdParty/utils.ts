@@ -32,26 +32,18 @@ import {
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
-    config?: TypeInput
+    config: TypeInput
 ): TypeNormalisedInput {
     validateTheStructureOfUserInput(config, InputSchema, "thirdparty recipe", recipeInstance.getRecipeId());
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(
         recipeInstance,
         appInfo,
-        config === undefined ? undefined : config.emailVerificationFeature
+        config.emailVerificationFeature
     );
 
-    let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.signInAndUpFeature
-    );
+    let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(recipeInstance, appInfo, config.signInAndUpFeature);
 
-    let signOutFeature = validateAndNormaliseSignOutConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.signOutFeature
-    );
+    let signOutFeature = validateAndNormaliseSignOutConfig(recipeInstance, appInfo, config.signOutFeature);
 
     return {
         emailVerificationFeature,
@@ -184,4 +176,11 @@ function validateAndNormaliseEmailVerificationConfig(
                             return await config.handlePostEmailVerification(userInfo);
                         },
           };
+}
+
+export function getRedirectionURI(recipeInstance: Recipe, provider: string) {
+    // TODO: might change when we support multi-tenancy
+    let websiteDomain = recipeInstance.getAppInfo().websiteDomain;
+    let websiteBasePath = recipeInstance.getAppInfo().websiteBasePath;
+    return `${websiteDomain}${websiteBasePath}/callback/${provider}`;
 }

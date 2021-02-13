@@ -13,14 +13,8 @@
  * under the License.
  */
 
-import { NormalisedAppinfo } from "../../types";
 import ThirdPartyRecipe from "./recipe";
-import ThirdPartyProvider from "./providers";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-
-const TypeString = {
-    type: "string",
-};
 
 const TypeBoolean = {
     type: "boolean",
@@ -30,7 +24,25 @@ const TypeAny = {
     type: "any",
 };
 
-export type ProviderListFunction = (recipe: ThirdPartyRecipe) => ThirdPartyProvider;
+export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
+
+export type TypeProvider = {
+    id: string;
+    get: (
+        redirectURI: string,
+        authCodeFromRequest: string | undefined
+    ) => {
+        accessTokenAPI: {
+            url: string;
+            params: { [key: string]: string }; // Will be merged with our object
+        };
+        authorizationRedirect: {
+            url: string;
+            params: { [key: string]: string };
+        };
+        getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
+    };
+};
 
 export type User = {
     // https://github.com/supertokens/core-driver-interface/wiki#third-party-user
@@ -71,7 +83,7 @@ export type TypeNormalisedInputEmailVerificationFeature = {
 export type TypeInputSignInAndUp = {
     disableDefaultImplementation?: boolean;
     handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
-    providers: ProviderListFunction[];
+    providers: TypeProvider[];
 };
 
 const InputSignInAndUpSchema = {
@@ -90,7 +102,7 @@ const InputSignInAndUpSchema = {
 export type TypeNormalisedInputSignInAndUp = {
     disableDefaultImplementation: boolean;
     handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
-    providers: ProviderListFunction[];
+    providers: TypeProvider[];
 };
 
 export type TypeInputSignOutFeature = {

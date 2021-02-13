@@ -1,17 +1,16 @@
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
-import { TypeInput, TypeNormalisedInput, User } from "./types";
+import { TypeInput, TypeNormalisedInput, User, TypeProvider } from "./types";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
 import STError from "./error";
-import ThirdPartyProvider from "./providers";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     emailVerificationRecipe: EmailVerificationRecipe;
-    providers: ThirdPartyProvider[];
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput);
+    providers: TypeProvider[];
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput);
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
@@ -33,4 +32,11 @@ export default class Recipe extends RecipeModule {
         nextPaginationToken?: string | undefined;
     }>;
     getUserCount: () => Promise<number>;
+    signInUp: (thirdPartyId: string, thirdPartyUserId: string, email: {
+        id: string;
+        isVerified: boolean;
+    }) => Promise<{
+        createdNewUser: boolean;
+        user: User;
+    }>;
 }

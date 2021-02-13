@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
-import { TypeInput, TypeNormalisedInput, User } from "./types";
+import { TypeInput, TypeNormalisedInput, User, TypeProvider } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
@@ -25,8 +25,14 @@ import {
     getUsersCount as getUsersCountCore,
     getUserById as getUserByIdFromCore,
     getUserByThirdPartyInfo as getUserByThirdPartyInfoFromCore,
+    signInUp as signInUpFromCore,
 } from "./coreAPICalls";
-import ThirdPartyProvider from "./providers";
+import { SIGN_IN_UP_API, SIGN_OUT_API, AUTHORISATION_API } from "./constants";
+import NormalisedURLPath from "../../normalisedURLPath";
+import signOutAPI from "./api/signout";
+import signInUpAPI from "./api/signinup";
+import authorisationUrlAPI from "./api/authorisationUrl";
+import { send200Response } from "../../utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -36,9 +42,9 @@ export default class Recipe extends RecipeModule {
 
     emailVerificationRecipe: EmailVerificationRecipe;
 
-    providers: ThirdPartyProvider[];
+    providers: TypeProvider[];
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.emailVerificationRecipe = new EmailVerificationRecipe(
@@ -47,9 +53,7 @@ export default class Recipe extends RecipeModule {
             this.config.emailVerificationFeature
         );
 
-        this.providers = this.config.signInAndUpFeature.providers.map((func) => {
-            return func(this);
-        });
+        this.providers = this.config.signInAndUpFeature.providers;
     }
 
     static init(config: TypeInput): RecipeListFunction {
@@ -85,21 +89,38 @@ export default class Recipe extends RecipeModule {
     }
 
     getAPIsHandled = (): APIHandled[] => {
-        let apisHandled: APIHandled[] = [];
-        for (let i = 0; i < this.providers.length; i++) {
-            apisHandled.push(...this.providers[i].getAPIsHandled());
-        }
-        return apisHandled;
+        return [
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_IN_UP_API),
+                id: SIGN_IN_UP_API,
+                disabled: this.config.signInAndUpFeature.disableDefaultImplementation,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_OUT_API),
+                id: SIGN_OUT_API,
+                disabled: this.config.signOutFeature.disableDefaultImplementation,
+            },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), AUTHORISATION_API),
+                id: AUTHORISATION_API,
+                disabled: this.config.signInAndUpFeature.disableDefaultImplementation,
+            },
+            ...this.emailVerificationRecipe.getAPIsHandled(),
+        ];
     };
 
     handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        for (let i = 0; i < this.providers.length; i++) {
-            let apisHandled = this.providers[i].getAPIsHandled();
-            for (let j = 0; j < apisHandled.length; j++) {
-                if (id === apisHandled[j].id) {
-                    return await this.providers[i].handleAPIRequest(id, req, res, next);
-                }
-            }
+        if (id === SIGN_IN_UP_API) {
+            return await signInUpAPI(this, req, res, next);
+        } else if (id === SIGN_OUT_API) {
+            return await signOutAPI(this, req, res, next);
+        } else if (id === AUTHORISATION_API) {
+            return await authorisationUrlAPI(this, req, res, next);
+        } else {
+            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
         }
     };
 
@@ -109,11 +130,16 @@ export default class Recipe extends RecipeModule {
         response: express.Response,
         next: express.NextFunction
     ): void => {
-        return next(err);
+        if (err.type === STError.NO_EMAIL_GIVEN_BY_PROVIDER) {
+            return send200Response(response, {
+                status: "NO_EMAIL_GIVEN_BY_PROVIDER",
+            });
+        }
+        return this.emailVerificationRecipe.handleError(err, request, response, next);
     };
 
     getAllCORSHeaders = (): string[] => {
-        return [];
+        return [...this.emailVerificationRecipe.getAllCORSHeaders()];
     };
 
     getUserById = async (userId: string): Promise<User | undefined> => {
@@ -160,5 +186,16 @@ export default class Recipe extends RecipeModule {
 
     getUserCount = async () => {
         return getUsersCountCore(this);
+    };
+
+    signInUp = async (
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: {
+            id: string;
+            isVerified: boolean;
+        }
+    ): Promise<{ createdNewUser: boolean; user: User }> => {
+        return await signInUpFromCore(this, thirdPartyId, thirdPartyUserId, email);
     };
 }
