@@ -56,7 +56,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 message:
                     "The third party provider " +
                     thirdPartyId +
-                    " seems to not be configured on the backend. Please checkout your frontend and backend configs.",
+                    " seems to not be configured on the backend. Please check your frontend and backend configs.",
             },
             recipeInstance.getRecipeId()
         );

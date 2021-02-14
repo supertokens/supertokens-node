@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import ThirdPartyRecipe from "./recipe";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 
 const TypeBoolean = {
