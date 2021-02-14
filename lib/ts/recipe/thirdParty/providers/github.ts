@@ -17,7 +17,7 @@ import axios from "axios";
 import { validateTheStructureOfUserInput } from "../../../utils";
 import Receipe from "../recipe";
 
-type TypeThirdPartyProviderGoogleConfig = {
+type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
     clientSecret: string;
     scope?: string[];
@@ -26,7 +26,7 @@ type TypeThirdPartyProviderGoogleConfig = {
     };
 };
 
-const InputSchemaTypeThirdPartyProviderGoogleConfig = {
+const InputSchemaTypeThirdPartyProviderGithubConfig = {
     type: "object",
     properties: {
         clientId: {
@@ -55,31 +55,27 @@ const InputSchemaTypeThirdPartyProviderGoogleConfig = {
     },
 };
 
-export default function Google(config: TypeThirdPartyProviderGoogleConfig): TypeProvider {
+export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider {
     validateTheStructureOfUserInput(
         config,
-        InputSchemaTypeThirdPartyProviderGoogleConfig,
-        "thirdparty recipe, provider google",
+        InputSchemaTypeThirdPartyProviderGithubConfig,
+        "thirdparty recipe, provider github",
         Receipe.RECIPE_ID
     );
-    const id = "google";
+    const id = "github";
 
     async function get(redirectURI: string, authCodeFromRequest: string | undefined): Promise<TypeProviderGetResponse> {
-        let accessTokenAPIURL = "https://accounts.google.com/o/oauth2/token";
+        let accessTokenAPIURL = "https://github.com/login/oauth/access_token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
             client_secret: config.clientSecret,
             redirect_uri: redirectURI,
-            grant_type: "authorization_code",
         };
         if (authCodeFromRequest !== undefined) {
             accessTokenAPIParams.code = authCodeFromRequest;
         }
-        let authorisationRedirectURL = "https://accounts.google.com/o/oauth2/v2/auth";
-        let scopes = [
-            "https://www.googleapis.com/auth/userinfo.profile",
-            "https://www.googleapis.com/auth/userinfo.email",
-        ];
+        let authorisationRedirectURL = "https://github.com/login/oauth/authorize";
+        let scopes = ["user"];
         if (config.scope !== undefined) {
             scopes.push(...config.scope);
             scopes = Array.from(new Set(scopes));
@@ -90,9 +86,6 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
                 : config.authorisationRedirect.params;
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
-            access_type: "offline",
-            include_granted_scopes: "true",
-            response_type: "code",
             redirect_uri: redirectURI,
             client_id: config.clientId,
             ...additionalParams,
@@ -102,25 +95,30 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
             access_token: string;
             expires_in: number;
             token_type: string;
-            scope: string;
-            refresh_token: string;
         }) {
             let accessToken = accessTokenAPIResponse.access_token;
             let authHeader = `Bearer ${accessToken}`;
             let response = await axios({
                 method: "get",
-                url: "https://www.googleapis.com/oauth2/v1/userinfo",
-                params: {
-                    alt: "json",
-                },
+                url: "https://api.github.com/user",
                 headers: {
                     Authorization: authHeader,
+                    Accept: "application/vnd.github.v3+json",
+                },
+            });
+            let emailsInfoResponse = await axios({
+                url: "https://api.github.com/user/emails",
+                headers: {
+                    Authorization: authHeader,
+                    Accept: "application/vnd.github.v3+json",
                 },
             });
             let userInfo = response.data;
+            let emailsInfo = emailsInfoResponse.data;
             let id = userInfo.id;
             let email = userInfo.email;
-            let isVerified = userInfo.verified_email;
+            let emailInfo = emailsInfo.find((e: any) => e.email === email);
+            let isVerified = emailInfo !== undefined ? emailInfo.verified : false;
             return {
                 id,
                 email: {
