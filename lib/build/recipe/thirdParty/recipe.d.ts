@@ -39,4 +39,5 @@ export default class Recipe extends RecipeModule {
         createdNewUser: boolean;
         user: User;
     }>;
+    static getInstanceOrThrowError(): Recipe;
 }

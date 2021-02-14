@@ -198,4 +198,17 @@ export default class Recipe extends RecipeModule {
     ): Promise<{ createdNewUser: boolean; user: User }> => {
         return await signInUpFromCore(this, thirdPartyId, thirdPartyUserId, email);
     };
+
+    static getInstanceOrThrowError(): Recipe {
+        if (Recipe.instance !== undefined) {
+            return Recipe.instance;
+        }
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+            },
+            Recipe.RECIPE_ID
+        );
+    }
 }
