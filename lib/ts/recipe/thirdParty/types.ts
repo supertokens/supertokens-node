@@ -39,7 +39,7 @@ export type TypeProviderGetResponse = {
 
 export type TypeProvider = {
     id: string;
-    get: (redirectURI: string, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
+    get: (redirectURI: string, authCodeFromRequest: string | undefined) => Promise<TypeProviderGetResponse>;
 };
 
 export type User = {

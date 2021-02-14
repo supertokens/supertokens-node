@@ -23,7 +23,7 @@ export declare type TypeProviderGetResponse = {
 };
 export declare type TypeProvider = {
     id: string;
-    get: (redirectURI: string, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
+    get: (redirectURI: string, authCodeFromRequest: string | undefined) => Promise<TypeProviderGetResponse>;
 };
 export declare type User = {
     id: string;

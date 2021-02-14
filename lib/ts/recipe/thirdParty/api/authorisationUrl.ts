@@ -57,7 +57,7 @@ export default async function authorisationUrlAPI(
     let redirectURI = getRedirectionURI(recipeInstance, provider.id);
     let providerInfo: TypeProviderGetResponse;
     try {
-        providerInfo = provider.get(redirectURI, undefined);
+        providerInfo = await provider.get(redirectURI, undefined);
     } catch (err) {
         throw new STError(
             {

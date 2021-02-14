@@ -66,7 +66,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
     let userInfo: UserInfo;
     let accessTokenAPIResponse: any;
     try {
-        let providerInfo = provider.get(redirectURI, code);
+        let providerInfo = await provider.get(redirectURI, code);
         accessTokenAPIResponse = await axios.default({
             method: "post",
             url: providerInfo.accessTokenAPI.url,
