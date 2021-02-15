@@ -82,6 +82,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
             data: qs.stringify(providerInfo.accessTokenAPI.params),
             headers: {
                 "content-type": "application/x-www-form-urlencoded",
+                accept: "application/json", // few providers like github don't send back json response by default
             },
         });
         userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data);
