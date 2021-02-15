@@ -18,6 +18,7 @@ const request = require("supertest");
 let fs = require("fs");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+let ThirPartyRecipe = require("../lib/build/recipe/thirdParty/recipe").default;
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 let FaunaDBSessionRecipe = require("../lib/build/recipe/session/faunadb/sessionRecipe").default;
 let { ProcessState } = require("../lib/build/processState");
@@ -178,6 +179,7 @@ module.exports.resetAll = function () {
     SessionRecipe.reset();
     EmailPasswordRecipe.reset();
     FaunaDBSessionRecipe.reset();
+    ThirPartyRecipe.reset();
     ProcessState.getInstance().reset();
 };
 
@@ -316,6 +318,29 @@ module.exports.signUPRequest = async function (app, email, password) {
                         value: email,
                     },
                 ],
+            })
+            .end((err, res) => {
+                if (err) {
+                    resolve(undefined);
+                } else {
+                    resolve(res);
+                }
+            });
+    });
+};
+
+module.exports.signInUPCustomRequest = async function (app, email, id) {
+    nock("https://test.com").post("/oauth/token").reply(200, {
+        id,
+        email,
+    });
+    return new Promise(function (resolve) {
+        request(app)
+            .post("/auth/signinup")
+            .send({
+                thirdPartyId: "custom",
+                code: "abcdefghj",
+                redirectURI: "http://127.0.0.1/callback",
             })
             .end((err, res) => {
                 if (err) {
