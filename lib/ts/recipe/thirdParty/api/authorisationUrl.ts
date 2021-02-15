@@ -17,7 +17,6 @@ import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import STError from "../error";
-import { getRedirectionURI } from "../utils";
 import { URLSearchParams } from "url";
 import { TypeProviderGetResponse } from "../types";
 
@@ -54,10 +53,9 @@ export default async function authorisationUrlAPI(
         );
     }
 
-    let redirectURI = getRedirectionURI(recipeInstance, provider.id);
     let providerInfo: TypeProviderGetResponse;
     try {
-        providerInfo = await provider.get(redirectURI, undefined);
+        providerInfo = await provider.get(undefined, undefined);
     } catch (err) {
         throw new STError(
             {
@@ -69,7 +67,7 @@ export default async function authorisationUrlAPI(
     }
     let paramsString = new URLSearchParams(providerInfo.authorisationRedirect.params).toString();
 
-    let url = `${redirectURI}?${paramsString}`;
+    let url = `${providerInfo.authorisationRedirect.url}?${paramsString}`;
 
     return send200Response(res, {
         status: "OK",

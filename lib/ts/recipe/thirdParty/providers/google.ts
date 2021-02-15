@@ -64,16 +64,21 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
     );
     const id = "google";
 
-    async function get(redirectURI: string, authCodeFromRequest: string | undefined): Promise<TypeProviderGetResponse> {
+    async function get(
+        redirectURI: string | undefined,
+        authCodeFromRequest: string | undefined
+    ): Promise<TypeProviderGetResponse> {
         let accessTokenAPIURL = "https://accounts.google.com/o/oauth2/token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
             client_secret: config.clientSecret,
-            redirect_uri: redirectURI,
             grant_type: "authorization_code",
         };
         if (authCodeFromRequest !== undefined) {
             accessTokenAPIParams.code = authCodeFromRequest;
+        }
+        if (redirectURI !== undefined) {
+            accessTokenAPIParams.redirect_uri = redirectURI;
         }
         let authorisationRedirectURL = "https://accounts.google.com/o/oauth2/v2/auth";
         let scopes = [
@@ -93,7 +98,6 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
             access_type: "offline",
             include_granted_scopes: "true",
             response_type: "code",
-            redirect_uri: redirectURI,
             client_id: config.clientId,
             ...additionalParams,
         };

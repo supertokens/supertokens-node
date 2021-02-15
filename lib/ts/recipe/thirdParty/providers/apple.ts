@@ -95,7 +95,10 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         );
     }
 
-    async function get(redirectURI: string, authCodeFromRequest: string | undefined): Promise<TypeProviderGetResponse> {
+    async function get(
+        redirectURI: string | undefined,
+        authCodeFromRequest: string | undefined
+    ): Promise<TypeProviderGetResponse> {
         let accessTokenAPIURL = "https://appleid.apple.com/auth/token";
         let clientSecret = getClientSecret(
             config.clientId,
@@ -106,11 +109,13 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
             client_secret: clientSecret,
-            redirect_uri: redirectURI,
             grant_type: "authorization_code",
         };
         if (authCodeFromRequest !== undefined) {
             accessTokenAPIParams.code = authCodeFromRequest;
+        }
+        if (redirectURI !== undefined) {
+            accessTokenAPIParams.redirect_uri = redirectURI;
         }
         let authorisationRedirectURL = "https://appleid.apple.com/auth/authorize";
         let scopes = ["name", "email"];
@@ -126,7 +131,6 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             scope: scopes.join(" "),
             response_mode: "form_post",
             response_type: "code",
-            redirect_uri: redirectURI,
             client_id: config.clientId,
             ...additionalParams,
         };

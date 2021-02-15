@@ -64,15 +64,20 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
     );
     const id = "github";
 
-    async function get(redirectURI: string, authCodeFromRequest: string | undefined): Promise<TypeProviderGetResponse> {
+    async function get(
+        redirectURI: string | undefined,
+        authCodeFromRequest: string | undefined
+    ): Promise<TypeProviderGetResponse> {
         let accessTokenAPIURL = "https://github.com/login/oauth/access_token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
             client_secret: config.clientSecret,
-            redirect_uri: redirectURI,
         };
         if (authCodeFromRequest !== undefined) {
             accessTokenAPIParams.code = authCodeFromRequest;
+        }
+        if (redirectURI !== undefined) {
+            accessTokenAPIParams.redirect_uri = redirectURI;
         }
         let authorisationRedirectURL = "https://github.com/login/oauth/authorize";
         let scopes = ["user"];
@@ -86,7 +91,6 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
                 : config.authorisationRedirect.params;
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
-            redirect_uri: redirectURI,
             client_id: config.clientId,
             ...additionalParams,
         };
