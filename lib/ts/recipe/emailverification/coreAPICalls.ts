@@ -35,7 +35,7 @@ export async function createEmailVerificationToken(
         throw new STError(
             {
                 type: STError.EMAIL_ALREADY_VERIFIED_ERROR,
-                message: "Failed to generated email verification token as the user ID is unknown",
+                message: "Failed to generated email verification token as the email is already verified",
             },
             recipeInstance.getRecipeId()
         );
