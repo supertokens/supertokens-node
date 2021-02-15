@@ -46,10 +46,10 @@ export type User = {
     // https://github.com/supertokens/core-driver-interface/wiki#third-party-user
     id: string;
     timeJoined: number;
+    email: string;
     thirdParty: {
         id: string;
         userId: string;
-        email: string;
     };
 };
 

@@ -15,7 +15,7 @@
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
 import { validateTheStructureOfUserInput } from "../../../utils";
-import Receipe from "../recipe";
+import Recipe from "../recipe";
 
 type TypeThirdPartyProviderGoogleConfig = {
     clientId: string;
@@ -60,7 +60,7 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
         config,
         InputSchemaTypeThirdPartyProviderGoogleConfig,
         "thirdparty recipe, provider google",
-        Receipe.RECIPE_ID
+        Recipe.RECIPE_ID
     );
     const id = "google";
 
@@ -120,6 +120,11 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
             let userInfo = response.data;
             let id = userInfo.id;
             let email = userInfo.email;
+            if (email === undefined || email === null) {
+                return {
+                    id,
+                };
+            }
             let isVerified = userInfo.verified_email;
             return {
                 id,

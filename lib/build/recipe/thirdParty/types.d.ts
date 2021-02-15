@@ -28,10 +28,10 @@ export declare type TypeProvider = {
 export declare type User = {
     id: string;
     timeJoined: number;
+    email: string;
     thirdParty: {
         id: string;
         userId: string;
-        email: string;
     };
 };
 export declare type TypeInputEmailVerificationFeature = {

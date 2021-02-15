@@ -14,9 +14,8 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { validateTheStructureOfUserInput } from "../../../utils";
-import Receipe from "../recipe";
+import Recipe from "../recipe";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
-import STError from "../error";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -78,7 +77,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         config,
         InputSchemaTypeThirdPartyProviderAppleConfig,
         "thirdparty recipe, provider apple",
-        Receipe.RECIPE_ID
+        Recipe.RECIPE_ID
     );
     const id = "apple";
 
@@ -141,16 +140,13 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         }) {
             let payload = jwtDecode(accessTokenAPIResponse.id_token);
             if (payload === null) {
-                throw new STError(
-                    {
-                        type: "GENERAL_ERROR",
-                        payload: new Error("no user info found from user's id token received from apple"),
-                    },
-                    Receipe.RECIPE_ID
-                );
+                throw new Error("no user info found from user's id token received from apple");
             }
             let id = (payload as any).email as string;
             let isVerified = (payload as any).email_verified;
+            if (id === undefined || id === null) {
+                throw new Error("no user info found from user's id token received from apple");
+            }
             return {
                 id,
                 email: {

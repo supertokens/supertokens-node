@@ -66,7 +66,7 @@ export default class Recipe extends RecipeModule {
                     {
                         type: STError.GENERAL_ERROR,
                         payload: new Error(
-                            "Emailverification recipe has already been initialised. Please check your code for bugs."
+                            "ThirdParty recipe has already been initialised. Please check your code for bugs."
                         ),
                     },
                     Recipe.RECIPE_ID
@@ -161,7 +161,7 @@ export default class Recipe extends RecipeModule {
                 this.getRecipeId()
             );
         }
-        return userInfo.thirdParty.email;
+        return userInfo.email;
     };
 
     createEmailVerificationToken = async (userId: string): Promise<string> => {

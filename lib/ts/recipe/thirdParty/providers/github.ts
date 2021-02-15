@@ -15,7 +15,7 @@
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
 import { validateTheStructureOfUserInput } from "../../../utils";
-import Receipe from "../recipe";
+import Recipe from "../recipe";
 
 type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
@@ -60,7 +60,7 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
         config,
         InputSchemaTypeThirdPartyProviderGithubConfig,
         "thirdparty recipe, provider github",
-        Receipe.RECIPE_ID
+        Recipe.RECIPE_ID
     );
     const id = "github";
 
@@ -117,6 +117,11 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
             let emailsInfo = emailsInfoResponse.data;
             let id = userInfo.id;
             let email = userInfo.email;
+            if (email === undefined || email === null) {
+                return {
+                    id,
+                };
+            }
             let emailInfo = emailsInfo.find((e: any) => e.email === email);
             let isVerified = emailInfo !== undefined ? emailInfo.verified : false;
             return {

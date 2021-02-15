@@ -65,6 +65,14 @@ export default class Wrapper {
     static isEmailVerified(userId: string) {
         return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
     }
+
+    static Google = thirdPartyProviders.Google;
+
+    static Github = thirdPartyProviders.Github;
+
+    static Facebook = thirdPartyProviders.Facebook;
+
+    static Apple = thirdPartyProviders.Apple;
 }
 
 export let init = Wrapper.init;
@@ -89,4 +97,10 @@ export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
 
 export let getUserCount = Wrapper.getUserCount;
 
-export let providers = thirdPartyProviders;
+export let Google = Wrapper.Google;
+
+export let Github = Wrapper.Github;
+
+export let Facebook = Wrapper.Facebook;
+
+export let Apple = Wrapper.Apple;
