@@ -162,12 +162,3 @@ function validateAndNormaliseEmailVerificationConfig(
                         },
           };
 }
-
-export function getRedirectionURI(recipeInstance: Recipe, providerId: string) {
-    // TODO: might change when we support multi-tenancy
-    let websiteDomain = recipeInstance.getAppInfo().websiteDomain.getAsStringDangerous();
-    let websiteBasePath = recipeInstance.getAppInfo().websiteBasePath.getAsStringDangerous();
-    // adding trailing backslash to counter issue with facebook redirect_uri as suggested in stackoverflow post:
-    // https://stackoverflow.com/questions/4386691/facebook-error-error-validating-verification-code
-    return `${websiteDomain}${websiteBasePath}/callback/${providerId}/`;
-}

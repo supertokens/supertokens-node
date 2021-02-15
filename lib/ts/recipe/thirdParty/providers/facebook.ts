@@ -52,15 +52,20 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
     );
     const id = "facebook";
 
-    async function get(redirectURI: string, authCodeFromRequest: string | undefined): Promise<TypeProviderGetResponse> {
+    async function get(
+        redirectURI: string | undefined,
+        authCodeFromRequest: string | undefined
+    ): Promise<TypeProviderGetResponse> {
         let accessTokenAPIURL = "https://graph.facebook.com/v9.0/oauth/access_token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
             client_secret: config.clientSecret,
-            redirect_uri: redirectURI,
         };
         if (authCodeFromRequest !== undefined) {
             accessTokenAPIParams.code = authCodeFromRequest;
+        }
+        if (redirectURI !== undefined) {
+            accessTokenAPIParams.redirect_uri = redirectURI;
         }
         let authorisationRedirectURL = "https://www.facebook.com/v9.0/dialog/oauth";
         let scopes = ["email"];
@@ -71,7 +76,6 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
             response_type: "code",
-            redirect_uri: redirectURI,
             client_id: config.clientId,
         };
 

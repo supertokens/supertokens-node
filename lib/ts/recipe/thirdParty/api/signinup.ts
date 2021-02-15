@@ -15,7 +15,6 @@
 
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-import { getRedirectionURI } from "../utils";
 import STError from "../error";
 import { send200Response } from "../../../utils";
 import * as axios from "axios";
@@ -27,6 +26,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
     let bodyParams = req.body;
     let thirdPartyId = bodyParams.thirdPartyId;
     let code = bodyParams.code;
+    let redirectURI = bodyParams.redirectURI;
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError(
@@ -48,6 +48,16 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
         );
     }
 
+    if (redirectURI === undefined || typeof redirectURI !== "string") {
+        throw new STError(
+            {
+                type: STError.BAD_INPUT_ERROR,
+                message: "Please provide the redirectURI in request body",
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
+
     let provider = recipeInstance.providers.find((p) => p.id === thirdPartyId);
     if (provider === undefined) {
         throw new STError(
@@ -62,7 +72,6 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
         );
     }
 
-    let redirectURI = getRedirectionURI(recipeInstance, provider.id);
     let userInfo: UserInfo;
     let accessTokenAPIResponse: any;
     try {
