@@ -24,7 +24,7 @@ const {
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdParty/recipe").default;
+let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");

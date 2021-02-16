@@ -13,14 +13,14 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, signInUPCustomRequest } = require("../utils");
-const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/recipe/thirdParty");
+const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/recipe/thirdparty");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdParty/recipe").default;
+let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
 
-describe(`usersTest: ${printPath("[test/thirdParty/users.test.js]")}`, function () {
+describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
             id: "custom",

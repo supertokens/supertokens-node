@@ -13,4 +13,4 @@
  * under the License.
  */
 
-export * from '../../lib/ts/recipe/thirdParty';
+export * from '../../lib/ts/recipe/thirdparty';

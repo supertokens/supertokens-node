@@ -16,8 +16,8 @@ const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require(".
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdParty/recipe").default;
-let ThirParty = require("../../lib/build/recipe/thirdParty");
+let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
+let ThirParty = require("../../lib/build/recipe/thirdparty");
 
 const privateKey = `-----BEGIN EC PRIVATE KEY-----\nMHQCAQEEIP92u8DjfW31UDDudzWtcsiH/gJ5RpdgL6EV4FTuADZWoAcGBSuBBAAK\noUQDQgAEBorYK2YgYN1BDxVNtBgq8ZdoIR5m02kfJKFI/Vq1+uagvjjZVLpeUEgQ\n79ENddF5P8V8gRri+XzD2zNYpYXGNQ==\n-----END EC PRIVATE KEY-----`;
 

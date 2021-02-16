@@ -16,8 +16,8 @@ const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdParty/recipe").default;
-let ThirParty = require("../../lib/build/recipe/thirdParty");
+let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
+let ThirParty = require("../../lib/build/recipe/thirdparty");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
