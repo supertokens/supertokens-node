@@ -704,4 +704,45 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             response_type: "code",
         });
     });
+
+    it("test passing invalid privateKey in config for third party provider apple", async function () {
+        await startST();
+
+        let clientId = "test";
+        let clientSecret = {
+            keyId: "test-key",
+            privateKey: "invalidKey",
+            teamId: "test-team-id",
+        };
+        try {
+            
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirPartyRecipe.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirParty.Apple({
+                                clientId,
+                                clientSecret,
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+        assert(false)
+        } catch (error) {
+            if(error.type !== ThirParty.Error.BAD_INPUT_ERROR){
+                throw error;
+            }
+        }
+    });
 });
