@@ -38,9 +38,9 @@ const InputSchemaTypeThirdPartyProviderFacebookConfig = {
                 type: "string",
             },
         },
-        required: ["clientId", "clientSecret"],
-        additionalProperties: false,
     },
+    required: ["clientId", "clientSecret"],
+    additionalProperties: false,
 };
 
 export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): TypeProvider {

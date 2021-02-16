@@ -67,9 +67,9 @@ const InputSchemaTypeThirdPartyProviderAppleConfig = {
             },
             additionalProperties: false,
         },
-        required: ["clientId", "clientSecret"],
-        additionalProperties: false,
     },
+    required: ["clientId", "clientSecret"],
+    additionalProperties: false,
 };
 
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider {

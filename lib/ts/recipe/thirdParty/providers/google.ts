@@ -50,9 +50,9 @@ const InputSchemaTypeThirdPartyProviderGoogleConfig = {
             },
             additionalProperties: false,
         },
-        required: ["clientId", "clientSecret"],
-        additionalProperties: false,
     },
+    required: ["clientId", "clientSecret"],
+    additionalProperties: false,
 };
 
 export default function Google(config: TypeThirdPartyProviderGoogleConfig): TypeProvider {
