@@ -57,7 +57,7 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
             );
         }
 
-        resetAll()
+        resetAll();
 
         try {
             STExpress.init({
@@ -69,17 +69,19 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret"
-                            })
-                        ],                
-                        a: "b"
-                    },
-                })],
+                recipeList: [
+                    ThirPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirParty.Google({
+                                    clientId: "test",
+                                    clientSecret: "test-secret",
+                                }),
+                            ],
+                            a: "b",
+                        },
+                    }),
+                ],
             });
             assert(false);
         } catch (err) {
@@ -89,7 +91,7 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
             );
         }
 
-        resetAll()
+        resetAll();
 
         try {
             STExpress.init({
@@ -101,17 +103,19 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret"
-                            })
-                        ]
-                    },
-                    a: "b"
-                })],
+                recipeList: [
+                    ThirPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirParty.Google({
+                                    clientId: "test",
+                                    clientSecret: "test-secret",
+                                }),
+                            ],
+                        },
+                        a: "b",
+                    }),
+                ],
             });
             assert(false);
         } catch (err) {
@@ -121,7 +125,7 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
             );
         }
 
-        resetAll()
+        resetAll();
 
         try {
             STExpress.init({
@@ -133,19 +137,21 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret"
-                            })
-                        ]
-                    },
-                    signOutFeature: {
-                        a: "b"
-                    },
-                })],
+                recipeList: [
+                    ThirPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirParty.Google({
+                                    clientId: "test",
+                                    clientSecret: "test-secret",
+                                }),
+                            ],
+                        },
+                        signOutFeature: {
+                            a: "b",
+                        },
+                    }),
+                ],
             });
             assert(false);
         } catch (err) {
@@ -155,7 +161,7 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
             );
         }
 
-        resetAll()
+        resetAll();
 
         try {
             STExpress.init({
@@ -167,19 +173,21 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret"
-                            })
-                        ]
-                    },
-                    emailVerificationFeature: {
-                        a: "b"
-                    },
-                })],
+                recipeList: [
+                    ThirPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirParty.Google({
+                                    clientId: "test",
+                                    clientSecret: "test-secret",
+                                }),
+                            ],
+                        },
+                        emailVerificationFeature: {
+                            a: "b",
+                        },
+                    }),
+                ],
             });
             assert(false);
         } catch (err) {
@@ -189,7 +197,7 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
             );
         }
 
-        resetAll()
+        resetAll();
 
         try {
             STExpress.init({
@@ -201,27 +209,29 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret"
-                            })
-                        ],
-                        disableDefaultImplementation: 1234
-                    },
-                })],
+                recipeList: [
+                    ThirPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirParty.Google({
+                                    clientId: "test",
+                                    clientSecret: "test-secret",
+                                }),
+                            ],
+                            disableDefaultImplementation: 1234,
+                        },
+                    }),
+                ],
             });
             assert(false);
         } catch (err) {
             assert.strictEqual(
                 err.message,
-                'Config schema error in thirdparty recipe: signInAndUpFeature.disableDefaultImplementation is not of a type(s) boolean'
+                "Config schema error in thirdparty recipe: signInAndUpFeature.disableDefaultImplementation is not of a type(s) boolean"
             );
         }
 
-        resetAll()
+        resetAll();
 
         try {
             STExpress.init({
@@ -233,29 +243,31 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret"
-                            })
-                        ],
-                    },
-                    signOutFeature: {
-                        disableDefaultImplementation: 1234
-                    }
-                })],
+                recipeList: [
+                    ThirPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirParty.Google({
+                                    clientId: "test",
+                                    clientSecret: "test-secret",
+                                }),
+                            ],
+                        },
+                        signOutFeature: {
+                            disableDefaultImplementation: 1234,
+                        },
+                    }),
+                ],
             });
             assert(false);
         } catch (err) {
             assert.strictEqual(
                 err.message,
-                'Config schema error in thirdparty recipe: signOutFeature.disableDefaultImplementation is not of a type(s) boolean'
+                "Config schema error in thirdparty recipe: signOutFeature.disableDefaultImplementation is not of a type(s) boolean"
             );
         }
 
-        resetAll()
+        resetAll();
 
         try {
             STExpress.init({
@@ -267,28 +279,29 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [
-                            ThirParty.Google({
-                                clientId: "test",
-                                clientSecret: "test-secret"
-                            })
-                        ],
-                    },
-                    emailVerificationFeature: {
-                        disableDefaultImplementation: 1234
-                    }
-                })],
+                recipeList: [
+                    ThirPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirParty.Google({
+                                    clientId: "test",
+                                    clientSecret: "test-secret",
+                                }),
+                            ],
+                        },
+                        emailVerificationFeature: {
+                            disableDefaultImplementation: 1234,
+                        },
+                    }),
+                ],
             });
             assert(false);
         } catch (err) {
             assert.strictEqual(
                 err.message,
-                'Config schema error in thirdparty recipe: emailVerificationFeature.disableDefaultImplementation is not of a type(s) boolean'
+                "Config schema error in thirdparty recipe: emailVerificationFeature.disableDefaultImplementation is not of a type(s) boolean"
             );
         }
-        
     });
 
     it("test no config for thirdparty module", async function () {

@@ -19,7 +19,7 @@ let { ProcessState } = require("../../lib/build/processState");
 let ThirPartyRecipe = require("../../lib/build/recipe/thirdParty/recipe").default;
 let ThirParty = require("../../lib/build/recipe/thirdParty");
 
-const privateKey =  `-----BEGIN EC PRIVATE KEY-----\nMHQCAQEEIP92u8DjfW31UDDudzWtcsiH/gJ5RpdgL6EV4FTuADZWoAcGBSuBBAAK\noUQDQgAEBorYK2YgYN1BDxVNtBgq8ZdoIR5m02kfJKFI/Vq1+uagvjjZVLpeUEgQ\n79ENddF5P8V8gRri+XzD2zNYpYXGNQ==\n-----END EC PRIVATE KEY-----`;
+const privateKey = `-----BEGIN EC PRIVATE KEY-----\nMHQCAQEEIP92u8DjfW31UDDudzWtcsiH/gJ5RpdgL6EV4FTuADZWoAcGBSuBBAAK\noUQDQgAEBorYK2YgYN1BDxVNtBgq8ZdoIR5m02kfJKFI/Vq1+uagvjjZVLpeUEgQ\n79ENddF5P8V8gRri+XzD2zNYpYXGNQ==\n-----END EC PRIVATE KEY-----`;
 
 /**
  * TODO
@@ -556,12 +556,12 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         let providerInfoGetResult = await providerInfo.get();
         assert.strictEqual(providerInfoGetResult.accessTokenAPI.url, "https://appleid.apple.com/auth/token");
         assert.strictEqual(providerInfoGetResult.authorisationRedirect.url, "https://appleid.apple.com/auth/authorize");
-        
+
         let accessTokenAPIParams = providerInfoGetResult.accessTokenAPI.params;
 
-        assert(accessTokenAPIParams.client_id === clientId)
-        assert(accessTokenAPIParams.client_secret !== undefined)
-        assert(accessTokenAPIParams.grant_type === "authorization_code")
+        assert(accessTokenAPIParams.client_id === clientId);
+        assert(accessTokenAPIParams.client_secret !== undefined);
+        assert(accessTokenAPIParams.grant_type === "authorization_code");
 
         assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
             client_id: "test",
@@ -715,32 +715,31 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             teamId: "test-team-id",
         };
         try {
-            
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [
-                            ThirParty.Apple({
-                                clientId,
-                                clientSecret,
-                            }),
-                        ],
-                    },
-                }),
-            ],
-        });
-        assert(false)
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    ThirPartyRecipe.init({
+                        signInAndUpFeature: {
+                            providers: [
+                                ThirParty.Apple({
+                                    clientId,
+                                    clientSecret,
+                                }),
+                            ],
+                        },
+                    }),
+                ],
+            });
+            assert(false);
         } catch (error) {
-            if(error.type !== ThirParty.Error.BAD_INPUT_ERROR){
+            if (error.type !== ThirParty.Error.BAD_INPUT_ERROR) {
                 throw error;
             }
         }
