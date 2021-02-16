@@ -168,6 +168,9 @@ export function validateTheStructureOfUserInput(
     configRoot: string,
     recipeId: string = ""
 ) {
+    // the validation package will not throw if the given schema is undefined
+    // as it is requires to validate a json object
+    config = config === undefined || config === null ? {} : config;
     let inputValidation = validate(config, inputSchema);
     if (inputValidation.errors.length > 0) {
         let path = inputValidation.errors[0].path.join(".");

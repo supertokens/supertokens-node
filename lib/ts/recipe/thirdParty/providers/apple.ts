@@ -16,6 +16,7 @@ import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { validateTheStructureOfUserInput } from "../../../utils";
 import Recipe from "../recipe";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
+import STError from "../error";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -67,9 +68,9 @@ const InputSchemaTypeThirdPartyProviderAppleConfig = {
             },
             additionalProperties: false,
         },
-        required: ["clientId", "clientSecret"],
-        additionalProperties: false,
     },
+    required: ["clientId", "clientSecret"],
+    additionalProperties: false,
 };
 
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider {
@@ -92,6 +93,23 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             },
             privateKey.replace(/\\n/g, "\n"),
             { algorithm: "ES256", keyid: keyId }
+        );
+    }
+    try {
+        // trying to generate a client secret, in case client has not passed the values correctly
+        getClientSecret(
+            config.clientId,
+            config.clientSecret.keyId,
+            config.clientSecret.teamId,
+            config.clientSecret.privateKey
+        );
+    } catch (error) {
+        throw new STError(
+            {
+                type: STError.BAD_INPUT_ERROR,
+                message: error.message,
+            },
+            Recipe.RECIPE_ID
         );
     }
 

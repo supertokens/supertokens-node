@@ -50,9 +50,9 @@ const InputSchemaTypeThirdPartyProviderGithubConfig = {
             },
             additionalProperties: false,
         },
-        required: ["clientId", "clientSecret"],
-        additionalProperties: false,
     },
+    required: ["clientId", "clientSecret"],
+    additionalProperties: false,
 };
 
 export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider {
