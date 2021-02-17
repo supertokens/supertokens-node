@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - using jsonschema to validate user config input (https://github.com/supertokens/supertokens-node/issues/73)
 - Fixed https://github.com/supertokens/supertokens-node/issues/77
 - Extracts email verification into its own recipe
+- Implements thirdparty recipe
+- Sends telemetryId for telemetry
 
 ## [3.4.2] - 2021-01-09
 ## Added

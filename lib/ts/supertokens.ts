@@ -69,15 +69,22 @@ export default class SuperTokens {
 
     sendTelemetry = async () => {
         try {
+            let querier = Querier.getInstanceOrThrowError("");
+            let response = await querier.sendGetRequest(new NormalisedURLPath("", "/telemetry"), {});
+            let telemetryId: string | undefined;
+            if (response.exists) {
+                telemetryId = response.telemetryId;
+            }
             await axios({
                 method: "POST",
                 url: "https://api.supertokens.io/0/st/telemetry",
                 data: {
                     appName: this.appInfo.appName,
                     websiteDomain: this.appInfo.websiteDomain.getAsStringDangerous(),
+                    telemetryId,
                 },
                 headers: {
-                    "api-version": 1,
+                    "api-version": 2,
                 },
             });
         } catch (ignored) {}
