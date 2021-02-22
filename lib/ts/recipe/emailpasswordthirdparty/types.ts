@@ -1,0 +1,202 @@
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+import { TypeProvider, TypeProviderGetResponse } from "../thirdparty/types";
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import {
+    NormalisedFormField,
+    TypeFormField,
+    TypeInputFormField,
+    TypeInputResetPasswordUsingTokenFeature,
+    InputResetPasswordUsingTokenFeatureSchema,
+} from "../emailpassword/types";
+
+const TypeString = {
+    type: "string",
+};
+
+const TypeBoolean = {
+    type: "boolean",
+};
+
+const TypeAny = {
+    type: "any",
+};
+
+export type User = {
+    id: string;
+    timeJoined: number;
+    email: string;
+    thirdParty?: {
+        id: string;
+        userId: string;
+    };
+};
+
+export type TypeContextEmailPassowrd = {
+    loginType: "emailpassword";
+    formFields: TypeFormField[];
+};
+
+export type TypeContextThirdParty = {
+    loginType: "thirdparty";
+    thirdPartyAuthCodeResponse: any;
+};
+
+export type TypeInputSetJwtPayloadForSession = (
+    user: User,
+    context: TypeContextEmailPassowrd | TypeContextThirdParty
+) => Promise<{ [key: string]: any }>;
+
+export type TypeInputSetSessionDataForSession = (
+    user: User,
+    context: TypeContextEmailPassowrd | TypeContextThirdParty
+) => Promise<{ [key: string]: any }>;
+
+export type TypeInputHandlePostSignUp = (
+    user: User,
+    context: TypeContextEmailPassowrd | TypeContextThirdParty
+) => Promise<void>;
+
+export type TypeInputHandlePostSignIn = (user: User, context: TypeContextThirdParty) => Promise<void>; // same as signup to keep the signature consistent
+
+export type TypeInputSignUp = {
+    disableDefaultImplementation?: boolean;
+    formFields?: TypeInputFormField[];
+    handlePostSignUp?: TypeInputHandlePostSignUp;
+    setJwtPayloadForSession?: TypeInputSetJwtPayloadForSession;
+    setSessionDataForSession?: TypeInputSetSessionDataForSession;
+};
+
+const InputSignUpSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+        formFields: {
+            type: "array",
+            items: {
+                type: "object",
+                properties: {
+                    id: TypeString,
+                    validate: TypeAny,
+                    optional: TypeBoolean,
+                },
+                required: ["id"],
+                additionalProperties: false,
+            },
+        },
+        handlePostSignUp: TypeAny,
+        setJwtPayloadForSession: TypeAny,
+        setSessionDataForSession: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export type TypeNormalisedInputSignUp = {
+    disableDefaultImplementation: boolean;
+    formFields: NormalisedFormField[];
+    handlePostSignUp: TypeInputHandlePostSignUp;
+    setJwtPayloadForSession: TypeInputSetJwtPayloadForSession;
+    setSessionDataForSession: TypeInputSetSessionDataForSession;
+};
+
+export type TypeInputSignIn = {
+    disableDefaultImplementation?: boolean;
+    handlePostSignIn?: TypeInputHandlePostSignIn;
+    setJwtPayloadForSession: TypeInputSetJwtPayloadForSession;
+    setSessionDataForSession: TypeInputSetSessionDataForSession;
+};
+
+const InputSignInSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+        handlePostSignIn: TypeAny,
+        setJwtPayloadForSession: TypeAny,
+        setSessionDataForSession: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export type TypeNormalisedInputSignIn = {
+    disableDefaultImplementation: boolean;
+    handlePostSignIn: TypeInputHandlePostSignIn;
+    setJwtPayloadForSession: TypeInputSetJwtPayloadForSession;
+    setSessionDataForSession: TypeInputSetSessionDataForSession;
+};
+
+export type TypeInputSignOut = {
+    disableDefaultImplementation?: boolean;
+};
+
+const InputSignOutSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+    },
+    additionalProperties: false,
+};
+
+export type TypeNormalisedInputSignOut = {
+    disableDefaultImplementation: boolean;
+};
+
+export type TypeInputEmailVerificationFeature = {
+    disableDefaultImplementation?: boolean;
+    getEmailVerificationURL?: (user: User) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    handlePostEmailVerification?: (user: User) => Promise<void>;
+};
+
+const InputEmailVerificationFeatureSchema = {
+    type: "object",
+    properties: {
+        disableDefaultImplementation: TypeBoolean,
+        getEmailVerificationURL: TypeAny,
+        createAndSendCustomEmail: TypeAny,
+        handlePostEmailVerification: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export type TypeInput = {
+    signUpFeature?: TypeInputSignUp;
+    signInFeature?: TypeInputSignIn;
+    providers?: TypeProvider[];
+    signOutFeature?: TypeInputSignOut;
+    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
+    emailVerificationFeature?: TypeInputEmailVerificationFeature;
+};
+
+const InputProvidersSchema = {
+    type: "array",
+};
+
+export const InputSchema = {
+    signUpFeature: InputSignUpSchema,
+    signInFeature: InputSignInSchema,
+    providers: InputProvidersSchema,
+    signOutFeature: InputSignOutSchema,
+    resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
+    emailVerificationFeature: InputEmailVerificationFeatureSchema,
+};
+
+export type TypeNormalisedInput = {
+    signUpFeature: TypeNormalisedInputSignUp;
+    signInFeature: TypeNormalisedInputSignIn;
+    providers: TypeProvider[];
+    signOutFeature: TypeNormalisedInputSignOut;
+    resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
+    emailVerificationFeature: TypeNormalisedInputEmailVerification;
+};

@@ -71,16 +71,9 @@ const InputEmailVerificationFeatureSchema = {
     additionalProperties: false,
 };
 
-export type TypeNormalisedInputEmailVerificationFeature = {
-    disableDefaultImplementation: boolean;
-    getEmailVerificationURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification: (user: User) => Promise<void>;
-};
-
 export type TypeInputSignInAndUp = {
     disableDefaultImplementation?: boolean;
-    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
+    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 
@@ -99,7 +92,7 @@ const InputSignInAndUpSchema = {
 
 export type TypeNormalisedInputSignInAndUp = {
     disableDefaultImplementation: boolean;
-    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
+    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 

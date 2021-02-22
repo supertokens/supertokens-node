@@ -30,7 +30,7 @@ import {
     TypeNormalisedInputSignInAndUp,
 } from "./types";
 
-async function defaultHandlePostSignUpIn(user: User, thirdPartyAuthCodeResponse: any) {}
+async function defaultHandlePostSignUpIn(user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) {}
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,

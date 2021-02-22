@@ -53,14 +53,18 @@ export type TypeInputEmailVerificationFeature = {
     handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 
+export type TypeInputFormField = {
+    id: string;
+    validate?: (value: any) => Promise<string | undefined>;
+    optional?: boolean;
+};
+
+export type TypeFormField = { id: string; value: any };
+
 export type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
-    formFields?: {
-        id: string;
-        validate?: (value: any) => Promise<string | undefined>;
-        optional?: boolean;
-    }[];
-    handleCustomFormFieldsPostSignUp?: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
+    formFields?: TypeInputFormField[];
+    handleCustomFormFieldsPostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 
 const InputSignUpSchema = {
@@ -94,7 +98,7 @@ export type NormalisedFormField = {
 export type TypeNormalisedInputSignUp = {
     disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
-    handleCustomFormFieldsPostSignUp: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
+    handleCustomFormFieldsPostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 
 export type TypeInputSignIn = {
@@ -136,7 +140,7 @@ export type TypeInputResetPasswordUsingTokenFeature = {
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string) => Promise<void>;
 };
 
-const InputResetPasswordUsingTokenFeatureSchema = {
+export const InputResetPasswordUsingTokenFeatureSchema = {
     type: "object",
     properties: {
         disableDefaultImplementation: TypeBoolean,

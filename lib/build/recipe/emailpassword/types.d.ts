@@ -12,17 +12,19 @@ export declare type TypeInputEmailVerificationFeature = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
 };
+export declare type TypeInputFormField = {
+    id: string;
+    validate?: (value: any) => Promise<string | undefined>;
+    optional?: boolean;
+};
+export declare type TypeFormField = {
+    id: string;
+    value: any;
+};
 export declare type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
-    formFields?: {
-        id: string;
-        validate?: (value: any) => Promise<string | undefined>;
-        optional?: boolean;
-    }[];
-    handleCustomFormFieldsPostSignUp?: (user: User, formFields: {
-        id: string;
-        value: any;
-    }[]) => Promise<void>;
+    formFields?: TypeInputFormField[];
+    handleCustomFormFieldsPostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 export declare type NormalisedFormField = {
     id: string;
@@ -32,10 +34,7 @@ export declare type NormalisedFormField = {
 export declare type TypeNormalisedInputSignUp = {
     disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
-    handleCustomFormFieldsPostSignUp: (user: User, formFields: {
-        id: string;
-        value: any;
-    }[]) => Promise<void>;
+    handleCustomFormFieldsPostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 export declare type TypeInputSignIn = {
     disableDefaultImplementation?: boolean;
@@ -54,6 +53,21 @@ export declare type TypeInputResetPasswordUsingTokenFeature = {
     disableDefaultImplementation?: boolean;
     getResetPasswordURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string) => Promise<void>;
+};
+export declare const InputResetPasswordUsingTokenFeatureSchema: {
+    type: string;
+    properties: {
+        disableDefaultImplementation: {
+            type: string;
+        };
+        getResetPasswordURL: {
+            type: string;
+        };
+        createAndSendCustomEmail: {
+            type: string;
+        };
+    };
+    additionalProperties: boolean;
 };
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     disableDefaultImplementation: boolean;

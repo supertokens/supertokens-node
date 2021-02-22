@@ -108,7 +108,11 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
     }
     let user = await recipeInstance.signInUp(provider.id, userInfo.id, emailInfo);
 
-    await recipeInstance.config.signInAndUpFeature.handlePostSignUpIn(user.user, accessTokenAPIResponse.data);
+    await recipeInstance.config.signInAndUpFeature.handlePostSignUpIn(
+        user.user,
+        accessTokenAPIResponse.data,
+        user.createdNewUser
+    );
 
     await Session.createNewSession(res, user.user.id);
     return send200Response(res, {
