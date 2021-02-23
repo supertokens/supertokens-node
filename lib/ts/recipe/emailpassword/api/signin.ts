@@ -39,8 +39,22 @@ export default async function signInAPI(recipeInstance: Recipe, req: Request, re
     // step 3. Errors for this are caught by the error handler
     let user = await recipeInstance.signIn(email, password);
 
+    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(
+        user,
+        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
+        "signin"
+    );
+    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(
+        user,
+        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
+        "signin"
+    );
+
+    let jwtPayload = await jwtPayloadPromise;
+    let sessionData = await sessionDataPromise;
+
     // step 4.
-    await Session.createNewSession(res, user.id);
+    await Session.createNewSession(res, user.id, jwtPayload, sessionData);
     return send200Response(res, {
         status: "OK",
         user,

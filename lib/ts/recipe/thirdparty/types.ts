@@ -53,6 +53,37 @@ export type User = {
     };
 };
 
+export type TypeInputSetJwtPayloadForSession = (
+    user: User,
+    thirdPartyAuthCodeResponse: any,
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any }>;
+
+export type TypeInputSetSessionDataForSession = (
+    user: User,
+    thirdPartyAuthCodeResponse: any,
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any }>;
+
+export type TypeInputSessionFeature = {
+    setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    setSessionData?: TypeInputSetSessionDataForSession;
+};
+
+const InputSessionFeatureSchema = {
+    type: "object",
+    properties: {
+        setJwtPayload: TypeAny,
+        setSessionData: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export type TypeNormalisedInputSessionFeature = {
+    setJwtPayload: TypeInputSetJwtPayloadForSession;
+    setSessionData: TypeInputSetSessionDataForSession;
+};
+
 export type TypeInputEmailVerificationFeature = {
     disableDefaultImplementation?: boolean;
     getEmailVerificationURL?: (user: User) => Promise<string>;
@@ -113,6 +144,7 @@ export type TypeNormalisedInputSignOutFeature = {
 };
 
 export type TypeInput = {
+    sessionFeature?: TypeInputSessionFeature;
     signInAndUpFeature: TypeInputSignInAndUp;
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
@@ -121,6 +153,7 @@ export type TypeInput = {
 export const InputSchema = {
     type: "object",
     properties: {
+        sessionFeature: InputSessionFeatureSchema,
         signInAndUpFeature: InputSignInAndUpSchema,
         signOutFeature: InputSignOutSchema,
         emailVerificationFeature: InputEmailVerificationFeatureSchema,
@@ -130,6 +163,7 @@ export const InputSchema = {
 };
 
 export type TypeNormalisedInput = {
+    sessionFeature: TypeNormalisedInputSessionFeature;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;

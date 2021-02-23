@@ -1,5 +1,20 @@
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+export declare type TypeInputSetJwtPayloadForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
+    [key: string]: any;
+}>;
+export declare type TypeInputSetSessionDataForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
+    [key: string]: any;
+}>;
+export declare type TypeInputSessionFeature = {
+    setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    setSessionData?: TypeInputSetSessionDataForSession;
+};
+export declare type TypeNormalisedInputSessionFeature = {
+    setJwtPayload: TypeInputSetJwtPayloadForSession;
+    setSessionData: TypeInputSetSessionDataForSession;
+};
 export declare type TypeNormalisedInput = {
+    sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -88,6 +103,7 @@ export declare type User = {
     timeJoined: number;
 };
 export declare type TypeInput = {
+    sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
@@ -97,6 +113,18 @@ export declare type TypeInput = {
 export declare const InputSchema: {
     type: string;
     properties: {
+        sessionFeature: {
+            type: string;
+            properties: {
+                setJwtPayload: {
+                    type: string;
+                };
+                setSessionData: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
         signUpFeature: {
             type: string;
             properties: {

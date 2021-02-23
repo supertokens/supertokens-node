@@ -34,6 +34,20 @@ export declare type User = {
         userId: string;
     };
 };
+export declare type TypeInputSetJwtPayloadForSession = (user: User, thirdPartyAuthCodeResponse: any, action: "signin" | "signup") => Promise<{
+    [key: string]: any;
+}>;
+export declare type TypeInputSetSessionDataForSession = (user: User, thirdPartyAuthCodeResponse: any, action: "signin" | "signup") => Promise<{
+    [key: string]: any;
+}>;
+export declare type TypeInputSessionFeature = {
+    setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    setSessionData?: TypeInputSetSessionDataForSession;
+};
+export declare type TypeNormalisedInputSessionFeature = {
+    setJwtPayload: TypeInputSetJwtPayloadForSession;
+    setSessionData: TypeInputSetSessionDataForSession;
+};
 export declare type TypeInputEmailVerificationFeature = {
     disableDefaultImplementation?: boolean;
     getEmailVerificationURL?: (user: User) => Promise<string>;
@@ -57,6 +71,7 @@ export declare type TypeNormalisedInputSignOutFeature = {
     disableDefaultImplementation: boolean;
 };
 export declare type TypeInput = {
+    sessionFeature?: TypeInputSessionFeature;
     signInAndUpFeature: TypeInputSignInAndUp;
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
@@ -64,6 +79,18 @@ export declare type TypeInput = {
 export declare const InputSchema: {
     type: string;
     properties: {
+        sessionFeature: {
+            type: string;
+            properties: {
+                setJwtPayload: {
+                    type: string;
+                };
+                setSessionData: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
         signInAndUpFeature: {
             type: string;
             properties: {
@@ -112,6 +139,7 @@ export declare const InputSchema: {
     additionalProperties: boolean;
 };
 export declare type TypeNormalisedInput = {
+    sessionFeature: TypeNormalisedInputSessionFeature;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;

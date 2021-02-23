@@ -26,6 +26,9 @@ import {
     NormalisedFormField,
     TypeInputEmailVerificationFeature,
     InputSchema,
+    TypeInputSessionFeature,
+    TypeNormalisedInputSessionFeature,
+    TypeFormField,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
@@ -44,6 +47,13 @@ export function validateAndNormaliseUserInput(
     config?: TypeInput
 ): TypeNormalisedInput {
     validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe", recipeInstance.getRecipeId());
+
+    let sessionFeature = validateAndNormaliseSessionFeatureConfig(
+        recipeInstance,
+        appInfo,
+        config === undefined ? undefined : config.sessionFeature
+    );
+
     let signUpFeature = validateAndNormaliseSignupConfig(
         recipeInstance,
         appInfo,
@@ -77,11 +87,49 @@ export function validateAndNormaliseUserInput(
     );
 
     return {
+        sessionFeature,
         signUpFeature,
         signInFeature,
         resetPasswordUsingTokenFeature,
         signOutFeature,
         emailVerificationFeature,
+    };
+}
+
+async function defaultSetSessionDataForSession(user: User, formFields: TypeFormField[], action: "signin" | "signup") {
+    return {};
+}
+
+async function defaultSetJwtPayloadForSession(user: User, formFields: TypeFormField[], action: "signin" | "signup") {
+    return {};
+}
+
+function validateAndNormaliseSessionFeatureConfig(
+    recipeInstance: Recipe,
+    appInfo: NormalisedAppinfo,
+    config?: TypeInputSessionFeature
+): TypeNormalisedInputSessionFeature {
+    let setJwtPayload: (
+        user: User,
+        formFields: TypeFormField[],
+        action: "signin" | "signup"
+    ) => Promise<{ [key: string]: any }> =
+        config === undefined || config.setJwtPayload === undefined
+            ? defaultSetJwtPayloadForSession
+            : config.setJwtPayload;
+
+    let setSessionData: (
+        user: User,
+        formFields: TypeFormField[],
+        action: "signin" | "signup"
+    ) => Promise<{ [key: string]: any }> =
+        config === undefined || config.setSessionData === undefined
+            ? defaultSetSessionDataForSession
+            : config.setSessionData;
+
+    return {
+        setJwtPayload,
+        setSessionData,
     };
 }
 

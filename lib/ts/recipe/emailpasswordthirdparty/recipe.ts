@@ -64,6 +64,28 @@ export default class Recipe extends RecipeModule {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.emailPasswordRecipe = EmailPasswordRecipe.init({
+            sessionFeature: {
+                setJwtPayload: (user, formfields, action) => {
+                    return this.config.sessionFeature.setJwtPayload(
+                        user,
+                        {
+                            loginType: "emailpassword",
+                            formFields: formfields,
+                        },
+                        action
+                    );
+                },
+                setSessionData: (user, formfields, action) => {
+                    return this.config.sessionFeature.setSessionData(
+                        user,
+                        {
+                            loginType: "emailpassword",
+                            formFields: formfields,
+                        },
+                        action
+                    );
+                },
+            },
             signUpFeature: {
                 disableDefaultImplementation: this.config.signUpFeature.disableDefaultImplementation,
                 formFields: this.config.signUpFeature.formFields,
@@ -88,6 +110,28 @@ export default class Recipe extends RecipeModule {
         this.thirdPartyRecipe = undefined;
         if (this.config.providers.length !== 0) {
             this.thirdPartyRecipe = ThirdPartyRecipe.init({
+                sessionFeature: {
+                    setJwtPayload: (user, thirdPartyAuthCodeResponse, action) => {
+                        return this.config.sessionFeature.setJwtPayload(
+                            user,
+                            {
+                                loginType: "thirdparty",
+                                thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
+                            },
+                            action
+                        );
+                    },
+                    setSessionData: (user, thirdPartyAuthCodeResponse, action) => {
+                        return this.config.sessionFeature.setSessionData(
+                            user,
+                            {
+                                loginType: "thirdparty",
+                                thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
+                            },
+                            action
+                        );
+                    },
+                },
                 signInAndUpFeature: {
                     disableDefaultImplementation:
                         this.config.signInFeature.disableDefaultImplementation ||

@@ -30,6 +30,8 @@ import {
     TypeInputEmailVerificationFeature,
     TypeInputSignOut,
     TypeNormalisedInputSignOut,
+    TypeNormalisedInputSessionFeature,
+    TypeInputSessionFeature,
 } from "./types";
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
@@ -48,6 +50,13 @@ export function validateAndNormaliseUserInput(
         "emailpasswordthirdparty recipe",
         recipeInstance.getRecipeId()
     );
+
+    let sessionFeature = validateAndNormaliseSessionFeatureConfig(
+        recipeInstance,
+        appInfo,
+        config === undefined ? undefined : config.sessionFeature
+    );
+
     let signUpFeature = validateAndNormaliseSignUpConfig(
         recipeInstance,
         appInfo,
@@ -77,6 +86,7 @@ export function validateAndNormaliseUserInput(
     );
 
     return {
+        sessionFeature,
         signUpFeature,
         signInFeature,
         providers,
@@ -94,11 +104,19 @@ async function defaultHandlePostSignUp(user: User, context: TypeContextEmailPass
 
 async function defaultHandlePostSignIn(user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty) {}
 
-async function defaultSetSessionDataForSession(user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty) {
+async function defaultSetSessionDataForSession(
+    user: User,
+    context: TypeContextEmailPassowrd | TypeContextThirdParty,
+    action: "signin" | "signup"
+) {
     return {};
 }
 
-async function defaultSetJwtPayloadForSession(user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty) {
+async function defaultSetJwtPayloadForSession(
+    user: User,
+    context: TypeContextEmailPassowrd | TypeContextThirdParty,
+    action: "signin" | "signup"
+) {
     return {};
 }
 
@@ -158,28 +176,39 @@ function validateAndNormaliseSignUpConfig(
             ? defaultHandlePostSignUp
             : config.handlePostSignUp;
 
-    let setJwtPayloadForSession: (
-        user: User,
-        context: TypeContextEmailPassowrd | TypeContextThirdParty
-    ) => Promise<{ [key: string]: any }> =
-        config === undefined || config.setJwtPayloadForSession === undefined
-            ? defaultSetJwtPayloadForSession
-            : config.setJwtPayloadForSession;
-
-    let setSessionDataForSession: (
-        user: User,
-        context: TypeContextEmailPassowrd | TypeContextThirdParty
-    ) => Promise<{ [key: string]: any }> =
-        config === undefined || config.setSessionDataForSession === undefined
-            ? defaultSetSessionDataForSession
-            : config.setSessionDataForSession;
-
     return {
         disableDefaultImplementation,
         formFields,
         handlePostSignUp,
-        setJwtPayloadForSession,
-        setSessionDataForSession,
+    };
+}
+
+function validateAndNormaliseSessionFeatureConfig(
+    recipeInstance: Recipe,
+    appInfo: NormalisedAppinfo,
+    config?: TypeInputSessionFeature
+): TypeNormalisedInputSessionFeature {
+    let setJwtPayload: (
+        user: User,
+        context: TypeContextEmailPassowrd | TypeContextThirdParty,
+        action: "signin" | "signup"
+    ) => Promise<{ [key: string]: any }> =
+        config === undefined || config.setJwtPayload === undefined
+            ? defaultSetJwtPayloadForSession
+            : config.setJwtPayload;
+
+    let setSessionData: (
+        user: User,
+        context: TypeContextEmailPassowrd | TypeContextThirdParty,
+        action: "signin" | "signup"
+    ) => Promise<{ [key: string]: any }> =
+        config === undefined || config.setSessionData === undefined
+            ? defaultSetSessionDataForSession
+            : config.setSessionData;
+
+    return {
+        setJwtPayload,
+        setSessionData,
     };
 }
 
@@ -198,27 +227,9 @@ function validateAndNormaliseSignInConfig(
             ? defaultHandlePostSignIn
             : config.handlePostSignIn;
 
-    let setJwtPayloadForSession: (
-        user: User,
-        context: TypeContextEmailPassowrd | TypeContextThirdParty
-    ) => Promise<{ [key: string]: any }> =
-        config === undefined || config.setJwtPayloadForSession === undefined
-            ? defaultSetJwtPayloadForSession
-            : config.setJwtPayloadForSession;
-
-    let setSessionDataForSession: (
-        user: User,
-        context: TypeContextEmailPassowrd | TypeContextThirdParty
-    ) => Promise<{ [key: string]: any }> =
-        config === undefined || config.setSessionDataForSession === undefined
-            ? defaultSetSessionDataForSession
-            : config.setSessionDataForSession;
-
     return {
         disableDefaultImplementation,
         handlePostSignIn,
-        setJwtPayloadForSession,
-        setSessionDataForSession,
     };
 }
 

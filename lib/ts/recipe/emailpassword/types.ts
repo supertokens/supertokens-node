@@ -27,7 +27,39 @@ const TypeAny = {
     type: "any",
 };
 
+export type TypeInputSetJwtPayloadForSession = (
+    user: User,
+    formFields: TypeFormField[],
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any }>;
+
+export type TypeInputSetSessionDataForSession = (
+    user: User,
+    formFields: TypeFormField[],
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any }>;
+
+export type TypeInputSessionFeature = {
+    setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    setSessionData?: TypeInputSetSessionDataForSession;
+};
+
+const InputSessionFeatureSchema = {
+    type: "object",
+    properties: {
+        setJwtPayload: TypeAny,
+        setSessionData: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export type TypeNormalisedInputSessionFeature = {
+    setJwtPayload: TypeInputSetJwtPayloadForSession;
+    setSessionData: TypeInputSetSessionDataForSession;
+};
+
 export type TypeNormalisedInput = {
+    sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -172,6 +204,7 @@ export type User = {
 };
 
 export type TypeInput = {
+    sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
@@ -182,6 +215,7 @@ export type TypeInput = {
 export const InputSchema = {
     type: "object",
     properties: {
+        sessionFeature: InputSessionFeatureSchema,
         signUpFeature: InputSignUpSchema,
         signInFeature: InputSignInSchema,
         resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,

@@ -54,16 +54,6 @@ export type TypeContextThirdParty = {
     thirdPartyAuthCodeResponse: any;
 };
 
-export type TypeInputSetJwtPayloadForSession = (
-    user: User,
-    context: TypeContextEmailPassowrd | TypeContextThirdParty
-) => Promise<{ [key: string]: any }>;
-
-export type TypeInputSetSessionDataForSession = (
-    user: User,
-    context: TypeContextEmailPassowrd | TypeContextThirdParty
-) => Promise<{ [key: string]: any }>;
-
 export type TypeInputHandlePostSignUp = (
     user: User,
     context: TypeContextEmailPassowrd | TypeContextThirdParty
@@ -71,12 +61,41 @@ export type TypeInputHandlePostSignUp = (
 
 export type TypeInputHandlePostSignIn = (user: User, context: TypeContextThirdParty) => Promise<void>; // same as signup to keep the signature consistent
 
+export type TypeInputSetJwtPayloadForSession = (
+    user: User,
+    context: TypeContextEmailPassowrd | TypeContextThirdParty,
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any }>;
+
+export type TypeInputSetSessionDataForSession = (
+    user: User,
+    context: TypeContextEmailPassowrd | TypeContextThirdParty,
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any }>;
+
+export type TypeInputSessionFeature = {
+    setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    setSessionData?: TypeInputSetSessionDataForSession;
+};
+
+const InputSessionFeatureSchema = {
+    type: "object",
+    properties: {
+        setJwtPayload: TypeAny,
+        setSessionData: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export type TypeNormalisedInputSessionFeature = {
+    setJwtPayload: TypeInputSetJwtPayloadForSession;
+    setSessionData: TypeInputSetSessionDataForSession;
+};
+
 export type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
     formFields?: TypeInputFormField[];
     handlePostSignUp?: TypeInputHandlePostSignUp;
-    setJwtPayloadForSession?: TypeInputSetJwtPayloadForSession;
-    setSessionDataForSession?: TypeInputSetSessionDataForSession;
 };
 
 const InputSignUpSchema = {
@@ -97,8 +116,6 @@ const InputSignUpSchema = {
             },
         },
         handlePostSignUp: TypeAny,
-        setJwtPayloadForSession: TypeAny,
-        setSessionDataForSession: TypeAny,
     },
     additionalProperties: false,
 };
@@ -107,15 +124,11 @@ export type TypeNormalisedInputSignUp = {
     disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
     handlePostSignUp: TypeInputHandlePostSignUp;
-    setJwtPayloadForSession: TypeInputSetJwtPayloadForSession;
-    setSessionDataForSession: TypeInputSetSessionDataForSession;
 };
 
 export type TypeInputSignIn = {
     disableDefaultImplementation?: boolean;
     handlePostSignIn?: TypeInputHandlePostSignIn;
-    setJwtPayloadForSession: TypeInputSetJwtPayloadForSession;
-    setSessionDataForSession: TypeInputSetSessionDataForSession;
 };
 
 const InputSignInSchema = {
@@ -123,8 +136,6 @@ const InputSignInSchema = {
     properties: {
         disableDefaultImplementation: TypeBoolean,
         handlePostSignIn: TypeAny,
-        setJwtPayloadForSession: TypeAny,
-        setSessionDataForSession: TypeAny,
     },
     additionalProperties: false,
 };
@@ -132,8 +143,6 @@ const InputSignInSchema = {
 export type TypeNormalisedInputSignIn = {
     disableDefaultImplementation: boolean;
     handlePostSignIn: TypeInputHandlePostSignIn;
-    setJwtPayloadForSession: TypeInputSetJwtPayloadForSession;
-    setSessionDataForSession: TypeInputSetSessionDataForSession;
 };
 
 export type TypeInputSignOut = {
@@ -171,6 +180,7 @@ const InputEmailVerificationFeatureSchema = {
 };
 
 export type TypeInput = {
+    sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
     providers?: TypeProvider[];
@@ -184,6 +194,7 @@ const InputProvidersSchema = {
 };
 
 export const InputSchema = {
+    sessionFeature: InputSessionFeatureSchema,
     signUpFeature: InputSignUpSchema,
     signInFeature: InputSignInSchema,
     providers: InputProvidersSchema,
@@ -193,6 +204,7 @@ export const InputSchema = {
 };
 
 export type TypeNormalisedInput = {
+    sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     providers: TypeProvider[];

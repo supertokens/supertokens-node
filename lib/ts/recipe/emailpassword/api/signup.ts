@@ -45,8 +45,22 @@ export default async function signUpAPI(recipeInstance: Recipe, req: Request, re
         formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID)
     );
 
+    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(
+        user,
+        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
+        "signup"
+    );
+    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(
+        user,
+        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
+        "signup"
+    );
+
+    let jwtPayload = await jwtPayloadPromise;
+    let sessionData = await sessionDataPromise;
+
     // step 4
-    await Session.createNewSession(res, user.id);
+    await Session.createNewSession(res, user.id, jwtPayload, sessionData);
     return send200Response(res, {
         status: "OK",
         user,

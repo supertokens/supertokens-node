@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [4.1.0] - 2021-02-23
+### Added
+- EmailpasswordThirdarty recipe added
+- sessionFeature config that allows user to set jwtPayload and sessionData during signup or signin
+
 ## [4.0.0] - 2021-02-02
 ### Changed
 - using jsonschema to validate user config input (https://github.com/supertokens/supertokens-node/issues/73)

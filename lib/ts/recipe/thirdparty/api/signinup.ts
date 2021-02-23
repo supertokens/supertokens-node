@@ -114,7 +114,22 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
         user.createdNewUser
     );
 
-    await Session.createNewSession(res, user.user.id);
+    let action: "signup" | "signin" = user.createdNewUser ? "signup" : "signin";
+    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(
+        user.user,
+        accessTokenAPIResponse.data,
+        action
+    );
+    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(
+        user.user,
+        accessTokenAPIResponse.data,
+        action
+    );
+
+    let jwtPayload = await jwtPayloadPromise;
+    let sessionData = await sessionDataPromise;
+
+    await Session.createNewSession(res, user.user.id, jwtPayload, sessionData);
     return send200Response(res, {
         status: "OK",
         ...user,
