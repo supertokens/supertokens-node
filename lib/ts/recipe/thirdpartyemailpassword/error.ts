@@ -15,7 +15,7 @@
 
 import STError from "../../error";
 
-export default class EmailPasswordThirdPartyError extends STError {
+export default class ThirdPartyEmailPasswordError extends STError {
     static UNKNOWN_USER_ID_ERROR: "UNKNOWN_USER_ID_ERROR" = "UNKNOWN_USER_ID_ERROR";
     static INVALID_PAGINATION_TOKEN: "INVALID_PAGINATION_TOKEN" = "INVALID_PAGINATION_TOKEN";
     constructor(

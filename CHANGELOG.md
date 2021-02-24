@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.1.0] - 2021-02-23
 ### Added
-- EmailpasswordThirdarty recipe added
+- ThirdartyEmailpassword recipe added
 - sessionFeature config that allows user to set jwtPayload and sessionData during signup or signin
 
 ## [4.0.0] - 2021-02-02

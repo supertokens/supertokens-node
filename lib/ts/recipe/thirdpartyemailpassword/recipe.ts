@@ -50,7 +50,7 @@ import STErrorThirdParty from "../thirdparty/error";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
-    static RECIPE_ID = "emailpasswordthirdparty";
+    static RECIPE_ID = "thirdpartyemailpassword";
 
     config: TypeNormalisedInput;
 

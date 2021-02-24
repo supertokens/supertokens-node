@@ -1,5 +1,4 @@
-"use strict";
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2020, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -13,14 +12,5 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-const error_1 = require("../../error");
-class EmailPasswordThirdPartyError extends error_1.default {
-    constructor(options, recipeId) {
-        super(Object.assign(Object.assign({}, options), { rId: recipeId }));
-    }
-}
-exports.default = EmailPasswordThirdPartyError;
-EmailPasswordThirdPartyError.UNKNOWN_USER_ID_ERROR = "UNKNOWN_USER_ID_ERROR";
-EmailPasswordThirdPartyError.INVALID_PAGINATION_TOKEN = "INVALID_PAGINATION_TOKEN";
-//# sourceMappingURL=error.js.map
+
+export * from '../../lib/ts/recipe/thirdpartyemailpassword';

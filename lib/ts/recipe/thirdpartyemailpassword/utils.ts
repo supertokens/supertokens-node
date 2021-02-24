@@ -47,7 +47,7 @@ export function validateAndNormaliseUserInput(
     validateTheStructureOfUserInput(
         config,
         InputSchema,
-        "emailpasswordthirdparty recipe",
+        "thirdpartyemailpassword recipe",
         recipeInstance.getRecipeId()
     );
 
