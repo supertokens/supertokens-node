@@ -31,13 +31,13 @@ export type TypeInputSetJwtPayloadForSession = (
     user: User,
     formFields: TypeFormField[],
     action: "signin" | "signup"
-) => Promise<{ [key: string]: any }>;
+) => Promise<{ [key: string]: any } | undefined>;
 
 export type TypeInputSetSessionDataForSession = (
     user: User,
     formFields: TypeFormField[],
     action: "signin" | "signup"
-) => Promise<{ [key: string]: any }>;
+) => Promise<{ [key: string]: any } | undefined>;
 
 export type TypeInputSessionFeature = {
     setJwtPayload?: TypeInputSetJwtPayloadForSession;

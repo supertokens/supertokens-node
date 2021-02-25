@@ -86,20 +86,12 @@ function validateAndNormaliseSessionFeatureConfig(
     appInfo: NormalisedAppinfo,
     config?: TypeInputSessionFeature
 ): TypeNormalisedInputSessionFeature {
-    let setJwtPayload: (
-        user: User,
-        thirdPartyAuthCodeResponse: any,
-        action: "signin" | "signup"
-    ) => Promise<{ [key: string]: any }> =
+    let setJwtPayload =
         config === undefined || config.setJwtPayload === undefined
             ? defaultSetJwtPayloadForSession
             : config.setJwtPayload;
 
-    let setSessionData: (
-        user: User,
-        thirdPartyAuthCodeResponse: any,
-        action: "signin" | "signup"
-    ) => Promise<{ [key: string]: any }> =
+    let setSessionData =
         config === undefined || config.setSessionData === undefined
             ? defaultSetSessionDataForSession
             : config.setSessionData;

@@ -42,7 +42,7 @@ import { defaultEmailValidator, defaultPasswordValidator } from "../emailpasswor
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
-    config: TypeInput
+    config?: TypeInput
 ): TypeNormalisedInput {
     validateTheStructureOfUserInput(
         config,
@@ -69,9 +69,9 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.signInFeature
     );
 
-    let resetPasswordUsingTokenFeature = config.resetPasswordUsingTokenFeature;
+    let resetPasswordUsingTokenFeature = config === undefined ? undefined : config.resetPasswordUsingTokenFeature;
 
-    let providers = config.providers === undefined ? [] : config.providers;
+    let providers = config === undefined || config.providers === undefined ? [] : config.providers;
 
     let signOutFeature = validateAndNormaliseSignOutConfig(
         recipeInstance,

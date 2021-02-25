@@ -19,6 +19,7 @@ import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
 import Session from "../../session";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
+import STError from "../error";
 
 export default async function signInAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
@@ -50,8 +51,20 @@ export default async function signInAPI(recipeInstance: Recipe, req: Request, re
         "signin"
     );
 
-    let jwtPayload = await jwtPayloadPromise;
-    let sessionData = await sessionDataPromise;
+    let jwtPayload: { [key: string]: any } | undefined = undefined;
+    let sessionData: { [key: string]: any } | undefined = undefined;
+    try {
+        jwtPayload = await jwtPayloadPromise;
+        sessionData = await sessionDataPromise;
+    } catch (err) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
 
     // step 4.
     await Session.createNewSession(res, user.id, jwtPayload, sessionData);

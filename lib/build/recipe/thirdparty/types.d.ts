@@ -36,10 +36,10 @@ export declare type User = {
 };
 export declare type TypeInputSetJwtPayloadForSession = (user: User, thirdPartyAuthCodeResponse: any, action: "signin" | "signup") => Promise<{
     [key: string]: any;
-}>;
+} | undefined>;
 export declare type TypeInputSetSessionDataForSession = (user: User, thirdPartyAuthCodeResponse: any, action: "signin" | "signup") => Promise<{
     [key: string]: any;
-}>;
+} | undefined>;
 export declare type TypeInputSessionFeature = {
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
     setSessionData?: TypeInputSetSessionDataForSession;

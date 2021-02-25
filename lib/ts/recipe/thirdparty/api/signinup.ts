@@ -126,8 +126,20 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
         action
     );
 
-    let jwtPayload = await jwtPayloadPromise;
-    let sessionData = await sessionDataPromise;
+    let jwtPayload: { [key: string]: any } | undefined = undefined;
+    let sessionData: { [key: string]: any } | undefined = undefined;
+    try {
+        jwtPayload = await jwtPayloadPromise;
+        sessionData = await sessionDataPromise;
+    } catch (err) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            },
+            recipeInstance.getRecipeId()
+        );
+    }
 
     await Session.createNewSession(res, user.user.id, jwtPayload, sessionData);
     return send200Response(res, {

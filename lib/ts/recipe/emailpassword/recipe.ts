@@ -45,8 +45,6 @@ import passwordResetAPI from "./api/passwordReset";
 import signOutAPI from "./api/signout";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
-import signInUpAPI from "../thirdparty/api/signinup";
-import authorisationUrlAPI from "../thirdparty/api/authorisationUrl";
 import EmailVerificationRecipe from "../emailverification/recipe";
 
 export default class Recipe extends RecipeModule {

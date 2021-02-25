@@ -1,10 +1,10 @@
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 export declare type TypeInputSetJwtPayloadForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
     [key: string]: any;
-}>;
+} | undefined>;
 export declare type TypeInputSetSessionDataForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
     [key: string]: any;
-}>;
+} | undefined>;
 export declare type TypeInputSessionFeature = {
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
     setSessionData?: TypeInputSetSessionDataForSession;
