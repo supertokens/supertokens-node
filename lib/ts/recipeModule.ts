@@ -29,6 +29,25 @@ export default abstract class RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo) {
         this.recipeId = recipeId;
         this.appInfo = appInfo;
+
+        // check if duplicate APIs are exposed by mistake
+        let apisHandled = this.getAPIsHandled();
+        let stringifiedApisHandled: string[] = apisHandled
+            .map((api) => {
+                if (api.disabled) {
+                    return "";
+                }
+                return api.method + ";" + api.pathWithoutApiBasePath.getAsStringDangerous();
+            })
+            .filter((i) => i !== "");
+        let findDuplicates = (arr: string[]) => arr.filter((item, index) => arr.indexOf(item) != index);
+        if (findDuplicates(stringifiedApisHandled).length !== 0) {
+            throw new STError({
+                rId: recipeId,
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Duplicate APIs exposed from recipe. Please combine them into one API"),
+            });
+        }
     }
 
     getRecipeId = (): string => {

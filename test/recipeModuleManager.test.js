@@ -29,6 +29,7 @@ const request = require("supertest");
 
 /**
  *
+ * TODO: Create a recipe with two APIs that have the same path and method, and see it throw an error.
  * TODO: (later) If a recipe has a callback and a user implements it, but throws a normal error from it, then we need to make sure that that error is caught only by their error handler
  * TODO: (later) Make a custom validator throw an error and check that it's transformed into a general error, and then in user's error handler, it's a normal error again
  *
