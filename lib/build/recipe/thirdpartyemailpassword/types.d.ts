@@ -22,10 +22,10 @@ export declare type TypeInputHandlePostSignUp = (user: User, context: TypeContex
 export declare type TypeInputHandlePostSignIn = (user: User, context: TypeContextThirdParty) => Promise<void>;
 export declare type TypeInputSetJwtPayloadForSession = (user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
     [key: string]: any;
-}>;
+} | undefined>;
 export declare type TypeInputSetSessionDataForSession = (user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
     [key: string]: any;
-}>;
+} | undefined>;
 export declare type TypeInputSessionFeature = {
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
     setSessionData?: TypeInputSetSessionDataForSession;

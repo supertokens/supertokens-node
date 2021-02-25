@@ -63,9 +63,10 @@ export default class Recipe extends RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
+
         this.emailPasswordRecipe = EmailPasswordRecipe.init({
             sessionFeature: {
-                setJwtPayload: (user, formfields, action) => {
+                setJwtPayload: async (user, formfields, action) => {
                     return this.config.sessionFeature.setJwtPayload(
                         user,
                         {
@@ -75,7 +76,7 @@ export default class Recipe extends RecipeModule {
                         action
                     );
                 },
-                setSessionData: (user, formfields, action) => {
+                setSessionData: async (user, formfields, action) => {
                     return this.config.sessionFeature.setSessionData(
                         user,
                         {
@@ -107,11 +108,12 @@ export default class Recipe extends RecipeModule {
                 disableDefaultImplementation: true,
             },
         })(appInfo) as EmailPasswordRecipe;
+
         this.thirdPartyRecipe = undefined;
         if (this.config.providers.length !== 0) {
             this.thirdPartyRecipe = ThirdPartyRecipe.init({
                 sessionFeature: {
-                    setJwtPayload: (user, thirdPartyAuthCodeResponse, action) => {
+                    setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
                         return this.config.sessionFeature.setJwtPayload(
                             user,
                             {
@@ -121,7 +123,7 @@ export default class Recipe extends RecipeModule {
                             action
                         );
                     },
-                    setSessionData: (user, thirdPartyAuthCodeResponse, action) => {
+                    setSessionData: async (user, thirdPartyAuthCodeResponse, action) => {
                         return this.config.sessionFeature.setSessionData(
                             user,
                             {

@@ -65,13 +65,13 @@ export type TypeInputSetJwtPayloadForSession = (
     user: User,
     context: TypeContextEmailPassowrd | TypeContextThirdParty,
     action: "signin" | "signup"
-) => Promise<{ [key: string]: any }>;
+) => Promise<{ [key: string]: any } | undefined>;
 
 export type TypeInputSetSessionDataForSession = (
     user: User,
     context: TypeContextEmailPassowrd | TypeContextThirdParty,
     action: "signin" | "signup"
-) => Promise<{ [key: string]: any }>;
+) => Promise<{ [key: string]: any } | undefined>;
 
 export type TypeInputSessionFeature = {
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
