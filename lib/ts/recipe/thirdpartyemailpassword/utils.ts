@@ -36,8 +36,7 @@ import {
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
 import STError from "./error";
-import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../emailpassword/constants";
-import { defaultEmailValidator, defaultPasswordValidator } from "../emailpassword/utils";
+import { normaliseSignUpFormFields } from "../emailpassword/utils";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -130,48 +129,8 @@ function validateAndNormaliseSignUpConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let formFields: NormalisedFormField[] = [];
-    if (config !== undefined && config.formFields !== undefined) {
-        config.formFields.forEach((field) => {
-            if (field.id === FORM_FIELD_PASSWORD_ID) {
-                formFields.push({
-                    id: field.id,
-                    validate: field.validate === undefined ? defaultPasswordValidator : field.validate,
-                    optional: false,
-                });
-            } else if (field.id === FORM_FIELD_EMAIL_ID) {
-                formFields.push({
-                    id: field.id,
-                    validate: field.validate === undefined ? defaultEmailValidator : field.validate,
-                    optional: false,
-                });
-            } else {
-                formFields.push({
-                    id: field.id,
-                    validate: field.validate === undefined ? defaultValidator : field.validate,
-                    optional: field.optional === undefined ? false : field.optional,
-                });
-            }
-        });
-    }
-    if (formFields.filter((field) => field.id === FORM_FIELD_PASSWORD_ID).length === 0) {
-        // no password field give by user
-        formFields.push({
-            id: FORM_FIELD_PASSWORD_ID,
-            validate: defaultPasswordValidator,
-            optional: false,
-        });
-    }
-    if (formFields.filter((field) => field.id === FORM_FIELD_EMAIL_ID).length === 0) {
-        // no email field give by user
-        formFields.push({
-            id: FORM_FIELD_EMAIL_ID,
-            validate: defaultEmailValidator,
-            optional: false,
-        });
-    }
-
-    let handlePostSignUp: (user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty) => Promise<void> =
+    let formFields: NormalisedFormField[] = config === undefined ? [] : normaliseSignUpFormFields(config.formFields);
+    let handlePostSignUp =
         config === undefined || config.handlePostSignUp === undefined
             ? defaultHandlePostSignUp
             : config.handlePostSignUp;
@@ -214,7 +173,7 @@ function validateAndNormaliseSignInConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let handlePostSignIn: (user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty) => Promise<void> =
+    let handlePostSignIn =
         config === undefined || config.handlePostSignIn === undefined
             ? defaultHandlePostSignIn
             : config.handlePostSignIn;
@@ -353,45 +312,49 @@ export function combinePaginationResults(
     nextPaginationToken?: string;
 } {
     let maxLoop = Math.min(limit, thirdPartyResult.users.length + emailPasswordResult.users.length);
-    let l = 0;
-    let m = 0;
+    let thirdPartyResultLoopIndex = 0;
+    let emailPasswordResultLoopIndex = 0;
     let users: User[] = [];
     for (let i = 0; i < maxLoop; i++) {
         if (
-            l !== thirdPartyResult.users.length && // there are still users available in the thirdPartyResult
-            (m === emailPasswordResult.users.length || // no more users left in emailPasswordResult array to match against
-                (oldestFirst && thirdPartyResult.users[l].timeJoined < emailPasswordResult.users[m].timeJoined) ||
-                (!oldestFirst && thirdPartyResult.users[l].timeJoined > emailPasswordResult.users[m].timeJoined))
+            thirdPartyResultLoopIndex !== thirdPartyResult.users.length && // there are still users available in the thirdPartyResult
+            (emailPasswordResultLoopIndex === emailPasswordResult.users.length || // no more users left in emailPasswordResult array to match against
+                (oldestFirst &&
+                    thirdPartyResult.users[thirdPartyResultLoopIndex].timeJoined <
+                        emailPasswordResult.users[emailPasswordResultLoopIndex].timeJoined) ||
+                (!oldestFirst &&
+                    thirdPartyResult.users[thirdPartyResultLoopIndex].timeJoined >
+                        emailPasswordResult.users[emailPasswordResultLoopIndex].timeJoined))
         ) {
-            users.push(thirdPartyResult.users[l]);
-            l++;
+            users.push(thirdPartyResult.users[thirdPartyResultLoopIndex]);
+            thirdPartyResultLoopIndex++;
         } else {
-            users.push(emailPasswordResult.users[m]);
-            m++;
+            users.push(emailPasswordResult.users[emailPasswordResultLoopIndex]);
+            emailPasswordResultLoopIndex++;
         }
     }
     let thirdPartyPaginationToken: string | null = null;
     let emailPasswordPaginationToken: string | null = null;
 
     // all users of thirdPartyResult are in the resulting users array. thus use the pagination token sent by the core (if any)
-    if (l === thirdPartyResult.users.length) {
+    if (thirdPartyResultLoopIndex === thirdPartyResult.users.length) {
         thirdPartyPaginationToken =
             thirdPartyResult.nextPaginationToken === undefined ? null : thirdPartyResult.nextPaginationToken;
     } else {
         thirdPartyPaginationToken = createNewPaginationToken(
-            thirdPartyResult.users[l].id,
-            thirdPartyResult.users[l].timeJoined
+            thirdPartyResult.users[thirdPartyResultLoopIndex].id,
+            thirdPartyResult.users[thirdPartyResultLoopIndex].timeJoined
         );
     }
 
     // all users of emailPasswordResult are in the resulting users array. thus use the pagination token sent by the core (if any)
-    if (m === emailPasswordResult.users.length) {
+    if (emailPasswordResultLoopIndex === emailPasswordResult.users.length) {
         emailPasswordPaginationToken =
             emailPasswordResult.nextPaginationToken === undefined ? null : emailPasswordResult.nextPaginationToken;
     } else {
         emailPasswordPaginationToken = createNewPaginationToken(
-            emailPasswordResult.users[m].id,
-            emailPasswordResult.users[m].timeJoined
+            emailPasswordResult.users[emailPasswordResultLoopIndex].id,
+            emailPasswordResult.users[emailPasswordResultLoopIndex].timeJoined
         );
     }
 

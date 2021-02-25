@@ -29,6 +29,7 @@ import {
     TypeInputSessionFeature,
     TypeNormalisedInputSessionFeature,
     TypeFormField,
+    TypeInputFormField,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
@@ -125,7 +126,7 @@ function validateAndNormaliseSessionFeatureConfig(
     };
 }
 
-function validateAndNormaliseEmailVerificationConfig(
+export function validateAndNormaliseEmailVerificationConfig(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
     config?: TypeInputEmailVerificationFeature
@@ -253,6 +254,19 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
     };
 }
 
+function normaliseSignInFormFields(formFields: NormalisedFormField[]) {
+    return formFields
+        .filter((filter) => filter.id === FORM_FIELD_EMAIL_ID || filter.id === FORM_FIELD_PASSWORD_ID)
+        .map((field) => {
+            return {
+                id: field.id,
+                // see issue: https://github.com/supertokens/supertokens-node/issues/36
+                validate: field.id === FORM_FIELD_EMAIL_ID ? field.validate : defaultValidator,
+                optional: false,
+            };
+        });
+}
+
 function validateAndNormaliseSignInConfig(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
@@ -264,20 +278,55 @@ function validateAndNormaliseSignInConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let formFields: NormalisedFormField[] = signUpConfig.formFields
-        .filter((filter) => filter.id === FORM_FIELD_EMAIL_ID || filter.id === FORM_FIELD_PASSWORD_ID)
-        .map((field) => {
-            return {
-                id: field.id,
-                // see issue: https://github.com/supertokens/supertokens-node/issues/36
-                validate: field.id === FORM_FIELD_EMAIL_ID ? field.validate : defaultValidator,
-                optional: false,
-            };
-        });
+    let formFields: NormalisedFormField[] = normaliseSignInFormFields(signUpConfig.formFields);
     return {
         disableDefaultImplementation,
         formFields,
     };
+}
+
+export function normaliseSignUpFormFields(formFields?: TypeInputFormField[]): NormalisedFormField[] {
+    let normalisedFormFields: NormalisedFormField[] = [];
+    if (formFields !== undefined) {
+        formFields.forEach((field) => {
+            if (field.id === FORM_FIELD_PASSWORD_ID) {
+                normalisedFormFields.push({
+                    id: field.id,
+                    validate: field.validate === undefined ? defaultPasswordValidator : field.validate,
+                    optional: false,
+                });
+            } else if (field.id === FORM_FIELD_EMAIL_ID) {
+                normalisedFormFields.push({
+                    id: field.id,
+                    validate: field.validate === undefined ? defaultEmailValidator : field.validate,
+                    optional: false,
+                });
+            } else {
+                normalisedFormFields.push({
+                    id: field.id,
+                    validate: field.validate === undefined ? defaultValidator : field.validate,
+                    optional: field.optional === undefined ? false : field.optional,
+                });
+            }
+        });
+    }
+    if (normalisedFormFields.filter((field) => field.id === FORM_FIELD_PASSWORD_ID).length === 0) {
+        // no password field give by user
+        normalisedFormFields.push({
+            id: FORM_FIELD_PASSWORD_ID,
+            validate: defaultPasswordValidator,
+            optional: false,
+        });
+    }
+    if (normalisedFormFields.filter((field) => field.id === FORM_FIELD_EMAIL_ID).length === 0) {
+        // no email field give by user
+        normalisedFormFields.push({
+            id: FORM_FIELD_EMAIL_ID,
+            validate: defaultEmailValidator,
+            optional: false,
+        });
+    }
+    return normalisedFormFields;
 }
 
 function validateAndNormaliseSignupConfig(
@@ -290,48 +339,9 @@ function validateAndNormaliseSignupConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let formFields: NormalisedFormField[] = [];
-    if (config !== undefined && config.formFields !== undefined) {
-        config.formFields.forEach((field) => {
-            if (field.id === FORM_FIELD_PASSWORD_ID) {
-                formFields.push({
-                    id: field.id,
-                    validate: field.validate === undefined ? defaultPasswordValidator : field.validate,
-                    optional: false,
-                });
-            } else if (field.id === FORM_FIELD_EMAIL_ID) {
-                formFields.push({
-                    id: field.id,
-                    validate: field.validate === undefined ? defaultEmailValidator : field.validate,
-                    optional: false,
-                });
-            } else {
-                formFields.push({
-                    id: field.id,
-                    validate: field.validate === undefined ? defaultValidator : field.validate,
-                    optional: field.optional === undefined ? false : field.optional,
-                });
-            }
-        });
-    }
-    if (formFields.filter((field) => field.id === FORM_FIELD_PASSWORD_ID).length === 0) {
-        // no password field give by user
-        formFields.push({
-            id: FORM_FIELD_PASSWORD_ID,
-            validate: defaultPasswordValidator,
-            optional: false,
-        });
-    }
-    if (formFields.filter((field) => field.id === FORM_FIELD_EMAIL_ID).length === 0) {
-        // no email field give by user
-        formFields.push({
-            id: FORM_FIELD_EMAIL_ID,
-            validate: defaultEmailValidator,
-            optional: false,
-        });
-    }
+    let formFields: NormalisedFormField[] = config === undefined ? [] : normaliseSignUpFormFields(config.formFields);
 
-    let handleCustomFormFieldsPostSignUp: (user: User, formFields: { id: string; value: string }[]) => Promise<void> =
+    let handleCustomFormFieldsPostSignUp =
         config === undefined || config.handleCustomFormFieldsPostSignUp === undefined
             ? defaultHandleCustomFormFieldsPostSignUp
             : config.handleCustomFormFieldsPostSignUp;

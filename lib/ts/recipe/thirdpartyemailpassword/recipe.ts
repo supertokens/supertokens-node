@@ -154,13 +154,14 @@ export default class Recipe extends RecipeModule {
                     },
                 },
                 signOutFeature: {
-                    disableDefaultImplementation: this.config.signOutFeature.disableDefaultImplementation,
+                    disableDefaultImplementation: true,
                 },
                 emailVerificationFeature: {
                     disableDefaultImplementation: true,
                 },
             })(appInfo) as ThirdPartyRecipe;
         }
+
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,
             appInfo,
@@ -178,7 +179,7 @@ export default class Recipe extends RecipeModule {
                     {
                         type: STError.GENERAL_ERROR,
                         payload: new Error(
-                            "ThirdParty recipe has already been initialised. Please check your code for bugs."
+                            "ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs."
                         ),
                     },
                     Recipe.RECIPE_ID
@@ -294,7 +295,14 @@ export default class Recipe extends RecipeModule {
     };
 
     getAllCORSHeaders = (): string[] => {
-        return [...this.emailVerificationRecipe.getAllCORSHeaders()];
+        let corsHeaders = [
+            ...this.emailVerificationRecipe.getAllCORSHeaders(),
+            ...this.emailPasswordRecipe.getAllCORSHeaders(),
+        ];
+        if (this.thirdPartyRecipe !== undefined) {
+            corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
+        }
+        return corsHeaders;
     };
 
     signUp = async (email: string, password: string): Promise<User> => {
@@ -316,8 +324,8 @@ export default class Recipe extends RecipeModule {
         if (this.thirdPartyRecipe === undefined) {
             throw new STError(
                 {
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "No thirdparty provider configured",
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error("No thirdparty provider configured"),
                 },
                 this.getRecipeId()
             );
@@ -381,7 +389,7 @@ export default class Recipe extends RecipeModule {
         return this.emailVerificationRecipe.isEmailVerified(userId, await this.getEmailForUserId(userId));
     };
 
-    getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
+    getUsersOldestFirst = async (limit?: number, nextPaginationTokenString?: string) => {
         limit = limit === undefined ? 100 : limit;
         let nextPaginationTokens: {
             thirdPartyPaginationToken: string | undefined;
@@ -390,8 +398,8 @@ export default class Recipe extends RecipeModule {
             thirdPartyPaginationToken: undefined,
             emailPasswordPaginationToken: undefined,
         };
-        if (nextPaginationToken !== undefined) {
-            nextPaginationTokens = extractPaginationTokens(this, nextPaginationToken);
+        if (nextPaginationTokenString !== undefined) {
+            nextPaginationTokens = extractPaginationTokens(this, nextPaginationTokenString);
         }
         let emailPasswordResultPromise = this.emailPasswordRecipe.getUsersOldestFirst(
             limit,
@@ -408,7 +416,7 @@ export default class Recipe extends RecipeModule {
         return combinePaginationResults(thirdPartyResult, emailPasswordResult, limit, true);
     };
 
-    getUsersNewestFirst = async (limit?: number, nextPaginationToken?: string) => {
+    getUsersNewestFirst = async (limit?: number, nextPaginationTokenString?: string) => {
         limit = limit === undefined ? 100 : limit;
         let nextPaginationTokens: {
             thirdPartyPaginationToken: string | undefined;
@@ -417,8 +425,8 @@ export default class Recipe extends RecipeModule {
             thirdPartyPaginationToken: undefined,
             emailPasswordPaginationToken: undefined,
         };
-        if (nextPaginationToken !== undefined) {
-            nextPaginationTokens = extractPaginationTokens(this, nextPaginationToken);
+        if (nextPaginationTokenString !== undefined) {
+            nextPaginationTokens = extractPaginationTokens(this, nextPaginationTokenString);
         }
         let emailPasswordResultPromise = this.emailPasswordRecipe.getUsersNewestFirst(
             limit,

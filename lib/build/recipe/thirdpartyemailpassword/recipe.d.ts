@@ -40,11 +40,11 @@ export default class Recipe extends RecipeModule {
     createEmailVerificationToken: (userId: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<import("../emailverification/types").User>;
     isEmailVerified: (userId: string) => Promise<boolean>;
-    getUsersOldestFirst: (limit?: number | undefined, nextPaginationToken?: string | undefined) => Promise<{
+    getUsersOldestFirst: (limit?: number | undefined, nextPaginationTokenString?: string | undefined) => Promise<{
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
-    getUsersNewestFirst: (limit?: number | undefined, nextPaginationToken?: string | undefined) => Promise<{
+    getUsersNewestFirst: (limit?: number | undefined, nextPaginationTokenString?: string | undefined) => Promise<{
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
