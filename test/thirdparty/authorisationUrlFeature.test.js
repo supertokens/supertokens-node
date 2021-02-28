@@ -23,7 +23,7 @@ const express = require("express");
 const request = require("supertest");
 let Session = require("../../recipe/session");
 
-describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.test.js]")}`, function () {
+describe.only(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
             id: "custom",
@@ -37,6 +37,9 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                         params: {
                             scope: "test",
                             client_id: "supertokens",
+                            dynamic: function dynamicParam(request) {
+                                return request.query.dynamic;
+                            },
                         },
                     },
                     getProfileInfo: async (authCodeResponse) => {
@@ -101,7 +104,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         let response1 = await new Promise((resolve) =>
             request(app)
-                .get("/auth/authorisationurl?thirdPartyId=custom")
+                .get("/auth/authorisationurl?thirdPartyId=custom&dynamic=example.com")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -112,7 +115,10 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
         );
         assert.notStrictEqual(response1, undefined);
         assert.strictEqual(response1.body.status, "OK");
-        assert.strictEqual(response1.body.url, "https://test.com/oauth/auth?scope=test&client_id=supertokens");
+        assert.strictEqual(
+            response1.body.url,
+            "https://test.com/oauth/auth?scope=test&client_id=supertokens&dynamic=example.com"
+        );
     });
 
     it("test provider get function throws error", async function () {

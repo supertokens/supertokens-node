@@ -65,7 +65,16 @@ export default async function authorisationUrlAPI(
             recipeInstance.getRecipeId()
         );
     }
-    let paramsString = new URLSearchParams(providerInfo.authorisationRedirect.params).toString();
+
+    const params = Object.entries(providerInfo.authorisationRedirect.params).reduce(
+        (acc, [key, value]) => ({
+            ...acc,
+            [key]: typeof value === "function" ? value(req) : value,
+        }),
+        {}
+    );
+
+    let paramsString = new URLSearchParams(params).toString();
 
     let url = `${providerInfo.authorisationRedirect.url}?${paramsString}`;
 

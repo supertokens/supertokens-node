@@ -13,6 +13,7 @@
  * under the License.
  */
 
+import { Request } from "express";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 
 const TypeBoolean = {
@@ -32,7 +33,7 @@ export type TypeProviderGetResponse = {
     };
     authorisationRedirect: {
         url: string;
-        params: { [key: string]: string };
+        params: { [key: string]: string | ((request: Request) => string) };
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
 };
