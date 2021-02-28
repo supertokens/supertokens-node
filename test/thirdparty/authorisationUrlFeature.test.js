@@ -23,7 +23,7 @@ const express = require("express");
 const request = require("supertest");
 let Session = require("../../recipe/session");
 
-describe.only(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.test.js]")}`, function () {
+describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.test.js]")}`, function () {
     before(function () {
         this.customProvider1 = {
             id: "custom",
