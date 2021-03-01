@@ -1,3 +1,4 @@
+import { Request } from "express";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 export declare type UserInfo = {
     id: string;
@@ -16,7 +17,7 @@ export declare type TypeProviderGetResponse = {
     authorisationRedirect: {
         url: string;
         params: {
-            [key: string]: string;
+            [key: string]: string | ((request: Request) => string);
         };
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;

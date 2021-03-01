@@ -1,4 +1,5 @@
 import { TypeProvider } from "../types";
+import { Request } from "express";
 declare type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
     clientSecret: {
@@ -8,7 +9,9 @@ declare type TypeThirdPartyProviderAppleConfig = {
     };
     scope?: string[];
     authorisationRedirect?: {
-        params?: object;
+        params?: {
+            [key: string]: string | ((request: Request) => string);
+        };
     };
 };
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider;

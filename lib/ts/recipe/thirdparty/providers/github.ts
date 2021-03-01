@@ -16,13 +16,14 @@ import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
 import { validateTheStructureOfUserInput } from "../../../utils";
 import Recipe from "../recipe";
+import { Request } from "express";
 
 type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
     clientSecret: string;
     scope?: string[];
     authorisationRedirect?: {
-        params?: object;
+        params?: { [key: string]: string | ((request: Request) => string) };
     };
 };
 
@@ -45,7 +46,7 @@ const InputSchemaTypeThirdPartyProviderGithubConfig = {
             type: "object",
             properties: {
                 params: {
-                    type: "object",
+                    type: "any",
                 },
             },
             additionalProperties: false,
