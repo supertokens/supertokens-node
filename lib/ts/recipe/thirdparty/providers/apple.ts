@@ -17,6 +17,7 @@ import { validateTheStructureOfUserInput } from "../../../utils";
 import Recipe from "../recipe";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
+import { Request } from "express";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -27,7 +28,7 @@ type TypeThirdPartyProviderAppleConfig = {
     };
     scope?: string[];
     authorisationRedirect?: {
-        params?: object;
+        params?: { [key: string]: string | ((request: Request) => string) };
     };
 };
 
@@ -63,7 +64,7 @@ const InputSchemaTypeThirdPartyProviderAppleConfig = {
             type: "object",
             properties: {
                 params: {
-                    type: "object",
+                    type: "any",
                 },
             },
             additionalProperties: false,
