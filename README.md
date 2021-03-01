@@ -13,7 +13,7 @@ This is a NodeJS library that is used to interface between a node API process an
 Learn more at https://supertokens.io
 
 ## Documentation
-To see documentation, please click [here](https://supertokens.io/docs/nodejs/installation).  
+To see documentation, please click [here](https://supertokens.io/docs/community/introduction).  
 
 ## Contributing  
 Please see the [CONTRIBUTING.md](https://github.com/supertokens/supertokens-node/blob/master/CONTRIBUTING.md) file for instructions.
