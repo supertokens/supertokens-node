@@ -25,7 +25,7 @@ export async function createEmailVerificationToken(
 ): Promise<string> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/email/verify/token"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/user/email/verify/token"), {
             userId,
             email,
         });
@@ -37,7 +37,7 @@ export async function createEmailVerificationToken(
                 type: STError.EMAIL_ALREADY_VERIFIED_ERROR,
                 message: "Failed to generated email verification token as the email is already verified",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -45,7 +45,7 @@ export async function createEmailVerificationToken(
 export async function verifyEmailUsingToken(recipeInstance: Recipe, token: string): Promise<User> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/email/verify"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/user/email/verify"), {
             method: "token",
             token,
         });
@@ -60,7 +60,7 @@ export async function verifyEmailUsingToken(recipeInstance: Recipe, token: strin
                 type: STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR,
                 message: "Failed to verify email as the the token has expired or is invalid",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -68,7 +68,7 @@ export async function verifyEmailUsingToken(recipeInstance: Recipe, token: strin
 export async function isEmailVerified(recipeInstance: Recipe, userId: string, email: string): Promise<boolean> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/email/verify"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/user/email/verify"), {
             userId,
             email,
         });

@@ -61,7 +61,7 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
         config,
         InputSchemaTypeThirdPartyProviderGoogleConfig,
         "thirdparty recipe, provider google",
-        Recipe.RECIPE_ID
+        undefined
     );
     const id = "google";
 

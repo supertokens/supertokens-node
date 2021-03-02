@@ -42,7 +42,7 @@ export default async function passwordReset(recipeInstance: Recipe, req: Request
                 type: STError.BAD_INPUT_ERROR,
                 message: "Please provide the password reset token",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
     if (typeof token !== "string") {
@@ -51,7 +51,7 @@ export default async function passwordReset(recipeInstance: Recipe, req: Request
                 type: STError.BAD_INPUT_ERROR,
                 message: "The password reset token must be a string",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 

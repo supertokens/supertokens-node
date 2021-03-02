@@ -14,6 +14,7 @@
  */
 
 import STError from "../../error";
+import RecipeModule from "../../recipeModule";
 
 export default class ThirdPartyEmailPasswordError extends STError {
     static UNKNOWN_USER_ID_ERROR: "UNKNOWN_USER_ID_ERROR" = "UNKNOWN_USER_ID_ERROR";
@@ -36,11 +37,11 @@ export default class ThirdPartyEmailPasswordError extends STError {
                   type: "INVALID_PAGINATION_TOKEN";
                   message: string;
               },
-        recipeId: string
+        recipe: RecipeModule | undefined
     ) {
         super({
             ...options,
-            rId: recipeId,
+            recipe,
         });
     }
 }

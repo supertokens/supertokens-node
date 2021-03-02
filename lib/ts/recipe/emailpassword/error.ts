@@ -14,6 +14,7 @@
  */
 
 import STError from "../../error";
+import RecipeModule from "../../recipeModule";
 
 export default class SessionError extends STError {
     static EMAIL_ALREADY_EXISTS_ERROR: "EMAIL_ALREADY_EXISTS_ERROR" = "EMAIL_ALREADY_EXISTS_ERROR";
@@ -51,11 +52,11 @@ export default class SessionError extends STError {
                   type: "GENERAL_ERROR";
                   payload: Error;
               },
-        recipeId: string
+        recipe: RecipeModule | undefined
     ) {
         super({
             ...options,
-            rId: recipeId,
+            recipe,
         });
     }
 }

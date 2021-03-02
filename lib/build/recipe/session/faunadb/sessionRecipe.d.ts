@@ -27,6 +27,7 @@ export default class SessionRecipe extends RecipeModule {
     handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
+    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
     getFDAT: (session: Session) => Promise<any>;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
     getSession: (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) => Promise<Session>;

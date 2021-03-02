@@ -16,20 +16,21 @@
 import { URL } from "url";
 import SuperTokensError from "./error";
 import STError from "./error";
+import RecipeModule from "./recipeModule";
 
 export default class NormalisedURLPath {
     private value: string;
 
-    constructor(rId: string, url: string) {
-        this.value = normaliseURLPathOrThrowError(rId, url);
+    constructor(recipe: RecipeModule | undefined, url: string) {
+        this.value = normaliseURLPathOrThrowError(recipe, url);
     }
 
     startsWith = (other: NormalisedURLPath) => {
         return this.value.startsWith(other.value);
     };
 
-    appendPath = (rId: string, other: NormalisedURLPath) => {
-        return new NormalisedURLPath(rId, this.value + other.value);
+    appendPath = (recipe: RecipeModule | undefined, other: NormalisedURLPath) => {
+        return new NormalisedURLPath(recipe, this.value + other.value);
     };
 
     getAsStringDangerous = () => {
@@ -45,7 +46,7 @@ export default class NormalisedURLPath {
     };
 }
 
-export function normaliseURLPathOrThrowError(rId: string, input: string): string {
+export function normaliseURLPathOrThrowError(recipe: RecipeModule | undefined, input: string): string {
     input = input.trim().toLowerCase();
 
     try {
@@ -71,7 +72,7 @@ export function normaliseURLPathOrThrowError(rId: string, input: string): string
         !input.startsWith("https://")
     ) {
         input = "http://" + input;
-        return normaliseURLPathOrThrowError(rId, input);
+        return normaliseURLPathOrThrowError(recipe, input);
     }
 
     if (input.charAt(0) !== "/") {
@@ -83,11 +84,11 @@ export function normaliseURLPathOrThrowError(rId: string, input: string): string
         // test that we can convert this to prevent an infinite loop
         new URL("http://example.com" + input);
 
-        return normaliseURLPathOrThrowError(rId, "http://example.com" + input);
+        return normaliseURLPathOrThrowError(recipe, "http://example.com" + input);
     } catch (err) {
         throw new STError({
             type: STError.GENERAL_ERROR,
-            rId,
+            recipe,
             payload: new Error("Please provide a valid URL path"),
         });
     }

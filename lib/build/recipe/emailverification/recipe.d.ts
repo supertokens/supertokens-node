@@ -15,6 +15,7 @@ export default class Recipe extends RecipeModule {
     handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
+    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
     createEmailVerificationToken: (userId: string, email: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<User>;
     isEmailVerified: (userId: string, email: string) => Promise<boolean>;

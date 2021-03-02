@@ -33,7 +33,7 @@ export default async function generateEmailVerifyToken(
             if (err !== undefined) {
                 reject(err);
             } else {
-                resolve();
+                resolve(undefined);
             }
         })
     );

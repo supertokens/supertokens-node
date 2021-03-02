@@ -47,7 +47,7 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe", recipeInstance.getRecipeId());
+    validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe", recipeInstance);
 
     let sessionFeature = validateAndNormaliseSessionFeatureConfig(
         recipeInstance,
@@ -149,7 +149,7 @@ export function validateAndNormaliseEmailVerificationConfig(
                                         type: STError.UNKNOWN_USER_ID_ERROR,
                                         message: "User ID unknown",
                                     },
-                                    recipeInstance.getRecipeId()
+                                    recipeInstance
                                 );
                             }
                             return await config.createAndSendCustomEmail(userInfo, link);
@@ -165,7 +165,7 @@ export function validateAndNormaliseEmailVerificationConfig(
                                         type: STError.UNKNOWN_USER_ID_ERROR,
                                         message: "User ID unknown",
                                     },
-                                    recipeInstance.getRecipeId()
+                                    recipeInstance
                                 );
                             }
                             return await config.getEmailVerificationURL(userInfo);
@@ -181,7 +181,7 @@ export function validateAndNormaliseEmailVerificationConfig(
                                         type: STError.UNKNOWN_USER_ID_ERROR,
                                         message: "User ID unknown",
                                     },
-                                    recipeInstance.getRecipeId()
+                                    recipeInstance
                                 );
                             }
                             return await config.handlePostEmailVerification(userInfo);

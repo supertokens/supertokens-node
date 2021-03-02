@@ -39,7 +39,7 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "thirdparty recipe", recipeInstance.getRecipeId());
+    validateTheStructureOfUserInput(config, InputSchema, "thirdparty recipe", recipeInstance);
 
     let sessionFeature = validateAndNormaliseSessionFeatureConfig(
         recipeInstance,
@@ -122,7 +122,7 @@ function validateAndNormaliseSignInAndUpConfig(
                 message:
                     "thirdparty recipe requires atleast 1 provider to be passed in signInAndUpFeature.providers config",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
     return {
@@ -170,7 +170,7 @@ function validateAndNormaliseEmailVerificationConfig(
                                         type: STError.UNKNOWN_USER_ID_ERROR,
                                         message: "User ID unknown",
                                     },
-                                    recipeInstance.getRecipeId()
+                                    recipeInstance
                                 );
                             }
                             return await config.createAndSendCustomEmail(userInfo, link);
@@ -186,7 +186,7 @@ function validateAndNormaliseEmailVerificationConfig(
                                         type: STError.UNKNOWN_USER_ID_ERROR,
                                         message: "User ID unknown",
                                     },
-                                    recipeInstance.getRecipeId()
+                                    recipeInstance
                                 );
                             }
                             return await config.getEmailVerificationURL(userInfo);
@@ -202,7 +202,7 @@ function validateAndNormaliseEmailVerificationConfig(
                                         type: STError.UNKNOWN_USER_ID_ERROR,
                                         message: "User ID unknown",
                                     },
-                                    recipeInstance.getRecipeId()
+                                    recipeInstance
                                 );
                             }
                             return await config.handlePostEmailVerification(userInfo);

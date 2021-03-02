@@ -85,7 +85,7 @@ export default class SessionRecipe extends RecipeModule {
                         payload: err,
                         type: STError.GENERAL_ERROR,
                     },
-                    this.getRecipeId()
+                    this
                 );
             }
         } else {
@@ -102,7 +102,7 @@ export default class SessionRecipe extends RecipeModule {
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
             },
-            OriginalSessionRecipe.RECIPE_ID
+            undefined
         );
     }
 
@@ -119,7 +119,7 @@ export default class SessionRecipe extends RecipeModule {
                             "Session recipe has already been initialised. Please check your code for bugs."
                         ),
                     },
-                    OriginalSessionRecipe.RECIPE_ID
+                    undefined
                 );
             }
         };
@@ -132,7 +132,7 @@ export default class SessionRecipe extends RecipeModule {
                     type: STError.GENERAL_ERROR,
                     payload: new Error("calling testing function in non testing env"),
                 },
-                OriginalSessionRecipe.RECIPE_ID
+                undefined
             );
         }
         SessionRecipe.instance = undefined;
@@ -154,6 +154,10 @@ export default class SessionRecipe extends RecipeModule {
 
     getAllCORSHeaders = (): string[] => {
         return this.parentRecipe.getAllCORSHeaders();
+    };
+
+    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+        return STError.isErrorFromSuperTokens(err) && this === err.recipe;
     };
 
     // instance functions.........
@@ -218,7 +222,7 @@ export default class SessionRecipe extends RecipeModule {
                     type: STError.GENERAL_ERROR,
                     payload: err,
                 },
-                this.getRecipeId()
+                this
             );
         }
     };
@@ -271,7 +275,7 @@ export default class SessionRecipe extends RecipeModule {
                     type: STError.GENERAL_ERROR,
                     payload: err,
                 },
-                this.getRecipeId()
+                this
             );
         }
     };

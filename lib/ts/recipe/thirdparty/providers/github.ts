@@ -61,7 +61,7 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
         config,
         InputSchemaTypeThirdPartyProviderGithubConfig,
         "thirdparty recipe, provider github",
-        Recipe.RECIPE_ID
+        undefined
     );
     const id = "github";
 

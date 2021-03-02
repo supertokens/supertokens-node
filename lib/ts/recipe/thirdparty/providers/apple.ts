@@ -79,7 +79,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         config,
         InputSchemaTypeThirdPartyProviderAppleConfig,
         "thirdparty recipe, provider apple",
-        Recipe.RECIPE_ID
+        undefined
     );
     const id = "apple";
 
@@ -110,7 +110,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
                 type: STError.BAD_INPUT_ERROR,
                 message: error.message,
             },
-            Recipe.RECIPE_ID
+            undefined
         );
     }
 

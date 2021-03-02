@@ -43,7 +43,7 @@ export default abstract class RecipeModule {
         let findDuplicates = (arr: string[]) => arr.filter((item, index) => arr.indexOf(item) != index);
         if (findDuplicates(stringifiedApisHandled).length !== 0) {
             throw new STError({
-                rId: recipeId,
+                recipe: this,
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Duplicate APIs exposed from recipe. Please combine them into one API"),
             });
@@ -60,13 +60,13 @@ export default abstract class RecipeModule {
 
     getQuerier = (): Querier => {
         if (this.querier === undefined) {
-            this.querier = Querier.getInstanceOrThrowError(this.getRecipeId());
+            this.querier = Querier.getInstanceOrThrowError(this);
         }
         return this.querier;
     };
 
-    isErrorFromThisRecipe = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && err.rId === this.getRecipeId();
+    isErrorFromThisRecipeBasedOnRid = (err: any): err is STError => {
+        return STError.isErrorFromSuperTokens(err) && err.getRecipeId() === this.recipeId;
     };
 
     returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
@@ -76,13 +76,15 @@ export default abstract class RecipeModule {
             if (
                 !currAPI.disabled &&
                 currAPI.method === method &&
-                this.appInfo.apiBasePath.appendPath(this.getRecipeId(), currAPI.pathWithoutApiBasePath).equals(path)
+                this.appInfo.apiBasePath.appendPath(this, currAPI.pathWithoutApiBasePath).equals(path)
             ) {
                 return currAPI.id;
             }
         }
         return undefined;
     };
+
+    abstract isErrorFromThisOrChildRecipeBasedOnInstance(err: any): err is STError;
 
     abstract getAPIsHandled(): APIHandled[];
 

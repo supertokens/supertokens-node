@@ -62,7 +62,7 @@ export default async function signInAPI(recipeInstance: Recipe, req: Request, re
                 type: STError.GENERAL_ERROR,
                 payload: err,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
