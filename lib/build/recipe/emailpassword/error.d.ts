@@ -1,5 +1,5 @@
 import STError from "../../error";
-import RecipeModule from '../../recipeModule';
+import RecipeModule from "../../recipeModule";
 export default class SessionError extends STError {
     static EMAIL_ALREADY_EXISTS_ERROR: "EMAIL_ALREADY_EXISTS_ERROR";
     static FIELD_ERROR: "FIELD_ERROR";

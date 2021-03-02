@@ -1,6 +1,6 @@
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import RecipeModule from './recipeModule';
+import RecipeModule from "./recipeModule";
 export declare class Querier {
     private static initCalled;
     private static hosts;

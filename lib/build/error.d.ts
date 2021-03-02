@@ -1,4 +1,4 @@
-import RecipeModule from './recipeModule';
+import RecipeModule from "./recipeModule";
 export default class SuperTokensError {
     private static errMagic;
     static GENERAL_ERROR: "GENERAL_ERROR";

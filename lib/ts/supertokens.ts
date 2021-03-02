@@ -60,6 +60,28 @@ export default class SuperTokens {
             return func(this.appInfo);
         });
 
+        // check if duplicate APIs are exposed by any recipe by mistake
+        for (let i = 0; i < this.recipeModules.length; i++) {
+            let recipe = this.recipeModules[i];
+            let apisHandled = recipe.getAPIsHandled();
+            let stringifiedApisHandled: string[] = apisHandled
+                .map((api) => {
+                    if (api.disabled) {
+                        return "";
+                    }
+                    return api.method + ";" + api.pathWithoutApiBasePath.getAsStringDangerous();
+                })
+                .filter((i) => i !== "");
+            let findDuplicates = (arr: string[]) => arr.filter((item, index) => arr.indexOf(item) != index);
+            if (findDuplicates(stringifiedApisHandled).length !== 0) {
+                throw new STError({
+                    recipe,
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error("Duplicate APIs exposed from recipe. Please combine them into one API"),
+                });
+            }
+        }
+
         let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
 
         if (telemetry) {
@@ -206,15 +228,9 @@ export default class SuperTokens {
                     return sendNon200Response(err.recipe, response, err.message, 400);
                 }
 
-                let errRecipe = err.recipe;
-
-                if (errRecipe === undefined) {
-                    return next(err.payload);
-                }
-
                 // we loop through all the recipes and pass the error to the one that matches the rId
                 for (let i = 0; i < this.recipeModules.length; i++) {
-                    if (errRecipe.isErrorFromThisRecipeBasedOnRid(err)) {
+                    if (this.recipeModules[i].isErrorFromThisRecipeBasedOnRid(err)) {
                         try {
                             return this.recipeModules[i].handleError(err, request, response, next);
                         } catch (error) {

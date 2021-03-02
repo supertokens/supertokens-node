@@ -1,6 +1,6 @@
 import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
 import * as express from "express";
-import RecipeModule from './recipeModule';
+import RecipeModule from "./recipeModule";
 export declare function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined;
 export declare function maxVersion(version1: string, version2: string): string;
 export declare function normaliseInputAppInfoOrThrowError(recipe: RecipeModule | undefined, appInfo: AppInfo): NormalisedAppinfo;

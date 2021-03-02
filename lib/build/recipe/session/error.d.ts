@@ -1,5 +1,5 @@
 import STError from "../../error";
-import RecipeModule from '../../recipeModule';
+import RecipeModule from "../../recipeModule";
 export default class SessionError extends STError {
     static UNAUTHORISED: "UNAUTHORISED";
     static TRY_REFRESH_TOKEN: "TRY_REFRESH_TOKEN";

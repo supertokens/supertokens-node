@@ -1,5 +1,5 @@
 import STError from "../../error";
-import RecipeModule from '../../recipeModule';
+import RecipeModule from "../../recipeModule";
 export default class SessionError extends STError {
     static EMAIL_ALREADY_VERIFIED_ERROR: "EMAIL_ALREADY_VERIFIED_ERROR";
     static EMAIL_VERIFICATION_INVALID_TOKEN_ERROR: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";

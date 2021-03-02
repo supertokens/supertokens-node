@@ -124,7 +124,9 @@ function validateAndNormaliseSignUpConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let formFields: NormalisedFormField[] = config === undefined ? [] : normaliseSignUpFormFields(config.formFields);
+    let formFields: NormalisedFormField[] = normaliseSignUpFormFields(
+        config === undefined ? undefined : config.formFields
+    );
     let handlePostSignUp =
         config === undefined || config.handlePostSignUp === undefined
             ? defaultHandlePostSignUp

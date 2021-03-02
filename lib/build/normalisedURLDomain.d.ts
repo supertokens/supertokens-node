@@ -1,4 +1,4 @@
-import RecipeModule from './recipeModule';
+import RecipeModule from "./recipeModule";
 export default class NormalisedURLDomain {
     private value;
     constructor(recipe: RecipeModule | undefined, url: string);
