@@ -150,12 +150,12 @@ export default class Recipe extends RecipeModule {
                         providers: this.config.providers,
                         handlePostSignUpIn: async (user, thirdPartyAuthCodeResponse, newUser) => {
                             if (newUser) {
-                                return await this.config.signInFeature.handlePostSignIn(user, {
+                                return await this.config.signUpFeature.handlePostSignUp(user, {
                                     loginType: "thirdparty",
                                     thirdPartyAuthCodeResponse,
                                 });
                             } else {
-                                return await this.config.signUpFeature.handlePostSignUp(user, {
+                                return await this.config.signInFeature.handlePostSignIn(user, {
                                     loginType: "thirdparty",
                                     thirdPartyAuthCodeResponse,
                                 });
@@ -236,9 +236,14 @@ export default class Recipe extends RecipeModule {
         return apisHandled;
     };
 
-    handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        let path = new NormalisedURLPath(undefined, req.originalUrl === undefined ? req.url : req.originalUrl);
-        let method: HTTPMethod = normaliseHttpMethod(req.method);
+    handleAPIRequest = async (
+        id: string,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => {
         if (this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
             return await this.emailPasswordRecipe.handleAPIRequest(id, req, res, next);
         }

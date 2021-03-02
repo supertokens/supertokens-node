@@ -180,13 +180,13 @@ export default class SuperTokens {
                 }
 
                 // give task to the matched recipe
-                return await this.handleAPI(matchedRecipe, id, request, response, next);
+                return await this.handleAPI(matchedRecipe, id, request, response, next, path, method);
             } else {
                 // we loop through all recipe modules to find the one with the matching path and method
                 for (let i = 0; i < this.recipeModules.length; i++) {
                     let id = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
                     if (id !== undefined) {
-                        return await this.handleAPI(this.recipeModules[i], id, request, response, next);
+                        return await this.handleAPI(this.recipeModules[i], id, request, response, next, path, method);
                     }
                 }
                 return next();
@@ -199,11 +199,13 @@ export default class SuperTokens {
         id: string,
         request: express.Request,
         response: express.Response,
-        next: express.NextFunction
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
     ) => {
         try {
             await assertThatBodyParserHasBeenUsed(matchedRecipe, request, response);
-            return await matchedRecipe.handleAPIRequest(id, request, response, next);
+            return await matchedRecipe.handleAPIRequest(id, request, response, next, path, method);
         } catch (err) {
             if (!STError.isErrorFromSuperTokens(err)) {
                 err = new STError({

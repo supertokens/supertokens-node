@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
@@ -8,6 +8,7 @@ import STError from "./error";
 import { TypeInput, TypeNormalisedInput, User } from "./types";
 import STErrorEmailPassword from "../emailpassword/error";
 import STErrorThirdParty from "../thirdparty/error";
+import NormalisedURLPath from "../../normalisedURLPath";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -20,7 +21,7 @@ export default class Recipe extends RecipeModule {
     static reset(): void;
     static getInstanceOrThrowError(): Recipe;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
+    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction, path: NormalisedURLPath, method: HTTPMethod) => Promise<void>;
     handleError: (err: STErrorEmailPassword | STErrorThirdParty, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
     isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;

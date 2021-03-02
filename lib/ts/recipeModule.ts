@@ -76,7 +76,9 @@ export default abstract class RecipeModule {
         id: string,
         req: express.Request,
         response: express.Response,
-        next: express.NextFunction
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
     ): Promise<void>;
 
     abstract handleError(
