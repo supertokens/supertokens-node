@@ -26,9 +26,12 @@ export default abstract class RecipeModule {
 
     private appInfo: NormalisedAppinfo;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo) {
+    private rIdToCore: string | undefined;
+
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, rIdToCore?: string) {
         this.recipeId = recipeId;
         this.appInfo = appInfo;
+        this.rIdToCore = rIdToCore;
     }
 
     getRecipeId = (): string => {
@@ -41,7 +44,7 @@ export default abstract class RecipeModule {
 
     getQuerier = (): Querier => {
         if (this.querier === undefined) {
-            this.querier = Querier.getInstanceOrThrowError(this);
+            this.querier = Querier.getInstanceOrThrowError(this, this.rIdToCore);
         }
         return this.querier;
     };

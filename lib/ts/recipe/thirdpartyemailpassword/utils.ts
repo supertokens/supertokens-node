@@ -24,7 +24,7 @@ import {
     TypeInputSignUp,
     TypeInputSignIn,
     TypeNormalisedInputSignUp,
-    TypeContextEmailPassowrd,
+    TypeContextEmailPassword,
     TypeContextThirdParty,
     TypeNormalisedInputSignIn,
     TypeInputEmailVerificationFeature,
@@ -94,13 +94,13 @@ async function defaultValidator(value: any): Promise<string | undefined> {
     return undefined;
 }
 
-async function defaultHandlePostSignUp(user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty) {}
+async function defaultHandlePostSignUp(user: User, context: TypeContextEmailPassword | TypeContextThirdParty) {}
 
-async function defaultHandlePostSignIn(user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty) {}
+async function defaultHandlePostSignIn(user: User, context: TypeContextEmailPassword | TypeContextThirdParty) {}
 
 async function defaultSetSessionDataForSession(
     user: User,
-    context: TypeContextEmailPassowrd | TypeContextThirdParty,
+    context: TypeContextEmailPassword | TypeContextThirdParty,
     action: "signin" | "signup"
 ) {
     return {};
@@ -108,7 +108,7 @@ async function defaultSetSessionDataForSession(
 
 async function defaultSetJwtPayloadForSession(
     user: User,
-    context: TypeContextEmailPassowrd | TypeContextThirdParty,
+    context: TypeContextEmailPassword | TypeContextThirdParty,
     action: "signin" | "signup"
 ) {
     return {};

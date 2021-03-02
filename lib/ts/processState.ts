@@ -40,7 +40,7 @@ export class ProcessState {
 
     private getEventByLastEventByName = (state: PROCESS_STATE) => {
         for (let i = this.history.length - 1; i >= 0; i--) {
-            if (this.history[i] == state) {
+            if (this.history[i] === state) {
                 return this.history[i];
             }
         }

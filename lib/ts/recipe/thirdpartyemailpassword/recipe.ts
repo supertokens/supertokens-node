@@ -13,13 +13,13 @@
  * under the License.
  */
 import RecipeModule from "../../recipeModule";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import * as express from "express";
 import STError from "./error";
-import { send200Response } from "../../utils";
+import { normaliseHttpMethod, send200Response } from "../../utils";
 import { TypeInput, TypeNormalisedInput, User } from "./types";
 import {
     validateAndNormaliseUserInput,
@@ -47,6 +47,7 @@ import signInUpAPI from "../thirdparty/api/signinup";
 import authorisationUrlAPI from "../thirdparty/api/authorisationUrl";
 import STErrorEmailPassword from "../emailpassword/error";
 import STErrorThirdParty from "../thirdparty/error";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -64,102 +65,112 @@ export default class Recipe extends RecipeModule {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
-        this.emailPasswordRecipe = EmailPasswordRecipe.init({
-            sessionFeature: {
-                setJwtPayload: async (user, formfields, action) => {
-                    return this.config.sessionFeature.setJwtPayload(
-                        user,
-                        {
-                            loginType: "emailpassword",
-                            formFields: formfields,
-                        },
-                        action
-                    );
-                },
-                setSessionData: async (user, formfields, action) => {
-                    return this.config.sessionFeature.setSessionData(
-                        user,
-                        {
-                            loginType: "emailpassword",
-                            formFields: formfields,
-                        },
-                        action
-                    );
-                },
-            },
-            signUpFeature: {
-                disableDefaultImplementation: this.config.signUpFeature.disableDefaultImplementation,
-                formFields: this.config.signUpFeature.formFields,
-                handleCustomFormFieldsPostSignUp: async (user, formfields) => {
-                    return await this.config.signUpFeature.handlePostSignUp(user, {
-                        loginType: "emailpassword",
-                        formFields: formfields,
-                    });
-                },
-            },
-            signInFeature: {
-                disableDefaultImplementation: this.config.signInFeature.disableDefaultImplementation,
-            },
-            signOutFeature: {
-                disableDefaultImplementation: this.config.signOutFeature.disableDefaultImplementation,
-            },
-            resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
-            emailVerificationFeature: {
-                disableDefaultImplementation: true,
-            },
-        })(appInfo) as EmailPasswordRecipe;
-
-        this.thirdPartyRecipe = undefined;
-        if (this.config.providers.length !== 0) {
-            this.thirdPartyRecipe = ThirdPartyRecipe.init({
+        this.emailPasswordRecipe = new EmailPasswordRecipe(
+            recipeId,
+            appInfo,
+            {
                 sessionFeature: {
-                    setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
+                    setJwtPayload: async (user, formfields, action) => {
                         return this.config.sessionFeature.setJwtPayload(
                             user,
                             {
-                                loginType: "thirdparty",
-                                thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
+                                loginType: "emailpassword",
+                                formFields: formfields,
                             },
                             action
                         );
                     },
-                    setSessionData: async (user, thirdPartyAuthCodeResponse, action) => {
+                    setSessionData: async (user, formfields, action) => {
                         return this.config.sessionFeature.setSessionData(
                             user,
                             {
-                                loginType: "thirdparty",
-                                thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
+                                loginType: "emailpassword",
+                                formFields: formfields,
                             },
                             action
                         );
                     },
                 },
-                signInAndUpFeature: {
-                    disableDefaultImplementation:
-                        this.config.signInFeature.disableDefaultImplementation ||
-                        this.config.signUpFeature.disableDefaultImplementation,
-                    providers: this.config.providers,
-                    handlePostSignUpIn: async (user, thirdPartyAuthCodeResponse, newUser) => {
-                        if (newUser) {
-                            return await this.config.signInFeature.handlePostSignIn(user, {
-                                loginType: "thirdparty",
-                                thirdPartyAuthCodeResponse,
-                            });
-                        } else {
-                            return await this.config.signUpFeature.handlePostSignUp(user, {
-                                loginType: "thirdparty",
-                                thirdPartyAuthCodeResponse,
-                            });
-                        }
+                signUpFeature: {
+                    disableDefaultImplementation: this.config.signUpFeature.disableDefaultImplementation,
+                    formFields: this.config.signUpFeature.formFields,
+                    handleCustomFormFieldsPostSignUp: async (user, formfields) => {
+                        return await this.config.signUpFeature.handlePostSignUp(user, {
+                            loginType: "emailpassword",
+                            formFields: formfields,
+                        });
                     },
                 },
-                signOutFeature: {
-                    disableDefaultImplementation: true,
+                signInFeature: {
+                    disableDefaultImplementation: this.config.signInFeature.disableDefaultImplementation,
                 },
+                signOutFeature: {
+                    disableDefaultImplementation: this.config.signOutFeature.disableDefaultImplementation,
+                },
+                resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
                 emailVerificationFeature: {
                     disableDefaultImplementation: true,
                 },
-            })(appInfo) as ThirdPartyRecipe;
+            },
+            EmailPasswordRecipe.RECIPE_ID
+        );
+
+        this.thirdPartyRecipe = undefined;
+        if (this.config.providers.length !== 0) {
+            this.thirdPartyRecipe = new ThirdPartyRecipe(
+                recipeId,
+                appInfo,
+                {
+                    sessionFeature: {
+                        setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
+                            return this.config.sessionFeature.setJwtPayload(
+                                user,
+                                {
+                                    loginType: "thirdparty",
+                                    thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
+                                },
+                                action
+                            );
+                        },
+                        setSessionData: async (user, thirdPartyAuthCodeResponse, action) => {
+                            return this.config.sessionFeature.setSessionData(
+                                user,
+                                {
+                                    loginType: "thirdparty",
+                                    thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
+                                },
+                                action
+                            );
+                        },
+                    },
+                    signInAndUpFeature: {
+                        disableDefaultImplementation:
+                            this.config.signInFeature.disableDefaultImplementation ||
+                            this.config.signUpFeature.disableDefaultImplementation,
+                        providers: this.config.providers,
+                        handlePostSignUpIn: async (user, thirdPartyAuthCodeResponse, newUser) => {
+                            if (newUser) {
+                                return await this.config.signInFeature.handlePostSignIn(user, {
+                                    loginType: "thirdparty",
+                                    thirdPartyAuthCodeResponse,
+                                });
+                            } else {
+                                return await this.config.signUpFeature.handlePostSignUp(user, {
+                                    loginType: "thirdparty",
+                                    thirdPartyAuthCodeResponse,
+                                });
+                            }
+                        },
+                    },
+                    signOutFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                    emailVerificationFeature: {
+                        disableDefaultImplementation: true,
+                    },
+                },
+                ThirdPartyRecipe.RECIPE_ID
+            );
         }
 
         this.emailVerificationRecipe = new EmailVerificationRecipe(
@@ -226,26 +237,18 @@ export default class Recipe extends RecipeModule {
     };
 
     handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        if (id === SIGN_UP_API) {
-            return await signUpAPI(this.emailPasswordRecipe, req, res, next);
-        } else if (id === SIGN_IN_API) {
-            return await signInAPI(this.emailPasswordRecipe, req, res, next);
-        } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
-            return await generatePasswordResetTokenAPI(this.emailPasswordRecipe, req, res, next);
-        } else if (id === SIGN_OUT_API) {
-            return await signOutAPI(this.emailPasswordRecipe, req, res, next);
-        } else if (id === PASSWORD_RESET_API) {
-            return await passwordResetAPI(this.emailPasswordRecipe, req, res, next);
-        } else if (id === SIGNUP_EMAIL_EXISTS_API) {
-            return await emailExistsAPI(this.emailPasswordRecipe, req, res, next);
+        let path = new NormalisedURLPath(undefined, req.originalUrl === undefined ? req.url : req.originalUrl);
+        let method: HTTPMethod = normaliseHttpMethod(req.method);
+        if (this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
+            return await this.emailPasswordRecipe.handleAPIRequest(id, req, res, next);
         }
-        if (this.thirdPartyRecipe !== undefined && id === SIGN_IN_UP_API) {
-            return await signInUpAPI(this.thirdPartyRecipe, req, res, next);
-        } else if (this.thirdPartyRecipe !== undefined && id === AUTHORISATION_API) {
-            return await authorisationUrlAPI(this.thirdPartyRecipe, req, res, next);
-        } else {
-            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
+        if (
+            this.thirdPartyRecipe !== undefined &&
+            this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
+        ) {
+            return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, next);
         }
+        return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
     };
 
     handleError = (

@@ -10,7 +10,7 @@ export declare type User = {
         userId: string;
     };
 };
-export declare type TypeContextEmailPassowrd = {
+export declare type TypeContextEmailPassword = {
     loginType: "emailpassword";
     formFields: TypeFormField[];
 };
@@ -18,12 +18,12 @@ export declare type TypeContextThirdParty = {
     loginType: "thirdparty";
     thirdPartyAuthCodeResponse: any;
 };
-export declare type TypeInputHandlePostSignUp = (user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty) => Promise<void>;
+export declare type TypeInputHandlePostSignUp = (user: User, context: TypeContextEmailPassword | TypeContextThirdParty) => Promise<void>;
 export declare type TypeInputHandlePostSignIn = (user: User, context: TypeContextThirdParty) => Promise<void>;
-export declare type TypeInputSetJwtPayloadForSession = (user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
+export declare type TypeInputSetJwtPayloadForSession = (user: User, context: TypeContextEmailPassword | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
     [key: string]: any;
 } | undefined>;
-export declare type TypeInputSetSessionDataForSession = (user: User, context: TypeContextEmailPassowrd | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
+export declare type TypeInputSetSessionDataForSession = (user: User, context: TypeContextEmailPassword | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
     [key: string]: any;
 } | undefined>;
 export declare type TypeInputSessionFeature = {

@@ -256,7 +256,7 @@ export class Querier {
         axiosFunction: (url: string) => Promise<any>,
         numberOfTries: number
     ): Promise<any> => {
-        if (numberOfTries == 0) {
+        if (numberOfTries === 0) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
                 recipe: this.recipe,

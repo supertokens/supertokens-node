@@ -7,7 +7,8 @@ export default abstract class RecipeModule {
     private recipeId;
     private querier;
     private appInfo;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo);
+    private rIdToCore;
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, rIdToCore?: string);
     getRecipeId: () => string;
     getAppInfo: () => NormalisedAppinfo;
     getQuerier: () => Querier;

@@ -44,7 +44,7 @@ export type User = {
     };
 };
 
-export type TypeContextEmailPassowrd = {
+export type TypeContextEmailPassword = {
     loginType: "emailpassword";
     formFields: TypeFormField[];
 };
@@ -56,20 +56,20 @@ export type TypeContextThirdParty = {
 
 export type TypeInputHandlePostSignUp = (
     user: User,
-    context: TypeContextEmailPassowrd | TypeContextThirdParty
+    context: TypeContextEmailPassword | TypeContextThirdParty
 ) => Promise<void>;
 
 export type TypeInputHandlePostSignIn = (user: User, context: TypeContextThirdParty) => Promise<void>; // same as signup to keep the signature consistent
 
 export type TypeInputSetJwtPayloadForSession = (
     user: User,
-    context: TypeContextEmailPassowrd | TypeContextThirdParty,
+    context: TypeContextEmailPassword | TypeContextThirdParty,
     action: "signin" | "signup"
 ) => Promise<{ [key: string]: any } | undefined>;
 
 export type TypeInputSetSessionDataForSession = (
     user: User,
-    context: TypeContextEmailPassowrd | TypeContextThirdParty,
+    context: TypeContextEmailPassword | TypeContextThirdParty,
     action: "signin" | "signup"
 ) => Promise<{ [key: string]: any } | undefined>;
 
