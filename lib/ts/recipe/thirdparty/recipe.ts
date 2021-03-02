@@ -69,7 +69,7 @@ export default class Recipe extends RecipeModule {
                             "ThirdParty recipe has already been initialised. Please check your code for bugs."
                         ),
                     },
-                    Recipe.RECIPE_ID
+                    undefined
                 );
             }
         };
@@ -82,7 +82,7 @@ export default class Recipe extends RecipeModule {
                     type: STError.GENERAL_ERROR,
                     payload: new Error("calling testing function in non testing env"),
                 },
-                Recipe.RECIPE_ID
+                undefined
             );
         }
         Recipe.instance = undefined;
@@ -92,19 +92,19 @@ export default class Recipe extends RecipeModule {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_IN_UP_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_IN_UP_API),
                 id: SIGN_IN_UP_API,
                 disabled: this.config.signInAndUpFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_OUT_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_OUT_API),
                 id: SIGN_OUT_API,
                 disabled: this.config.signOutFeature.disableDefaultImplementation,
             },
             {
                 method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), AUTHORISATION_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, AUTHORISATION_API),
                 id: AUTHORISATION_API,
                 disabled: this.config.signInAndUpFeature.disableDefaultImplementation,
             },
@@ -142,6 +142,13 @@ export default class Recipe extends RecipeModule {
         return [...this.emailVerificationRecipe.getAllCORSHeaders()];
     };
 
+    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+        return (
+            STError.isErrorFromSuperTokens(err) &&
+            (this === err.recipe || this.emailVerificationRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err))
+        );
+    };
+
     getUserById = async (userId: string): Promise<User | undefined> => {
         return getUserByIdFromCore(this, userId);
     };
@@ -158,7 +165,7 @@ export default class Recipe extends RecipeModule {
                     type: STError.UNKNOWN_USER_ID_ERROR,
                     message: "Unknown User ID provided",
                 },
-                this.getRecipeId()
+                this
             );
         }
         return userInfo.email;
@@ -208,7 +215,7 @@ export default class Recipe extends RecipeModule {
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
             },
-            Recipe.RECIPE_ID
+            undefined
         );
     }
 }

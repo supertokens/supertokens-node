@@ -11,8 +11,9 @@ export default abstract class RecipeModule {
     getRecipeId: () => string;
     getAppInfo: () => NormalisedAppinfo;
     getQuerier: () => Querier;
-    isErrorFromThisRecipe: (err: any) => err is STError;
+    isErrorFromThisRecipeBasedOnRid: (err: any) => err is STError;
     returnAPIIdIfCanHandleRequest: (path: NormalisedURLPath, method: HTTPMethod) => string | undefined;
+    abstract isErrorFromThisOrChildRecipeBasedOnInstance(err: any): err is STError;
     abstract getAPIsHandled(): APIHandled[];
     abstract handleAPIRequest(id: string, req: express.Request, response: express.Response, next: express.NextFunction): Promise<void>;
     abstract handleError(error: STError, request: express.Request, response: express.Response, next: express.NextFunction): void;

@@ -91,7 +91,7 @@ export default class Session {
         newJWTPayload = newJWTPayload === null || newJWTPayload === undefined ? {} : newJWTPayload;
         let response = await this.recipeInstance
             .getQuerier()
-            .sendPostRequest(new NormalisedURLPath(this.recipeInstance.getRecipeId(), "/recipe/session/regenerate"), {
+            .sendPostRequest(new NormalisedURLPath(this.recipeInstance, "/recipe/session/regenerate"), {
                 accessToken: this.accessToken,
                 userDataInJWT: newJWTPayload,
             });
@@ -102,7 +102,7 @@ export default class Session {
                     message: "Session has probably been revoked while updating JWT payload",
                     type: STError.UNAUTHORISED,
                 },
-                this.recipeInstance.getRecipeId()
+                this.recipeInstance
             );
         }
         this.userDataInJWT = response.session.userDataInJWT;

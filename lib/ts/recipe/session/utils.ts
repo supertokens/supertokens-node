@@ -37,8 +37,9 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
+import RecipeModule from "../../recipeModule";
 
-export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: string): string {
+export function normaliseSessionScopeOrThrowError(recipe: RecipeModule | undefined, sessionScope: string): string {
     function helper(sessionScope: string): string {
         sessionScope = sessionScope.trim().toLowerCase();
 
@@ -67,7 +68,7 @@ export function normaliseSessionScopeOrThrowError(rId: string, sessionScope: str
                     type: STError.GENERAL_ERROR,
                     payload: new Error("Please provide a valid sessionScope"),
                 },
-                rId
+                recipe
             );
         }
     }
@@ -99,7 +100,7 @@ export function getTopLevelDomainForSameSiteResolution(url: string, recipeInstan
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Please make sure that the apiDomain and websiteDomain have correct values"),
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
     return parsedURL.domain;
@@ -110,11 +111,11 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "session recipe", recipeInstance.getRecipeId());
+    validateTheStructureOfUserInput(config, InputSchema, "session recipe", recipeInstance);
     let cookieDomain =
         config === undefined || config.cookieDomain === undefined
             ? undefined
-            : normaliseSessionScopeOrThrowError(recipeInstance.getRecipeId(), config.cookieDomain);
+            : normaliseSessionScopeOrThrowError(recipeInstance, config.cookieDomain);
 
     let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(
         appInfo.apiDomain.getAsStringDangerous(),
@@ -129,7 +130,7 @@ export function validateAndNormaliseUserInput(
     cookieSameSite =
         config === undefined || config.cookieSameSite === undefined
             ? cookieSameSite
-            : normaliseSameSiteOrThrowError(recipeInstance.getRecipeId(), config.cookieSameSite);
+            : normaliseSameSiteOrThrowError(recipeInstance, config.cookieSameSite);
 
     let cookieSecure =
         config === undefined || config.cookieSecure === undefined
@@ -197,7 +198,7 @@ export function validateAndNormaliseUserInput(
                     'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'
                 ),
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -214,14 +215,14 @@ export function validateAndNormaliseUserInput(
                     "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
                 ),
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
     return {
         refreshTokenPath: appInfo.apiBasePath.appendPath(
-            recipeInstance.getRecipeId(),
-            new NormalisedURLPath(recipeInstance.getRecipeId(), REFRESH_API_PATH)
+            recipeInstance,
+            new NormalisedURLPath(recipeInstance, REFRESH_API_PATH)
         ),
         cookieDomain,
         cookieSameSite,
@@ -233,7 +234,10 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-export function normaliseSameSiteOrThrowError(rId: string, sameSite: string): "strict" | "lax" | "none" {
+export function normaliseSameSiteOrThrowError(
+    recipe: RecipeModule | undefined,
+    sameSite: string
+): "strict" | "lax" | "none" {
     sameSite = sameSite.trim();
     sameSite = sameSite.toLocaleLowerCase();
     if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
@@ -242,7 +246,7 @@ export function normaliseSameSiteOrThrowError(rId: string, sameSite: string): "s
                 type: STError.GENERAL_ERROR,
                 payload: new Error('cookie same site must be one of "strict", "lax", or "none"'),
             },
-            rId
+            recipe
         );
     }
     return sameSite;

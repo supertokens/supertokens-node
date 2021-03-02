@@ -182,7 +182,7 @@ export default class Recipe extends RecipeModule {
                             "ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs."
                         ),
                     },
-                    Recipe.RECIPE_ID
+                    undefined
                 );
             }
         };
@@ -195,7 +195,7 @@ export default class Recipe extends RecipeModule {
                     type: STError.GENERAL_ERROR,
                     payload: new Error("calling testing function in non testing env"),
                 },
-                Recipe.RECIPE_ID
+                undefined
             );
         }
         Recipe.instance = undefined;
@@ -210,7 +210,7 @@ export default class Recipe extends RecipeModule {
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
             },
-            Recipe.RECIPE_ID
+            undefined
         );
     }
 
@@ -254,42 +254,13 @@ export default class Recipe extends RecipeModule {
         response: express.Response,
         next: express.NextFunction
     ): void => {
-        if (err.type === STErrorEmailPassword.EMAIL_ALREADY_EXISTS_ERROR) {
-            return this.handleError(
-                new STErrorEmailPassword(
-                    {
-                        type: STErrorEmailPassword.FIELD_ERROR,
-                        payload: [
-                            {
-                                id: "email",
-                                error: "This email already exists. Please sign in instead.",
-                            },
-                        ],
-                        message: "Error in input formFields",
-                    },
-                    this.getRecipeId()
-                ),
-                request,
-                response,
-                next
-            );
-        } else if (err.type === STErrorEmailPassword.WRONG_CREDENTIALS_ERROR) {
-            return send200Response(response, {
-                status: "WRONG_CREDENTIALS_ERROR",
-            });
-        } else if (err.type === STErrorEmailPassword.FIELD_ERROR) {
-            return send200Response(response, {
-                status: "FIELD_ERROR",
-                formFields: err.payload,
-            });
-        } else if (err.type === STErrorEmailPassword.RESET_PASSWORD_INVALID_TOKEN_ERROR) {
-            return send200Response(response, {
-                status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-            });
-        } else if (err.type === STErrorThirdParty.NO_EMAIL_GIVEN_BY_PROVIDER) {
-            return send200Response(response, {
-                status: "NO_EMAIL_GIVEN_BY_PROVIDER",
-            });
+        if (this.emailPasswordRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)) {
+            return this.emailPasswordRecipe.handleError(err, request, response, next);
+        } else if (
+            this.thirdPartyRecipe !== undefined &&
+            this.thirdPartyRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)
+        ) {
+            return this.thirdPartyRecipe.handleError(err, request, response, next);
         }
         return this.emailVerificationRecipe.handleError(err, request, response, next);
     };
@@ -303,6 +274,17 @@ export default class Recipe extends RecipeModule {
             corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
         }
         return corsHeaders;
+    };
+
+    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+        return (
+            STError.isErrorFromSuperTokens(err) &&
+            (this === err.recipe ||
+                this.emailVerificationRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err) ||
+                this.emailPasswordRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err) ||
+                (this.thirdPartyRecipe !== undefined &&
+                    this.thirdPartyRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)))
+        );
     };
 
     signUp = async (email: string, password: string): Promise<User> => {
@@ -327,7 +309,7 @@ export default class Recipe extends RecipeModule {
                     type: STError.GENERAL_ERROR,
                     payload: new Error("No thirdparty provider configured"),
                 },
-                this.getRecipeId()
+                this
             );
         }
         return this.thirdPartyRecipe.signInUp(thirdPartyId, thirdPartyUserId, email);
@@ -359,7 +341,7 @@ export default class Recipe extends RecipeModule {
                     type: STError.UNKNOWN_USER_ID_ERROR,
                     message: "Unknown User ID provided",
                 },
-                this.getRecipeId()
+                this
             );
         }
         return userInfo.email;

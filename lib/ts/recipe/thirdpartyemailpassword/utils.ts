@@ -43,12 +43,7 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(
-        config,
-        InputSchema,
-        "thirdpartyemailpassword recipe",
-        recipeInstance.getRecipeId()
-    );
+    validateTheStructureOfUserInput(config, InputSchema, "thirdpartyemailpassword recipe", recipeInstance);
 
     let sessionFeature = validateAndNormaliseSessionFeatureConfig(
         recipeInstance,
@@ -129,7 +124,9 @@ function validateAndNormaliseSignUpConfig(
             ? false
             : config.disableDefaultImplementation;
 
-    let formFields: NormalisedFormField[] = config === undefined ? [] : normaliseSignUpFormFields(config.formFields);
+    let formFields: NormalisedFormField[] = normaliseSignUpFormFields(
+        config === undefined ? undefined : config.formFields
+    );
     let handlePostSignUp =
         config === undefined || config.handlePostSignUp === undefined
             ? defaultHandlePostSignUp
@@ -207,7 +204,7 @@ function validateAndNormaliseEmailVerificationConfig(
                                         type: STError.UNKNOWN_USER_ID_ERROR,
                                         message: "User ID unknown",
                                     },
-                                    recipeInstance.getRecipeId()
+                                    recipeInstance
                                 );
                             }
                             return await config.createAndSendCustomEmail(userInfo, link);
@@ -223,7 +220,7 @@ function validateAndNormaliseEmailVerificationConfig(
                                         type: STError.UNKNOWN_USER_ID_ERROR,
                                         message: "User ID unknown",
                                     },
-                                    recipeInstance.getRecipeId()
+                                    recipeInstance
                                 );
                             }
                             return await config.getEmailVerificationURL(userInfo);
@@ -239,7 +236,7 @@ function validateAndNormaliseEmailVerificationConfig(
                                         type: STError.UNKNOWN_USER_ID_ERROR,
                                         message: "User ID unknown",
                                     },
-                                    recipeInstance.getRecipeId()
+                                    recipeInstance
                                 );
                             }
                             return await config.handlePostEmailVerification(userInfo);
@@ -287,7 +284,7 @@ export function extractPaginationTokens(
                 type: "INVALID_PAGINATION_TOKEN",
                 message: "nextPaginationToken is invalid",
             },
-            recipe.getRecipeId()
+            recipe
         );
     }
     return {

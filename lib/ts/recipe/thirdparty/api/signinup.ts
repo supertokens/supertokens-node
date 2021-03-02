@@ -34,7 +34,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: STError.BAD_INPUT_ERROR,
                 message: "Please provide the thirdPartyId in request body",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -44,7 +44,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: STError.BAD_INPUT_ERROR,
                 message: "Please provide the code in request body",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -54,7 +54,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: STError.BAD_INPUT_ERROR,
                 message: "Please provide the redirectURI in request body",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -68,7 +68,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                     thirdPartyId +
                     " seems to not be configured on the backend. Please check your frontend and backend configs.",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -92,7 +92,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: "GENERAL_ERROR",
                 payload: err,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -103,7 +103,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: "NO_EMAIL_GIVEN_BY_PROVIDER",
                 message: `Provider ${provider.id} returned no email info for the user.`,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
     let user = await recipeInstance.signInUp(provider.id, userInfo.id, emailInfo);
@@ -137,7 +137,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: STError.GENERAL_ERROR,
                 payload: err,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 

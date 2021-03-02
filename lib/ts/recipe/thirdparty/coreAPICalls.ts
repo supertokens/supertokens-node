@@ -28,7 +28,7 @@ export async function signInUp(
 ): Promise<{ createdNewUser: boolean; user: User }> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/signinup"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/signinup"), {
             thirdPartyId,
             thirdPartyUserId,
             email,
@@ -42,7 +42,7 @@ export async function signInUp(
 export async function getUserById(recipeInstance: Recipe, userId: string): Promise<User | undefined> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/user"), {
             userId,
         });
     if (response.status === "OK") {
@@ -61,7 +61,7 @@ export async function getUserByThirdPartyInfo(
 ): Promise<User | undefined> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/user"), {
             thirdPartyId,
             thirdPartyUserId,
         });
@@ -85,7 +85,7 @@ export async function getUsers(
 }> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/users"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/users"), {
             timeJoinedOrder,
             limit,
             paginationToken,
@@ -99,6 +99,6 @@ export async function getUsers(
 export async function getUsersCount(recipeInstance: Recipe): Promise<number> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/users/count"), {});
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/users/count"), {});
     return Number(response.count);
 }

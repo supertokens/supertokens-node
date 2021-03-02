@@ -40,17 +40,17 @@ export default class SuperTokens {
     recipeModules: RecipeModule[];
 
     constructor(config: TypeInput) {
-        validateTheStructureOfUserInput(config, InputSchema, "init function");
-        this.appInfo = normaliseInputAppInfoOrThrowError("", config.appInfo);
+        validateTheStructureOfUserInput(config, InputSchema, "init function", undefined);
+        this.appInfo = normaliseInputAppInfoOrThrowError(undefined, config.appInfo);
 
         Querier.init(
-            config.supertokens.connectionURI.split(";").map((h) => new NormalisedURLDomain("", h)),
+            config.supertokens.connectionURI.split(";").map((h) => new NormalisedURLDomain(undefined, h)),
             config.supertokens.apiKey
         );
 
         if (config.recipeList === undefined || config.recipeList.length === 0) {
             throw new SuperTokensError({
-                rId: "",
+                recipe: undefined,
                 type: "GENERAL_ERROR",
                 payload: new Error("Please provide at least one recipe to the supertokens.init function call"),
             });
@@ -59,6 +59,28 @@ export default class SuperTokens {
         this.recipeModules = config.recipeList.map((func) => {
             return func(this.appInfo);
         });
+
+        // check if duplicate APIs are exposed by any recipe by mistake
+        for (let i = 0; i < this.recipeModules.length; i++) {
+            let recipe = this.recipeModules[i];
+            let apisHandled = recipe.getAPIsHandled();
+            let stringifiedApisHandled: string[] = apisHandled
+                .map((api) => {
+                    if (api.disabled) {
+                        return "";
+                    }
+                    return api.method + ";" + api.pathWithoutApiBasePath.getAsStringDangerous();
+                })
+                .filter((i) => i !== "");
+            let findDuplicates = (arr: string[]) => arr.filter((item, index) => arr.indexOf(item) != index);
+            if (findDuplicates(stringifiedApisHandled).length !== 0) {
+                throw new STError({
+                    recipe,
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error("Duplicate APIs exposed from recipe. Please combine them into one API"),
+                });
+            }
+        }
 
         let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
 
@@ -69,8 +91,8 @@ export default class SuperTokens {
 
     sendTelemetry = async () => {
         try {
-            let querier = Querier.getInstanceOrThrowError("");
-            let response = await querier.sendGetRequest(new NormalisedURLPath("", "/telemetry"), {});
+            let querier = Querier.getInstanceOrThrowError(undefined);
+            let response = await querier.sendGetRequest(new NormalisedURLPath(undefined, "/telemetry"), {});
             let telemetryId: string | undefined;
             if (response.exists) {
                 telemetryId = response.telemetryId;
@@ -100,7 +122,7 @@ export default class SuperTokens {
         if (process.env.TEST_MODE !== "testing") {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                rId: "",
+                recipe: undefined,
                 payload: new Error("calling testing function in non testing env"),
             });
         }
@@ -114,7 +136,7 @@ export default class SuperTokens {
         }
         throw new STError({
             type: STError.GENERAL_ERROR,
-            rId: "",
+            recipe: undefined,
             payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
         });
     }
@@ -123,7 +145,10 @@ export default class SuperTokens {
 
     middleware = () => {
         return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
-            let path = new NormalisedURLPath("", request.originalUrl === undefined ? request.url : request.originalUrl);
+            let path = new NormalisedURLPath(
+                undefined,
+                request.originalUrl === undefined ? request.url : request.originalUrl
+            );
             let method: HTTPMethod = normaliseHttpMethod(request.method);
 
             // if the prefix of the URL doesn't match the base path, we skip
@@ -177,14 +202,14 @@ export default class SuperTokens {
         next: express.NextFunction
     ) => {
         try {
-            await assertThatBodyParserHasBeenUsed(matchedRecipe.getRecipeId(), request, response);
+            await assertThatBodyParserHasBeenUsed(matchedRecipe, request, response);
             return await matchedRecipe.handleAPIRequest(id, request, response, next);
         } catch (err) {
             if (!STError.isErrorFromSuperTokens(err)) {
                 err = new STError({
                     type: STError.GENERAL_ERROR,
                     payload: err,
-                    rId: matchedRecipe.getRecipeId(),
+                    recipe: matchedRecipe,
                 });
             }
             return next(err);
@@ -200,13 +225,12 @@ export default class SuperTokens {
                 }
 
                 if (err.type === STError.BAD_INPUT_ERROR) {
-                    return sendNon200Response(err.rId, response, err.message, 400);
+                    return sendNon200Response(err.recipe, response, err.message, 400);
                 }
 
                 // we loop through all the recipes and pass the error to the one that matches the rId
                 for (let i = 0; i < this.recipeModules.length; i++) {
-                    let rId = this.recipeModules[i].getRecipeId();
-                    if (rId === err.rId) {
+                    if (this.recipeModules[i].isErrorFromThisRecipeBasedOnRid(err)) {
                         try {
                             return this.recipeModules[i].handleError(err, request, response, next);
                         } catch (error) {

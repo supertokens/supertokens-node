@@ -47,7 +47,7 @@ export async function createNewSession(
     requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session"), requestBody);
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session"), requestBody);
     recipeInstance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
     delete response.status;
     delete response.jwtSigningPublicKey;
@@ -102,7 +102,7 @@ export async function getSession(
                                 "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false",
                             type: STError.TRY_REFRESH_TOKEN,
                         },
-                        recipeInstance.getRecipeId()
+                        recipeInstance
                     );
                 } else {
                     throw new STError(
@@ -110,7 +110,7 @@ export async function getSession(
                             message: "anti-csrf check failed",
                             type: STError.TRY_REFRESH_TOKEN,
                         },
-                        recipeInstance.getRecipeId()
+                        recipeInstance
                     );
                 }
             }
@@ -151,7 +151,7 @@ export async function getSession(
 
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/verify"), requestBody);
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
         recipeInstance.updateJwtSigningPublicKeyInfo(
             response.jwtSigningPublicKey,
@@ -167,7 +167,7 @@ export async function getSession(
                 message: response.message,
                 type: STError.UNAUTHORISED,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     } else {
         throw new STError(
@@ -175,7 +175,7 @@ export async function getSession(
                 message: response.message,
                 type: STError.TRY_REFRESH_TOKEN,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -204,7 +204,7 @@ export async function refreshSession(
 
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/refresh"), requestBody);
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/refresh"), requestBody);
     if (response.status === "OK") {
         delete response.status;
         return response;
@@ -214,7 +214,7 @@ export async function refreshSession(
                 message: response.message,
                 type: STError.UNAUTHORISED,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     } else {
         throw new STError(
@@ -226,7 +226,7 @@ export async function refreshSession(
                 },
                 type: STError.TOKEN_THEFT_DETECTED,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -239,7 +239,7 @@ export async function refreshSession(
 export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/remove"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/remove"), {
             userId,
         });
     return response.sessionHandlesRevoked;
@@ -252,7 +252,7 @@ export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, us
 export async function getAllSessionHandlesForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/user"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/user"), {
             userId,
         });
     return response.sessionHandles;
@@ -266,7 +266,7 @@ export async function getAllSessionHandlesForUser(recipeInstance: SessionRecipe,
 export async function revokeSession(recipeInstance: SessionRecipe, sessionHandle: string): Promise<boolean> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/remove"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/remove"), {
             sessionHandles: [sessionHandle],
         });
     return response.sessionHandlesRevoked.length === 1;
@@ -283,7 +283,7 @@ export async function revokeMultipleSessions(
 ): Promise<string[]> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/remove"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/remove"), {
             sessionHandles,
         });
     return response.sessionHandlesRevoked;
@@ -297,7 +297,7 @@ export async function revokeMultipleSessions(
 export async function getSessionData(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/data"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/data"), {
             sessionHandle,
         });
     if (response.status === "OK") {
@@ -308,7 +308,7 @@ export async function getSessionData(recipeInstance: SessionRecipe, sessionHandl
                 message: response.message,
                 type: STError.UNAUTHORISED,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -321,7 +321,7 @@ export async function updateSessionData(recipeInstance: SessionRecipe, sessionHa
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
     let response = await recipeInstance
         .getQuerier()
-        .sendPutRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/session/data"), {
+        .sendPutRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/data"), {
             sessionHandle,
             userDataInDatabase: newSessionData,
         });
@@ -331,7 +331,7 @@ export async function updateSessionData(recipeInstance: SessionRecipe, sessionHa
                 message: response.message,
                 type: STError.UNAUTHORISED,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -343,7 +343,7 @@ export async function updateSessionData(recipeInstance: SessionRecipe, sessionHa
 export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/jwt/data"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/jwt/data"), {
             sessionHandle,
         });
     if (response.status === "OK") {
@@ -354,7 +354,7 @@ export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle
                 message: response.message,
                 type: STError.UNAUTHORISED,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -366,7 +366,7 @@ export async function updateJWTPayload(recipeInstance: SessionRecipe, sessionHan
     newJWTPayload = newJWTPayload === null || newJWTPayload === undefined ? {} : newJWTPayload;
     let response = await recipeInstance
         .getQuerier()
-        .sendPutRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/jwt/data"), {
+        .sendPutRequest(new NormalisedURLPath(recipeInstance, "/recipe/jwt/data"), {
             sessionHandle,
             userDataInJWT: newJWTPayload,
         });
@@ -376,7 +376,7 @@ export async function updateJWTPayload(recipeInstance: SessionRecipe, sessionHan
                 message: response.message,
                 type: STError.UNAUTHORISED,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }

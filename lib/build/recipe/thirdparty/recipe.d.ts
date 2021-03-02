@@ -17,6 +17,7 @@ export default class Recipe extends RecipeModule {
     handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
+    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
     getUserById: (userId: string) => Promise<User | undefined>;
     getUserByThirdPartyInfo: (thirdPartyId: string, thirdPartyUserId: string) => Promise<User | undefined>;
     getEmailForUserId: (userId: string) => Promise<string>;

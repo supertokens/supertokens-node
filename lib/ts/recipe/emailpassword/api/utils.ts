@@ -78,7 +78,7 @@ function newBadRequestError(recipeInstance: Recipe, message: string) {
             type: STError.BAD_INPUT_ERROR,
             message,
         },
-        recipeInstance.getRecipeId()
+        recipeInstance
     );
 }
 
@@ -131,7 +131,7 @@ async function validateFormOrThrowError(
                 payload: validationErrors,
                 message: "Error in input formFields",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }

@@ -21,7 +21,7 @@ import STError from "./error";
 export async function signUp(recipeInstance: Recipe, email: string, password: string): Promise<User> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/signup"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/signup"), {
             email,
             password,
         });
@@ -35,7 +35,7 @@ export async function signUp(recipeInstance: Recipe, email: string, password: st
                 message: "Sign up failed because the email, " + email + ", is already taken",
                 type: STError.EMAIL_ALREADY_EXISTS_ERROR,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -43,7 +43,7 @@ export async function signUp(recipeInstance: Recipe, email: string, password: st
 export async function signIn(recipeInstance: Recipe, email: string, password: string): Promise<User> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/signin"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/signin"), {
             email,
             password,
         });
@@ -57,7 +57,7 @@ export async function signIn(recipeInstance: Recipe, email: string, password: st
                 message: "Sign in failed because of incorrect email & password combination",
                 type: STError.WRONG_CREDENTIALS_ERROR,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -65,7 +65,7 @@ export async function signIn(recipeInstance: Recipe, email: string, password: st
 export async function getUserById(recipeInstance: Recipe, userId: string): Promise<User | undefined> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/user"), {
             userId,
         });
     if (response.status === "OK") {
@@ -80,7 +80,7 @@ export async function getUserById(recipeInstance: Recipe, userId: string): Promi
 export async function getUserByEmail(recipeInstance: Recipe, email: string): Promise<User | undefined> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/user"), {
             email,
         });
     if (response.status === "OK") {
@@ -95,7 +95,7 @@ export async function getUserByEmail(recipeInstance: Recipe, email: string): Pro
 export async function createResetPasswordToken(recipeInstance: Recipe, userId: string): Promise<string> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/password/reset/token"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/user/password/reset/token"), {
             userId,
         });
     if (response.status === "OK") {
@@ -106,7 +106,7 @@ export async function createResetPasswordToken(recipeInstance: Recipe, userId: s
                 type: STError.UNKNOWN_USER_ID_ERROR,
                 message: "Failed to generated password reset token as the user ID is unknown",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -114,7 +114,7 @@ export async function createResetPasswordToken(recipeInstance: Recipe, userId: s
 export async function resetPasswordUsingToken(recipeInstance: Recipe, token: string, newPassword: string) {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/user/password/reset"), {
+        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/user/password/reset"), {
             method: "token",
             token,
             newPassword,
@@ -125,7 +125,7 @@ export async function resetPasswordUsingToken(recipeInstance: Recipe, token: str
                 type: STError.RESET_PASSWORD_INVALID_TOKEN_ERROR,
                 message: "Failed to reset password as the the token has expired or is invalid",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }
@@ -141,7 +141,7 @@ export async function getUsers(
 }> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/users"), {
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/users"), {
             timeJoinedOrder,
             limit,
             paginationToken,
@@ -155,6 +155,6 @@ export async function getUsers(
 export async function getUsersCount(recipeInstance: Recipe): Promise<number> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance.getRecipeId(), "/recipe/users/count"), {});
+        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/users/count"), {});
     return Number(response.count);
 }

@@ -4,6 +4,7 @@ import EmailVerificationRecipe from "../emailverification/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import * as express from "express";
+import STError from "./error";
 import { TypeInput, TypeNormalisedInput, User } from "./types";
 import STErrorEmailPassword from "../emailpassword/error";
 import STErrorThirdParty from "../thirdparty/error";
@@ -22,6 +23,7 @@ export default class Recipe extends RecipeModule {
     handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
     handleError: (err: STErrorEmailPassword | STErrorThirdParty, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
+    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
     signUp: (email: string, password: string) => Promise<User>;
     signIn: (email: string, password: string) => Promise<User>;
     signInUp: (thirdPartyId: string, thirdPartyUserId: string, email: {

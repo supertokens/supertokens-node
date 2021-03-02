@@ -30,7 +30,7 @@ export default async function emailExists(recipeInstance: Recipe, req: Request, 
                 type: STError.BAD_INPUT_ERROR,
                 message: "Please provide the email as a GET param",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 

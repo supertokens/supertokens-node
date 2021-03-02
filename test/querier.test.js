@@ -18,6 +18,7 @@ let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let Session = require("../recipe/session");
+let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 let nock = require("nock");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 let EmailPassword = require("../recipe/emailpassword");
@@ -58,7 +59,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             await Session.getAllSessionHandlesForUser();
             assert(false);
         } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR || err.rId !== "session") {
+            if (err.type !== ST.Error.GENERAL_ERROR || err.recipe.getRecipeId() !== "session") {
                 throw err;
             }
         }
@@ -67,7 +68,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             await EmailPassword.getUserByEmail();
             assert(false);
         } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR || err.rId !== "emailpassword") {
+            if (err.type !== ST.Error.GENERAL_ERROR || err.recipe.getRecipeId() !== "emailpassword") {
                 throw err;
             }
         }
@@ -129,7 +130,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
 
-        let querier = Querier.getInstanceOrThrowError("test");
+        let querier = Querier.getInstanceOrThrowError(SessionRecipe.getInstanceOrThrowError());
 
         nock("http://localhost:8080", {
             allowUnmocked: true,
@@ -140,7 +141,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             });
 
         let response = await querier.sendGetRequest(new NormalisedURLPath("", "/recipe"), {});
-        assert(response.rid === "test");
+        assert(response.rid === "session");
 
         nock("http://localhost:8080", {
             allowUnmocked: true,
@@ -151,7 +152,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             });
 
         let response2 = await querier.sendGetRequest(new NormalisedURLPath("", "/recipe/random"), {});
-        assert(response2.rid === "test");
+        assert(response2.rid === "session");
 
         nock("http://localhost:8080", {
             allowUnmocked: true,
