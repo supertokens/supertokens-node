@@ -33,10 +33,18 @@ export class Querier {
 
     private __hosts: NormalisedURLDomain[];
     private recipe: RecipeModule | undefined;
+    private rIdToCore: string | undefined;
 
-    private constructor(hosts: NormalisedURLDomain[], recipe: RecipeModule | undefined) {
+    // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
+    // to support multiple rIds per API
+    private constructor(hosts: NormalisedURLDomain[], recipe: RecipeModule | undefined, rIdToCore?: string) {
         this.__hosts = hosts;
         this.recipe = recipe;
+        if (rIdToCore !== undefined) {
+            this.rIdToCore = rIdToCore;
+        } else if (this.recipe !== undefined) {
+            this.rIdToCore = this.recipe.getRecipeId();
+        }
     }
 
     getAPIVersion = async (): Promise<string> => {
@@ -97,7 +105,7 @@ export class Querier {
         return Querier.hostsAliveForTesting;
     };
 
-    static getInstanceOrThrowError(recipe: RecipeModule | undefined): Querier {
+    static getInstanceOrThrowError(recipe: RecipeModule | undefined, rIdToCore?: string): Querier {
         if (!Querier.initCalled || Querier.hosts === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
@@ -105,7 +113,7 @@ export class Querier {
                 payload: new Error("Please call the supertokens.init function before using SuperTokens"),
             });
         }
-        return new Querier(Querier.hosts, recipe);
+        return new Querier(Querier.hosts, recipe, rIdToCore);
     }
 
     static init(hosts: NormalisedURLDomain[], apiKey?: string) {
@@ -133,10 +141,10 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                if (path.isARecipePath() && this.recipe !== undefined) {
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
                     headers = {
                         ...headers,
-                        rid: this.recipe.getRecipeId(),
+                        rid: this.rIdToCore,
                     };
                 }
                 return await axios({
@@ -164,10 +172,10 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                if (path.isARecipePath() && this.recipe !== undefined) {
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
                     headers = {
                         ...headers,
-                        rid: this.recipe.getRecipeId(),
+                        rid: this.rIdToCore,
                     };
                 }
                 return await axios({
@@ -195,10 +203,10 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                if (path.isARecipePath() && this.recipe !== undefined) {
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
                     headers = {
                         ...headers,
-                        rid: this.recipe.getRecipeId(),
+                        rid: this.rIdToCore,
                     };
                 }
                 return await axios.get(url, {
@@ -224,10 +232,10 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                if (path.isARecipePath() && this.recipe !== undefined) {
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
                     headers = {
                         ...headers,
-                        rid: this.recipe.getRecipeId(),
+                        rid: this.rIdToCore,
                     };
                 }
                 return await axios({
