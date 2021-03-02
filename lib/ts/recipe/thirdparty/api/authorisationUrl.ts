@@ -35,7 +35,7 @@ export default async function authorisationUrlAPI(
                 type: STError.BAD_INPUT_ERROR,
                 message: "Please provide the thirdPartyId as a GET param",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -49,7 +49,7 @@ export default async function authorisationUrlAPI(
                     thirdPartyId +
                     " seems to not be configured on the backend. Please check your frontend and backend configs.",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -62,7 +62,7 @@ export default async function authorisationUrlAPI(
                 type: "GENERAL_ERROR",
                 payload: err,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 

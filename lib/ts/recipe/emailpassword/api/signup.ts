@@ -19,6 +19,7 @@ import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
 import Session from "../../session";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
+import STError from "../error";
 
 export default async function signUpAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
@@ -45,8 +46,34 @@ export default async function signUpAPI(recipeInstance: Recipe, req: Request, re
         formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID)
     );
 
+    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(
+        user,
+        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
+        "signup"
+    );
+    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(
+        user,
+        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
+        "signup"
+    );
+
+    let jwtPayload: { [key: string]: any } | undefined = undefined;
+    let sessionData: { [key: string]: any } | undefined = undefined;
+    try {
+        jwtPayload = await jwtPayloadPromise;
+        sessionData = await sessionDataPromise;
+    } catch (err) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            },
+            recipeInstance
+        );
+    }
+
     // step 4
-    await Session.createNewSession(res, user.id);
+    await Session.createNewSession(res, user.id, jwtPayload, sessionData);
     return send200Response(res, {
         status: "OK",
         user,

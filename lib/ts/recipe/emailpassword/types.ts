@@ -27,7 +27,39 @@ const TypeAny = {
     type: "any",
 };
 
+export type TypeInputSetJwtPayloadForSession = (
+    user: User,
+    formFields: TypeFormField[],
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any } | undefined>;
+
+export type TypeInputSetSessionDataForSession = (
+    user: User,
+    formFields: TypeFormField[],
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any } | undefined>;
+
+export type TypeInputSessionFeature = {
+    setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    setSessionData?: TypeInputSetSessionDataForSession;
+};
+
+const InputSessionFeatureSchema = {
+    type: "object",
+    properties: {
+        setJwtPayload: TypeAny,
+        setSessionData: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export type TypeNormalisedInputSessionFeature = {
+    setJwtPayload: TypeInputSetJwtPayloadForSession;
+    setSessionData: TypeInputSetSessionDataForSession;
+};
+
 export type TypeNormalisedInput = {
+    sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -53,14 +85,18 @@ export type TypeInputEmailVerificationFeature = {
     handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 
+export type TypeInputFormField = {
+    id: string;
+    validate?: (value: any) => Promise<string | undefined>;
+    optional?: boolean;
+};
+
+export type TypeFormField = { id: string; value: any };
+
 export type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
-    formFields?: {
-        id: string;
-        validate?: (value: any) => Promise<string | undefined>;
-        optional?: boolean;
-    }[];
-    handleCustomFormFieldsPostSignUp?: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
+    formFields?: TypeInputFormField[];
+    handleCustomFormFieldsPostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 
 const InputSignUpSchema = {
@@ -94,7 +130,7 @@ export type NormalisedFormField = {
 export type TypeNormalisedInputSignUp = {
     disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
-    handleCustomFormFieldsPostSignUp: (user: User, formFields: { id: string; value: any }[]) => Promise<void>;
+    handleCustomFormFieldsPostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 
 export type TypeInputSignIn = {
@@ -136,7 +172,7 @@ export type TypeInputResetPasswordUsingTokenFeature = {
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string) => Promise<void>;
 };
 
-const InputResetPasswordUsingTokenFeatureSchema = {
+export const InputResetPasswordUsingTokenFeatureSchema = {
     type: "object",
     properties: {
         disableDefaultImplementation: TypeBoolean,
@@ -168,6 +204,7 @@ export type User = {
 };
 
 export type TypeInput = {
+    sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
@@ -178,6 +215,7 @@ export type TypeInput = {
 export const InputSchema = {
     type: "object",
     properties: {
+        sessionFeature: InputSessionFeatureSchema,
         signUpFeature: InputSignUpSchema,
         signInFeature: InputSignInSchema,
         resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,

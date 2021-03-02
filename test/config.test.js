@@ -597,14 +597,14 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             normaliseURLDomainOrThrowError("", "/one/two");
             assert(false);
         } catch (err) {
-            assert(err.message === "Please provide a valid domain name" && err.rId === "");
+            assert(err.message === "Please provide a valid domain name");
         }
 
         try {
             normaliseURLDomainOrThrowError("", "");
             assert(false);
         } catch (err) {
-            assert(err.message === "Please provide a valid domain name" && err.rId === "");
+            assert(err.message === "Please provide a valid domain name");
         }
     });
 

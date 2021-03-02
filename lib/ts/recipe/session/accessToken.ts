@@ -74,7 +74,7 @@ export async function getInfoFromAccessToken(
                 message: "Failed to verify access token",
                 type: STError.TRY_REFRESH_TOKEN,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }

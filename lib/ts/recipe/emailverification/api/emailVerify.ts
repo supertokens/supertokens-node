@@ -31,7 +31,7 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
                     type: STError.BAD_INPUT_ERROR,
                     message: "Please provide the email verification token",
                 },
-                recipeInstance.getRecipeId()
+                recipeInstance
             );
         }
         if (typeof token !== "string") {
@@ -40,7 +40,7 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
                     type: STError.BAD_INPUT_ERROR,
                     message: "The email verification token must be a string",
                 },
-                recipeInstance.getRecipeId()
+                recipeInstance
             );
         }
 
@@ -63,7 +63,7 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
                 if (err !== undefined) {
                     reject(err);
                 } else {
-                    resolve();
+                    resolve(undefined);
                 }
             })
         );

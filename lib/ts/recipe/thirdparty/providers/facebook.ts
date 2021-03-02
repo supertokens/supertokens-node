@@ -48,7 +48,7 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
         config,
         InputSchemaTypeThirdPartyProviderFacebookConfig,
         "thirdparty recipe, provider facebook",
-        Recipe.RECIPE_ID
+        undefined
     );
     const id = "facebook";
 

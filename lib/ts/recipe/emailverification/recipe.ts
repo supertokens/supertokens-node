@@ -14,8 +14,8 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, User } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
+import { TypeInput, TypeNormalisedInput } from "./types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -50,7 +50,7 @@ export default class Recipe extends RecipeModule {
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
             },
-            Recipe.RECIPE_ID
+            undefined
         );
     }
 
@@ -67,7 +67,7 @@ export default class Recipe extends RecipeModule {
                             "Emailverification recipe has already been initialised. Please check your code for bugs."
                         ),
                     },
-                    Recipe.RECIPE_ID
+                    undefined
                 );
             }
         };
@@ -80,7 +80,7 @@ export default class Recipe extends RecipeModule {
                     type: STError.GENERAL_ERROR,
                     payload: new Error("calling testing function in non testing env"),
                 },
-                Recipe.RECIPE_ID
+                undefined
             );
         }
         Recipe.instance = undefined;
@@ -92,26 +92,33 @@ export default class Recipe extends RecipeModule {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), GENERATE_EMAIL_VERIFY_TOKEN_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, GENERATE_EMAIL_VERIFY_TOKEN_API),
                 id: GENERATE_EMAIL_VERIFY_TOKEN_API,
                 disabled: this.config.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), EMAIL_VERIFY_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, EMAIL_VERIFY_API),
                 id: EMAIL_VERIFY_API,
                 disabled: this.config.disableDefaultImplementation,
             },
             {
                 method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), EMAIL_VERIFY_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, EMAIL_VERIFY_API),
                 id: EMAIL_VERIFY_API,
                 disabled: this.config.disableDefaultImplementation,
             },
         ];
     };
 
-    handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    handleAPIRequest = async (
+        id: string,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => {
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
             return await generateEmailVerifyTokenAPI(this, req, res, next);
         } else {
@@ -140,6 +147,10 @@ export default class Recipe extends RecipeModule {
 
     getAllCORSHeaders = (): string[] => {
         return [];
+    };
+
+    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+        return STError.isErrorFromSuperTokens(err) && this === err.recipe;
     };
 
     // instance functions below...............

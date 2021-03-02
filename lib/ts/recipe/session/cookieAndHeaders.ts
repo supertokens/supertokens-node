@@ -163,7 +163,7 @@ function setHeader(
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Error while setting header with key: " + key + " and value: " + value),
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 }

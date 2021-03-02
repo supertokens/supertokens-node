@@ -1,3 +1,4 @@
+import RecipeModule from "./recipeModule";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -21,24 +22,24 @@ export default class SuperTokensError {
     public type: string;
     public message: string;
     public payload: any;
-    public rId: string;
+    public recipe: RecipeModule | undefined;
     private errMagic = SuperTokensError.errMagic;
 
     constructor(
         options:
             | {
-                  rId: string;
+                  recipe: RecipeModule | undefined;
                   message: string;
                   payload?: any;
                   type: string;
               }
             | {
-                  rId: string;
+                  recipe: RecipeModule | undefined;
                   payload: Error;
                   type: "GENERAL_ERROR";
               }
             | {
-                  rId: string;
+                  recipe: RecipeModule | undefined;
                   message: string;
                   type: "BAD_INPUT_ERROR";
                   payload: undefined;
@@ -47,8 +48,12 @@ export default class SuperTokensError {
         this.type = options.type;
         this.message = options.type === "GENERAL_ERROR" ? options.payload.message : (options as any).message;
         this.payload = options.payload;
-        this.rId = options.rId;
+        this.recipe = options.recipe;
     }
+
+    getRecipeId = () => {
+        return this.recipe === undefined ? "" : this.recipe.getRecipeId();
+    };
 
     static isErrorFromSuperTokens(obj: any): obj is SuperTokensError {
         return obj.errMagic === SuperTokensError.errMagic;

@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, User } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -55,8 +55,8 @@ export default class Recipe extends RecipeModule {
 
     emailVerificationRecipe: EmailVerificationRecipe;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput, rIdToCore?: string) {
+        super(recipeId, appInfo, rIdToCore);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,
@@ -73,7 +73,7 @@ export default class Recipe extends RecipeModule {
                     type: STError.UNKNOWN_USER_ID_ERROR,
                     message: "Unknown User ID provided",
                 },
-                this.getRecipeId()
+                this
             );
         }
         return userInfo.email;
@@ -88,7 +88,7 @@ export default class Recipe extends RecipeModule {
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
             },
-            Recipe.RECIPE_ID
+            undefined
         );
     }
 
@@ -105,7 +105,7 @@ export default class Recipe extends RecipeModule {
                             "Emailpassword recipe has already been initialised. Please check your code for bugs."
                         ),
                     },
-                    Recipe.RECIPE_ID
+                    undefined
                 );
             }
         };
@@ -118,7 +118,7 @@ export default class Recipe extends RecipeModule {
                     type: STError.GENERAL_ERROR,
                     payload: new Error("calling testing function in non testing env"),
                 },
-                Recipe.RECIPE_ID
+                undefined
             );
         }
         Recipe.instance = undefined;
@@ -130,37 +130,37 @@ export default class Recipe extends RecipeModule {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_UP_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_UP_API),
                 id: SIGN_UP_API,
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_IN_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_IN_API),
                 id: SIGN_IN_API,
                 disabled: this.config.signInFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), GENERATE_PASSWORD_RESET_TOKEN_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, GENERATE_PASSWORD_RESET_TOKEN_API),
                 id: GENERATE_PASSWORD_RESET_TOKEN_API,
                 disabled: this.config.resetPasswordUsingTokenFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), PASSWORD_RESET_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, PASSWORD_RESET_API),
                 id: PASSWORD_RESET_API,
                 disabled: this.config.resetPasswordUsingTokenFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGN_OUT_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_OUT_API),
                 id: SIGN_OUT_API,
                 disabled: this.config.signOutFeature.disableDefaultImplementation,
             },
             {
                 method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), SIGNUP_EMAIL_EXISTS_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGNUP_EMAIL_EXISTS_API),
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
@@ -168,7 +168,14 @@ export default class Recipe extends RecipeModule {
         ];
     };
 
-    handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    handleAPIRequest = async (
+        id: string,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => {
         if (id === SIGN_UP_API) {
             return await signUpAPI(this, req, res, next);
         } else if (id === SIGN_IN_API) {
@@ -182,7 +189,7 @@ export default class Recipe extends RecipeModule {
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this, req, res, next);
         } else {
-            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
+            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
         }
     };
 
@@ -206,7 +213,7 @@ export default class Recipe extends RecipeModule {
                         ],
                         message: "Error in input formFields",
                     },
-                    this.getRecipeId()
+                    this
                 ),
                 request,
                 response,
@@ -232,6 +239,13 @@ export default class Recipe extends RecipeModule {
 
     getAllCORSHeaders = (): string[] => {
         return [...this.emailVerificationRecipe.getAllCORSHeaders()];
+    };
+
+    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+        return (
+            STError.isErrorFromSuperTokens(err) &&
+            (this === err.recipe || this.emailVerificationRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err))
+        );
     };
 
     // instance functions below...............

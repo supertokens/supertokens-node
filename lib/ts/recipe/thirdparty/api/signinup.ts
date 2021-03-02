@@ -34,7 +34,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: STError.BAD_INPUT_ERROR,
                 message: "Please provide the thirdPartyId in request body",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -44,7 +44,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: STError.BAD_INPUT_ERROR,
                 message: "Please provide the code in request body",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -54,7 +54,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: STError.BAD_INPUT_ERROR,
                 message: "Please provide the redirectURI in request body",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -68,7 +68,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                     thirdPartyId +
                     " seems to not be configured on the backend. Please check your frontend and backend configs.",
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -92,7 +92,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: "GENERAL_ERROR",
                 payload: err,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
 
@@ -103,14 +103,45 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
                 type: "NO_EMAIL_GIVEN_BY_PROVIDER",
                 message: `Provider ${provider.id} returned no email info for the user.`,
             },
-            recipeInstance.getRecipeId()
+            recipeInstance
         );
     }
     let user = await recipeInstance.signInUp(provider.id, userInfo.id, emailInfo);
 
-    await recipeInstance.config.signInAndUpFeature.handlePostSignUpIn(user.user, accessTokenAPIResponse.data);
+    await recipeInstance.config.signInAndUpFeature.handlePostSignUpIn(
+        user.user,
+        accessTokenAPIResponse.data,
+        user.createdNewUser
+    );
 
-    await Session.createNewSession(res, user.user.id);
+    let action: "signup" | "signin" = user.createdNewUser ? "signup" : "signin";
+    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(
+        user.user,
+        accessTokenAPIResponse.data,
+        action
+    );
+    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(
+        user.user,
+        accessTokenAPIResponse.data,
+        action
+    );
+
+    let jwtPayload: { [key: string]: any } | undefined = undefined;
+    let sessionData: { [key: string]: any } | undefined = undefined;
+    try {
+        jwtPayload = await jwtPayloadPromise;
+        sessionData = await sessionDataPromise;
+    } catch (err) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            },
+            recipeInstance
+        );
+    }
+
+    await Session.createNewSession(res, user.user.id, jwtPayload, sessionData);
     return send200Response(res, {
         status: "OK",
         ...user,

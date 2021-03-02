@@ -1,5 +1,20 @@
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+export declare type TypeInputSetJwtPayloadForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
+    [key: string]: any;
+} | undefined>;
+export declare type TypeInputSetSessionDataForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
+    [key: string]: any;
+} | undefined>;
+export declare type TypeInputSessionFeature = {
+    setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    setSessionData?: TypeInputSetSessionDataForSession;
+};
+export declare type TypeNormalisedInputSessionFeature = {
+    setJwtPayload: TypeInputSetJwtPayloadForSession;
+    setSessionData: TypeInputSetSessionDataForSession;
+};
 export declare type TypeNormalisedInput = {
+    sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -12,17 +27,19 @@ export declare type TypeInputEmailVerificationFeature = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
 };
+export declare type TypeInputFormField = {
+    id: string;
+    validate?: (value: any) => Promise<string | undefined>;
+    optional?: boolean;
+};
+export declare type TypeFormField = {
+    id: string;
+    value: any;
+};
 export declare type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
-    formFields?: {
-        id: string;
-        validate?: (value: any) => Promise<string | undefined>;
-        optional?: boolean;
-    }[];
-    handleCustomFormFieldsPostSignUp?: (user: User, formFields: {
-        id: string;
-        value: any;
-    }[]) => Promise<void>;
+    formFields?: TypeInputFormField[];
+    handleCustomFormFieldsPostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 export declare type NormalisedFormField = {
     id: string;
@@ -32,10 +49,7 @@ export declare type NormalisedFormField = {
 export declare type TypeNormalisedInputSignUp = {
     disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
-    handleCustomFormFieldsPostSignUp: (user: User, formFields: {
-        id: string;
-        value: any;
-    }[]) => Promise<void>;
+    handleCustomFormFieldsPostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 export declare type TypeInputSignIn = {
     disableDefaultImplementation?: boolean;
@@ -54,6 +68,21 @@ export declare type TypeInputResetPasswordUsingTokenFeature = {
     disableDefaultImplementation?: boolean;
     getResetPasswordURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string) => Promise<void>;
+};
+export declare const InputResetPasswordUsingTokenFeatureSchema: {
+    type: string;
+    properties: {
+        disableDefaultImplementation: {
+            type: string;
+        };
+        getResetPasswordURL: {
+            type: string;
+        };
+        createAndSendCustomEmail: {
+            type: string;
+        };
+    };
+    additionalProperties: boolean;
 };
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     disableDefaultImplementation: boolean;
@@ -74,6 +103,7 @@ export declare type User = {
     timeJoined: number;
 };
 export declare type TypeInput = {
+    sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
@@ -83,6 +113,18 @@ export declare type TypeInput = {
 export declare const InputSchema: {
     type: string;
     properties: {
+        sessionFeature: {
+            type: string;
+            properties: {
+                setJwtPayload: {
+                    type: string;
+                };
+                setSessionData: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
         signUpFeature: {
             type: string;
             properties: {

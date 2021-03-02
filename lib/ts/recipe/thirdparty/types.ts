@@ -54,6 +54,37 @@ export type User = {
     };
 };
 
+export type TypeInputSetJwtPayloadForSession = (
+    user: User,
+    thirdPartyAuthCodeResponse: any,
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any } | undefined>;
+
+export type TypeInputSetSessionDataForSession = (
+    user: User,
+    thirdPartyAuthCodeResponse: any,
+    action: "signin" | "signup"
+) => Promise<{ [key: string]: any } | undefined>;
+
+export type TypeInputSessionFeature = {
+    setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    setSessionData?: TypeInputSetSessionDataForSession;
+};
+
+const InputSessionFeatureSchema = {
+    type: "object",
+    properties: {
+        setJwtPayload: TypeAny,
+        setSessionData: TypeAny,
+    },
+    additionalProperties: false,
+};
+
+export type TypeNormalisedInputSessionFeature = {
+    setJwtPayload: TypeInputSetJwtPayloadForSession;
+    setSessionData: TypeInputSetSessionDataForSession;
+};
+
 export type TypeInputEmailVerificationFeature = {
     disableDefaultImplementation?: boolean;
     getEmailVerificationURL?: (user: User) => Promise<string>;
@@ -72,16 +103,9 @@ const InputEmailVerificationFeatureSchema = {
     additionalProperties: false,
 };
 
-export type TypeNormalisedInputEmailVerificationFeature = {
-    disableDefaultImplementation: boolean;
-    getEmailVerificationURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification: (user: User) => Promise<void>;
-};
-
 export type TypeInputSignInAndUp = {
     disableDefaultImplementation?: boolean;
-    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
+    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 
@@ -100,7 +124,7 @@ const InputSignInAndUpSchema = {
 
 export type TypeNormalisedInputSignInAndUp = {
     disableDefaultImplementation: boolean;
-    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any) => Promise<void>;
+    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 
@@ -121,6 +145,7 @@ export type TypeNormalisedInputSignOutFeature = {
 };
 
 export type TypeInput = {
+    sessionFeature?: TypeInputSessionFeature;
     signInAndUpFeature: TypeInputSignInAndUp;
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
@@ -129,6 +154,7 @@ export type TypeInput = {
 export const InputSchema = {
     type: "object",
     properties: {
+        sessionFeature: InputSessionFeatureSchema,
         signInAndUpFeature: InputSignInAndUpSchema,
         signOutFeature: InputSignOutSchema,
         emailVerificationFeature: InputEmailVerificationFeatureSchema,
@@ -138,6 +164,7 @@ export const InputSchema = {
 };
 
 export type TypeNormalisedInput = {
+    sessionFeature: TypeNormalisedInputSessionFeature;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;

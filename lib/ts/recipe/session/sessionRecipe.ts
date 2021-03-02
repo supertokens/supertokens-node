@@ -31,11 +31,11 @@ import {
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
     setFrontTokenInHeaders,
 } from "./cookieAndHeaders";
-import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
+import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import { handleRefreshAPI } from "./api";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { maxVersion, normaliseHttpMethod } from "../../utils";
+import { normaliseHttpMethod } from "../../utils";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 
 // For Express
@@ -66,7 +66,7 @@ export default class SessionRecipe extends RecipeModule {
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
             },
-            SessionRecipe.RECIPE_ID
+            undefined
         );
     }
 
@@ -83,7 +83,7 @@ export default class SessionRecipe extends RecipeModule {
                             "Session recipe has already been initialised. Please check your code for bugs."
                         ),
                     },
-                    SessionRecipe.RECIPE_ID
+                    undefined
                 );
             }
         };
@@ -96,7 +96,7 @@ export default class SessionRecipe extends RecipeModule {
                     type: STError.GENERAL_ERROR,
                     payload: new Error("calling testing function in non testing env"),
                 },
-                SessionRecipe.RECIPE_ID
+                undefined
             );
         }
         SessionRecipe.instance = undefined;
@@ -108,14 +108,21 @@ export default class SessionRecipe extends RecipeModule {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), REFRESH_API_PATH),
+                pathWithoutApiBasePath: new NormalisedURLPath(this, REFRESH_API_PATH),
                 id: "REFRESH",
                 disabled: this.config.sessionRefreshFeature.disableDefaultImplementation,
             },
         ];
     };
 
-    handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    handleAPIRequest = async (
+        id: string,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => {
         await handleRefreshAPI(this, req, res, next);
     };
 
@@ -141,13 +148,17 @@ export default class SessionRecipe extends RecipeModule {
         return getCORSAllowedHeadersFromCookiesAndHeaders();
     };
 
+    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+        return STError.isErrorFromSuperTokens(err) && this === err.recipe;
+    };
+
     // instance functions below...............
 
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined) {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.getQuerier().sendPostRequest(
-                new NormalisedURLPath(this.getRecipeId(), "/recipe/handshake"),
+                new NormalisedURLPath(this, "/recipe/handshake"),
                 {}
             );
             let enableAntiCsrf = this.config.enableAntiCsrf;
@@ -199,7 +210,7 @@ export default class SessionRecipe extends RecipeModule {
                     message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
                     type: STError.UNAUTHORISED,
                 },
-                this.getRecipeId()
+                this
             );
         }
         let accessToken = getAccessTokenFromCookie(req);
@@ -210,7 +221,7 @@ export default class SessionRecipe extends RecipeModule {
                     message: "Access token has expired. Please call the refresh API",
                     type: STError.TRY_REFRESH_TOKEN,
                 },
-                this.getRecipeId()
+                this
             );
         }
         try {
@@ -259,7 +270,7 @@ export default class SessionRecipe extends RecipeModule {
                     message: "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
                     type: STError.UNAUTHORISED,
                 },
-                this.getRecipeId()
+                this
             );
         }
 

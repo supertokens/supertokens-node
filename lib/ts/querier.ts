@@ -20,6 +20,7 @@ import STError from "./error";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
+import RecipeModule from "./recipeModule";
 
 export class Querier {
     private static initCalled = false;
@@ -31,11 +32,19 @@ export class Querier {
     private static hostsAliveForTesting: Set<string> = new Set<string>();
 
     private __hosts: NormalisedURLDomain[];
-    private rId: string;
+    private recipe: RecipeModule | undefined;
+    private rIdToCore: string | undefined;
 
-    private constructor(hosts: NormalisedURLDomain[], rId: string) {
+    // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
+    // to support multiple rIds per API
+    private constructor(hosts: NormalisedURLDomain[], recipe: RecipeModule | undefined, rIdToCore?: string) {
         this.__hosts = hosts;
-        this.rId = rId;
+        this.recipe = recipe;
+        if (rIdToCore !== undefined) {
+            this.rIdToCore = rIdToCore;
+        } else if (this.recipe !== undefined) {
+            this.rIdToCore = this.recipe.getRecipeId();
+        }
     }
 
     getAPIVersion = async (): Promise<string> => {
@@ -44,7 +53,7 @@ export class Querier {
         }
         ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
         let response = await this.sendRequestHelper(
-            new NormalisedURLPath(this.rId, "/apiversion"),
+            new NormalisedURLPath(this.recipe, "/apiversion"),
             "GET",
             (url: string) => {
                 let headers: any = {};
@@ -64,7 +73,7 @@ export class Querier {
         if (supportedVersion === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                rId: this.rId,
+                recipe: this.recipe,
                 payload: new Error(
                     "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions"
                 ),
@@ -78,7 +87,7 @@ export class Querier {
         if (process.env.TEST_MODE !== "testing") {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                rId: "",
+                recipe: undefined,
                 payload: new Error("calling testing function in non testing env"),
             });
         }
@@ -89,22 +98,22 @@ export class Querier {
         if (process.env.TEST_MODE !== "testing") {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                rId: this.rId,
+                recipe: this.recipe,
                 payload: new Error("calling testing function in non testing env"),
             });
         }
         return Querier.hostsAliveForTesting;
     };
 
-    static getInstanceOrThrowError(rId: string): Querier {
+    static getInstanceOrThrowError(recipe: RecipeModule | undefined, rIdToCore?: string): Querier {
         if (!Querier.initCalled || Querier.hosts === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                rId,
+                recipe,
                 payload: new Error("Please call the supertokens.init function before using SuperTokens"),
             });
         }
-        return new Querier(Querier.hosts, rId);
+        return new Querier(Querier.hosts, recipe, rIdToCore);
     }
 
     static init(hosts: NormalisedURLDomain[], apiKey?: string) {
@@ -132,10 +141,10 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                if (path.isARecipePath()) {
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
                     headers = {
                         ...headers,
-                        rid: this.rId,
+                        rid: this.rIdToCore,
                     };
                 }
                 return await axios({
@@ -163,10 +172,10 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                if (path.isARecipePath()) {
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
                     headers = {
                         ...headers,
-                        rid: this.rId,
+                        rid: this.rIdToCore,
                     };
                 }
                 return await axios({
@@ -194,10 +203,10 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                if (path.isARecipePath()) {
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
                     headers = {
                         ...headers,
-                        rid: this.rId,
+                        rid: this.rIdToCore,
                     };
                 }
                 return await axios.get(url, {
@@ -223,10 +232,10 @@ export class Querier {
                         "api-key": Querier.apiKey,
                     };
                 }
-                if (path.isARecipePath()) {
+                if (path.isARecipePath() && this.rIdToCore !== undefined) {
                     headers = {
                         ...headers,
-                        rid: this.rId,
+                        rid: this.rIdToCore,
                     };
                 }
                 return await axios({
@@ -247,10 +256,10 @@ export class Querier {
         axiosFunction: (url: string) => Promise<any>,
         numberOfTries: number
     ): Promise<any> => {
-        if (numberOfTries == 0) {
+        if (numberOfTries === 0) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                rId: this.rId,
+                recipe: this.recipe,
                 payload: new Error("No SuperTokens core available to query"),
             });
         }
@@ -273,7 +282,7 @@ export class Querier {
             if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
                 throw new STError({
                     type: STError.GENERAL_ERROR,
-                    rId: this.rId,
+                    recipe: this.recipe,
                     payload: new Error(
                         "SuperTokens core threw an error for a " +
                             method +
@@ -288,7 +297,7 @@ export class Querier {
             } else {
                 throw new STError({
                     type: STError.GENERAL_ERROR,
-                    rId: this.rId,
+                    recipe: this.recipe,
                     payload: err,
                 });
             }

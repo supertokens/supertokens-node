@@ -26,9 +26,12 @@ export default abstract class RecipeModule {
 
     private appInfo: NormalisedAppinfo;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo) {
+    private rIdToCore: string | undefined;
+
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, rIdToCore?: string) {
         this.recipeId = recipeId;
         this.appInfo = appInfo;
+        this.rIdToCore = rIdToCore;
     }
 
     getRecipeId = (): string => {
@@ -41,13 +44,13 @@ export default abstract class RecipeModule {
 
     getQuerier = (): Querier => {
         if (this.querier === undefined) {
-            this.querier = Querier.getInstanceOrThrowError(this.getRecipeId());
+            this.querier = Querier.getInstanceOrThrowError(this, this.rIdToCore);
         }
         return this.querier;
     };
 
-    isErrorFromThisRecipe = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && err.rId === this.getRecipeId();
+    isErrorFromThisRecipeBasedOnRid = (err: any): err is STError => {
+        return STError.isErrorFromSuperTokens(err) && err.getRecipeId() === this.recipeId;
     };
 
     returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
@@ -57,7 +60,7 @@ export default abstract class RecipeModule {
             if (
                 !currAPI.disabled &&
                 currAPI.method === method &&
-                this.appInfo.apiBasePath.appendPath(this.getRecipeId(), currAPI.pathWithoutApiBasePath).equals(path)
+                this.appInfo.apiBasePath.appendPath(this, currAPI.pathWithoutApiBasePath).equals(path)
             ) {
                 return currAPI.id;
             }
@@ -65,13 +68,17 @@ export default abstract class RecipeModule {
         return undefined;
     };
 
+    abstract isErrorFromThisOrChildRecipeBasedOnInstance(err: any): err is STError;
+
     abstract getAPIsHandled(): APIHandled[];
 
     abstract handleAPIRequest(
         id: string,
         req: express.Request,
         response: express.Response,
-        next: express.NextFunction
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
     ): Promise<void>;
 
     abstract handleError(
