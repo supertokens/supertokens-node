@@ -20,9 +20,10 @@ import STError from "../error";
 import * as faunadb from "faunadb";
 import Session from "./sessionClass";
 import RecipeModule from "../../../recipeModule";
-import { NormalisedAppinfo, RecipeListFunction } from "../../../types";
+import { NormalisedAppinfo, RecipeListFunction, HTTPMethod } from "../../../types";
 import OriginalSessionClass from "../sessionClass";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
+import NormalisedURLPath from "../../../normalisedURLPath";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -144,8 +145,15 @@ export default class SessionRecipe extends RecipeModule {
         return this.parentRecipe.getAPIsHandled();
     };
 
-    handleAPIRequest = (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
-        return this.parentRecipe.handleAPIRequest(id, req, res, next);
+    handleAPIRequest = (
+        id: string,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => {
+        return this.parentRecipe.handleAPIRequest(id, req, res, next, path, method);
     };
 
     handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {

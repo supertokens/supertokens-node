@@ -31,11 +31,11 @@ import {
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
     setFrontTokenInHeaders,
 } from "./cookieAndHeaders";
-import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
+import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import { handleRefreshAPI } from "./api";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { maxVersion, normaliseHttpMethod } from "../../utils";
+import { normaliseHttpMethod } from "../../utils";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 
 // For Express
@@ -115,7 +115,14 @@ export default class SessionRecipe extends RecipeModule {
         ];
     };
 
-    handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    handleAPIRequest = async (
+        id: string,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => {
         await handleRefreshAPI(this, req, res, next);
     };
 

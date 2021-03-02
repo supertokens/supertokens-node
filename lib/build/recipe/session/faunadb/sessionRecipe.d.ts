@@ -5,8 +5,9 @@ import STError from "../error";
 import * as faunadb from "faunadb";
 import Session from "./sessionClass";
 import RecipeModule from "../../../recipeModule";
-import { NormalisedAppinfo, RecipeListFunction } from "../../../types";
+import { NormalisedAppinfo, RecipeListFunction, HTTPMethod } from "../../../types";
 import OriginalSessionClass from "../sessionClass";
+import NormalisedURLPath from "../../../normalisedURLPath";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     parentRecipe: OriginalSessionRecipe;
@@ -24,7 +25,7 @@ export default class SessionRecipe extends RecipeModule {
     static init(config: TypeFaunaDBInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => import("../../../types").APIHandled[];
-    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
+    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction, path: NormalisedURLPath, method: HTTPMethod) => Promise<void>;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
     isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;

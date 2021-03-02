@@ -4,7 +4,8 @@ import STError from "./error";
 import Session from "./sessionClass";
 import { HandshakeInfo } from "./types";
 import * as express from "express";
-import { NormalisedAppinfo, RecipeListFunction, APIHandled } from "../../types";
+import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
+import NormalisedURLPath from "../../normalisedURLPath";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -15,7 +16,7 @@ export default class SessionRecipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
+    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction, path: NormalisedURLPath, method: HTTPMethod) => Promise<void>;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
     isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;

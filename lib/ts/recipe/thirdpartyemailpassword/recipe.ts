@@ -19,32 +19,8 @@ import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import * as express from "express";
 import STError from "./error";
-import { normaliseHttpMethod, send200Response } from "../../utils";
 import { TypeInput, TypeNormalisedInput, User } from "./types";
-import {
-    validateAndNormaliseUserInput,
-    createNewPaginationToken,
-    combinePaginationTokens,
-    extractPaginationTokens,
-    combinePaginationResults,
-} from "./utils";
-import {
-    SIGN_UP_API,
-    SIGN_IN_API,
-    GENERATE_PASSWORD_RESET_TOKEN_API,
-    PASSWORD_RESET_API,
-    SIGN_OUT_API,
-    SIGNUP_EMAIL_EXISTS_API,
-} from "../emailpassword/constants";
-import { SIGN_IN_UP_API, AUTHORISATION_API } from "../thirdparty/constants";
-import signUpAPI from "../emailpassword/api/signup";
-import signInAPI from "../emailpassword/api/signin";
-import generatePasswordResetTokenAPI from "../emailpassword/api/generatePasswordResetToken";
-import passwordResetAPI from "../emailpassword/api/passwordReset";
-import signOutAPI from "../emailpassword/api/signout";
-import emailExistsAPI from "../emailpassword/api/emailExists";
-import signInUpAPI from "../thirdparty/api/signinup";
-import authorisationUrlAPI from "../thirdparty/api/authorisationUrl";
+import { validateAndNormaliseUserInput, extractPaginationTokens, combinePaginationResults } from "./utils";
 import STErrorEmailPassword from "../emailpassword/error";
 import STErrorThirdParty from "../thirdparty/error";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -115,7 +91,6 @@ export default class Recipe extends RecipeModule {
             EmailPasswordRecipe.RECIPE_ID
         );
 
-        this.thirdPartyRecipe = undefined;
         if (this.config.providers.length !== 0) {
             this.thirdPartyRecipe = new ThirdPartyRecipe(
                 recipeId,
@@ -245,15 +220,15 @@ export default class Recipe extends RecipeModule {
         method: HTTPMethod
     ) => {
         if (this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
-            return await this.emailPasswordRecipe.handleAPIRequest(id, req, res, next);
+            return await this.emailPasswordRecipe.handleAPIRequest(id, req, res, next, path, method);
         }
         if (
             this.thirdPartyRecipe !== undefined &&
             this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
         ) {
-            return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, next);
+            return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, next, path, method);
         }
-        return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
+        return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
     };
 
     handleError = (

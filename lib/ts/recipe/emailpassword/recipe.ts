@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, User } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -168,7 +168,14 @@ export default class Recipe extends RecipeModule {
         ];
     };
 
-    handleAPIRequest = async (id: string, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    handleAPIRequest = async (
+        id: string,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => {
         if (id === SIGN_UP_API) {
             return await signUpAPI(this, req, res, next);
         } else if (id === SIGN_IN_API) {
@@ -182,7 +189,7 @@ export default class Recipe extends RecipeModule {
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this, req, res, next);
         } else {
-            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next);
+            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
         }
     };
 
