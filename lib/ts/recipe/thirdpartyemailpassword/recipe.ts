@@ -254,42 +254,13 @@ export default class Recipe extends RecipeModule {
         response: express.Response,
         next: express.NextFunction
     ): void => {
-        if (err.type === STErrorEmailPassword.EMAIL_ALREADY_EXISTS_ERROR) {
-            return this.handleError(
-                new STErrorEmailPassword(
-                    {
-                        type: STErrorEmailPassword.FIELD_ERROR,
-                        payload: [
-                            {
-                                id: "email",
-                                error: "This email already exists. Please sign in instead.",
-                            },
-                        ],
-                        message: "Error in input formFields",
-                    },
-                    this
-                ),
-                request,
-                response,
-                next
-            );
-        } else if (err.type === STErrorEmailPassword.WRONG_CREDENTIALS_ERROR) {
-            return send200Response(response, {
-                status: "WRONG_CREDENTIALS_ERROR",
-            });
-        } else if (err.type === STErrorEmailPassword.FIELD_ERROR) {
-            return send200Response(response, {
-                status: "FIELD_ERROR",
-                formFields: err.payload,
-            });
-        } else if (err.type === STErrorEmailPassword.RESET_PASSWORD_INVALID_TOKEN_ERROR) {
-            return send200Response(response, {
-                status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-            });
-        } else if (err.type === STErrorThirdParty.NO_EMAIL_GIVEN_BY_PROVIDER) {
-            return send200Response(response, {
-                status: "NO_EMAIL_GIVEN_BY_PROVIDER",
-            });
+        if (this.emailPasswordRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)) {
+            return this.emailPasswordRecipe.handleError(err, request, response, next);
+        } else if (
+            this.thirdPartyRecipe !== undefined &&
+            this.thirdPartyRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)
+        ) {
+            return this.thirdPartyRecipe.handleError(err, request, response, next);
         }
         return this.emailVerificationRecipe.handleError(err, request, response, next);
     };
