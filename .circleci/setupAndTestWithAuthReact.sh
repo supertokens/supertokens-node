@@ -55,7 +55,7 @@ npm i git+https://github.com:supertokens/supertokens-node.git#$3
 cd ../react-test-app/
 npm i -d
 cd ../../
-npm run test
+SKIP_OAUTH=true npm run test
 if [[ $? -ne 0 ]]
 then
     echo "test failed... exiting!"
