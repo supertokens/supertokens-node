@@ -92,7 +92,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 }),
             ],
         });
-        let q = Querier.getInstanceOrThrowError("");
+        let q = Querier.getInstanceOrThrowError(undefined);
         await q.getAPIVersion();
 
         let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -183,7 +183,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
         try {
-            let q = Querier.getInstanceOrThrowError("");
+            let q = Querier.getInstanceOrThrowError(undefined);
             await q.sendGetRequest(new NormalisedURLPath("", "/"), {});
             throw new Error();
         } catch (err) {
@@ -212,7 +212,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 }),
             ],
         });
-        let q = Querier.getInstanceOrThrowError("");
+        let q = Querier.getInstanceOrThrowError(undefined);
         assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         assert.equal(await q.sendDeleteRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
@@ -243,7 +243,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 }),
             ],
         });
-        let q = Querier.getInstanceOrThrowError("");
+        let q = Querier.getInstanceOrThrowError(undefined);
         assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         assert.equal(await q.sendPostRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
