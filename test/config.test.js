@@ -619,6 +619,13 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         } catch (err) {
             assert(err.message === "Please provide a valid domain name");
         }
+
+        try {
+            normaliseURLDomainOrThrowError("", "/.netlify/functions/api");
+            assert(false);
+        } catch (err) {
+            assert(err.message === "Please provide a valid domain name");
+        }
     });
 
     it("various config values", async function () {

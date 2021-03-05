@@ -57,6 +57,14 @@ export function normaliseURLDomainOrThrowError(
     } catch (err) {}
     // not a valid URL
 
+    if (input.startsWith("/")) {
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            recipe,
+            payload: new Error("Please provide a valid domain name"),
+        });
+    }
+
     if (input.indexOf(".") === 0) {
         input = input.substr(1);
     }
