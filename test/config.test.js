@@ -556,6 +556,19 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         );
         assert(normaliseURLPathOrThrowError("", "exists") === "/exists");
         assert(normaliseURLPathOrThrowError("", "exists?email=john.doe%40gmail.com") === "/exists");
+
+        assert(normaliseURLPathOrThrowError("", "/.netlify/functions/api") === "/.netlify/functions/api");
+        assert(normaliseURLPathOrThrowError("", "/netlify/.functions/api") === "/netlify/.functions/api");
+        assert(
+            normaliseURLPathOrThrowError("", "app.example.com/.netlify/functions/api") === "/.netlify/functions/api"
+        );
+        assert(
+            normaliseURLPathOrThrowError("", "app.example.com/netlify/.functions/api") === "/netlify/.functions/api"
+        );
+        assert(normaliseURLPathOrThrowError("", "/app.example.com") === "/app.example.com");
+
+        assert(normaliseURLPathOrThrowError("", ".netlify/functions/api") === "/functions/api");
+        assert(normaliseURLPathOrThrowError("", "netlify/.functions/api") === "/netlify/.functions/api");
     });
 
     it("testing URL domain normalisation", async function () {

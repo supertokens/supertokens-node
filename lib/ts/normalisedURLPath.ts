@@ -96,7 +96,7 @@ export function normaliseURLPathOrThrowError(recipe: RecipeModule | undefined, i
 
 function domainGiven(input: string): boolean {
     // If no dot, return false.
-    if (input.indexOf(".") === -1) {
+    if (input.indexOf(".") === -1 || input.startsWith("/")) {
         return false;
     }
 
