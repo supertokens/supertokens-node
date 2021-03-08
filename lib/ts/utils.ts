@@ -1,13 +1,14 @@
 import STError from "./error";
 import { AppInfo, NormalisedAppinfo, HTTPMethod, TypeInput } from "./types";
 import * as express from "express";
-import { HEADER_RID } from "./constants";
+import { API_VERSION_FILE_PATH, HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import SuperTokensError from "./error";
 import RecipeModule from "./recipeModule";
+import { readFile, writeFile } from "fs";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -204,4 +205,30 @@ export function validateTheStructureOfUserInput(
             type: "GENERAL_ERROR",
         });
     }
+}
+
+export async function getAPIVersionFromFileIfExists(): Promise<string | null> {
+    try {
+        let apiVersionFromFile = await new Promise<Buffer>((resolve, reject) => {
+            readFile(API_VERSION_FILE_PATH, (err, data) => {
+                if (err !== undefined && err !== null) {
+                    reject(err);
+                }
+                resolve(data);
+            });
+        });
+        return apiVersionFromFile.toString();
+    } catch (err) {
+        return null;
+    }
+}
+
+export async function storeAPIVersionInFile(apiVersion: string) {
+    try {
+        await new Promise((resolve, reject) => {
+            writeFile(API_VERSION_FILE_PATH, apiVersion, {}, () => {
+                resolve(undefined);
+            });
+        });
+    } catch (err) {}
 }

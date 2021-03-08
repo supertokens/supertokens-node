@@ -14,7 +14,7 @@
  */
 import axios from "axios";
 
-import { getLargestVersionFromIntersection } from "./utils";
+import { getAPIVersionFromFileIfExists, getLargestVersionFromIntersection, storeAPIVersionInFile } from "./utils";
 import { cdiSupported } from "./version";
 import STError from "./error";
 import NormalisedURLDomain from "./normalisedURLDomain";
@@ -34,10 +34,16 @@ export class Querier {
     private __hosts: NormalisedURLDomain[];
     private recipe: RecipeModule | undefined;
     private rIdToCore: string | undefined;
+    private isInServerlessEnv: boolean;
 
     // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
     // to support multiple rIds per API
-    private constructor(hosts: NormalisedURLDomain[], recipe: RecipeModule | undefined, rIdToCore?: string) {
+    private constructor(
+        hosts: NormalisedURLDomain[],
+        isInServerlessEnv: boolean,
+        recipe: RecipeModule | undefined,
+        rIdToCore?: string
+    ) {
         this.__hosts = hosts;
         this.recipe = recipe;
         if (rIdToCore !== undefined) {
@@ -50,6 +56,13 @@ export class Querier {
     getAPIVersion = async (): Promise<string> => {
         if (Querier.apiVersion !== undefined) {
             return Querier.apiVersion;
+        }
+        if (this.isInServerlessEnv) {
+            let apiVersion = await getAPIVersionFromFileIfExists();
+            if (apiVersion !== null) {
+                Querier.apiVersion = apiVersion;
+                return Querier.apiVersion;
+            }
         }
         ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
         let response = await this.sendRequestHelper(
@@ -80,6 +93,9 @@ export class Querier {
             });
         }
         Querier.apiVersion = supportedVersion;
+        if (this.isInServerlessEnv) {
+            await storeAPIVersionInFile(supportedVersion);
+        }
         return Querier.apiVersion;
     };
 
@@ -105,7 +121,11 @@ export class Querier {
         return Querier.hostsAliveForTesting;
     };
 
-    static getInstanceOrThrowError(recipe: RecipeModule | undefined, rIdToCore?: string): Querier {
+    static getInstanceOrThrowError(
+        isInServerlessEnv: boolean,
+        recipe: RecipeModule | undefined,
+        rIdToCore?: string
+    ): Querier {
         if (!Querier.initCalled || Querier.hosts === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
@@ -113,7 +133,7 @@ export class Querier {
                 payload: new Error("Please call the supertokens.init function before using SuperTokens"),
             });
         }
-        return new Querier(Querier.hosts, recipe, rIdToCore);
+        return new Querier(Querier.hosts, isInServerlessEnv, recipe, rIdToCore);
     }
 
     static init(hosts: NormalisedURLDomain[], apiKey?: string) {

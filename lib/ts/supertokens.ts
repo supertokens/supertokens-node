@@ -37,6 +37,8 @@ export default class SuperTokens {
 
     appInfo: NormalisedAppinfo;
 
+    isInServerlessEnv: boolean;
+
     recipeModules: RecipeModule[];
 
     constructor(config: TypeInput) {
@@ -56,8 +58,10 @@ export default class SuperTokens {
             });
         }
 
+        this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
+
         this.recipeModules = config.recipeList.map((func) => {
-            return func(this.appInfo);
+            return func(this.appInfo, this.isInServerlessEnv);
         });
 
         // check if duplicate APIs are exposed by any recipe by mistake
@@ -91,7 +95,7 @@ export default class SuperTokens {
 
     sendTelemetry = async () => {
         try {
-            let querier = Querier.getInstanceOrThrowError(undefined);
+            let querier = Querier.getInstanceOrThrowError(this.isInServerlessEnv, undefined);
             let response = await querier.sendGetRequest(new NormalisedURLPath(undefined, "/telemetry"), {});
             let telemetryId: string | undefined;
             if (response.exists) {

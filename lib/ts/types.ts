@@ -41,6 +41,7 @@ export type TypeInput = {
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
+    isInServerlessEnv?: boolean;
 };
 
 const TypeString = {
@@ -79,12 +80,13 @@ export const InputSchema = {
             type: "array",
         },
         telemetry: TypeBoolean,
+        isInServerlessEnv: TypeBoolean,
     },
     required: ["supertokens", "appInfo", "recipeList"],
     additionalProperties: false,
 };
 
-export type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
+export type RecipeListFunction = (appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) => RecipeModule;
 
 export type APIHandled = {
     pathWithoutApiBasePath: NormalisedURLPath;

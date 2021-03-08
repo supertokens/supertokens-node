@@ -23,6 +23,7 @@ export declare type TypeInput = {
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
+    isInServerlessEnv?: boolean;
 };
 export declare const InputSchema: {
     type: string;
@@ -68,11 +69,14 @@ export declare const InputSchema: {
         telemetry: {
             type: string;
         };
+        isInServerlessEnv: {
+            type: string;
+        };
     };
     required: string[];
     additionalProperties: boolean;
 };
-export declare type RecipeListFunction = (appInfo: NormalisedAppinfo) => RecipeModule;
+export declare type RecipeListFunction = (appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) => RecipeModule;
 export declare type APIHandled = {
     pathWithoutApiBasePath: NormalisedURLPath;
     method: HTTPMethod;

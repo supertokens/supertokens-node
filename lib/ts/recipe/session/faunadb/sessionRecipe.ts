@@ -54,10 +54,10 @@ export default class SessionRecipe extends RecipeModule {
     q = faunadb.query;
     faunaDBClient: faunadb.Client;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeFaunaDBInput) {
-        super(recipeId, appInfo);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeFaunaDBInput) {
+        super(recipeId, appInfo, isInServerlessEnv);
 
-        this.parentRecipe = new OriginalSessionRecipe(recipeId, appInfo, config);
+        this.parentRecipe = new OriginalSessionRecipe(recipeId, appInfo, isInServerlessEnv, config);
 
         // we save the parent recipe's functions here, so that they can be used later
         this.superCreateNewSession = this.parentRecipe.createNewSession;
@@ -108,9 +108,14 @@ export default class SessionRecipe extends RecipeModule {
     }
 
     static init(config: TypeFaunaDBInput): RecipeListFunction {
-        return (appInfo) => {
+        return (appInfo, isInServerlessEnv) => {
             if (SessionRecipe.instance === undefined) {
-                SessionRecipe.instance = new SessionRecipe(OriginalSessionRecipe.RECIPE_ID, appInfo, config);
+                SessionRecipe.instance = new SessionRecipe(
+                    OriginalSessionRecipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    config
+                );
                 return SessionRecipe.instance;
             } else {
                 throw new STError(

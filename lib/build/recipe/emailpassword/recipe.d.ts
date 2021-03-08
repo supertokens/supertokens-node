@@ -10,7 +10,7 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     emailVerificationRecipe: EmailVerificationRecipe;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput, rIdToCore?: string);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput, rIdToCore?: string);
     getEmailForUserId: (userId: string) => Promise<string>;
     static getInstanceOrThrowError(): Recipe;
     static init(config?: TypeInput): RecipeListFunction;

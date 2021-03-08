@@ -92,7 +92,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await startST();
 
         try {
-            await Querier.getInstanceOrThrowError();
+            await Querier.getInstanceOrThrowError(false);
             assert(false);
         } catch (err) {
             if (err.type !== ST.Error.GENERAL_ERROR) {
@@ -116,7 +116,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             ],
         });
 
-        await Querier.getInstanceOrThrowError();
+        await Querier.getInstanceOrThrowError(false);
     });
 
     // Check that modules have been inited when we call supertokens.init

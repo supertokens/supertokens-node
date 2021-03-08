@@ -1,4 +1,4 @@
-import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
+import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput, HandshakeInfo } from "./types";
 import * as express from "express";
 import SessionRecipe from "./sessionRecipe";
 import { NormalisedAppinfo } from "../../types";
@@ -8,3 +8,5 @@ export declare function getTopLevelDomainForSameSiteResolution(url: string, reci
 export declare function validateAndNormaliseUserInput(recipeInstance: SessionRecipe, appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput;
 export declare function normaliseSameSiteOrThrowError(recipe: RecipeModule | undefined, sameSite: string): "strict" | "lax" | "none";
 export declare function attachCreateOrRefreshSessionResponseToExpressRes(recipeInstance: SessionRecipe, res: express.Response, response: CreateOrRefreshAPIResponse): void;
+export declare function getHandshakeInfoFromFileIfExists(): Promise<HandshakeInfo | null>;
+export declare function storeHandshakeInfoInFile(handshakeInfo: HandshakeInfo): Promise<void>;

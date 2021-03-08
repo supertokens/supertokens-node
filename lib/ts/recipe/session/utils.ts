@@ -19,6 +19,7 @@ import {
     TypeNormalisedInput,
     NormalisedErrorHandlers,
     InputSchema,
+    HandshakeInfo,
 } from "./types";
 import {
     setFrontTokenInHeaders,
@@ -32,12 +33,13 @@ import { URL } from "url";
 import SessionRecipe from "./sessionRecipe";
 import STError from "./error";
 import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauthorisedResponse } from "./middleware";
-import { REFRESH_API_PATH } from "./constants";
+import { HANDSHAKE_INFO_FILE_PATH, REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 import RecipeModule from "../../recipeModule";
+import { readFile, writeFile } from "fs";
 
 export function normaliseSessionScopeOrThrowError(recipe: RecipeModule | undefined, sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -273,4 +275,30 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(recipeInstance, res, response.antiCsrfToken);
     }
+}
+
+export async function getHandshakeInfoFromFileIfExists(): Promise<HandshakeInfo | null> {
+    try {
+        let handshakeInfoFromFile = await new Promise<Buffer>((resolve, reject) => {
+            readFile(HANDSHAKE_INFO_FILE_PATH, (err, data) => {
+                if (err !== undefined && err !== null) {
+                    reject(err);
+                }
+                resolve(data);
+            });
+        });
+        return JSON.parse(handshakeInfoFromFile.toString());
+    } catch (err) {
+        return null;
+    }
+}
+
+export async function storeHandshakeInfoInFile(handshakeInfo: HandshakeInfo) {
+    try {
+        await new Promise((resolve, reject) => {
+            writeFile(HANDSHAKE_INFO_FILE_PATH, JSON.stringify(handshakeInfo), {}, () => {
+                resolve(undefined);
+            });
+        });
+    } catch (err) {}
 }

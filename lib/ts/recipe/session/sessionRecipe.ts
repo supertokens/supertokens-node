@@ -17,7 +17,12 @@ import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput } from "./types";
 import STError from "./error";
 import Session from "./sessionClass";
-import { validateAndNormaliseUserInput, attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
+import {
+    validateAndNormaliseUserInput,
+    attachCreateOrRefreshSessionResponseToExpressRes,
+    getHandshakeInfoFromFileIfExists,
+    storeHandshakeInfoInFile,
+} from "./utils";
 import { HandshakeInfo } from "./types";
 import * as express from "express";
 import * as SessionFunctions from "./sessionFunctions";
@@ -47,8 +52,8 @@ export default class SessionRecipe extends RecipeModule {
 
     handshakeInfo: HandshakeInfo | undefined = undefined;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
+        super(recipeId, appInfo, isInServerlessEnv);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         // Solving the cold start problem
@@ -71,9 +76,9 @@ export default class SessionRecipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo) => {
+        return (appInfo, isInServerlessEnv) => {
             if (SessionRecipe.instance === undefined) {
-                SessionRecipe.instance = new SessionRecipe(SessionRecipe.RECIPE_ID, appInfo, config);
+                SessionRecipe.instance = new SessionRecipe(SessionRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return SessionRecipe.instance;
             } else {
                 throw new STError(
@@ -156,6 +161,13 @@ export default class SessionRecipe extends RecipeModule {
 
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined) {
+            if (this.checkIfInServerlessEnv()) {
+                let handshakeInfo = await getHandshakeInfoFromFileIfExists();
+                if (handshakeInfo !== null) {
+                    this.handshakeInfo = handshakeInfo;
+                    return this.handshakeInfo;
+                }
+            }
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.getQuerier().sendPostRequest(
                 new NormalisedURLPath(this, "/recipe/handshake"),
@@ -170,6 +182,9 @@ export default class SessionRecipe extends RecipeModule {
                 accessTokenValidity: response.accessTokenValidity,
                 refreshTokenValidity: response.refreshTokenValidity,
             };
+            if (this.checkIfInServerlessEnv()) {
+                await storeHandshakeInfoInFile(this.handshakeInfo);
+            }
         }
         return this.handshakeInfo;
     };

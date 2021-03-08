@@ -14,3 +14,5 @@
  */
 
 export const REFRESH_API_PATH = "/session/refresh";
+
+export const HANDSHAKE_INFO_FILE_PATH = "/tmp/handshakeInfo.json";

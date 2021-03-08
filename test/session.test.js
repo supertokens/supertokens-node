@@ -427,7 +427,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         try {
-            await Querier.getInstanceOrThrowError(undefined).getAPIVersion();
+            await Querier.getInstanceOrThrowError(false, undefined).getAPIVersion();
             throw new Error("should not have come here");
         } catch (err) {
             if (

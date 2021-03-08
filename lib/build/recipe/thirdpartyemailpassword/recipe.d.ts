@@ -16,7 +16,7 @@ export default class Recipe extends RecipeModule {
     emailVerificationRecipe: EmailVerificationRecipe;
     emailPasswordRecipe: EmailPasswordRecipe;
     thirdPartyRecipe: ThirdPartyRecipe | undefined;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput);
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     static getInstanceOrThrowError(): Recipe;

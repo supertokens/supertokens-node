@@ -11,11 +11,12 @@ export declare class Querier {
     private __hosts;
     private recipe;
     private rIdToCore;
+    private isInServerlessEnv;
     private constructor();
     getAPIVersion: () => Promise<string>;
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
-    static getInstanceOrThrowError(recipe: RecipeModule | undefined, rIdToCore?: string): Querier;
+    static getInstanceOrThrowError(isInServerlessEnv: boolean, recipe: RecipeModule | undefined, rIdToCore?: string): Querier;
     static init(hosts: NormalisedURLDomain[], apiKey?: string): void;
     sendPostRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
     sendDeleteRequest: (path: NormalisedURLPath, body: any) => Promise<any>;

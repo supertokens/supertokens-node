@@ -55,12 +55,19 @@ export default class Recipe extends RecipeModule {
 
     emailVerificationRecipe: EmailVerificationRecipe;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput, rIdToCore?: string) {
-        super(recipeId, appInfo, rIdToCore);
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config?: TypeInput,
+        rIdToCore?: string
+    ) {
+        super(recipeId, appInfo, isInServerlessEnv, rIdToCore);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,
             appInfo,
+            isInServerlessEnv,
             this.config.emailVerificationFeature
         );
     }
@@ -93,9 +100,9 @@ export default class Recipe extends RecipeModule {
     }
 
     static init(config?: TypeInput): RecipeListFunction {
-        return (appInfo) => {
+        return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, config);
+                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
                 throw new STError(

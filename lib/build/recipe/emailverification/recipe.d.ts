@@ -8,7 +8,7 @@ export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput);
     static getInstanceOrThrowError(): Recipe;
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
