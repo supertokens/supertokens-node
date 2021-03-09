@@ -25,7 +25,7 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import RecipeModule from "./recipeModule";
-import { API_VERSION_FILE_PATH } from "./constants";
+import { SERVERLESS_CACHE_API_VERSION_FILE_PATH } from "./constants";
 
 export class Querier {
     private static initCalled = false;
@@ -64,7 +64,7 @@ export class Querier {
             return Querier.apiVersion;
         }
         if (this.isInServerlessEnv) {
-            let apiVersion = await getDataFromFileForServerlessCache<string>(API_VERSION_FILE_PATH);
+            let apiVersion = await getDataFromFileForServerlessCache<string>(SERVERLESS_CACHE_API_VERSION_FILE_PATH);
             if (apiVersion !== undefined) {
                 Querier.apiVersion = apiVersion;
                 return Querier.apiVersion;
@@ -100,7 +100,7 @@ export class Querier {
         }
         Querier.apiVersion = supportedVersion;
         if (this.isInServerlessEnv) {
-            storeIntoTempFolderForServerlessCache(API_VERSION_FILE_PATH, supportedVersion);
+            storeIntoTempFolderForServerlessCache(SERVERLESS_CACHE_API_VERSION_FILE_PATH, supportedVersion);
         }
         return Querier.apiVersion;
     };

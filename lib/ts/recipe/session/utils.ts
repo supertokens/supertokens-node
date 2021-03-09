@@ -33,7 +33,7 @@ import { URL } from "url";
 import SessionRecipe from "./sessionRecipe";
 import STError from "./error";
 import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauthorisedResponse } from "./middleware";
-import { HANDSHAKE_INFO_FILE_PATH, REFRESH_API_PATH } from "./constants";
+import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";

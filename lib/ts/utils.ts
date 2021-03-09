@@ -1,7 +1,7 @@
 import STError from "./error";
 import { AppInfo, NormalisedAppinfo, HTTPMethod, TypeInput } from "./types";
 import * as express from "express";
-import { API_VERSION_FILE_PATH, HEADER_RID } from "./constants";
+import { SERVERLESS_CACHE_API_VERSION_FILE_PATH, HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import * as bodyParser from "body-parser";
@@ -9,7 +9,7 @@ import { validate } from "jsonschema";
 import SuperTokensError from "./error";
 import RecipeModule from "./recipeModule";
 import { readFile, writeFile, unlink, mkdir } from "fs";
-import { HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
+import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -248,7 +248,7 @@ async function removeFile(filePath: string) {
 }
 
 export async function removeTempFiles() {
-    let tempFilesPath = [API_VERSION_FILE_PATH, HANDSHAKE_INFO_FILE_PATH];
+    let tempFilesPath = [SERVERLESS_CACHE_API_VERSION_FILE_PATH, SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH];
     for (let i = 0; i < tempFilesPath.length; i++) {
         await removeFile(tempFilesPath[i]);
     }

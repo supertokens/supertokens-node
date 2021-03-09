@@ -33,7 +33,7 @@ import {
 } from "./cookieAndHeaders";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import { handleRefreshAPI } from "./api";
-import { HANDSHAKE_INFO_FILE_PATH, REFRESH_API_PATH } from "./constants";
+import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import {
     getDataFromFileForServerlessCache,
@@ -161,7 +161,9 @@ export default class SessionRecipe extends RecipeModule {
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined) {
             if (this.checkIfInServerlessEnv()) {
-                let handshakeInfo = await getDataFromFileForServerlessCache<HandshakeInfo>(HANDSHAKE_INFO_FILE_PATH);
+                let handshakeInfo = await getDataFromFileForServerlessCache<HandshakeInfo>(
+                    SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH
+                );
                 if (handshakeInfo !== undefined) {
                     this.handshakeInfo = handshakeInfo;
                     return this.handshakeInfo;
@@ -182,7 +184,7 @@ export default class SessionRecipe extends RecipeModule {
                 refreshTokenValidity: response.refreshTokenValidity,
             };
             if (this.checkIfInServerlessEnv()) {
-                storeIntoTempFolderForServerlessCache(HANDSHAKE_INFO_FILE_PATH, this.handshakeInfo);
+                storeIntoTempFolderForServerlessCache(SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, this.handshakeInfo);
             }
         }
         return this.handshakeInfo;
