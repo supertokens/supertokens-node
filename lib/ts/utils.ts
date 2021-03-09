@@ -247,7 +247,7 @@ async function removeFile(filePath: string) {
     } catch (err) {}
 }
 
-export async function removeTempFiles() {
+export async function removeServerlessCache() {
     let tempFilesPath = [SERVERLESS_CACHE_API_VERSION_FILE_PATH, SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH];
     for (let i = 0; i < tempFilesPath.length; i++) {
         await removeFile(tempFilesPath[i]);

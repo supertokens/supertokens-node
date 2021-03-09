@@ -23,7 +23,7 @@ import {
     sendNon200Response,
     assertThatBodyParserHasBeenUsed,
     validateTheStructureOfUserInput,
-    removeTempFiles,
+    removeServerlessCache,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -72,7 +72,7 @@ export default class SuperTokens {
              * directory. The user can then again set it to true which would store the
              * updated handshake info and apiversion in the temp files
              */
-            removeTempFiles();
+            removeServerlessCache();
         }
 
         this.recipeModules = config.recipeList.map((func) => {

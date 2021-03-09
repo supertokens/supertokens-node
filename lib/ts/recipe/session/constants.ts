@@ -13,7 +13,7 @@
  * under the License.
  */
 
+import { SERVERLESS_CACHE_BASE_FILE_PATH } from "../../constants";
+
 export const REFRESH_API_PATH = "/session/refresh";
-const SERVERLESS_CACHE_BASE_FILE_PATH =
-    process.env.SERVERLESS_CACHE_BASE_FILE_PATH === undefined ? "/tmp" : process.env.SERVERLESS_CACHE_BASE_FILE_PATH;
-export const SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH = `${SERVERLESS_CACHE_BASE_FILE_PATH}/supertokens-handshakeInfo.json`;
+export const SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH = `${SERVERLESS_CACHE_BASE_FILE_PATH}/supertokens-handshakeInfo`;

@@ -14,4 +14,4 @@ export declare function isAnIpAddress(ipaddress: string): boolean;
 export declare function validateTheStructureOfUserInput(config: any, inputSchema: any, configRoot: string, recipe: RecipeModule | undefined): void;
 export declare function getDataFromFileForServerlessCache<T>(filePath: string): Promise<T | undefined>;
 export declare function storeIntoTempFolderForServerlessCache(filePath: string, data: any): Promise<void>;
-export declare function removeTempFiles(): Promise<void>;
+export declare function removeServerlessCache(): Promise<void>;
