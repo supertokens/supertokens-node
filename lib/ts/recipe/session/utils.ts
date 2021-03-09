@@ -276,29 +276,3 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
         setAntiCsrfTokenInHeaders(recipeInstance, res, response.antiCsrfToken);
     }
 }
-
-export async function getHandshakeInfoFromFileIfExists(): Promise<HandshakeInfo | null> {
-    try {
-        let handshakeInfoFromFile = await new Promise<Buffer>((resolve, reject) => {
-            readFile(HANDSHAKE_INFO_FILE_PATH, (err, data) => {
-                if (err !== undefined && err !== null) {
-                    reject(err);
-                }
-                resolve(data);
-            });
-        });
-        return JSON.parse(handshakeInfoFromFile.toString());
-    } catch (err) {
-        return null;
-    }
-}
-
-export async function storeHandshakeInfoInFile(handshakeInfo: HandshakeInfo) {
-    try {
-        await new Promise((resolve, reject) => {
-            writeFile(HANDSHAKE_INFO_FILE_PATH, JSON.stringify(handshakeInfo), {}, () => {
-                resolve(undefined);
-            });
-        });
-    } catch (err) {}
-}

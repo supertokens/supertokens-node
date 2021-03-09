@@ -14,13 +14,14 @@
  */
 import axios from "axios";
 
-import { getAPIVersionFromFileIfExists, getLargestVersionFromIntersection, storeAPIVersionInFile } from "./utils";
+import { getDataFromFileIfExists, getLargestVersionFromIntersection, storeIntoTempFile } from "./utils";
 import { cdiSupported } from "./version";
 import STError from "./error";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
 import RecipeModule from "./recipeModule";
+import { API_VERSION_FILE_PATH } from "./constants";
 
 export class Querier {
     private static initCalled = false;
@@ -51,6 +52,7 @@ export class Querier {
         } else if (this.recipe !== undefined) {
             this.rIdToCore = this.recipe.getRecipeId();
         }
+        this.isInServerlessEnv = isInServerlessEnv;
     }
 
     getAPIVersion = async (): Promise<string> => {
@@ -58,8 +60,8 @@ export class Querier {
             return Querier.apiVersion;
         }
         if (this.isInServerlessEnv) {
-            let apiVersion = await getAPIVersionFromFileIfExists();
-            if (apiVersion !== null) {
+            let apiVersion = await getDataFromFileIfExists<string>(API_VERSION_FILE_PATH);
+            if (apiVersion !== undefined) {
                 Querier.apiVersion = apiVersion;
                 return Querier.apiVersion;
             }
@@ -94,7 +96,7 @@ export class Querier {
         }
         Querier.apiVersion = supportedVersion;
         if (this.isInServerlessEnv) {
-            await storeAPIVersionInFile(supportedVersion);
+            storeIntoTempFile(API_VERSION_FILE_PATH, supportedVersion);
         }
         return Querier.apiVersion;
     };

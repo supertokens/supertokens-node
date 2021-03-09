@@ -17,12 +17,7 @@ import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput } from "./types";
 import STError from "./error";
 import Session from "./sessionClass";
-import {
-    validateAndNormaliseUserInput,
-    attachCreateOrRefreshSessionResponseToExpressRes,
-    getHandshakeInfoFromFileIfExists,
-    storeHandshakeInfoInFile,
-} from "./utils";
+import { validateAndNormaliseUserInput, attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
 import { HandshakeInfo } from "./types";
 import * as express from "express";
 import * as SessionFunctions from "./sessionFunctions";
@@ -38,9 +33,9 @@ import {
 } from "./cookieAndHeaders";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import { handleRefreshAPI } from "./api";
-import { REFRESH_API_PATH } from "./constants";
+import { HANDSHAKE_INFO_FILE_PATH, REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { normaliseHttpMethod } from "../../utils";
+import { getDataFromFileIfExists, normaliseHttpMethod, storeIntoTempFile } from "../../utils";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 
 // For Express
@@ -162,8 +157,8 @@ export default class SessionRecipe extends RecipeModule {
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined) {
             if (this.checkIfInServerlessEnv()) {
-                let handshakeInfo = await getHandshakeInfoFromFileIfExists();
-                if (handshakeInfo !== null) {
+                let handshakeInfo = await getDataFromFileIfExists<HandshakeInfo>(HANDSHAKE_INFO_FILE_PATH);
+                if (handshakeInfo !== undefined) {
                     this.handshakeInfo = handshakeInfo;
                     return this.handshakeInfo;
                 }
@@ -183,7 +178,7 @@ export default class SessionRecipe extends RecipeModule {
                 refreshTokenValidity: response.refreshTokenValidity,
             };
             if (this.checkIfInServerlessEnv()) {
-                await storeHandshakeInfoInFile(this.handshakeInfo);
+                storeIntoTempFile(HANDSHAKE_INFO_FILE_PATH, this.handshakeInfo);
             }
         }
         return this.handshakeInfo;

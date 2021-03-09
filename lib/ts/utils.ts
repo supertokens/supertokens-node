@@ -8,7 +8,8 @@ import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import SuperTokensError from "./error";
 import RecipeModule from "./recipeModule";
-import { readFile, writeFile } from "fs";
+import { readFile, writeFile, unlink, mkdir } from "fs";
+import { HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -207,28 +208,62 @@ export function validateTheStructureOfUserInput(
     }
 }
 
-export async function getAPIVersionFromFileIfExists(): Promise<string | null> {
+export async function getDataFromFileIfExists<T>(filePath: string): Promise<T | undefined> {
     try {
-        let apiVersionFromFile = await new Promise<Buffer>((resolve, reject) => {
-            readFile(API_VERSION_FILE_PATH, (err, data) => {
+        let dataFromFile = await new Promise<Buffer>((resolve, reject) => {
+            readFile(filePath, (err, data) => {
                 if (err !== undefined && err !== null) {
                     reject(err);
                 }
                 resolve(data);
             });
         });
-        return apiVersionFromFile.toString();
+        return JSON.parse(dataFromFile.toString());
     } catch (err) {
-        return null;
+        return undefined;
     }
 }
 
-export async function storeAPIVersionInFile(apiVersion: string) {
+export async function storeIntoTempFile(filePath: string, data: any) {
     try {
-        await new Promise((resolve, reject) => {
-            writeFile(API_VERSION_FILE_PATH, apiVersion, {}, () => {
+        await createTempDirIfNotAlreadyExists();
+        await new Promise(async (resolve, reject) => {
+            writeFile(filePath, JSON.stringify(data), (err) => {
                 resolve(undefined);
             });
         });
     } catch (err) {}
+}
+
+export async function createTempDirIfNotAlreadyExists() {
+    // we allow this to throw error as it will be called from the try block of storeIntoTempFile function
+    await new Promise((resolve, reject) => {
+        // will have no effect if the directory already exists
+        mkdir("/temp", (err) => {
+            if (err !== undefined && err !== null) {
+                reject(err);
+            }
+            resolve(undefined);
+        });
+    });
+}
+
+async function removeFile(filePath: string) {
+    try {
+        await new Promise((resolve, reject) => {
+            unlink(filePath, (err) => {
+                if (err !== undefined && err !== null) {
+                    reject(err);
+                }
+                resolve(undefined);
+            });
+        });
+    } catch (err) {}
+}
+
+export async function removeTempFiles() {
+    let tempFilesPath = [API_VERSION_FILE_PATH, HANDSHAKE_INFO_FILE_PATH];
+    for (let i = 0; i < tempFilesPath.length; i++) {
+        await removeFile(tempFilesPath[i]);
+    }
 }

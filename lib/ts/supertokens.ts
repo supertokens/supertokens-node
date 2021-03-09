@@ -23,6 +23,7 @@ import {
     sendNon200Response,
     assertThatBodyParserHasBeenUsed,
     validateTheStructureOfUserInput,
+    removeTempFiles,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -59,6 +60,10 @@ export default class SuperTokens {
         }
 
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
+
+        if (!this.isInServerlessEnv) {
+            removeTempFiles();
+        }
 
         this.recipeModules = config.recipeList.map((func) => {
             return func(this.appInfo, this.isInServerlessEnv);

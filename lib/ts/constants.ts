@@ -15,4 +15,4 @@
 
 export const HEADER_RID = "rid";
 export const HEADER_FDI = "fdi-version";
-export const API_VERSION_FILE_PATH = "/tmp/apiversion.txt";
+export const API_VERSION_FILE_PATH = "/tmp/supertokens-apiversion.txt";
