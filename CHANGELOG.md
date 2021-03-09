@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.2.0] - 2021-03-09
 ### Added
 - Optimization for serverless execution
+- Config to enable serverless optimisation
 
 ## [4.1.2] - 2021-03-05
 ### Changed

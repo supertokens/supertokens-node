@@ -15,4 +15,8 @@
 
 export const HEADER_RID = "rid";
 export const HEADER_FDI = "fdi-version";
-export const API_VERSION_FILE_PATH = "/tmp/supertokens-apiversion.txt";
+const SERVERLESS_CACHE_API_VERSION_FILE_PATH =
+    process.env.SERVERLESS_CACHE_API_VERSION_FILE_PATH === undefined
+        ? "/tmp"
+        : process.env.SERVERLESS_CACHE_API_VERSION_FILE_PATH;
+export const API_VERSION_FILE_PATH = `${SERVERLESS_CACHE_API_VERSION_FILE_PATH}/supertokens-apiversion.txt`;

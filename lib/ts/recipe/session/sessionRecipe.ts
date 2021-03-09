@@ -35,7 +35,11 @@ import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from ".
 import { handleRefreshAPI } from "./api";
 import { HANDSHAKE_INFO_FILE_PATH, REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { getDataFromFileIfExists, normaliseHttpMethod, storeIntoTempFile } from "../../utils";
+import {
+    getDataFromFileForServerlessCache,
+    normaliseHttpMethod,
+    storeIntoTempFolderForServerlessCache,
+} from "../../utils";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 
 // For Express
@@ -157,7 +161,7 @@ export default class SessionRecipe extends RecipeModule {
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined) {
             if (this.checkIfInServerlessEnv()) {
-                let handshakeInfo = await getDataFromFileIfExists<HandshakeInfo>(HANDSHAKE_INFO_FILE_PATH);
+                let handshakeInfo = await getDataFromFileForServerlessCache<HandshakeInfo>(HANDSHAKE_INFO_FILE_PATH);
                 if (handshakeInfo !== undefined) {
                     this.handshakeInfo = handshakeInfo;
                     return this.handshakeInfo;
@@ -178,7 +182,7 @@ export default class SessionRecipe extends RecipeModule {
                 refreshTokenValidity: response.refreshTokenValidity,
             };
             if (this.checkIfInServerlessEnv()) {
-                storeIntoTempFile(HANDSHAKE_INFO_FILE_PATH, this.handshakeInfo);
+                storeIntoTempFolderForServerlessCache(HANDSHAKE_INFO_FILE_PATH, this.handshakeInfo);
             }
         }
         return this.handshakeInfo;

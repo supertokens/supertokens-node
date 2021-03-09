@@ -14,4 +14,8 @@
  */
 
 export const REFRESH_API_PATH = "/session/refresh";
-export const HANDSHAKE_INFO_FILE_PATH = "/tmp/supertokens-handshakeInfo.json";
+const SERVERLESS_CACHE_API_VERSION_FILE_PATH =
+    process.env.SERVERLESS_CACHE_API_VERSION_FILE_PATH === undefined
+        ? "/tmp"
+        : process.env.SERVERLESS_CACHE_API_VERSION_FILE_PATH;
+export const HANDSHAKE_INFO_FILE_PATH = `${SERVERLESS_CACHE_API_VERSION_FILE_PATH}/supertokens-handshakeInfo.json`;

@@ -208,7 +208,7 @@ export function validateTheStructureOfUserInput(
     }
 }
 
-export async function getDataFromFileIfExists<T>(filePath: string): Promise<T | undefined> {
+export async function getDataFromFileForServerlessCache<T>(filePath: string): Promise<T | undefined> {
     try {
         let dataFromFile = await new Promise<Buffer>((resolve, reject) => {
             readFile(filePath, (err, data) => {
@@ -224,28 +224,14 @@ export async function getDataFromFileIfExists<T>(filePath: string): Promise<T | 
     }
 }
 
-export async function storeIntoTempFile(filePath: string, data: any) {
+export async function storeIntoTempFolderForServerlessCache(filePath: string, data: any) {
     try {
-        await createTempDirIfNotAlreadyExists();
         await new Promise(async (resolve, reject) => {
             writeFile(filePath, JSON.stringify(data), (err) => {
                 resolve(undefined);
             });
         });
     } catch (err) {}
-}
-
-export async function createTempDirIfNotAlreadyExists() {
-    // we allow this to throw error as it will be called from the try block of storeIntoTempFile function
-    await new Promise((resolve, reject) => {
-        // will have no effect if the directory already exists
-        mkdir("/temp", (err) => {
-            if (err !== undefined && err !== null) {
-                reject(err);
-            }
-            resolve(undefined);
-        });
-    });
 }
 
 async function removeFile(filePath: string) {

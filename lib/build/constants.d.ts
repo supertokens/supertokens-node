@@ -1,3 +1,3 @@
 export declare const HEADER_RID = "rid";
 export declare const HEADER_FDI = "fdi-version";
-export declare const API_VERSION_FILE_PATH = "/tmp/supertokens-apiversion.txt";
+export declare const API_VERSION_FILE_PATH: string;

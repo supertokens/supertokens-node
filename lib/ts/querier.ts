@@ -14,7 +14,11 @@
  */
 import axios from "axios";
 
-import { getDataFromFileIfExists, getLargestVersionFromIntersection, storeIntoTempFile } from "./utils";
+import {
+    getDataFromFileForServerlessCache,
+    getLargestVersionFromIntersection,
+    storeIntoTempFolderForServerlessCache,
+} from "./utils";
 import { cdiSupported } from "./version";
 import STError from "./error";
 import NormalisedURLDomain from "./normalisedURLDomain";
@@ -60,7 +64,7 @@ export class Querier {
             return Querier.apiVersion;
         }
         if (this.isInServerlessEnv) {
-            let apiVersion = await getDataFromFileIfExists<string>(API_VERSION_FILE_PATH);
+            let apiVersion = await getDataFromFileForServerlessCache<string>(API_VERSION_FILE_PATH);
             if (apiVersion !== undefined) {
                 Querier.apiVersion = apiVersion;
                 return Querier.apiVersion;
@@ -96,7 +100,7 @@ export class Querier {
         }
         Querier.apiVersion = supportedVersion;
         if (this.isInServerlessEnv) {
-            storeIntoTempFile(API_VERSION_FILE_PATH, supportedVersion);
+            storeIntoTempFolderForServerlessCache(API_VERSION_FILE_PATH, supportedVersion);
         }
         return Querier.apiVersion;
     };
