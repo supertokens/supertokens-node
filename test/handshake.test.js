@@ -12,18 +12,21 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
+const { printPath, setupST, startST, createTmpDirForTesting, killAllST, cleanST } = require("./utils");
 let ST = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 const { maxVersion } = require("../lib/build/utils");
+const { removeServerlessCache } = require("../lib/build/utils");
 
 describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createTmpDirForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

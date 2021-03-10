@@ -16,7 +16,7 @@ const {
     printPath,
     setupST,
     startST,
-    stopST,
+    createTmpDirForTesting,
     killAllST,
     cleanST,
     extractInfoFromResponse,
@@ -33,6 +33,7 @@ let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+const { removeServerlessCache } = require("../lib/build/utils");
 
 /* TODO:
 - check that if signing key changes, things are still fine
@@ -48,6 +49,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createTmpDirForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

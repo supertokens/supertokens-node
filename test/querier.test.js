@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
+const { printPath, setupST, startST, createTmpDirForTesting, killAllST, cleanST } = require("./utils");
 let ST = require("../");
 let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
@@ -23,11 +23,14 @@ let nock = require("nock");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 let EmailPassword = require("../recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+const { removeServerlessCache } = require("../lib/build/utils");
 
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createTmpDirForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

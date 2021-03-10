@@ -45,6 +45,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createTmpDirForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 
@@ -1261,19 +1263,12 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
     it("testing no calls to the core are happening (on supertokens.init) if the cache files exist with proper values", async function () {
         await startST();
-        await createTmpDirForTesting(); // create dir if not already present
-        await removeServerlessCache(); // if dir already present, it may still have some tmp files
         {
-            let verifyHandshakeState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
+            let verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
                 2000
             );
-            assert(verifyHandshakeState === undefined);
-            let verifyAPIVersionState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION,
-                2000
-            );
-            assert(verifyAPIVersionState === undefined);
+            assert(verifyRequestHelperState === undefined);
 
             STExpress.init({
                 supertokens: {
@@ -1288,33 +1283,22 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            verifyHandshakeState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
+            verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
                 2000
             );
-            assert(verifyHandshakeState !== undefined);
-            verifyAPIVersionState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION,
-                2000
-            );
-            assert(verifyAPIVersionState !== undefined);
-
+            assert(verifyRequestHelperState !== undefined);
             resetAll();
         }
 
         ProcessState.getInstance().reset();
 
         {
-            let verifyHandshakeState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
+            let verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
                 2000
             );
-            assert(verifyHandshakeState === undefined);
-            let verifyAPIVersionState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION,
-                2000
-            );
-            assert(verifyAPIVersionState === undefined);
+            assert(verifyRequestHelperState === undefined);
 
             STExpress.init({
                 supertokens: {
@@ -1329,17 +1313,11 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            verifyHandshakeState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
+            verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
                 2000
             );
-            assert(verifyHandshakeState === undefined);
-            verifyAPIVersionState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION,
-                2000
-            );
-            assert(verifyAPIVersionState === undefined);
-
+            assert(verifyRequestHelperState === undefined);
             resetAll();
         }
     });

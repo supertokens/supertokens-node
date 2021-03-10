@@ -383,9 +383,9 @@ module.exports.createTmpDirForTesting = async function () {
         fs.mkdir(process.env.SERVERLESS_CACHE_BASE_FILE_PATH, (err) => {
             if (err !== undefined && err !== null) {
                 if (err.message.includes("EEXIST")) {
-                    resolve();
+                    return resolve();
                 }
-                reject(err);
+                return reject(err);
             }
             resolve();
         });
