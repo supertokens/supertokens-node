@@ -20,7 +20,7 @@ const {
     killAllST,
     cleanST,
     signUPRequest,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
 } = require("../utils");
 const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/recipe/emailpassword");
 let assert = require("assert");
@@ -36,7 +36,7 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

@@ -13,7 +13,15 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, createTmpDirForTesting } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    createServerlessCacheForTesting,
+} = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -49,7 +57,7 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

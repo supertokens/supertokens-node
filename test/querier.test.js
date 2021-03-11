@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, createTmpDirForTesting, killAllST, cleanST } = require("./utils");
+const { printPath, setupST, startST, createServerlessCacheForTesting, killAllST, cleanST } = require("./utils");
 let ST = require("../");
 let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
@@ -29,7 +29,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

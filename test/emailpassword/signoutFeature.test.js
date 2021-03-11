@@ -24,7 +24,7 @@ const {
     signUPRequest,
     extractInfoFromResponse,
     setKeyValueInConfig,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -47,7 +47,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

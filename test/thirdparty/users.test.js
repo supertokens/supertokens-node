@@ -16,7 +16,7 @@ const {
     printPath,
     setupST,
     startST,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
     killAllST,
     cleanST,
     signInUPCustomRequest,
@@ -58,7 +58,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

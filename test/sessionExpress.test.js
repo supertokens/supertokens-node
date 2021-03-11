@@ -16,7 +16,7 @@ const {
     printPath,
     setupST,
     startST,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
     killAllST,
     cleanST,
     extractInfoFromResponse,
@@ -36,7 +36,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

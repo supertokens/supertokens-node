@@ -22,7 +22,7 @@ const {
     cleanST,
     resetAll,
     signUPRequest,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -58,7 +58,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

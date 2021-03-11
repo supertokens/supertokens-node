@@ -12,7 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, createTmpDirForTesting, killAllST, cleanST, resetAll } = require("./utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    createServerlessCacheForTesting,
+    killAllST,
+    cleanST,
+    resetAll,
+} = require("./utils");
 let { ProcessState } = require("../lib/build/processState");
 let ST = require("../");
 let Session = require("../recipe/session");
@@ -40,7 +48,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
         resetTestRecipies();

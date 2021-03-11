@@ -21,7 +21,7 @@ const {
     signUPRequest,
     extractInfoFromResponse,
     setKeyValueInConfig,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
@@ -61,7 +61,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

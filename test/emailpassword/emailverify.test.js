@@ -25,7 +25,7 @@ const {
     extractInfoFromResponse,
     setKeyValueInConfig,
     emailVerifyTokenRequest,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
@@ -48,7 +48,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

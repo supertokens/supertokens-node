@@ -19,7 +19,7 @@ const {
     stopST,
     killAllST,
     cleanST,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
     signUPRequest,
 } = require("../utils");
 let STExpress = require("../../");
@@ -37,7 +37,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

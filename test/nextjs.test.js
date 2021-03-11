@@ -13,7 +13,7 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, createTmpDirForTesting, killAllST, cleanST } = require("./utils");
+const { printPath, setupST, startST, createServerlessCacheForTesting, killAllST, cleanST } = require("./utils");
 let assert = require("assert");
 const httpMocks = require("node-mocks-http");
 let { ProcessState } = require("../lib/build/processState");
@@ -30,7 +30,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             await killAllST();
             await setupST();
             await startST();
-            await createTmpDirForTesting();
+            await createServerlessCacheForTesting();
             await removeServerlessCache();
             ProcessState.getInstance().reset();
             SuperTokens.init({
@@ -244,7 +244,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             await killAllST();
             await setupST();
             await startST();
-            await createTmpDirForTesting();
+            await createServerlessCacheForTesting();
             await removeServerlessCache();
             ProcessState.getInstance().reset();
             SuperTokens.init({

@@ -19,7 +19,7 @@ const {
     killAllST,
     cleanST,
     extractInfoFromResponse,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
 } = require("./utils");
 let assert = require("assert");
 const express = require("express");
@@ -39,7 +39,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

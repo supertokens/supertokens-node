@@ -20,7 +20,7 @@ const {
     killAllST,
     cleanST,
     resetAll,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -40,7 +40,7 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });

@@ -21,7 +21,7 @@ const {
     cleanST,
     resetAll,
     signUPRequest,
-    createTmpDirForTesting,
+    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -57,7 +57,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createTmpDirForTesting();
+        await createServerlessCacheForTesting();
         await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
