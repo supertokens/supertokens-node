@@ -1322,6 +1322,54 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         }
     });
 
+    it("testing that the api version loaded and the handshake info loaded from the cache are correct", async function () {
+        await startST();
+        let handshakeInfo;
+        let apiVersion;
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                isInServerlessEnv: true,
+                recipeList: [Session.init()],
+            });
+
+            handshakeInfo = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+            assert.notStrictEqual(handshakeInfo, undefined);
+            apiVersion = await Querier.getInstanceOrThrowError(false).getAPIVersion();
+            assert.notStrictEqual(apiVersion, undefined);
+            resetAll();
+        }
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                isInServerlessEnv: true,
+                recipeList: [Session.init()],
+            });
+
+            let handshakeInfo2 = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+            assert.notStrictEqual(handshakeInfo2, undefined);
+            let apiVersion2 = await Querier.getInstanceOrThrowError(false).getAPIVersion();
+            assert.notStrictEqual(apiVersion2, undefined);
+            assert.deepStrictEqual(handshakeInfo, handshakeInfo2);
+            assert.strictEqual(apiVersion, apiVersion2);
+            resetAll();
+        }
+    });
+
     it("testing storeIntoTempFolderForServerlessCache doesn't throw error if the filePath doesn't exists", async function () {
         try {
             await storeIntoTempFolderForServerlessCache("/random/path/to/some/file", "data");
