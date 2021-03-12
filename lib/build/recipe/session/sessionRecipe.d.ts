@@ -11,7 +11,7 @@ export default class SessionRecipe extends RecipeModule {
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     handshakeInfo: HandshakeInfo | undefined;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config?: TypeInput);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;

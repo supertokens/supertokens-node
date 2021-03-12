@@ -377,3 +377,17 @@ module.exports.emailVerifyTokenRequest = async function (app, accessToken, idRef
 
     return result;
 };
+
+module.exports.createServerlessCacheForTesting = async function () {
+    await new Promise((resolve, reject) => {
+        fs.mkdir(process.env.SERVERLESS_CACHE_BASE_FILE_PATH, (err) => {
+            if (err !== undefined && err !== null) {
+                if (err.message.includes("EEXIST")) {
+                    return resolve();
+                }
+                return reject(err);
+            }
+            resolve();
+        });
+    });
+};

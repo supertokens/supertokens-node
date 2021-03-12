@@ -12,12 +12,21 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    killAllST,
+    cleanST,
+    resetAll,
+    createServerlessCacheForTesting,
+} = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
 let ThirParty = require("../../lib/build/recipe/thirdparty");
+const { removeServerlessCache } = require("../../lib/build/utils");
 
 /**
  * TODO
@@ -27,6 +36,8 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

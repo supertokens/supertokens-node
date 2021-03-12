@@ -20,7 +20,7 @@ export default class SessionRecipe extends RecipeModule {
     superRefreshSession: (req: express.Request, res: express.Response) => Promise<OriginalSessionClass>;
     q: typeof faunadb.query;
     faunaDBClient: faunadb.Client;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeFaunaDBInput);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeFaunaDBInput);
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config: TypeFaunaDBInput): RecipeListFunction;
     static reset(): void;

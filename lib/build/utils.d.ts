@@ -12,3 +12,6 @@ export declare function send200Response(res: express.Response, responseJson: any
 export declare function assertThatBodyParserHasBeenUsed(recipe: RecipeModule | undefined, req: express.Request, res: express.Response): Promise<void>;
 export declare function isAnIpAddress(ipaddress: string): boolean;
 export declare function validateTheStructureOfUserInput(config: any, inputSchema: any, configRoot: string, recipe: RecipeModule | undefined): void;
+export declare function getDataFromFileForServerlessCache<T>(filePath: string): Promise<T | undefined>;
+export declare function storeIntoTempFolderForServerlessCache(filePath: string, data: any): Promise<void>;
+export declare function removeServerlessCache(): Promise<void>;

@@ -37,13 +37,14 @@ export default class Recipe extends RecipeModule {
 
     thirdPartyRecipe: ThirdPartyRecipe | undefined;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput) {
-        super(recipeId, appInfo);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+        super(recipeId, appInfo, isInServerlessEnv);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         this.emailPasswordRecipe = new EmailPasswordRecipe(
             recipeId,
             appInfo,
+            isInServerlessEnv,
             {
                 sessionFeature: {
                     setJwtPayload: async (user, formfields, action) => {
@@ -95,6 +96,7 @@ export default class Recipe extends RecipeModule {
             this.thirdPartyRecipe = new ThirdPartyRecipe(
                 recipeId,
                 appInfo,
+                isInServerlessEnv,
                 {
                     sessionFeature: {
                         setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
@@ -151,14 +153,15 @@ export default class Recipe extends RecipeModule {
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,
             appInfo,
+            isInServerlessEnv,
             this.config.emailVerificationFeature
         );
     }
 
     static init(config: TypeInput): RecipeListFunction {
-        return (appInfo) => {
+        return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, config);
+                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
                 throw new STError(

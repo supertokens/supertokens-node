@@ -13,7 +13,17 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    signUPRequest,
+    createServerlessCacheForTesting,
+} = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
@@ -29,6 +39,7 @@ let generatePasswordResetToken = require("../../lib/build/recipe/emailpassword/a
 let passwordReset = require("../../lib/build/recipe/emailpassword/api/passwordReset").default;
 const express = require("express");
 const request = require("supertest");
+const { removeServerlessCache } = require("../../lib/build/utils");
 
 /**
  * TODO: (later) in passwordResetFunctions.ts:
@@ -47,6 +58,8 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

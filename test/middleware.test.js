@@ -12,7 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("./utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    killAllST,
+    cleanST,
+    extractInfoFromResponse,
+    createServerlessCacheForTesting,
+} = require("./utils");
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -21,6 +29,7 @@ let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+const { removeServerlessCache } = require("../lib/build/utils");
 
 /**
  * TODO: (Later) check that disabling default API actually disables it (for emailpassword)
@@ -30,6 +39,8 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

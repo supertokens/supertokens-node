@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
+const { printPath, setupST, startST, createServerlessCacheForTesting, killAllST, cleanST } = require("./utils");
 let ST = require("../");
 let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
@@ -23,11 +23,14 @@ let nock = require("nock");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 let EmailPassword = require("../recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+const { removeServerlessCache } = require("../lib/build/utils");
 
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 
@@ -92,7 +95,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 }),
             ],
         });
-        let q = Querier.getInstanceOrThrowError(undefined);
+        let q = Querier.getInstanceOrThrowError(false, undefined);
         await q.getAPIVersion();
 
         let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -130,7 +133,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
 
-        let querier = Querier.getInstanceOrThrowError(SessionRecipe.getInstanceOrThrowError());
+        let querier = Querier.getInstanceOrThrowError(false, SessionRecipe.getInstanceOrThrowError());
 
         nock("http://localhost:8080", {
             allowUnmocked: true,
@@ -183,7 +186,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
         try {
-            let q = Querier.getInstanceOrThrowError(undefined);
+            let q = Querier.getInstanceOrThrowError(false, undefined);
             await q.sendGetRequest(new NormalisedURLPath("", "/"), {});
             throw new Error();
         } catch (err) {
@@ -212,7 +215,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 }),
             ],
         });
-        let q = Querier.getInstanceOrThrowError(undefined);
+        let q = Querier.getInstanceOrThrowError(false, undefined);
         assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         assert.equal(await q.sendDeleteRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
@@ -243,7 +246,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 }),
             ],
         });
-        let q = Querier.getInstanceOrThrowError(undefined);
+        let q = Querier.getInstanceOrThrowError(false, undefined);
         assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         assert.equal(await q.sendPostRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();

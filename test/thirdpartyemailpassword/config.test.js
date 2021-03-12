@@ -13,12 +13,21 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    createServerlessCacheForTesting,
+} = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 let ThirdPartyEmailPasswordRecipe = require("../../lib/build/recipe/thirdpartyemailpassword/recipe").default;
+const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]")}`, function () {
     before(function () {
@@ -48,6 +57,8 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

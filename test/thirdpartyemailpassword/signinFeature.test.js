@@ -22,7 +22,7 @@ const {
     cleanST,
     resetAll,
     signUPRequest,
-    extractInfoFromResponse,
+    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -33,6 +33,7 @@ const express = require("express");
 const request = require("supertest");
 let nock = require("nock");
 const { response } = require("express");
+const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeature.test.js]")}`, function () {
     before(function () {
@@ -62,6 +63,8 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

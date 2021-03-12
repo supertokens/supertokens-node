@@ -1,10 +1,10 @@
 {
   "name": "supertokens-node",
-  "version": "4.1.2",
+  "version": "4.2.0",
   "description": "NodeJS driver for SuperTokens core",
   "main": "index.js",
   "scripts": {
-    "test": "TEST_MODE=testing npx mocha --timeout 500000",
+    "test": "TEST_MODE=testing SERVERLESS_CACHE_BASE_FILE_PATH=./.tmp npx mocha --timeout 500000",
     "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit",
     "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json",
     "pretty": "cd lib && npx prettier --write --config .prettierrc \"ts/**/*.ts\" \"build/**/*.js\" \"../test/**/*.js\"",

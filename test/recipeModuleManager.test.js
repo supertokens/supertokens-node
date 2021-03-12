@@ -12,7 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("./utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    createServerlessCacheForTesting,
+    killAllST,
+    cleanST,
+    resetAll,
+} = require("./utils");
 let { ProcessState } = require("../lib/build/processState");
 let ST = require("../");
 let Session = require("../recipe/session");
@@ -26,6 +34,7 @@ let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").de
 const express = require("express");
 const assert = require("assert");
 const request = require("supertest");
+const { removeServerlessCache } = require("../lib/build/utils");
 
 /**
  *
@@ -39,6 +48,8 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
         resetTestRecipies();
     });
@@ -92,7 +103,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await startST();
 
         try {
-            await Querier.getInstanceOrThrowError();
+            await Querier.getInstanceOrThrowError(false);
             assert(false);
         } catch (err) {
             if (err.type !== ST.Error.GENERAL_ERROR) {
@@ -116,7 +127,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             ],
         });
 
-        await Querier.getInstanceOrThrowError();
+        await Querier.getInstanceOrThrowError(false);
     });
 
     // Check that modules have been inited when we call supertokens.init

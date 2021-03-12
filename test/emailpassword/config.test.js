@@ -12,7 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    createServerlessCacheForTesting,
+} = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
@@ -25,11 +34,14 @@ const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let utils = require("../../lib/build/recipe/emailpassword/utils");
+const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

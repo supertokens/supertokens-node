@@ -21,6 +21,7 @@ const {
     cleanST,
     extractInfoFromResponse,
     setKeyValueInConfig,
+    createServerlessCacheForTesting,
 } = require("./utils");
 let SuperTokens = require("../");
 let Session = require("../recipe/session/faunadb");
@@ -32,11 +33,14 @@ let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let { maxVersion } = require("../lib/build/utils");
 let faunadb = require("faunadb");
 const q = faunadb.query;
+const { removeServerlessCache } = require("../lib/build/utils");
 
 describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 
@@ -584,7 +588,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        let currCDIVersion = await Querier.getInstanceOrThrowError().getAPIVersion();
+        let currCDIVersion = await Querier.getInstanceOrThrowError(false).getAPIVersion();
         if (maxVersion(currCDIVersion, "2.1") === "2.1") {
             assert(cookies.accessTokenDomain === "localhost" || cookies.accessTokenDomain === "supertokens.io");
             assert(cookies.refreshTokenDomain === "localhost" || cookies.refreshTokenDomain === "supertokens.io");

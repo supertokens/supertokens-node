@@ -13,7 +13,7 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST } = require("./utils");
+const { printPath, setupST, startST, createServerlessCacheForTesting, killAllST, cleanST } = require("./utils");
 let assert = require("assert");
 const httpMocks = require("node-mocks-http");
 let { ProcessState } = require("../lib/build/processState");
@@ -22,6 +22,7 @@ const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
 const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
+const { removeServerlessCache } = require("../lib/build/utils");
 
 describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
     describe("Backward compatbility superTokensMiddleware", function () {
@@ -29,6 +30,8 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             await killAllST();
             await setupST();
             await startST();
+            await createServerlessCacheForTesting();
+            await removeServerlessCache();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
@@ -241,6 +244,8 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             await killAllST();
             await setupST();
             await startST();
+            await createServerlessCacheForTesting();
+            await removeServerlessCache();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {

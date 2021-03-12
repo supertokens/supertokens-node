@@ -12,12 +12,21 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("./utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    createServerlessCacheForTesting,
+} = require("./utils");
 let STExpress = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
 let assert = require("assert");
-let { ProcessState } = require("../lib/build/processState");
+let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let { normaliseURLPathOrThrowError } = require("../lib/build/normalisedURLPath");
 let { normaliseURLDomainOrThrowError } = require("../lib/build/normalisedURLDomain");
 let { normaliseSessionScopeOrThrowError } = require("../lib/build/recipe/session/utils");
@@ -26,6 +35,7 @@ let SuperTokens = require("../lib/build/supertokens").default;
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/recipe/session/utils");
+const { removeServerlessCache, storeIntoTempFolderForServerlessCache } = require("../lib/build/utils");
 
 /**
  * TODO: (Later) test config for faunadb session module
@@ -35,6 +45,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 
@@ -1247,5 +1259,75 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://localhost:3000"), "localhost");
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://test.com:3567"), "test.com");
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://test.com:3567"), "test.com");
+    });
+
+    it("testing no calls to the core are happening (on supertokens.init) if the cache files exist with proper values", async function () {
+        await startST();
+        {
+            let verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
+                2000
+            );
+            assert(verifyRequestHelperState === undefined);
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                isInServerlessEnv: true,
+                recipeList: [Session.init()],
+            });
+
+            verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
+                2000
+            );
+            assert(verifyRequestHelperState !== undefined);
+            resetAll();
+        }
+
+        ProcessState.getInstance().reset();
+
+        {
+            let verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
+                2000
+            );
+            assert(verifyRequestHelperState === undefined);
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                isInServerlessEnv: true,
+                recipeList: [Session.init()],
+            });
+
+            verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
+                2000
+            );
+            assert(verifyRequestHelperState === undefined);
+            resetAll();
+        }
+    });
+
+    it("testing storeIntoTempFolderForServerlessCache doesn't throw error if the filePath doesn't exists", async function () {
+        try {
+            await storeIntoTempFolderForServerlessCache("/random/path/to/some/file", "data");
+            assert(true);
+        } catch (err) {
+            throw err;
+        }
     });
 });

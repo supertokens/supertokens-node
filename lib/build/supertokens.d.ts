@@ -5,6 +5,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 export default class SuperTokens {
     private static instance;
     appInfo: NormalisedAppinfo;
+    isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
     constructor(config: TypeInput);
     sendTelemetry: () => Promise<void>;

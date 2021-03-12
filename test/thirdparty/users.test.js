@@ -12,13 +12,22 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, signInUPCustomRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    createServerlessCacheForTesting,
+    killAllST,
+    cleanST,
+    signInUPCustomRequest,
+} = require("../utils");
 const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/recipe/thirdparty");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
+const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function () {
     before(function () {
@@ -49,6 +58,8 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
     beforeEach(async function () {
         await killAllST();
         await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

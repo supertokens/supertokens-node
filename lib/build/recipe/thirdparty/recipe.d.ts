@@ -11,7 +11,7 @@ export default class Recipe extends RecipeModule {
     config: TypeNormalisedInput;
     emailVerificationRecipe: EmailVerificationRecipe;
     providers: TypeProvider[];
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, config: TypeInput, rIdToCore?: string);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput, rIdToCore?: string);
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];

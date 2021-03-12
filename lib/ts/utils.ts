@@ -1,13 +1,15 @@
 import STError from "./error";
 import { AppInfo, NormalisedAppinfo, HTTPMethod, TypeInput } from "./types";
 import * as express from "express";
-import { HEADER_RID } from "./constants";
+import { SERVERLESS_CACHE_API_VERSION_FILE_PATH, HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import SuperTokensError from "./error";
 import RecipeModule from "./recipeModule";
+import { readFile, writeFile, unlink, mkdir } from "fs";
+import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -203,5 +205,51 @@ export function validateTheStructureOfUserInput(
             payload: new Error(errorMessage),
             type: "GENERAL_ERROR",
         });
+    }
+}
+
+export async function getDataFromFileForServerlessCache<T>(filePath: string): Promise<T | undefined> {
+    try {
+        let dataFromFile = await new Promise<Buffer>((resolve, reject) => {
+            readFile(filePath, (err, data) => {
+                if (err !== undefined && err !== null) {
+                    reject(err);
+                }
+                resolve(data);
+            });
+        });
+        return JSON.parse(dataFromFile.toString());
+    } catch (err) {
+        return undefined;
+    }
+}
+
+export async function storeIntoTempFolderForServerlessCache(filePath: string, data: any) {
+    try {
+        await new Promise(async (resolve, reject) => {
+            writeFile(filePath, JSON.stringify(data), (err) => {
+                resolve(undefined);
+            });
+        });
+    } catch (err) {}
+}
+
+async function removeFile(filePath: string) {
+    try {
+        await new Promise((resolve, reject) => {
+            unlink(filePath, (err) => {
+                if (err !== undefined && err !== null) {
+                    reject(err);
+                }
+                resolve(undefined);
+            });
+        });
+    } catch (err) {}
+}
+
+export async function removeServerlessCache() {
+    let tempFilesPath = [SERVERLESS_CACHE_API_VERSION_FILE_PATH, SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH];
+    for (let i = 0; i < tempFilesPath.length; i++) {
+        await removeFile(tempFilesPath[i]);
     }
 }

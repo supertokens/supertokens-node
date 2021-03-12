@@ -23,6 +23,7 @@ import {
     sendNon200Response,
     assertThatBodyParserHasBeenUsed,
     validateTheStructureOfUserInput,
+    removeServerlessCache,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
@@ -36,6 +37,8 @@ export default class SuperTokens {
     private static instance: SuperTokens | undefined;
 
     appInfo: NormalisedAppinfo;
+
+    isInServerlessEnv: boolean;
 
     recipeModules: RecipeModule[];
 
@@ -56,8 +59,24 @@ export default class SuperTokens {
             });
         }
 
+        this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
+
+        if (!this.isInServerlessEnv) {
+            /**
+             * remove the files from the temp file-system.
+             * for users using this lib in a serverless execution environment,
+             * if the users updates/changes the core version they are using,
+             * handshake info and api version that are stored in the temp files
+             * might also be required to be updated. User can enforce this by stetting
+             * this boolean to false, which would remove the files from the temporary
+             * directory. The user can then again set it to true which would store the
+             * updated handshake info and apiversion in the temp files
+             */
+            removeServerlessCache();
+        }
+
         this.recipeModules = config.recipeList.map((func) => {
-            return func(this.appInfo);
+            return func(this.appInfo, this.isInServerlessEnv);
         });
 
         // check if duplicate APIs are exposed by any recipe by mistake
@@ -91,7 +110,7 @@ export default class SuperTokens {
 
     sendTelemetry = async () => {
         try {
-            let querier = Querier.getInstanceOrThrowError(undefined);
+            let querier = Querier.getInstanceOrThrowError(this.isInServerlessEnv, undefined);
             let response = await querier.sendGetRequest(new NormalisedURLPath(undefined, "/telemetry"), {});
             let telemetryId: string | undefined;
             if (response.exists) {

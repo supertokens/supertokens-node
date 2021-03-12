@@ -7,10 +7,12 @@ export default abstract class RecipeModule {
     private recipeId;
     private querier;
     private appInfo;
+    private isInServerlessEnv;
     private rIdToCore;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, rIdToCore?: string);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, rIdToCore?: string);
     getRecipeId: () => string;
     getAppInfo: () => NormalisedAppinfo;
+    checkIfInServerlessEnv: () => boolean;
     getQuerier: () => Querier;
     isErrorFromThisRecipeBasedOnRid: (err: any) => err is STError;
     returnAPIIdIfCanHandleRequest: (path: NormalisedURLPath, method: HTTPMethod) => string | undefined;
