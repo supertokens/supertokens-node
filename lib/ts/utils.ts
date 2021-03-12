@@ -155,6 +155,16 @@ export async function assertThatBodyParserHasBeenUsed(
                     recipe,
                 });
             }
+        } else if (typeof req.body === "string") {
+            try {
+                req.body = JSON.parse(req.body);
+            } catch (err) {
+                throw new STError({
+                    type: STError.BAD_INPUT_ERROR,
+                    message: "API input error: Please make sure to pass a valid JSON input in thr request body",
+                    recipe,
+                });
+            }
         }
     } else if (method === "delete" || method === "get") {
         if (req.query === undefined) {
