@@ -13,8 +13,8 @@ export default class Recipe extends RecipeModule {
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction, path: NormalisedURLPath, method: HTTPMethod) => Promise<void>;
-    handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
+    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction, _: NormalisedURLPath, __: HTTPMethod) => Promise<void>;
+    handleError: (err: STError, _: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
     isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
     createEmailVerificationToken: (userId: string, email: string) => Promise<string>;

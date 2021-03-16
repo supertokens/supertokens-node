@@ -23,7 +23,6 @@ export default class SuperTokensError {
     public message: string;
     public payload: any;
     public recipe: RecipeModule | undefined;
-    private errMagic = SuperTokensError.errMagic;
 
     constructor(
         options:

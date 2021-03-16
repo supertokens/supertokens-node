@@ -24,7 +24,7 @@ export default async function authorisationUrlAPI(
     recipeInstance: Recipe,
     req: Request,
     res: Response,
-    next: NextFunction
+    _: NextFunction
 ) {
     let queryParams = req.query;
     let thirdPartyId = queryParams.thirdPartyId;

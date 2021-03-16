@@ -90,33 +90,29 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-async function defaultValidator(value: any): Promise<string | undefined> {
-    return undefined;
-}
+async function defaultHandlePostSignUp(_: User, __: TypeContextEmailPassword | TypeContextThirdParty) {}
 
-async function defaultHandlePostSignUp(user: User, context: TypeContextEmailPassword | TypeContextThirdParty) {}
-
-async function defaultHandlePostSignIn(user: User, context: TypeContextEmailPassword | TypeContextThirdParty) {}
+async function defaultHandlePostSignIn(_: User, __: TypeContextEmailPassword | TypeContextThirdParty) {}
 
 async function defaultSetSessionDataForSession(
-    user: User,
-    context: TypeContextEmailPassword | TypeContextThirdParty,
-    action: "signin" | "signup"
+    _: User,
+    __: TypeContextEmailPassword | TypeContextThirdParty,
+    ___: "signin" | "signup"
 ) {
     return {};
 }
 
 async function defaultSetJwtPayloadForSession(
-    user: User,
-    context: TypeContextEmailPassword | TypeContextThirdParty,
-    action: "signin" | "signup"
+    _: User,
+    __: TypeContextEmailPassword | TypeContextThirdParty,
+    ___: "signin" | "signup"
 ) {
     return {};
 }
 
 function validateAndNormaliseSignUpConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     config?: TypeInputSignUp
 ): TypeNormalisedInputSignUp {
     let disableDefaultImplementation =
@@ -140,8 +136,8 @@ function validateAndNormaliseSignUpConfig(
 }
 
 function validateAndNormaliseSessionFeatureConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     config?: TypeInputSessionFeature
 ): TypeNormalisedInputSessionFeature {
     let setJwtPayload =
@@ -161,8 +157,8 @@ function validateAndNormaliseSessionFeatureConfig(
 }
 
 function validateAndNormaliseSignInConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     config?: TypeInputSignIn
 ): TypeNormalisedInputSignIn {
     let disableDefaultImplementation =
@@ -183,7 +179,7 @@ function validateAndNormaliseSignInConfig(
 
 function validateAndNormaliseEmailVerificationConfig(
     recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: NormalisedAppinfo,
     config?: TypeInputEmailVerificationFeature
 ): TypeNormalisedInputEmailVerification {
     return config === undefined
@@ -245,8 +241,8 @@ function validateAndNormaliseEmailVerificationConfig(
 }
 
 function validateAndNormaliseSignOutConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     config?: TypeInputSignOut
 ): TypeNormalisedInputSignOut {
     let disableDefaultImplementation =

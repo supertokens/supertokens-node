@@ -1,5 +1,5 @@
 import STError from "./error";
-import { AppInfo, NormalisedAppinfo, HTTPMethod, TypeInput } from "./types";
+import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
 import * as express from "express";
 import { SERVERLESS_CACHE_API_VERSION_FILE_PATH, HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
@@ -8,7 +8,7 @@ import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import SuperTokensError from "./error";
 import RecipeModule from "./recipeModule";
-import { readFile, writeFile, unlink, mkdir } from "fs";
+import { readFile, writeFile, unlink } from "fs";
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
@@ -236,8 +236,8 @@ export async function getDataFromFileForServerlessCache<T>(filePath: string): Pr
 
 export async function storeIntoTempFolderForServerlessCache(filePath: string, data: any) {
     try {
-        await new Promise(async (resolve, reject) => {
-            writeFile(filePath, JSON.stringify(data), (err) => {
+        await new Promise(async (resolve, _) => {
+            writeFile(filePath, JSON.stringify(data), (_) => {
                 resolve(undefined);
             });
         });

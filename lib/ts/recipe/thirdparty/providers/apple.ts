@@ -14,7 +14,6 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { validateTheStructureOfUserInput } from "../../../utils";
-import Recipe from "../recipe";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
 import { Request } from "express";

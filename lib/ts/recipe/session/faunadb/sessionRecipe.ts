@@ -66,6 +66,7 @@ export default class SessionRecipe extends RecipeModule {
 
         // we override the parent recipe's functions with the modified ones.
         this.parentRecipe.createNewSession = this.createNewSession;
+        // @ts-ignore
         this.parentRecipe.getSession = this.getSession;
         this.parentRecipe.refreshSession = this.refreshSession;
 

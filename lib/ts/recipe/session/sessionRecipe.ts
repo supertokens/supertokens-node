@@ -56,7 +56,7 @@ export default class SessionRecipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         // Solving the cold start problem
-        this.getHandshakeInfo().catch((ignored) => {
+        this.getHandshakeInfo().catch((_) => {
             // ignored
         });
     }
@@ -120,12 +120,12 @@ export default class SessionRecipe extends RecipeModule {
     };
 
     handleAPIRequest = async (
-        id: string,
+        _: string,
         req: express.Request,
         res: express.Response,
         next: express.NextFunction,
-        path: NormalisedURLPath,
-        method: HTTPMethod
+        __: NormalisedURLPath,
+        ___: HTTPMethod
     ) => {
         await handleRefreshAPI(this, req, res, next);
     };
