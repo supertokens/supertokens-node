@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Optimization for serverless execution
 - Config to enable serverless optimisation
+## [4.1.3] - 2021-03-19
+### Changed
+- Fixes bug in NextJS wrapper which called resolve even though there was an error
 
 ## [4.1.2] - 2021-03-05
 ### Changed
