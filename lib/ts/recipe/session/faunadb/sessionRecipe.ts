@@ -46,7 +46,7 @@ export default class SessionRecipe extends RecipeModule {
     superGetSession: (
         req: express.Request,
         res: express.Response,
-        doAntiCsrfCheck: boolean
+        doAntiCsrfCheck?: boolean
     ) => Promise<OriginalSessionClass>;
 
     superRefreshSession: (req: express.Request, res: express.Response) => Promise<OriginalSessionClass>;
@@ -66,7 +66,6 @@ export default class SessionRecipe extends RecipeModule {
 
         // we override the parent recipe's functions with the modified ones.
         this.parentRecipe.createNewSession = this.createNewSession;
-        // @ts-ignore
         this.parentRecipe.getSession = this.getSession;
         this.parentRecipe.refreshSession = this.refreshSession;
 
@@ -241,7 +240,7 @@ export default class SessionRecipe extends RecipeModule {
         }
     };
 
-    getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): Promise<Session> => {
+    getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean): Promise<Session> => {
         let originalSession = await this.superGetSession(req, res, doAntiCsrfCheck);
         return new Session(
             this.parentRecipe,

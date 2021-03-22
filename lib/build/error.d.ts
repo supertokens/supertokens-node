@@ -7,6 +7,7 @@ export default class SuperTokensError {
     message: string;
     payload: any;
     recipe: RecipeModule | undefined;
+    private errMagic;
     constructor(options: {
         recipe: RecipeModule | undefined;
         message: string;

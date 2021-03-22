@@ -23,6 +23,8 @@ export default class SuperTokensError {
     public message: string;
     public payload: any;
     public recipe: RecipeModule | undefined;
+    // @ts-ignore
+    private errMagic: string;
 
     constructor(
         options:
@@ -48,6 +50,7 @@ export default class SuperTokensError {
         this.message = options.type === "GENERAL_ERROR" ? options.payload.message : (options as any).message;
         this.payload = options.payload;
         this.recipe = options.recipe;
+        this.errMagic = SuperTokensError.errMagic;
     }
 
     getRecipeId = () => {
