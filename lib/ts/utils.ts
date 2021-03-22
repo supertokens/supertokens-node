@@ -44,7 +44,8 @@ export function maxVersion(version1: string, version2: string): string {
 
 export function normaliseInputAppInfoOrThrowError(
     recipe: RecipeModule | undefined,
-    appInfo: AppInfo
+    appInfo: AppInfo,
+    apiWebProxyPath: NormalisedURLPath
 ): NormalisedAppinfo {
     if (appInfo === undefined) {
         throw new STError({
@@ -80,10 +81,12 @@ export function normaliseInputAppInfoOrThrowError(
         appName: appInfo.appName,
         websiteDomain: new NormalisedURLDomain(recipe, appInfo.websiteDomain),
         apiDomain: new NormalisedURLDomain(recipe, appInfo.apiDomain),
-        apiBasePath:
+        apiBasePath: apiWebProxyPath.appendPath(
+            recipe,
             appInfo.apiBasePath === undefined
                 ? new NormalisedURLPath(recipe, "/auth")
-                : new NormalisedURLPath(recipe, appInfo.apiBasePath),
+                : new NormalisedURLPath(recipe, appInfo.apiBasePath)
+        ),
         websiteBasePath:
             appInfo.websiteBasePath === undefined
                 ? new NormalisedURLPath(recipe, "/auth")

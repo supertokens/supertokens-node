@@ -20,6 +20,7 @@ export declare type TypeInput = {
         connectionURI: string;
         apiKey?: string;
     };
+    apiWebProxyPath?: string;
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
@@ -70,6 +71,9 @@ export declare const InputSchema: {
             type: string;
         };
         isInServerlessEnv: {
+            type: string;
+        };
+        apiWebProxyPath: {
             type: string;
         };
     };
