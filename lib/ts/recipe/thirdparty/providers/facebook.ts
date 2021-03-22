@@ -15,7 +15,6 @@
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
 import { validateTheStructureOfUserInput } from "../../../utils";
-import Recipe from "../recipe";
 
 type TypeThirdPartyProviderFacebookConfig = {
     clientId: string;

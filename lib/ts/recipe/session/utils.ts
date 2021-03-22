@@ -19,7 +19,6 @@ import {
     TypeNormalisedInput,
     NormalisedErrorHandlers,
     InputSchema,
-    HandshakeInfo,
 } from "./types";
 import {
     setFrontTokenInHeaders,
@@ -39,7 +38,6 @@ import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 import RecipeModule from "../../recipeModule";
-import { readFile, writeFile } from "fs";
 
 export function normaliseSessionScopeOrThrowError(recipe: RecipeModule | undefined, sessionScope: string): string {
     function helper(sessionScope: string): string {

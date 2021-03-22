@@ -18,7 +18,7 @@ import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import STError from "../error";
 
-export default async function emailExists(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
+export default async function emailExists(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
 
     // step 1

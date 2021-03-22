@@ -38,6 +38,7 @@ export type TypeInput = {
         connectionURI: string;
         apiKey?: string;
     };
+    apiWebProxyPath?: string;
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
@@ -81,6 +82,7 @@ export const InputSchema = {
         },
         telemetry: TypeBoolean,
         isInServerlessEnv: TypeBoolean,
+        apiWebProxyPath: TypeString,
     },
     required: ["supertokens", "appInfo", "recipeList"],
     additionalProperties: false,

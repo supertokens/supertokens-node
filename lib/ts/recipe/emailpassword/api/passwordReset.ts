@@ -20,7 +20,7 @@ import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
 
-export default async function passwordReset(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
+export default async function passwordReset(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
     // step 1

@@ -21,7 +21,7 @@ import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
 
-export default async function signInAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
+export default async function signInAPI(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
 
     // step 1

@@ -22,7 +22,7 @@ import {
 } from "./emailVerificationFunctions";
 
 export function validateAndNormaliseUserInput(
-    recipeInstance: Recipe,
+    _: Recipe,
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
@@ -40,9 +40,7 @@ export function validateAndNormaliseUserInput(
             : config.createAndSendCustomEmail;
 
     let handlePostEmailVerification =
-        config.handlePostEmailVerification === undefined
-            ? async (user: User) => {}
-            : config.handlePostEmailVerification;
+        config.handlePostEmailVerification === undefined ? async (_: User) => {} : config.handlePostEmailVerification;
 
     let getEmailForUserId = config.getEmailForUserId;
 

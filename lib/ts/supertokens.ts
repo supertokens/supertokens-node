@@ -36,6 +36,8 @@ import SuperTokensError from "./error";
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
 
+    apiWebProxyPath: NormalisedURLPath;
+
     appInfo: NormalisedAppinfo;
 
     isInServerlessEnv: boolean;
@@ -44,7 +46,11 @@ export default class SuperTokens {
 
     constructor(config: TypeInput) {
         validateTheStructureOfUserInput(config, InputSchema, "init function", undefined);
-        this.appInfo = normaliseInputAppInfoOrThrowError(undefined, config.appInfo);
+        this.apiWebProxyPath =
+            config.apiWebProxyPath !== undefined
+                ? new NormalisedURLPath(undefined, config.apiWebProxyPath)
+                : new NormalisedURLPath(undefined, "");
+        this.appInfo = normaliseInputAppInfoOrThrowError(undefined, config.appInfo, this.apiWebProxyPath);
 
         Querier.init(
             config.supertokens.connectionURI.split(";").map((h) => new NormalisedURLDomain(undefined, h)),
@@ -164,9 +170,9 @@ export default class SuperTokens {
 
     middleware = () => {
         return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
-            let path = new NormalisedURLPath(
+            let path = this.apiWebProxyPath.appendPath(
                 undefined,
-                request.originalUrl === undefined ? request.url : request.originalUrl
+                new NormalisedURLPath(undefined, request.originalUrl === undefined ? request.url : request.originalUrl)
             );
             let method: HTTPMethod = normaliseHttpMethod(request.method);
 

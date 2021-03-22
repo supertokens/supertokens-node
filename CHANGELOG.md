@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Optimization for serverless execution
 - Config to enable serverless optimisation
+- apiWebProxyPath config added. This will allow user to config proxy path which would be used by browser while making request to the api-server. This enables to set correct value for the refreshTokenPath.
+### Changed
+- allowing empty string to be passed in request body
+- doAntiCsrfCheck parameter for getSession in FaunaDB is now optional
 
 ## [4.1.2] - 2021-03-05
 ### Changed

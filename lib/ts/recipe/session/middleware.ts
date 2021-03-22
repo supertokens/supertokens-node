@@ -45,8 +45,8 @@ export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boo
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
-    message: string,
-    request: Request,
+    _: string,
+    __: Request,
     response: Response,
     next: NextFunction
 ) {
@@ -64,8 +64,8 @@ export async function sendTryRefreshTokenResponse(
 
 export async function sendUnauthorisedResponse(
     recipeInstance: SessionRecipe,
-    message: string,
-    request: Request,
+    _: string,
+    __: Request,
     response: Response,
     next: NextFunction
 ) {
@@ -79,8 +79,8 @@ export async function sendUnauthorisedResponse(
 export async function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
     sessionHandle: string,
-    userId: string,
-    request: Request,
+    _: string,
+    __: Request,
     response: Response,
     next: NextFunction
 ) {

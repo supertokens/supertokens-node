@@ -18,7 +18,7 @@ import { NormalisedAppinfo } from "../../types";
 import axios from "axios";
 
 export function getEmailVerificationURL(appInfo: NormalisedAppinfo) {
-    return async (ignored: User): Promise<string> => {
+    return async (_: User): Promise<string> => {
         return (
             appInfo.websiteDomain.getAsStringDangerous() +
             appInfo.websiteBasePath.getAsStringDangerous() +

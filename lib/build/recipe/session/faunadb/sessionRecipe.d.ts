@@ -16,7 +16,7 @@ export default class SessionRecipe extends RecipeModule {
         userCollectionName: string;
     };
     superCreateNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<OriginalSessionClass>;
-    superGetSession: (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) => Promise<OriginalSessionClass>;
+    superGetSession: (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean) => Promise<OriginalSessionClass>;
     superRefreshSession: (req: express.Request, res: express.Response) => Promise<OriginalSessionClass>;
     q: typeof faunadb.query;
     faunaDBClient: faunadb.Client;
@@ -31,6 +31,6 @@ export default class SessionRecipe extends RecipeModule {
     isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
     getFDAT: (session: Session) => Promise<any>;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
-    getSession: (req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) => Promise<Session>;
+    getSession: (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean | undefined) => Promise<Session>;
     refreshSession: (req: express.Request, res: express.Response) => Promise<Session>;
 }

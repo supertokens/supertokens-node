@@ -116,8 +116,8 @@ export default class Recipe extends RecipeModule {
         req: express.Request,
         res: express.Response,
         next: express.NextFunction,
-        path: NormalisedURLPath,
-        method: HTTPMethod
+        _: NormalisedURLPath,
+        __: HTTPMethod
     ) => {
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
             return await generateEmailVerifyTokenAPI(this, req, res, next);
@@ -126,12 +126,7 @@ export default class Recipe extends RecipeModule {
         }
     };
 
-    handleError = (
-        err: STError,
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction
-    ): void => {
+    handleError = (err: STError, _: express.Request, response: express.Response, next: express.NextFunction): void => {
         if (err.type === STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR) {
             return send200Response(response, {
                 status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",

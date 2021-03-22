@@ -23,7 +23,7 @@ export default async function generateEmailVerifyToken(
     recipeInstance: Recipe,
     req: Request,
     res: Response,
-    next: NextFunction
+    _: NextFunction
 ) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 

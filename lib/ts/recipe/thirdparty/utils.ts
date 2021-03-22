@@ -32,7 +32,7 @@ import {
     TypeNormalisedInputSessionFeature,
 } from "./types";
 
-async function defaultHandlePostSignUpIn(user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) {}
+async function defaultHandlePostSignUpIn(_: User, __: any, ___: boolean) {}
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -65,25 +65,17 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-async function defaultSetSessionDataForSession(
-    user: User,
-    thirdPartyAuthCodeResponse: any,
-    action: "signin" | "signup"
-) {
+async function defaultSetSessionDataForSession(_: User, __: any, ___: "signin" | "signup") {
     return {};
 }
 
-async function defaultSetJwtPayloadForSession(
-    user: User,
-    thirdPartyAuthCodeResponse: any,
-    action: "signin" | "signup"
-) {
+async function defaultSetJwtPayloadForSession(_: User, __: any, ___: "signin" | "signup") {
     return {};
 }
 
 function validateAndNormaliseSessionFeatureConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     config?: TypeInputSessionFeature
 ): TypeNormalisedInputSessionFeature {
     let setJwtPayload =
@@ -104,7 +96,7 @@ function validateAndNormaliseSessionFeatureConfig(
 
 function validateAndNormaliseSignInAndUpConfig(
     recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: NormalisedAppinfo,
     config: TypeInputSignInAndUp
 ): TypeNormalisedInputSignInAndUp {
     let disableDefaultImplementation =
@@ -133,8 +125,8 @@ function validateAndNormaliseSignInAndUpConfig(
 }
 
 function validateAndNormaliseSignOutConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     config?: TypeInputSignOutFeature
 ): TypeNormalisedInputSignOutFeature {
     let disableDefaultImplementation =
@@ -149,7 +141,7 @@ function validateAndNormaliseSignOutConfig(
 
 function validateAndNormaliseEmailVerificationConfig(
     recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: NormalisedAppinfo,
     config?: TypeInputEmailVerificationFeature
 ): TypeNormalisedInputEmailVerification {
     return config === undefined
