@@ -108,17 +108,15 @@ export function supertokensRedwoodGraphQLHandler(
                         }
                         return callback(err, callbackResult);
                     };
-                    let getCurrentUser = createGraphQLHandlerOptions.getCurrentUser;
-                    delete createGraphQLHandlerOptions.getCurrentUser;
                     createGraphQLHandler({
+                        ...createGraphQLHandlerOptions,
                         getCurrentUser: async (___: any, __: any) => {
-                            return await getCurrentUser(superTokensSession, {
+                            return await createGraphQLHandlerOptions.getCurrentUser(superTokensSession, {
                                 type: "supertokens",
                                 token: "",
                                 schema: "",
                             });
                         },
-                        ...createGraphQLHandlerOptions,
                     })(event, context, customCallback);
                 }
             });
