@@ -27,7 +27,7 @@ export function supertokensServerlessHandler(options: {
     app.use(bodyParser.urlencoded({ extended: false }));
     app.use(bodyParser.json());
 
-    app.use(middleware);
+    app.use(middleware());
 
     app.use(options.handler);
 
