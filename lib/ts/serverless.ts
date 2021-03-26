@@ -86,7 +86,7 @@ export function supertokensRedwoodGraphQLHandler(
                             }
                             let resultHeaderKeys = Object.keys(result.headers);
                             for (let i = 0; i < resultHeaderKeys.length; i++) {
-                                if (callbackResult.headers[resultHeaderKeys[i]] !== undefined) {
+                                if (callbackResult.headers[resultHeaderKeys[i]] === undefined) {
                                     callbackResult.headers[resultHeaderKeys[i]] = result.headers[resultHeaderKeys[i]];
                                 }
                             }
