@@ -15,6 +15,7 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
+export { supertokensRedwoodGraphQLHandler, supertokensServerlessHandler } from "./serverless";
 
 // For Express
 export default class SuperTokensWrapper {
