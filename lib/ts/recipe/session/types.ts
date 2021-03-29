@@ -87,6 +87,9 @@ export type TypeInput = {
     sessionRefreshFeature?: {
         disableDefaultImplementation?: boolean;
     };
+    signOutFeature?: {
+        disableDefaultImplementation?: boolean;
+    };
     errorHandlers?: ErrorHandlers;
     enableAntiCsrf?: boolean;
 };
@@ -99,6 +102,13 @@ export const InputSchema = {
         sessionExpiredStatusCode: TypeNumber,
         cookieDomain: TypeString,
         sessionRefreshFeature: {
+            type: "object",
+            properties: {
+                disableDefaultImplementation: TypeBoolean,
+            },
+            additionalProperties: false,
+        },
+        signOutFeature: {
             type: "object",
             properties: {
                 disableDefaultImplementation: TypeBoolean,
@@ -122,6 +132,9 @@ export type TypeNormalisedInput = {
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     sessionRefreshFeature: {
+        disableDefaultImplementation: boolean;
+    };
+    signOutFeature: {
         disableDefaultImplementation: boolean;
     };
     errorHandlers: NormalisedErrorHandlers;

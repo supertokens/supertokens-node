@@ -13,10 +13,10 @@
  * under the License.
  */
 import { Response, NextFunction, Request } from "express";
-import SessionRecipe from "./sessionRecipe";
-import { send200Response } from "../../utils";
+import SessionRecipe from "../sessionRecipe";
+import { send200Response } from "../../../utils";
 
-export async function handleRefreshAPI(
+export default async function handleRefreshAPI(
     recipeInstance: SessionRecipe,
     request: Request,
     response: Response,
