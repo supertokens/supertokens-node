@@ -15,18 +15,18 @@
 
 import Recipe from "../sessionRecipe";
 import { Request, Response, NextFunction } from "express";
-import Session, { SessionContainer } from "../";
 import { send200Response } from "../../../utils";
+import Error from "../error";
 
 export default async function signOutAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 
     // step 1
-    let session: SessionContainer;
+    let session;
     try {
-        session = await Session.getSession(req, res);
+        session = await recipeInstance.getSession(req, res);
     } catch (err) {
-        if (Session.Error.isErrorFromSuperTokens(err) && err.type === Session.Error.UNAUTHORISED) {
+        if (Error.isErrorFromSuperTokens(err) && err.type === Error.UNAUTHORISED) {
             // The session is expired / does not exist anyway. So we return OK
             return send200Response(res, {
                 status: "OK",
