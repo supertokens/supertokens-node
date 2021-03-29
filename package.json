@@ -37,8 +37,7 @@
     "cookie": "0.4.0",
     "jsonschema": "1.4.0",
     "jsonwebtoken": "8.5.1",
-    "psl": "1.8.0",
-    "serverless-http": "^2.7.0"
+    "psl": "1.8.0"
   },
   "devDependencies": {
     "@types/cookie": "0.3.3",
@@ -46,7 +45,6 @@
     "@types/jsonwebtoken": "8.5.0",
     "@types/psl": "1.1.0",
     "@types/validator": "10.11.0",
-    "aws-lambda": "^1.0.6",
     "cookie-parser": "^1.4.5",
     "express": "4.17.1",
     "faunadb": "^3.0.1",

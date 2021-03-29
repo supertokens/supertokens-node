@@ -1,7 +1,6 @@
 /// <reference types="express" />
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-export { supertokensRedwoodGraphQLHandler, supertokensServerlessHandler } from "./serverless";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
