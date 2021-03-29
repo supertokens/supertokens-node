@@ -56,6 +56,9 @@ export declare type TypeInput = {
     sessionRefreshFeature?: {
         disableDefaultImplementation?: boolean;
     };
+    signOutFeature?: {
+        disableDefaultImplementation?: boolean;
+    };
     errorHandlers?: ErrorHandlers;
     enableAntiCsrf?: boolean;
 };
@@ -75,6 +78,15 @@ export declare const InputSchema: {
             type: string;
         };
         sessionRefreshFeature: {
+            type: string;
+            properties: {
+                disableDefaultImplementation: {
+                    type: string;
+                };
+            };
+            additionalProperties: boolean;
+        };
+        signOutFeature: {
             type: string;
             properties: {
                 disableDefaultImplementation: {
@@ -120,6 +132,9 @@ export declare type TypeNormalisedInput = {
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
     sessionRefreshFeature: {
+        disableDefaultImplementation: boolean;
+    };
+    signOutFeature: {
         disableDefaultImplementation: boolean;
     };
     errorHandlers: NormalisedErrorHandlers;
