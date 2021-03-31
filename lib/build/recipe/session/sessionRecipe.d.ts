@@ -16,7 +16,7 @@ export default class SessionRecipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (_: string, req: express.Request, res: express.Response, next: express.NextFunction, __: NormalisedURLPath, ___: HTTPMethod) => Promise<void>;
+    handleAPIRequest: (id: string, req: express.Request, res: express.Response, next: express.NextFunction, __: NormalisedURLPath, ___: HTTPMethod) => Promise<void>;
     handleError: (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
     isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;

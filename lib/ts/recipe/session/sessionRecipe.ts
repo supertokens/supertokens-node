@@ -32,8 +32,9 @@ import {
     setFrontTokenInHeaders,
 } from "./cookieAndHeaders";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
-import { handleRefreshAPI } from "./api";
-import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, REFRESH_API_PATH } from "./constants";
+import handleRefreshAPI from "./api/refresh";
+import signOutAPI from "./api/signout";
+import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, REFRESH_API_PATH, SIGNOUT_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import {
     getDataFromFileForServerlessCache,
@@ -113,21 +114,31 @@ export default class SessionRecipe extends RecipeModule {
             {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(this, REFRESH_API_PATH),
-                id: "REFRESH",
+                id: REFRESH_API_PATH,
                 disabled: this.config.sessionRefreshFeature.disableDefaultImplementation,
+            },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGNOUT_API_PATH),
+                id: SIGNOUT_API_PATH,
+                disabled: this.config.signOutFeature.disableDefaultImplementation,
             },
         ];
     };
 
     handleAPIRequest = async (
-        _: string,
+        id: string,
         req: express.Request,
         res: express.Response,
         next: express.NextFunction,
         __: NormalisedURLPath,
         ___: HTTPMethod
     ) => {
-        await handleRefreshAPI(this, req, res, next);
+        if (id === REFRESH_API_PATH) {
+            return await handleRefreshAPI(this, req, res, next);
+        } else {
+            return await signOutAPI(this, req, res, next);
+        }
     };
 
     handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {

@@ -151,6 +151,17 @@ export function validateAndNormaliseUserInput(
         sessionRefreshFeature.disableDefaultImplementation = config.sessionRefreshFeature.disableDefaultImplementation;
     }
 
+    let signOutFeature = {
+        disableDefaultImplementation: false,
+    };
+    if (
+        config !== undefined &&
+        config.signOutFeature !== undefined &&
+        config.signOutFeature.disableDefaultImplementation !== undefined
+    ) {
+        signOutFeature.disableDefaultImplementation = config.signOutFeature.disableDefaultImplementation;
+    }
+
     let enableAntiCsrf =
         config === undefined || config.enableAntiCsrf === undefined ? cookieSameSite === "none" : config.enableAntiCsrf;
 
@@ -231,6 +242,7 @@ export function validateAndNormaliseUserInput(
         sessionRefreshFeature,
         errorHandlers,
         enableAntiCsrf,
+        signOutFeature,
     };
 }
 

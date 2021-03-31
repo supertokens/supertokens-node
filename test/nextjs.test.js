@@ -553,7 +553,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
             );
         });
 
-        it("Verify session successfully when session is present (check if it continues after)", async function () {
+        it("Verify session successfully when session is present (check if it continues after)", function (done) {
             const request = httpMocks.createRequest({
                 method: "GET",
                 url: "/api/auth/user/info",
@@ -563,15 +563,24 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 eventEmitter: require("events").EventEmitter,
             });
 
-            const error = await superTokensNextWrapper(
+            response.on("end", () => {
+                try {
+                    assert.deepStrictEqual(response._getStatusCode(), 401);
+                    return done();
+                } catch (err) {
+                    return done(err);
+                }
+            });
+
+            superTokensNextWrapper(
                 async (next) => {
                     return await Session.verifySession()(request, response, next);
                 },
                 request,
                 response
-            );
-            // Must continue if no error.
-            assert.deepStrictEqual(error, undefined);
+            ).then(() => {
+                return done(new Error("not come here"));
+            });
         });
 
         it("Create new session", async function () {
@@ -582,11 +591,6 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
 
             const response = httpMocks.createResponse({
                 eventEmitter: require("events").EventEmitter,
-            });
-
-            response.on("end", () => {
-                assert.deepStrictEqual(response._getStatusCode(), 401);
-                return done();
             });
 
             const session = await superTokensNextWrapper(

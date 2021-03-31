@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - allowing empty string to be passed in request body
 - doAntiCsrfCheck parameter for getSession in FaunaDB is now optional
+- Sign out API for session recipe
+
+## [4.1.3] - 2021-03-19
+### Changed
+- Fixes bug in NextJS wrapper which called resolve even though there was an error
 
 ## [4.1.2] - 2021-03-05
 ### Changed

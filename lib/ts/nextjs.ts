@@ -40,8 +40,14 @@ export default class NextJS {
     ): Promise<unknown> {
         return new Promise(async (resolve: any, reject: any) => {
             try {
-                const result = await middleware(next(request, response, resolve, reject));
-                return resolve(result);
+                let callbackCalled = false;
+                const result = await middleware((err) => {
+                    callbackCalled = true;
+                    next(request, response, resolve, reject)(err);
+                });
+                if (!callbackCalled) {
+                    return resolve(result);
+                }
             } catch (err) {
                 SuperTokens.errorHandler()(err, request, response, (errorHandlerError: any) => {
                     if (errorHandlerError !== undefined) {
