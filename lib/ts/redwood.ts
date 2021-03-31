@@ -94,9 +94,6 @@ class CustomResponse extends ServerResponse {
     };
 }
 
-// TODO: take serverless app as argument --DONE
-// TODO: this should be imported from supertokens-node/redwood --DONE
-// TODO: supertokensRedwoodGraphQLHandler -> supertokensGraphQLHandler --DONE
 export function supertokensGraphQLHandler(createGraphQLHandler: any, createGraphQLHandlerOptions: any) {
     return (event: any, context: any, callback: any): void => {
         if (
