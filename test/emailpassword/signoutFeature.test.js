@@ -154,6 +154,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
         let response = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
+                .set("rid", "emailpassword")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);

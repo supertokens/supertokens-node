@@ -223,6 +223,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
         let response = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
+                .set("rid", "thirdpartyemailpassword")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
