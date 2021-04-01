@@ -141,7 +141,7 @@ export declare type TypeNormalisedInput = {
     enableAntiCsrf: boolean;
 };
 export interface SessionRequest extends Request {
-    session: Session;
+    session?: Session;
 }
 export interface ErrorHandlerMiddleware {
     (message: string, request: Request, response: Response, next: NextFunction): void;
@@ -153,4 +153,8 @@ export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
     onTryRefreshToken: ErrorHandlerMiddleware;
     onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
+}
+export interface VerifySessionOptions {
+    antiCsrfCheck?: boolean;
+    sessionRequired?: boolean;
 }

@@ -126,9 +126,29 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handle", Session.verifySession(true), async (req, res) => {
+        app.get("/user/handleV0", Session.verifySession(true), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
+
+        app.get(
+            "/user/handleV1",
+            Session.verifySession({
+                antiCsrfCheck: true,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session.getHandle() });
+            }
+        );
+
+        app.get(
+            "/user/handleOptional",
+            Session.verifySession({
+                sessionRequired: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session !== undefined });
+            }
+        );
 
         app.post("/auth/session/refresh", Session.verifySession(), async (req, res, next) => {
             res.status(200).json({ message: true });
@@ -175,7 +195,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
                 ])
@@ -190,9 +210,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 })
         );
         // not passing anit csrf even if requried
-        let r2 = await new Promise((resolve) =>
+        let r2V0 = await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
                 ])
@@ -205,12 +225,60 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r2 === "try refresh token");
+        assert(r2V0 === "try refresh token");
+
+        let r2V1 = await new Promise((resolve) =>
+            request(app)
+                .get("/user/handleV1")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(401)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r2V1 === "try refresh token");
+
+        let r2Optional = await new Promise((resolve) =>
+            request(app)
+                .get("/user/handleOptional")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r2Optional === true);
+
+        r2Optional = await new Promise((resolve) =>
+            request(app)
+                .get("/user/handleOptional")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r2Optional === false);
 
         // not passing id refresh token
-        let r3 = await new Promise((resolve) =>
+        let r3V0 = await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .expect(401)
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
@@ -222,7 +290,23 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r3 === "unauthorised");
+        assert(r3V0 === "unauthorised");
+
+        let r3V1 = await new Promise((resolve) =>
+            request(app)
+                .get("/user/handleV1")
+                .expect(401)
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
+                .set("anti-csrf", res1.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r3V1 === "unauthorised");
 
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -261,7 +345,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
                 ])
@@ -321,7 +405,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         let r5 = await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie,
                 ])
@@ -376,9 +460,29 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handle", Session.verifySession(true), async (req, res) => {
+        app.get("/user/handleV0", Session.verifySession(true), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
+
+        app.get(
+            "/user/handleV1",
+            Session.verifySession({
+                antiCsrfCheck: true,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session.getHandle() });
+            }
+        );
+
+        app.get(
+            "/user/handleOptional",
+            Session.verifySession({
+                sessionRequired: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session !== undefined });
+            }
+        );
 
         app.post("/logout", Session.verifySession(), async (req, res) => {
             await req.session.revokeSession();
@@ -421,7 +525,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
                 ])
@@ -436,9 +540,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 })
         );
         // not passing anit csrf even if requried
-        let r2 = await new Promise((resolve) =>
+        let r2V0 = await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
                 ])
@@ -451,12 +555,29 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r2 === "try refresh token");
+        assert(r2V0 === "try refresh token");
+
+        let r2V1 = await new Promise((resolve) =>
+            request(app)
+                .get("/user/handleV1")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(401)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r2V1 === "try refresh token");
 
         // not passing id refresh token
-        let r3 = await new Promise((resolve) =>
+        let r3V0 = await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .expect(401)
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
@@ -468,7 +589,54 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r3 === "unauthorised");
+        assert(r3V0 === "unauthorised");
+
+        let r3V1 = await new Promise((resolve) =>
+            request(app)
+                .get("/user/handleV1")
+                .expect(401)
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
+                .set("anti-csrf", res1.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r3V1 === "unauthorised");
+
+        let rOptional = await new Promise((resolve) =>
+            request(app)
+                .get("/user/handleOptional")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(rOptional === true);
+
+        rOptional = await new Promise((resolve) =>
+            request(app)
+                .get("/user/handleOptional")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(rOptional === false);
 
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -507,7 +675,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
                 ])
@@ -571,7 +739,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         let r5 = await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie,
                 ])
@@ -627,9 +795,29 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handle", Session.verifySession(true), async (req, res) => {
+        app.get("/custom/user/handleV0", Session.verifySession(true), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
+
+        app.get(
+            "/custom/user/handleV1",
+            Session.verifySession({
+                antiCsrfCheck: true,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session.getHandle() });
+            }
+        );
+
+        app.get(
+            "/custom/user/handleOptional",
+            Session.verifySession({
+                sessionRequired: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session !== undefined });
+            }
+        );
 
         app.post("/custom/session/refresh", Session.verifySession(), async (req, res, next) => {
             res.status(200).json({ message: true });
@@ -678,7 +866,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
                 ])
@@ -694,9 +882,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
 
         // not passing anit csrf even if requried
-        let r2 = await new Promise((resolve) =>
+        let r2V0 = await new Promise((resolve) =>
             request(app)
-                .get("/custom/user/handle")
+                .get("/custom/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
                 ])
@@ -709,12 +897,29 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r2 === "try refresh token");
+        assert(r2V0 === "try refresh token");
+
+        let r2V1 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handleV1")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(401)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r2V1 === "try refresh token");
 
         // not passing id refresh token
-        let r3 = await new Promise((resolve) =>
+        let r3V0 = await new Promise((resolve) =>
             request(app)
-                .get("/custom/user/handle")
+                .get("/custom/user/handleV0")
                 .expect(401)
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
@@ -726,7 +931,54 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r3 === "unauthorised");
+        assert(r3V0 === "unauthorised");
+
+        let r3V1 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handleV1")
+                .expect(401)
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
+                .set("anti-csrf", res1.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r3V1 === "unauthorised");
+
+        let rOptional = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handleOptional")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(rOptional === true);
+
+        rOptional = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handleOptional")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(rOptional === false);
 
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -766,7 +1018,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         await new Promise((resolve) =>
             request(app)
-                .get("/custom/user/handle")
+                .get("/custom/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
                 ])
@@ -827,7 +1079,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         let r5 = await new Promise((resolve) =>
             request(app)
-                .get("/custom/user/handle")
+                .get("/custom/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie,
                 ])
@@ -887,9 +1139,29 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handle", Session.verifySession(true), async (req, res) => {
+        app.get("/custom/user/handleV0", Session.verifySession(true), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
+
+        app.get(
+            "/custom/user/handleV1",
+            Session.verifySession({
+                antiCsrfCheck: true,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session.getHandle() });
+            }
+        );
+
+        app.get(
+            "/custom/user/handleOptional",
+            Session.verifySession({
+                sessionRequired: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session !== undefined });
+            }
+        );
 
         app.post("/custom/logout", Session.verifySession(), async (req, res) => {
             await req.session.revokeSession();
@@ -938,7 +1210,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         await new Promise((resolve) =>
             request(app)
-                .get("/user/handle")
+                .get("/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
                 ])
@@ -954,9 +1226,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
 
         // not passing anit csrf even if requried
-        let r2 = await new Promise((resolve) =>
+        let r2V0 = await new Promise((resolve) =>
             request(app)
-                .get("/custom/user/handle")
+                .get("/custom/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
                 ])
@@ -969,12 +1241,29 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r2 === "try refresh token");
+        assert(r2V0 === "try refresh token");
+
+        let r2V1 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handleV1")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(401)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r2V1 === "try refresh token");
 
         // not passing id refresh token
-        let r3 = await new Promise((resolve) =>
+        let r3V0 = await new Promise((resolve) =>
             request(app)
-                .get("/custom/user/handle")
+                .get("/custom/user/handleV0")
                 .expect(401)
                 .set("Cookie", ["sAccessToken=" + res1.accessToken])
                 .set("anti-csrf", res1.antiCsrf)
@@ -986,7 +1275,53 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(r3 === "unauthorised");
+        assert(r3V0 === "unauthorised");
+
+        let r3V1 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handleV1")
+                .expect(401)
+                .set("Cookie", ["sAccessToken=" + res1.accessToken])
+                .set("anti-csrf", res1.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r3V1 === "unauthorised");
+
+        let rOptional = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handleOptional")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(rOptional === true);
+
+        rOptional = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handleOptional")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
 
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1026,7 +1361,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         await new Promise((resolve) =>
             request(app)
-                .get("/custom/user/handle")
+                .get("/custom/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
                 ])
@@ -1087,7 +1422,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         let r5 = await new Promise((resolve) =>
             request(app)
-                .get("/custom/user/handle")
+                .get("/custom/user/handleV0")
                 .set("Cookie", [
                     "sAccessToken=" + res4.accessToken + ";sIdRefreshToken=" + res4.idRefreshTokenFromCookie,
                 ])

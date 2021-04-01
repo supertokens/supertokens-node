@@ -17,6 +17,7 @@ import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import Session from "../../session";
+import SessionClass from "../../session/sessionClass";
 import { SessionRequest } from "../../session/types";
 
 export default async function generateEmailVerifyToken(
@@ -37,7 +38,7 @@ export default async function generateEmailVerifyToken(
             }
         })
     );
-    let session = (req as SessionRequest).session;
+    let session = (req as SessionRequest).session as SessionClass;
     let userId = session.getUserId();
 
     let email = await recipeInstance.config.getEmailForUserId(userId);

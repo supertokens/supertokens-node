@@ -18,6 +18,7 @@ import * as express from "express";
 import SuperTokensError from "../error";
 import SessionClass from "./sessionClass";
 import { verifySession as originalVerifySession } from "../middleware";
+import { VerifySessionOptions } from "../types";
 
 // For Express
 export default class SessionWrapper {
@@ -75,8 +76,8 @@ export default class SessionWrapper {
         return SessionRecipe.getInstanceOrThrowError().parentRecipe.updateJWTPayload(sessionHandle, newJWTPayload);
     }
 
-    static verifySession = (antiCsrfCheck?: boolean) => {
-        return originalVerifySession(SessionRecipe.getInstanceOrThrowError().parentRecipe, antiCsrfCheck);
+    static verifySession = (options?: VerifySessionOptions | boolean) => {
+        return originalVerifySession(SessionRecipe.getInstanceOrThrowError().parentRecipe, options);
     };
 }
 
