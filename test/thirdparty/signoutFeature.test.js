@@ -189,6 +189,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
         let response = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signout")
+                .set("rid", "thirdparty")
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
