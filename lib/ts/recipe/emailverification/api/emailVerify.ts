@@ -20,7 +20,7 @@ import STError from "../error";
 import Session from "../../session";
 import { SessionRequest } from "../../session/types";
 
-export default async function emailVerify(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
+export default async function emailVerify(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
     if (normaliseHttpMethod(req.method) === "post") {
         // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
         // step 1

@@ -24,7 +24,7 @@ export default async function generatePasswordResetToken(
     recipeInstance: Recipe,
     req: Request,
     res: Response,
-    next: NextFunction
+    _: NextFunction
 ) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 

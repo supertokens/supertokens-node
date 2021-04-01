@@ -18,7 +18,7 @@ import { NormalisedAppinfo } from "../../types";
 import axios from "axios";
 
 export function getResetPasswordURL(appInfo: NormalisedAppinfo) {
-    return async (ignored: User): Promise<string> => {
+    return async (_: User): Promise<string> => {
         // according to https://github.com/supertokens/supertokens-auth-react/issues/6
         return (
             appInfo.websiteDomain.getAsStringDangerous() +

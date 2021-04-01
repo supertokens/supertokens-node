@@ -97,17 +97,17 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-async function defaultSetSessionDataForSession(user: User, formFields: TypeFormField[], action: "signin" | "signup") {
+async function defaultSetSessionDataForSession(_: User, __: TypeFormField[], ___: "signin" | "signup") {
     return {};
 }
 
-async function defaultSetJwtPayloadForSession(user: User, formFields: TypeFormField[], action: "signin" | "signup") {
+async function defaultSetJwtPayloadForSession(_: User, __: TypeFormField[], ___: "signin" | "signup") {
     return {};
 }
 
 function validateAndNormaliseSessionFeatureConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     config?: TypeInputSessionFeature
 ): TypeNormalisedInputSessionFeature {
     let setJwtPayload =
@@ -128,7 +128,7 @@ function validateAndNormaliseSessionFeatureConfig(
 
 export function validateAndNormaliseEmailVerificationConfig(
     recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: NormalisedAppinfo,
     config?: TypeInputEmailVerificationFeature
 ): TypeNormalisedInputEmailVerification {
     return config === undefined
@@ -190,8 +190,8 @@ export function validateAndNormaliseEmailVerificationConfig(
 }
 
 function validateAndNormaliseSignOutConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     config?: TypeInputSignOutFeature
 ): TypeNormalisedInputSignOutFeature {
     let disableDefaultImplementation =
@@ -205,7 +205,7 @@ function validateAndNormaliseSignOutConfig(
 }
 
 function validateAndNormaliseResetPasswordUsingTokenConfig(
-    recipeInstance: Recipe,
+    _: Recipe,
     appInfo: NormalisedAppinfo,
     signUpConfig: TypeNormalisedInputSignUp,
     config?: TypeInputResetPasswordUsingTokenFeature
@@ -268,8 +268,8 @@ function normaliseSignInFormFields(formFields: NormalisedFormField[]) {
 }
 
 function validateAndNormaliseSignInConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     signUpConfig: TypeNormalisedInputSignUp,
     config?: TypeInputSignUp
 ): TypeNormalisedInputSignIn {
@@ -330,8 +330,8 @@ export function normaliseSignUpFormFields(formFields?: TypeInputFormField[]): No
 }
 
 function validateAndNormaliseSignupConfig(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
+    _: Recipe,
+    __: NormalisedAppinfo,
     config?: TypeInputSignUp
 ): TypeNormalisedInputSignUp {
     let disableDefaultImplementation =
@@ -355,11 +355,11 @@ function validateAndNormaliseSignupConfig(
     };
 }
 
-async function defaultValidator(value: any): Promise<string | undefined> {
+async function defaultValidator(_: any): Promise<string | undefined> {
     return undefined;
 }
 
-async function defaultHandleCustomFormFieldsPostSignUp(user: User, formFields: { id: string; value: any }[]) {}
+async function defaultHandleCustomFormFieldsPostSignUp(_: User, __: { id: string; value: any }[]) {}
 
 export async function defaultPasswordValidator(value: any) {
     // length >= 8 && < 100

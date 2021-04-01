@@ -18,7 +18,7 @@ import { Request, Response, NextFunction } from "express";
 import Session, { SessionContainer } from "../../session";
 import { send200Response } from "../../../utils";
 
-export default async function signOutAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
+export default async function signOutAPI(_: Recipe, req: Request, res: Response, __: NextFunction) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 
     // step 1

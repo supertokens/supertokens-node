@@ -18,7 +18,6 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse } from "./types";
 import SessionRecipe from "./sessionRecipe";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { maxVersion } from "../../utils";
 
 /**
  * @description call this to "login" a user.
@@ -87,8 +86,6 @@ export async function getSession(
                 handShakeInfo.jwtSigningPublicKey,
                 handShakeInfo.enableAntiCsrf && doAntiCsrfCheck
             );
-            let sessionHandle = accessTokenInfo.sessionHandle;
-
             // anti-csrf check
             if (
                 handShakeInfo.enableAntiCsrf &&

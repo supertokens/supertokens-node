@@ -14,7 +14,6 @@
  */
 
 import { URL } from "url";
-import SuperTokensError from "./error";
 import STError from "./error";
 import RecipeModule from "./recipeModule";
 

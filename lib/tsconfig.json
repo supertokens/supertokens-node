@@ -10,6 +10,11 @@
         "sourceMap": true,
         "noImplicitThis": true,
         "skipLibCheck": true,
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
         "lib": [
             "ES2017"
         ]

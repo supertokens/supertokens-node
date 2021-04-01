@@ -22,7 +22,7 @@ import * as qs from "querystring";
 import { UserInfo } from "../types";
 import Session from "../../session";
 
-export default async function signInUpAPI(recipeInstance: Recipe, req: Request, res: Response, next: NextFunction) {
+export default async function signInUpAPI(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
     let bodyParams = req.body;
     let thirdPartyId = bodyParams.thirdPartyId;
     let code = bodyParams.code;

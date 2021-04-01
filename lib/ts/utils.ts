@@ -1,5 +1,5 @@
 import STError from "./error";
-import { AppInfo, NormalisedAppinfo, HTTPMethod, TypeInput } from "./types";
+import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
 import * as express from "express";
 import { SERVERLESS_CACHE_API_VERSION_FILE_PATH, HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
@@ -8,7 +8,7 @@ import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import SuperTokensError from "./error";
 import RecipeModule from "./recipeModule";
-import { readFile, writeFile, unlink, mkdir } from "fs";
+import { readFile, writeFile, unlink } from "fs";
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
@@ -44,7 +44,8 @@ export function maxVersion(version1: string, version2: string): string {
 
 export function normaliseInputAppInfoOrThrowError(
     recipe: RecipeModule | undefined,
-    appInfo: AppInfo
+    appInfo: AppInfo,
+    apiWebProxyPath: NormalisedURLPath
 ): NormalisedAppinfo {
     if (appInfo === undefined) {
         throw new STError({
@@ -80,10 +81,12 @@ export function normaliseInputAppInfoOrThrowError(
         appName: appInfo.appName,
         websiteDomain: new NormalisedURLDomain(recipe, appInfo.websiteDomain),
         apiDomain: new NormalisedURLDomain(recipe, appInfo.apiDomain),
-        apiBasePath:
+        apiBasePath: apiWebProxyPath.appendPath(
+            recipe,
             appInfo.apiBasePath === undefined
                 ? new NormalisedURLPath(recipe, "/auth")
-                : new NormalisedURLPath(recipe, appInfo.apiBasePath),
+                : new NormalisedURLPath(recipe, appInfo.apiBasePath)
+        ),
         websiteBasePath:
             appInfo.websiteBasePath === undefined
                 ? new NormalisedURLPath(recipe, "/auth")
@@ -154,6 +157,20 @@ export async function assertThatBodyParserHasBeenUsed(
                     message: "API input error: Please make sure to pass a valid JSON input in thr request body",
                     recipe,
                 });
+            }
+        } else if (typeof req.body === "string") {
+            try {
+                req.body = JSON.parse(req.body);
+            } catch (err) {
+                if (req.body === "") {
+                    req.body = {};
+                } else {
+                    throw new STError({
+                        type: STError.BAD_INPUT_ERROR,
+                        message: "API input error: Please make sure to pass a valid JSON input in thr request body",
+                        recipe,
+                    });
+                }
             }
         }
     } else if (method === "delete" || method === "get") {
@@ -226,8 +243,8 @@ export async function getDataFromFileForServerlessCache<T>(filePath: string): Pr
 
 export async function storeIntoTempFolderForServerlessCache(filePath: string, data: any) {
     try {
-        await new Promise(async (resolve, reject) => {
-            writeFile(filePath, JSON.stringify(data), (err) => {
+        await new Promise(async (resolve, _) => {
+            writeFile(filePath, JSON.stringify(data), (_) => {
                 resolve(undefined);
             });
         });
