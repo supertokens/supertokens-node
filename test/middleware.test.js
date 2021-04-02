@@ -607,7 +607,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         assert(r3V1 === "unauthorised");
 
-        let rOptional = await new Promise((resolve) =>
+        let rOptionalSession = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleOptional")
                 .set("Cookie", [
@@ -622,9 +622,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(rOptional === true);
+        assert(rOptionalSession === true);
 
-        rOptional = await new Promise((resolve) =>
+        rOptionalSession = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleOptional")
                 .expect(200)
@@ -636,7 +636,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(rOptional === false);
+        assert(rOptionalSession === false);
 
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -949,7 +949,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         assert(r3V1 === "unauthorised");
 
-        let rOptional = await new Promise((resolve) =>
+        let rOptionalSession = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleOptional")
                 .set("Cookie", [
@@ -964,9 +964,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(rOptional === true);
+        assert(rOptionalSession === true);
 
-        rOptional = await new Promise((resolve) =>
+        rOptionalSession = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleOptional")
                 .expect(200)
@@ -978,7 +978,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(rOptional === false);
+        assert(rOptionalSession === false);
 
         let res2 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1293,7 +1293,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         );
         assert(r3V1 === "unauthorised");
 
-        let rOptional = await new Promise((resolve) =>
+        let rOptionalSession = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleOptional")
                 .set("Cookie", [
@@ -1308,9 +1308,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        assert(rOptional === true);
+        assert(rOptionalSession === true);
 
-        rOptional = await new Promise((resolve) =>
+        rOptionalSession = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleOptional")
                 .expect(200)
