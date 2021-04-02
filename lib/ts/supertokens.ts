@@ -53,7 +53,10 @@ export default class SuperTokens {
         this.appInfo = normaliseInputAppInfoOrThrowError(undefined, config.appInfo, this.apiWebProxyPath);
 
         Querier.init(
-            config.supertokens.connectionURI.split(";").map((h) => new NormalisedURLDomain(undefined, h)),
+            config.supertokens.connectionURI
+                .split(";")
+                .filter((h) => h !== "")
+                .map((h) => new NormalisedURLDomain(undefined, h.trim())),
             config.supertokens.apiKey
         );
 
