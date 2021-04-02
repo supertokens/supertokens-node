@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - doAntiCsrfCheck parameter for getSession in FaunaDB is now optional
 - Sign out API for session recipe
 - verifySession now accepts an object as a parameter. Two valid parameters are sessionRequired and antiCsrfCheck. sessionRequired can be by user if they intends to make the session requirement optional for the API.
+- Allows ";" at the end of connectionURI to core
 
 ## [4.1.3] - 2021-03-19
 ### Changed

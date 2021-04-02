@@ -44,7 +44,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await startST();
         ST.init({
             supertokens: {
-                connectionURI: "http://localhost:8080",
+                connectionURI: "http://localhost:8080;",
             },
             appInfo: {
                 apiDomain: "api.supertokens.io",
