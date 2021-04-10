@@ -54,7 +54,7 @@ export function verifySession(recipeInstance: SessionRecipe, options?: VerifySes
              */
             if (
                 !isRefreshAPICall(recipeInstance, request) &&
-                (err.type === STError.UNAUTHORISED || err.type === STError.TRY_REFRESH_TOKEN) &&
+                err.type === STError.UNAUTHORISED &&
                 options !== undefined &&
                 typeof options !== "boolean" &&
                 options.sessionRequired === false
