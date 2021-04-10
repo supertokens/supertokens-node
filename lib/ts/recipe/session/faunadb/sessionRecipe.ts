@@ -15,7 +15,7 @@
 
 import OriginalSessionRecipe from "../sessionRecipe";
 import * as express from "express";
-import { TypeFaunaDBInput } from "./types";
+import { TypeFaunaDBInput, VerifySessionOptions } from "./types";
 import STError from "../error";
 import * as faunadb from "faunadb";
 import Session from "./sessionClass";
@@ -46,8 +46,8 @@ export default class SessionRecipe extends RecipeModule {
     superGetSession: (
         req: express.Request,
         res: express.Response,
-        doAntiCsrfCheck?: boolean
-    ) => Promise<OriginalSessionClass>;
+        options?: VerifySessionOptions | boolean
+    ) => Promise<OriginalSessionClass | undefined>;
 
     superRefreshSession: (req: express.Request, res: express.Response) => Promise<OriginalSessionClass>;
 
@@ -240,8 +240,15 @@ export default class SessionRecipe extends RecipeModule {
         }
     };
 
-    getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean): Promise<Session> => {
-        let originalSession = await this.superGetSession(req, res, doAntiCsrfCheck);
+    getSession = async (
+        req: express.Request,
+        res: express.Response,
+        options?: VerifySessionOptions | boolean
+    ): Promise<Session | undefined> => {
+        let originalSession = await this.superGetSession(req, res, options);
+        if (originalSession === undefined) {
+            return undefined;
+        }
         return new Session(
             this.parentRecipe,
             originalSession.getAccessToken(),

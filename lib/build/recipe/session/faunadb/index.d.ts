@@ -8,7 +8,7 @@ export default class SessionWrapper {
     static Error: typeof SuperTokensError;
     static SessionContainer: typeof SessionClass;
     static createNewSession(res: express.Response, userId: string, jwtPayload?: any, sessionData?: any): Promise<import("../sessionClass").default>;
-    static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): Promise<import("../sessionClass").default>;
+    static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean): Promise<import("../sessionClass").default | undefined>;
     static refreshSession(req: express.Request, res: express.Response): Promise<import("../sessionClass").default>;
     static revokeAllSessionsForUser(userId: string): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string): Promise<string[]>;

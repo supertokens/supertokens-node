@@ -17,8 +17,6 @@ import { SessionRequest, VerifySessionOptions } from "./types";
 import SessionRecipe from "./sessionRecipe";
 import { normaliseHttpMethod, sendNon200Response } from "../../utils";
 import NormalisedURLPath from "../../normalisedURLPath";
-import STError from "./error";
-import { getIdRefreshTokenFromCookie } from "./cookieAndHeaders";
 
 export function verifySession(recipeInstance: SessionRecipe, options?: VerifySessionOptions | boolean) {
     // We know this should be Request but then Type
@@ -28,8 +26,6 @@ export function verifySession(recipeInstance: SessionRecipe, options?: VerifySes
             if (method === "options" || method === "trace") {
                 return next();
             }
-            let antiCsrfCheck =
-                options !== undefined ? (typeof options === "boolean" ? options : options.antiCsrfCheck) : undefined;
 
             let incomingPath = new NormalisedURLPath(
                 recipeInstance,
@@ -39,31 +35,7 @@ export function verifySession(recipeInstance: SessionRecipe, options?: VerifySes
             if (incomingPath.equals(refreshTokenPath) && method === "post") {
                 request.session = await recipeInstance.refreshSession(request, response);
             } else {
-                try {
-                    request.session = await recipeInstance.getSession(request, response, antiCsrfCheck);
-                } catch (err) {
-                    /**
-                     * The condition for letting letting an anonymous
-                     * session pass is (we do not of that to throw the error):
-                     * - Should throw an UNAUTHORISED error
-                     * - Should be that no session headers are provided in the request.
-                     *   Cause if they are, it means the frontend thinks there is a session
-                     *   but actually there is none. So it's better to send an UNAUTHORISED error
-                     * - User has set sessionRequired to false
-                     */
-
-                    if (
-                        !(
-                            getIdRefreshTokenFromCookie(request) === undefined &&
-                            err.type === STError.UNAUTHORISED &&
-                            options !== undefined &&
-                            typeof options !== "boolean" &&
-                            options.sessionRequired === false
-                        )
-                    ) {
-                        throw err;
-                    }
-                }
+                request.session = await recipeInstance.getSession(request, response, options);
             }
             return next();
         } catch (err) {
