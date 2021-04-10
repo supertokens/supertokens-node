@@ -18,6 +18,7 @@ import SessionRecipe from "./sessionRecipe";
 import { normaliseHttpMethod, sendNon200Response } from "../../utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 import STError from "./error";
+import { getIdRefreshTokenFromCookie } from "./cookieAndHeaders";
 
 export function verifySession(recipeInstance: SessionRecipe, options?: VerifySessionOptions | boolean) {
     // We know this should be Request but then Type
@@ -41,8 +42,19 @@ export function verifySession(recipeInstance: SessionRecipe, options?: VerifySes
                 try {
                     request.session = await recipeInstance.getSession(request, response, antiCsrfCheck);
                 } catch (err) {
+                    /**
+                     * The condition for letting letting an anonymous
+                     * session pass is (we do not of that to throw the error):
+                     * - Should throw an UNAUTHORISED error
+                     * - Should be that no session headers are provided in the request.
+                     *   Cause if they are, it means the frontend thinks there is a session
+                     *   but actually there is none. So it's better to send an UNAUTHORISED error
+                     * - User has set sessionRequired to false
+                     */
+
                     if (
                         !(
+                            getIdRefreshTokenFromCookie(request) === undefined &&
                             err.type === STError.UNAUTHORISED &&
                             options !== undefined &&
                             typeof options !== "boolean" &&
