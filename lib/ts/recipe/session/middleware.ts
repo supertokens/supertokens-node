@@ -19,16 +19,6 @@ import { normaliseHttpMethod, sendNon200Response } from "../../utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 import STError from "./error";
 
-function isRefreshAPICall(recipeInstance: SessionRecipe, request: Request): boolean {
-    let refreshTokenPath = recipeInstance.config.refreshTokenPath;
-    let method = normaliseHttpMethod(request.method);
-    let incomingPath = new NormalisedURLPath(
-        recipeInstance,
-        request.originalUrl === undefined ? request.url : request.originalUrl
-    );
-    return incomingPath.equals(refreshTokenPath) && method === "post";
-}
-
 export function verifySession(recipeInstance: SessionRecipe, options?: VerifySessionOptions | boolean) {
     // We know this should be Request but then Type
     return async (request: SessionRequest, response: Response, next: NextFunction) => {
@@ -39,28 +29,32 @@ export function verifySession(recipeInstance: SessionRecipe, options?: VerifySes
             }
             let antiCsrfCheck =
                 options !== undefined ? (typeof options === "boolean" ? options : options.antiCsrfCheck) : undefined;
-            if (isRefreshAPICall(recipeInstance, request)) {
+
+            let refreshTokenPath = recipeInstance.config.refreshTokenPath;
+            let incomingPath = new NormalisedURLPath(
+                recipeInstance,
+                request.originalUrl === undefined ? request.url : request.originalUrl
+            );
+            if (incomingPath.equals(refreshTokenPath) && method === "post") {
                 request.session = await recipeInstance.refreshSession(request, response);
             } else {
-                request.session = await recipeInstance.getSession(request, response, antiCsrfCheck);
+                try {
+                    request.session = await recipeInstance.getSession(request, response, antiCsrfCheck);
+                } catch (err) {
+                    if (
+                        !(
+                            err.type === STError.UNAUTHORISED &&
+                            options !== undefined &&
+                            typeof options !== "boolean" &&
+                            options.sessionRequired === false
+                        )
+                    ) {
+                        throw err;
+                    }
+                }
             }
             return next();
         } catch (err) {
-            /**
-             * checking:
-             *  - it should not be the refresh API
-             *  - error thrown should be either unauthorised or try refresh token
-             *  - sessionRequired parameter is set to false in options
-             */
-            if (
-                !isRefreshAPICall(recipeInstance, request) &&
-                err.type === STError.UNAUTHORISED &&
-                options !== undefined &&
-                typeof options !== "boolean" &&
-                options.sessionRequired === false
-            ) {
-                return next();
-            }
             next(err);
         }
     };
