@@ -30,11 +30,11 @@ export function verifySession(recipeInstance: SessionRecipe, options?: VerifySes
             let antiCsrfCheck =
                 options !== undefined ? (typeof options === "boolean" ? options : options.antiCsrfCheck) : undefined;
 
-            let refreshTokenPath = recipeInstance.config.refreshTokenPath;
             let incomingPath = new NormalisedURLPath(
                 recipeInstance,
                 request.originalUrl === undefined ? request.url : request.originalUrl
             );
+            let refreshTokenPath = recipeInstance.config.refreshTokenPath;
             if (incomingPath.equals(refreshTokenPath) && method === "post") {
                 request.session = await recipeInstance.refreshSession(request, response);
             } else {
