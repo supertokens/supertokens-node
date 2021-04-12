@@ -71,15 +71,20 @@ export default class Recipe extends RecipeModule {
                 signUpFeature: {
                     disableDefaultImplementation: this.config.signUpFeature.disableDefaultImplementation,
                     formFields: this.config.signUpFeature.formFields,
-                    handleCustomFormFieldsPostSignUp: async (user, formfields) => {
+                    handlePostSignUp: async (user, formFields) => {
                         return await this.config.signUpFeature.handlePostSignUp(user, {
                             loginType: "emailpassword",
-                            formFields: formfields,
+                            formFields: formFields,
                         });
                     },
                 },
                 signInFeature: {
                     disableDefaultImplementation: this.config.signInFeature.disableDefaultImplementation,
+                    handlePostSignIn: async (user) => {
+                        return await this.config.signInFeature.handlePostSignIn(user, {
+                            loginType: "emailpassword",
+                        });
+                    },
                 },
                 signOutFeature: {
                     disableDefaultImplementation: this.config.signOutFeature.disableDefaultImplementation,

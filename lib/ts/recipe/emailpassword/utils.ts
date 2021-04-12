@@ -30,6 +30,7 @@ import {
     TypeNormalisedInputSessionFeature,
     TypeFormField,
     TypeInputFormField,
+    TypeInputSignIn,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
@@ -271,7 +272,7 @@ function validateAndNormaliseSignInConfig(
     _: Recipe,
     __: NormalisedAppinfo,
     signUpConfig: TypeNormalisedInputSignUp,
-    config?: TypeInputSignUp
+    config?: TypeInputSignIn
 ): TypeNormalisedInputSignIn {
     let disableDefaultImplementation =
         config === undefined || config.disableDefaultImplementation === undefined
@@ -279,9 +280,15 @@ function validateAndNormaliseSignInConfig(
             : config.disableDefaultImplementation;
 
     let formFields: NormalisedFormField[] = normaliseSignInFormFields(signUpConfig.formFields);
+
+    let handlePostSignIn =
+        config === undefined || config.handlePostSignIn === undefined
+            ? defaultHandlePostSignIn
+            : config.handlePostSignIn;
     return {
         disableDefaultImplementation,
         formFields,
+        handlePostSignIn,
     };
 }
 
@@ -343,15 +350,31 @@ function validateAndNormaliseSignupConfig(
         config === undefined ? undefined : config.formFields
     );
 
-    let handleCustomFormFieldsPostSignUp =
-        config === undefined || config.handleCustomFormFieldsPostSignUp === undefined
-            ? defaultHandleCustomFormFieldsPostSignUp
-            : config.handleCustomFormFieldsPostSignUp;
+    /**
+     * if user uses handleCustomFormFieldsPostSignUp method, we emit a deprecation warning
+     */
+    if (config !== undefined && config.handleCustomFormFieldsPostSignUp !== undefined) {
+        process.emitWarning(
+            "handleCustomFormFieldsPostSignUp() is deprecated and will soon stop working in future versions. Please use handlePostSignUp() instead",
+            "DeprecationWarning"
+        );
+    }
+
+    /**
+     * if both handlePostSignUp and handleCustomFormFieldsPostSignUp are passed, handlePostSignUp will be used
+     */
+    if (config !== undefined && config.handlePostSignUp === undefined) {
+        config.handlePostSignUp = config.handleCustomFormFieldsPostSignUp;
+    }
+    let handlePostSignUp =
+        config === undefined || config.handlePostSignUp === undefined
+            ? defaultHandlePostSignUp
+            : config.handlePostSignUp;
 
     return {
         disableDefaultImplementation,
         formFields,
-        handleCustomFormFieldsPostSignUp,
+        handlePostSignUp,
     };
 }
 
@@ -359,7 +382,9 @@ async function defaultValidator(_: any): Promise<string | undefined> {
     return undefined;
 }
 
-async function defaultHandleCustomFormFieldsPostSignUp(_: User, __: { id: string; value: any }[]) {}
+async function defaultHandlePostSignUp(_: User, __: { id: string; value: any }[]) {}
+
+async function defaultHandlePostSignIn(_: User) {}
 
 export async function defaultPasswordValidator(value: any) {
     // length >= 8 && < 100

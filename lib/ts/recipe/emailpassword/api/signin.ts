@@ -40,6 +40,9 @@ export default async function signInAPI(recipeInstance: Recipe, req: Request, re
     // step 3. Errors for this are caught by the error handler
     let user = await recipeInstance.signIn(email, password);
 
+    // set 4
+    await recipeInstance.config.signInFeature.handlePostSignIn(user);
+
     let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(
         user,
         formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
