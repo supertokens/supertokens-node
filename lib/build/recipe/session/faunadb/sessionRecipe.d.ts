@@ -1,6 +1,6 @@
 import OriginalSessionRecipe from "../sessionRecipe";
 import * as express from "express";
-import { TypeFaunaDBInput } from "./types";
+import { TypeFaunaDBInput, VerifySessionOptions } from "./types";
 import STError from "../error";
 import * as faunadb from "faunadb";
 import Session from "./sessionClass";
@@ -16,7 +16,7 @@ export default class SessionRecipe extends RecipeModule {
         userCollectionName: string;
     };
     superCreateNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<OriginalSessionClass>;
-    superGetSession: (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean) => Promise<OriginalSessionClass>;
+    superGetSession: (req: express.Request, res: express.Response, options?: VerifySessionOptions | boolean) => Promise<OriginalSessionClass | undefined>;
     superRefreshSession: (req: express.Request, res: express.Response) => Promise<OriginalSessionClass>;
     q: typeof faunadb.query;
     faunaDBClient: faunadb.Client;
@@ -31,6 +31,6 @@ export default class SessionRecipe extends RecipeModule {
     isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
     getFDAT: (session: Session) => Promise<any>;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
-    getSession: (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean | undefined) => Promise<Session>;
+    getSession: (req: express.Request, res: express.Response, options?: boolean | VerifySessionOptions | undefined) => Promise<Session | undefined>;
     refreshSession: (req: express.Request, res: express.Response) => Promise<Session>;
 }

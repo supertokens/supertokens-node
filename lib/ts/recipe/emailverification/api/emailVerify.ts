@@ -18,7 +18,6 @@ import { Request, Response, NextFunction } from "express";
 import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
 import Session from "../../session";
-import SessionClass from "../../session/sessionClass";
 import { SessionRequest } from "../../session/types";
 
 export default async function emailVerify(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
@@ -68,7 +67,17 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
                 }
             })
         );
-        let session = (req as SessionRequest).session as SessionClass;
+        let session = (req as SessionRequest).session;
+        if (session === undefined) {
+            throw new STError(
+                {
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error("Session is undefined. Should not come here."),
+                },
+                recipeInstance
+            );
+        }
+
         let userId = session.getUserId();
 
         let email = await recipeInstance.config.getEmailForUserId(userId);

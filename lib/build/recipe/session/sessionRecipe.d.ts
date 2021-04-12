@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput } from "./types";
+import { TypeInput, TypeNormalisedInput, VerifySessionOptions } from "./types";
 import STError from "./error";
 import Session from "./sessionClass";
 import { HandshakeInfo } from "./types";
@@ -23,7 +23,7 @@ export default class SessionRecipe extends RecipeModule {
     getHandshakeInfo: () => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
-    getSession: (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean | undefined) => Promise<Session>;
+    getSession: (req: express.Request, res: express.Response, options?: boolean | VerifySessionOptions | undefined) => Promise<Session | undefined>;
     refreshSession: (req: express.Request, res: express.Response) => Promise<Session>;
     revokeAllSessionsForUser: (userId: string) => Promise<string[]>;
     getAllSessionHandlesForUser: (userId: string) => Promise<string[]>;

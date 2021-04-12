@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput } from "./types";
+import { TypeInput, TypeNormalisedInput, VerifySessionOptions } from "./types";
 import STError from "./error";
 import Session from "./sessionClass";
 import { validateAndNormaliseUserInput, attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
@@ -226,11 +226,24 @@ export default class SessionRecipe extends RecipeModule {
         );
     };
 
-    getSession = async (req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean): Promise<Session> => {
+    getSession = async (
+        req: express.Request,
+        res: express.Response,
+        options?: VerifySessionOptions | boolean
+    ): Promise<Session | undefined> => {
+        let doAntiCsrfCheck =
+            options !== undefined ? (typeof options === "boolean" ? options : options.antiCsrfCheck) : undefined;
+
         let idRefreshToken = getIdRefreshTokenFromCookie(req);
         if (idRefreshToken === undefined) {
             // we do not clear cookies here because of a
             // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
+
+            if (options !== undefined && typeof options !== "boolean" && options.sessionRequired === false) {
+                // there is no session that exists here, and the user wants session verification
+                // to be optional. So we return undefined.
+                return undefined;
+            }
 
             throw new STError(
                 {
