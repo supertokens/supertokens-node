@@ -18,6 +18,7 @@ const {
     startST,
     killAllST,
     cleanST,
+    setKeyValueInConfig,
     extractInfoFromResponse,
     createServerlessCacheForTesting,
 } = require("./utils");
@@ -209,7 +210,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        // not passing anit csrf even if requried
+        // not passing anti csrf even if requried
         let r2V0 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
@@ -539,7 +540,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     }
                 })
         );
-        // not passing anit csrf even if requried
+        // not passing anti csrf even if requried
         let r2V0 = await new Promise((resolve) =>
             request(app)
                 .get("/user/handleV0")
@@ -881,7 +882,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 })
         );
 
-        // not passing anit csrf even if requried
+        // not passing anti csrf even if requried
         let r2V0 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
@@ -1225,7 +1226,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 })
         );
 
-        // not passing anit csrf even if requried
+        // not passing anti csrf even if requried
         let r2V0 = await new Promise((resolve) =>
             request(app)
                 .get("/custom/user/handleV0")
@@ -1436,5 +1437,426 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 })
         );
         assert(r5 === "try refresh token");
+    });
+
+    // https://github.com/supertokens/supertokens-node/pull/108
+    // An expired access token is used and we see that try refresh token error is thrown
+    it("test session verify middleware with expired access token and session required false", async function () {
+        await setKeyValueInConfig("access_token_validity", 2);
+        await startST();
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiBasePath: "/custom",
+            },
+            recipeList: [
+                Session.init({
+                    cookieDomain: "test-driver",
+                    cookieSecure: true,
+                    cookieSameSite: "strict",
+                    errorHandlers: {
+                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                            res.statusCode = 403;
+                            return res.json({
+                                message: "token theft detected",
+                            });
+                        },
+                    },
+                    enableAntiCsrf: true,
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "testing-userId", {}, {});
+            res.status(200).json({ message: true });
+        });
+
+        app.get("/custom/user/id", Session.verifySession(), async (req, res) => {
+            res.status(200).json({ message: req.session.getUserId() });
+        });
+
+        app.get(
+            "/custom/user/handle",
+            Session.verifySession({
+                sessionRequired: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session !== undefined });
+            }
+        );
+
+        app.post("/custom/logout", Session.verifySession(), async (req, res) => {
+            await req.session.revokeSession();
+            res.status(200).json({ message: true });
+        });
+
+        app.use(SuperTokens.errorHandler());
+
+        let res1 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(res1.accessTokenHttpOnly);
+        assert(res1.idRefreshTokenHttpOnly);
+        assert(res1.refreshTokenHttpOnly);
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/id")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res1.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+
+        assert(r1 === "testing-userId");
+
+        await new Promise((resolve) =>
+            request(app)
+                .get("/user/handle")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res1.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+
+        await new Promise((r) => setTimeout(r, 5000));
+
+        let r2 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handle")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(401)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r2 === "try refresh token");
+    });
+
+    // https://github.com/supertokens/supertokens-node/pull/108
+    // A session exists, is refreshed, then is revoked, and then we try and use the access token (after first refresh), and we see that unauthorised error is called.
+    it("test session verify middleware with old access token and session required false", async function () {
+        await setKeyValueInConfig("access_token_blacklisting", true);
+        await startST();
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiBasePath: "/custom",
+            },
+            recipeList: [
+                Session.init({
+                    cookieDomain: "test-driver",
+                    cookieSecure: true,
+                    cookieSameSite: "strict",
+                    errorHandlers: {
+                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                            res.statusCode = 403;
+                            return res.json({
+                                message: "token theft detected",
+                            });
+                        },
+                    },
+                    enableAntiCsrf: true,
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "testing-userId", {}, {});
+            res.status(200).json({ message: true });
+        });
+
+        app.get("/custom/user/id", Session.verifySession(), async (req, res) => {
+            res.status(200).json({ message: req.session.getUserId() });
+        });
+
+        app.get(
+            "/custom/user/handle",
+            Session.verifySession({
+                sessionRequired: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session !== undefined });
+            }
+        );
+
+        app.post("/custom/logout", Session.verifySession(), async (req, res) => {
+            await req.session.revokeSession();
+            res.status(200).json({ message: true });
+        });
+
+        app.use(SuperTokens.errorHandler());
+
+        let res1 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(res1.accessTokenHttpOnly);
+        assert(res1.idRefreshTokenHttpOnly);
+        assert(res1.refreshTokenHttpOnly);
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/id")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res1.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+
+        assert(r1 === "testing-userId");
+
+        await new Promise((resolve) =>
+            request(app)
+                .get("/user/handle")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res1.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+
+        let res2 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/custom/session/refresh")
+                    .expect(200)
+                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("anti-csrf", res1.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let res3 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .get("/custom/user/id")
+                    .set("Cookie", [
+                        "sAccessToken=" + res2.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res2.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handle")
+                .set("Cookie", [
+                    "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+                ])
+                .set("anti-csrf", res2.antiCsrf)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+
+        let res4 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/custom/logout")
+                    .set("Cookie", [
+                        "sAccessToken=" + res3.accessToken + ";sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res2.antiCsrf)
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert.deepEqual(res4.antiCsrf, undefined);
+        assert.deepEqual(res4.accessToken, "");
+        assert.deepEqual(res4.refreshToken, "");
+        assert.deepEqual(res4.idRefreshTokenFromHeader, "remove");
+        assert.deepEqual(res4.idRefreshTokenFromCookie, "");
+        assert.deepEqual(res4.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res4.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res4.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+
+        let r2 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handle")
+                .set("Cookie", [
+                    "sAccessToken=" + res1.accessToken + ";sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
+                .expect(401)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r2 === "unauthorised");
+    });
+
+    // https://github.com/supertokens/supertokens-node/pull/108
+    // A session doesn't exist, and we call verifySession, and it let's go through
+    it("test session verify middleware with no session and session required false", async function () {
+        await startST();
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiBasePath: "/custom",
+            },
+            recipeList: [
+                Session.init({
+                    cookieDomain: "test-driver",
+                    cookieSecure: true,
+                    cookieSameSite: "strict",
+                    errorHandlers: {
+                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
+                            res.statusCode = 403;
+                            return res.json({
+                                message: "token theft detected",
+                            });
+                        },
+                    },
+                    enableAntiCsrf: true,
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(SuperTokens.middleware());
+
+        app.get(
+            "/custom/user/handle",
+            Session.verifySession({
+                sessionRequired: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ message: req.session !== undefined });
+            }
+        );
+
+        app.use(SuperTokens.errorHandler());
+
+        let r1 = await new Promise((resolve) =>
+            request(app)
+                .get("/custom/user/handle")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body.message);
+                    }
+                })
+        );
+        assert(r1 === false);
     });
 });
