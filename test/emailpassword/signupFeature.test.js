@@ -524,7 +524,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
     });
 
     //- If provided by the user, and custom fields are there, only those should be sent
-    it("test that if provided by the user, and custom fields are there, only those are sent", async function () {
+    it("test that if provided by the user, and custom fields are there, only those are sent, using deprecated handleCustomFormFieldsPostSignUp", async function () {
         await startST();
 
         let customFormFields = "";
@@ -594,8 +594,79 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         assert(customFormFields[0].value === "testValue");
     });
 
+    //- If provided by the user, and custom fields are there, only those should be sent
+    it("test that if provided by the user, and custom fields are there, only those are sent, using handlePostSignUp", async function () {
+        await startST();
+
+        let customFormFields = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "testField",
+                            },
+                        ],
+                        handlePostSignUp: (user, formFields) => {
+                            customFormFields = formFields;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                        {
+                            id: "testField",
+                            value: "testValue",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(customFormFields.length === 1);
+        assert(customFormFields[0].id === "testField");
+        assert(customFormFields[0].value === "testValue");
+    });
+
     //If provided by the user, and no custom fields are there, then the formFields param must sbe empty
-    it("test that if provided by the user, and no custom fields are there, then formFields must be empty", async function () {
+    it("test that if provided by the user, and no custom fields are there, then formFields must be empty, using deprecated handleCustomFormFieldsPostSignUp", async function () {
         await startST();
 
         let customFormFields = "";
@@ -612,6 +683,66 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                 EmailPassword.init({
                     signUpFeature: {
                         handleCustomFormFieldsPostSignUp: (user, formFields) => {
+                            customFormFields = formFields;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(customFormFields.length === 0);
+    });
+
+    //If provided by the user, and no custom fields are there, then the formFields param must sbe empty
+    it("test that if provided by the user, and no custom fields are there, then formFields must be empty, using handlePostSignUp", async function () {
+        await startST();
+
+        let customFormFields = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        handlePostSignUp: (user, formFields) => {
                             customFormFields = formFields;
                         },
                     },
@@ -1381,6 +1512,76 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                             },
                         ],
                         handleCustomFormFieldsPostSignUp: (user, formFields) => {
+                            customFormFields = formFields;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signup")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                        {
+                            id: "testField",
+                            value: { key: "value" },
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.status === "OK");
+        assert(customFormFields.length === 1);
+        assert(customFormFields[0].id === "testField");
+        assert(customFormFields[0].value.key === "value");
+    });
+
+    // Pass a non string value in the formFields array and make sure it passes through the signUp API and is sent in the handlePostSignUp as that type
+    it("test that non string value in formFields array and it passes through the signup API and it is sent to the handlePostSignUp", async function () {
+        await startST();
+
+        let customFormFields = "";
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    signUpFeature: {
+                        formFields: [
+                            {
+                                id: "testField",
+                            },
+                        ],
+                        handlePostSignUp: (user, formFields) => {
                             customFormFields = formFields;
                         },
                     },

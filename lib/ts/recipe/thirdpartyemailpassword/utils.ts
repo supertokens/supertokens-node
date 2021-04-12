@@ -24,7 +24,7 @@ import {
     TypeInputSignUp,
     TypeInputSignIn,
     TypeNormalisedInputSignUp,
-    TypeContextEmailPassword,
+    TypeContextEmailPasswordSignUp,
     TypeContextThirdParty,
     TypeNormalisedInputSignIn,
     TypeInputEmailVerificationFeature,
@@ -32,6 +32,8 @@ import {
     TypeNormalisedInputSignOut,
     TypeNormalisedInputSessionFeature,
     TypeInputSessionFeature,
+    TypeContextEmailPasswordSignIn,
+    TypeContextEmailPasswordSessionDataAndJWT,
 } from "./types";
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
@@ -90,13 +92,13 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-async function defaultHandlePostSignUp(_: User, __: TypeContextEmailPassword | TypeContextThirdParty) {}
+async function defaultHandlePostSignUp(_: User, __: TypeContextEmailPasswordSignUp | TypeContextThirdParty) {}
 
-async function defaultHandlePostSignIn(_: User, __: TypeContextEmailPassword | TypeContextThirdParty) {}
+async function defaultHandlePostSignIn(_: User, __: TypeContextEmailPasswordSignIn | TypeContextThirdParty) {}
 
 async function defaultSetSessionDataForSession(
     _: User,
-    __: TypeContextEmailPassword | TypeContextThirdParty,
+    __: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
     ___: "signin" | "signup"
 ) {
     return {};
@@ -104,7 +106,7 @@ async function defaultSetSessionDataForSession(
 
 async function defaultSetJwtPayloadForSession(
     _: User,
-    __: TypeContextEmailPassword | TypeContextThirdParty,
+    __: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
     ___: "signin" | "signup"
 ) {
     return {};

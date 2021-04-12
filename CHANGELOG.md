@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [4.3.0] - Unreleased
 ### Changed
 - verifySession now accepts an object as a parameter. Two valid parameters are sessionRequired and antiCsrfCheck. sessionRequired can be given by users if they intend to make the session requirement optional for an API.
+- updated type of handlePostSignIn parameter in signInFeature for thirdpartyemailpassword
+### Added
+- handlePostSignUp parameter in signUpFeature for emailpassword recipe.
+- deprecation warning for handleCustomFormFieldsPostSignUp parameter.
+- handlePostSignIn parameter in signInFeature for emailpassword recipe.
 
 ## [4.2.0] - 2021-03-09
 ### Added

@@ -96,7 +96,9 @@ export type TypeFormField = { id: string; value: any };
 export type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
     formFields?: TypeInputFormField[];
+    // depcrecated
     handleCustomFormFieldsPostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
+    handlePostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 
 const InputSignUpSchema = {
@@ -117,6 +119,7 @@ const InputSignUpSchema = {
             },
         },
         handleCustomFormFieldsPostSignUp: TypeAny,
+        handlePostSignUp: TypeAny,
     },
     additionalProperties: false,
 };
@@ -130,17 +133,19 @@ export type NormalisedFormField = {
 export type TypeNormalisedInputSignUp = {
     disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
-    handleCustomFormFieldsPostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
+    handlePostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 
 export type TypeInputSignIn = {
     disableDefaultImplementation?: boolean;
+    handlePostSignIn?: (user: User) => Promise<void>;
 };
 
 const InputSignInSchema = {
     type: "object",
     properties: {
         disableDefaultImplementation: TypeBoolean,
+        handlePostSignIn: TypeAny,
     },
     additionalProperties: false,
 };
@@ -148,6 +153,7 @@ const InputSignInSchema = {
 export type TypeNormalisedInputSignIn = {
     disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
+    handlePostSignIn: (user: User) => Promise<void>;
 };
 
 export type TypeInputSignOutFeature = {

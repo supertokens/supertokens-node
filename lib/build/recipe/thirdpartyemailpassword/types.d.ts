@@ -10,20 +10,27 @@ export declare type User = {
         userId: string;
     };
 };
-export declare type TypeContextEmailPassword = {
+export declare type TypeContextEmailPasswordSignUp = {
     loginType: "emailpassword";
     formFields: TypeFormField[];
+};
+export declare type TypeContextEmailPasswordSessionDataAndJWT = {
+    loginType: "emailpassword";
+    formFields: TypeFormField[];
+};
+export declare type TypeContextEmailPasswordSignIn = {
+    loginType: "emailpassword";
 };
 export declare type TypeContextThirdParty = {
     loginType: "thirdparty";
     thirdPartyAuthCodeResponse: any;
 };
-export declare type TypeInputHandlePostSignUp = (user: User, context: TypeContextEmailPassword | TypeContextThirdParty) => Promise<void>;
-export declare type TypeInputHandlePostSignIn = (user: User, context: TypeContextThirdParty) => Promise<void>;
-export declare type TypeInputSetJwtPayloadForSession = (user: User, context: TypeContextEmailPassword | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
+export declare type TypeInputHandlePostSignUp = (user: User, context: TypeContextEmailPasswordSignUp | TypeContextThirdParty) => Promise<void>;
+export declare type TypeInputHandlePostSignIn = (user: User, context: TypeContextEmailPasswordSignIn | TypeContextThirdParty) => Promise<void>;
+export declare type TypeInputSetJwtPayloadForSession = (user: User, context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
     [key: string]: any;
 } | undefined>;
-export declare type TypeInputSetSessionDataForSession = (user: User, context: TypeContextEmailPassword | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
+export declare type TypeInputSetSessionDataForSession = (user: User, context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
     [key: string]: any;
 } | undefined>;
 export declare type TypeInputSessionFeature = {
