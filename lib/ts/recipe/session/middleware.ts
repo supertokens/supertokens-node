@@ -13,12 +13,12 @@
  * under the License.
  */
 import { Response, NextFunction, Request } from "express";
-import { SessionRequest } from "./types";
+import { SessionRequest, VerifySessionOptions } from "./types";
 import SessionRecipe from "./sessionRecipe";
 import { normaliseHttpMethod, sendNon200Response } from "../../utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 
-export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boolean) {
+export function verifySession(recipeInstance: SessionRecipe, options?: VerifySessionOptions | boolean) {
     // We know this should be Request but then Type
     return async (request: SessionRequest, response: Response, next: NextFunction) => {
         try {
@@ -26,6 +26,7 @@ export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boo
             if (method === "options" || method === "trace") {
                 return next();
             }
+
             let incomingPath = new NormalisedURLPath(
                 recipeInstance,
                 request.originalUrl === undefined ? request.url : request.originalUrl
@@ -34,7 +35,7 @@ export function verifySession(recipeInstance: SessionRecipe, antiCsrfCheck?: boo
             if (incomingPath.equals(refreshTokenPath) && method === "post") {
                 request.session = await recipeInstance.refreshSession(request, response);
             } else {
-                request.session = await recipeInstance.getSession(request, response, antiCsrfCheck);
+                request.session = await recipeInstance.getSession(request, response, options);
             }
             return next();
         } catch (err) {

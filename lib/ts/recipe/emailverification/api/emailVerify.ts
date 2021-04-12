@@ -68,6 +68,16 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
             })
         );
         let session = (req as SessionRequest).session;
+        if (session === undefined) {
+            throw new STError(
+                {
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error("Session is undefined. Should not come here."),
+                },
+                recipeInstance
+            );
+        }
+
         let userId = session.getUserId();
 
         let email = await recipeInstance.config.getEmailForUserId(userId);

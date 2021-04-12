@@ -17,6 +17,7 @@ import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import Session from "../../session";
+import STError from "../error";
 import { SessionRequest } from "../../session/types";
 
 export default async function generateEmailVerifyToken(
@@ -38,6 +39,16 @@ export default async function generateEmailVerifyToken(
         })
     );
     let session = (req as SessionRequest).session;
+    if (session === undefined) {
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Session is undefined. Should not come here."),
+            },
+            recipeInstance
+        );
+    }
+
     let userId = session.getUserId();
 
     let email = await recipeInstance.config.getEmailForUserId(userId);
