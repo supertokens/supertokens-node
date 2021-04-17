@@ -300,14 +300,14 @@ export default class SessionRecipe extends RecipeModule {
     };
 
     refreshSession = async (req: express.Request, res: express.Response): Promise<Session> => {
-        let inputRefreshToken = getRefreshTokenFromCookie(req);
-        if (inputRefreshToken === undefined) {
+        let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
+        if (inputIdRefreshToken === undefined) {
             // we do not clear cookies here because of a
             // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
 
             throw new STError(
                 {
-                    message: "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
+                    message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
                     type: STError.UNAUTHORISED,
                 },
                 this
@@ -315,6 +315,17 @@ export default class SessionRecipe extends RecipeModule {
         }
 
         try {
+            let inputRefreshToken = getRefreshTokenFromCookie(req);
+            if (inputRefreshToken === undefined) {
+                throw new STError(
+                    {
+                        message:
+                            "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
+                        type: STError.UNAUTHORISED,
+                    },
+                    this
+                );
+            }
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
             let response = await SessionFunctions.refreshSession(this, inputRefreshToken, antiCsrfToken);
             attachCreateOrRefreshSessionResponseToExpressRes(this, res, response);
