@@ -166,7 +166,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -298,7 +298,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {

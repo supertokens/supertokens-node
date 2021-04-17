@@ -356,7 +356,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res1.refreshToken,
+                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res1.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -434,7 +437,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + res2.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res2.refreshToken,
+                        "sIdRefreshToken=" + res2.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res2.antiCsrf)
                     .expect(200)
                     .end((err, res) => {

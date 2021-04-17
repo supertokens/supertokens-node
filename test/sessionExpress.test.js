@@ -94,7 +94,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res2 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -226,7 +226,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -253,7 +256,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res3 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -332,7 +335,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -359,7 +365,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let res3 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .end((err, res) => {
                     if (err) {
@@ -465,7 +471,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/auth/session/refresh")
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -698,7 +707,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await new Promise((resolve) =>
                 request(app)
                     .post("/session/refresh")
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res.antiCsrf)
                     .end((err, res) => {
                         if (err) {

@@ -258,7 +258,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + infoFromResponse.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + infoFromResponse.refreshToken,
+                        "sIdRefreshToken=" + infoFromResponse.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", infoFromResponse.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
@@ -843,7 +846,10 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + infoFromResponse.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + infoFromResponse.refreshToken,
+                        "sIdRefreshToken=" + infoFromResponse.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", infoFromResponse.antiCsrf)
                     .expect(200)
                     .end((err, res) => {

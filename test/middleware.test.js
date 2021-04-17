@@ -314,7 +314,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res1.refreshToken,
+                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -363,7 +366,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r4 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                .set("Cookie", [
+                    "sRefreshToken=" + res1.refreshToken,
+                    "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
@@ -644,7 +650,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res1.refreshToken,
+                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -693,7 +702,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r4 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                .set("Cookie", [
+                    "sRefreshToken=" + res1.refreshToken,
+                    "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
@@ -986,7 +998,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 request(app)
                     .post("/custom/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res1.refreshToken,
+                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -1037,7 +1052,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r4 = await new Promise((resolve) =>
             request(app)
                 .post("/custom/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                .set("Cookie", [
+                    "sRefreshToken=" + res1.refreshToken,
+                    "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
@@ -1329,7 +1347,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 request(app)
                     .post("/custom/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res1.refreshToken,
+                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {
@@ -1380,7 +1401,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
         let r4 = await new Promise((resolve) =>
             request(app)
                 .post("/custom/session/refresh")
-                .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                .set("Cookie", [
+                    "sRefreshToken=" + res1.refreshToken,
+                    "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                ])
                 .set("anti-csrf", res1.antiCsrf)
                 .expect(403)
                 .end((err, res) => {
@@ -1702,7 +1726,10 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 request(app)
                     .post("/custom/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + res1.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res1.refreshToken,
+                        "sIdRefreshToken=" + res1.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res1.antiCsrf)
                     .end((err, res) => {
                         if (err) {

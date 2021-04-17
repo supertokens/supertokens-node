@@ -263,7 +263,10 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                 request(app)
                     .post("/auth/session/refresh")
                     .expect(200)
-                    .set("Cookie", ["sRefreshToken=" + res.refreshToken])
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
                     .set("anti-csrf", res.antiCsrf)
                     .expect(200)
                     .end((err, res) => {
