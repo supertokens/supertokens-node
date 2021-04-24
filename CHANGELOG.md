@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [4.3.2] - 2021-04-124
+### Changed:
+- Complies with FDI 1.7.1 for issue https://github.com/supertokens/supertokens-core/issues/233
+
 ## [4.3.1] - 2021-04-17
 ### Fixed
 - Issue https://github.com/supertokens/supertokens-node/issues/113: If the `idRefreshToken` is present in the request, but the refresh token is missing, we clear the `idRefreshToken` as well.

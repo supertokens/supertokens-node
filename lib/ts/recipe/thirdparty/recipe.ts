@@ -148,6 +148,11 @@ export default class Recipe extends RecipeModule {
             return send200Response(response, {
                 status: "NO_EMAIL_GIVEN_BY_PROVIDER",
             });
+        } else if (err.type === STError.FIELD_ERROR) {
+            return send200Response(response, {
+                status: "FIELD_ERROR",
+                error: err.message,
+            });
         }
         return this.emailVerificationRecipe.handleError(err, request, response, next);
     };
