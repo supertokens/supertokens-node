@@ -148,17 +148,7 @@ export async function assertThatBodyParserHasBeenUsed(
     // according to https://github.com/supertokens/supertokens-node/issues/33
     let method = normaliseHttpMethod(req.method);
     if (method === "post" || method === "put") {
-        if (req.body === undefined) {
-            let jsonParser = bodyParser.json();
-            let err = await new Promise((resolve) => jsonParser(req, res, resolve));
-            if (err !== undefined) {
-                throw new STError({
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "API input error: Please make sure to pass a valid JSON input in thr request body",
-                    recipe,
-                });
-            }
-        } else if (typeof req.body === "string") {
+        if (typeof req.body === "string") {
             try {
                 req.body = JSON.parse(req.body);
             } catch (err) {
@@ -171,6 +161,25 @@ export async function assertThatBodyParserHasBeenUsed(
                         recipe,
                     });
                 }
+            }
+        } else {
+            try {
+                if (req.body !== undefined) {
+                    JSON.parse(req.body);
+                    return;
+                }
+            } catch (ignored) {}
+
+            // if it comes here, it means that req.body is undefined or
+            // that it's not a valid JSON. So we parse it.
+            let jsonParser = bodyParser.json();
+            let err = await new Promise((resolve) => jsonParser(req, res, resolve));
+            if (err !== undefined) {
+                throw new STError({
+                    type: STError.BAD_INPUT_ERROR,
+                    message: "API input error: Please make sure to pass a valid JSON input in thr request body",
+                    recipe,
+                });
             }
         }
     } else if (method === "delete" || method === "get") {

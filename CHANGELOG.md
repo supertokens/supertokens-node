@@ -5,7 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## [4.3.2] - 2021-04-124
+## [4.3.3] - 2021-04-25
+### Changed:
+- Fixes case when bodyParser is not used in serverless functions - We now attempt to use bodyParser even if `req.body` is not `undefined` - as long as it's not a valid JSON.
+
+## [4.3.2] - 2021-04-24
 ### Changed:
 - Complies with FDI 1.7.1 for issue https://github.com/supertokens/supertokens-core/issues/233
 
