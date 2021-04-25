@@ -163,15 +163,7 @@ export async function assertThatBodyParserHasBeenUsed(
                 }
             }
         } else {
-            try {
-                if (req.body !== undefined) {
-                    JSON.parse(req.body);
-                    return;
-                }
-            } catch (ignored) {}
-
-            // if it comes here, it means that req.body is undefined or
-            // that it's not a valid JSON. So we parse it.
+            // even if the user has applied bodyParser already, it doesn't matter.
             let jsonParser = bodyParser.json();
             let err = await new Promise((resolve) => jsonParser(req, res, resolve));
             if (err !== undefined) {
