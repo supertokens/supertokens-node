@@ -6,7 +6,6 @@ if [[ $(git log master ^HEAD) ]]; then
     exit 1
 fi
 
-
 # get version------------
 version=`cat package.json | grep -e '"version":'`
 while IFS='"' read -ra ADDR; do
