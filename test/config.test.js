@@ -21,7 +21,10 @@ const {
     cleanST,
     resetAll,
     createServerlessCacheForTesting,
+    extractInfoFromResponse,
 } = require("./utils");
+const request = require("supertest");
+const express = require("express");
 let STExpress = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
@@ -32,6 +35,7 @@ let { normaliseURLDomainOrThrowError } = require("../lib/build/normalisedURLDoma
 let { normaliseSessionScopeOrThrowError } = require("../lib/build/recipe/session/utils");
 const { Querier } = require("../lib/build/querier");
 let SuperTokens = require("../lib/build/supertokens").default;
+let ST = require("../");
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/recipe/session/utils");
@@ -1376,6 +1380,276 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             assert(true);
         } catch (err) {
             throw err;
+        }
+    });
+
+    it("apiGatewayPath test", async function () {
+        await startST();
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiGatewayPath: "/gateway",
+                },
+                recipeList: [
+                    Session.init({
+                        enableAntiCsrf: true,
+                    }),
+                ],
+            });
+
+            const app = express();
+
+            app.use(ST.middleware());
+
+            app.post("/create", async (req, res) => {
+                await Session.createNewSession(res, "", {}, {});
+                res.status(200).send("");
+            });
+
+            let res = extractInfoFromResponse(
+                await new Promise((resolve) =>
+                    request(app)
+                        .post("/create")
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(res);
+                            }
+                        })
+                )
+            );
+
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(res2.status === 200);
+
+            assert(
+                SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/gateway/auth"
+            );
+            resetAll();
+        }
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "hello",
+                    apiGatewayPath: "/gateway",
+                },
+                recipeList: [
+                    Session.init({
+                        enableAntiCsrf: true,
+                    }),
+                ],
+            });
+
+            const app = express();
+
+            app.use(ST.middleware());
+
+            app.post("/create", async (req, res) => {
+                await Session.createNewSession(res, "", {}, {});
+                res.status(200).send("");
+            });
+
+            let res = extractInfoFromResponse(
+                await new Promise((resolve) =>
+                    request(app)
+                        .post("/create")
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(res);
+                            }
+                        })
+                )
+            );
+
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/hello/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(res2.status === 200);
+
+            assert(
+                SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/gateway/hello"
+            );
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "hello",
+                },
+                recipeList: [
+                    Session.init({
+                        enableAntiCsrf: true,
+                    }),
+                ],
+            });
+
+            const app = express();
+
+            app.use(ST.middleware());
+
+            app.post("/create", async (req, res) => {
+                await Session.createNewSession(res, "", {}, {});
+                res.status(200).send("");
+            });
+
+            let res = extractInfoFromResponse(
+                await new Promise((resolve) =>
+                    request(app)
+                        .post("/create")
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(res);
+                            }
+                        })
+                )
+            );
+
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/hello/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(res2.status === 200);
+
+            assert(SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/hello");
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                    apiBasePath: "/hello",
+                },
+                recipeList: [
+                    Session.init({
+                        enableAntiCsrf: true,
+                    }),
+                ],
+                apiWebProxyPath: "/gateway",
+            });
+
+            const app = express();
+
+            app.use(ST.middleware());
+
+            app.post("/create", async (req, res) => {
+                await Session.createNewSession(res, "", {}, {});
+                res.status(200).send("");
+            });
+
+            let res = extractInfoFromResponse(
+                await new Promise((resolve) =>
+                    request(app)
+                        .post("/create")
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(res);
+                            }
+                        })
+                )
+            );
+
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/hello/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res.antiCsrf)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert(res2.status === 200);
+
+            assert(
+                SuperTokens.getInstanceOrThrowError().appInfo.apiBasePath.getAsStringDangerous() === "/gateway/hello"
+            );
+            resetAll();
         }
     });
 });

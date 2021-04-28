@@ -20,9 +20,10 @@ import NormalisedURLPath from "./normalisedURLPath";
 export type AppInfo = {
     appName: string;
     websiteDomain: string;
+    websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
-    websiteBasePath?: string;
+    apiGatewayPath?: string;
 };
 
 export type NormalisedAppinfo = {
@@ -30,6 +31,7 @@ export type NormalisedAppinfo = {
     websiteDomain: NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     apiBasePath: NormalisedURLPath;
+    apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;
 };
 
@@ -38,11 +40,13 @@ export type TypeInput = {
         connectionURI: string;
         apiKey?: string;
     };
-    apiWebProxyPath?: string;
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
+
+    // deprecated - use appInfo -> apiGatewayPath instead
+    apiWebProxyPath?: string;
 };
 
 const TypeString = {
@@ -72,6 +76,7 @@ export const InputSchema = {
                 websiteDomain: TypeString,
                 apiDomain: TypeString,
                 apiBasePath: TypeString,
+                apiGatewayPath: TypeString,
                 websiteBasePath: TypeString,
             },
             required: ["appName", "websiteDomain", "apiDomain"],
