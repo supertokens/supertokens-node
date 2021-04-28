@@ -44,8 +44,7 @@ export function maxVersion(version1: string, version2: string): string {
 
 export function normaliseInputAppInfoOrThrowError(
     recipe: RecipeModule | undefined,
-    appInfo: AppInfo,
-    apiWebProxyPath: NormalisedURLPath
+    appInfo: AppInfo
 ): NormalisedAppinfo {
     if (appInfo === undefined) {
         throw new STError({
@@ -77,11 +76,15 @@ export function normaliseInputAppInfoOrThrowError(
             recipe,
         });
     }
+    let apiGatewayPath =
+        appInfo.apiGatewayPath !== undefined
+            ? new NormalisedURLPath(undefined, appInfo.apiGatewayPath)
+            : new NormalisedURLPath(undefined, "");
     return {
         appName: appInfo.appName,
         websiteDomain: new NormalisedURLDomain(recipe, appInfo.websiteDomain),
         apiDomain: new NormalisedURLDomain(recipe, appInfo.apiDomain),
-        apiBasePath: apiWebProxyPath.appendPath(
+        apiBasePath: apiGatewayPath.appendPath(
             recipe,
             appInfo.apiBasePath === undefined
                 ? new NormalisedURLPath(recipe, "/auth")
@@ -91,6 +94,7 @@ export function normaliseInputAppInfoOrThrowError(
             appInfo.websiteBasePath === undefined
                 ? new NormalisedURLPath(recipe, "/auth")
                 : new NormalisedURLPath(recipe, appInfo.websiteBasePath),
+        apiGatewayPath,
     };
 }
 

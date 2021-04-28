@@ -4,7 +4,6 @@ import * as express from "express";
 import NormalisedURLPath from "./normalisedURLPath";
 export default class SuperTokens {
     private static instance;
-    apiWebProxyPath: NormalisedURLPath;
     appInfo: NormalisedAppinfo;
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];

@@ -36,8 +36,6 @@ import SuperTokensError from "./error";
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
 
-    apiWebProxyPath: NormalisedURLPath;
-
     appInfo: NormalisedAppinfo;
 
     isInServerlessEnv: boolean;
@@ -46,11 +44,20 @@ export default class SuperTokens {
 
     constructor(config: TypeInput) {
         validateTheStructureOfUserInput(config, InputSchema, "init function", undefined);
-        this.apiWebProxyPath =
-            config.apiWebProxyPath !== undefined
-                ? new NormalisedURLPath(undefined, config.apiWebProxyPath)
-                : new NormalisedURLPath(undefined, "");
-        this.appInfo = normaliseInputAppInfoOrThrowError(undefined, config.appInfo, this.apiWebProxyPath);
+
+        if (config.apiWebProxyPath !== undefined) {
+            process.emitWarning(
+                "apiWebProxyPath is deprecated and will soon stop working in future versions. Please use appInfo.apiGatewayPath instead",
+                "DeprecationWarning"
+            );
+        }
+
+        // we prioritize apiGatewayPath over apiWebProxyPath
+        if (config.appInfo.apiGatewayPath === undefined) {
+            config.appInfo.apiGatewayPath = config.apiWebProxyPath;
+        }
+
+        this.appInfo = normaliseInputAppInfoOrThrowError(undefined, config.appInfo);
 
         Querier.init(
             config.supertokens.connectionURI
@@ -173,7 +180,7 @@ export default class SuperTokens {
 
     middleware = () => {
         return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
-            let path = this.apiWebProxyPath.appendPath(
+            let path = this.appInfo.apiGatewayPath.appendPath(
                 undefined,
                 new NormalisedURLPath(undefined, request.originalUrl === undefined ? request.url : request.originalUrl)
             );

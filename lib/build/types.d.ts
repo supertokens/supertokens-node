@@ -4,15 +4,17 @@ import NormalisedURLPath from "./normalisedURLPath";
 export declare type AppInfo = {
     appName: string;
     websiteDomain: string;
+    websiteBasePath?: string;
     apiDomain: string;
     apiBasePath?: string;
-    websiteBasePath?: string;
+    apiGatewayPath?: string;
 };
 export declare type NormalisedAppinfo = {
     appName: string;
     websiteDomain: NormalisedURLDomain;
     apiDomain: NormalisedURLDomain;
     apiBasePath: NormalisedURLPath;
+    apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;
 };
 export declare type TypeInput = {
@@ -20,11 +22,11 @@ export declare type TypeInput = {
         connectionURI: string;
         apiKey?: string;
     };
-    apiWebProxyPath?: string;
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
+    apiWebProxyPath?: string;
 };
 export declare const InputSchema: {
     type: string;
@@ -55,6 +57,9 @@ export declare const InputSchema: {
                     type: string;
                 };
                 apiBasePath: {
+                    type: string;
+                };
+                apiGatewayPath: {
                     type: string;
                 };
                 websiteBasePath: {
