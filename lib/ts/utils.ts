@@ -162,8 +162,7 @@ export async function assertThatBodyParserHasBeenUsed(
                     });
                 }
             }
-        } else {
-            // even if the user has applied bodyParser already, it doesn't matter.
+        } else if (req.body === undefined || Buffer.isBuffer(req.body)) {
             let jsonParser = bodyParser.json();
             let err = await new Promise((resolve) => jsonParser(req, res, resolve));
             if (err !== undefined) {
