@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Uses custom header as a measure to prevent CSRF attacks - unless the user explicitly enables anti-csrf tokens.
 - new FDI 1.8
 - changes `enableAntiCsrf` config to `antiCsrf`.
+- removes deprecated `apiWebProxyPath` config. Use `appInfo -> apiGatewayPath` instead.
 
 ## [4.4.1] - 2021-04-29
 ### Fixed:
