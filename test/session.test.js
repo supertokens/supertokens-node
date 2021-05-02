@@ -73,7 +73,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -133,7 +133,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -209,7 +209,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -267,7 +267,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -325,7 +325,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -375,7 +375,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -424,7 +424,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -457,7 +457,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -536,7 +536,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -580,7 +580,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -625,7 +625,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -675,7 +675,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -718,7 +718,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -765,7 +765,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -809,7 +809,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -844,7 +844,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
     //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
     it("test that when anti-csrf is disabled from ST core not having that in input to verify session is fine", async function () {
-        await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -857,7 +856,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: false,
+                    antiCsrf: "NONE",
                 }),
             ],
         });
@@ -888,37 +887,25 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(Object.keys(response3.session).length === 3);
     });
 
-    it("test that anti-csrf disabled and sameSite none throws an error", async function () {
-        await setKeyValueInConfig("enable_anti_csrf", "false");
+    it("test that anti-csrf disabled and sameSite none does not throw an error", async function () {
         await startST();
 
-        try {
-            SuperTokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init({
-                        cookieSameSite: "none",
-                        enableAntiCsrf: false,
-                    }),
-                ],
-            });
-            assert(false);
-        } catch (err) {
-            if (
-                err.type !== Session.Error.GENERAL_ERROR ||
-                err.message !==
-                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'
-            ) {
-                throw err;
-            }
-        }
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    cookieSameSite: "none",
+                    antiCsrf: "NONE",
+                }),
+            ],
+        });
     });
 
     it("test that additional property throws an error", async function () {
@@ -953,7 +940,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that anti-csrf disabled and sameSite lax does now throw an error", async function () {
-        await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -967,7 +953,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             recipeList: [
                 Session.init({
                     cookieSameSite: "lax",
-                    enableAntiCsrf: false,
+                    antiCsrf: "NONE",
                 }),
             ],
         });
@@ -977,7 +963,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     });
 
     it("test that anti-csrf disabled and sameSite strict does now throw an error", async function () {
-        await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -991,7 +976,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             recipeList: [
                 Session.init({
                     cookieSameSite: "strict",
-                    enableAntiCsrf: false,
+                    antiCsrf: "NONE",
                 }),
             ],
         });

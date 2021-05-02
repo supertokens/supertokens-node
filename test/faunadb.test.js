@@ -67,7 +67,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                     faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                     userCollectionName: "users",
                     accessFaunadbTokenFromFrontend: true,
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -186,7 +186,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                     faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                     userCollectionName: "users",
                     accessFaunadbTokenFromFrontend: true,
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -257,7 +257,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                     }),
                     userCollectionName: "users",
                     accessFaunadbTokenFromFrontend: true,
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -377,7 +377,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                     faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                     userCollectionName: "users",
                     accessFaunadbTokenFromFrontend: true,
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -500,7 +500,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 Session.init({
                     faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                     userCollectionName: "users",
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -582,7 +582,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 Session.init({
                     faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                     userCollectionName: "users",
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -698,7 +698,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                     faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                     userCollectionName: "users",
                     accessFaunadbTokenFromFrontend: true,
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -794,7 +794,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                     faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                     userCollectionName: "users",
                     accessFaunadbTokenFromFrontend: true,
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -945,7 +945,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 Session.init({
                     faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
                     userCollectionName: "users",
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });

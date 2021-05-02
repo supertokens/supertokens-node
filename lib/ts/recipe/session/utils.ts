@@ -162,6 +162,18 @@ export function validateAndNormaliseUserInput(
         signOutFeature.disableDefaultImplementation = config.signOutFeature.disableDefaultImplementation;
     }
 
+    if (config !== undefined && config.antiCsrf !== undefined) {
+        if (config.antiCsrf !== "NONE" && config.antiCsrf !== "VIA_CUSTOM_HEADER" && config.antiCsrf !== "VIA_TOKEN") {
+            throw new STError(
+                {
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error("antiCsrf config must be one of 'NONE' or 'VIA_CUSTOM_HEADER' or 'VIA_TOKEN'"),
+                },
+                recipeInstance
+            );
+        }
+    }
+
     let antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" =
         config === undefined || config.antiCsrf === undefined
             ? cookieSameSite === "none"

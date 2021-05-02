@@ -68,7 +68,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     sessionRefreshFeature: {
                         disableDefaultImplementation: true,
                     },
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -113,7 +113,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -441,7 +441,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                     errorHandlers: {
                         onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
                             res.statusCode = 403;
@@ -793,7 +793,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1140,7 +1140,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1492,7 +1492,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1631,7 +1631,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1851,7 +1851,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                             });
                         },
                     },
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });

@@ -443,7 +443,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });

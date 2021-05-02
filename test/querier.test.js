@@ -53,7 +53,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 EmailPassword.init(),
             ],
@@ -91,7 +91,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -128,7 +128,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -181,7 +181,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -211,7 +211,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -242,7 +242,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });

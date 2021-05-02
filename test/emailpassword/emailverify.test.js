@@ -82,7 +82,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -127,7 +127,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -176,7 +176,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -221,7 +221,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -313,7 +313,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -383,7 +383,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -448,7 +448,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -495,7 +495,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -554,7 +554,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -632,7 +632,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -718,7 +718,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -771,7 +771,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     },
                 }),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });

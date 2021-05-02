@@ -196,7 +196,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 ThirdPartyEmailPassword.init({
                     providers: [this.customProvider1],

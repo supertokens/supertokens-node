@@ -73,7 +73,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -223,7 +223,7 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });

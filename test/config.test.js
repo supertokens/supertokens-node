@@ -779,11 +779,11 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [
                     Session.init({
-                        enableAntiCsrf: true,
+                        antiCsrf: "VIA_CUSTOM_HEADER",
                     }),
                 ],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
@@ -804,7 +804,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
 
@@ -826,7 +826,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
@@ -847,7 +847,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
@@ -868,7 +868,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
@@ -889,7 +889,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
@@ -910,7 +910,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
             resetAll();
@@ -930,13 +930,33 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [
                     Session.init({
-                        enableAntiCsrf: true,
+                        antiCsrf: "VIA_CUSTOM_HEADER",
                     }),
                 ],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === true);
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "127.0.0.1:9000",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [Session.init()],
+            });
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "VIA_CUSTOM_HEADER");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
 
@@ -954,9 +974,31 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [Session.init()],
             });
-            assert(SessionRecipe.getInstanceOrThrowError().config.enableAntiCsrf === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "127.0.0.1:3000",
+                    appName: "SuperTokens",
+                    websiteDomain: "google.com",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [
+                    Session.init({
+                        antiCsrf: "NONE",
+                    }),
+                ],
+            });
+            assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
             resetAll();
         }
 
@@ -975,16 +1017,13 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     },
                     recipeList: [
                         Session.init({
-                            enableAntiCsrf: false,
+                            antiCsrf: "RANDOM",
                         }),
                     ],
                 });
                 assert(false);
             } catch (err) {
-                if (
-                    err.message !==
-                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'
-                ) {
+                if (err.message !== "antiCsrf config must be one of 'NONE' or 'VIA_CUSTOM_HEADER' or 'VIA_TOKEN'") {
                     throw err;
                 }
             }
@@ -1398,7 +1437,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [
                     Session.init({
-                        enableAntiCsrf: true,
+                        antiCsrf: "VIA_TOKEN",
                     }),
                 ],
             });
@@ -1465,7 +1504,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [
                     Session.init({
-                        enableAntiCsrf: true,
+                        antiCsrf: "VIA_TOKEN",
                     }),
                 ],
             });
@@ -1532,7 +1571,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [
                     Session.init({
-                        enableAntiCsrf: true,
+                        antiCsrf: "VIA_TOKEN",
                     }),
                 ],
             });
@@ -1597,7 +1636,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 },
                 recipeList: [
                     Session.init({
-                        enableAntiCsrf: true,
+                        antiCsrf: "VIA_TOKEN",
                     }),
                 ],
                 apiWebProxyPath: "/gateway",
