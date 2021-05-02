@@ -50,9 +50,9 @@ cd supertokens-website
 git checkout $2
 cd ../project/test/frontendIntegration/
 npm i -d
-node . &
+TEST_MODE=testing node . &
 pid=$!
-NODE_PORT=8082 node . &
+TEST_MODE=testing NODE_PORT=8082 node . &
 pid2=$!
 cd ../../../supertokens-website/test/server
 npm i -d
