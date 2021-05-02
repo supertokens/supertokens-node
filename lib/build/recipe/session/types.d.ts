@@ -3,7 +3,7 @@ import Session from "./sessionClass";
 import NormalisedURLPath from "../../normalisedURLPath";
 export declare type HandshakeInfo = {
     jwtSigningPublicKey: string;
-    enableAntiCsrf: boolean;
+    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     accessTokenBlacklistingEnabled: boolean;
     jwtSigningPublicKeyExpiryTime: number;
     accessTokenValidity: number;
@@ -60,7 +60,7 @@ export declare type TypeInput = {
         disableDefaultImplementation?: boolean;
     };
     errorHandlers?: ErrorHandlers;
-    enableAntiCsrf?: boolean;
+    antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 };
 export declare const InputSchema: {
     type: string;
@@ -107,7 +107,7 @@ export declare const InputSchema: {
             };
             additionalProperties: boolean;
         };
-        enableAntiCsrf: {
+        antiCsrf: {
             type: string;
         };
         faunadbSecret: {
@@ -138,7 +138,7 @@ export declare type TypeNormalisedInput = {
         disableDefaultImplementation: boolean;
     };
     errorHandlers: NormalisedErrorHandlers;
-    enableAntiCsrf: boolean;
+    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 };
 export interface SessionRequest extends Request {
     session?: Session;

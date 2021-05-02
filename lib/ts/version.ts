@@ -12,6 +12,6 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export const version = "4.4.1";
+export const version = "5.0.0";
 
 export const cdiSupported = ["2.7"];

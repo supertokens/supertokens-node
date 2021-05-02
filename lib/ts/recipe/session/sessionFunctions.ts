@@ -43,7 +43,7 @@ export async function createNewSession(
     };
 
     let handShakeInfo = await recipeInstance.getHandshakeInfo();
-    requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
+    requestBody.enableAntiCsrf = handShakeInfo.antiCsrf === "VIA_TOKEN";
     let response = await recipeInstance
         .getQuerier()
         .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session"), requestBody);
@@ -63,7 +63,8 @@ export async function getSession(
     recipeInstance: SessionRecipe,
     accessToken: string,
     antiCsrfToken: string | undefined,
-    doAntiCsrfCheck: boolean
+    doAntiCsrfCheck: boolean,
+    containsCustomHeader: boolean
 ): Promise<{
     session: {
         handle: string;
@@ -78,33 +79,44 @@ export async function getSession(
 }> {
     let handShakeInfo = await recipeInstance.getHandshakeInfo();
 
+    let fallbackToCore = true;
     try {
         if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
             let accessTokenInfo = await getInfoFromAccessToken(
                 recipeInstance,
                 accessToken,
                 handShakeInfo.jwtSigningPublicKey,
-                handShakeInfo.enableAntiCsrf && doAntiCsrfCheck
+                handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
             );
             // anti-csrf check
-            if (
-                handShakeInfo.enableAntiCsrf &&
-                doAntiCsrfCheck &&
-                (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken)
-            ) {
-                if (antiCsrfToken === undefined) {
+            if (handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck) {
+                if (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken) {
+                    if (antiCsrfToken === undefined) {
+                        throw new STError(
+                            {
+                                message:
+                                    "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false for this API",
+                                type: STError.TRY_REFRESH_TOKEN,
+                            },
+                            recipeInstance
+                        );
+                    } else {
+                        throw new STError(
+                            {
+                                message: "anti-csrf check failed",
+                                type: STError.TRY_REFRESH_TOKEN,
+                            },
+                            recipeInstance
+                        );
+                    }
+                }
+            } else if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && doAntiCsrfCheck) {
+                if (!containsCustomHeader) {
+                    fallbackToCore = false;
                     throw new STError(
                         {
                             message:
-                                "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false",
-                            type: STError.TRY_REFRESH_TOKEN,
-                        },
-                        recipeInstance
-                    );
-                } else {
-                    throw new STError(
-                        {
-                            message: "anti-csrf check failed",
+                                "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API",
                             type: STError.TRY_REFRESH_TOKEN,
                         },
                         recipeInstance
@@ -126,8 +138,7 @@ export async function getSession(
             }
         }
     } catch (err) {
-        if (err.type !== STError.TRY_REFRESH_TOKEN) {
-            // if error is try refresh token, we call the actual API.
+        if (err.type !== STError.TRY_REFRESH_TOKEN || !fallbackToCore) {
             throw err;
         }
     }
@@ -143,7 +154,7 @@ export async function getSession(
         accessToken,
         antiCsrfToken,
         doAntiCsrfCheck,
-        enableAntiCsrf: handShakeInfo.enableAntiCsrf,
+        enableAntiCsrf: handShakeInfo.antiCsrf === "VIA_TOKEN",
     };
 
     let response = await recipeInstance
@@ -185,8 +196,11 @@ export async function getSession(
 export async function refreshSession(
     recipeInstance: SessionRecipe,
     refreshToken: string,
-    antiCsrfToken: string | undefined
+    antiCsrfToken: string | undefined,
+    containsCustomHeader: boolean
 ): Promise<CreateOrRefreshAPIResponse> {
+    let handShakeInfo = await recipeInstance.getHandshakeInfo();
+
     let requestBody: {
         refreshToken: string;
         antiCsrfToken?: string;
@@ -194,10 +208,20 @@ export async function refreshSession(
     } = {
         refreshToken,
         antiCsrfToken,
+        enableAntiCsrf: handShakeInfo.antiCsrf === "VIA_TOKEN",
     };
 
-    let handShakeInfo = await recipeInstance.getHandshakeInfo();
-    requestBody.enableAntiCsrf = handShakeInfo.enableAntiCsrf;
+    if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
+        if (!containsCustomHeader) {
+            throw new STError(
+                {
+                    message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
+                    type: STError.UNAUTHORISED,
+                },
+                recipeInstance
+            );
+        }
+    }
 
     let response = await recipeInstance
         .getQuerier()
@@ -230,7 +254,7 @@ export async function refreshSession(
 
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
- * Access tokens cannot be immediately invalidated. Unless we add a bloacklisting method. Or changed the private key to sign them.
+ * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {

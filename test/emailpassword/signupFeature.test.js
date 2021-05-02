@@ -419,7 +419,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
             recipeList: [
                 EmailPassword.init(),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });

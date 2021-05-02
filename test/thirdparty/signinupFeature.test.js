@@ -196,7 +196,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 ThirPartyRecipe.init({
                     signInAndUpFeature: {
@@ -312,7 +312,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 ThirPartyRecipe.init({
                     signInAndUpFeature: {

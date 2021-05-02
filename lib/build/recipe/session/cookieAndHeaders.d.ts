@@ -17,6 +17,7 @@ export declare function attachRefreshTokenToCookie(recipeInstance: SessionRecipe
 export declare function getAccessTokenFromCookie(req: express.Request): string | undefined;
 export declare function getRefreshTokenFromCookie(req: express.Request): string | undefined;
 export declare function getAntiCsrfTokenFromHeaders(req: express.Request): string | undefined;
+export declare function getRidFromHeader(req: express.Request): string | undefined;
 export declare function getIdRefreshTokenFromCookie(req: express.Request): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(recipeInstance: SessionRecipe, res: express.Response, antiCsrfToken: string): void;
 export declare function setIdRefreshTokenInHeaderAndCookie(recipeInstance: SessionRecipe, res: express.Response, idRefreshToken: string, expiry: number): void;

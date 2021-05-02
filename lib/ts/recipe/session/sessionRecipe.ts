@@ -30,6 +30,7 @@ import {
     getRefreshTokenFromCookie,
     getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders,
     setFrontTokenInHeaders,
+    getRidFromHeader,
 } from "./cookieAndHeaders";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import handleRefreshAPI from "./api/refresh";
@@ -171,11 +172,16 @@ export default class SessionRecipe extends RecipeModule {
 
     getHandshakeInfo = async (): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined) {
+            let antiCsrf = this.config.antiCsrf;
             if (this.checkIfInServerlessEnv()) {
                 let handshakeInfo = await getDataFromFileForServerlessCache<HandshakeInfo>(
                     SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH
                 );
                 if (handshakeInfo !== undefined) {
+                    handshakeInfo = {
+                        ...handshakeInfo,
+                        antiCsrf,
+                    };
                     this.handshakeInfo = handshakeInfo;
                     return this.handshakeInfo;
                 }
@@ -185,10 +191,9 @@ export default class SessionRecipe extends RecipeModule {
                 new NormalisedURLPath(this, "/recipe/handshake"),
                 {}
             );
-            let enableAntiCsrf = this.config.enableAntiCsrf;
             this.handshakeInfo = {
                 jwtSigningPublicKey: response.jwtSigningPublicKey,
-                enableAntiCsrf,
+                antiCsrf,
                 accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
                 jwtSigningPublicKeyExpiryTime: response.jwtSigningPublicKeyExpiryTime,
                 accessTokenValidity: response.accessTokenValidity,
@@ -271,7 +276,13 @@ export default class SessionRecipe extends RecipeModule {
                 doAntiCsrfCheck = normaliseHttpMethod(req.method) !== "get";
             }
 
-            let response = await SessionFunctions.getSession(this, accessToken, antiCsrfToken, doAntiCsrfCheck);
+            let response = await SessionFunctions.getSession(
+                this,
+                accessToken,
+                antiCsrfToken,
+                doAntiCsrfCheck,
+                getRidFromHeader(req) !== undefined
+            );
             if (response.accessToken !== undefined) {
                 setFrontTokenInHeaders(
                     this,
@@ -327,7 +338,12 @@ export default class SessionRecipe extends RecipeModule {
                 );
             }
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
-            let response = await SessionFunctions.refreshSession(this, inputRefreshToken, antiCsrfToken);
+            let response = await SessionFunctions.refreshSession(
+                this,
+                inputRefreshToken,
+                antiCsrfToken,
+                getRidFromHeader(req) !== undefined
+            );
             attachCreateOrRefreshSessionResponseToExpressRes(this, res, response);
             return new Session(
                 this,

@@ -73,7 +73,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 EmailPassword.init(),
             ],
@@ -90,7 +90,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 EmailPassword.init(),
             ],
@@ -122,7 +122,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -164,7 +164,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 EmailPassword.init(),
             ],

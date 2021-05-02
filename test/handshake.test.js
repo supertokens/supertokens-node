@@ -106,7 +106,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
         let info = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
         assert.equal(typeof info.jwtSigningPublicKey, "string");
         let cdiVersion = await SessionRecipe.getInstanceOrThrowError().getQuerier().getAPIVersion();
-        assert.strictEqual(info.enableAntiCsrf, false);
+        assert.strictEqual(info.antiCsrf, "NONE");
         assert.equal(info.accessTokenBlacklistingEnabled, false);
         assert.equal(typeof info.jwtSigningPublicKeyExpiryTime, "number");
         assert.equal(info.accessTokenValidity, 3600 * 1000);

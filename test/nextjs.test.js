@@ -46,7 +46,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
                 recipeList: [
                     EmailPassword.init(),
                     Session.init({
-                        enableAntiCsrf: true,
+                        antiCsrf: "VIA_TOKEN",
                     }),
                 ],
             });

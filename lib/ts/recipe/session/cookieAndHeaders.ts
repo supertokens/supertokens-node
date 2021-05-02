@@ -29,6 +29,8 @@ const idRefreshTokenHeaderKey = "id-refresh-token";
 
 const antiCsrfHeaderKey = "anti-csrf";
 
+const ridHeaderKey = "rid";
+
 const frontTokenHeaderKey = "front-token";
 
 /**
@@ -78,6 +80,10 @@ export function getAntiCsrfTokenFromHeaders(req: express.Request): string | unde
     return getHeader(req, antiCsrfHeaderKey);
 }
 
+export function getRidFromHeader(req: express.Request): string | undefined {
+    return getHeader(req, ridHeaderKey);
+}
+
 export function getIdRefreshTokenFromCookie(req: express.Request): string | undefined {
     return getCookieValue(req, idRefreshTokenCookieKey);
 }
@@ -122,7 +128,7 @@ export function setFrontTokenInHeaders(
 }
 
 export function getCORSAllowedHeaders(): string[] {
-    return [antiCsrfHeaderKey];
+    return [antiCsrfHeaderKey, ridHeaderKey];
 }
 
 function setHeader(

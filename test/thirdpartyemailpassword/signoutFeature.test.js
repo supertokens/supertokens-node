@@ -88,7 +88,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                     providers: [this.customProvider1],
                 }),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -297,7 +297,7 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                     providers: [this.customProvider1],
                 }),
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });

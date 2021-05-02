@@ -9,7 +9,7 @@ export declare function createNewSession(recipeInstance: SessionRecipe, userId: 
  * @description authenticates a session. To be used in APIs that require authentication
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED and TRY_REFRESH_TOKEN
  */
-export declare function getSession(recipeInstance: SessionRecipe, accessToken: string, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean): Promise<{
+export declare function getSession(recipeInstance: SessionRecipe, accessToken: string, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean, containsCustomHeader: boolean): Promise<{
     session: {
         handle: string;
         userId: string;
@@ -26,10 +26,10 @@ export declare function getSession(recipeInstance: SessionRecipe, accessToken: s
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
-export declare function refreshSession(recipeInstance: SessionRecipe, refreshToken: string, antiCsrfToken: string | undefined): Promise<CreateOrRefreshAPIResponse>;
+export declare function refreshSession(recipeInstance: SessionRecipe, refreshToken: string, antiCsrfToken: string | undefined, containsCustomHeader: boolean): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
- * Access tokens cannot be immediately invalidated. Unless we add a bloacklisting method. Or changed the private key to sign them.
+ * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  * @throws AuthError, GENERAL_ERROR
  */
 export declare function revokeAllSessionsForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]>;

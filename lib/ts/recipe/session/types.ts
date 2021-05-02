@@ -18,7 +18,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 
 export type HandshakeInfo = {
     jwtSigningPublicKey: string;
-    enableAntiCsrf: boolean;
+    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     accessTokenBlacklistingEnabled: boolean;
     jwtSigningPublicKeyExpiryTime: number;
     accessTokenValidity: number;
@@ -91,7 +91,7 @@ export type TypeInput = {
         disableDefaultImplementation?: boolean;
     };
     errorHandlers?: ErrorHandlers;
-    enableAntiCsrf?: boolean;
+    antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 };
 
 export const InputSchema = {
@@ -116,7 +116,7 @@ export const InputSchema = {
             additionalProperties: false,
         },
         errorHandlers: InputSchemaErrorHandlers,
-        enableAntiCsrf: TypeBoolean,
+        antiCsrf: TypeString,
         faunadbSecret: TypeString,
         userCollectionName: TypeString,
         accessFaunadbTokenFromFrontend: TypeBoolean,
@@ -138,7 +138,7 @@ export type TypeNormalisedInput = {
         disableDefaultImplementation: boolean;
     };
     errorHandlers: NormalisedErrorHandlers;
-    enableAntiCsrf: boolean;
+    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 };
 
 export interface SessionRequest extends Request {

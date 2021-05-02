@@ -89,7 +89,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 ThirPartyRecipe.init({
                     signInAndUpFeature: {
@@ -137,7 +137,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 ThirPartyRecipe.init({
                     signInAndUpFeature: {

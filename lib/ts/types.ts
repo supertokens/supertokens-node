@@ -44,9 +44,6 @@ export type TypeInput = {
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
-
-    // deprecated - use appInfo -> apiGatewayPath instead
-    apiWebProxyPath?: string;
 };
 
 const TypeString = {
@@ -87,7 +84,6 @@ export const InputSchema = {
         },
         telemetry: TypeBoolean,
         isInServerlessEnv: TypeBoolean,
-        apiWebProxyPath: TypeString,
     },
     required: ["supertokens", "appInfo", "recipeList"],
     additionalProperties: false,

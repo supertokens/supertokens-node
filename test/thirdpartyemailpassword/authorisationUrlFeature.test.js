@@ -85,7 +85,7 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 ThirdPartyEmailPasswordRecipe.init({
                     providers: [this.customProvider1],
@@ -129,7 +129,7 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
                 ThirdPartyEmailPasswordRecipe.init({
                     providers: [this.customProvider2],

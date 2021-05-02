@@ -45,18 +45,6 @@ export default class SuperTokens {
     constructor(config: TypeInput) {
         validateTheStructureOfUserInput(config, InputSchema, "init function", undefined);
 
-        if (config.apiWebProxyPath !== undefined) {
-            process.emitWarning(
-                "apiWebProxyPath is deprecated and will soon stop working in future versions. Please use appInfo.apiGatewayPath instead",
-                "DeprecationWarning"
-            );
-        }
-
-        // we prioritize apiGatewayPath over apiWebProxyPath
-        if (config.appInfo.apiGatewayPath === undefined) {
-            config.appInfo.apiGatewayPath = config.apiWebProxyPath;
-        }
-
         this.appInfo = normaliseInputAppInfoOrThrowError(undefined, config.appInfo);
 
         Querier.init(

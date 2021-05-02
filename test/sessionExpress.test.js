@@ -64,7 +64,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     sessionRefreshFeature: {
                         disableDefaultImplementation: true,
                     },
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -124,7 +124,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                     signOutFeature: {
                         disableDefaultImplementation: true,
                     },
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -180,7 +180,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -296,7 +296,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -403,7 +403,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -572,7 +572,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -639,7 +639,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -809,7 +809,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -890,7 +890,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -976,7 +976,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1121,7 +1121,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1286,7 +1286,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1513,7 +1513,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1556,7 +1556,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
     //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
     it("test that when anti-csrf is disabled from from ST core, not having to input in verify session is fine in express", async function () {
-        await setKeyValueInConfig("enable_anti_csrf", "false");
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -1569,7 +1568,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: false,
+                    antiCsrf: "NONE",
                 }),
             ],
         });
@@ -1646,7 +1645,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1703,7 +1702,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    enableAntiCsrf: true,
+                    antiCsrf: "VIA_TOKEN",
                 }),
             ],
         });
@@ -1745,5 +1744,212 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.deepEqual(cookies.accessTokenExpiry, undefined);
         assert.deepEqual(cookies.idRefreshTokenExpiry, undefined);
         assert.deepEqual(cookies.refreshTokenExpiry, undefined);
+    });
+
+    it("test that when anti-csrf is enabled with custom header, and we don't provide that in verifySession, we get try refresh token", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_CUSTOM_HEADER",
+                }),
+            ],
+        });
+
+        const app = express();
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "id1", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+            let sessionResponse = req.session;
+            res.status(200).json({ userId: sessionResponse.userId });
+        });
+        app.post("/session/verifyAntiCsrfFalse", Session.verifySession(false), async (req, res) => {
+            let sessionResponse = req.session;
+            res.status(200).json({ userId: sessionResponse.userId });
+        });
+
+        app.use(SuperTokens.errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        {
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verify")
+                    .set("Cookie", [
+                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.deepStrictEqual(res2.status, 401);
+            assert.deepStrictEqual(res2.text, '{"message":"try refresh token"}');
+
+            let res3 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verify")
+                    .set("Cookie", [
+                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("rid", "session")
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.deepStrictEqual(res3.body.userId, "id1");
+        }
+
+        {
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verifyAntiCsrfFalse")
+                    .set("Cookie", [
+                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.deepStrictEqual(res2.body.userId, "id1");
+
+            let res3 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verifyAntiCsrfFalse")
+                    .set("Cookie", [
+                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("rid", "session")
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.deepStrictEqual(res3.body.userId, "id1");
+        }
+    });
+
+    it("test resfresh API when using CUSTOM HEADER anti-csrf", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_CUSTOM_HEADER",
+                }),
+            ],
+        });
+        const app = express();
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(SuperTokens.errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        {
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(res2.status, 401);
+            assert.deepStrictEqual(res2.text, '{"message":"unauthorised"}');
+        }
+
+        {
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("rid", "session")
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(res2.status, 200);
+        }
     });
 });
