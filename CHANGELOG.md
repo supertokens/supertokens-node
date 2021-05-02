@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Breaking change:
 - Uses custom header as a measure to prevent CSRF attacks - unless the user explicitly enables anti-csrf tokens.
 - new FDI 1.8
-- renames `enableAntiCsrf` to `enableAntiCsrfTokens`. If `enableAntiCsrfTokens` is `undefined` or `false`, we use custom header based CSRF protection whenever the `apiDomain` and the `websiteDomain` do not share the same site (`sameSite` is `none`).
+- changes `enableAntiCsrf` config to `antiCsrf`.
 
 ## [4.4.1] - 2021-04-29
 ### Fixed:

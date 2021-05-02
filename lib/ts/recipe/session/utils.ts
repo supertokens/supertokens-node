@@ -163,11 +163,11 @@ export function validateAndNormaliseUserInput(
     }
 
     let antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" =
-        config === undefined || config.enableAntiCsrfTokens !== true
+        config === undefined || config.antiCsrf === undefined
             ? cookieSameSite === "none"
                 ? "VIA_CUSTOM_HEADER"
                 : "NONE"
-            : "VIA_TOKEN";
+            : config.antiCsrf;
 
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: (

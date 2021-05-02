@@ -91,7 +91,7 @@ export type TypeInput = {
         disableDefaultImplementation?: boolean;
     };
     errorHandlers?: ErrorHandlers;
-    enableAntiCsrfTokens?: boolean;
+    antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 };
 
 export const InputSchema = {
@@ -116,7 +116,7 @@ export const InputSchema = {
             additionalProperties: false,
         },
         errorHandlers: InputSchemaErrorHandlers,
-        enableAntiCsrfTokens: TypeBoolean,
+        antiCsrf: TypeString,
         faunadbSecret: TypeString,
         userCollectionName: TypeString,
         accessFaunadbTokenFromFrontend: TypeBoolean,

@@ -60,7 +60,7 @@ export declare type TypeInput = {
         disableDefaultImplementation?: boolean;
     };
     errorHandlers?: ErrorHandlers;
-    enableAntiCsrfTokens?: boolean;
+    antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 };
 export declare const InputSchema: {
     type: string;
@@ -107,7 +107,7 @@ export declare const InputSchema: {
             };
             additionalProperties: boolean;
         };
-        enableAntiCsrfTokens: {
+        antiCsrf: {
             type: string;
         };
         faunadbSecret: {
