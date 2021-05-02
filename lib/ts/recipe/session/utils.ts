@@ -162,8 +162,12 @@ export function validateAndNormaliseUserInput(
         signOutFeature.disableDefaultImplementation = config.signOutFeature.disableDefaultImplementation;
     }
 
-    let enableAntiCsrf =
-        config === undefined || config.enableAntiCsrf === undefined ? cookieSameSite === "none" : config.enableAntiCsrf;
+    let antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE" =
+        config === undefined || config.enableAntiCsrfTokens !== true
+            ? cookieSameSite === "none"
+                ? "VIA_CUSTOM_HEADER"
+                : "NONE"
+            : "VIA_TOKEN";
 
     let errorHandlers: NormalisedErrorHandlers = {
         onTokenTheftDetected: (
@@ -201,18 +205,6 @@ export function validateAndNormaliseUserInput(
         }
     }
 
-    if (cookieSameSite === "none" && !enableAntiCsrf) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error(
-                    'Security error: enableAntiCsrf can\'t be set to false if cookieSameSite value is "none".'
-                ),
-            },
-            recipeInstance
-        );
-    }
-
     if (
         cookieSameSite === "none" &&
         !cookieSecure &&
@@ -241,7 +233,7 @@ export function validateAndNormaliseUserInput(
         sessionExpiredStatusCode,
         sessionRefreshFeature,
         errorHandlers,
-        enableAntiCsrf,
+        antiCsrf,
         signOutFeature,
     };
 }
