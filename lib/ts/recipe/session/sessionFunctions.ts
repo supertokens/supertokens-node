@@ -199,6 +199,8 @@ export async function refreshSession(
     antiCsrfToken: string | undefined,
     containsCustomHeader: boolean
 ): Promise<CreateOrRefreshAPIResponse> {
+    let handShakeInfo = await recipeInstance.getHandshakeInfo();
+
     let requestBody: {
         refreshToken: string;
         antiCsrfToken?: string;
@@ -206,12 +208,10 @@ export async function refreshSession(
     } = {
         refreshToken,
         antiCsrfToken,
+        enableAntiCsrf: handShakeInfo.antiCsrf === "VIA_TOKEN",
     };
 
-    let handShakeInfo = await recipeInstance.getHandshakeInfo();
-    if (handShakeInfo.antiCsrf === "VIA_TOKEN") {
-        requestBody.enableAntiCsrf = true;
-    } else if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
+    if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
         if (!containsCustomHeader) {
             throw new STError(
                 {
