@@ -8,6 +8,12 @@
         return response.data;
     };
 
+    async function getNumberOfTimesRefreshAttempted(BASE_URL = "http://localhost.org:8080") {
+        let instance = axios.create();
+        let response = await instance.get(BASE_URL + "/refreshAttemptedTime");
+        return response.data;
+    };
+
     async function getNumberOfTimesGetSessionCalled(BASE_URL = "http://localhost.org:8080") {
         let instance = axios.create();
         let response = await instance.get(BASE_URL + "/getSessionCalledTime");
@@ -22,6 +28,12 @@
 
     function assertEqual(a, b) {
         if (a !== b) {
+            throw new Error("assert failed");
+        }
+    }
+
+    function assertNotEqual(a, b) {
+        if (a === b) {
             throw new Error("assert failed");
         }
     }
