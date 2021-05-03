@@ -1,1 +1,1 @@
-export * from '../../../lib/build/recipe/session/faunadb';
+export * from "../../../lib/build/recipe/session/faunadb";

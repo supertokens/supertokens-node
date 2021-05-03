@@ -1,1 +1,1 @@
-export * from '../lib/build/nextjs';
+export * from "../lib/build/nextjs";

@@ -1,46 +1,46 @@
 version: 2.1
 orbs:
-  slack: circleci/slack@3.4.2
+    slack: circleci/slack@3.4.2
 jobs:
-  publish:
-    docker:
-      - image: circleci/node:8.10.0
-    steps:
-      - checkout
-      - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-      - run: npm publish
-      - slack/status
-  test:
-    docker:
-      - image: rishabhpoddar/supertokens_website_sdk_testing
-    resource_class: large
-    steps:
-      - add_ssh_keys:
-          fingerprints:
-            - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
-      - checkout
-      - run: apt-get install lsof
-      - run: npm i -d
-      - run: (cd .circleci/ && ./doTests.sh)
-      - slack/status
+    publish:
+        docker:
+            - image: circleci/node:8.10.0
+        steps:
+            - checkout
+            - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            - run: npm publish
+            - slack/status
+    test:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        resource_class: large
+        steps:
+            - add_ssh_keys:
+                  fingerprints:
+                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
+            - checkout
+            - run: apt-get install lsof
+            - run: npm i -d
+            - run: (cd .circleci/ && ./doTests.sh)
+            - slack/status
 
 workflows:
-  version: 2
-  tagged-build:
-    jobs:
-      - publish:
-          context:
-            - slack-notification
-          filters:
-            tags:
-              only: /v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
-      - test:
-          context:
-            - slack-notification
-          filters:
-            tags:
-              only: /dev-v[0-9]+(\.[0-9]+)*/
-            branches:
-              ignore: /.*/
+    version: 2
+    tagged-build:
+        jobs:
+            - publish:
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/
+            - test:
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/

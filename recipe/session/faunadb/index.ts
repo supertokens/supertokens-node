@@ -13,4 +13,4 @@
  * under the License.
  */
 
-export * from '../../../lib/ts/recipe/session/faunadb';
+export * from "../../../lib/ts/recipe/session/faunadb";

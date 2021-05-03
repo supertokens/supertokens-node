@@ -1,1 +1,1 @@
-export * from '../../lib/build/recipe/session';
+export * from "../../lib/build/recipe/session";

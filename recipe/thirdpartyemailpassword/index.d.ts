@@ -1,1 +1,1 @@
-export * from '../../lib/build/recipe/thirdpartyemailpassword';
+export * from "../../lib/build/recipe/thirdpartyemailpassword";

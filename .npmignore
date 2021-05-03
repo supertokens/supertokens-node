@@ -6,7 +6,7 @@ hooks/
 .circleci/
 lib/tsconfig.json
 .mocharc.yml
-lib/.prettierrc
+.prettierrc
 lib/tslint.json
 addDevTag
 addReleaseTag

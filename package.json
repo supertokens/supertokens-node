@@ -1,61 +1,62 @@
 {
-  "name": "supertokens-node",
-  "version": "5.0.0",
-  "description": "NodeJS driver for SuperTokens core",
-  "main": "index.js",
-  "scripts": {
-    "test": "TEST_MODE=testing SERVERLESS_CACHE_BASE_FILE_PATH=./.tmp npx mocha --timeout 500000",
-    "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit",
-    "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json",
-    "pretty": "cd lib && npx prettier --write --config .prettierrc \"ts/**/*.ts\" \"build/**/*.js\" \"../test/**/*.js\"",
-    "build-pretty": "npm run build && npm run pretty",
-    "pretty-check": "cd lib && npx prettier --check --config .prettierrc \"ts/**/*.ts\" \"build/**/*.js\" \"../test/**/*.js\"",
-    "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
-  },
-  "keywords": [
-    "auth",
-    "authentication",
-    "authorisation",
-    "nodejs",
-    "supertokens",
-    "jwt",
-    "refresh tokens"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/supertokens/supertokens-node.git"
-  },
-  "author": "rishabhpoddar",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/supertokens/supertokens-node/issues"
-  },
-  "homepage": "https://github.com/supertokens/supertokens-node#readme",
-  "dependencies": {
-    "axios": "0.21.1",
-    "body-parser": "1.19.0",
-    "cookie": "0.4.0",
-    "jsonschema": "1.4.0",
-    "jsonwebtoken": "8.5.1",
-    "psl": "1.8.0"
-  },
-  "devDependencies": {
-    "@types/cookie": "0.3.3",
-    "@types/express": "4.16.1",
-    "@types/jsonwebtoken": "8.5.0",
-    "@types/psl": "1.1.0",
-    "@types/validator": "10.11.0",
-    "cookie-parser": "^1.4.5",
-    "express": "4.17.1",
-    "faunadb": "^3.0.1",
-    "mocha": "6.1.4",
-    "nock": "11.7.0",
-    "node-mocks-http": "^1.9.0",
-    "prettier": "2.0.5",
-    "supertest": "4.0.2",
-    "typescript": "3.8.3"
-  },
-  "browser": {
-    "fs": false
-  }
+    "name": "supertokens-node",
+    "version": "5.0.0",
+    "description": "NodeJS driver for SuperTokens core",
+    "main": "index.js",
+    "scripts": {
+        "test": "TEST_MODE=testing SERVERLESS_CACHE_BASE_FILE_PATH=./.tmp npx mocha --timeout 500000",
+        "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit",
+        "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json",
+        "pretty": "npx pretty-quick .",
+        "build-pretty": "npm run build && npm run pretty",
+        "pretty-check": "npx pretty-quick --check .",
+        "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
+    },
+    "keywords": [
+        "auth",
+        "authentication",
+        "authorisation",
+        "nodejs",
+        "supertokens",
+        "jwt",
+        "refresh tokens"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/supertokens/supertokens-node.git"
+    },
+    "author": "rishabhpoddar",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/supertokens/supertokens-node/issues"
+    },
+    "homepage": "https://github.com/supertokens/supertokens-node#readme",
+    "dependencies": {
+        "axios": "0.21.1",
+        "body-parser": "1.19.0",
+        "cookie": "0.4.0",
+        "jsonschema": "1.4.0",
+        "jsonwebtoken": "8.5.1",
+        "psl": "1.8.0"
+    },
+    "devDependencies": {
+        "@types/cookie": "0.3.3",
+        "@types/express": "4.16.1",
+        "@types/jsonwebtoken": "8.5.0",
+        "@types/psl": "1.1.0",
+        "@types/validator": "10.11.0",
+        "cookie-parser": "^1.4.5",
+        "express": "4.17.1",
+        "faunadb": "^3.0.1",
+        "mocha": "6.1.4",
+        "nock": "11.7.0",
+        "node-mocks-http": "^1.9.0",
+        "prettier": "^2.0.5",
+        "pretty-quick": "^3.1.0",
+        "supertest": "4.0.2",
+        "typescript": "3.8.3"
+    },
+    "browser": {
+        "fs": false
+    }
 }
