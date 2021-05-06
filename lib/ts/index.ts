@@ -15,6 +15,7 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
+import * as express from "express";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -23,11 +24,15 @@ export default class SuperTokensWrapper {
     static Error = SuperTokensError;
 
     static middleware() {
-        return SuperTokens.getInstanceOrThrowError().middleware();
+        // See https://github.com/supertokens/supertokens-node/issues/122
+        return (req: express.Request, res: express.Response, next: express.NextFunction) =>
+            SuperTokens.getInstanceOrThrowError().middleware()(req, res, next);
     }
 
     static errorHandler() {
-        return SuperTokens.getInstanceOrThrowError().errorHandler();
+        // See https://github.com/supertokens/supertokens-node/issues/122
+        return (err: any, req: express.Request, res: express.Response, next: express.NextFunction) =>
+            SuperTokens.getInstanceOrThrowError().errorHandler()(err, req, res, next);
     }
 
     static getAllCORSHeaders() {

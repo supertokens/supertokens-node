@@ -1952,4 +1952,95 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             assert.deepStrictEqual(res2.status, 200);
         }
     });
+
+    it("test that init can be called post route and middleware declaration", async function () {
+        await startST();
+
+        const app = express();
+
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "id1", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+            let sessionResponse = req.session;
+            res.status(200).json({ userId: sessionResponse.userId });
+        });
+        app.post("/session/verifyAntiCsrfFalse", Session.verifySession(false), async (req, res) => {
+            let sessionResponse = req.session;
+            res.status(200).json({ userId: sessionResponse.userId });
+        });
+
+        app.use(SuperTokens.errorHandler());
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_CUSTOM_HEADER",
+                }),
+            ],
+        });
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        {
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verify")
+                    .set("Cookie", [
+                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.deepStrictEqual(res2.status, 401);
+            assert.deepStrictEqual(res2.text, '{"message":"try refresh token"}');
+
+            let res3 = await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verify")
+                    .set("Cookie", [
+                        "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("rid", "session")
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.deepStrictEqual(res3.body.userId, "id1");
+        }
+    });
 });

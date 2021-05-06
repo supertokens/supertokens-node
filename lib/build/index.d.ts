@@ -1,11 +1,16 @@
-/// <reference types="express" />
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
+import * as express from "express";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
-    static middleware(): (request: import("express").Request, response: import("express").Response, next: import("express").NextFunction) => Promise<void>;
-    static errorHandler(): (err: any, request: import("express").Request, response: import("express").Response, next: import("express").NextFunction) => Promise<void>;
+    static middleware(): (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
+    static errorHandler(): (
+        err: any,
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction
+    ) => Promise<void>;
     static getAllCORSHeaders(): string[];
 }
 export declare let init: typeof SuperTokens.init;
