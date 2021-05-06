@@ -71,7 +71,11 @@ export default class SessionWrapper {
     }
 
     static verifySession = (options?: VerifySessionOptions | boolean) => {
-        return originalVerifySession(SessionRecipe.getInstanceOrThrowError(), options);
+        // We do not directly return originVerifySession func cause of
+        // https://github.com/supertokens/supertokens-node/issues/122
+
+        return (req: express.Request, res: express.Response, next: express.NextFunction) =>
+            originalVerifySession(SessionRecipe.getInstanceOrThrowError(), options)(req, res, next);
     };
 }
 
