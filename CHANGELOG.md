@@ -5,10 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [6.0.0] - 2021-05-18
 
 -   Uses `getSession` function instead of `verifySession` middleware in prebuilt APIs
--   Refactor code to use recipeImplementations that can be overrided by the user
+-   Refactor code to use recipeImplementations that can be override by the user
 -   `getSession` third param is no longer a boolean
 -   Provides FaunaDB's session implementation as a modification to the original session recipe.
 
