@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import Recipe from "../sessionRecipe";
+import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import STError from "../error";

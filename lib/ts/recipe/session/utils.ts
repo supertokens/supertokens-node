@@ -29,7 +29,7 @@ import {
 } from "./cookieAndHeaders";
 import * as express from "express";
 import { URL } from "url";
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 import STError from "./error";
 import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauthorisedResponse } from "./middleware";
 import { REFRESH_API_PATH } from "./constants";

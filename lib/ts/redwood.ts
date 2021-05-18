@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import Session from "./recipe/session/sessionRecipe";
+import Session from "./recipe/session/recipe";
 import { getSession, Error as STError, SessionContainer } from "./recipe/session";
 
 import { ServerResponse } from "http";

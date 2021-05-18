@@ -13,7 +13,7 @@
  * under the License.
  */
 import * as express from "express";
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 import * as SessionFunctions from "./sessionFunctions";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";

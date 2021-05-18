@@ -1,5 +1,5 @@
 import * as express from "express";
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 export default class Session {
     private sessionHandle;
     private userId;
@@ -7,7 +7,14 @@ export default class Session {
     private res;
     private accessToken;
     private recipeInstance;
-    constructor(recipeInstance: SessionRecipe, accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response);
+    constructor(
+        recipeInstance: SessionRecipe,
+        accessToken: string,
+        sessionHandle: string,
+        userId: string,
+        userDataInJWT: any,
+        res: express.Response
+    );
     revokeSession: () => Promise<void>;
     getSessionData: () => Promise<any>;
     updateSessionData: (newSessionData: any) => Promise<void>;

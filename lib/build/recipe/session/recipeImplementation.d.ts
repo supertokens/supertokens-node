@@ -1,5 +1,5 @@
 import { RecipeInterface, VerifySessionOptions } from "./types";
-import Recipe from "./sessionRecipe";
+import Recipe from "./recipe";
 import * as express from "express";
 import Session from "./sessionClass";
 export default class RecipeImplementation implements RecipeInterface {

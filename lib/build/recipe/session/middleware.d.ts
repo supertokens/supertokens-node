@@ -1,6 +1,6 @@
 import { Response, NextFunction, Request } from "express";
 import { SessionRequest, VerifySessionOptions } from "./types";
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 export declare function verifySession(
     recipeInstance: SessionRecipe,
     options?: VerifySessionOptions

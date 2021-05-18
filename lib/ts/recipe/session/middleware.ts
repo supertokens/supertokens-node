@@ -14,7 +14,7 @@
  */
 import { Response, NextFunction, Request } from "express";
 import { SessionRequest, VerifySessionOptions } from "./types";
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 import { normaliseHttpMethod, sendNon200Response } from "../../utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 

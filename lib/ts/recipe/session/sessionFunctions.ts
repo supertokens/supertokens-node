@@ -16,7 +16,7 @@ import { getInfoFromAccessToken } from "./accessToken";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse } from "./types";
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
 
 /**

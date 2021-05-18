@@ -17,7 +17,7 @@ import * as express from "express";
 import { IncomingMessage, ServerResponse } from "http";
 
 import STError from "./error";
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 import { getHeader } from "../../utils";
 
 const accessTokenCookieKey = "sAccessToken";

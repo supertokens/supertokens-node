@@ -13,18 +13,21 @@
  * under the License.
  */
 
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 import { verifySession as originalVerifySession } from "./middleware";
 import * as express from "express";
 import SuperTokensError from "./error";
 import SessionClass from "./sessionClass";
 import { VerifySessionOptions } from "./types";
+import OriginalRecipeImplementation from "./recipeImplementation";
 
 // For Express
 export default class SessionWrapper {
     static init = SessionRecipe.init;
 
     static Error = SuperTokensError;
+
+    static RecipeImplementation = OriginalRecipeImplementation;
 
     static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
         return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession(
@@ -119,3 +122,5 @@ export let verifySession = SessionWrapper.verifySession;
 export let Error = SessionWrapper.Error;
 
 export type SessionContainer = SessionClass;
+
+export let RecipeImplementation = SessionWrapper.RecipeImplementation;

@@ -1,5 +1,5 @@
 import { RecipeInterface, VerifySessionOptions } from "./types";
-import Recipe from "./sessionRecipe";
+import Recipe from "./recipe";
 import * as SessionFunctions from "./sessionFunctions";
 import {
     attachAccessTokenToCookie,

@@ -15,7 +15,7 @@
 
 import STError from "./error";
 import { verifyJWTAndGetPayload } from "./jwt";
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 
 export async function getInfoFromAccessToken(
     recipeInstance: SessionRecipe,

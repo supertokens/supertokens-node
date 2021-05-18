@@ -13,7 +13,7 @@
  * under the License.
  */
 import { Response, NextFunction, Request } from "express";
-import SessionRecipe from "../sessionRecipe";
+import SessionRecipe from "../recipe";
 import { send200Response } from "../../../utils";
 
 export default async function handleRefreshAPI(

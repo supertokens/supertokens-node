@@ -1,15 +1,26 @@
 import { CreateOrRefreshAPIResponse } from "./types";
-import SessionRecipe from "./sessionRecipe";
+import SessionRecipe from "./recipe";
 /**
  * @description call this to "login" a user.
  * @throws GENERAL_ERROR in case anything fails.
  */
-export declare function createNewSession(recipeInstance: SessionRecipe, userId: string, jwtPayload?: any, sessionData?: any): Promise<CreateOrRefreshAPIResponse>;
+export declare function createNewSession(
+    recipeInstance: SessionRecipe,
+    userId: string,
+    jwtPayload?: any,
+    sessionData?: any
+): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED and TRY_REFRESH_TOKEN
  */
-export declare function getSession(recipeInstance: SessionRecipe, accessToken: string, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean, containsCustomHeader: boolean): Promise<{
+export declare function getSession(
+    recipeInstance: SessionRecipe,
+    accessToken: string,
+    antiCsrfToken: string | undefined,
+    doAntiCsrfCheck: boolean,
+    containsCustomHeader: boolean
+): Promise<{
     session: {
         handle: string;
         userId: string;
@@ -26,7 +37,12 @@ export declare function getSession(recipeInstance: SessionRecipe, accessToken: s
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
-export declare function refreshSession(recipeInstance: SessionRecipe, refreshToken: string, antiCsrfToken: string | undefined, containsCustomHeader: boolean): Promise<CreateOrRefreshAPIResponse>;
+export declare function refreshSession(
+    recipeInstance: SessionRecipe,
+    refreshToken: string,
+    antiCsrfToken: string | undefined,
+    containsCustomHeader: boolean
+): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
@@ -49,7 +65,10 @@ export declare function revokeSession(recipeInstance: SessionRecipe, sessionHand
  * @returns list of sessions revoked
  * @throws AuthError, GENERAL_ERROR
  */
-export declare function revokeMultipleSessions(recipeInstance: SessionRecipe, sessionHandles: string[]): Promise<string[]>;
+export declare function revokeMultipleSessions(
+    recipeInstance: SessionRecipe,
+    sessionHandles: string[]
+): Promise<string[]>;
 /**
  * @description: this function reads from the database every time. It provides no locking mechanism in case other processes are updating session data for this session as well, so please take of that by yourself.
  * @returns session data as provided by the user earlier
@@ -60,7 +79,11 @@ export declare function getSessionData(recipeInstance: SessionRecipe, sessionHan
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export declare function updateSessionData(recipeInstance: SessionRecipe, sessionHandle: string, newSessionData: any): Promise<void>;
+export declare function updateSessionData(
+    recipeInstance: SessionRecipe,
+    sessionHandle: string,
+    newSessionData: any
+): Promise<void>;
 /**
  * @returns jwt payload as provided by the user earlier
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
@@ -69,4 +92,8 @@ export declare function getJWTPayload(recipeInstance: SessionRecipe, sessionHand
 /**
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export declare function updateJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string, newJWTPayload: any): Promise<void>;
+export declare function updateJWTPayload(
+    recipeInstance: SessionRecipe,
+    sessionHandle: string,
+    newJWTPayload: any
+): Promise<void>;
