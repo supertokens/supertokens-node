@@ -38,6 +38,8 @@ import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 import RecipeModule from "../../recipeModule";
+import RecipeImplementation from "./recipeImplementation";
+import { RecipeInterface } from "./types";
 
 export function normaliseSessionScopeOrThrowError(recipe: RecipeModule | undefined, sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -234,6 +236,20 @@ export function validateAndNormaliseUserInput(
         );
     }
 
+    let override: {
+        functions: (recipeInstance: SessionRecipe) => RecipeInterface;
+    };
+
+    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
+        override = {
+            functions: config.override.functions,
+        };
+    } else {
+        override = {
+            functions: (recipeInstance: SessionRecipe) => new RecipeImplementation(recipeInstance),
+        };
+    }
+
     return {
         refreshTokenPath: appInfo.apiBasePath.appendPath(
             recipeInstance,
@@ -247,6 +263,7 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         signOutFeature,
+        override,
     };
 }
 

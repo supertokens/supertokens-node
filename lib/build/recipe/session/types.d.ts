@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import Session from "./sessionClass";
 import NormalisedURLPath from "../../normalisedURLPath";
 import * as express from "express";
+import Recipe from "./recipe";
 export declare type HandshakeInfo = {
     jwtSigningPublicKey: string;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
@@ -62,6 +63,9 @@ export declare type TypeInput = {
     };
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    override?: {
+        functions?: (recipeInstance: Recipe) => RecipeInterface;
+    };
 };
 export declare const InputSchema: {
     type: string;
@@ -111,16 +115,7 @@ export declare const InputSchema: {
         antiCsrf: {
             type: string;
         };
-        faunadbSecret: {
-            type: string;
-        };
-        userCollectionName: {
-            type: string;
-        };
-        accessFaunadbTokenFromFrontend: {
-            type: string;
-        };
-        faunadbClient: {
+        override: {
             type: string;
         };
     };
@@ -140,6 +135,9 @@ export declare type TypeNormalisedInput = {
     };
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    override: {
+        functions: (recipeInstance: Recipe) => RecipeInterface;
+    };
 };
 export interface SessionRequest extends Request {
     session?: Session;

@@ -16,6 +16,7 @@ import { Request, Response, NextFunction } from "express";
 import Session from "./sessionClass";
 import NormalisedURLPath from "../../normalisedURLPath";
 import * as express from "express";
+import Recipe from "./recipe";
 
 export type HandshakeInfo = {
     jwtSigningPublicKey: string;
@@ -93,6 +94,9 @@ export type TypeInput = {
     };
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    override?: {
+        functions?: (recipeInstance: Recipe) => RecipeInterface;
+    };
 };
 
 export const InputSchema = {
@@ -118,10 +122,7 @@ export const InputSchema = {
         },
         errorHandlers: InputSchemaErrorHandlers,
         antiCsrf: TypeString,
-        faunadbSecret: TypeString,
-        userCollectionName: TypeString,
-        accessFaunadbTokenFromFrontend: TypeBoolean,
-        faunadbClient: TypeAny,
+        override: TypeAny,
     },
     additionalProperties: false,
 };
@@ -140,6 +141,9 @@ export type TypeNormalisedInput = {
     };
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    override: {
+        functions: (recipeInstance: Recipe) => RecipeInterface;
+    };
 };
 
 export interface SessionRequest extends Request {

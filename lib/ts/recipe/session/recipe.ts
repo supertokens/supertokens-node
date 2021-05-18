@@ -27,7 +27,6 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { getDataFromFileForServerlessCache, storeIntoTempFolderForServerlessCache } from "../../utils";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } from "./cookieAndHeaders";
-import RecipeImplementation from "./recipeImplementation";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -43,7 +42,7 @@ export default class SessionRecipe extends RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo, isInServerlessEnv);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
-        this.recipeInterfaceImpl = new RecipeImplementation(this);
+        this.recipeInterfaceImpl = this.config.override.functions(this);
 
         // Solving the cold start problem
         this.getHandshakeInfo().catch((_) => {
