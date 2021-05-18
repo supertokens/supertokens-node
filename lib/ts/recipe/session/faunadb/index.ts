@@ -16,8 +16,6 @@
 import OriginalRecipeImplementation from "./recipeImplementation";
 
 // For Express
-export default class Wrapper {
-    static RecipeImplementation = OriginalRecipeImplementation;
-}
+export default OriginalRecipeImplementation;
 
-export let RecipeImplementation = Wrapper.RecipeImplementation;
+export let RecipeImplementation = OriginalRecipeImplementation;

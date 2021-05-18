@@ -16,7 +16,7 @@ import { Request, Response, NextFunction } from "express";
 import Session from "./sessionClass";
 import NormalisedURLPath from "../../normalisedURLPath";
 import * as express from "express";
-import Recipe from "./recipe";
+import RecipeImplementation from "./recipeImplementation";
 
 export type HandshakeInfo = {
     jwtSigningPublicKey: string;
@@ -95,7 +95,7 @@ export type TypeInput = {
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override?: {
-        functions?: (recipeInstance: Recipe) => RecipeInterface;
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
     };
 };
 
@@ -142,7 +142,7 @@ export type TypeNormalisedInput = {
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override: {
-        functions: (recipeInstance: Recipe) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 };
 

@@ -32,7 +32,7 @@ let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
-let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 const { removeServerlessCache } = require("../lib/build/utils");
 
 /* TODO:

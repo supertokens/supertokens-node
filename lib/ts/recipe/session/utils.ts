@@ -237,7 +237,7 @@ export function validateAndNormaliseUserInput(
     }
 
     let override: {
-        functions: (recipeInstance: SessionRecipe) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 
     if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
@@ -246,7 +246,7 @@ export function validateAndNormaliseUserInput(
         };
     } else {
         override = {
-            functions: (recipeInstance: SessionRecipe) => new RecipeImplementation(recipeInstance),
+            functions: (originalImplementation: RecipeImplementation) => originalImplementation,
         };
     }
 

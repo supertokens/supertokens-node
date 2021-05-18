@@ -29,7 +29,7 @@ let { Querier } = require("../lib/build/querier");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
-let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 const { removeServerlessCache } = require("../lib/build/utils");
 
 /**

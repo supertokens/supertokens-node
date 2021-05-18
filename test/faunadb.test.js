@@ -24,7 +24,8 @@ const {
     createServerlessCacheForTesting,
 } = require("./utils");
 let SuperTokens = require("../");
-let Session = require("../recipe/session/faunadb");
+let Session = require("../recipe/session");
+let RecipeImplementation = require("../recipe/session/faunadb").default;
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -49,7 +50,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         await cleanST();
     });
 
-    it("checking FDAT lifetime", async function () {
+    it("checking FDAT lifetime haha", async function () {
         await setKeyValueInConfig("access_token_validity", "3");
         await startST();
 
@@ -64,10 +65,18 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    userCollectionName: "users",
-                    accessFaunadbTokenFromFrontend: true,
                     antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return new RecipeImplementation(oI, {
+                                userCollectionName: "users",
+                                accessFaunadbTokenFromFrontend: true,
+                                faunaDBClient: new faunadb.Client({
+                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                }),
+                            });
+                        },
+                    },
                 }),
             ],
         });

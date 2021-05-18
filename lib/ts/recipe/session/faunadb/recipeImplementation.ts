@@ -1,13 +1,12 @@
-import { VerifySessionOptions } from "../types";
-import Recipe from "../recipe";
-import { RecipeImplementation as OriginalRecipeImplementation } from "../";
+import { VerifySessionOptions, RecipeInterface } from "../types";
+import OriginalRecipeImplementation from "../recipeImplementation";
 import STError from "../error";
 import * as express from "express";
 import Session from "./sessionClass";
 import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 
-export default class RecipeImplementation extends OriginalRecipeImplementation {
+export default class RecipeImplementation implements RecipeInterface {
     config: {
         accessFaunadbTokenFromFrontend: boolean;
         userCollectionName: string;
@@ -16,20 +15,22 @@ export default class RecipeImplementation extends OriginalRecipeImplementation {
 
     q = faunadb.query;
 
+    originalImplementation: OriginalRecipeImplementation;
+
     constructor(
-        recipeInstance: Recipe,
+        originalImplementation: OriginalRecipeImplementation,
         config: {
             accessFaunadbTokenFromFrontend?: boolean;
             userCollectionName: string;
-            faunadbClient: faunadb.Client;
+            faunaDBClient: faunadb.Client;
         }
     ) {
-        super(recipeInstance);
+        this.originalImplementation = originalImplementation;
         this.config = {
             accessFaunadbTokenFromFrontend:
                 config.accessFaunadbTokenFromFrontend === undefined ? false : config.accessFaunadbTokenFromFrontend,
             userCollectionName: config.userCollectionName,
-            faunaDBClient: config.faunadbClient,
+            faunaDBClient: config.faunaDBClient,
         };
     }
 
@@ -42,8 +43,8 @@ export default class RecipeImplementation extends OriginalRecipeImplementation {
             return FAUNADB_TOKEN_TIME_LAG_MILLI;
         }
 
-        let accessTokenLifetime = (await this.recipeInstance.getHandshakeInfo()).accessTokenValidity;
-
+        let accessTokenLifetime = (await this.originalImplementation.recipeInstance.getHandshakeInfo())
+            .accessTokenValidity;
         let faunaResponse: any = await this.config.faunaDBClient.query(
             this.q.Create(this.q.Tokens(), {
                 instance: this.q.Ref(this.q.Collection(this.config.userCollectionName), session.getUserId()),
@@ -60,9 +61,9 @@ export default class RecipeImplementation extends OriginalRecipeImplementation {
         sessionData: any = {}
     ): Promise<Session> => {
         // TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
-        let originalSession = await super.createNewSession(res, userId, jwtPayload, sessionData);
+        let originalSession = await this.originalImplementation.createNewSession(res, userId, jwtPayload, sessionData);
         let session = new Session(
-            this.recipeInstance,
+            this.originalImplementation.recipeInstance,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),
@@ -93,7 +94,7 @@ export default class RecipeImplementation extends OriginalRecipeImplementation {
                     type: STError.GENERAL_ERROR,
                     payload: err,
                 },
-                this.recipeInstance
+                this.originalImplementation.recipeInstance
             );
         }
     };
@@ -103,12 +104,12 @@ export default class RecipeImplementation extends OriginalRecipeImplementation {
         res: express.Response,
         options?: VerifySessionOptions
     ): Promise<Session | undefined> => {
-        let originalSession = await super.getSession(req, res, options);
+        let originalSession = await this.originalImplementation.getSession(req, res, options);
         if (originalSession === undefined) {
             return undefined;
         }
         return new Session(
-            this.recipeInstance,
+            this.originalImplementation.recipeInstance,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),
@@ -118,9 +119,9 @@ export default class RecipeImplementation extends OriginalRecipeImplementation {
     };
 
     refreshSession = async (req: express.Request, res: express.Response): Promise<Session> => {
-        let originalSession = await super.refreshSession(req, res);
+        let originalSession = await this.originalImplementation.refreshSession(req, res);
         let session = new Session(
-            this.recipeInstance,
+            this.originalImplementation.recipeInstance,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),
@@ -153,8 +154,40 @@ export default class RecipeImplementation extends OriginalRecipeImplementation {
                     type: STError.GENERAL_ERROR,
                     payload: err,
                 },
-                this.recipeInstance
+                this.originalImplementation.recipeInstance
             );
         }
+    };
+
+    revokeAllSessionsForUser = (userId: string) => {
+        return this.originalImplementation.revokeAllSessionsForUser(userId);
+    };
+
+    getAllSessionHandlesForUser = (userId: string): Promise<string[]> => {
+        return this.originalImplementation.getAllSessionHandlesForUser(userId);
+    };
+
+    revokeSession = (sessionHandle: string): Promise<boolean> => {
+        return this.originalImplementation.revokeSession(sessionHandle);
+    };
+
+    revokeMultipleSessions = (sessionHandles: string[]) => {
+        return this.originalImplementation.revokeMultipleSessions(sessionHandles);
+    };
+
+    getSessionData = (sessionHandle: string): Promise<any> => {
+        return this.originalImplementation.getSessionData(sessionHandle);
+    };
+
+    updateSessionData = (sessionHandle: string, newSessionData: any) => {
+        return this.originalImplementation.updateSessionData(sessionHandle, newSessionData);
+    };
+
+    getJWTPayload = (sessionHandle: string): Promise<any> => {
+        return this.originalImplementation.getJWTPayload(sessionHandle);
+    };
+
+    updateJWTPayload = (sessionHandle: string, newJWTPayload: any) => {
+        return this.originalImplementation.updateJWTPayload(sessionHandle, newJWTPayload);
     };
 }

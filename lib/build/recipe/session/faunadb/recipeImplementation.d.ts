@@ -1,22 +1,22 @@
-import { VerifySessionOptions } from "../types";
-import Recipe from "../recipe";
-import { RecipeImplementation as OriginalRecipeImplementation } from "../";
+import { VerifySessionOptions, RecipeInterface } from "../types";
+import OriginalRecipeImplementation from "../recipeImplementation";
 import * as express from "express";
 import Session from "./sessionClass";
 import * as faunadb from "faunadb";
-export default class RecipeImplementation extends OriginalRecipeImplementation {
+export default class RecipeImplementation implements RecipeInterface {
     config: {
         accessFaunadbTokenFromFrontend: boolean;
         userCollectionName: string;
         faunaDBClient: faunadb.Client;
     };
     q: typeof faunadb.query;
+    originalImplementation: OriginalRecipeImplementation;
     constructor(
-        recipeInstance: Recipe,
+        originalImplementation: OriginalRecipeImplementation,
         config: {
             accessFaunadbTokenFromFrontend?: boolean;
             userCollectionName: string;
-            faunadbClient: faunadb.Client;
+            faunaDBClient: faunadb.Client;
         }
     );
     getFDAT: (session: Session) => Promise<any>;
@@ -27,4 +27,12 @@ export default class RecipeImplementation extends OriginalRecipeImplementation {
         options?: VerifySessionOptions | undefined
     ) => Promise<Session | undefined>;
     refreshSession: (req: express.Request, res: express.Response) => Promise<Session>;
+    revokeAllSessionsForUser: (userId: string) => Promise<string[]>;
+    getAllSessionHandlesForUser: (userId: string) => Promise<string[]>;
+    revokeSession: (sessionHandle: string) => Promise<boolean>;
+    revokeMultipleSessions: (sessionHandles: string[]) => Promise<string[]>;
+    getSessionData: (sessionHandle: string) => Promise<any>;
+    updateSessionData: (sessionHandle: string, newSessionData: any) => Promise<void>;
+    getJWTPayload: (sessionHandle: string) => Promise<any>;
+    updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
 }

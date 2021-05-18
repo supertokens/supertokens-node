@@ -1,5 +1,3 @@
 import OriginalRecipeImplementation from "./recipeImplementation";
-export default class Wrapper {
-    static RecipeImplementation: typeof OriginalRecipeImplementation;
-}
+export default OriginalRecipeImplementation;
 export declare let RecipeImplementation: typeof OriginalRecipeImplementation;

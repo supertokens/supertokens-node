@@ -15,7 +15,7 @@
 const { printPath, setupST, startST, createServerlessCacheForTesting, killAllST, cleanST } = require("./utils");
 let ST = require("../");
 let Session = require("../recipe/session");
-let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 const { maxVersion } = require("../lib/build/utils");
