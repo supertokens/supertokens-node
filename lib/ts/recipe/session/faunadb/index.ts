@@ -1,112 +1,160 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
- *
- * This software is licensed under the Apache License, Version 2.0 (the
- * "License") as published by the Apache Software Foundation.
- *
- * You may not use this file except in compliance with the License. You may
- * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations
- * under the License.
- */
-
-import SessionRecipe from "./sessionRecipe";
-import * as express from "express";
-import SuperTokensError from "../error";
-import SessionClass from "./sessionClass";
-import { verifySession as originalVerifySession } from "../middleware";
 import { VerifySessionOptions } from "../types";
+import Recipe from "../sessionRecipe";
+import OriginalRecipeImplementation from "../recipeImplementation";
+import * as express from "express";
+import Session from "./sessionClass";
+import STError from "../error";
+import * as faunadb from "faunadb";
+import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 
-// For Express
-export default class SessionWrapper {
-    static init = SessionRecipe.init;
-    static Error = SuperTokensError;
+export default class RecipeImplementation extends OriginalRecipeImplementation {
+    config: {
+        accessFaunadbTokenFromFrontend: boolean;
+        userCollectionName: string;
+        faunaDBClient: faunadb.Client;
+    };
 
-    static SessionContainer = SessionClass;
+    q = faunadb.query;
 
-    static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.createNewSession(
-            res,
-            userId,
-            jwtPayload,
-            sessionData
+    constructor(
+        recipeInstance: Recipe,
+        config: {
+            accessFaunadbTokenFromFrontend?: boolean;
+            userCollectionName: string;
+            faunadbClient: faunadb.Client;
+        }
+    ) {
+        super(recipeInstance);
+        this.config = {
+            accessFaunadbTokenFromFrontend:
+                config.accessFaunadbTokenFromFrontend === undefined ? false : config.accessFaunadbTokenFromFrontend,
+            userCollectionName: config.userCollectionName,
+            faunaDBClient: config.faunadbClient,
+        };
+    }
+
+    getFDAT = async (session: Session) => {
+        function getFaunadbTokenTimeLag() {
+            if (process.env.INSTALL_PATH !== undefined) {
+                // if in testing...
+                return 2 * 1000;
+            }
+            return FAUNADB_TOKEN_TIME_LAG_MILLI;
+        }
+
+        let accessTokenLifetime = (await this.recipeInstance.getHandshakeInfo()).accessTokenValidity;
+
+        let faunaResponse: any = await this.config.faunaDBClient.query(
+            this.q.Create(this.q.Tokens(), {
+                instance: this.q.Ref(this.q.Collection(this.config.userCollectionName), session.getUserId()),
+                ttl: this.q.TimeAdd(this.q.Now(), accessTokenLifetime + getFaunadbTokenTimeLag(), "millisecond"),
+            })
         );
-    }
+        return faunaResponse.secret;
+    };
 
-    static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck: boolean) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.getSession(req, res, doAntiCsrfCheck);
-    }
+    createNewSession = async (
+        res: express.Response,
+        userId: string,
+        jwtPayload: any = {},
+        sessionData: any = {}
+    ): Promise<Session> => {
+        // TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
+        let originalSession = await super.createNewSession(res, userId, jwtPayload, sessionData);
+        let session = new Session(
+            this.recipeInstance,
+            originalSession.getAccessToken(),
+            originalSession.getHandle(),
+            originalSession.getUserId(),
+            originalSession.getJWTPayload(),
+            res
+        );
+        try {
+            let fdat = await this.getFDAT(session);
 
-    static refreshSession(req: express.Request, res: express.Response) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.refreshSession(req, res);
-    }
+            if (this.config.accessFaunadbTokenFromFrontend) {
+                let newPayload = {
+                    ...jwtPayload,
+                };
+                newPayload[FAUNADB_SESSION_KEY] = fdat;
+                await session.updateJWTPayload(newPayload);
+            } else {
+                let newPayload = {
+                    ...sessionData,
+                };
+                newPayload[FAUNADB_SESSION_KEY] = fdat;
+                await session.updateSessionData(newPayload);
+            }
 
-    static revokeAllSessionsForUser(userId: string) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.revokeAllSessionsForUser(userId);
-    }
+            return session;
+        } catch (err) {
+            throw new STError(
+                {
+                    type: STError.GENERAL_ERROR,
+                    payload: err,
+                },
+                this.recipeInstance
+            );
+        }
+    };
 
-    static getAllSessionHandlesForUser(userId: string) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.getAllSessionHandlesForUser(userId);
-    }
+    getSession = async (
+        req: express.Request,
+        res: express.Response,
+        options?: VerifySessionOptions
+    ): Promise<Session | undefined> => {
+        let originalSession = await super.getSession(req, res, options);
+        if (originalSession === undefined) {
+            return undefined;
+        }
+        return new Session(
+            this.recipeInstance,
+            originalSession.getAccessToken(),
+            originalSession.getHandle(),
+            originalSession.getUserId(),
+            originalSession.getJWTPayload(),
+            res
+        );
+    };
 
-    static revokeSession(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.revokeSession(sessionHandle);
-    }
+    refreshSession = async (req: express.Request, res: express.Response): Promise<Session> => {
+        let originalSession = await super.refreshSession(req, res);
+        let session = new Session(
+            this.recipeInstance,
+            originalSession.getAccessToken(),
+            originalSession.getHandle(),
+            originalSession.getUserId(),
+            originalSession.getJWTPayload(),
+            res
+        );
+        try {
+            let fdat = await this.getFDAT(session);
 
-    static revokeMultipleSessions(sessionHandles: string[]) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.revokeMultipleSessions(sessionHandles);
-    }
+            // we do not use the accessFaunaDBTokenFromFrontend boolean here so that
+            // it can be changed without affecting existing sessions.
+            if (session.getJWTPayload()[FAUNADB_SESSION_KEY] !== undefined) {
+                let newPayload = {
+                    ...session.getJWTPayload(),
+                };
+                newPayload[FAUNADB_SESSION_KEY] = fdat;
+                await session.updateJWTPayload(newPayload);
+            } else {
+                let newPayload = {
+                    ...(await session.getSessionData()),
+                };
+                newPayload[FAUNADB_SESSION_KEY] = fdat;
+                await session.updateSessionData(newPayload);
+            }
 
-    static getSessionData(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.getSessionData(sessionHandle);
-    }
-
-    static updateSessionData(sessionHandle: string, newSessionData: any) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.updateSessionData(sessionHandle, newSessionData);
-    }
-
-    static getJWTPayload(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.getJWTPayload(sessionHandle);
-    }
-
-    static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-        return SessionRecipe.getInstanceOrThrowError().parentRecipe.updateJWTPayload(sessionHandle, newJWTPayload);
-    }
-
-    static verifySession = (options?: VerifySessionOptions | boolean) => {
-        return originalVerifySession(SessionRecipe.getInstanceOrThrowError().parentRecipe, options);
+            return session;
+        } catch (err) {
+            throw new STError(
+                {
+                    type: STError.GENERAL_ERROR,
+                    payload: err,
+                },
+                this.recipeInstance
+            );
+        }
     };
 }
-
-export let init = SessionWrapper.init;
-
-export let createNewSession = SessionWrapper.createNewSession;
-
-export let getSession = SessionWrapper.getSession;
-
-export let refreshSession = SessionWrapper.refreshSession;
-
-export let revokeAllSessionsForUser = SessionWrapper.revokeAllSessionsForUser;
-
-export let getAllSessionHandlesForUser = SessionWrapper.getAllSessionHandlesForUser;
-
-export let revokeSession = SessionWrapper.revokeSession;
-
-export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
-
-export let getSessionData = SessionWrapper.getSessionData;
-
-export let updateSessionData = SessionWrapper.updateSessionData;
-
-export let getJWTPayload = SessionWrapper.getJWTPayload;
-
-export let updateJWTPayload = SessionWrapper.updateJWTPayload;
-
-export let verifySession = SessionWrapper.verifySession;
-
-export let Error = SessionWrapper.Error;
-
-export let SessionContainer = SessionWrapper.SessionContainer;

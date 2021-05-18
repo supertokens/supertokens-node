@@ -24,7 +24,7 @@ export default async function signOutAPI(recipeInstance: Recipe, req: Request, r
     // step 1
     let session;
     try {
-        session = await recipeInstance.getSession(req, res);
+        session = await recipeInstance.recipeInterfaceImpl.getSession(req, res);
     } catch (err) {
         if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNAUTHORISED) {
             // The session is expired / does not exist anyway. So we return OK

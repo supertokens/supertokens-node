@@ -41,7 +41,7 @@ export default async function generatePasswordResetToken(
     let email = formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value;
 
     // step 2.
-    let user = await recipeInstance.getUserByEmail(email);
+    let user = await recipeInstance.recipeInterfaceImpl.getUserByEmail(email);
     if (user === undefined) {
         return send200Response(res, {
             status: "OK",
@@ -51,7 +51,7 @@ export default async function generatePasswordResetToken(
     // step 3
     let token: string;
     try {
-        token = await recipeInstance.createResetPasswordToken(user.id);
+        token = await recipeInstance.recipeInterfaceImpl.createResetPasswordToken(user.id);
     } catch (err) {
         if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNKNOWN_USER_ID_ERROR) {
             return send200Response(res, {

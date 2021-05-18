@@ -22,6 +22,6 @@ export default async function handleRefreshAPI(
     response: Response,
     _: NextFunction
 ) {
-    await recipeInstance.refreshSession(request, response);
+    await recipeInstance.recipeInterfaceImpl.refreshSession(request, response);
     send200Response(response, {});
 }

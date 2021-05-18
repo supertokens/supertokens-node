@@ -143,7 +143,7 @@ export function validateAndNormaliseEmailVerificationConfig(
                   config.createAndSendCustomEmail === undefined
                       ? undefined
                       : async (user, link) => {
-                            let userInfo = await recipeInstance.getUserById(user.id);
+                            let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
                             if (userInfo === undefined || config.createAndSendCustomEmail === undefined) {
                                 throw new STError(
                                     {
@@ -159,7 +159,7 @@ export function validateAndNormaliseEmailVerificationConfig(
                   config.getEmailVerificationURL === undefined
                       ? undefined
                       : async (user) => {
-                            let userInfo = await recipeInstance.getUserById(user.id);
+                            let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
                             if (userInfo === undefined || config.getEmailVerificationURL === undefined) {
                                 throw new STError(
                                     {
@@ -175,7 +175,7 @@ export function validateAndNormaliseEmailVerificationConfig(
                   config.handlePostEmailVerification === undefined
                       ? undefined
                       : async (user) => {
-                            let userInfo = await recipeInstance.getUserById(user.id);
+                            let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
                             if (userInfo === undefined || config.handlePostEmailVerification === undefined) {
                                 throw new STError(
                                     {

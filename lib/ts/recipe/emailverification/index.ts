@@ -23,15 +23,15 @@ export default class Wrapper {
     static Error = SuperTokensError;
 
     static createEmailVerificationToken(userId: string, email: string) {
-        return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId, email);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(userId, email);
     }
 
     static verifyEmailUsingToken(token: string) {
-        return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken(token);
     }
 
     static isEmailVerified(userId: string, email: string) {
-        return Recipe.getInstanceOrThrowError().isEmailVerified(userId, email);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified(userId, email);
     }
 }
 

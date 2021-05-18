@@ -18,7 +18,7 @@ import SessionRecipe from "./sessionRecipe";
 import { normaliseHttpMethod, sendNon200Response } from "../../utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 
-export function verifySession(recipeInstance: SessionRecipe, options?: VerifySessionOptions | boolean) {
+export function verifySession(recipeInstance: SessionRecipe, options?: VerifySessionOptions) {
     // We know this should be Request but then Type
     return async (request: SessionRequest, response: Response, next: NextFunction) => {
         try {
@@ -33,9 +33,9 @@ export function verifySession(recipeInstance: SessionRecipe, options?: VerifySes
             );
             let refreshTokenPath = recipeInstance.config.refreshTokenPath;
             if (incomingPath.equals(refreshTokenPath) && method === "post") {
-                request.session = await recipeInstance.refreshSession(request, response);
+                request.session = await recipeInstance.recipeInterfaceImpl.refreshSession(request, response);
             } else {
-                request.session = await recipeInstance.getSession(request, response, options);
+                request.session = await recipeInstance.recipeInterfaceImpl.getSession(request, response, options);
             }
             return next();
         } catch (err) {
@@ -86,7 +86,7 @@ export async function sendTokenTheftDetectedResponse(
     next: NextFunction
 ) {
     try {
-        await recipeInstance.revokeSession(sessionHandle);
+        await recipeInstance.recipeInterfaceImpl.revokeSession(sessionHandle);
         sendNon200Response(
             recipeInstance,
             response,

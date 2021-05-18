@@ -18,7 +18,6 @@ import { Request, Response, NextFunction } from "express";
 import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
 import Session from "../../session";
-import { SessionRequest } from "../../session/types";
 
 export default async function emailVerify(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
     if (normaliseHttpMethod(req.method) === "post") {
@@ -44,7 +43,7 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
             );
         }
 
-        let user = await recipeInstance.verifyEmailUsingToken(token);
+        let user = await recipeInstance.recipeInterfaceImpl.verifyEmailUsingToken(token);
 
         // step 2
         send200Response(res, {
@@ -58,16 +57,8 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
         // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
         // step 1.
-        await new Promise((resolve, reject) =>
-            Session.verifySession()(req as SessionRequest, res, (err: any) => {
-                if (err !== undefined) {
-                    reject(err);
-                } else {
-                    resolve(undefined);
-                }
-            })
-        );
-        let session = (req as SessionRequest).session;
+        let session = await Session.getSession(req, res);
+
         if (session === undefined) {
             throw new STError(
                 {
@@ -83,7 +74,7 @@ export default async function emailVerify(recipeInstance: Recipe, req: Request, 
         let email = await recipeInstance.config.getEmailForUserId(userId);
 
         // step 2.
-        let isVerified = await recipeInstance.isEmailVerified(userId, email);
+        let isVerified = await recipeInstance.recipeInterfaceImpl.isEmailVerified(userId, email);
 
         // step 3
         return send200Response(res, {

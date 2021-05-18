@@ -18,7 +18,6 @@ import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import Session from "../../session";
 import STError from "../error";
-import { SessionRequest } from "../../session/types";
 
 export default async function generateEmailVerifyToken(
     recipeInstance: Recipe,
@@ -29,16 +28,8 @@ export default async function generateEmailVerifyToken(
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
     // step 1.
-    await new Promise((resolve, reject) =>
-        Session.verifySession()(req as SessionRequest, res, (err: any) => {
-            if (err !== undefined) {
-                reject(err);
-            } else {
-                resolve(undefined);
-            }
-        })
-    );
-    let session = (req as SessionRequest).session;
+    let session = await Session.getSession(req, res);
+
     if (session === undefined) {
         throw new STError(
             {
@@ -54,7 +45,7 @@ export default async function generateEmailVerifyToken(
     let email = await recipeInstance.config.getEmailForUserId(userId);
 
     // step 2
-    let token = await recipeInstance.createEmailVerificationToken(userId, email);
+    let token = await recipeInstance.recipeInterfaceImpl.createEmailVerificationToken(userId, email);
 
     // step 3
     let emailVerifyLink =

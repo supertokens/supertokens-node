@@ -35,7 +35,7 @@ export default async function emailExists(recipeInstance: Recipe, req: Request, 
     }
 
     // step 2
-    let user = await recipeInstance.getUserByEmail(email);
+    let user = await recipeInstance.recipeInterfaceImpl.getUserByEmail(email);
 
     return send200Response(res, {
         status: "OK",

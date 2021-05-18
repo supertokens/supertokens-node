@@ -15,24 +15,19 @@
 
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, User, TypeProvider } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
 import STError from "./error";
-import {
-    getUsers as getUsersCore,
-    getUsersCount as getUsersCountCore,
-    getUserById as getUserByIdFromCore,
-    getUserByThirdPartyInfo as getUserByThirdPartyInfoFromCore,
-    signInUp as signInUpFromCore,
-} from "./coreAPICalls";
+
 import { SIGN_IN_UP_API, SIGN_OUT_API, AUTHORISATION_API } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import signOutAPI from "./api/signout";
 import signInUpAPI from "./api/signinup";
 import authorisationUrlAPI from "./api/authorisationUrl";
 import { send200Response } from "../../utils";
+import RecipeImplementation from "./recipeImplementation";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -43,6 +38,8 @@ export default class Recipe extends RecipeModule {
     emailVerificationRecipe: EmailVerificationRecipe;
 
     providers: TypeProvider[];
+
+    recipeInterfaceImpl: RecipeInterface;
 
     constructor(
         recipeId: string,
@@ -61,6 +58,7 @@ export default class Recipe extends RecipeModule {
         );
 
         this.providers = this.config.signInAndUpFeature.providers;
+        this.recipeInterfaceImpl = new RecipeImplementation(this);
     }
 
     static init(config: TypeInput): RecipeListFunction {
@@ -80,6 +78,19 @@ export default class Recipe extends RecipeModule {
                 );
             }
         };
+    }
+
+    static getInstanceOrThrowError(): Recipe {
+        if (Recipe.instance !== undefined) {
+            return Recipe.instance;
+        }
+        throw new STError(
+            {
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+            },
+            undefined
+        );
     }
 
     static reset() {
@@ -168,16 +179,10 @@ export default class Recipe extends RecipeModule {
         );
     };
 
-    getUserById = async (userId: string): Promise<User | undefined> => {
-        return getUserByIdFromCore(this, userId);
-    };
-
-    getUserByThirdPartyInfo = async (thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> => {
-        return getUserByThirdPartyInfoFromCore(this, thirdPartyId, thirdPartyUserId);
-    };
+    // helper functions...
 
     getEmailForUserId = async (userId: string) => {
-        let userInfo = await this.getUserById(userId);
+        let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
         if (userInfo === undefined) {
             throw new STError(
                 {
@@ -191,50 +196,31 @@ export default class Recipe extends RecipeModule {
     };
 
     createEmailVerificationToken = async (userId: string): Promise<string> => {
-        return this.emailVerificationRecipe.createEmailVerificationToken(userId, await this.getEmailForUserId(userId));
+        return this.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken(
+            userId,
+            await this.getEmailForUserId(userId)
+        );
     };
 
-    verifyEmailUsingToken = async (token: string) => {
-        return this.emailVerificationRecipe.verifyEmailUsingToken(token);
+    verifyEmailUsingToken = async (token: string): Promise<User> => {
+        let user = await this.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken(token);
+        let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
+        if (userInThisRecipe === undefined) {
+            throw new STError(
+                {
+                    type: STError.UNKNOWN_USER_ID_ERROR,
+                    message: "Unknown User ID provided",
+                },
+                this
+            );
+        }
+        return userInThisRecipe;
     };
 
     isEmailVerified = async (userId: string) => {
-        return this.emailVerificationRecipe.isEmailVerified(userId, await this.getEmailForUserId(userId));
-    };
-
-    getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
-        return getUsersCore(this, "ASC", limit, nextPaginationToken);
-    };
-
-    getUsersNewestFirst = async (limit?: number, nextPaginationToken?: string) => {
-        return getUsersCore(this, "DESC", limit, nextPaginationToken);
-    };
-
-    getUserCount = async () => {
-        return getUsersCountCore(this);
-    };
-
-    signInUp = async (
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        email: {
-            id: string;
-            isVerified: boolean;
-        }
-    ): Promise<{ createdNewUser: boolean; user: User }> => {
-        return await signInUpFromCore(this, thirdPartyId, thirdPartyUserId, email);
-    };
-
-    static getInstanceOrThrowError(): Recipe {
-        if (Recipe.instance !== undefined) {
-            return Recipe.instance;
-        }
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-            },
-            undefined
+        return this.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified(
+            userId,
+            await this.getEmailForUserId(userId)
         );
-    }
+    };
 }

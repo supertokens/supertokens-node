@@ -27,50 +27,61 @@ export default class SessionWrapper {
     static Error = SuperTokensError;
 
     static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
-        return SessionRecipe.getInstanceOrThrowError().createNewSession(res, userId, jwtPayload, sessionData);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession(
+            res,
+            userId,
+            jwtPayload,
+            sessionData
+        );
     }
 
-    static getSession(req: express.Request, res: express.Response, doAntiCsrfCheck?: boolean) {
-        return SessionRecipe.getInstanceOrThrowError().getSession(req, res, doAntiCsrfCheck);
+    static getSession(req: express.Request, res: express.Response, options?: VerifySessionOptions) {
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession(req, res, options);
     }
 
     static refreshSession(req: express.Request, res: express.Response) {
-        return SessionRecipe.getInstanceOrThrowError().refreshSession(req, res);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession(req, res);
     }
 
     static revokeAllSessionsForUser(userId: string) {
-        return SessionRecipe.getInstanceOrThrowError().revokeAllSessionsForUser(userId);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser(userId);
     }
 
     static getAllSessionHandlesForUser(userId: string) {
-        return SessionRecipe.getInstanceOrThrowError().getAllSessionHandlesForUser(userId);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser(userId);
     }
 
     static revokeSession(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().revokeSession(sessionHandle);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession(sessionHandle);
     }
 
     static revokeMultipleSessions(sessionHandles: string[]) {
-        return SessionRecipe.getInstanceOrThrowError().revokeMultipleSessions(sessionHandles);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions(sessionHandles);
     }
 
     static getSessionData(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().getSessionData(sessionHandle);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionData(sessionHandle);
     }
 
     static updateSessionData(sessionHandle: string, newSessionData: any) {
-        return SessionRecipe.getInstanceOrThrowError().updateSessionData(sessionHandle, newSessionData);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData(
+            sessionHandle,
+            newSessionData
+        );
     }
 
     static getJWTPayload(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().getJWTPayload(sessionHandle);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWTPayload(sessionHandle);
     }
 
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-        return SessionRecipe.getInstanceOrThrowError().updateJWTPayload(sessionHandle, newJWTPayload);
+        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJWTPayload(
+            sessionHandle,
+            newJWTPayload
+        );
     }
 
-    static verifySession = (options?: VerifySessionOptions | boolean) => {
+    static verifySession = (options?: VerifySessionOptions) => {
         // We do not directly return originVerifySession func cause of
         // https://github.com/supertokens/supertokens-node/issues/122
 

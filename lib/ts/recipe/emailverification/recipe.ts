@@ -14,21 +14,17 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GENERATE_EMAIL_VERIFY_TOKEN_API, EMAIL_VERIFY_API } from "./constants";
-import {
-    createEmailVerificationToken as createEmailVerificationTokenFromCore,
-    verifyEmailUsingToken as verifyEmailUsingTokenFromCore,
-    isEmailVerified as isEmailVerifiedFromCore,
-} from "./coreAPICalls";
 import { send200Response } from "../../utils";
 import generateEmailVerifyTokenAPI from "./api/generateEmailVerifyToken";
 import emailVerifyAPI from "./api/emailVerify";
+import RecipeImplementation from "./recipeImplementation";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -36,9 +32,12 @@ export default class Recipe extends RecipeModule {
 
     config: TypeNormalisedInput;
 
+    recipeInterfaceImpl: RecipeInterface;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
         super(recipeId, appInfo, isInServerlessEnv);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
+        this.recipeInterfaceImpl = new RecipeImplementation(this);
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -146,19 +145,5 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && this === err.recipe;
-    };
-
-    // instance functions below...............
-
-    createEmailVerificationToken = async (userId: string, email: string): Promise<string> => {
-        return createEmailVerificationTokenFromCore(this, userId, email);
-    };
-
-    verifyEmailUsingToken = async (token: string) => {
-        return verifyEmailUsingTokenFromCore(this, token);
-    };
-
-    isEmailVerified = async (userId: string, email: string) => {
-        return isEmailVerifiedFromCore(this, userId, email);
     };
 }

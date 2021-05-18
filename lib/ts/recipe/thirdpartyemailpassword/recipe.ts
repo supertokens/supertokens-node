@@ -278,12 +278,14 @@ export default class Recipe extends RecipeModule {
         );
     };
 
+    // helper functions...
+
     signUp = async (email: string, password: string): Promise<User> => {
-        return this.emailPasswordRecipe.signUp(email, password);
+        return await this.emailPasswordRecipe.recipeInterfaceImpl.signUp(email, password);
     };
 
     signIn = async (email: string, password: string): Promise<User> => {
-        return this.emailPasswordRecipe.signIn(email, password);
+        return this.emailPasswordRecipe.recipeInterfaceImpl.signIn(email, password);
     };
 
     signInUp = async (
@@ -303,25 +305,25 @@ export default class Recipe extends RecipeModule {
                 this
             );
         }
-        return this.thirdPartyRecipe.signInUp(thirdPartyId, thirdPartyUserId, email);
+        return this.thirdPartyRecipe.recipeInterfaceImpl.signInUp(thirdPartyId, thirdPartyUserId, email);
     };
 
     getUserById = async (userId: string): Promise<User | undefined> => {
-        let user: User | undefined = await this.emailPasswordRecipe.getUserById(userId);
+        let user: User | undefined = await this.emailPasswordRecipe.recipeInterfaceImpl.getUserById(userId);
         if (user !== undefined) {
             return user;
         }
         if (this.thirdPartyRecipe === undefined) {
             return undefined;
         }
-        return await this.thirdPartyRecipe.getUserById(userId);
+        return await this.thirdPartyRecipe.recipeInterfaceImpl.getUserById(userId);
     };
 
     getUserByThirdPartyInfo = async (thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> => {
         if (this.thirdPartyRecipe === undefined) {
             return undefined;
         }
-        return this.thirdPartyRecipe.getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
+        return this.thirdPartyRecipe.recipeInterfaceImpl.getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
     };
 
     getEmailForUserId = async (userId: string) => {
@@ -339,27 +341,33 @@ export default class Recipe extends RecipeModule {
     };
 
     getUserByEmail = async (email: string): Promise<User | undefined> => {
-        return this.emailPasswordRecipe.getUserByEmail(email);
+        return this.emailPasswordRecipe.recipeInterfaceImpl.getUserByEmail(email);
     };
 
     createResetPasswordToken = async (userId: string): Promise<string> => {
-        return this.emailPasswordRecipe.createResetPasswordToken(userId);
+        return this.emailPasswordRecipe.recipeInterfaceImpl.createResetPasswordToken(userId);
     };
 
     resetPasswordUsingToken = async (token: string, newPassword: string) => {
-        return this.emailPasswordRecipe.resetPasswordUsingToken(token, newPassword);
+        return this.emailPasswordRecipe.recipeInterfaceImpl.resetPasswordUsingToken(token, newPassword);
     };
 
     createEmailVerificationToken = async (userId: string): Promise<string> => {
-        return this.emailVerificationRecipe.createEmailVerificationToken(userId, await this.getEmailForUserId(userId));
+        return this.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken(
+            userId,
+            await this.getEmailForUserId(userId)
+        );
     };
 
     verifyEmailUsingToken = async (token: string) => {
-        return this.emailVerificationRecipe.verifyEmailUsingToken(token);
+        return this.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken(token);
     };
 
     isEmailVerified = async (userId: string) => {
-        return this.emailVerificationRecipe.isEmailVerified(userId, await this.getEmailForUserId(userId));
+        return this.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified(
+            userId,
+            await this.getEmailForUserId(userId)
+        );
     };
 
     getUsersOldestFirst = async (limit?: number, nextPaginationTokenString?: string) => {
@@ -374,7 +382,7 @@ export default class Recipe extends RecipeModule {
         if (nextPaginationTokenString !== undefined) {
             nextPaginationTokens = extractPaginationTokens(this, nextPaginationTokenString);
         }
-        let emailPasswordResultPromise = this.emailPasswordRecipe.getUsersOldestFirst(
+        let emailPasswordResultPromise = this.emailPasswordRecipe.recipeInterfaceImpl.getUsersOldestFirst(
             limit,
             nextPaginationTokens.emailPasswordPaginationToken
         );
@@ -383,7 +391,10 @@ export default class Recipe extends RecipeModule {
                 ? {
                       users: [],
                   }
-                : this.thirdPartyRecipe.getUsersOldestFirst(limit, nextPaginationTokens.thirdPartyPaginationToken);
+                : this.thirdPartyRecipe.recipeInterfaceImpl.getUsersOldestFirst(
+                      limit,
+                      nextPaginationTokens.thirdPartyPaginationToken
+                  );
         let emailPasswordResult = await emailPasswordResultPromise;
         let thirdPartyResult = await thirdPartyResultPromise;
         return combinePaginationResults(thirdPartyResult, emailPasswordResult, limit, true);
@@ -401,7 +412,7 @@ export default class Recipe extends RecipeModule {
         if (nextPaginationTokenString !== undefined) {
             nextPaginationTokens = extractPaginationTokens(this, nextPaginationTokenString);
         }
-        let emailPasswordResultPromise = this.emailPasswordRecipe.getUsersNewestFirst(
+        let emailPasswordResultPromise = this.emailPasswordRecipe.recipeInterfaceImpl.getUsersNewestFirst(
             limit,
             nextPaginationTokens.emailPasswordPaginationToken
         );
@@ -410,15 +421,19 @@ export default class Recipe extends RecipeModule {
                 ? {
                       users: [],
                   }
-                : this.thirdPartyRecipe.getUsersNewestFirst(limit, nextPaginationTokens.thirdPartyPaginationToken);
+                : this.thirdPartyRecipe.recipeInterfaceImpl.getUsersNewestFirst(
+                      limit,
+                      nextPaginationTokens.thirdPartyPaginationToken
+                  );
         let emailPasswordResult = await emailPasswordResultPromise;
         let thirdPartyResult = await thirdPartyResultPromise;
         return combinePaginationResults(thirdPartyResult, emailPasswordResult, limit, false);
     };
 
     getUserCount = async () => {
-        let promise1 = this.emailPasswordRecipe.getUserCount();
-        let promise2 = this.thirdPartyRecipe !== undefined ? this.thirdPartyRecipe.getUserCount() : 0;
+        let promise1 = this.emailPasswordRecipe.recipeInterfaceImpl.getUserCount();
+        let promise2 =
+            this.thirdPartyRecipe !== undefined ? this.thirdPartyRecipe.recipeInterfaceImpl.getUserCount() : 0;
         return (await promise1) + (await promise2);
     };
 }

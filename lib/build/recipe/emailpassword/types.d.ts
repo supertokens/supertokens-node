@@ -1,10 +1,24 @@
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-export declare type TypeInputSetJwtPayloadForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
-    [key: string]: any;
-} | undefined>;
-export declare type TypeInputSetSessionDataForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
-    [key: string]: any;
-} | undefined>;
+export declare type TypeInputSetJwtPayloadForSession = (
+    user: User,
+    formFields: TypeFormField[],
+    action: "signin" | "signup"
+) => Promise<
+    | {
+          [key: string]: any;
+      }
+    | undefined
+>;
+export declare type TypeInputSetSessionDataForSession = (
+    user: User,
+    formFields: TypeFormField[],
+    action: "signin" | "signup"
+) => Promise<
+    | {
+          [key: string]: any;
+      }
+    | undefined
+>;
 export declare type TypeInputSessionFeature = {
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
     setSessionData?: TypeInputSetSessionDataForSession;
@@ -219,3 +233,26 @@ export declare const InputSchema: {
     };
     additionalProperties: boolean;
 };
+export interface RecipeInterface {
+    signUp(email: string, password: string): Promise<User>;
+    signIn(email: string, password: string): Promise<User>;
+    getUserById(userId: string): Promise<User | undefined>;
+    getUserByEmail(email: string): Promise<User | undefined>;
+    createResetPasswordToken(userId: string): Promise<string>;
+    resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+    getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+    getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+    getUserCount(): Promise<number>;
+}

@@ -169,3 +169,36 @@ export type TypeNormalisedInput = {
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
 };
+
+export interface RecipeInterface {
+    getUserById(userId: string): Promise<User | undefined>;
+
+    getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
+
+    getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+
+    getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+
+    getUserCount(): Promise<number>;
+
+    signInUp(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: {
+            id: string;
+            isVerified: boolean;
+        }
+    ): Promise<{ createdNewUser: boolean; user: User }>;
+}

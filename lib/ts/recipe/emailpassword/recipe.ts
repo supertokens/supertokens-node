@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, User } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -28,16 +28,6 @@ import {
     SIGN_OUT_API,
     SIGNUP_EMAIL_EXISTS_API,
 } from "./constants";
-import {
-    signUp as signUpAPIToCore,
-    signIn as signInAPIToCore,
-    getUserById as getUserByIdFromCore,
-    getUserByEmail as getUserByEmailFromCore,
-    createResetPasswordToken as createResetPasswordTokenFromCore,
-    resetPasswordUsingToken as resetPasswordUsingTokenToCore,
-    getUsersCount as getUsersCountCore,
-    getUsers as getUsersCore,
-} from "./coreAPICalls";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
 import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
@@ -46,6 +36,7 @@ import signOutAPI from "./api/signout";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
 import EmailVerificationRecipe from "../emailverification/recipe";
+import RecipeImplementation from "./recipeImplementation";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -54,6 +45,8 @@ export default class Recipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     emailVerificationRecipe: EmailVerificationRecipe;
+
+    recipeInterfaceImpl: RecipeInterface;
 
     constructor(
         recipeId: string,
@@ -70,21 +63,8 @@ export default class Recipe extends RecipeModule {
             isInServerlessEnv,
             this.config.emailVerificationFeature
         );
+        this.recipeInterfaceImpl = new RecipeImplementation(this);
     }
-
-    getEmailForUserId = async (userId: string) => {
-        let userInfo = await this.getUserById(userId);
-        if (userInfo === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this
-            );
-        }
-        return userInfo.email;
-    };
 
     static getInstanceOrThrowError(): Recipe {
         if (Recipe.instance !== undefined) {
@@ -255,53 +235,48 @@ export default class Recipe extends RecipeModule {
         );
     };
 
-    // instance functions below...............
+    // extra instance functions below...............
 
-    signUp = async (email: string, password: string): Promise<User> => {
-        return signUpAPIToCore(this, email, password);
-    };
-
-    signIn = async (email: string, password: string): Promise<User> => {
-        return signInAPIToCore(this, email, password);
-    };
-
-    getUserById = async (userId: string): Promise<User | undefined> => {
-        return getUserByIdFromCore(this, userId);
-    };
-
-    getUserByEmail = async (email: string): Promise<User | undefined> => {
-        return getUserByEmailFromCore(this, email);
-    };
-
-    createResetPasswordToken = async (userId: string): Promise<string> => {
-        return createResetPasswordTokenFromCore(this, userId);
-    };
-
-    resetPasswordUsingToken = async (token: string, newPassword: string) => {
-        return resetPasswordUsingTokenToCore(this, token, newPassword);
+    getEmailForUserId = async (userId: string) => {
+        let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
+        if (userInfo === undefined) {
+            throw new STError(
+                {
+                    type: STError.UNKNOWN_USER_ID_ERROR,
+                    message: "Unknown User ID provided",
+                },
+                this
+            );
+        }
+        return userInfo.email;
     };
 
     createEmailVerificationToken = async (userId: string): Promise<string> => {
-        return this.emailVerificationRecipe.createEmailVerificationToken(userId, await this.getEmailForUserId(userId));
+        return this.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken(
+            userId,
+            await this.getEmailForUserId(userId)
+        );
     };
 
-    verifyEmailUsingToken = async (token: string) => {
-        return this.emailVerificationRecipe.verifyEmailUsingToken(token);
+    verifyEmailUsingToken = async (token: string): Promise<User> => {
+        let user = await this.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken(token);
+        let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
+        if (userInThisRecipe === undefined) {
+            throw new STError(
+                {
+                    type: STError.UNKNOWN_USER_ID_ERROR,
+                    message: "Unknown User ID provided",
+                },
+                this
+            );
+        }
+        return userInThisRecipe;
     };
 
     isEmailVerified = async (userId: string) => {
-        return this.emailVerificationRecipe.isEmailVerified(userId, await this.getEmailForUserId(userId));
-    };
-
-    getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
-        return getUsersCore(this, "ASC", limit, nextPaginationToken);
-    };
-
-    getUsersNewestFirst = async (limit?: number, nextPaginationToken?: string) => {
-        return getUsersCore(this, "DESC", limit, nextPaginationToken);
-    };
-
-    getUserCount = async () => {
-        return getUsersCountCore(this);
+        return this.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified(
+            userId,
+            await this.getEmailForUserId(userId)
+        );
     };
 }

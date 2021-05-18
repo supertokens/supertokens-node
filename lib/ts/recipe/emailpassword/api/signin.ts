@@ -38,7 +38,7 @@ export default async function signInAPI(recipeInstance: Recipe, req: Request, re
     let password = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
 
     // step 3. Errors for this are caught by the error handler
-    let user = await recipeInstance.signIn(email, password);
+    let user = await recipeInstance.recipeInterfaceImpl.signIn(email, password);
 
     // set 4
     await recipeInstance.config.signInFeature.handlePostSignIn(user);

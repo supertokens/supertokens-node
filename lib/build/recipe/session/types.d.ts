@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import Session from "./sessionClass";
 import NormalisedURLPath from "../../normalisedURLPath";
+import * as express from "express";
 export declare type HandshakeInfo = {
     jwtSigningPublicKey: string;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
@@ -157,4 +158,21 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
+}
+export interface RecipeInterface {
+    createNewSession(res: express.Response, userId: string, jwtPayload?: any, sessionData?: any): Promise<Session>;
+    getSession(
+        req: express.Request,
+        res: express.Response,
+        options?: VerifySessionOptions
+    ): Promise<Session | undefined>;
+    refreshSession(req: express.Request, res: express.Response): Promise<Session>;
+    revokeAllSessionsForUser(userId: string): Promise<string[]>;
+    getAllSessionHandlesForUser(userId: string): Promise<string[]>;
+    revokeSession(sessionHandle: string): Promise<boolean>;
+    revokeMultipleSessions(sessionHandles: string[]): Promise<string[]>;
+    getSessionData(sessionHandle: string): Promise<any>;
+    updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
+    getJWTPayload(sessionHandle: string): Promise<any>;
+    updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
 }

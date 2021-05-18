@@ -230,3 +230,35 @@ export const InputSchema = {
     },
     additionalProperties: false,
 };
+
+export interface RecipeInterface {
+    signUp(email: string, password: string): Promise<User>;
+
+    signIn(email: string, password: string): Promise<User>;
+
+    getUserById(userId: string): Promise<User | undefined>;
+
+    getUserByEmail(email: string): Promise<User | undefined>;
+
+    createResetPasswordToken(userId: string): Promise<string>;
+
+    resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+
+    getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+
+    getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+
+    getUserCount(): Promise<number>;
+}

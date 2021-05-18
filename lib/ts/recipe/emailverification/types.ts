@@ -33,3 +33,11 @@ export type User = {
     id: string;
     email: string;
 };
+
+export interface RecipeInterface {
+    createEmailVerificationToken(userId: string, email: string): Promise<string>;
+
+    verifyEmailUsingToken(token: string): Promise<User>;
+
+    isEmailVerified(userId: string, email: string): Promise<boolean>;
+}

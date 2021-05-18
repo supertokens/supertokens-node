@@ -106,7 +106,7 @@ export default async function signInUpAPI(recipeInstance: Recipe, req: Request, 
             recipeInstance
         );
     }
-    let user = await recipeInstance.signInUp(provider.id, userInfo.id, emailInfo);
+    let user = await recipeInstance.recipeInterfaceImpl.signInUp(provider.id, userInfo.id, emailInfo);
 
     await recipeInstance.config.signInAndUpFeature.handlePostSignUpIn(
         user.user,

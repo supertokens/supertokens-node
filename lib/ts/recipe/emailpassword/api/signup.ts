@@ -38,7 +38,7 @@ export default async function signUpAPI(recipeInstance: Recipe, req: Request, re
     let password = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
 
     // step 2. Errors for this are caught by the error handler
-    let user = await recipeInstance.signUp(email, password);
+    let user = await recipeInstance.recipeInterfaceImpl.signUp(email, password);
 
     // set 3
     await recipeInstance.config.signUpFeature.handlePostSignUp(

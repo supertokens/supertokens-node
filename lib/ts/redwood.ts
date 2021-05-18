@@ -14,7 +14,7 @@
  */
 
 import Session from "./recipe/session/sessionRecipe";
-import { getSession, Error as STError } from "./recipe/session";
+import { getSession, Error as STError, SessionContainer } from "./recipe/session";
 
 import { ServerResponse } from "http";
 
@@ -106,7 +106,7 @@ export function supertokensGraphQLHandler(createGraphQLHandler: any, createGraph
             event.query = event.queryStringParameters;
             let response = new CustomResponse(event);
             getSession(event, response as any)
-                .then((session) => {
+                .then((session: SessionContainer | undefined) => {
                     let callbackForGraphQL = (err: any, callbackResult: any) => {
                         if (response.getHeaders() !== undefined) {
                             if (callbackResult.headers === undefined) {
@@ -134,7 +134,7 @@ export function supertokensGraphQLHandler(createGraphQLHandler: any, createGraph
                         },
                     })(event, context, callbackForGraphQL);
                 })
-                .catch((err) => {
+                .catch((err: any) => {
                     let callbackCalled = false;
                     let errorHandler: any = undefined;
                     if (err.type === STError.UNAUTHORISED) {

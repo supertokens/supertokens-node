@@ -9,17 +9,23 @@ export default class Wrapper {
     static getUserByEmail(email: string): Promise<import("./types").User | undefined>;
     static createResetPasswordToken(userId: string): Promise<string>;
     static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
-    static getUsersOldestFirst(limit?: number, nextPaginationToken?: string): Promise<{
+    static getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
         users: import("./types").User[];
         nextPaginationToken?: string | undefined;
     }>;
-    static getUsersNewestFirst(limit?: number, nextPaginationToken?: string): Promise<{
+    static getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
         users: import("./types").User[];
         nextPaginationToken?: string | undefined;
     }>;
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<import("../emailverification/types").User>;
+    static verifyEmailUsingToken(token: string): Promise<import("./types").User>;
     static isEmailVerified(userId: string): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;

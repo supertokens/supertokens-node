@@ -56,7 +56,7 @@ export default async function passwordReset(recipeInstance: Recipe, req: Request
     }
 
     // step 2
-    await recipeInstance.resetPasswordUsingToken(token, newPassword);
+    await recipeInstance.recipeInterfaceImpl.resetPasswordUsingToken(token, newPassword);
 
     // step 3
     return send200Response(res, {

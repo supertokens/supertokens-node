@@ -31,27 +31,30 @@ export default class Wrapper {
             isVerified: boolean;
         }
     ) {
-        return Recipe.getInstanceOrThrowError().signInUp(thirdPartyId, thirdPartyUserId, email);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp(thirdPartyId, thirdPartyUserId, email);
     }
 
     static getUserById(userId: string) {
-        return Recipe.getInstanceOrThrowError().getUserById(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById(userId);
     }
 
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string) {
-        return Recipe.getInstanceOrThrowError().getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo(
+            thirdPartyId,
+            thirdPartyUserId
+        );
     }
 
     static getUsersOldestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().getUsersOldestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst(limit, nextPaginationToken);
     }
 
     static getUsersNewestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().getUsersNewestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst(limit, nextPaginationToken);
     }
 
     static getUserCount() {
-        return Recipe.getInstanceOrThrowError().getUserCount();
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
     static createEmailVerificationToken(userId: string) {
