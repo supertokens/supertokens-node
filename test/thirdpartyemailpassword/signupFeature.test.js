@@ -366,7 +366,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(process.env.loginType, "thirdparty");
     });
 
-    it("test handleCustomFormFieldsPostSignUp gets set correctly", async function () {
+    it("test handlePostSignUp gets set correctly", async function () {
         await startST();
 
         process.env.userId = "";
@@ -628,7 +628,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await thirdPartyRecipe.getUserById("randomID"), undefined);
+        assert.strictEqual(await ThirdPartyEmailPassword.getUserById("randomID"), undefined);
 
         const app = express();
 
@@ -657,7 +657,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await thirdPartyRecipe.getUserById(signUpUserInfo.id);
+        let userInfo = await ThirdPartyEmailPassword.getUserById(signUpUserInfo.id);
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
@@ -685,7 +685,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await thirdPartyRecipe.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user"), undefined);
 
         const app = express();
 
@@ -714,7 +714,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await thirdPartyRecipe.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user");
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);

@@ -34,6 +34,7 @@ import {
     TypeInputSessionFeature,
     TypeContextEmailPasswordSignIn,
     TypeContextEmailPasswordSessionDataAndJWT,
+    RecipeInterface,
 } from "./types";
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
@@ -81,7 +82,22 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.emailVerificationFeature
     );
 
+    let override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
+
+    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
+        override = {
+            functions: config.override.functions,
+        };
+    } else {
+        override = {
+            functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        };
+    }
+
     return {
+        override,
         sessionFeature,
         signUpFeature,
         signInFeature,
@@ -196,7 +212,7 @@ function validateAndNormaliseEmailVerificationConfig(
                   config.createAndSendCustomEmail === undefined
                       ? undefined
                       : async (user, link) => {
-                            let userInfo = await recipeInstance.getUserById(user.id);
+                            let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
                             if (userInfo === undefined || config.createAndSendCustomEmail === undefined) {
                                 throw new STError(
                                     {
@@ -212,7 +228,7 @@ function validateAndNormaliseEmailVerificationConfig(
                   config.getEmailVerificationURL === undefined
                       ? undefined
                       : async (user) => {
-                            let userInfo = await recipeInstance.getUserById(user.id);
+                            let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
                             if (userInfo === undefined || config.getEmailVerificationURL === undefined) {
                                 throw new STError(
                                     {
@@ -228,7 +244,7 @@ function validateAndNormaliseEmailVerificationConfig(
                   config.handlePostEmailVerification === undefined
                       ? undefined
                       : async (user) => {
-                            let userInfo = await recipeInstance.getUserById(user.id);
+                            let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
                             if (userInfo === undefined || config.handlePostEmailVerification === undefined) {
                                 throw new STError(
                                     {

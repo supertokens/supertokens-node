@@ -110,6 +110,9 @@ export declare type TypeInput = {
     signOutFeature?: TypeInputSignOut;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
+    override?: {
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 export declare const InputSchema: {
     sessionFeature: {
@@ -215,6 +218,9 @@ export declare const InputSchema: {
         };
         additionalProperties: boolean;
     };
+    override: {
+        type: string;
+    };
 };
 export declare type TypeNormalisedInput = {
     sessionFeature: TypeNormalisedInputSessionFeature;
@@ -224,6 +230,9 @@ export declare type TypeNormalisedInput = {
     signOutFeature: TypeNormalisedInputSignOut;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
+    override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 export interface RecipeInterface {
     getUserById(userId: string): Promise<User | undefined>;

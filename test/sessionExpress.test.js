@@ -904,7 +904,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.post("/session/verify", async (req, res) => {
             try {
-                let sessionResponse = await Session.getSession(req, res, true);
+                let sessionResponse = await Session.getSession(req, res, { antiCsrfCheck: true });
                 res.status(200).json({ success: false });
             } catch (err) {
                 res.status(200).json({
@@ -914,7 +914,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         app.post("/session/verifyAntiCsrfFalse", async (req, res) => {
-            let sessionResponse = await Session.getSession(req, res, false);
+            let sessionResponse = await Session.getSession(req, res, { antiCsrfCheck: false });
             res.status(200).json({ userId: sessionResponse.userId });
         });
 
@@ -1774,7 +1774,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
         });
-        app.post("/session/verifyAntiCsrfFalse", Session.verifySession(false), async (req, res) => {
+        app.post("/session/verifyAntiCsrfFalse", Session.verifySession({ antiCsrfCheck: false }), async (req, res) => {
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
         });

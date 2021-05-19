@@ -953,7 +953,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert((await emailpassword.getUserByEmail("random@gmail.com")) === undefined);
+        assert((await EmailPassword.getUserByEmail("random@gmail.com")) === undefined);
 
         const app = express();
 
@@ -966,7 +966,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(signUpResponse.status === 200);
 
         let signUpUserInfo = JSON.parse(signUpResponse.text).user;
-        let userInfo = await emailpassword.getUserByEmail("random@gmail.com");
+        let userInfo = await EmailPassword.getUserByEmail("random@gmail.com");
 
         assert(userInfo.email === signUpUserInfo.email);
         assert(userInfo.id === signUpUserInfo.id);
@@ -994,7 +994,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert((await emailpassword.getUserById("randomID")) === undefined);
+        assert((await EmailPassword.getUserById("randomID")) === undefined);
 
         const app = express();
 
@@ -1007,7 +1007,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(signUpResponse.status === 200);
 
         let signUpUserInfo = JSON.parse(signUpResponse.text).user;
-        let userInfo = await emailpassword.getUserById(signUpUserInfo.id);
+        let userInfo = await EmailPassword.getUserById(signUpUserInfo.id);
 
         assert(userInfo.email === signUpUserInfo.email);
         assert(userInfo.id === signUpUserInfo.id);

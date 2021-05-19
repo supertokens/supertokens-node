@@ -127,7 +127,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handleV0", Session.verifySession(true), async (req, res) => {
+        app.get("/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
@@ -467,7 +467,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handleV0", Session.verifySession(true), async (req, res) => {
+        app.get("/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
@@ -808,7 +808,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handleV0", Session.verifySession(true), async (req, res) => {
+        app.get("/custom/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
@@ -1158,7 +1158,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handleV0", Session.verifySession(true), async (req, res) => {
+        app.get("/custom/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 

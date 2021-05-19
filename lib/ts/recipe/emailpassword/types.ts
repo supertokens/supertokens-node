@@ -106,8 +106,6 @@ export type TypeFormField = { id: string; value: any };
 export type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
     formFields?: TypeInputFormField[];
-    // depcrecated
-    handleCustomFormFieldsPostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
     handlePostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 
@@ -128,7 +126,6 @@ const InputSignUpSchema = {
                 additionalProperties: false,
             },
         },
-        handleCustomFormFieldsPostSignUp: TypeAny,
         handlePostSignUp: TypeAny,
     },
     additionalProperties: false,

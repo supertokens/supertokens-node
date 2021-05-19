@@ -3,31 +3,44 @@ import SuperTokensError from "./error";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static signInUp(thirdPartyId: string, thirdPartyUserId: string, email: {
-        id: string;
-        isVerified: boolean;
-    }): Promise<{
+    static signInUp(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: {
+            id: string;
+            isVerified: boolean;
+        }
+    ): Promise<{
         createdNewUser: boolean;
         user: import("./types").User;
     }>;
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<import("./types").User | undefined>;
+    static getUserByThirdPartyInfo(
+        thirdPartyId: string,
+        thirdPartyUserId: string
+    ): Promise<import("./types").User | undefined>;
     static signUp(email: string, password: string): Promise<import("./types").User>;
     static signIn(email: string, password: string): Promise<import("./types").User>;
     static getUserById(userId: string): Promise<import("./types").User | undefined>;
     static getUserByEmail(email: string): Promise<import("./types").User | undefined>;
     static createResetPasswordToken(userId: string): Promise<string>;
     static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
-    static getUsersOldestFirst(limit?: number, nextPaginationToken?: string): Promise<{
+    static getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
         users: import("./types").User[];
         nextPaginationToken?: string | undefined;
     }>;
-    static getUsersNewestFirst(limit?: number, nextPaginationToken?: string): Promise<{
+    static getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
         users: import("./types").User[];
         nextPaginationToken?: string | undefined;
     }>;
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<import("../emailverification/types").User>;
+    static verifyEmailUsingToken(token: string): Promise<import("./types").User>;
     static isEmailVerified(userId: string): Promise<boolean>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Refactor code to use recipeImplementations that can be override by the user
 -   `getSession` third param is no longer a boolean
 -   Provides FaunaDB's session implementation as a modification to the original session recipe.
+-   Removes deprecated `handleCustomFormFieldsPostSignUp`. Instead, use `handlePostSignUp`
 
 ## [5.0.1] - 2021-05-06
 

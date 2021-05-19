@@ -366,22 +366,6 @@ function validateAndNormaliseSignupConfig(
         config === undefined ? undefined : config.formFields
     );
 
-    /**
-     * if user uses handleCustomFormFieldsPostSignUp method, we emit a deprecation warning
-     */
-    if (config !== undefined && config.handleCustomFormFieldsPostSignUp !== undefined) {
-        process.emitWarning(
-            "handleCustomFormFieldsPostSignUp() is deprecated and will soon stop working in future versions. Please use handlePostSignUp() instead",
-            "DeprecationWarning"
-        );
-    }
-
-    /**
-     * if both handlePostSignUp and handleCustomFormFieldsPostSignUp are passed, handlePostSignUp will be used
-     */
-    if (config !== undefined && config.handlePostSignUp === undefined) {
-        config.handlePostSignUp = config.handleCustomFormFieldsPostSignUp;
-    }
     let handlePostSignUp =
         config === undefined || config.handlePostSignUp === undefined
             ? defaultHandlePostSignUp

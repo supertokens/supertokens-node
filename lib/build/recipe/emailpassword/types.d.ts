@@ -62,7 +62,6 @@ export declare type TypeFormField = {
 export declare type TypeInputSignUp = {
     disableDefaultImplementation?: boolean;
     formFields?: TypeInputFormField[];
-    handleCustomFormFieldsPostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
     handlePostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 export declare type NormalisedFormField = {
@@ -172,9 +171,6 @@ export declare const InputSchema: {
                         required: string[];
                         additionalProperties: boolean;
                     };
-                };
-                handleCustomFormFieldsPostSignUp: {
-                    type: string;
                 };
                 handlePostSignUp: {
                     type: string;

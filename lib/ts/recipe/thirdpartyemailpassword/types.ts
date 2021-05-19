@@ -206,6 +206,9 @@ export type TypeInput = {
     signOutFeature?: TypeInputSignOut;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
+    override?: {
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 
 const InputProvidersSchema = {
@@ -220,6 +223,7 @@ export const InputSchema = {
     signOutFeature: InputSignOutSchema,
     resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
     emailVerificationFeature: InputEmailVerificationFeatureSchema,
+    override: TypeAny,
 };
 
 export type TypeNormalisedInput = {
@@ -230,6 +234,9 @@ export type TypeNormalisedInput = {
     signOutFeature: TypeNormalisedInputSignOut;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
+    override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 
 export interface RecipeInterface {
