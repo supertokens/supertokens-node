@@ -15,6 +15,7 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
+import { RecipeInterface } from "./types";
 
 // For Express
 export default class Wrapper {
@@ -44,3 +45,5 @@ export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
 export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
+
+export type { RecipeInterface };

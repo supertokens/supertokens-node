@@ -17,8 +17,8 @@ import SessionRecipe from "./recipe";
 import { verifySession as originalVerifySession } from "./middleware";
 import * as express from "express";
 import SuperTokensError from "./error";
-import SessionClass from "./sessionClass";
-import { VerifySessionOptions } from "./types";
+import SessionContainer from "./sessionClass";
+import { VerifySessionOptions, RecipeInterface } from "./types";
 
 // For Express
 export default class SessionWrapper {
@@ -118,4 +118,4 @@ export let verifySession = SessionWrapper.verifySession;
 
 export let Error = SessionWrapper.Error;
 
-export type SessionContainer = SessionClass;
+export type { VerifySessionOptions, RecipeInterface, SessionContainer };
