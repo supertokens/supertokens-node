@@ -1,6 +1,8 @@
 export default class NextJS {
-    static superTokensNextWrapper(middleware: (next: (middlewareError?: any) => void) => Promise<unknown>, request: any, response: any): Promise<unknown>;
-    static superTokensMiddleware(request: any, response: any): Promise<any>;
+    static superTokensNextWrapper<T>(
+        middleware: (next: (middlewareError?: any) => void) => Promise<T>,
+        request: any,
+        response: any
+    ): Promise<T>;
 }
-export declare let superTokensMiddleware: typeof NextJS.superTokensMiddleware;
 export declare let superTokensNextWrapper: typeof NextJS.superTokensNextWrapper;

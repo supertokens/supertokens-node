@@ -1,5 +1,6 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
+import { RecipeInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -12,3 +13,4 @@ export declare let Error: typeof SuperTokensError;
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
+export type { RecipeInterface };

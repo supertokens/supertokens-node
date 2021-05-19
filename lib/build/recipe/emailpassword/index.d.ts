@@ -1,5 +1,6 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
+import { RecipeInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -42,3 +43,4 @@ export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
 export declare let getUsersOldestFirst: typeof Wrapper.getUsersOldestFirst;
 export declare let getUsersNewestFirst: typeof Wrapper.getUsersNewestFirst;
 export declare let getUserCount: typeof Wrapper.getUserCount;
+export type { RecipeInterface };

@@ -1,8 +1,12 @@
 import SessionRecipe from "./recipe";
 import * as express from "express";
 import SuperTokensError from "./error";
-import SessionClass from "./sessionClass";
-import { VerifySessionOptions } from "./types";
+import {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainerInterface as SessionContainer,
+    SessionRequest,
+} from "./types";
 export default class SessionWrapper {
     static init: typeof SessionRecipe.init;
     static Error: typeof SuperTokensError;
@@ -11,13 +15,13 @@ export default class SessionWrapper {
         userId: string,
         jwtPayload?: any,
         sessionData?: any
-    ): Promise<SessionClass>;
+    ): Promise<SessionContainer>;
     static getSession(
         req: express.Request,
         res: express.Response,
         options?: VerifySessionOptions
-    ): Promise<SessionClass | undefined>;
-    static refreshSession(req: express.Request, res: express.Response): Promise<SessionClass>;
+    ): Promise<SessionContainer | undefined>;
+    static refreshSession(req: express.Request, res: express.Response): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string): Promise<string[]>;
     static revokeSession(sessionHandle: string): Promise<boolean>;
@@ -46,4 +50,4 @@ export declare let verifySession: (
     options?: VerifySessionOptions | undefined
 ) => (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
 export declare let Error: typeof SuperTokensError;
-export declare type SessionContainer = SessionClass;
+export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest };

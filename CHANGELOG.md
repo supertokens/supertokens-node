@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `getSession` third param is no longer a boolean
 -   Provides FaunaDB's session implementation as a modification to the original session recipe.
 -   Removes deprecated `handleCustomFormFieldsPostSignUp`. Instead, use `handlePostSignUp`
+-   Removes `superTokensMiddleware` from NextJS as it is no longer needed and was deprecated.
+-   Fixes NextJS type for `superTokensNextWrapper` function
 
 ## [5.0.1] - 2021-05-06
 

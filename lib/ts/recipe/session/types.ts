@@ -13,7 +13,6 @@
  * under the License.
  */
 import { Request, Response, NextFunction } from "express";
-import Session from "./sessionClass";
 import NormalisedURLPath from "../../normalisedURLPath";
 import * as express from "express";
 
@@ -146,7 +145,7 @@ export type TypeNormalisedInput = {
 };
 
 export interface SessionRequest extends Request {
-    session?: Session;
+    session?: SessionContainerInterface;
 }
 
 export interface ErrorHandlerMiddleware {
@@ -169,15 +168,20 @@ export interface VerifySessionOptions {
 }
 
 export interface RecipeInterface {
-    createNewSession(res: express.Response, userId: string, jwtPayload?: any, sessionData?: any): Promise<Session>;
+    createNewSession(
+        res: express.Response,
+        userId: string,
+        jwtPayload?: any,
+        sessionData?: any
+    ): Promise<SessionContainerInterface>;
 
     getSession(
         req: express.Request,
         res: express.Response,
         options?: VerifySessionOptions
-    ): Promise<Session | undefined>;
+    ): Promise<SessionContainerInterface | undefined>;
 
-    refreshSession(req: express.Request, res: express.Response): Promise<Session>;
+    refreshSession(req: express.Request, res: express.Response): Promise<SessionContainerInterface>;
 
     revokeAllSessionsForUser(userId: string): Promise<string[]>;
 
@@ -194,4 +198,22 @@ export interface RecipeInterface {
     getJWTPayload(sessionHandle: string): Promise<any>;
 
     updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
+}
+
+export interface SessionContainerInterface {
+    revokeSession(): Promise<void>;
+
+    getSessionData(): Promise<any>;
+
+    updateSessionData(newSessionData: any): Promise<any>;
+
+    getUserId(): string;
+
+    getJWTPayload(): any;
+
+    getHandle(): string;
+
+    getAccessToken(): string;
+
+    updateJWTPayload(newJWTPayload: any): Promise<void>;
 }

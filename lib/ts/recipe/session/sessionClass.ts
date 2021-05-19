@@ -18,8 +18,9 @@ import * as SessionFunctions from "./sessionFunctions";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { SessionContainerInterface } from "./types";
 
-export default class Session {
+export default class Session implements SessionContainerInterface {
     private sessionHandle: string;
     private userId: string;
     private userDataInJWT: any;

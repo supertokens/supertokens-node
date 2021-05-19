@@ -1,6 +1,7 @@
 import * as express from "express";
 import SessionRecipe from "./recipe";
-export default class Session {
+import { SessionContainerInterface } from "./types";
+export default class Session implements SessionContainerInterface {
     private sessionHandle;
     private userId;
     private userDataInJWT;
