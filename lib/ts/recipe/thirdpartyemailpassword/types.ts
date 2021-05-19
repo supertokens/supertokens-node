@@ -13,7 +13,10 @@
  * under the License.
  */
 import { TypeProvider } from "../thirdparty/types";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import {
+    TypeInput as TypeNormalisedInputEmailVerification,
+    RecipeInterface as EmailVerificationRecipeInterface,
+} from "../emailverification/types";
 import {
     NormalisedFormField,
     TypeFormField,
@@ -178,6 +181,9 @@ export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
+    override?: {
+        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+    };
 };
 
 const InputEmailVerificationFeatureSchema = {
@@ -187,6 +193,7 @@ const InputEmailVerificationFeatureSchema = {
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
         handlePostEmailVerification: TypeAny,
+        override: TypeAny,
     },
     additionalProperties: false,
 };
@@ -224,3 +231,46 @@ export type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
 };
+
+export interface RecipeInterface {
+    getUserById(userId: string): Promise<User | undefined>;
+
+    getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
+
+    getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+
+    getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+
+    getUserCount(): Promise<number>;
+
+    signInUp(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: {
+            id: string;
+            isVerified: boolean;
+        }
+    ): Promise<{ createdNewUser: boolean; user: User }>;
+
+    signUp(email: string, password: string): Promise<User>;
+
+    signIn(email: string, password: string): Promise<User>;
+
+    getUserByEmail(email: string): Promise<User | undefined>;
+
+    createResetPasswordToken(userId: string): Promise<string>;
+
+    resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+}

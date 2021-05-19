@@ -63,7 +63,7 @@ export default class Recipe extends RecipeModule {
             isInServerlessEnv,
             this.config.emailVerificationFeature
         );
-        this.recipeInterfaceImpl = new RecipeImplementation(this);
+        this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this));
     }
 
     static getInstanceOrThrowError(): Recipe {

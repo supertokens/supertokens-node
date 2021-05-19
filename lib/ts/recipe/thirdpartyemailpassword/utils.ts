@@ -190,6 +190,7 @@ function validateAndNormaliseEmailVerificationConfig(
           }
         : {
               disableDefaultImplementation: config.disableDefaultImplementation,
+              override: config.override,
               getEmailForUserId: recipeInstance.getEmailForUserId,
               createAndSendCustomEmail:
                   config.createAndSendCustomEmail === undefined

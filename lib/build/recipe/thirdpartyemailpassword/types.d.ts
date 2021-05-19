@@ -1,6 +1,14 @@
 import { TypeProvider } from "../thirdparty/types";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import { NormalisedFormField, TypeFormField, TypeInputFormField, TypeInputResetPasswordUsingTokenFeature } from "../emailpassword/types";
+import {
+    TypeInput as TypeNormalisedInputEmailVerification,
+    RecipeInterface as EmailVerificationRecipeInterface,
+} from "../emailverification/types";
+import {
+    NormalisedFormField,
+    TypeFormField,
+    TypeInputFormField,
+    TypeInputResetPasswordUsingTokenFeature,
+} from "../emailpassword/types";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -25,14 +33,34 @@ export declare type TypeContextThirdParty = {
     loginType: "thirdparty";
     thirdPartyAuthCodeResponse: any;
 };
-export declare type TypeInputHandlePostSignUp = (user: User, context: TypeContextEmailPasswordSignUp | TypeContextThirdParty) => Promise<void>;
-export declare type TypeInputHandlePostSignIn = (user: User, context: TypeContextEmailPasswordSignIn | TypeContextThirdParty) => Promise<void>;
-export declare type TypeInputSetJwtPayloadForSession = (user: User, context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
-    [key: string]: any;
-} | undefined>;
-export declare type TypeInputSetSessionDataForSession = (user: User, context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty, action: "signin" | "signup") => Promise<{
-    [key: string]: any;
-} | undefined>;
+export declare type TypeInputHandlePostSignUp = (
+    user: User,
+    context: TypeContextEmailPasswordSignUp | TypeContextThirdParty
+) => Promise<void>;
+export declare type TypeInputHandlePostSignIn = (
+    user: User,
+    context: TypeContextEmailPasswordSignIn | TypeContextThirdParty
+) => Promise<void>;
+export declare type TypeInputSetJwtPayloadForSession = (
+    user: User,
+    context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
+    action: "signin" | "signup"
+) => Promise<
+    | {
+          [key: string]: any;
+      }
+    | undefined
+>;
+export declare type TypeInputSetSessionDataForSession = (
+    user: User,
+    context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
+    action: "signin" | "signup"
+) => Promise<
+    | {
+          [key: string]: any;
+      }
+    | undefined
+>;
 export declare type TypeInputSessionFeature = {
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
     setSessionData?: TypeInputSetSessionDataForSession;
@@ -70,6 +98,9 @@ export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
+    override?: {
+        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+    };
 };
 export declare type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
@@ -178,6 +209,9 @@ export declare const InputSchema: {
             handlePostEmailVerification: {
                 type: string;
             };
+            override: {
+                type: string;
+            };
         };
         additionalProperties: boolean;
     };
@@ -191,3 +225,38 @@ export declare type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
 };
+export interface RecipeInterface {
+    getUserById(userId: string): Promise<User | undefined>;
+    getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
+    getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+    getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+    getUserCount(): Promise<number>;
+    signInUp(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: {
+            id: string;
+            isVerified: boolean;
+        }
+    ): Promise<{
+        createdNewUser: boolean;
+        user: User;
+    }>;
+    signUp(email: string, password: string): Promise<User>;
+    signIn(email: string, password: string): Promise<User>;
+    getUserByEmail(email: string): Promise<User | undefined>;
+    createResetPasswordToken(userId: string): Promise<string>;
+    resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+}

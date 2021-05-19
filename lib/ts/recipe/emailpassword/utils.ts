@@ -34,7 +34,7 @@ import {
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
-import { TypeNormalisedInputSignOutFeature, TypeInputSignOutFeature } from "./types";
+import { TypeNormalisedInputSignOutFeature, TypeInputSignOutFeature, RecipeInterface } from "./types";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import {
     getResetPasswordURL as defaultGetResetPasswordURL,
@@ -88,6 +88,20 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.emailVerificationFeature
     );
 
+    let override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
+
+    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
+        override = {
+            functions: config.override.functions,
+        };
+    } else {
+        override = {
+            functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        };
+    }
+
     return {
         sessionFeature,
         signUpFeature,
@@ -95,6 +109,7 @@ export function validateAndNormaliseUserInput(
         resetPasswordUsingTokenFeature,
         signOutFeature,
         emailVerificationFeature,
+        override,
     };
 }
 
@@ -138,6 +153,7 @@ export function validateAndNormaliseEmailVerificationConfig(
           }
         : {
               disableDefaultImplementation: config.disableDefaultImplementation,
+              override: config.override,
               getEmailForUserId: recipeInstance.getEmailForUserId,
               createAndSendCustomEmail:
                   config.createAndSendCustomEmail === undefined

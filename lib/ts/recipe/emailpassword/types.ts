@@ -13,7 +13,10 @@
  * under the License.
  */
 
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import {
+    TypeInput as TypeNormalisedInputEmailVerification,
+    RecipeInterface as EmailVerificationRecipeInterface,
+} from "../emailverification/types";
 
 const TypeString = {
     type: "string",
@@ -65,6 +68,9 @@ export type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
+    override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 
 const InputEmailVerificationFeatureSchema = {
@@ -74,6 +80,7 @@ const InputEmailVerificationFeatureSchema = {
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
         handlePostEmailVerification: TypeAny,
+        override: TypeAny,
     },
     additionalProperties: false,
 };
@@ -83,6 +90,9 @@ export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
+    override?: {
+        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+    };
 };
 
 export type TypeInputFormField = {
@@ -196,13 +206,6 @@ export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
 
-export type TypeNormalisedInputEmailVerificationFeature = {
-    disableDefaultImplementation: boolean;
-    getEmailVerificationURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification: (user: User) => Promise<void>;
-};
-
 export type User = {
     id: string;
     email: string;
@@ -216,6 +219,9 @@ export type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
+    override?: {
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 
 export const InputSchema = {
@@ -227,6 +233,7 @@ export const InputSchema = {
         resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
         signOutFeature: InputSignOutSchema,
         emailVerificationFeature: InputEmailVerificationFeatureSchema,
+        override: TypeAny,
     },
     additionalProperties: false,
 };

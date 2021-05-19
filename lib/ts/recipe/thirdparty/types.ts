@@ -14,7 +14,10 @@
  */
 
 import { Request } from "express";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import {
+    TypeInput as TypeNormalisedInputEmailVerification,
+    RecipeInterface as EmailVerificationRecipeInterface,
+} from "../emailverification/types";
 
 const TypeBoolean = {
     type: "boolean",
@@ -90,6 +93,9 @@ export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
+    override?: {
+        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+    };
 };
 
 const InputEmailVerificationFeatureSchema = {
@@ -99,6 +105,7 @@ const InputEmailVerificationFeatureSchema = {
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
         handlePostEmailVerification: TypeAny,
+        override: TypeAny,
     },
     additionalProperties: false,
 };
@@ -149,6 +156,9 @@ export type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
+    override?: {
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 
 export const InputSchema = {
@@ -158,6 +168,7 @@ export const InputSchema = {
         signInAndUpFeature: InputSignInAndUpSchema,
         signOutFeature: InputSignOutSchema,
         emailVerificationFeature: InputEmailVerificationFeatureSchema,
+        override: TypeAny,
     },
     required: ["signInAndUpFeature"],
     additionalProperties: false,
@@ -168,6 +179,9 @@ export type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
+    override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 
 export interface RecipeInterface {

@@ -1,5 +1,8 @@
 import { Request } from "express";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import {
+    TypeInput as TypeNormalisedInputEmailVerification,
+    RecipeInterface as EmailVerificationRecipeInterface,
+} from "../emailverification/types";
 export declare type UserInfo = {
     id: string;
     email?: {
@@ -68,6 +71,9 @@ export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
+    override?: {
+        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+    };
 };
 export declare type TypeInputSignInAndUp = {
     disableDefaultImplementation?: boolean;
@@ -90,6 +96,9 @@ export declare type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
+    override?: {
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 export declare const InputSchema: {
     type: string;
@@ -146,8 +155,14 @@ export declare const InputSchema: {
                 handlePostEmailVerification: {
                     type: string;
                 };
+                override: {
+                    type: string;
+                };
             };
             additionalProperties: boolean;
+        };
+        override: {
+            type: string;
         };
     };
     required: string[];
@@ -158,6 +173,9 @@ export declare type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
+    override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 export interface RecipeInterface {
     getUserById(userId: string): Promise<User | undefined>;

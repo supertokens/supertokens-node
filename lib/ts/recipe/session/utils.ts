@@ -38,7 +38,6 @@ import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 import RecipeModule from "../../recipeModule";
-import RecipeImplementation from "./recipeImplementation";
 import { RecipeInterface } from "./types";
 
 export function normaliseSessionScopeOrThrowError(recipe: RecipeModule | undefined, sessionScope: string): string {
@@ -237,7 +236,7 @@ export function validateAndNormaliseUserInput(
     }
 
     let override: {
-        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
     };
 
     if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
@@ -246,7 +245,7 @@ export function validateAndNormaliseUserInput(
         };
     } else {
         override = {
-            functions: (originalImplementation: RecipeImplementation) => originalImplementation,
+            functions: (originalImplementation: RecipeInterface) => originalImplementation,
         };
     }
 

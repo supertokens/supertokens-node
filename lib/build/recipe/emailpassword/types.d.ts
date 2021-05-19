@@ -1,4 +1,7 @@
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import {
+    TypeInput as TypeNormalisedInputEmailVerification,
+    RecipeInterface as EmailVerificationRecipeInterface,
+} from "../emailverification/types";
 export declare type TypeInputSetJwtPayloadForSession = (
     user: User,
     formFields: TypeFormField[],
@@ -34,12 +37,18 @@ export declare type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
+    override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 export declare type TypeInputEmailVerificationFeature = {
     disableDefaultImplementation?: boolean;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
+    override?: {
+        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+    };
 };
 export declare type TypeInputFormField = {
     id: string;
@@ -108,12 +117,6 @@ export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
-export declare type TypeNormalisedInputEmailVerificationFeature = {
-    disableDefaultImplementation: boolean;
-    getEmailVerificationURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification: (user: User) => Promise<void>;
-};
 export declare type User = {
     id: string;
     email: string;
@@ -126,6 +129,9 @@ export declare type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
+    override?: {
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
 };
 export declare const InputSchema: {
     type: string;
@@ -227,8 +233,14 @@ export declare const InputSchema: {
                 handlePostEmailVerification: {
                     type: string;
                 };
+                override: {
+                    type: string;
+                };
             };
             additionalProperties: boolean;
+        };
+        override: {
+            type: string;
         };
     };
     additionalProperties: boolean;

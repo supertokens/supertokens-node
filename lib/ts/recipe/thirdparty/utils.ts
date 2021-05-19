@@ -30,6 +30,7 @@ import {
     TypeNormalisedInputSignInAndUp,
     TypeInputSessionFeature,
     TypeNormalisedInputSessionFeature,
+    RecipeInterface,
 } from "./types";
 
 async function defaultHandlePostSignUpIn(_: User, __: any, ___: boolean) {}
@@ -57,11 +58,26 @@ export function validateAndNormaliseUserInput(
 
     let signOutFeature = validateAndNormaliseSignOutConfig(recipeInstance, appInfo, config.signOutFeature);
 
+    let override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+    };
+
+    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
+        override = {
+            functions: config.override.functions,
+        };
+    } else {
+        override = {
+            functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        };
+    }
+
     return {
         sessionFeature,
         emailVerificationFeature,
         signOutFeature,
         signInAndUpFeature,
+        override,
     };
 }
 
@@ -150,6 +166,7 @@ function validateAndNormaliseEmailVerificationConfig(
           }
         : {
               disableDefaultImplementation: config.disableDefaultImplementation,
+              override: config.override,
               getEmailForUserId: recipeInstance.getEmailForUserId,
               createAndSendCustomEmail:
                   config.createAndSendCustomEmail === undefined
