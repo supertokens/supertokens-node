@@ -42,6 +42,7 @@ import {
 } from "./passwordResetFunctions";
 import { validateTheStructureOfUserInput } from "../../utils";
 import STError from "./error";
+import { RecipeImplementation } from "./";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -89,7 +90,7 @@ export function validateAndNormaliseUserInput(
     );
 
     let override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 
     if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
@@ -98,7 +99,7 @@ export function validateAndNormaliseUserInput(
         };
     } else {
         override = {
-            functions: (originalImplementation: RecipeInterface) => originalImplementation,
+            functions: (originalImplementation: RecipeImplementation) => originalImplementation,
         };
     }
 

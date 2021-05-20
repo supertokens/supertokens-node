@@ -1,8 +1,8 @@
-import { VerifySessionOptions, RecipeInterface } from "../types";
-import OriginalRecipeImplementation from "../recipeImplementation";
+import { VerifySessionOptions, RecipeInterface } from "../";
 import * as express from "express";
 import Session from "./sessionClass";
 import * as faunadb from "faunadb";
+import { RecipeImplementation as OriginalRecipeImplementation } from "../";
 export default class RecipeImplementation implements RecipeInterface {
     config: {
         accessFaunadbTokenFromFrontend: boolean;

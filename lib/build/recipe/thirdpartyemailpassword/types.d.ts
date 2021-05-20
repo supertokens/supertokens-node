@@ -1,14 +1,16 @@
 import { TypeProvider } from "../thirdparty/types";
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import {
-    TypeInput as TypeNormalisedInputEmailVerification,
+    RecipeImplementation as EmailVerificationRecipeImplementation,
     RecipeInterface as EmailVerificationRecipeInterface,
-} from "../emailverification/types";
+} from "../emailverification";
 import {
     NormalisedFormField,
     TypeFormField,
     TypeInputFormField,
     TypeInputResetPasswordUsingTokenFeature,
 } from "../emailpassword/types";
+import { RecipeImplementation } from "./";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -99,7 +101,7 @@ export declare type TypeInputEmailVerificationFeature = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
     override?: {
-        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+        functions?: (originalImplementation: EmailVerificationRecipeImplementation) => EmailVerificationRecipeInterface;
     };
 };
 export declare type TypeInput = {
@@ -111,7 +113,7 @@ export declare type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 };
 export declare const InputSchema: {
@@ -231,7 +233,7 @@ export declare type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 };
 export interface RecipeInterface {

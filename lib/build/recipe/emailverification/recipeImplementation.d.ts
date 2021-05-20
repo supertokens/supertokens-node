@@ -1,4 +1,4 @@
-import { RecipeInterface, User } from "./types";
+import { RecipeInterface, User } from "./";
 import Recipe from "./recipe";
 export default class RecipeImplementation implements RecipeInterface {
     recipeInstance: Recipe;

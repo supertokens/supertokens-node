@@ -1,8 +1,19 @@
 import express from "express";
 import Supertokens from "../..";
-import Session, { RecipeInterface, VerifySessionOptions, SessionContainer, SessionRequest } from "../../recipe/session";
-import EmailPassword, { RecipeInterface as EPRecipeInterface } from "../../recipe/emailpassword";
+import Session, {
+    RecipeInterface,
+    VerifySessionOptions,
+    SessionContainer,
+    SessionRequest,
+    RecipeImplementation as SessionRecipeImplementation,
+} from "../../recipe/session";
+import EmailPassword, {
+    RecipeInterface as EPRecipeInterface,
+    RecipeImplementation as EPRecipeImplementation,
+} from "../../recipe/emailpassword";
 import NextJS from "../../nextjs";
+import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
+let faunadb = require("faunadb");
 
 let app = express();
 
@@ -93,3 +104,31 @@ app.use(
 app.use(Supertokens.errorHandler());
 
 app.listen();
+
+Supertokens.init({
+    appInfo: {
+        apiDomain: "",
+        appName: "",
+        websiteDomain: "",
+    },
+    recipeList: [
+        Session.init({
+            antiCsrf: "NONE",
+            cookieDomain: "",
+            override: {
+                functions: (originalImpl: SessionRecipeImplementation) => {
+                    return new FaunaDBImplementation(originalImpl, {
+                        faunaDBClient: new faunadb(),
+                        userCollectionName: "users",
+                    });
+                },
+            },
+        }),
+        EmailPassword.init({
+            override: {},
+        }),
+    ],
+    supertokens: {
+        connectionURI: "",
+    },
+});

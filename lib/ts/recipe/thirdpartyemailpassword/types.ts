@@ -13,10 +13,11 @@
  * under the License.
  */
 import { TypeProvider } from "../thirdparty/types";
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import {
-    TypeInput as TypeNormalisedInputEmailVerification,
+    RecipeImplementation as EmailVerificationRecipeImplementation,
     RecipeInterface as EmailVerificationRecipeInterface,
-} from "../emailverification/types";
+} from "../emailverification";
 import {
     NormalisedFormField,
     TypeFormField,
@@ -24,6 +25,7 @@ import {
     TypeInputResetPasswordUsingTokenFeature,
     InputResetPasswordUsingTokenFeatureSchema,
 } from "../emailpassword/types";
+import { RecipeImplementation } from "./";
 
 const TypeString = {
     type: "string",
@@ -182,7 +184,7 @@ export type TypeInputEmailVerificationFeature = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
     override?: {
-        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+        functions?: (originalImplementation: EmailVerificationRecipeImplementation) => EmailVerificationRecipeInterface;
     };
 };
 
@@ -207,7 +209,7 @@ export type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 };
 
@@ -235,7 +237,7 @@ export type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 };
 

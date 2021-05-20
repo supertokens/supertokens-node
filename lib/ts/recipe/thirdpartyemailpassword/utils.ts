@@ -40,6 +40,7 @@ import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
 import STError from "./error";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
+import { RecipeImplementation } from "./";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -83,7 +84,7 @@ export function validateAndNormaliseUserInput(
     );
 
     let override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 
     if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
@@ -92,7 +93,7 @@ export function validateAndNormaliseUserInput(
         };
     } else {
         override = {
-            functions: (originalImplementation: RecipeInterface) => originalImplementation,
+            functions: (originalImplementation: RecipeImplementation) => originalImplementation,
         };
     }
 

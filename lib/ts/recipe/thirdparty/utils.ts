@@ -32,6 +32,7 @@ import {
     TypeNormalisedInputSessionFeature,
     RecipeInterface,
 } from "./types";
+import { RecipeImplementation } from "./";
 
 async function defaultHandlePostSignUpIn(_: User, __: any, ___: boolean) {}
 
@@ -59,7 +60,7 @@ export function validateAndNormaliseUserInput(
     let signOutFeature = validateAndNormaliseSignOutConfig(recipeInstance, appInfo, config.signOutFeature);
 
     let override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 
     if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
@@ -68,7 +69,7 @@ export function validateAndNormaliseUserInput(
         };
     } else {
         override = {
-            functions: (originalImplementation: RecipeInterface) => originalImplementation,
+            functions: (originalImplementation: RecipeImplementation) => originalImplementation,
         };
     }
 

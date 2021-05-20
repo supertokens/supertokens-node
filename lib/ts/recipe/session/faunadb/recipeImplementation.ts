@@ -1,10 +1,10 @@
-import { VerifySessionOptions, RecipeInterface } from "../types";
-import OriginalRecipeImplementation from "../recipeImplementation";
+import { VerifySessionOptions, RecipeInterface } from "../";
 import STError from "../error";
 import * as express from "express";
 import Session from "./sessionClass";
 import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
+import { RecipeImplementation as OriginalRecipeImplementation } from "../";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {

@@ -1,4 +1,3 @@
-import SessionRecipe from "./recipe";
 import * as express from "express";
 import SuperTokensError from "./error";
 import {
@@ -7,8 +6,10 @@ import {
     SessionContainerInterface as SessionContainer,
     SessionRequest,
 } from "./types";
+import Recipe from "./recipe";
+import RecipeImplementation from "./recipeImplementation";
 export default class SessionWrapper {
-    static init: typeof SessionRecipe.init;
+    static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static createNewSession(
         res: express.Response,
@@ -34,7 +35,7 @@ export default class SessionWrapper {
         options?: VerifySessionOptions | undefined
     ) => (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
 }
-export declare let init: typeof SessionRecipe.init;
+export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
 export declare let getSession: typeof SessionWrapper.getSession;
 export declare let refreshSession: typeof SessionWrapper.refreshSession;
@@ -50,4 +51,4 @@ export declare let verifySession: (
     options?: VerifySessionOptions | undefined
 ) => (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
 export declare let Error: typeof SuperTokensError;
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest };
+export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, RecipeImplementation };

@@ -20,6 +20,7 @@ import {
     getEmailVerificationURL as defaultGetEmailVerificationURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
 } from "./emailVerificationFunctions";
+import { RecipeImplementation } from "./";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -45,7 +46,7 @@ export function validateAndNormaliseUserInput(
     let getEmailForUserId = config.getEmailForUserId;
 
     let override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 
     if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
@@ -54,7 +55,7 @@ export function validateAndNormaliseUserInput(
         };
     } else {
         override = {
-            functions: (originalImplementation: RecipeInterface) => originalImplementation,
+            functions: (originalImplementation: RecipeImplementation) => originalImplementation,
         };
     }
 

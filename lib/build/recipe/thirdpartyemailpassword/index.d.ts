@@ -1,6 +1,7 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface } from "./types";
+import RecipeImplementation from "./recipeImplementation";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -68,4 +69,4 @@ export declare let Google: typeof import("../thirdparty/providers/google").defau
 export declare let Github: typeof import("../thirdparty/providers/github").default;
 export declare let Facebook: typeof import("../thirdparty/providers/facebook").default;
 export declare let Apple: typeof import("../thirdparty/providers/apple").default;
-export type { RecipeInterface };
+export type { RecipeInterface, RecipeImplementation };

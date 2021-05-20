@@ -15,9 +15,11 @@
 
 import { Request } from "express";
 import {
-    TypeInput as TypeNormalisedInputEmailVerification,
     RecipeInterface as EmailVerificationRecipeInterface,
-} from "../emailverification/types";
+    RecipeImplementation as EmailVerificationRecipeImplementation,
+} from "../emailverification";
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import { RecipeImplementation } from "./";
 
 const TypeBoolean = {
     type: "boolean",
@@ -94,7 +96,7 @@ export type TypeInputEmailVerificationFeature = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
     override?: {
-        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+        functions?: (originalImplementation: EmailVerificationRecipeImplementation) => EmailVerificationRecipeInterface;
     };
 };
 
@@ -157,7 +159,7 @@ export type TypeInput = {
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 };
 
@@ -180,7 +182,7 @@ export type TypeNormalisedInput = {
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
     };
 };
 
