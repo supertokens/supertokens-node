@@ -43,16 +43,8 @@ export default async function signInAPI(recipeInstance: Recipe, req: Request, re
     // set 4
     await recipeInstance.config.signInFeature.handlePostSignIn(user);
 
-    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
-        "signin"
-    );
-    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
-        "signin"
-    );
+    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(user, formFields, "signin");
+    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(user, formFields, "signin");
 
     let jwtPayload: { [key: string]: any } | undefined = undefined;
     let sessionData: { [key: string]: any } | undefined = undefined;

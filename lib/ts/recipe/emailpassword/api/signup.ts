@@ -41,21 +41,10 @@ export default async function signUpAPI(recipeInstance: Recipe, req: Request, re
     let user = await recipeInstance.recipeInterfaceImpl.signUp(email, password);
 
     // set 3
-    await recipeInstance.config.signUpFeature.handlePostSignUp(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID)
-    );
+    await recipeInstance.config.signUpFeature.handlePostSignUp(user, formFields);
 
-    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
-        "signup"
-    );
-    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
-        "signup"
-    );
+    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(user, formFields, "signup");
+    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(user, formFields, "signup");
 
     let jwtPayload: { [key: string]: any } | undefined = undefined;
     let sessionData: { [key: string]: any } | undefined = undefined;

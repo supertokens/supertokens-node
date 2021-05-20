@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Removes deprecated `handleCustomFormFieldsPostSignUp`. Instead, use `handlePostSignUp`
 -   Removes `superTokensMiddleware` from NextJS as it is no longer needed and was deprecated.
 -   Fixes NextJS type for `superTokensNextWrapper` function
+-   Sign up / sign in callbacks' `formField` param includes email & password.
 
 ## [5.0.1] - 2021-05-06
 
