@@ -16,52 +16,23 @@
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
-import Session from "../../session";
-import STError from "../error";
+import { APIInterface } from "../";
 
 export default async function generateEmailVerifyToken(
+    apiImplementation: APIInterface,
     recipeInstance: Recipe,
     req: Request,
     res: Response,
-    _: NextFunction
+    next: NextFunction
 ) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
-    // step 1.
-    let session = await Session.getSession(req, res);
-
-    if (session === undefined) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Session is undefined. Should not come here."),
-            },
-            recipeInstance
-        );
-    }
-
-    let userId = session.getUserId();
-
-    let email = await recipeInstance.config.getEmailForUserId(userId);
-
-    // step 2
-    let token = await recipeInstance.recipeInterfaceImpl.createEmailVerificationToken(userId, email);
-
-    // step 3
-    let emailVerifyLink =
-        (await recipeInstance.config.getEmailVerificationURL({ id: userId, email })) +
-        "?token=" +
-        token +
-        "&rid=" +
-        recipeInstance.getRecipeId();
-
-    // step 4
-    send200Response(res, {
-        status: "OK",
+    let result = await apiImplementation.generateEmailVerifyTokenPOST({
+        recipeImplementation: recipeInstance.recipeInterfaceImpl,
+        req,
+        res,
+        next,
     });
 
-    // step 5 & 6
-    try {
-        await recipeInstance.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink);
-    } catch (ignored) {}
+    send200Response(res, result);
 }

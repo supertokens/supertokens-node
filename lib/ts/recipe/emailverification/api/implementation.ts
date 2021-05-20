@@ -1,6 +1,7 @@
-import { APIInterface, APIOptions, Error as STError } from "../";
+import { APIInterface, APIOptions } from "../";
 import Recipe from "../recipe";
 import Session from "../../session";
+import STError from "../error";
 
 export default class APIImplementation implements APIInterface {
     recipeInstance: Recipe;

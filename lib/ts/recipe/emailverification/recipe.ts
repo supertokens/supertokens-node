@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -25,6 +25,7 @@ import { send200Response } from "../../utils";
 import generateEmailVerifyTokenAPI from "./api/generateEmailVerifyToken";
 import emailVerifyAPI from "./api/emailVerify";
 import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -34,10 +35,13 @@ export default class Recipe extends RecipeModule {
 
     recipeInterfaceImpl: RecipeInterface;
 
+    apiImpl: APIInterface;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
         super(recipeId, appInfo, isInServerlessEnv);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this));
+        this.apiImpl = this.config.override.apis(new APIImplementation(this));
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -119,9 +123,9 @@ export default class Recipe extends RecipeModule {
         __: HTTPMethod
     ) => {
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
-            return await generateEmailVerifyTokenAPI(this, req, res, next);
+            return await generateEmailVerifyTokenAPI(this.apiImpl, this, req, res, next);
         } else {
-            return await emailVerifyAPI(this, req, res, next);
+            return await emailVerifyAPI(this.apiImpl, this, req, res, next);
         }
     };
 
