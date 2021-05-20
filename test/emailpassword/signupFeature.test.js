@@ -589,9 +589,13 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         );
 
         assert(response.status === "OK");
-        assert(customFormFields.length === 1);
-        assert(customFormFields[0].id === "testField");
-        assert(customFormFields[0].value === "testValue");
+        assert(customFormFields.length === 3);
+        assert(customFormFields[0].id === "password");
+        assert(customFormFields[0].value === "validpass123");
+        assert(customFormFields[1].id === "email");
+        assert(customFormFields[1].value === "random@gmail.com");
+        assert(customFormFields[2].id === "testField");
+        assert(customFormFields[2].value === "testValue");
     });
 
     //If provided by the user, and no custom fields are there, then the formFields param must sbe empty
@@ -651,7 +655,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         );
 
         assert(response.status === "OK");
-        assert(customFormFields.length === 0);
+        assert(customFormFields.length === 2);
     });
 
     /* formField validation testing:
@@ -1423,8 +1427,8 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                 })
         );
         assert(response.status === "OK");
-        assert(customFormFields.length === 1);
-        assert(customFormFields[0].id === "testField");
-        assert(customFormFields[0].value.key === "value");
+        assert(customFormFields.length === 3);
+        assert(customFormFields[2].id === "testField");
+        assert(customFormFields[2].value.key === "value");
     });
 });
