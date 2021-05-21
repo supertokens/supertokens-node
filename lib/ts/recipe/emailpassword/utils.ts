@@ -31,6 +31,7 @@ import {
     TypeFormField,
     TypeInputFormField,
     TypeInputSignIn,
+    APIInterface,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
@@ -42,7 +43,7 @@ import {
 } from "./passwordResetFunctions";
 import { validateTheStructureOfUserInput } from "../../utils";
 import STError from "./error";
-import { RecipeImplementation } from "./";
+import { RecipeImplementation, APIImplementation } from "./";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -91,16 +92,25 @@ export function validateAndNormaliseUserInput(
 
     let override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
+    } = {
+        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
+        apis: (originalImplementation: APIImplementation) => originalImplementation,
     };
 
-    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
-        override = {
-            functions: config.override.functions,
-        };
-    } else {
-        override = {
-            functions: (originalImplementation: RecipeImplementation) => originalImplementation,
-        };
+    if (config !== undefined && config.override !== undefined) {
+        if (config.override.functions !== undefined) {
+            override = {
+                ...override,
+                functions: config.override.functions,
+            };
+        }
+        if (config.override.apis !== undefined) {
+            override = {
+                ...override,
+                apis: config.override.apis,
+            };
+        }
     }
 
     return {

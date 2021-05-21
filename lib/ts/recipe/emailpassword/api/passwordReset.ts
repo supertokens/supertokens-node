@@ -15,12 +15,18 @@
 
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-import { FORM_FIELD_PASSWORD_ID } from "../constants";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
+import { APIInterface } from "../";
 
-export default async function passwordReset(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
+export default async function passwordReset(
+    apiImplementation: APIInterface,
+    recipeInstance: Recipe,
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
     // step 1
@@ -32,8 +38,6 @@ export default async function passwordReset(recipeInstance: Recipe, req: Request
         recipeInstance.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
         req.body.formFields
     );
-
-    let newPassword = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
 
     let token = req.body.token;
     if (token === undefined) {
@@ -55,11 +59,12 @@ export default async function passwordReset(recipeInstance: Recipe, req: Request
         );
     }
 
-    // step 2
-    await recipeInstance.recipeInterfaceImpl.resetPasswordUsingToken(token, newPassword);
-
-    // step 3
-    return send200Response(res, {
-        status: "OK",
+    let result = await apiImplementation.passwordResetPOST(formFields, token, {
+        recipeImplementation: recipeInstance.recipeInterfaceImpl,
+        req,
+        res,
+        next,
     });
+
+    send200Response(res, result);
 }

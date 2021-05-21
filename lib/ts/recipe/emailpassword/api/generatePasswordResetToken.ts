@@ -15,16 +15,16 @@
 
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-import { FORM_FIELD_EMAIL_ID } from "../constants";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
-import STError from "../error";
+import { APIInterface } from "../";
 
 export default async function generatePasswordResetToken(
+    apiImplementation: APIInterface,
     recipeInstance: Recipe,
     req: Request,
     res: Response,
-    _: NextFunction
+    next: NextFunction
 ) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
@@ -38,44 +38,12 @@ export default async function generatePasswordResetToken(
         req.body.formFields
     );
 
-    let email = formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value;
-
-    // step 2.
-    let user = await recipeInstance.recipeInterfaceImpl.getUserByEmail(email);
-    if (user === undefined) {
-        return send200Response(res, {
-            status: "OK",
-        });
-    }
-
-    // step 3
-    let token: string;
-    try {
-        token = await recipeInstance.recipeInterfaceImpl.createResetPasswordToken(user.id);
-    } catch (err) {
-        if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNKNOWN_USER_ID_ERROR) {
-            return send200Response(res, {
-                status: "OK",
-            });
-        }
-        throw err;
-    }
-
-    // step 4
-    let passwordResetLink =
-        (await recipeInstance.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user)) +
-        "?token=" +
-        token +
-        "&rid=" +
-        recipeInstance.getRecipeId();
-
-    // step 5
-    send200Response(res, {
-        status: "OK",
+    let result = await apiImplementation.generatePasswordResetTokenPOST(formFields, {
+        recipeImplementation: recipeInstance.recipeInterfaceImpl,
+        req,
+        res,
+        next,
     });
 
-    // step 6 & 7
-    try {
-        await recipeInstance.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(user, passwordResetLink);
-    } catch (ignored) {}
+    send200Response(res, result);
 }

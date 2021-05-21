@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, User } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, User, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -11,6 +11,7 @@ export default class Recipe extends RecipeModule {
     config: TypeNormalisedInput;
     emailVerificationRecipe: EmailVerificationRecipe;
     recipeInterfaceImpl: RecipeInterface;
+    apiImpl: APIInterface;
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,

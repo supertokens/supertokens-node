@@ -17,11 +17,17 @@ import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import STError from "../error";
+import { APIInterface } from "../";
 
-export default async function emailExists(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
+export default async function emailExists(
+    apiImplementation: APIInterface,
+    recipeInstance: Recipe,
+    req: Request,
+    res: Response,
+    next: NextFunction
+) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
 
-    // step 1
     let email = req.query.email;
 
     if (email === undefined || typeof email !== "string") {
@@ -34,11 +40,12 @@ export default async function emailExists(recipeInstance: Recipe, req: Request, 
         );
     }
 
-    // step 2
-    let user = await recipeInstance.recipeInterfaceImpl.getUserByEmail(email);
-
-    return send200Response(res, {
-        status: "OK",
-        exists: user !== undefined,
+    let result = await apiImplementation.emailExistsGET(email, {
+        recipeImplementation: recipeInstance.recipeInterfaceImpl,
+        req,
+        res,
+        next,
     });
+
+    return send200Response(res, result);
 }

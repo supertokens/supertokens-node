@@ -1,3 +1,10 @@
 import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
-export default function emailExists(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction): Promise<void>;
+import { APIInterface } from "../";
+export default function emailExists(
+    apiImplementation: APIInterface,
+    recipeInstance: Recipe,
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void>;

@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, User } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, User, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -37,6 +37,7 @@ import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -47,6 +48,8 @@ export default class Recipe extends RecipeModule {
     emailVerificationRecipe: EmailVerificationRecipe;
 
     recipeInterfaceImpl: RecipeInterface;
+
+    apiImpl: APIInterface;
 
     constructor(
         recipeId: string,
@@ -64,6 +67,7 @@ export default class Recipe extends RecipeModule {
             this.config.emailVerificationFeature
         );
         this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this));
+        this.apiImpl = this.config.override.apis(new APIImplementation(this));
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -164,17 +168,17 @@ export default class Recipe extends RecipeModule {
         method: HTTPMethod
     ) => {
         if (id === SIGN_UP_API) {
-            return await signUpAPI(this, req, res, next);
+            return await signUpAPI(this.apiImpl, this, req, res, next);
         } else if (id === SIGN_IN_API) {
-            return await signInAPI(this, req, res, next);
+            return await signInAPI(this.apiImpl, this, req, res, next);
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
-            return await generatePasswordResetTokenAPI(this, req, res, next);
+            return await generatePasswordResetTokenAPI(this.apiImpl, this, req, res, next);
         } else if (id === SIGN_OUT_API) {
-            return await signOutAPI(this, req, res, next);
+            return await signOutAPI(this.apiImpl, this, req, res, next);
         } else if (id === PASSWORD_RESET_API) {
-            return await passwordResetAPI(this, req, res, next);
+            return await passwordResetAPI(this.apiImpl, this, req, res, next);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
-            return await emailExistsAPI(this, req, res, next);
+            return await emailExistsAPI(this.apiImpl, this, req, res, next);
         } else {
             return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
         }

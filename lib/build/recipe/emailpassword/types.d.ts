@@ -1,9 +1,12 @@
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     RecipeImplementation as EmailVerificationRecipeImplemenation,
+    APIImplementation as EmailVerificationAPIImplementation,
+    APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import { RecipeImplementation } from "./";
+import { RecipeImplementation, APIImplementation } from "./";
+import { Request, Response, NextFunction } from "express";
 export declare type TypeInputSetJwtPayloadForSession = (
     user: User,
     formFields: TypeFormField[],
@@ -41,6 +44,7 @@ export declare type TypeNormalisedInput = {
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 export declare type TypeInputEmailVerificationFeature = {
@@ -50,6 +54,7 @@ export declare type TypeInputEmailVerificationFeature = {
     handlePostEmailVerification?: (user: User) => Promise<void>;
     override?: {
         functions?: (originalImplementation: EmailVerificationRecipeImplemenation) => EmailVerificationRecipeInterface;
+        apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
     };
 };
 export declare type TypeInputFormField = {
@@ -132,6 +137,7 @@ export declare type TypeInput = {
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis?: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 export declare const InputSchema: {
@@ -265,4 +271,63 @@ export interface RecipeInterface {
         nextPaginationToken?: string;
     }>;
     getUserCount(): Promise<number>;
+}
+export declare type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    req: Request;
+    res: Response;
+    next: NextFunction;
+};
+export interface APIInterface {
+    emailExistsGET(
+        email: string,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        exists: boolean;
+    }>;
+    generatePasswordResetTokenPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    passwordResetPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        token: string,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    signInPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        user: User;
+    }>;
+    signOutPOST(
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    signUpPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        user: User;
+    }>;
 }
