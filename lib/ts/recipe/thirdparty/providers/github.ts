@@ -59,8 +59,7 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
     validateTheStructureOfUserInput(
         config,
         InputSchemaTypeThirdPartyProviderGithubConfig,
-        "thirdparty recipe, provider github",
-        undefined
+        "thirdparty recipe, provider github"
     );
     const id = "github";
 

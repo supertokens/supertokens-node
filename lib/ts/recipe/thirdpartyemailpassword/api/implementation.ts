@@ -112,13 +112,10 @@ export default class APIImplementation implements APIInterface {
         url: string;
     }> => {
         if (this.thirdPartyImplementation === undefined || this.thirdPartyRecipeInstance === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("No thirdparty provider configured"),
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("No thirdparty provider configured"),
+            });
         }
         return this.thirdPartyImplementation.authorisationUrlGET(provider, {
             ...options,
@@ -137,13 +134,10 @@ export default class APIImplementation implements APIInterface {
         user: User;
     }> => {
         if (this.thirdPartyImplementation === undefined || this.thirdPartyRecipeInstance === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("No thirdparty provider configured"),
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("No thirdparty provider configured"),
+            });
         }
         return this.thirdPartyImplementation.signInUpPOST(provider, code, redirectURI, {
             ...options,

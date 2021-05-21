@@ -37,13 +37,10 @@ export default class APIImplementation implements APIInterface {
             recipeImplementation: this.recipeInstance.recipeInterfaceImpl,
         });
         if (result.user.thirdParty === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("Should never come here"),
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Should never come here"),
+            });
         }
         return {
             ...result,

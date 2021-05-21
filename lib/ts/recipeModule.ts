@@ -56,10 +56,6 @@ export default abstract class RecipeModule {
         return this.querier;
     };
 
-    isErrorFromThisRecipeBasedOnRid = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && err.getRecipeId() === this.recipeId;
-    };
-
     returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
         let apisHandled = this.getAPIsHandled();
         for (let i = 0; i < apisHandled.length; i++) {
@@ -67,15 +63,13 @@ export default abstract class RecipeModule {
             if (
                 !currAPI.disabled &&
                 currAPI.method === method &&
-                this.appInfo.apiBasePath.appendPath(this, currAPI.pathWithoutApiBasePath).equals(path)
+                this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)
             ) {
                 return currAPI.id;
             }
         }
         return undefined;
     };
-
-    abstract isErrorFromThisOrChildRecipeBasedOnInstance(err: any): err is STError;
 
     abstract getAPIsHandled(): APIHandled[];
 
@@ -96,4 +90,6 @@ export default abstract class RecipeModule {
     ): void;
 
     abstract getAllCORSHeaders(): string[];
+
+    abstract isErrorFromThisRecipe(err: any): err is STError;
 }

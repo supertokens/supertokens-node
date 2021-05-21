@@ -1,4 +1,3 @@
-import RecipeModule from "./recipeModule";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -22,25 +21,29 @@ export default class SuperTokensError {
     public type: string;
     public message: string;
     public payload: any;
-    public recipe: RecipeModule | undefined;
+
+    // this variable is used to identify which
+    // recipe initiated this error. If no recipe
+    // initiated it, it will be undefined, else it
+    // will be the "actual" rid of that recipe. By actual,
+    // I mean that it will not be influenced by the
+    // parent's RID.
+    public fromRecipe: string | undefined;
     // @ts-ignore
     private errMagic: string;
 
     constructor(
         options:
             | {
-                  recipe: RecipeModule | undefined;
                   message: string;
                   payload?: any;
                   type: string;
               }
             | {
-                  recipe: RecipeModule | undefined;
                   payload: Error;
                   type: "GENERAL_ERROR";
               }
             | {
-                  recipe: RecipeModule | undefined;
                   message: string;
                   type: "BAD_INPUT_ERROR";
                   payload: undefined;
@@ -49,13 +52,8 @@ export default class SuperTokensError {
         this.type = options.type;
         this.message = options.type === "GENERAL_ERROR" ? options.payload.message : (options as any).message;
         this.payload = options.payload;
-        this.recipe = options.recipe;
         this.errMagic = SuperTokensError.errMagic;
     }
-
-    getRecipeId = () => {
-        return this.recipe === undefined ? "" : this.recipe.getRecipeId();
-    };
 
     static isErrorFromSuperTokens(obj: any): obj is SuperTokensError {
         return obj.errMagic === SuperTokensError.errMagic;

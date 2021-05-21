@@ -25,27 +25,24 @@ export async function createEmailVerificationToken(
 ): Promise<string> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/user/email/verify/token"), {
+        .sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token"), {
             userId,
             email,
         });
     if (response.status === "OK") {
         return response.token;
     } else {
-        throw new STError(
-            {
-                type: STError.EMAIL_ALREADY_VERIFIED_ERROR,
-                message: "Failed to generated email verification token as the email is already verified",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.EMAIL_ALREADY_VERIFIED_ERROR,
+            message: "Failed to generated email verification token as the email is already verified",
+        });
     }
 }
 
 export async function verifyEmailUsingToken(recipeInstance: Recipe, token: string): Promise<User> {
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/user/email/verify"), {
+        .sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
             method: "token",
             token,
         });
@@ -55,20 +52,17 @@ export async function verifyEmailUsingToken(recipeInstance: Recipe, token: strin
             email: response.email,
         };
     } else {
-        throw new STError(
-            {
-                type: STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR,
-                message: "Failed to verify email as the the token has expired or is invalid",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR,
+            message: "Failed to verify email as the the token has expired or is invalid",
+        });
     }
 }
 
 export async function isEmailVerified(recipeInstance: Recipe, userId: string, email: string): Promise<boolean> {
     let response = await recipeInstance
         .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/user/email/verify"), {
+        .sendGetRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
             userId,
             email,
         });

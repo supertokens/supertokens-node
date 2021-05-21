@@ -46,8 +46,7 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
     validateTheStructureOfUserInput(
         config,
         InputSchemaTypeThirdPartyProviderFacebookConfig,
-        "thirdparty recipe, provider facebook",
-        undefined
+        "thirdparty recipe, provider facebook"
     );
     const id = "facebook";
 

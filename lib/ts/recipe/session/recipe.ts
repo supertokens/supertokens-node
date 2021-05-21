@@ -55,13 +55,10 @@ export default class SessionRecipe extends RecipeModule {
         if (SessionRecipe.instance !== undefined) {
             return SessionRecipe.instance;
         }
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-            },
-            undefined
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+        });
     }
 
     static init(config?: TypeInput): RecipeListFunction {
@@ -70,28 +67,20 @@ export default class SessionRecipe extends RecipeModule {
                 SessionRecipe.instance = new SessionRecipe(SessionRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return SessionRecipe.instance;
             } else {
-                throw new STError(
-                    {
-                        type: STError.GENERAL_ERROR,
-                        payload: new Error(
-                            "Session recipe has already been initialised. Please check your code for bugs."
-                        ),
-                    },
-                    undefined
-                );
+                throw new STError({
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error("Session recipe has already been initialised. Please check your code for bugs."),
+                });
             }
         };
     }
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("calling testing function in non testing env"),
-                },
-                undefined
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("calling testing function in non testing env"),
+            });
         }
         SessionRecipe.instance = undefined;
     }
@@ -102,13 +91,13 @@ export default class SessionRecipe extends RecipeModule {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, REFRESH_API_PATH),
+                pathWithoutApiBasePath: new NormalisedURLPath(REFRESH_API_PATH),
                 id: REFRESH_API_PATH,
                 disabled: this.config.sessionRefreshFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGNOUT_API_PATH),
+                pathWithoutApiBasePath: new NormalisedURLPath(SIGNOUT_API_PATH),
                 id: SIGNOUT_API_PATH,
                 disabled: this.config.signOutFeature.disableDefaultImplementation,
             },
@@ -131,20 +120,24 @@ export default class SessionRecipe extends RecipeModule {
     };
 
     handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {
-        if (err.type === STError.UNAUTHORISED) {
-            return this.config.errorHandlers.onUnauthorised(err.message, request, response, next);
-        } else if (err.type === STError.TRY_REFRESH_TOKEN) {
-            return this.config.errorHandlers.onTryRefreshToken(err.message, request, response, next);
-        } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
-            return this.config.errorHandlers.onTokenTheftDetected(
-                err.payload.sessionHandle,
-                err.payload.userId,
-                request,
-                response,
-                next
-            );
+        if (err.fromRecipe === SessionRecipe.RECIPE_ID) {
+            if (err.type === STError.UNAUTHORISED) {
+                return this.config.errorHandlers.onUnauthorised(err.message, request, response, next);
+            } else if (err.type === STError.TRY_REFRESH_TOKEN) {
+                return this.config.errorHandlers.onTryRefreshToken(err.message, request, response, next);
+            } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
+                return this.config.errorHandlers.onTokenTheftDetected(
+                    err.payload.sessionHandle,
+                    err.payload.userId,
+                    request,
+                    response,
+                    next
+                );
+            } else {
+                return next(err);
+            }
         } else {
-            return next(err);
+            next(err);
         }
     };
 
@@ -152,8 +145,8 @@ export default class SessionRecipe extends RecipeModule {
         return getCORSAllowedHeadersFromCookiesAndHeaders();
     };
 
-    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && this === err.recipe;
+    isErrorFromThisRecipe = (err: any): err is STError => {
+        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === SessionRecipe.RECIPE_ID;
     };
 
     // helper functions below....
@@ -175,10 +168,7 @@ export default class SessionRecipe extends RecipeModule {
                 }
             }
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
-            let response = await this.getQuerier().sendPostRequest(
-                new NormalisedURLPath(this, "/recipe/handshake"),
-                {}
-            );
+            let response = await this.getQuerier().sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
             this.handshakeInfo = {
                 jwtSigningPublicKey: response.jwtSigningPublicKey,
                 antiCsrf,

@@ -92,25 +92,21 @@ export default class Session implements SessionContainerInterface {
         newJWTPayload = newJWTPayload === null || newJWTPayload === undefined ? {} : newJWTPayload;
         let response = await this.recipeInstance
             .getQuerier()
-            .sendPostRequest(new NormalisedURLPath(this.recipeInstance, "/recipe/session/regenerate"), {
+            .sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
                 accessToken: this.accessToken,
                 userDataInJWT: newJWTPayload,
             });
         if (response.status === "UNAUTHORISED") {
             clearSessionFromCookie(this.recipeInstance, this.res);
-            throw new STError(
-                {
-                    message: "Session has probably been revoked while updating JWT payload",
-                    type: STError.UNAUTHORISED,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                message: "Session has probably been revoked while updating JWT payload",
+                type: STError.UNAUTHORISED,
+            });
         }
         this.userDataInJWT = response.session.userDataInJWT;
         if (response.accessToken !== undefined) {
             this.accessToken = response.accessToken.token;
             setFrontTokenInHeaders(
-                this.recipeInstance,
                 this.res,
                 response.session.userId,
                 response.accessToken.expiry,

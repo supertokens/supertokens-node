@@ -14,7 +14,6 @@
  */
 
 import STError from "../../error";
-import RecipeModule from "../../recipeModule";
 
 export default class SessionError extends STError {
     static UNAUTHORISED: "UNAUTHORISED" = "UNAUTHORISED";
@@ -42,12 +41,11 @@ export default class SessionError extends STError {
             | {
                   type: "GENERAL_ERROR";
                   payload: Error;
-              },
-        recipe: RecipeModule | undefined
+              }
     ) {
         super({
             ...options,
-            recipe,
         });
+        this.fromRecipe = "session";
     }
 }

@@ -31,7 +31,7 @@ export default class SessionRecipe extends RecipeModule {
         next: express.NextFunction
     ) => void;
     getAllCORSHeaders: () => string[];
-    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
+    isErrorFromThisRecipe: (err: any) => err is STError;
     getHandshakeInfo: () => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
 }

@@ -34,29 +34,22 @@ export default async function passwordReset(
         id: string;
         value: string;
     }[] = await validateFormFieldsOrThrowError(
-        recipeInstance,
         recipeInstance.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
         req.body.formFields
     );
 
     let token = req.body.token;
     if (token === undefined) {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the password reset token",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the password reset token",
+        });
     }
     if (typeof token !== "string") {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message: "The password reset token must be a string",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "The password reset token must be a string",
+        });
     }
 
     let result = await apiImplementation.passwordResetPOST(formFields, token, {

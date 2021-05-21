@@ -14,7 +14,6 @@
  */
 
 import STError from "../../error";
-import RecipeModule from "../../recipeModule";
 
 export default class ThirdPartyError extends STError {
     static UNKNOWN_USER_ID_ERROR: "UNKNOWN_USER_ID_ERROR" = "UNKNOWN_USER_ID_ERROR";
@@ -42,12 +41,11 @@ export default class ThirdPartyError extends STError {
             | {
                   type: "GENERAL_ERROR";
                   payload: Error;
-              },
-        recipe: RecipeModule | undefined
+              }
     ) {
         super({
             ...options,
-            recipe,
         });
+        this.fromRecipe = "thirdparty";
     }
 }

@@ -35,13 +35,10 @@ export default class RecipeImplementation implements RecipeInterface {
     ): Promise<{ createdNewUser: boolean; user: User }> => {
         let result = await this.recipeInstance.recipeInterfaceImpl.signInUp(thirdPartyId, thirdPartyUserId, email);
         if (result.user.thirdParty === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("Should never come here"),
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Should never come here"),
+            });
         }
         return {
             createdNewUser: result.createdNewUser,
@@ -69,32 +66,23 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     getUsersOldestFirst = async (_?: number, __?: string) => {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Should never be called"),
-            },
-            this.recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Should never be called"),
+        });
     };
 
     getUsersNewestFirst = async (_?: number, __?: string) => {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Should never be called"),
-            },
-            this.recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Should never be called"),
+        });
     };
 
     getUserCount = async () => {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Should never be called"),
-            },
-            this.recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Should never be called"),
+        });
     };
 }

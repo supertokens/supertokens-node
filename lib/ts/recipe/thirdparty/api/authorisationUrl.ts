@@ -30,27 +30,21 @@ export default async function authorisationUrlAPI(
     let thirdPartyId = queryParams.thirdPartyId;
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the thirdPartyId as a GET param",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the thirdPartyId as a GET param",
+        });
     }
 
     let provider = recipeInstance.providers.find((p) => p.id === thirdPartyId);
     if (provider === undefined) {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message:
-                    "The third party provider " +
-                    thirdPartyId +
-                    " seems to not be configured on the backend. Please check your frontend and backend configs.",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message:
+                "The third party provider " +
+                thirdPartyId +
+                " seems to not be configured on the backend. Please check your frontend and backend configs.",
+        });
     }
 
     let result = await apiImplementation.authorisationUrlGET(provider, {

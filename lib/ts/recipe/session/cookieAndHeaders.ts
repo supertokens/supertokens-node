@@ -40,8 +40,8 @@ export function clearSessionFromCookie(recipeInstance: SessionRecipe, res: expre
     setCookie(recipeInstance, res, accessTokenCookieKey, "", 0, "accessTokenPath");
     setCookie(recipeInstance, res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
     setCookie(recipeInstance, res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
-    setHeader(recipeInstance, res, idRefreshTokenHeaderKey, "remove", false);
-    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
+    setHeader(res, idRefreshTokenHeaderKey, "remove", false);
+    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 }
 
 /**
@@ -88,9 +88,9 @@ export function getIdRefreshTokenFromCookie(req: express.Request): string | unde
     return getCookieValue(req, idRefreshTokenCookieKey);
 }
 
-export function setAntiCsrfTokenInHeaders(recipeInstance: SessionRecipe, res: express.Response, antiCsrfToken: string) {
-    setHeader(recipeInstance, res, antiCsrfHeaderKey, antiCsrfToken, false);
-    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
+export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string) {
+    setHeader(res, antiCsrfHeaderKey, antiCsrfToken, false);
+    setHeader(res, "Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
 }
 
 export function setIdRefreshTokenInHeaderAndCookie(
@@ -99,45 +99,27 @@ export function setIdRefreshTokenInHeaderAndCookie(
     idRefreshToken: string,
     expiry: number
 ) {
-    setHeader(recipeInstance, res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
-    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
+    setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
+    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 
     setCookie(recipeInstance, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
 }
 
-export function setFrontTokenInHeaders(
-    recipeInstance: SessionRecipe,
-    res: express.Response,
-    userId: string,
-    atExpiry: number,
-    jwtPayload: any
-) {
+export function setFrontTokenInHeaders(res: express.Response, userId: string, atExpiry: number, jwtPayload: any) {
     let tokenInfo = {
         uid: userId,
         ate: atExpiry,
         up: jwtPayload,
     };
-    setHeader(
-        recipeInstance,
-        res,
-        frontTokenHeaderKey,
-        Buffer.from(JSON.stringify(tokenInfo)).toString("base64"),
-        false
-    );
-    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", frontTokenHeaderKey, true);
+    setHeader(res, frontTokenHeaderKey, Buffer.from(JSON.stringify(tokenInfo)).toString("base64"), false);
+    setHeader(res, "Access-Control-Expose-Headers", frontTokenHeaderKey, true);
 }
 
 export function getCORSAllowedHeaders(): string[] {
     return [antiCsrfHeaderKey, ridHeaderKey];
 }
 
-function setHeader(
-    recipeInstance: SessionRecipe,
-    res: express.Response,
-    key: string,
-    value: string,
-    allowDuplicateKey: boolean
-) {
+function setHeader(res: express.Response, key: string, value: string, allowDuplicateKey: boolean) {
     try {
         let existingHeaders = res.getHeaders();
         let existingValue = existingHeaders[key.toLowerCase()];
@@ -164,13 +146,10 @@ function setHeader(
             }
         }
     } catch (err) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Error while setting header with key: " + key + " and value: " + value),
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Error while setting header with key: " + key + " and value: " + value),
+        });
     }
 }
 

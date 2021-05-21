@@ -59,24 +59,18 @@ export default class RecipeImplementation implements RecipeInterface {
                 return undefined;
             }
 
-            throw new STError(
-                {
-                    message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
-                    type: STError.UNAUTHORISED,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
+                type: STError.UNAUTHORISED,
+            });
         }
         let accessToken = getAccessTokenFromCookie(req);
         if (accessToken === undefined) {
             // maybe the access token has expired.
-            throw new STError(
-                {
-                    message: "Access token has expired. Please call the refresh API",
-                    type: STError.TRY_REFRESH_TOKEN,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                message: "Access token has expired. Please call the refresh API",
+                type: STError.TRY_REFRESH_TOKEN,
+            });
         }
         try {
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
@@ -94,7 +88,6 @@ export default class RecipeImplementation implements RecipeInterface {
             );
             if (response.accessToken !== undefined) {
                 setFrontTokenInHeaders(
-                    this.recipeInstance,
                     res,
                     response.session.userId,
                     response.accessToken.expiry,
@@ -130,26 +123,19 @@ export default class RecipeImplementation implements RecipeInterface {
             // we do not clear cookies here because of a
             // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
 
-            throw new STError(
-                {
-                    message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
-                    type: STError.UNAUTHORISED,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
+                type: STError.UNAUTHORISED,
+            });
         }
 
         try {
             let inputRefreshToken = getRefreshTokenFromCookie(req);
             if (inputRefreshToken === undefined) {
-                throw new STError(
-                    {
-                        message:
-                            "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
-                        type: STError.UNAUTHORISED,
-                    },
-                    this.recipeInstance
-                );
+                throw new STError({
+                    message: "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
+                    type: STError.UNAUTHORISED,
+                });
             }
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
             let response = await SessionFunctions.refreshSession(

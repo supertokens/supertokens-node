@@ -31,13 +31,10 @@ export default async function emailExists(
     let email = req.query.email;
 
     if (email === undefined || typeof email !== "string") {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the email as a GET param",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the email as a GET param",
+        });
     }
 
     let result = await apiImplementation.emailExistsGET(email, {

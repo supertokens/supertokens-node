@@ -203,28 +203,22 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
-                throw new STError(
-                    {
-                        type: STError.GENERAL_ERROR,
-                        payload: new Error(
-                            "ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs."
-                        ),
-                    },
-                    undefined
-                );
+                throw new STError({
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error(
+                        "ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs."
+                    ),
+                });
             }
         };
     }
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("calling testing function in non testing env"),
-                },
-                undefined
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("calling testing function in non testing env"),
+            });
         }
         Recipe.instance = undefined;
     }
@@ -233,13 +227,10 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-            },
-            undefined
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+        });
     }
 
     getAPIsHandled = (): APIHandled[] => {
@@ -279,15 +270,16 @@ export default class Recipe extends RecipeModule {
         response: express.Response,
         next: express.NextFunction
     ): void => {
-        if (this.emailPasswordRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)) {
-            return this.emailPasswordRecipe.handleError(err, request, response, next);
-        } else if (
-            this.thirdPartyRecipe !== undefined &&
-            this.thirdPartyRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)
-        ) {
-            return this.thirdPartyRecipe.handleError(err, request, response, next);
+        if (err.fromRecipe === Recipe.RECIPE_ID) {
+            next(err);
+        } else {
+            if (this.emailPasswordRecipe.isErrorFromThisRecipe(err)) {
+                return this.emailPasswordRecipe.handleError(err, request, response, next);
+            } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
+                return this.thirdPartyRecipe.handleError(err, request, response, next);
+            }
+            return this.emailVerificationRecipe.handleError(err, request, response, next);
         }
-        return this.emailVerificationRecipe.handleError(err, request, response, next);
     };
 
     getAllCORSHeaders = (): string[] => {
@@ -301,14 +293,13 @@ export default class Recipe extends RecipeModule {
         return corsHeaders;
     };
 
-    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+    isErrorFromThisRecipe = (err: any): err is STError => {
         return (
             STError.isErrorFromSuperTokens(err) &&
-            (this === err.recipe ||
-                this.emailVerificationRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err) ||
-                this.emailPasswordRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err) ||
-                (this.thirdPartyRecipe !== undefined &&
-                    this.thirdPartyRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)))
+            (err.fromRecipe === Recipe.RECIPE_ID ||
+                this.emailVerificationRecipe.isErrorFromThisRecipe(err) ||
+                this.emailPasswordRecipe.isErrorFromThisRecipe(err) ||
+                (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
         );
     };
 
@@ -317,13 +308,10 @@ export default class Recipe extends RecipeModule {
     getEmailForUserId = async (userId: string) => {
         let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
         if (userInfo === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this
-            );
+            throw new STError({
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Unknown User ID provided",
+            });
         }
         return userInfo.email;
     };
@@ -339,13 +327,10 @@ export default class Recipe extends RecipeModule {
         let user = await this.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken(token);
         let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
         if (userInThisRecipe === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this
-            );
+            throw new STError({
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Unknown User ID provided",
+            });
         }
         return userInThisRecipe;
     };

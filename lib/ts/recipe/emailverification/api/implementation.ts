@@ -31,13 +31,10 @@ export default class APIImplementation implements APIInterface {
         let session = await Session.getSession(options.req, options.res);
 
         if (session === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("Session is undefined. Should not come here."),
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Session is undefined. Should not come here."),
+            });
         }
 
         let userId = session.getUserId();
@@ -56,13 +53,10 @@ export default class APIImplementation implements APIInterface {
         let session = await Session.getSession(options.req, options.res);
 
         if (session === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("Session is undefined. Should not come here."),
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Session is undefined. Should not come here."),
+            });
         }
 
         let userId = session.getUserId();

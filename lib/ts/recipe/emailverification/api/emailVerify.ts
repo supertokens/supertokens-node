@@ -33,22 +33,16 @@ export default async function emailVerify(
         // step 1
         let token = req.body.token;
         if (token === undefined || token === null) {
-            throw new STError(
-                {
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "Please provide the email verification token",
-                },
-                recipeInstance
-            );
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message: "Please provide the email verification token",
+            });
         }
         if (typeof token !== "string") {
-            throw new STError(
-                {
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "The email verification token must be a string",
-                },
-                recipeInstance
-            );
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message: "The email verification token must be a string",
+            });
         }
 
         result = await apiImplementation.verifyEmailPOST(token, {

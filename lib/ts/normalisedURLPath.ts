@@ -15,21 +15,20 @@
 
 import { URL } from "url";
 import STError from "./error";
-import RecipeModule from "./recipeModule";
 
 export default class NormalisedURLPath {
     private value: string;
 
-    constructor(recipe: RecipeModule | undefined, url: string) {
-        this.value = normaliseURLPathOrThrowError(recipe, url);
+    constructor(url: string) {
+        this.value = normaliseURLPathOrThrowError(url);
     }
 
     startsWith = (other: NormalisedURLPath) => {
         return this.value.startsWith(other.value);
     };
 
-    appendPath = (recipe: RecipeModule | undefined, other: NormalisedURLPath) => {
-        return new NormalisedURLPath(recipe, this.value + other.value);
+    appendPath = (other: NormalisedURLPath) => {
+        return new NormalisedURLPath(this.value + other.value);
     };
 
     getAsStringDangerous = () => {
@@ -45,7 +44,7 @@ export default class NormalisedURLPath {
     };
 }
 
-export function normaliseURLPathOrThrowError(recipe: RecipeModule | undefined, input: string): string {
+export function normaliseURLPathOrThrowError(input: string): string {
     input = input.trim().toLowerCase();
 
     try {
@@ -71,7 +70,7 @@ export function normaliseURLPathOrThrowError(recipe: RecipeModule | undefined, i
         !input.startsWith("https://")
     ) {
         input = "http://" + input;
-        return normaliseURLPathOrThrowError(recipe, input);
+        return normaliseURLPathOrThrowError(input);
     }
 
     if (input.charAt(0) !== "/") {
@@ -83,11 +82,10 @@ export function normaliseURLPathOrThrowError(recipe: RecipeModule | undefined, i
         // test that we can convert this to prevent an infinite loop
         new URL("http://example.com" + input);
 
-        return normaliseURLPathOrThrowError(recipe, "http://example.com" + input);
+        return normaliseURLPathOrThrowError("http://example.com" + input);
     } catch (err) {
         throw new STError({
             type: STError.GENERAL_ERROR,
-            recipe,
             payload: new Error("Please provide a valid URL path"),
         });
     }

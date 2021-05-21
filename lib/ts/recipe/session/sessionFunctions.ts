@@ -46,7 +46,7 @@ export async function createNewSession(
     requestBody.enableAntiCsrf = handShakeInfo.antiCsrf === "VIA_TOKEN";
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session"), requestBody);
+        .sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
     recipeInstance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
     delete response.status;
     delete response.jwtSigningPublicKey;
@@ -83,7 +83,6 @@ export async function getSession(
     try {
         if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
             let accessTokenInfo = await getInfoFromAccessToken(
-                recipeInstance,
                 accessToken,
                 handShakeInfo.jwtSigningPublicKey,
                 handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
@@ -92,35 +91,26 @@ export async function getSession(
             if (handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck) {
                 if (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken) {
                     if (antiCsrfToken === undefined) {
-                        throw new STError(
-                            {
-                                message:
-                                    "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false for this API",
-                                type: STError.TRY_REFRESH_TOKEN,
-                            },
-                            recipeInstance
-                        );
+                        throw new STError({
+                            message:
+                                "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false for this API",
+                            type: STError.TRY_REFRESH_TOKEN,
+                        });
                     } else {
-                        throw new STError(
-                            {
-                                message: "anti-csrf check failed",
-                                type: STError.TRY_REFRESH_TOKEN,
-                            },
-                            recipeInstance
-                        );
+                        throw new STError({
+                            message: "anti-csrf check failed",
+                            type: STError.TRY_REFRESH_TOKEN,
+                        });
                     }
                 }
             } else if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && doAntiCsrfCheck) {
                 if (!containsCustomHeader) {
                     fallbackToCore = false;
-                    throw new STError(
-                        {
-                            message:
-                                "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API",
-                            type: STError.TRY_REFRESH_TOKEN,
-                        },
-                        recipeInstance
-                    );
+                    throw new STError({
+                        message:
+                            "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API",
+                        type: STError.TRY_REFRESH_TOKEN,
+                    });
                 }
             }
 
@@ -159,7 +149,7 @@ export async function getSession(
 
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/verify"), requestBody);
+        .sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
         recipeInstance.updateJwtSigningPublicKeyInfo(
             response.jwtSigningPublicKey,
@@ -170,21 +160,15 @@ export async function getSession(
         delete response.jwtSigningPublicKeyExpiryTime;
         return response;
     } else if (response.status === "UNAUTHORISED") {
-        throw new STError(
-            {
-                message: response.message,
-                type: STError.UNAUTHORISED,
-            },
-            recipeInstance
-        );
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     } else {
-        throw new STError(
-            {
-                message: response.message,
-                type: STError.TRY_REFRESH_TOKEN,
-            },
-            recipeInstance
-        );
+        throw new STError({
+            message: response.message,
+            type: STError.TRY_REFRESH_TOKEN,
+        });
     }
 }
 
@@ -213,42 +197,33 @@ export async function refreshSession(
 
     if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
         if (!containsCustomHeader) {
-            throw new STError(
-                {
-                    message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
-                    type: STError.UNAUTHORISED,
-                },
-                recipeInstance
-            );
+            throw new STError({
+                message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
+                type: STError.UNAUTHORISED,
+            });
         }
     }
 
     let response = await recipeInstance
         .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/refresh"), requestBody);
+        .sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
     if (response.status === "OK") {
         delete response.status;
         return response;
     } else if (response.status === "UNAUTHORISED") {
-        throw new STError(
-            {
-                message: response.message,
-                type: STError.UNAUTHORISED,
-            },
-            recipeInstance
-        );
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     } else {
-        throw new STError(
-            {
-                message: "Token theft detected",
-                payload: {
-                    userId: response.session.userId,
-                    sessionHandle: response.session.handle,
-                },
-                type: STError.TOKEN_THEFT_DETECTED,
+        throw new STError({
+            message: "Token theft detected",
+            payload: {
+                userId: response.session.userId,
+                sessionHandle: response.session.handle,
             },
-            recipeInstance
-        );
+            type: STError.TOKEN_THEFT_DETECTED,
+        });
     }
 }
 
@@ -258,11 +233,9 @@ export async function refreshSession(
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/remove"), {
-            userId,
-        });
+    let response = await recipeInstance.getQuerier().sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+        userId,
+    });
     return response.sessionHandlesRevoked;
 }
 
@@ -271,11 +244,9 @@ export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, us
  * @throws AuthError, GENERAL_ERROR
  */
 export async function getAllSessionHandlesForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/user"), {
-            userId,
-        });
+    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/session/user"), {
+        userId,
+    });
     return response.sessionHandles;
 }
 
@@ -285,11 +256,9 @@ export async function getAllSessionHandlesForUser(recipeInstance: SessionRecipe,
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeSession(recipeInstance: SessionRecipe, sessionHandle: string): Promise<boolean> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/remove"), {
-            sessionHandles: [sessionHandle],
-        });
+    let response = await recipeInstance.getQuerier().sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+        sessionHandles: [sessionHandle],
+    });
     return response.sessionHandlesRevoked.length === 1;
 }
 
@@ -302,11 +271,9 @@ export async function revokeMultipleSessions(
     recipeInstance: SessionRecipe,
     sessionHandles: string[]
 ): Promise<string[]> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/remove"), {
-            sessionHandles,
-        });
+    let response = await recipeInstance.getQuerier().sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+        sessionHandles,
+    });
     return response.sessionHandlesRevoked;
 }
 
@@ -316,21 +283,16 @@ export async function revokeMultipleSessions(
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getSessionData(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/data"), {
-            sessionHandle,
-        });
+    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/session/data"), {
+        sessionHandle,
+    });
     if (response.status === "OK") {
         return response.userDataInDatabase;
     } else {
-        throw new STError(
-            {
-                message: response.message,
-                type: STError.UNAUTHORISED,
-            },
-            recipeInstance
-        );
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     }
 }
 
@@ -340,20 +302,15 @@ export async function getSessionData(recipeInstance: SessionRecipe, sessionHandl
  */
 export async function updateSessionData(recipeInstance: SessionRecipe, sessionHandle: string, newSessionData: any) {
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
-    let response = await recipeInstance
-        .getQuerier()
-        .sendPutRequest(new NormalisedURLPath(recipeInstance, "/recipe/session/data"), {
-            sessionHandle,
-            userDataInDatabase: newSessionData,
-        });
+    let response = await recipeInstance.getQuerier().sendPutRequest(new NormalisedURLPath("/recipe/session/data"), {
+        sessionHandle,
+        userDataInDatabase: newSessionData,
+    });
     if (response.status === "UNAUTHORISED") {
-        throw new STError(
-            {
-                message: response.message,
-                type: STError.UNAUTHORISED,
-            },
-            recipeInstance
-        );
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     }
 }
 
@@ -362,21 +319,16 @@ export async function updateSessionData(recipeInstance: SessionRecipe, sessionHa
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/jwt/data"), {
-            sessionHandle,
-        });
+    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+        sessionHandle,
+    });
     if (response.status === "OK") {
         return response.userDataInJWT;
     } else {
-        throw new STError(
-            {
-                message: response.message,
-                type: STError.UNAUTHORISED,
-            },
-            recipeInstance
-        );
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     }
 }
 
@@ -385,19 +337,14 @@ export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle
  */
 export async function updateJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string, newJWTPayload: any) {
     newJWTPayload = newJWTPayload === null || newJWTPayload === undefined ? {} : newJWTPayload;
-    let response = await recipeInstance
-        .getQuerier()
-        .sendPutRequest(new NormalisedURLPath(recipeInstance, "/recipe/jwt/data"), {
-            sessionHandle,
-            userDataInJWT: newJWTPayload,
-        });
+    let response = await recipeInstance.getQuerier().sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+        sessionHandle,
+        userDataInJWT: newJWTPayload,
+    });
     if (response.status === "UNAUTHORISED") {
-        throw new STError(
-            {
-                message: response.message,
-                type: STError.UNAUTHORISED,
-            },
-            recipeInstance
-        );
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
     }
 }

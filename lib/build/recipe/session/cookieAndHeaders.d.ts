@@ -29,11 +29,7 @@ export declare function getRefreshTokenFromCookie(req: express.Request): string 
 export declare function getAntiCsrfTokenFromHeaders(req: express.Request): string | undefined;
 export declare function getRidFromHeader(req: express.Request): string | undefined;
 export declare function getIdRefreshTokenFromCookie(req: express.Request): string | undefined;
-export declare function setAntiCsrfTokenInHeaders(
-    recipeInstance: SessionRecipe,
-    res: express.Response,
-    antiCsrfToken: string
-): void;
+export declare function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string): void;
 export declare function setIdRefreshTokenInHeaderAndCookie(
     recipeInstance: SessionRecipe,
     res: express.Response,
@@ -41,7 +37,6 @@ export declare function setIdRefreshTokenInHeaderAndCookie(
     expiry: number
 ): void;
 export declare function setFrontTokenInHeaders(
-    recipeInstance: SessionRecipe,
     res: express.Response,
     userId: string,
     atExpiry: number,

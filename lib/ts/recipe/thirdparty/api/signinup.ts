@@ -32,47 +32,35 @@ export default async function signInUpAPI(
     let redirectURI = bodyParams.redirectURI;
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the thirdPartyId in request body",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the thirdPartyId in request body",
+        });
     }
 
     if (code === undefined || typeof code !== "string") {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the code in request body",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the code in request body",
+        });
     }
 
     if (redirectURI === undefined || typeof redirectURI !== "string") {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the redirectURI in request body",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the redirectURI in request body",
+        });
     }
 
     let provider = recipeInstance.providers.find((p) => p.id === thirdPartyId);
     if (provider === undefined) {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message:
-                    "The third party provider " +
-                    thirdPartyId +
-                    " seems to not be configured on the backend. Please check your frontend and backend configs.",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message:
+                "The third party provider " +
+                thirdPartyId +
+                " seems to not be configured on the backend. Please check your frontend and backend configs.",
+        });
     }
 
     let result = await apiImplementation.signInUpPOST(provider, code, redirectURI, {

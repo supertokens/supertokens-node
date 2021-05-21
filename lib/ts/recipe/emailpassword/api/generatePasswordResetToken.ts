@@ -33,7 +33,6 @@ export default async function generatePasswordResetToken(
         id: string;
         value: string;
     }[] = await validateFormFieldsOrThrowError(
-        recipeInstance,
         recipeInstance.config.resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm,
         req.body.formFields
     );

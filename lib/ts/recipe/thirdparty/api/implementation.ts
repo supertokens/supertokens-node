@@ -24,13 +24,10 @@ export default class APIImplementation implements APIInterface {
         try {
             providerInfo = await provider.get(undefined, undefined);
         } catch (err) {
-            throw new STError(
-                {
-                    type: "GENERAL_ERROR",
-                    payload: err,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: "GENERAL_ERROR",
+                payload: err,
+            });
         }
 
         const params = Object.entries(providerInfo.authorisationRedirect.params).reduce(
@@ -76,24 +73,18 @@ export default class APIImplementation implements APIInterface {
             });
             userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data);
         } catch (err) {
-            throw new STError(
-                {
-                    type: "GENERAL_ERROR",
-                    payload: err,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: "GENERAL_ERROR",
+                payload: err,
+            });
         }
 
         let emailInfo = userInfo.email;
         if (emailInfo === undefined) {
-            throw new STError(
-                {
-                    type: "NO_EMAIL_GIVEN_BY_PROVIDER",
-                    message: `Provider ${provider.id} returned no email info for the user.`,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: "NO_EMAIL_GIVEN_BY_PROVIDER",
+                message: `Provider ${provider.id} returned no email info for the user.`,
+            });
         }
         let user = await options.recipeImplementation.signInUp(provider.id, userInfo.id, emailInfo);
 
@@ -121,13 +112,10 @@ export default class APIImplementation implements APIInterface {
             jwtPayload = await jwtPayloadPromise;
             sessionData = await sessionDataPromise;
         } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            });
         }
 
         await Session.createNewSession(options.res, user.user.id, jwtPayload, sessionData);
@@ -156,13 +144,10 @@ export default class APIImplementation implements APIInterface {
         }
 
         if (session === undefined) {
-            throw new Session.Error(
-                {
-                    type: Session.Error.GENERAL_ERROR,
-                    payload: new Error("Session is undefined. Should not come here."),
-                },
-                this.recipeInstance
-            );
+            throw new Session.Error({
+                type: Session.Error.GENERAL_ERROR,
+                payload: new Error("Session is undefined. Should not come here."),
+            });
         }
 
         await session.revokeSession();

@@ -709,27 +709,23 @@ class TestRecipe extends RecipeModule {
             return;
         } else if (id === "/error") {
             throw new STError({
-                recipe: this,
                 message: "error from TestRecipe /error ",
                 payload: undefined,
                 type: "ERROR_FROM_TEST_RECIPE",
             });
         } else if (id === "/error/general") {
             throw new STError({
-                recipe: this,
                 payload: new Error("General error from TestRecipe"),
                 type: STError.GENERAL_ERROR,
             });
         } else if (id === "/error/badinput") {
             throw new STError({
-                recipe: this,
                 message: "Bad input error from TestRecipe",
                 payload: undefined,
                 type: STError.BAD_INPUT_ERROR,
             });
         } else if (id === "/error/throw-error") {
             throw new STError({
-                recipe: this,
                 message: "Error thrown from recipe error",
                 payload: undefined,
                 type: "ERROR_FROM_TEST_RECIPE_ERROR_HANDLER",
@@ -819,7 +815,6 @@ class TestRecipe1 extends RecipeModule {
             return;
         } else if (id === "/error") {
             throw new STError({
-                recipe: this,
                 message: "error from TestRecipe1 /error ",
                 payload: undefined,
                 type: "ERROR_FROM_TEST_RECIPE1",

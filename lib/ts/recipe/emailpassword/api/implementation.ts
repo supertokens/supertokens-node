@@ -119,13 +119,10 @@ export default class APIImplementation implements APIInterface {
             jwtPayload = await jwtPayloadPromise;
             sessionData = await sessionDataPromise;
         } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            });
         }
 
         await Session.createNewSession(options.res, user.id, jwtPayload, sessionData);
@@ -154,13 +151,10 @@ export default class APIImplementation implements APIInterface {
         }
 
         if (session === undefined) {
-            throw new Session.Error(
-                {
-                    type: Session.Error.GENERAL_ERROR,
-                    payload: new Error("Session is undefined. Should not come here."),
-                },
-                this.recipeInstance
-            );
+            throw new Session.Error({
+                type: Session.Error.GENERAL_ERROR,
+                payload: new Error("Session is undefined. Should not come here."),
+            });
         }
 
         await session.revokeSession();
@@ -196,13 +190,10 @@ export default class APIImplementation implements APIInterface {
             jwtPayload = await jwtPayloadPromise;
             sessionData = await sessionDataPromise;
         } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            });
         }
 
         await Session.createNewSession(options.res, user.id, jwtPayload, sessionData);

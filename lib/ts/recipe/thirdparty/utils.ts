@@ -41,7 +41,7 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "thirdparty recipe", recipeInstance);
+    validateTheStructureOfUserInput(config, InputSchema, "thirdparty recipe");
 
     let sessionFeature = validateAndNormaliseSessionFeatureConfig(
         recipeInstance,
@@ -51,7 +51,7 @@ export function validateAndNormaliseUserInput(
 
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
-    let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(recipeInstance, appInfo, config.signInAndUpFeature);
+    let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
 
     let signOutFeature = validateAndNormaliseSignOutConfig(recipeInstance, appInfo, config.signOutFeature);
 
@@ -117,7 +117,6 @@ function validateAndNormaliseSessionFeatureConfig(
 }
 
 function validateAndNormaliseSignInAndUpConfig(
-    recipeInstance: Recipe,
     _: NormalisedAppinfo,
     config: TypeInputSignInAndUp
 ): TypeNormalisedInputSignInAndUp {
@@ -130,14 +129,11 @@ function validateAndNormaliseSignInAndUpConfig(
     let providers = config.providers;
 
     if (providers === undefined || providers.length === 0) {
-        throw new STError(
-            {
-                type: "BAD_INPUT_ERROR",
-                message:
-                    "thirdparty recipe requires atleast 1 provider to be passed in signInAndUpFeature.providers config",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: "BAD_INPUT_ERROR",
+            message:
+                "thirdparty recipe requires atleast 1 provider to be passed in signInAndUpFeature.providers config",
+        });
     }
     return {
         disableDefaultImplementation,
@@ -183,13 +179,10 @@ function validateAndNormaliseEmailVerificationConfig(
                                 userInfo === undefined ||
                                 config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
                             ) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
                             return await config.emailVerificationFeature.createAndSendCustomEmail(userInfo, link);
                         },
@@ -202,13 +195,10 @@ function validateAndNormaliseEmailVerificationConfig(
                                 userInfo === undefined ||
                                 config?.emailVerificationFeature?.getEmailVerificationURL === undefined
                             ) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
                             return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                         },
@@ -221,13 +211,10 @@ function validateAndNormaliseEmailVerificationConfig(
                                 userInfo === undefined ||
                                 config?.emailVerificationFeature?.handlePostEmailVerification === undefined
                             ) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
                             return await config.emailVerificationFeature.handlePostEmailVerification(userInfo);
                         },

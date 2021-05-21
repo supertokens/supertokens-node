@@ -26,13 +26,11 @@ export async function signInUp(
         isVerified: boolean;
     }
 ): Promise<{ createdNewUser: boolean; user: User }> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendPostRequest(new NormalisedURLPath(recipeInstance, "/recipe/signinup"), {
-            thirdPartyId,
-            thirdPartyUserId,
-            email,
-        });
+    let response = await recipeInstance.getQuerier().sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+        thirdPartyId,
+        thirdPartyUserId,
+        email,
+    });
     return {
         createdNewUser: response.createdNewUser,
         user: response.user,
@@ -40,11 +38,9 @@ export async function signInUp(
 }
 
 export async function getUserById(recipeInstance: Recipe, userId: string): Promise<User | undefined> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/user"), {
-            userId,
-        });
+    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/user"), {
+        userId,
+    });
     if (response.status === "OK") {
         return {
             ...response.user,
@@ -59,12 +55,10 @@ export async function getUserByThirdPartyInfo(
     thirdPartyId: string,
     thirdPartyUserId: string
 ): Promise<User | undefined> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/user"), {
-            thirdPartyId,
-            thirdPartyUserId,
-        });
+    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/user"), {
+        thirdPartyId,
+        thirdPartyUserId,
+    });
     if (response.status === "OK") {
         return {
             ...response.user,
@@ -83,13 +77,11 @@ export async function getUsers(
     users: User[];
     nextPaginationToken?: string;
 }> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/users"), {
-            timeJoinedOrder,
-            limit,
-            paginationToken,
-        });
+    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/users"), {
+        timeJoinedOrder,
+        limit,
+        paginationToken,
+    });
     return {
         users: response.users,
         nextPaginationToken: response.nextPaginationToken,
@@ -97,8 +89,6 @@ export async function getUsers(
 }
 
 export async function getUsersCount(recipeInstance: Recipe): Promise<number> {
-    let response = await recipeInstance
-        .getQuerier()
-        .sendGetRequest(new NormalisedURLPath(recipeInstance, "/recipe/users/count"), {});
+    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/users/count"), {});
     return Number(response.count);
 }

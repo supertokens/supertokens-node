@@ -72,7 +72,7 @@ export class Querier {
         }
         ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
         let response = await this.sendRequestHelper(
-            new NormalisedURLPath(this.recipe, "/apiversion"),
+            new NormalisedURLPath("/apiversion"),
             "GET",
             (url: string) => {
                 let headers: any = {};
@@ -92,7 +92,6 @@ export class Querier {
         if (supportedVersion === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                recipe: this.recipe,
                 payload: new Error(
                     "The running SuperTokens core version is not compatible with this NodeJS SDK. Please visit https://supertokens.io/docs/community/compatibility to find the right versions"
                 ),
@@ -109,7 +108,6 @@ export class Querier {
         if (process.env.TEST_MODE !== "testing") {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                recipe: undefined,
                 payload: new Error("calling testing function in non testing env"),
             });
         }
@@ -120,7 +118,6 @@ export class Querier {
         if (process.env.TEST_MODE !== "testing") {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                recipe: this.recipe,
                 payload: new Error("calling testing function in non testing env"),
             });
         }
@@ -135,7 +132,6 @@ export class Querier {
         if (!Querier.initCalled || Querier.hosts === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                recipe,
                 payload: new Error("Please call the supertokens.init function before using SuperTokens"),
             });
         }
@@ -285,7 +281,6 @@ export class Querier {
         if (numberOfTries === 0) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
-                recipe: this.recipe,
                 payload: new Error("No SuperTokens core available to query"),
             });
         }
@@ -309,7 +304,6 @@ export class Querier {
             if (err.response !== undefined && err.response.status !== undefined && err.response.data !== undefined) {
                 throw new STError({
                     type: STError.GENERAL_ERROR,
-                    recipe: this.recipe,
                     payload: new Error(
                         "SuperTokens core threw an error for a " +
                             method +
@@ -324,7 +318,6 @@ export class Querier {
             } else {
                 throw new STError({
                     type: STError.GENERAL_ERROR,
-                    recipe: this.recipe,
                     payload: err,
                 });
             }

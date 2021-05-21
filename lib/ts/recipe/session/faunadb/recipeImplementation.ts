@@ -89,13 +89,10 @@ export default class RecipeImplementation implements RecipeInterface {
 
             return session;
         } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                },
-                this.originalImplementation.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            });
         }
     };
 
@@ -149,13 +146,10 @@ export default class RecipeImplementation implements RecipeInterface {
 
             return session;
         } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                },
-                this.originalImplementation.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            });
         }
     };
 

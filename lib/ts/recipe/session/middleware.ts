@@ -28,7 +28,6 @@ export function verifySession(recipeInstance: SessionRecipe, options?: VerifySes
             }
 
             let incomingPath = new NormalisedURLPath(
-                recipeInstance,
                 request.originalUrl === undefined ? request.url : request.originalUrl
             );
             let refreshTokenPath = recipeInstance.config.refreshTokenPath;
@@ -52,12 +51,7 @@ export async function sendTryRefreshTokenResponse(
     next: NextFunction
 ) {
     try {
-        sendNon200Response(
-            recipeInstance,
-            response,
-            "try refresh token",
-            recipeInstance.config.sessionExpiredStatusCode
-        );
+        sendNon200Response(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
     } catch (err) {
         next(err);
     }
@@ -71,7 +65,7 @@ export async function sendUnauthorisedResponse(
     next: NextFunction
 ) {
     try {
-        sendNon200Response(recipeInstance, response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
+        sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
     } catch (err) {
         next(err);
     }
@@ -87,12 +81,7 @@ export async function sendTokenTheftDetectedResponse(
 ) {
     try {
         await recipeInstance.recipeInterfaceImpl.revokeSession(sessionHandle);
-        sendNon200Response(
-            recipeInstance,
-            response,
-            "token theft detected",
-            recipeInstance.config.sessionExpiredStatusCode
-        );
+        sendNon200Response(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
     } catch (err) {
         next(err);
     }

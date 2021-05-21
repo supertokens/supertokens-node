@@ -32,11 +32,7 @@ export default async function signUpAPI(
     let formFields: {
         id: string;
         value: string;
-    }[] = await validateFormFieldsOrThrowError(
-        recipeInstance,
-        recipeInstance.config.signUpFeature.formFields,
-        req.body.formFields
-    );
+    }[] = await validateFormFieldsOrThrowError(recipeInstance.config.signUpFeature.formFields, req.body.formFields);
 
     let result = await apiImplementation.signUpPOST(formFields, {
         recipeImplementation: recipeInstance.recipeInterfaceImpl,
