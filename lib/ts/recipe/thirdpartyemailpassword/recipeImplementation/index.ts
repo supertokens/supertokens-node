@@ -1,11 +1,12 @@
-import { RecipeInterface, User } from "./types";
-import Recipe from "./recipe";
-import EmailPasswordImplemenation from "../emailpassword/recipeImplementation";
-import EmailPasswordRecipe from "../emailpassword/recipe";
-import ThirdPartyImplemenation from "../thirdparty/recipeImplementation";
-import ThirdPartyRecipe from "../thirdparty/recipe";
-import STError from "./error";
-import { extractPaginationTokens, combinePaginationResults } from "./utils";
+import { RecipeInterface, User } from "../types";
+import Recipe from "../recipe";
+import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
+import EmailPasswordRecipe from "../../emailpassword/recipe";
+import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
+import ThirdPartyRecipe from "../../thirdparty/recipe";
+import STError from "../error";
+import { extractPaginationTokens, combinePaginationResults } from "../utils";
+
 export default class RecipeImplementation implements RecipeInterface {
     recipeInstance: Recipe;
     emailPasswordImplementation: EmailPasswordImplemenation;

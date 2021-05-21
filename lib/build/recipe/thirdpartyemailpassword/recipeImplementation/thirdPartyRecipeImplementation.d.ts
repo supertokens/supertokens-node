@@ -1,5 +1,5 @@
-import { RecipeInterface, User } from "../thirdparty/types";
-import Recipe from "./recipe";
+import { RecipeInterface, User } from "../../thirdparty/types";
+import Recipe from "../recipe";
 export default class RecipeImplementation implements RecipeInterface {
     recipeInstance: Recipe;
     constructor(recipeInstance: Recipe);

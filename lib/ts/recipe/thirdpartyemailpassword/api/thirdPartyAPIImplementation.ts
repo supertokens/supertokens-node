@@ -1,0 +1,67 @@
+import { APIInterface, APIOptions, User, TypeProvider } from "../../thirdparty";
+import STError from "../error";
+import Recipe from "../recipe";
+
+export default class APIImplementation implements APIInterface {
+    recipeInstance: Recipe;
+
+    constructor(recipeInstance: Recipe) {
+        this.recipeInstance = recipeInstance;
+    }
+
+    authorisationUrlGET = async (
+        provider: TypeProvider,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        url: string;
+    }> => {
+        return this.recipeInstance.apiImpl.authorisationUrlGET(provider, {
+            ...options,
+            recipeImplementation: this.recipeInstance.recipeInterfaceImpl,
+        });
+    };
+
+    signInUpPOST = async (
+        provider: TypeProvider,
+        code: string,
+        redirectURI: string,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }> => {
+        let result = await this.recipeInstance.apiImpl.signInUpPOST(provider, code, redirectURI, {
+            ...options,
+            recipeImplementation: this.recipeInstance.recipeInterfaceImpl,
+        });
+        if (result.user.thirdParty === undefined) {
+            throw new STError(
+                {
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error("Should never come here"),
+                },
+                this.recipeInstance
+            );
+        }
+        return {
+            ...result,
+            user: {
+                ...result.user,
+                thirdParty: result.user.thirdParty,
+            },
+        };
+    };
+
+    signOutPOST = async (
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }> => {
+        return this.recipeInstance.apiImpl.signOutPOST({
+            ...options,
+            recipeImplementation: this.recipeInstance.recipeInterfaceImpl,
+        });
+    };
+}

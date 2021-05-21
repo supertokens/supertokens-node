@@ -19,14 +19,17 @@ import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import * as express from "express";
 import STError from "./error";
-import { TypeInput, TypeNormalisedInput, User, RecipeInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, User, RecipeInterface, APIInterface } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import STErrorEmailPassword from "../emailpassword/error";
 import STErrorThirdParty from "../thirdparty/error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
-import EmailPasswordRecipeImplementation from "./emailPasswordRecipeImplementation";
-import ThirdPartyRecipeImplementation from "./thirdPartyRecipeImplementation";
+import EmailPasswordRecipeImplementation from "./recipeImplementation/emailPasswordRecipeImplementation";
+import ThirdPartyRecipeImplementation from "./recipeImplementation/thirdPartyRecipeImplementation";
+import ThirdPartyAPIImplementation from "./api/thirdPartyAPIImplementation";
+import EmailPasswordAPIImplementation from "./api/emailPasswordAPIImplementation";
+import APIImplementation from "./api/implementation";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -42,6 +45,8 @@ export default class Recipe extends RecipeModule {
 
     recipeInterfaceImpl: RecipeInterface;
 
+    apiImpl: APIInterface;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
         super(recipeId, appInfo, isInServerlessEnv);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
@@ -54,6 +59,9 @@ export default class Recipe extends RecipeModule {
                 override: {
                     functions: (_) => {
                         return new EmailPasswordRecipeImplementation(this);
+                    },
+                    apis: (_) => {
+                        return new EmailPasswordAPIImplementation(this);
                     },
                 },
                 sessionFeature: {
@@ -117,6 +125,9 @@ export default class Recipe extends RecipeModule {
                         functions: (_) => {
                             return new ThirdPartyRecipeImplementation(this);
                         },
+                        apis: (_) => {
+                            return new ThirdPartyAPIImplementation(this);
+                        },
                     },
                     sessionFeature: {
                         setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
@@ -172,6 +183,10 @@ export default class Recipe extends RecipeModule {
 
         this.recipeInterfaceImpl = this.config.override.functions(
             new RecipeImplementation(this, this.emailPasswordRecipe, this.thirdPartyRecipe)
+        );
+
+        this.apiImpl = this.config.override.apis(
+            new APIImplementation(this, this.emailPasswordRecipe, this.thirdPartyRecipe)
         );
 
         this.emailVerificationRecipe = new EmailVerificationRecipe(

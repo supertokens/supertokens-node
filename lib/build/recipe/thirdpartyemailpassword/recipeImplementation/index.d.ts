@@ -1,9 +1,9 @@
-import { RecipeInterface, User } from "./types";
-import Recipe from "./recipe";
-import EmailPasswordImplemenation from "../emailpassword/recipeImplementation";
-import EmailPasswordRecipe from "../emailpassword/recipe";
-import ThirdPartyImplemenation from "../thirdparty/recipeImplementation";
-import ThirdPartyRecipe from "../thirdparty/recipe";
+import { RecipeInterface, User } from "../types";
+import Recipe from "../recipe";
+import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
+import EmailPasswordRecipe from "../../emailpassword/recipe";
+import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
+import ThirdPartyRecipe from "../../thirdparty/recipe";
 export default class RecipeImplementation implements RecipeInterface {
     recipeInstance: Recipe;
     emailPasswordImplementation: EmailPasswordImplemenation;

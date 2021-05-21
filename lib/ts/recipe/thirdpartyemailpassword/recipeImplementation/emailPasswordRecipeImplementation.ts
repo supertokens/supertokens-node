@@ -1,6 +1,6 @@
-import { RecipeInterface, User } from "../emailpassword/types";
-import STError from "./error";
-import Recipe from "./recipe";
+import { RecipeInterface, User } from "../../emailpassword/types";
+import STError from "../error";
+import Recipe from "../recipe";
 
 export default class RecipeImplementation implements RecipeInterface {
     recipeInstance: Recipe;

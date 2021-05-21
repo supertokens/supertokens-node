@@ -164,6 +164,7 @@ export default class Recipe extends RecipeModule {
                 status: "NO_EMAIL_GIVEN_BY_PROVIDER",
             });
         } else if (err.type === STError.FIELD_ERROR) {
+            // Do not remove this error: This is needed so that custom error can be thrown to the frontend during sign up / in
             return send200Response(response, {
                 status: "FIELD_ERROR",
                 error: err.message,

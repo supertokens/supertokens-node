@@ -1,6 +1,6 @@
-import { RecipeInterface, User } from "../thirdparty/types";
-import STError from "./error";
-import Recipe from "./recipe";
+import { RecipeInterface, User } from "../../thirdparty/types";
+import STError from "../error";
+import Recipe from "../recipe";
 
 export default class RecipeImplementation implements RecipeInterface {
     recipeInstance: Recipe;
