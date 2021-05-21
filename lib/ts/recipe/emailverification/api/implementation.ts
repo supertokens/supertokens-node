@@ -13,7 +13,9 @@ export default class APIImplementation implements APIInterface {
     verifyEmailPOST = async (token: string, options: APIOptions): Promise<{ status: "OK" }> => {
         let user = await options.recipeImplementation.verifyEmailUsingToken(token);
 
-        this.recipeInstance.config.handlePostEmailVerification(user).catch((_) => {});
+        try {
+            this.recipeInstance.config.handlePostEmailVerification(user).catch((_) => {});
+        } catch (ignored) {}
 
         return {
             status: "OK",
@@ -76,7 +78,11 @@ export default class APIImplementation implements APIInterface {
             "&rid=" +
             this.recipeInstance.getRecipeId();
 
-        this.recipeInstance.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink).catch((_) => {});
+        try {
+            this.recipeInstance.config
+                .createAndSendCustomEmail({ id: userId, email }, emailVerifyLink)
+                .catch((_) => {});
+        } catch (ignored) {}
 
         return {
             status: "OK",

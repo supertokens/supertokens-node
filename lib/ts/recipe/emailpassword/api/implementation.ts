@@ -62,9 +62,11 @@ export default class APIImplementation implements APIInterface {
             "&rid=" +
             this.recipeInstance.getRecipeId();
 
-        this.recipeInstance.config.resetPasswordUsingTokenFeature
-            .createAndSendCustomEmail(user, passwordResetLink)
-            .catch((_) => {});
+        try {
+            this.recipeInstance.config.resetPasswordUsingTokenFeature
+                .createAndSendCustomEmail(user, passwordResetLink)
+                .catch((_) => {});
+        } catch (ignored) {}
 
         return {
             status: "OK",
