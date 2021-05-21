@@ -1,6 +1,6 @@
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
-    RecipeImplementation as EmailVerificationRecipeImplemenation,
+    RecipeImplementation as EmailVerificationRecipeImplementation,
     APIImplementation as EmailVerificationAPIImplementation,
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
@@ -52,10 +52,6 @@ export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
-    override?: {
-        functions?: (originalImplementation: EmailVerificationRecipeImplemenation) => EmailVerificationRecipeInterface;
-        apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
-    };
 };
 export declare type TypeInputFormField = {
     id: string;
@@ -138,6 +134,12 @@ export declare type TypeInput = {
     override?: {
         functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
         apis?: (originalImplementation: APIImplementation) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (
+                originalImplementation: EmailVerificationRecipeImplementation
+            ) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+        };
     };
 };
 export declare const InputSchema: {
@@ -235,9 +237,6 @@ export declare const InputSchema: {
                     type: string;
                 };
                 handlePostEmailVerification: {
-                    type: string;
-                };
-                override: {
                     type: string;
                 };
             };

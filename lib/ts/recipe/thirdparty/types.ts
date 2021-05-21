@@ -97,10 +97,6 @@ export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
-    override?: {
-        functions?: (originalImplementation: EmailVerificationRecipeImplementation) => EmailVerificationRecipeInterface;
-        apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
-    };
 };
 
 const InputEmailVerificationFeatureSchema = {
@@ -110,7 +106,6 @@ const InputEmailVerificationFeatureSchema = {
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
         handlePostEmailVerification: TypeAny,
-        override: TypeAny,
     },
     additionalProperties: false,
 };
@@ -164,6 +159,12 @@ export type TypeInput = {
     override?: {
         functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
         apis?: (originalImplementation: APIImplementation) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (
+                originalImplementation: EmailVerificationRecipeImplementation
+            ) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+        };
     };
 };
 
