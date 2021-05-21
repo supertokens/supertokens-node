@@ -17,14 +17,14 @@ import Recipe from "../recipe";
 import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import STError from "../error";
-import { URLSearchParams } from "url";
-import { TypeProviderGetResponse } from "../types";
+import { APIInterface } from "../";
 
 export default async function authorisationUrlAPI(
+    apiImplementation: APIInterface,
     recipeInstance: Recipe,
     req: Request,
     res: Response,
-    _: NextFunction
+    next: NextFunction
 ) {
     let queryParams = req.query;
     let thirdPartyId = queryParams.thirdPartyId;
@@ -53,33 +53,12 @@ export default async function authorisationUrlAPI(
         );
     }
 
-    let providerInfo: TypeProviderGetResponse;
-    try {
-        providerInfo = await provider.get(undefined, undefined);
-    } catch (err) {
-        throw new STError(
-            {
-                type: "GENERAL_ERROR",
-                payload: err,
-            },
-            recipeInstance
-        );
-    }
-
-    const params = Object.entries(providerInfo.authorisationRedirect.params).reduce(
-        (acc, [key, value]) => ({
-            ...acc,
-            [key]: typeof value === "function" ? value(req) : value,
-        }),
-        {}
-    );
-
-    let paramsString = new URLSearchParams(params).toString();
-
-    let url = `${providerInfo.authorisationRedirect.url}?${paramsString}`;
-
-    return send200Response(res, {
-        status: "OK",
-        url,
+    let result = await apiImplementation.authorisationUrlGET(provider, {
+        recipeImplementation: recipeInstance.recipeInterfaceImpl,
+        req,
+        res,
+        next,
     });
+
+    return send200Response(res, result);
 }

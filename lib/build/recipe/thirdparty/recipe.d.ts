@@ -1,6 +1,6 @@
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User, APIInterface } from "./types";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
 import STError from "./error";
@@ -12,6 +12,7 @@ export default class Recipe extends RecipeModule {
     emailVerificationRecipe: EmailVerificationRecipe;
     providers: TypeProvider[];
     recipeInterfaceImpl: RecipeInterface;
+    apiImpl: APIInterface;
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,

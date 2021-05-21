@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User, APIInterface } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
@@ -28,6 +28,7 @@ import signInUpAPI from "./api/signinup";
 import authorisationUrlAPI from "./api/authorisationUrl";
 import { send200Response } from "../../utils";
 import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -40,6 +41,8 @@ export default class Recipe extends RecipeModule {
     providers: TypeProvider[];
 
     recipeInterfaceImpl: RecipeInterface;
+
+    apiImpl: APIInterface;
 
     constructor(
         recipeId: string,
@@ -59,6 +62,7 @@ export default class Recipe extends RecipeModule {
 
         this.providers = this.config.signInAndUpFeature.providers;
         this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this));
+        this.apiImpl = this.config.override.apis(new APIImplementation(this));
     }
 
     static init(config: TypeInput): RecipeListFunction {
@@ -139,11 +143,11 @@ export default class Recipe extends RecipeModule {
         method: HTTPMethod
     ) => {
         if (id === SIGN_IN_UP_API) {
-            return await signInUpAPI(this, req, res, next);
+            return await signInUpAPI(this.apiImpl, this, req, res, next);
         } else if (id === SIGN_OUT_API) {
-            return await signOutAPI(this, req, res, next);
+            return await signOutAPI(this.apiImpl, this, req, res, next);
         } else if (id === AUTHORISATION_API) {
-            return await authorisationUrlAPI(this, req, res, next);
+            return await authorisationUrlAPI(this.apiImpl, this, req, res, next);
         } else {
             return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
         }

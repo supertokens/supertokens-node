@@ -31,8 +31,9 @@ import {
     TypeInputSessionFeature,
     TypeNormalisedInputSessionFeature,
     RecipeInterface,
+    APIInterface,
 } from "./types";
-import { RecipeImplementation } from "./";
+import { RecipeImplementation, APIImplementation } from "./";
 
 async function defaultHandlePostSignUpIn(_: User, __: any, ___: boolean) {}
 
@@ -61,16 +62,25 @@ export function validateAndNormaliseUserInput(
 
     let override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
+    } = {
+        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
+        apis: (originalImplementation: APIImplementation) => originalImplementation,
     };
 
-    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
-        override = {
-            functions: config.override.functions,
-        };
-    } else {
-        override = {
-            functions: (originalImplementation: RecipeImplementation) => originalImplementation,
-        };
+    if (config !== undefined && config.override !== undefined) {
+        if (config.override.functions !== undefined) {
+            override = {
+                ...override,
+                functions: config.override.functions,
+            };
+        }
+        if (config.override.apis !== undefined) {
+            override = {
+                ...override,
+                apis: config.override.apis,
+            };
+        }
     }
 
     return {

@@ -13,13 +13,15 @@
  * under the License.
  */
 
-import { Request } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     RecipeImplementation as EmailVerificationRecipeImplementation,
+    APIImplementation as EmailVerificationAPIImplementation,
+    APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import { RecipeImplementation } from "./";
+import { RecipeImplementation, APIImplementation } from "./";
 
 const TypeBoolean = {
     type: "boolean",
@@ -97,6 +99,7 @@ export type TypeInputEmailVerificationFeature = {
     handlePostEmailVerification?: (user: User) => Promise<void>;
     override?: {
         functions?: (originalImplementation: EmailVerificationRecipeImplementation) => EmailVerificationRecipeInterface;
+        apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
     };
 };
 
@@ -160,6 +163,7 @@ export type TypeInput = {
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis?: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 
@@ -183,6 +187,7 @@ export type TypeNormalisedInput = {
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 
@@ -217,4 +222,38 @@ export interface RecipeInterface {
             isVerified: boolean;
         }
     ): Promise<{ createdNewUser: boolean; user: User }>;
+}
+
+export type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    req: Request;
+    res: Response;
+    next: NextFunction;
+};
+
+export interface APIInterface {
+    authorisationUrlGET(
+        provider: TypeProvider,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        url: string;
+    }>;
+
+    signInUpPOST(
+        provider: TypeProvider,
+        code: string,
+        redirectURI: string,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
+
+    signOutPOST(
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
 }
