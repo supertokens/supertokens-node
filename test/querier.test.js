@@ -39,8 +39,8 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await cleanST();
     });
 
-    // Test that if the querier throws an error from a recipe, that recipe's ID is there
-    it("test that if the querier throws an error from a recipe, that recipe's ID is there", async function () {
+    // Test that if the querier throws an error from a recipe, that recipe's ID is not there
+    it("test that if the querier throws an error from a recipe, that recipe's ID is not there", async function () {
         await startST();
         ST.init({
             supertokens: {
@@ -62,7 +62,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             await Session.getAllSessionHandlesForUser();
             assert(false);
         } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR || err.recipe.getRecipeId() !== "session") {
+            if (err.type !== ST.Error.GENERAL_ERROR || err.fromRecipe === "session") {
                 throw err;
             }
         }
@@ -71,7 +71,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             await EmailPassword.getUserByEmail();
             assert(false);
         } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR || err.recipe.getRecipeId() !== "emailpassword") {
+            if (err.type !== ST.Error.GENERAL_ERROR || err.fromRecipe === "emailpassword") {
                 throw err;
             }
         }
@@ -143,7 +143,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 return this.req.headers;
             });
 
-        let response = await querier.sendGetRequest(new NormalisedURLPath("", "/recipe"), {});
+        let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe"), {});
         assert(response.rid === "session");
 
         nock("http://localhost:8080", {
@@ -154,7 +154,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 return this.req.headers;
             });
 
-        let response2 = await querier.sendGetRequest(new NormalisedURLPath("", "/recipe/random"), {});
+        let response2 = await querier.sendGetRequest(new NormalisedURLPath("/recipe/random"), {});
         assert(response2.rid === "session");
 
         nock("http://localhost:8080", {
@@ -165,7 +165,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 return this.req.headers;
             });
 
-        let response3 = await querier.sendGetRequest(new NormalisedURLPath("", "/test"), {});
+        let response3 = await querier.sendGetRequest(new NormalisedURLPath("/test"), {});
         assert(response3.rid === undefined);
     });
 
@@ -216,11 +216,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
         let q = Querier.getInstanceOrThrowError(false, undefined);
-        assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
-        assert.equal(await q.sendDeleteRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
+        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
+        assert.equal(await q.sendDeleteRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
-        assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n"); // this will be the 4th API call
+        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 3);
         assert.equal(hostsAlive.has("http://localhost:8080"), true);
@@ -247,11 +247,11 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
         let q = Querier.getInstanceOrThrowError(false, undefined);
-        assert.equal(await q.sendGetRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
-        assert.equal(await q.sendPostRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n");
+        assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
+        assert.equal(await q.sendPostRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
-        assert.equal(await q.sendPutRequest(new NormalisedURLPath("", "/hello"), {}), "Hello\n"); // this will be the 4th API call
+        assert.equal(await q.sendPutRequest(new NormalisedURLPath("/hello"), {}), "Hello\n"); // this will be the 4th API call
         hostsAlive = q.getHostsAliveForTesting();
         assert.equal(hostsAlive.size, 2);
         assert.equal(hostsAlive.has("http://localhost:8080"), true);
