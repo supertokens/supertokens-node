@@ -1,19 +1,16 @@
 import { APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions, User, TypeProvider } from "../";
-import STError from "../error";
 import ThirdPartyRecipe from "../../thirdparty/recipe";
 import EmailPasswordImplemenation from "../../emailpassword/api/implementation";
 import ThirdPartyImplemenation from "../../thirdparty/api/implementation";
 
 export default class APIImplementation implements APIInterface {
     emailPasswordImplementation: EmailPasswordImplemenation;
-    thirdPartyImplementation: ThirdPartyImplemenation | undefined;
+    thirdPartyImplementation: ThirdPartyImplemenation;
     thirdPartyRecipeInstance?: ThirdPartyRecipe;
 
-    constructor(hasThirdPartyAPIs: boolean) {
+    constructor() {
         this.emailPasswordImplementation = new EmailPasswordImplemenation();
-        if (hasThirdPartyAPIs) {
-            this.thirdPartyImplementation = new ThirdPartyImplemenation();
-        }
+        this.thirdPartyImplementation = new ThirdPartyImplemenation();
     }
 
     emailExistsGET = async (
@@ -84,12 +81,6 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         url: string;
     }> => {
-        if (this.thirdPartyImplementation === undefined || this.thirdPartyRecipeInstance === undefined) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("No thirdparty provider configured"),
-            });
-        }
         return this.thirdPartyImplementation.authorisationUrlGET(provider, options);
     };
 
@@ -103,12 +94,6 @@ export default class APIImplementation implements APIInterface {
         createdNewUser: boolean;
         user: User;
     }> => {
-        if (this.thirdPartyImplementation === undefined || this.thirdPartyRecipeInstance === undefined) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("No thirdparty provider configured"),
-            });
-        }
         return this.thirdPartyImplementation.signInUpPOST(provider, code, redirectURI, options);
     };
 

@@ -59,7 +59,7 @@ export default class Recipe extends RecipeModule {
             )
         );
 
-        this.apiImpl = this.config.override.apis(new APIImplementation(this.config.providers.length !== 0));
+        this.apiImpl = this.config.override.apis(new APIImplementation());
 
         this.emailPasswordRecipe = new EmailPasswordRecipe(recipeId, appInfo, isInServerlessEnv, {
             override: {
