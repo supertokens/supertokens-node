@@ -40,7 +40,7 @@ export default class Recipe extends RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
         super(recipeId, appInfo, isInServerlessEnv);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
-        this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this));
+        this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this.getQuerier()));
         this.apiImpl = this.config.override.apis(new APIImplementation(this));
     }
 

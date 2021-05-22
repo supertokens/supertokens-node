@@ -24,7 +24,6 @@ import STError from "./error";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
-import RecipeModule from "./recipeModule";
 import { SERVERLESS_CACHE_API_VERSION_FILE_PATH } from "./constants";
 
 export class Querier {
@@ -37,25 +36,14 @@ export class Querier {
     private static hostsAliveForTesting: Set<string> = new Set<string>();
 
     private __hosts: NormalisedURLDomain[];
-    private recipe: RecipeModule | undefined;
     private rIdToCore: string | undefined;
     private isInServerlessEnv: boolean;
 
     // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
     // to support multiple rIds per API
-    private constructor(
-        hosts: NormalisedURLDomain[],
-        isInServerlessEnv: boolean,
-        recipe: RecipeModule | undefined,
-        rIdToCore?: string
-    ) {
+    private constructor(hosts: NormalisedURLDomain[], isInServerlessEnv: boolean, rIdToCore?: string) {
         this.__hosts = hosts;
-        this.recipe = recipe;
-        if (rIdToCore !== undefined) {
-            this.rIdToCore = rIdToCore;
-        } else if (this.recipe !== undefined) {
-            this.rIdToCore = this.recipe.getRecipeId();
-        }
+        this.rIdToCore = rIdToCore;
         this.isInServerlessEnv = isInServerlessEnv;
     }
 
@@ -124,18 +112,14 @@ export class Querier {
         return Querier.hostsAliveForTesting;
     };
 
-    static getInstanceOrThrowError(
-        isInServerlessEnv: boolean,
-        recipe: RecipeModule | undefined,
-        rIdToCore?: string
-    ): Querier {
+    static getInstanceOrThrowError(isInServerlessEnv: boolean, rIdToCore?: string): Querier {
         if (!Querier.initCalled || Querier.hosts === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Please call the supertokens.init function before using SuperTokens"),
             });
         }
-        return new Querier(Querier.hosts, isInServerlessEnv, recipe, rIdToCore);
+        return new Querier(Querier.hosts, isInServerlessEnv, rIdToCore);
     }
 
     static init(hosts: NormalisedURLDomain[], apiKey?: string) {

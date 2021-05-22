@@ -28,13 +28,15 @@ export default abstract class RecipeModule {
 
     private isInServerlessEnv: boolean;
 
-    private rIdToCore: string | undefined;
+    private rIdToCore: string;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, rIdToCore?: string) {
         this.recipeId = recipeId;
         this.appInfo = appInfo;
         this.isInServerlessEnv = isInServerlessEnv;
-        this.rIdToCore = rIdToCore;
+
+        // we use the recipeID of this recipe if rIdToCore is not overriding it..
+        this.rIdToCore = rIdToCore === undefined ? recipeId : rIdToCore;
     }
 
     getRecipeId = (): string => {
@@ -51,7 +53,7 @@ export default abstract class RecipeModule {
 
     getQuerier = (): Querier => {
         if (this.querier === undefined) {
-            this.querier = Querier.getInstanceOrThrowError(this.isInServerlessEnv, this, this.rIdToCore);
+            this.querier = Querier.getInstanceOrThrowError(this.isInServerlessEnv, this.rIdToCore);
         }
         return this.querier;
     };
