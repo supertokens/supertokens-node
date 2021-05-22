@@ -1,12 +1,10 @@
 import { APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions, User, TypeProvider } from "../";
-import ThirdPartyRecipe from "../../thirdparty/recipe";
 import EmailPasswordImplemenation from "../../emailpassword/api/implementation";
 import ThirdPartyImplemenation from "../../thirdparty/api/implementation";
 
 export default class APIImplementation implements APIInterface {
     emailPasswordImplementation: EmailPasswordImplemenation;
     thirdPartyImplementation: ThirdPartyImplemenation;
-    thirdPartyRecipeInstance?: ThirdPartyRecipe;
 
     constructor() {
         this.emailPasswordImplementation = new EmailPasswordImplemenation();

@@ -95,7 +95,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 }),
             ],
         });
-        let q = Querier.getInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
         await q.getAPIVersion();
 
         let verifyState = await ProcessState.getInstance().waitForEvent(
@@ -133,7 +133,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
 
-        let querier = Querier.getInstanceOrThrowError(false, SessionRecipe.getInstanceOrThrowError());
+        let querier = Querier.getNewInstanceOrThrowError(false, SessionRecipe.getInstanceOrThrowError().getRecipeId());
 
         nock("http://localhost:8080", {
             allowUnmocked: true,
@@ -186,7 +186,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
         try {
-            let q = Querier.getInstanceOrThrowError(false, undefined);
+            let q = Querier.getNewInstanceOrThrowError(false, undefined);
             await q.sendGetRequest(new NormalisedURLPath("", "/"), {});
             throw new Error();
         } catch (err) {
@@ -215,7 +215,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 }),
             ],
         });
-        let q = Querier.getInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
         assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
         assert.equal(await q.sendDeleteRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();
@@ -246,7 +246,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                 }),
             ],
         });
-        let q = Querier.getInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
         assert.equal(await q.sendGetRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
         assert.equal(await q.sendPostRequest(new NormalisedURLPath("/hello"), {}), "Hello\n");
         let hostsAlive = q.getHostsAliveForTesting();

@@ -1373,9 +1373,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            handshakeInfo = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+            handshakeInfo = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
             assert.notStrictEqual(handshakeInfo, undefined);
-            apiVersion = await Querier.getInstanceOrThrowError(false).getAPIVersion();
+            apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
             assert.notStrictEqual(apiVersion, undefined);
             resetAll();
         }
@@ -1393,9 +1393,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 recipeList: [Session.init()],
             });
 
-            let handshakeInfo2 = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+            let handshakeInfo2 = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
             assert.notStrictEqual(handshakeInfo2, undefined);
-            let apiVersion2 = await Querier.getInstanceOrThrowError(false).getAPIVersion();
+            let apiVersion2 = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
             assert.notStrictEqual(apiVersion2, undefined);
             assert.deepStrictEqual(handshakeInfo, handshakeInfo2);
             assert.strictEqual(apiVersion, apiVersion2);

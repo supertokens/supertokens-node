@@ -51,7 +51,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
         });
 
         let sessionRecipeInstance = SessionRecipe.getInstanceOrThrowError();
-        await sessionRecipeInstance.getHandshakeInfo();
+        await sessionRecipeInstance.recipeInterfaceImpl.getHandshakeInfo();
         let verifyState = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
             2000
@@ -60,7 +60,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
 
         ProcessState.getInstance().reset();
 
-        await sessionRecipeInstance.getHandshakeInfo();
+        await sessionRecipeInstance.recipeInterfaceImpl.getHandshakeInfo();
         verifyState = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO,
             2000
@@ -103,16 +103,15 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
             },
             recipeList: [Session.init()],
         });
-        let info = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+        let info = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
         assert.equal(typeof info.jwtSigningPublicKey, "string");
-        let cdiVersion = await SessionRecipe.getInstanceOrThrowError().getQuerier().getAPIVersion();
         assert.strictEqual(info.antiCsrf, "NONE");
         assert.equal(info.accessTokenBlacklistingEnabled, false);
         assert.equal(typeof info.jwtSigningPublicKeyExpiryTime, "number");
         assert.equal(info.accessTokenValidity, 3600 * 1000);
         assert.equal(info.refreshTokenValidity, 144000 * 60 * 1000);
-        SessionRecipe.getInstanceOrThrowError().updateJwtSigningPublicKeyInfo("hello", 100);
-        let info2 = await SessionRecipe.getInstanceOrThrowError().getHandshakeInfo();
+        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJwtSigningPublicKeyInfo("hello", 100);
+        let info2 = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
         assert.equal(info2.jwtSigningPublicKey, "hello");
         assert.equal(info2.jwtSigningPublicKeyExpiryTime, 100);
     });
