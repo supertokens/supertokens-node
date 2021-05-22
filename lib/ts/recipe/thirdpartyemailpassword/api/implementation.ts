@@ -9,11 +9,10 @@ export default class APIImplementation implements APIInterface {
     thirdPartyImplementation: ThirdPartyImplemenation | undefined;
     thirdPartyRecipeInstance?: ThirdPartyRecipe;
 
-    constructor(thirdPartyRecipeInstance?: ThirdPartyRecipe) {
-        this.thirdPartyRecipeInstance = thirdPartyRecipeInstance;
+    constructor(hasThirdPartyAPIs: boolean) {
         this.emailPasswordImplementation = new EmailPasswordImplemenation();
-        if (thirdPartyRecipeInstance !== undefined) {
-            this.thirdPartyImplementation = new ThirdPartyImplemenation(thirdPartyRecipeInstance);
+        if (hasThirdPartyAPIs) {
+            this.thirdPartyImplementation = new ThirdPartyImplemenation();
         }
     }
 

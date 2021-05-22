@@ -6,7 +6,7 @@ export default class APIImplementation implements APIInterface {
     emailPasswordImplementation: EmailPasswordImplemenation;
     thirdPartyImplementation: ThirdPartyImplemenation | undefined;
     thirdPartyRecipeInstance?: ThirdPartyRecipe;
-    constructor(thirdPartyRecipeInstance?: ThirdPartyRecipe);
+    constructor(hasThirdPartyAPIs: boolean);
     emailExistsGET: (
         email: string,
         options: import("../../emailpassword").APIOptions

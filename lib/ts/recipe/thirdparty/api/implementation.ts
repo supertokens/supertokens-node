@@ -1,5 +1,4 @@
 import { APIInterface, APIOptions, User, TypeProvider } from "../";
-import Recipe from "../recipe";
 import Session, { SessionContainer } from "../../session";
 import STError from "../error";
 import { URLSearchParams } from "url";
@@ -7,12 +6,6 @@ import * as axios from "axios";
 import * as qs from "querystring";
 
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
-
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
-    }
-
     authorisationUrlGET = async (
         provider: TypeProvider,
         options: APIOptions
@@ -88,19 +81,19 @@ export default class APIImplementation implements APIInterface {
         }
         let user = await options.recipeImplementation.signInUp(provider.id, userInfo.id, emailInfo);
 
-        await this.recipeInstance.config.signInAndUpFeature.handlePostSignUpIn(
+        await options.config.signInAndUpFeature.handlePostSignUpIn(
             user.user,
             accessTokenAPIResponse.data,
             user.createdNewUser
         );
 
         let action: "signup" | "signin" = user.createdNewUser ? "signup" : "signin";
-        let jwtPayloadPromise = this.recipeInstance.config.sessionFeature.setJwtPayload(
+        let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(
             user.user,
             accessTokenAPIResponse.data,
             action
         );
-        let sessionDataPromise = this.recipeInstance.config.sessionFeature.setSessionData(
+        let sessionDataPromise = options.config.sessionFeature.setSessionData(
             user.user,
             accessTokenAPIResponse.data,
             action

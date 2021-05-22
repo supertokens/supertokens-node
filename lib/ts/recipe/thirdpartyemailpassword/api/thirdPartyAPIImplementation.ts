@@ -1,12 +1,12 @@
 import { APIInterface, APIOptions, User, TypeProvider } from "../../thirdparty";
+import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 import STError from "../error";
-import Recipe from "../recipe";
 
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
+    apiImplmentation: ThirdPartyEmailPasswordAPIInterface;
 
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
+    constructor(apiImplmentation: ThirdPartyEmailPasswordAPIInterface) {
+        this.apiImplmentation = apiImplmentation;
     }
 
     authorisationUrlGET = async (
@@ -16,7 +16,7 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         url: string;
     }> => {
-        return this.recipeInstance.apiImpl.authorisationUrlGET(provider, options);
+        return this.apiImplmentation.authorisationUrlGET(provider, options);
     };
 
     signInUpPOST = async (
@@ -29,7 +29,7 @@ export default class APIImplementation implements APIInterface {
         createdNewUser: boolean;
         user: User;
     }> => {
-        let result = await this.recipeInstance.apiImpl.signInUpPOST(provider, code, redirectURI, options);
+        let result = await this.apiImplmentation.signInUpPOST(provider, code, redirectURI, options);
         if (result.user.thirdParty === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,

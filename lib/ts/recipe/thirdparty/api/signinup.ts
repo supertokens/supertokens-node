@@ -13,20 +13,12 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
 import STError from "../error";
 import { send200Response } from "../../../utils";
-import { APIInterface } from "../";
+import { APIInterface, APIOptions } from "../";
 
-export default async function signInUpAPI(
-    apiImplementation: APIInterface,
-    recipeInstance: Recipe,
-    req: Request,
-    res: Response,
-    next: NextFunction
-) {
-    let bodyParams = req.body;
+export default async function signInUpAPI(apiImplementation: APIInterface, options: APIOptions) {
+    let bodyParams = options.req.body;
     let thirdPartyId = bodyParams.thirdPartyId;
     let code = bodyParams.code;
     let redirectURI = bodyParams.redirectURI;
@@ -52,7 +44,7 @@ export default async function signInUpAPI(
         });
     }
 
-    let provider = recipeInstance.providers.find((p) => p.id === thirdPartyId);
+    let provider = options.providers.find((p) => p.id === thirdPartyId);
     if (provider === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
@@ -63,12 +55,7 @@ export default async function signInUpAPI(
         });
     }
 
-    let result = await apiImplementation.signInUpPOST(provider, code, redirectURI, {
-        recipeImplementation: recipeInstance.recipeInterfaceImpl,
-        req,
-        res,
-        next,
-    });
+    let result = await apiImplementation.signInUpPOST(provider, code, redirectURI, options);
 
-    return send200Response(res, result);
+    return send200Response(options.res, result);
 }

@@ -1,11 +1,11 @@
 import { APIInterface, APIOptions, User } from "../../emailpassword";
-import Recipe from "../recipe";
+import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
+    apiImplmentation: ThirdPartyEmailPasswordAPIInterface;
 
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
+    constructor(apiImplmentation: ThirdPartyEmailPasswordAPIInterface) {
+        this.apiImplmentation = apiImplmentation;
     }
 
     emailExistsGET = async (
@@ -15,7 +15,7 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         exists: boolean;
     }> => {
-        return this.recipeInstance.apiImpl.emailExistsGET(email, options);
+        return this.apiImplmentation.emailExistsGET(email, options);
     };
 
     generatePasswordResetTokenPOST = async (
@@ -27,7 +27,7 @@ export default class APIImplementation implements APIInterface {
     ): Promise<{
         status: "OK";
     }> => {
-        return this.recipeInstance.apiImpl.generatePasswordResetTokenPOST(formFields, options);
+        return this.apiImplmentation.generatePasswordResetTokenPOST(formFields, options);
     };
 
     passwordResetPOST = async (
@@ -40,7 +40,7 @@ export default class APIImplementation implements APIInterface {
     ): Promise<{
         status: "OK";
     }> => {
-        return this.recipeInstance.apiImpl.passwordResetPOST(formFields, token, options);
+        return this.apiImplmentation.passwordResetPOST(formFields, token, options);
     };
 
     signInPOST = async (
@@ -53,7 +53,7 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         user: User;
     }> => {
-        return this.recipeInstance.apiImpl.signInPOST(formFields, options);
+        return this.apiImplmentation.signInPOST(formFields, options);
     };
 
     signUpPOST = async (
@@ -66,7 +66,7 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         user: User;
     }> => {
-        return this.recipeInstance.apiImpl.signUpPOST(formFields, options);
+        return this.apiImplmentation.signUpPOST(formFields, options);
     };
 
     signOutPOST = async (
@@ -74,6 +74,6 @@ export default class APIImplementation implements APIInterface {
     ): Promise<{
         status: "OK";
     }> => {
-        return this.recipeInstance.apiImpl.signOutPOST(options);
+        return this.apiImplmentation.signOutPOST(options);
     };
 }

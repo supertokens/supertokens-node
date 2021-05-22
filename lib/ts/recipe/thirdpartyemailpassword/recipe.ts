@@ -59,13 +59,15 @@ export default class Recipe extends RecipeModule {
             )
         );
 
+        this.apiImpl = this.config.override.apis(new APIImplementation(this.config.providers.length !== 0));
+
         this.emailPasswordRecipe = new EmailPasswordRecipe(recipeId, appInfo, isInServerlessEnv, {
             override: {
                 functions: (_) => {
                     return new EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
                 },
                 apis: (_) => {
-                    return new EmailPasswordAPIImplementation(this);
+                    return new EmailPasswordAPIImplementation(this.apiImpl);
                 },
             },
             sessionFeature: {
@@ -124,7 +126,7 @@ export default class Recipe extends RecipeModule {
                         return new ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
                     },
                     apis: (_) => {
-                        return new ThirdPartyAPIImplementation(this);
+                        return new ThirdPartyAPIImplementation(this.apiImpl);
                     },
                 },
                 sessionFeature: {
@@ -176,8 +178,6 @@ export default class Recipe extends RecipeModule {
                 },
             });
         }
-
-        this.apiImpl = this.config.override.apis(new APIImplementation(this.thirdPartyRecipe));
 
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,
