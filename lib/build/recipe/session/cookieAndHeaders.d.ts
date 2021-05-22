@@ -1,16 +1,16 @@
 /// <reference types="node" />
 import * as express from "express";
 import { IncomingMessage, ServerResponse } from "http";
-import SessionRecipe from "./recipe";
+import { TypeNormalisedInput } from "./types";
 /**
  * @description clears all the auth cookies from the response
  */
-export declare function clearSessionFromCookie(recipeInstance: SessionRecipe, res: express.Response): void;
+export declare function clearSessionFromCookie(config: TypeNormalisedInput, res: express.Response): void;
 /**
  * @param expiry: must be time in milliseconds from epoch time.
  */
 export declare function attachAccessTokenToCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     token: string,
     expiry: number
@@ -19,7 +19,7 @@ export declare function attachAccessTokenToCookie(
  * @param expiry: must be time in milliseconds from epoch time.
  */
 export declare function attachRefreshTokenToCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     token: string,
     expiry: number
@@ -31,7 +31,7 @@ export declare function getRidFromHeader(req: express.Request): string | undefin
 export declare function getIdRefreshTokenFromCookie(req: express.Request): string | undefined;
 export declare function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string): void;
 export declare function setIdRefreshTokenInHeaderAndCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     idRefreshToken: string,
     expiry: number
@@ -55,7 +55,7 @@ export declare function getCORSAllowedHeaders(): string[];
  * @param path
  */
 export declare function setCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: ServerResponse,
     name: string,
     value: string,

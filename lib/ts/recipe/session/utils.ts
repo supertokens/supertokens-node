@@ -257,7 +257,7 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
 }
 
 export function attachCreateOrRefreshSessionResponseToExpressRes(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     response: CreateOrRefreshAPIResponse
 ) {
@@ -265,9 +265,9 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     let refreshToken = response.refreshToken;
     let idRefreshToken = response.idRefreshToken;
     setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
-    attachAccessTokenToCookie(recipeInstance, res, accessToken.token, accessToken.expiry);
-    attachRefreshTokenToCookie(recipeInstance, res, refreshToken.token, refreshToken.expiry);
-    setIdRefreshTokenInHeaderAndCookie(recipeInstance, res, idRefreshToken.token, idRefreshToken.expiry);
+    attachAccessTokenToCookie(config, res, accessToken.token, accessToken.expiry);
+    attachRefreshTokenToCookie(config, res, refreshToken.token, refreshToken.expiry);
+    setIdRefreshTokenInHeaderAndCookie(config, res, idRefreshToken.token, idRefreshToken.expiry);
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }

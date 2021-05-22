@@ -17,8 +17,8 @@ import * as express from "express";
 import { IncomingMessage, ServerResponse } from "http";
 
 import STError from "./error";
-import SessionRecipe from "./recipe";
 import { getHeader } from "../../utils";
+import { TypeNormalisedInput } from "./types";
 
 const accessTokenCookieKey = "sAccessToken";
 const refreshTokenCookieKey = "sRefreshToken";
@@ -36,10 +36,10 @@ const frontTokenHeaderKey = "front-token";
 /**
  * @description clears all the auth cookies from the response
  */
-export function clearSessionFromCookie(recipeInstance: SessionRecipe, res: express.Response) {
-    setCookie(recipeInstance, res, accessTokenCookieKey, "", 0, "accessTokenPath");
-    setCookie(recipeInstance, res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
-    setCookie(recipeInstance, res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
+export function clearSessionFromCookie(config: TypeNormalisedInput, res: express.Response) {
+    setCookie(config, res, accessTokenCookieKey, "", 0, "accessTokenPath");
+    setCookie(config, res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
+    setCookie(config, res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
     setHeader(res, idRefreshTokenHeaderKey, "remove", false);
     setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 }
@@ -48,24 +48,24 @@ export function clearSessionFromCookie(recipeInstance: SessionRecipe, res: expre
  * @param expiry: must be time in milliseconds from epoch time.
  */
 export function attachAccessTokenToCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     token: string,
     expiry: number
 ) {
-    setCookie(recipeInstance, res, accessTokenCookieKey, token, expiry, "accessTokenPath");
+    setCookie(config, res, accessTokenCookieKey, token, expiry, "accessTokenPath");
 }
 
 /**
  * @param expiry: must be time in milliseconds from epoch time.
  */
 export function attachRefreshTokenToCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     token: string,
     expiry: number
 ) {
-    setCookie(recipeInstance, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
+    setCookie(config, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
 }
 
 export function getAccessTokenFromCookie(req: express.Request): string | undefined {
@@ -94,7 +94,7 @@ export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: 
 }
 
 export function setIdRefreshTokenInHeaderAndCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     idRefreshToken: string,
     expiry: number
@@ -102,7 +102,7 @@ export function setIdRefreshTokenInHeaderAndCookie(
     setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
     setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 
-    setCookie(recipeInstance, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
+    setCookie(config, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
 }
 
 export function setFrontTokenInHeaders(res: express.Response, userId: string, atExpiry: number, jwtPayload: any) {
@@ -165,19 +165,19 @@ function setHeader(res: express.Response, key: string, value: string, allowDupli
  * @param path
  */
 export function setCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: ServerResponse,
     name: string,
     value: string,
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath"
 ) {
-    let domain = recipeInstance.config.cookieDomain;
-    let secure = recipeInstance.config.cookieSecure;
-    let sameSite = recipeInstance.config.cookieSameSite;
+    let domain = config.cookieDomain;
+    let secure = config.cookieSecure;
+    let sameSite = config.cookieSameSite;
     let path = "";
     if (pathType === "refreshTokenPath") {
-        path = recipeInstance.config.refreshTokenPath.getAsStringDangerous();
+        path = config.refreshTokenPath.getAsStringDangerous();
     } else if (pathType === "accessTokenPath") {
         path = "/";
     }

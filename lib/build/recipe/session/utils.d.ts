@@ -11,7 +11,7 @@ export declare function validateAndNormaliseUserInput(
 ): TypeNormalisedInput;
 export declare function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none";
 export declare function attachCreateOrRefreshSessionResponseToExpressRes(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     response: CreateOrRefreshAPIResponse
 ): void;

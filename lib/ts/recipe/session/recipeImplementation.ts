@@ -1,5 +1,4 @@
-import { RecipeInterface, VerifySessionOptions } from "./types";
-import Recipe from "./recipe";
+import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
     attachAccessTokenToCookie,
@@ -16,11 +15,27 @@ import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod } from "../../utils";
+import { Querier } from "../../querier";
+import { getDataFromFileForServerlessCache, storeIntoTempFolderForServerlessCache } from "../../utils";
+import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./constants";
+import { PROCESS_STATE, ProcessState } from "../../processState";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 export default class RecipeImplementation implements RecipeInterface {
-    recipeInstance: Recipe;
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
+    querier: Querier;
+    config: TypeNormalisedInput;
+    handshakeInfo: HandshakeInfo | undefined = undefined;
+    isInServerlessEnv: boolean;
+
+    constructor(querier: Querier, config: TypeNormalisedInput, isInServerlessEnv: boolean) {
+        this.querier = querier;
+        this.config = config;
+        this.isInServerlessEnv = isInServerlessEnv;
+
+        // Solving the cold start problem
+        this.getHandshakeInfo().catch((_) => {
+            // ignored
+        });
     }
 
     createNewSession = async (
@@ -29,10 +44,10 @@ export default class RecipeImplementation implements RecipeInterface {
         jwtPayload: any = {},
         sessionData: any = {}
     ): Promise<Session> => {
-        let response = await SessionFunctions.createNewSession(this.recipeInstance, userId, jwtPayload, sessionData);
-        attachCreateOrRefreshSessionResponseToExpressRes(this.recipeInstance, res, response);
+        let response = await SessionFunctions.createNewSession(this, userId, jwtPayload, sessionData);
+        attachCreateOrRefreshSessionResponseToExpressRes(this.config, res, response);
         return new Session(
-            this.recipeInstance,
+            this,
             response.accessToken.token,
             response.session.handle,
             response.session.userId,
@@ -80,7 +95,7 @@ export default class RecipeImplementation implements RecipeInterface {
             }
 
             let response = await SessionFunctions.getSession(
-                this.recipeInstance,
+                this,
                 accessToken,
                 antiCsrfToken,
                 doAntiCsrfCheck,
@@ -93,16 +108,11 @@ export default class RecipeImplementation implements RecipeInterface {
                     response.accessToken.expiry,
                     response.session.userDataInJWT
                 );
-                attachAccessTokenToCookie(
-                    this.recipeInstance,
-                    res,
-                    response.accessToken.token,
-                    response.accessToken.expiry
-                );
+                attachAccessTokenToCookie(this.config, res, response.accessToken.token, response.accessToken.expiry);
                 accessToken = response.accessToken.token;
             }
             return new Session(
-                this.recipeInstance,
+                this,
                 accessToken,
                 response.session.handle,
                 response.session.userId,
@@ -111,7 +121,7 @@ export default class RecipeImplementation implements RecipeInterface {
             );
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.recipeInstance, res);
+                clearSessionFromCookie(this.config, res);
             }
             throw err;
         }
@@ -139,14 +149,14 @@ export default class RecipeImplementation implements RecipeInterface {
             }
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
             let response = await SessionFunctions.refreshSession(
-                this.recipeInstance,
+                this,
                 inputRefreshToken,
                 antiCsrfToken,
                 getRidFromHeader(req) !== undefined
             );
-            attachCreateOrRefreshSessionResponseToExpressRes(this.recipeInstance, res, response);
+            attachCreateOrRefreshSessionResponseToExpressRes(this.config, res, response);
             return new Session(
-                this.recipeInstance,
+                this,
                 response.accessToken.token,
                 response.session.handle,
                 response.session.userId,
@@ -155,41 +165,81 @@ export default class RecipeImplementation implements RecipeInterface {
             );
         } catch (err) {
             if (err.type === STError.UNAUTHORISED || err.type === STError.TOKEN_THEFT_DETECTED) {
-                clearSessionFromCookie(this.recipeInstance, res);
+                clearSessionFromCookie(this.config, res);
             }
             throw err;
         }
     };
 
     revokeAllSessionsForUser = (userId: string) => {
-        return SessionFunctions.revokeAllSessionsForUser(this.recipeInstance, userId);
+        return SessionFunctions.revokeAllSessionsForUser(this, userId);
     };
 
     getAllSessionHandlesForUser = (userId: string): Promise<string[]> => {
-        return SessionFunctions.getAllSessionHandlesForUser(this.recipeInstance, userId);
+        return SessionFunctions.getAllSessionHandlesForUser(this, userId);
     };
 
     revokeSession = (sessionHandle: string): Promise<boolean> => {
-        return SessionFunctions.revokeSession(this.recipeInstance, sessionHandle);
+        return SessionFunctions.revokeSession(this, sessionHandle);
     };
 
     revokeMultipleSessions = (sessionHandles: string[]) => {
-        return SessionFunctions.revokeMultipleSessions(this.recipeInstance, sessionHandles);
+        return SessionFunctions.revokeMultipleSessions(this, sessionHandles);
     };
 
     getSessionData = (sessionHandle: string): Promise<any> => {
-        return SessionFunctions.getSessionData(this.recipeInstance, sessionHandle);
+        return SessionFunctions.getSessionData(this, sessionHandle);
     };
 
     updateSessionData = (sessionHandle: string, newSessionData: any) => {
-        return SessionFunctions.updateSessionData(this.recipeInstance, sessionHandle, newSessionData);
+        return SessionFunctions.updateSessionData(this, sessionHandle, newSessionData);
     };
 
     getJWTPayload = (sessionHandle: string): Promise<any> => {
-        return SessionFunctions.getJWTPayload(this.recipeInstance, sessionHandle);
+        return SessionFunctions.getJWTPayload(this, sessionHandle);
     };
 
     updateJWTPayload = (sessionHandle: string, newJWTPayload: any) => {
-        return SessionFunctions.updateJWTPayload(this.recipeInstance, sessionHandle, newJWTPayload);
+        return SessionFunctions.updateJWTPayload(this, sessionHandle, newJWTPayload);
+    };
+
+    getHandshakeInfo = async (): Promise<HandshakeInfo> => {
+        if (this.handshakeInfo === undefined) {
+            let antiCsrf = this.config.antiCsrf;
+            if (this.isInServerlessEnv) {
+                let handshakeInfo = await getDataFromFileForServerlessCache<HandshakeInfo>(
+                    SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH
+                );
+                if (handshakeInfo !== undefined) {
+                    handshakeInfo = {
+                        ...handshakeInfo,
+                        antiCsrf,
+                    };
+                    this.handshakeInfo = handshakeInfo;
+                    return this.handshakeInfo;
+                }
+            }
+            ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
+            let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
+            this.handshakeInfo = {
+                jwtSigningPublicKey: response.jwtSigningPublicKey,
+                antiCsrf,
+                accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
+                jwtSigningPublicKeyExpiryTime: response.jwtSigningPublicKeyExpiryTime,
+                accessTokenValidity: response.accessTokenValidity,
+                refreshTokenValidity: response.refreshTokenValidity,
+            };
+            if (this.isInServerlessEnv) {
+                storeIntoTempFolderForServerlessCache(SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, this.handshakeInfo);
+            }
+        }
+        return this.handshakeInfo;
+    };
+
+    updateJwtSigningPublicKeyInfo = (newKey: string, newExpiry: number) => {
+        if (this.handshakeInfo !== undefined) {
+            this.handshakeInfo.jwtSigningPublicKey = newKey;
+            this.handshakeInfo.jwtSigningPublicKeyExpiryTime = newExpiry;
+        }
     };
 }

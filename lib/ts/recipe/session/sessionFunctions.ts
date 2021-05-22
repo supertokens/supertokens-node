@@ -16,15 +16,15 @@ import { getInfoFromAccessToken } from "./accessToken";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse } from "./types";
-import SessionRecipe from "./recipe";
 import NormalisedURLPath from "../../normalisedURLPath";
+import RecipeImplementation from "./recipeImplementation";
 
 /**
  * @description call this to "login" a user.
  * @throws GENERAL_ERROR in case anything fails.
  */
 export async function createNewSession(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     userId: string,
     jwtPayload: any = {},
     sessionData: any = {}
@@ -42,12 +42,16 @@ export async function createNewSession(
         userDataInDatabase: sessionData,
     };
 
-    let handShakeInfo = await recipeInstance.getHandshakeInfo();
+    let handShakeInfo = await recipeImplementation.getHandshakeInfo();
     requestBody.enableAntiCsrf = handShakeInfo.antiCsrf === "VIA_TOKEN";
-    let response = await recipeInstance
-        .getQuerier()
-        .sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
-    recipeInstance.updateJwtSigningPublicKeyInfo(response.jwtSigningPublicKey, response.jwtSigningPublicKeyExpiryTime);
+    let response = await recipeImplementation.querier.sendPostRequest(
+        new NormalisedURLPath("/recipe/session"),
+        requestBody
+    );
+    recipeImplementation.updateJwtSigningPublicKeyInfo(
+        response.jwtSigningPublicKey,
+        response.jwtSigningPublicKeyExpiryTime
+    );
     delete response.status;
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
@@ -60,7 +64,7 @@ export async function createNewSession(
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED and TRY_REFRESH_TOKEN
  */
 export async function getSession(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     accessToken: string,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
@@ -77,7 +81,7 @@ export async function getSession(
         createdTime: number;
     };
 }> {
-    let handShakeInfo = await recipeInstance.getHandshakeInfo();
+    let handShakeInfo = await recipeImplementation.getHandshakeInfo();
 
     let fallbackToCore = true;
     try {
@@ -147,11 +151,12 @@ export async function getSession(
         enableAntiCsrf: handShakeInfo.antiCsrf === "VIA_TOKEN",
     };
 
-    let response = await recipeInstance
-        .getQuerier()
-        .sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
+    let response = await recipeImplementation.querier.sendPostRequest(
+        new NormalisedURLPath("/recipe/session/verify"),
+        requestBody
+    );
     if (response.status === "OK") {
-        recipeInstance.updateJwtSigningPublicKeyInfo(
+        recipeImplementation.updateJwtSigningPublicKeyInfo(
             response.jwtSigningPublicKey,
             response.jwtSigningPublicKeyExpiryTime
         );
@@ -178,12 +183,12 @@ export async function getSession(
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
 export async function refreshSession(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     refreshToken: string,
     antiCsrfToken: string | undefined,
     containsCustomHeader: boolean
 ): Promise<CreateOrRefreshAPIResponse> {
-    let handShakeInfo = await recipeInstance.getHandshakeInfo();
+    let handShakeInfo = await recipeImplementation.getHandshakeInfo();
 
     let requestBody: {
         refreshToken: string;
@@ -204,9 +209,10 @@ export async function refreshSession(
         }
     }
 
-    let response = await recipeInstance
-        .getQuerier()
-        .sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
+    let response = await recipeImplementation.querier.sendPostRequest(
+        new NormalisedURLPath("/recipe/session/refresh"),
+        requestBody
+    );
     if (response.status === "OK") {
         delete response.status;
         return response;
@@ -232,8 +238,11 @@ export async function refreshSession(
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
-    let response = await recipeInstance.getQuerier().sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+export async function revokeAllSessionsForUser(
+    recipeImplementation: RecipeImplementation,
+    userId: string
+): Promise<string[]> {
+    let response = await recipeImplementation.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
         userId,
     });
     return response.sessionHandlesRevoked;
@@ -243,8 +252,11 @@ export async function revokeAllSessionsForUser(recipeInstance: SessionRecipe, us
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  * @throws AuthError, GENERAL_ERROR
  */
-export async function getAllSessionHandlesForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]> {
-    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/session/user"), {
+export async function getAllSessionHandlesForUser(
+    recipeImplementation: RecipeImplementation,
+    userId: string
+): Promise<string[]> {
+    let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/user"), {
         userId,
     });
     return response.sessionHandles;
@@ -255,8 +267,11 @@ export async function getAllSessionHandlesForUser(recipeInstance: SessionRecipe,
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  * @throws AuthError, GENERAL_ERROR
  */
-export async function revokeSession(recipeInstance: SessionRecipe, sessionHandle: string): Promise<boolean> {
-    let response = await recipeInstance.getQuerier().sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+export async function revokeSession(
+    recipeImplementation: RecipeImplementation,
+    sessionHandle: string
+): Promise<boolean> {
+    let response = await recipeImplementation.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
         sessionHandles: [sessionHandle],
     });
     return response.sessionHandlesRevoked.length === 1;
@@ -268,10 +283,10 @@ export async function revokeSession(recipeInstance: SessionRecipe, sessionHandle
  * @throws AuthError, GENERAL_ERROR
  */
 export async function revokeMultipleSessions(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     sessionHandles: string[]
 ): Promise<string[]> {
-    let response = await recipeInstance.getQuerier().sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+    let response = await recipeImplementation.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
         sessionHandles,
     });
     return response.sessionHandlesRevoked;
@@ -282,8 +297,8 @@ export async function revokeMultipleSessions(
  * @returns session data as provided by the user earlier
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export async function getSessionData(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
-    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/session/data"), {
+export async function getSessionData(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any> {
+    let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/data"), {
         sessionHandle,
     });
     if (response.status === "OK") {
@@ -300,9 +315,13 @@ export async function getSessionData(recipeInstance: SessionRecipe, sessionHandl
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export async function updateSessionData(recipeInstance: SessionRecipe, sessionHandle: string, newSessionData: any) {
+export async function updateSessionData(
+    recipeImplementation: RecipeImplementation,
+    sessionHandle: string,
+    newSessionData: any
+) {
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
-    let response = await recipeInstance.getQuerier().sendPutRequest(new NormalisedURLPath("/recipe/session/data"), {
+    let response = await recipeImplementation.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/data"), {
         sessionHandle,
         userDataInDatabase: newSessionData,
     });
@@ -318,8 +337,8 @@ export async function updateSessionData(recipeInstance: SessionRecipe, sessionHa
  * @returns jwt payload as provided by the user earlier
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any> {
-    let response = await recipeInstance.getQuerier().sendGetRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+export async function getJWTPayload(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any> {
+    let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/data"), {
         sessionHandle,
     });
     if (response.status === "OK") {
@@ -335,9 +354,13 @@ export async function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle
 /**
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export async function updateJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string, newJWTPayload: any) {
+export async function updateJWTPayload(
+    recipeImplementation: RecipeImplementation,
+    sessionHandle: string,
+    newJWTPayload: any
+) {
     newJWTPayload = newJWTPayload === null || newJWTPayload === undefined ? {} : newJWTPayload;
-    let response = await recipeInstance.getQuerier().sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+    let response = await recipeImplementation.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
         sessionHandle,
         userDataInJWT: newJWTPayload,
     });
