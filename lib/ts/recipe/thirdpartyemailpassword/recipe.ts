@@ -182,7 +182,7 @@ export default class Recipe extends RecipeModule {
         }
 
         this.recipeInterfaceImpl = this.config.override.functions(
-            new RecipeImplementation(this, this.emailPasswordRecipe, this.thirdPartyRecipe)
+            new RecipeImplementation(this.emailPasswordRecipe, this.thirdPartyRecipe)
         );
 
         this.apiImpl = this.config.override.apis(

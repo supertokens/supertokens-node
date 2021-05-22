@@ -1,5 +1,4 @@
 import { RecipeInterface, User } from "../types";
-import Recipe from "../recipe";
 import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
 import EmailPasswordRecipe from "../../emailpassword/recipe";
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
@@ -8,16 +7,10 @@ import STError from "../error";
 import { extractPaginationTokens, combinePaginationResults } from "../utils";
 
 export default class RecipeImplementation implements RecipeInterface {
-    recipeInstance: Recipe;
     emailPasswordImplementation: EmailPasswordImplemenation;
     thirdPartyImplementation: ThirdPartyImplemenation | undefined;
 
-    constructor(
-        recipeInstance: Recipe,
-        emailPasswordRecipeInstance: EmailPasswordRecipe,
-        thirdPartyRecipeInstance?: ThirdPartyRecipe
-    ) {
-        this.recipeInstance = recipeInstance;
+    constructor(emailPasswordRecipeInstance: EmailPasswordRecipe, thirdPartyRecipeInstance?: ThirdPartyRecipe) {
         this.emailPasswordImplementation = new EmailPasswordImplemenation(emailPasswordRecipeInstance.getQuerier());
         if (thirdPartyRecipeInstance !== undefined) {
             this.thirdPartyImplementation = new ThirdPartyImplemenation(thirdPartyRecipeInstance.getQuerier());
