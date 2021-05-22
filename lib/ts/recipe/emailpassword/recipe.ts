@@ -64,7 +64,7 @@ export default class Recipe extends RecipeModule {
         this.recipeInterfaceImpl = this.config.override.functions(
             new RecipeImplementation(Querier.getNewInstanceOrThrowError(isInServerlessEnv, recipeId))
         );
-        this.apiImpl = this.config.override.apis(new APIImplementation(this));
+        this.apiImpl = this.config.override.apis(new APIImplementation());
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -155,18 +155,26 @@ export default class Recipe extends RecipeModule {
         path: NormalisedURLPath,
         method: HTTPMethod
     ) => {
+        let options = {
+            config: this.config,
+            next,
+            recipeId: this.getRecipeId(),
+            recipeImplementation: this.recipeInterfaceImpl,
+            req,
+            res,
+        };
         if (id === SIGN_UP_API) {
-            return await signUpAPI(this.apiImpl, this, req, res, next);
+            return await signUpAPI(this.apiImpl, options);
         } else if (id === SIGN_IN_API) {
-            return await signInAPI(this.apiImpl, this, req, res, next);
+            return await signInAPI(this.apiImpl, options);
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
-            return await generatePasswordResetTokenAPI(this.apiImpl, this, req, res, next);
+            return await generatePasswordResetTokenAPI(this.apiImpl, options);
         } else if (id === SIGN_OUT_API) {
-            return await signOutAPI(this.apiImpl, this, req, res, next);
+            return await signOutAPI(this.apiImpl, options);
         } else if (id === PASSWORD_RESET_API) {
-            return await passwordResetAPI(this.apiImpl, this, req, res, next);
+            return await passwordResetAPI(this.apiImpl, options);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
-            return await emailExistsAPI(this.apiImpl, this, req, res, next);
+            return await emailExistsAPI(this.apiImpl, options);
         } else {
             return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
         }

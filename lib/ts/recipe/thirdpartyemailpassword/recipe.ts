@@ -177,9 +177,7 @@ export default class Recipe extends RecipeModule {
             });
         }
 
-        this.apiImpl = this.config.override.apis(
-            new APIImplementation(this, this.emailPasswordRecipe, this.thirdPartyRecipe)
-        );
+        this.apiImpl = this.config.override.apis(new APIImplementation(this.thirdPartyRecipe));
 
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,

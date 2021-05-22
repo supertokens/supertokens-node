@@ -13,33 +13,20 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
-import { APIInterface } from "../";
+import { APIInterface, APIOptions } from "../";
 
-export default async function signInAPI(
-    apiImplementation: APIInterface,
-    recipeInstance: Recipe,
-    req: Request,
-    res: Response,
-    next: NextFunction
-) {
+export default async function signInAPI(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
 
     // step 1
     let formFields: {
         id: string;
         value: string;
-    }[] = await validateFormFieldsOrThrowError(recipeInstance.config.signInFeature.formFields, req.body.formFields);
+    }[] = await validateFormFieldsOrThrowError(options.config.signInFeature.formFields, options.req.body.formFields);
 
-    let result = await apiImplementation.signInPOST(formFields, {
-        recipeImplementation: recipeInstance.recipeInterfaceImpl,
-        req,
-        res,
-        next,
-    });
+    let result = await apiImplementation.signInPOST(formFields, options);
 
-    send200Response(res, result);
+    send200Response(options.res, result);
 }

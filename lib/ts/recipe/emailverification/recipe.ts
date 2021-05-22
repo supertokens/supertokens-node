@@ -116,24 +116,18 @@ export default class Recipe extends RecipeModule {
         _: NormalisedURLPath,
         __: HTTPMethod
     ) => {
+        let options = {
+            config: this.config,
+            next,
+            recipeId: this.getRecipeId(),
+            recipeImplementation: this.recipeInterfaceImpl,
+            req,
+            res,
+        };
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
-            return await generateEmailVerifyTokenAPI(this.apiImpl, {
-                config: this.config,
-                next,
-                recipeId: this.getRecipeId(),
-                recipeImplementation: this.recipeInterfaceImpl,
-                req,
-                res,
-            });
+            return await generateEmailVerifyTokenAPI(this.apiImpl, options);
         } else {
-            return await emailVerifyAPI(this.apiImpl, {
-                config: this.config,
-                next,
-                recipeId: this.getRecipeId(),
-                recipeImplementation: this.recipeInterfaceImpl,
-                req,
-                res,
-            });
+            return await emailVerifyAPI(this.apiImpl, options);
         }
     };
 

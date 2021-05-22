@@ -1,15 +1,8 @@
 import { APIInterface, APIOptions, User } from "../";
-import Recipe from "../recipe";
 import Session, { SessionContainer } from "../../session";
 import STError from "../error";
 
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
-
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
-    }
-
     emailExistsGET = async (
         email: string,
         options: APIOptions
@@ -56,14 +49,14 @@ export default class APIImplementation implements APIInterface {
         }
 
         let passwordResetLink =
-            (await this.recipeInstance.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user)) +
+            (await options.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user)) +
             "?token=" +
             token +
             "&rid=" +
-            this.recipeInstance.getRecipeId();
+            options.recipeId;
 
         try {
-            this.recipeInstance.config.resetPasswordUsingTokenFeature
+            options.config.resetPasswordUsingTokenFeature
                 .createAndSendCustomEmail(user, passwordResetLink)
                 .catch((_) => {});
         } catch (ignored) {}
@@ -108,10 +101,10 @@ export default class APIImplementation implements APIInterface {
 
         let user = await options.recipeImplementation.signIn(email, password);
 
-        await this.recipeInstance.config.signInFeature.handlePostSignIn(user);
+        await options.config.signInFeature.handlePostSignIn(user);
 
-        let jwtPayloadPromise = this.recipeInstance.config.sessionFeature.setJwtPayload(user, formFields, "signin");
-        let sessionDataPromise = this.recipeInstance.config.sessionFeature.setSessionData(user, formFields, "signin");
+        let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signin");
+        let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signin");
 
         let jwtPayload: { [key: string]: any } | undefined = undefined;
         let sessionData: { [key: string]: any } | undefined = undefined;
@@ -179,10 +172,10 @@ export default class APIImplementation implements APIInterface {
 
         let user = await options.recipeImplementation.signUp(email, password);
 
-        await this.recipeInstance.config.signUpFeature.handlePostSignUp(user, formFields);
+        await options.config.signUpFeature.handlePostSignUp(user, formFields);
 
-        let jwtPayloadPromise = this.recipeInstance.config.sessionFeature.setJwtPayload(user, formFields, "signup");
-        let sessionDataPromise = this.recipeInstance.config.sessionFeature.setSessionData(user, formFields, "signup");
+        let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signup");
+        let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signup");
 
         let jwtPayload: { [key: string]: any } | undefined = undefined;
         let sessionData: { [key: string]: any } | undefined = undefined;

@@ -13,20 +13,12 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
-import { APIInterface } from "../";
+import { APIInterface, APIOptions } from "../";
 
-export default async function passwordReset(
-    apiImplementation: APIInterface,
-    recipeInstance: Recipe,
-    req: Request,
-    res: Response,
-    next: NextFunction
-) {
+export default async function passwordReset(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
     // step 1
@@ -34,11 +26,11 @@ export default async function passwordReset(
         id: string;
         value: string;
     }[] = await validateFormFieldsOrThrowError(
-        recipeInstance.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
-        req.body.formFields
+        options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
+        options.req.body.formFields
     );
 
-    let token = req.body.token;
+    let token = options.req.body.token;
     if (token === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
@@ -52,12 +44,7 @@ export default async function passwordReset(
         });
     }
 
-    let result = await apiImplementation.passwordResetPOST(formFields, token, {
-        recipeImplementation: recipeInstance.recipeInterfaceImpl,
-        req,
-        res,
-        next,
-    });
+    let result = await apiImplementation.passwordResetPOST(formFields, token, options);
 
-    send200Response(res, result);
+    send200Response(options.res, result);
 }

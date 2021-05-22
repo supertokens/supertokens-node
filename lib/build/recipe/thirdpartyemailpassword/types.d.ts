@@ -1,4 +1,4 @@
-import { TypeProvider } from "../thirdparty/types";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import {
     RecipeImplementation as EmailVerificationRecipeImplementation,
@@ -11,9 +11,9 @@ import {
     TypeFormField,
     TypeInputFormField,
     TypeInputResetPasswordUsingTokenFeature,
+    APIOptions as EmailPasswordAPIOptionsOriginal,
 } from "../emailpassword/types";
 import { RecipeImplementation, APIImplementation } from "./";
-import { Request, Response, NextFunction } from "express";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -276,16 +276,12 @@ export interface RecipeInterface {
     createResetPasswordToken(userId: string): Promise<string>;
     resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
 }
-export declare type APIOptions = {
-    recipeImplementation: RecipeInterface;
-    req: Request;
-    res: Response;
-    next: NextFunction;
-};
+export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
+export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 export interface APIInterface {
     authorisationUrlGET(
         provider: TypeProvider,
-        options: APIOptions
+        options: ThirdPartyAPIOptions
     ): Promise<{
         status: "OK";
         url: string;
@@ -294,20 +290,20 @@ export interface APIInterface {
         provider: TypeProvider,
         code: string,
         redirectURI: string,
-        options: APIOptions
+        options: ThirdPartyAPIOptions
     ): Promise<{
         status: "OK";
         createdNewUser: boolean;
         user: User;
     }>;
     signOutPOST(
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
     }>;
     emailExistsGET(
         email: string,
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
         exists: boolean;
@@ -317,7 +313,7 @@ export interface APIInterface {
             id: string;
             value: string;
         }[],
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
     }>;
@@ -327,7 +323,7 @@ export interface APIInterface {
             value: string;
         }[],
         token: string,
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
     }>;
@@ -336,7 +332,7 @@ export interface APIInterface {
             id: string;
             value: string;
         }[],
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
         user: User;
@@ -346,7 +342,7 @@ export interface APIInterface {
             id: string;
             value: string;
         }[],
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
         user: User;

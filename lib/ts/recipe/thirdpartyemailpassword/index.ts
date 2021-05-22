@@ -16,7 +16,7 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import * as thirdPartyProviders from "../thirdparty/providers";
-import { RecipeInterface, User, APIInterface, APIOptions } from "./types";
+import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -142,4 +142,13 @@ export let Facebook = Wrapper.Facebook;
 
 export let Apple = Wrapper.Apple;
 
-export type { RecipeInterface, RecipeImplementation, TypeProvider, User, APIInterface, APIOptions, APIImplementation };
+export type {
+    RecipeInterface,
+    RecipeImplementation,
+    TypeProvider,
+    User,
+    APIInterface,
+    EmailPasswordAPIOptions,
+    ThirdPartyAPIOptions,
+    APIImplementation,
+};
