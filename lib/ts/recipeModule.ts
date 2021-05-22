@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import { Querier } from "./querier";
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import * as express from "express";
@@ -22,21 +21,11 @@ import NormalisedURLPath from "./normalisedURLPath";
 export default abstract class RecipeModule {
     private recipeId: string;
 
-    private querier: Querier | undefined;
-
     private appInfo: NormalisedAppinfo;
 
-    private isInServerlessEnv: boolean;
-
-    private rIdToCore: string;
-
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, rIdToCore?: string) {
+    constructor(recipeId: string, appInfo: NormalisedAppinfo) {
         this.recipeId = recipeId;
         this.appInfo = appInfo;
-        this.isInServerlessEnv = isInServerlessEnv;
-
-        // we use the recipeID of this recipe if rIdToCore is not overriding it..
-        this.rIdToCore = rIdToCore === undefined ? recipeId : rIdToCore;
     }
 
     getRecipeId = (): string => {
@@ -45,17 +34,6 @@ export default abstract class RecipeModule {
 
     getAppInfo = (): NormalisedAppinfo => {
         return this.appInfo;
-    };
-
-    checkIfInServerlessEnv = (): boolean => {
-        return this.isInServerlessEnv;
-    };
-
-    getQuerier = (): Querier => {
-        if (this.querier === undefined) {
-            this.querier = Querier.getInstanceOrThrowError(this.isInServerlessEnv, this.rIdToCore);
-        }
-        return this.querier;
     };
 
     returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {

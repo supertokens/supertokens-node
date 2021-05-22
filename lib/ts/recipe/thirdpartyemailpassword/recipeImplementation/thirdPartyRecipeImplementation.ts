@@ -1,19 +1,16 @@
 import { RecipeInterface, User } from "../../thirdparty/types";
 import STError from "../error";
-import Recipe from "../recipe";
+import { RecipeInterface as ThirdPartyRecipeInterface } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
-    recipeInstance: Recipe;
+    recipeImplementation: ThirdPartyRecipeInterface;
 
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
+    constructor(recipeImplementation: ThirdPartyRecipeInterface) {
+        this.recipeImplementation = recipeImplementation;
     }
 
     getUserByThirdPartyInfo = async (thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> => {
-        let user = await this.recipeInstance.recipeInterfaceImpl.getUserByThirdPartyInfo(
-            thirdPartyId,
-            thirdPartyUserId
-        );
+        let user = await this.recipeImplementation.getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
         if (user === undefined || user.thirdParty === undefined) {
             return undefined;
         }
@@ -33,7 +30,7 @@ export default class RecipeImplementation implements RecipeInterface {
             isVerified: boolean;
         }
     ): Promise<{ createdNewUser: boolean; user: User }> => {
-        let result = await this.recipeInstance.recipeInterfaceImpl.signInUp(thirdPartyId, thirdPartyUserId, email);
+        let result = await this.recipeImplementation.signInUp(thirdPartyId, thirdPartyUserId, email);
         if (result.user.thirdParty === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
@@ -52,7 +49,7 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     getUserById = async (userId: string): Promise<User | undefined> => {
-        let user = await this.recipeInstance.recipeInterfaceImpl.getUserById(userId);
+        let user = await this.recipeImplementation.getUserById(userId);
         if (user === undefined || user.thirdParty === undefined) {
             // either user is undefined or it's an email password user.
             return undefined;

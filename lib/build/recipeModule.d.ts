@@ -1,19 +1,13 @@
-import { Querier } from "./querier";
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import * as express from "express";
 import NormalisedURLPath from "./normalisedURLPath";
 export default abstract class RecipeModule {
     private recipeId;
-    private querier;
     private appInfo;
-    private isInServerlessEnv;
-    private rIdToCore;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, rIdToCore?: string);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo);
     getRecipeId: () => string;
     getAppInfo: () => NormalisedAppinfo;
-    checkIfInServerlessEnv: () => boolean;
-    getQuerier: () => Querier;
     returnAPIIdIfCanHandleRequest: (path: NormalisedURLPath, method: HTTPMethod) => string | undefined;
     abstract getAPIsHandled(): APIHandled[];
     abstract handleAPIRequest(

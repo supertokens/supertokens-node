@@ -25,6 +25,7 @@ import { REFRESH_API_PATH, SIGNOUT_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } from "./cookieAndHeaders";
 import RecipeImplementation from "./recipeImplementation";
+import { Querier } from "../../querier";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -36,10 +37,14 @@ export default class SessionRecipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
-        super(recipeId, appInfo, isInServerlessEnv);
+        super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.recipeInterfaceImpl = this.config.override.functions(
-            new RecipeImplementation(this.getQuerier(), this.config, this.checkIfInServerlessEnv())
+            new RecipeImplementation(
+                Querier.getInstanceOrThrowError(isInServerlessEnv, recipeId),
+                this.config,
+                isInServerlessEnv
+            )
         );
     }
 

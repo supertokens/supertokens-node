@@ -38,6 +38,7 @@ import emailExistsAPI from "./api/emailExists";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
+import { Querier } from "../../querier";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -51,14 +52,8 @@ export default class Recipe extends RecipeModule {
 
     apiImpl: APIInterface;
 
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config?: TypeInput,
-        rIdToCore?: string
-    ) {
-        super(recipeId, appInfo, isInServerlessEnv, rIdToCore);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
+        super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,
@@ -66,7 +61,9 @@ export default class Recipe extends RecipeModule {
             isInServerlessEnv,
             this.config.emailVerificationFeature
         );
-        this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this.getQuerier()));
+        this.recipeInterfaceImpl = this.config.override.functions(
+            new RecipeImplementation(Querier.getInstanceOrThrowError(isInServerlessEnv, recipeId))
+        );
         this.apiImpl = this.config.override.apis(new APIImplementation(this));
     }
 

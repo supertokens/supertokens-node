@@ -26,6 +26,7 @@ import generateEmailVerifyTokenAPI from "./api/generateEmailVerifyToken";
 import emailVerifyAPI from "./api/emailVerify";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
+import { Querier } from "../../querier";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -38,9 +39,11 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
-        super(recipeId, appInfo, isInServerlessEnv);
+        super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
-        this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this.getQuerier()));
+        this.recipeInterfaceImpl = this.config.override.functions(
+            new RecipeImplementation(Querier.getInstanceOrThrowError(isInServerlessEnv, recipeId))
+        );
         this.apiImpl = this.config.override.apis(new APIImplementation(this));
     }
 

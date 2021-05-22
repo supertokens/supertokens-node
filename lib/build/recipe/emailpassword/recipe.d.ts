@@ -12,13 +12,7 @@ export default class Recipe extends RecipeModule {
     emailVerificationRecipe: EmailVerificationRecipe;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config?: TypeInput,
-        rIdToCore?: string
-    );
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): Recipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;

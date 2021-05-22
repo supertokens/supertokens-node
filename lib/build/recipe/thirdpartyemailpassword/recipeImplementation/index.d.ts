@@ -1,12 +1,11 @@
 import { RecipeInterface, User } from "../types";
 import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
-import EmailPasswordRecipe from "../../emailpassword/recipe";
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
-import ThirdPartyRecipe from "../../thirdparty/recipe";
+import { Querier } from "../../../querier";
 export default class RecipeImplementation implements RecipeInterface {
     emailPasswordImplementation: EmailPasswordImplemenation;
     thirdPartyImplementation: ThirdPartyImplemenation | undefined;
-    constructor(emailPasswordRecipeInstance: EmailPasswordRecipe, thirdPartyRecipeInstance?: ThirdPartyRecipe);
+    constructor(emailPasswordQuerier: Querier, thirdPartyQuerier?: Querier);
     signUp: (email: string, password: string) => Promise<User>;
     signIn: (email: string, password: string) => Promise<User>;
     signInUp: (
