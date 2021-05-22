@@ -20,7 +20,7 @@ export default class RecipeImplementation implements RecipeInterface {
         this.recipeInstance = recipeInstance;
         this.emailPasswordImplementation = new EmailPasswordImplemenation(emailPasswordRecipeInstance.getQuerier());
         if (thirdPartyRecipeInstance !== undefined) {
-            this.thirdPartyImplementation = new ThirdPartyImplemenation(thirdPartyRecipeInstance);
+            this.thirdPartyImplementation = new ThirdPartyImplemenation(thirdPartyRecipeInstance.getQuerier());
         }
     }
 
