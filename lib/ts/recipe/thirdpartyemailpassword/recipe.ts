@@ -54,8 +54,8 @@ export default class Recipe extends RecipeModule {
 
         this.recipeInterfaceImpl = this.config.override.functions(
             new RecipeImplementation(
-                Querier.getInstanceOrThrowError(isInServerlessEnv, EmailPasswordRecipe.RECIPE_ID),
-                Querier.getInstanceOrThrowError(isInServerlessEnv, ThirdPartyRecipe.RECIPE_ID)
+                Querier.getNewInstanceOrThrowError(isInServerlessEnv, EmailPasswordRecipe.RECIPE_ID),
+                Querier.getNewInstanceOrThrowError(isInServerlessEnv, ThirdPartyRecipe.RECIPE_ID)
             )
         );
 

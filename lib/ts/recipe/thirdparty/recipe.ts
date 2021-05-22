@@ -57,7 +57,7 @@ export default class Recipe extends RecipeModule {
 
         this.providers = this.config.signInAndUpFeature.providers;
         this.recipeInterfaceImpl = this.config.override.functions(
-            new RecipeImplementation(Querier.getInstanceOrThrowError(isInServerlessEnv, recipeId))
+            new RecipeImplementation(Querier.getNewInstanceOrThrowError(isInServerlessEnv, recipeId))
         );
         this.apiImpl = this.config.override.apis(new APIImplementation(this));
     }

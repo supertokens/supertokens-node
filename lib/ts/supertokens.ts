@@ -112,7 +112,7 @@ export default class SuperTokens {
 
     sendTelemetry = async () => {
         try {
-            let querier = Querier.getInstanceOrThrowError(this.isInServerlessEnv, undefined);
+            let querier = Querier.getNewInstanceOrThrowError(this.isInServerlessEnv, undefined);
             let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {});
             let telemetryId: string | undefined;
             if (response.exists) {

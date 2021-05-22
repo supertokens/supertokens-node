@@ -112,7 +112,7 @@ export class Querier {
         return Querier.hostsAliveForTesting;
     };
 
-    static getInstanceOrThrowError(isInServerlessEnv: boolean, rIdToCore?: string): Querier {
+    static getNewInstanceOrThrowError(isInServerlessEnv: boolean, rIdToCore?: string): Querier {
         if (!Querier.initCalled || Querier.hosts === undefined) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
