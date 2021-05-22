@@ -1,14 +1,19 @@
-import { TypeProvider } from "../thirdparty/types";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import {
-    TypeInput as TypeNormalisedInputEmailVerification,
+    RecipeImplementation as EmailVerificationRecipeImplementation,
     RecipeInterface as EmailVerificationRecipeInterface,
-} from "../emailverification/types";
+    APIImplementation as EmailVerificationAPIImplementation,
+    APIInterface as EmailVerificationAPIInterface,
+} from "../emailverification";
 import {
     NormalisedFormField,
     TypeFormField,
     TypeInputFormField,
     TypeInputResetPasswordUsingTokenFeature,
+    APIOptions as EmailPasswordAPIOptionsOriginal,
 } from "../emailpassword/types";
+import { RecipeImplementation, APIImplementation } from "./";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -98,9 +103,6 @@ export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
-    override?: {
-        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-    };
 };
 export declare type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
@@ -111,7 +113,14 @@ export declare type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis?: (originalImplementation: APIImplementation) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (
+                originalImplementation: EmailVerificationRecipeImplementation
+            ) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+        };
     };
 };
 export declare const InputSchema: {
@@ -212,9 +221,6 @@ export declare const InputSchema: {
             handlePostEmailVerification: {
                 type: string;
             };
-            override: {
-                type: string;
-            };
         };
         additionalProperties: boolean;
     };
@@ -231,7 +237,8 @@ export declare type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 export interface RecipeInterface {
@@ -268,4 +275,76 @@ export interface RecipeInterface {
     getUserByEmail(email: string): Promise<User | undefined>;
     createResetPasswordToken(userId: string): Promise<string>;
     resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+}
+export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
+export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
+export interface APIInterface {
+    authorisationUrlGET(
+        provider: TypeProvider,
+        options: ThirdPartyAPIOptions
+    ): Promise<{
+        status: "OK";
+        url: string;
+    }>;
+    signInUpPOST(
+        provider: TypeProvider,
+        code: string,
+        redirectURI: string,
+        options: ThirdPartyAPIOptions
+    ): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
+    signOutPOST(
+        options: EmailPasswordAPIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    emailExistsGET(
+        email: string,
+        options: EmailPasswordAPIOptions
+    ): Promise<{
+        status: "OK";
+        exists: boolean;
+    }>;
+    generatePasswordResetTokenPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        options: EmailPasswordAPIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    passwordResetPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        token: string,
+        options: EmailPasswordAPIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    signInPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        options: EmailPasswordAPIOptions
+    ): Promise<{
+        status: "OK";
+        user: User;
+    }>;
+    signUpPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        options: EmailPasswordAPIOptions
+    ): Promise<{
+        status: "OK";
+        user: User;
+    }>;
 }

@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Removes `superTokensMiddleware` from NextJS as it is no longer needed and was deprecated.
 -   Fixes NextJS type for `superTokensNextWrapper` function
 -   Sign up / sign in callbacks' `formField` param includes email & password.
+-   Adds API interfaces to all recipes
+-   Provides a way to override API logic easily.
 
 ## [5.0.1] - 2021-05-06
 

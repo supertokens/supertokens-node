@@ -13,34 +13,21 @@
  * under the License.
  */
 import { Response, NextFunction, Request } from "express";
-import { SessionRequest, VerifySessionOptions } from "./types";
-import SessionRecipe from "./recipe";
-import { normaliseHttpMethod, sendNon200Response } from "../../utils";
-import NormalisedURLPath from "../../normalisedURLPath";
+import { SessionRequest, VerifySessionOptions } from "../types";
+import SessionRecipe from "../recipe";
+import { sendNon200Response } from "../../../utils";
 
 export function verifySession(recipeInstance: SessionRecipe, options?: VerifySessionOptions) {
     // We know this should be Request but then Type
-    return async (request: SessionRequest, response: Response, next: NextFunction) => {
-        try {
-            let method = normaliseHttpMethod(request.method);
-            if (method === "options" || method === "trace") {
-                return next();
-            }
-
-            let incomingPath = new NormalisedURLPath(
-                recipeInstance,
-                request.originalUrl === undefined ? request.url : request.originalUrl
-            );
-            let refreshTokenPath = recipeInstance.config.refreshTokenPath;
-            if (incomingPath.equals(refreshTokenPath) && method === "post") {
-                request.session = await recipeInstance.recipeInterfaceImpl.refreshSession(request, response);
-            } else {
-                request.session = await recipeInstance.recipeInterfaceImpl.getSession(request, response, options);
-            }
-            return next();
-        } catch (err) {
-            next(err);
-        }
+    return async (req: SessionRequest, res: Response, next: NextFunction) => {
+        return await recipeInstance.apiImpl.verifySession(options, {
+            config: recipeInstance.config,
+            next,
+            req,
+            res,
+            recipeId: recipeInstance.getRecipeId(),
+            recipeImplementation: recipeInstance.recipeInterfaceImpl,
+        });
     };
 }
 
@@ -52,12 +39,7 @@ export async function sendTryRefreshTokenResponse(
     next: NextFunction
 ) {
     try {
-        sendNon200Response(
-            recipeInstance,
-            response,
-            "try refresh token",
-            recipeInstance.config.sessionExpiredStatusCode
-        );
+        sendNon200Response(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
     } catch (err) {
         next(err);
     }
@@ -71,7 +53,7 @@ export async function sendUnauthorisedResponse(
     next: NextFunction
 ) {
     try {
-        sendNon200Response(recipeInstance, response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
+        sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
     } catch (err) {
         next(err);
     }
@@ -87,12 +69,7 @@ export async function sendTokenTheftDetectedResponse(
 ) {
     try {
         await recipeInstance.recipeInterfaceImpl.revokeSession(sessionHandle);
-        sendNon200Response(
-            recipeInstance,
-            response,
-            "token theft detected",
-            recipeInstance.config.sessionExpiredStatusCode
-        );
+        sendNon200Response(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
     } catch (err) {
         next(err);
     }

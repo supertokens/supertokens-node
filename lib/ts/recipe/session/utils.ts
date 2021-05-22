@@ -31,16 +31,19 @@ import * as express from "express";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
 import STError from "./error";
-import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauthorisedResponse } from "./middleware";
+import {
+    sendTryRefreshTokenResponse,
+    sendTokenTheftDetectedResponse,
+    sendUnauthorisedResponse,
+} from "./api/middleware";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
-import RecipeModule from "../../recipeModule";
-import { RecipeInterface } from "./types";
+import { RecipeImplementation, RecipeInterface, APIImplementation, APIInterface } from "./";
 
-export function normaliseSessionScopeOrThrowError(recipe: RecipeModule | undefined, sessionScope: string): string {
+export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
     function helper(sessionScope: string): string {
         sessionScope = sessionScope.trim().toLowerCase();
 
@@ -64,13 +67,10 @@ export function normaliseSessionScopeOrThrowError(recipe: RecipeModule | undefin
 
             return sessionScope;
         } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("Please provide a valid sessionScope"),
-                },
-                recipe
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("Please provide a valid sessionScope"),
+            });
         }
     }
 
@@ -87,7 +87,7 @@ export function normaliseSessionScopeOrThrowError(recipe: RecipeModule | undefin
     return noDotNormalised;
 }
 
-export function getTopLevelDomainForSameSiteResolution(url: string, recipeInstance: SessionRecipe): string {
+export function getTopLevelDomainForSameSiteResolution(url: string): string {
     let urlObj = new URL(url);
     let hostname = urlObj.hostname;
     if (hostname.startsWith("localhost") || hostname.startsWith("localhost.org") || isAnIpAddress(hostname)) {
@@ -96,13 +96,10 @@ export function getTopLevelDomainForSameSiteResolution(url: string, recipeInstan
     }
     let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
     if (parsedURL.domain === null) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Please make sure that the apiDomain and websiteDomain have correct values"),
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Please make sure that the apiDomain and websiteDomain have correct values"),
+        });
     }
     return parsedURL.domain;
 }
@@ -112,26 +109,20 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "session recipe", recipeInstance);
+    validateTheStructureOfUserInput(config, InputSchema, "session recipe");
     let cookieDomain =
         config === undefined || config.cookieDomain === undefined
             ? undefined
-            : normaliseSessionScopeOrThrowError(recipeInstance, config.cookieDomain);
+            : normaliseSessionScopeOrThrowError(config.cookieDomain);
 
-    let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(
-        appInfo.apiDomain.getAsStringDangerous(),
-        recipeInstance
-    );
-    let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(
-        appInfo.websiteDomain.getAsStringDangerous(),
-        recipeInstance
-    );
+    let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(appInfo.apiDomain.getAsStringDangerous());
+    let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(appInfo.websiteDomain.getAsStringDangerous());
 
     let cookieSameSite: "strict" | "lax" | "none" = topLevelAPIDomain !== topLevelWebsiteDomain ? "none" : "lax";
     cookieSameSite =
         config === undefined || config.cookieSameSite === undefined
             ? cookieSameSite
-            : normaliseSameSiteOrThrowError(recipeInstance, config.cookieSameSite);
+            : normaliseSameSiteOrThrowError(config.cookieSameSite);
 
     let cookieSecure =
         config === undefined || config.cookieSecure === undefined
@@ -165,13 +156,10 @@ export function validateAndNormaliseUserInput(
 
     if (config !== undefined && config.antiCsrf !== undefined) {
         if (config.antiCsrf !== "NONE" && config.antiCsrf !== "VIA_CUSTOM_HEADER" && config.antiCsrf !== "VIA_TOKEN") {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("antiCsrf config must be one of 'NONE' or 'VIA_CUSTOM_HEADER' or 'VIA_TOKEN'"),
-                },
-                recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("antiCsrf config must be one of 'NONE' or 'VIA_CUSTOM_HEADER' or 'VIA_TOKEN'"),
+            });
         }
     }
 
@@ -224,36 +212,39 @@ export function validateAndNormaliseUserInput(
         !(topLevelAPIDomain === "localhost" || isAnIpAddress(topLevelAPIDomain)) &&
         !(topLevelWebsiteDomain === "localhost" || isAnIpAddress(topLevelWebsiteDomain))
     ) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error(
-                    "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
-                ),
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error(
+                "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
+            ),
+        });
     }
 
     let override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
+    } = {
+        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
+        apis: (originalImplementation: APIImplementation) => originalImplementation,
     };
 
-    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
-        override = {
-            functions: config.override.functions,
-        };
-    } else {
-        override = {
-            functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        };
+    if (config !== undefined && config.override !== undefined) {
+        if (config.override.functions !== undefined) {
+            override = {
+                ...override,
+                functions: config.override.functions,
+            };
+        }
+        if (config.override.apis !== undefined) {
+            override = {
+                ...override,
+                apis: config.override.apis,
+            };
+        }
     }
 
     return {
-        refreshTokenPath: appInfo.apiBasePath.appendPath(
-            recipeInstance,
-            new NormalisedURLPath(recipeInstance, REFRESH_API_PATH)
-        ),
+        refreshTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(REFRESH_API_PATH)),
         cookieDomain,
         cookieSameSite,
         cookieSecure,
@@ -266,43 +257,31 @@ export function validateAndNormaliseUserInput(
     };
 }
 
-export function normaliseSameSiteOrThrowError(
-    recipe: RecipeModule | undefined,
-    sameSite: string
-): "strict" | "lax" | "none" {
+export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none" {
     sameSite = sameSite.trim();
     sameSite = sameSite.toLocaleLowerCase();
     if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error('cookie same site must be one of "strict", "lax", or "none"'),
-            },
-            recipe
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error('cookie same site must be one of "strict", "lax", or "none"'),
+        });
     }
     return sameSite;
 }
 
 export function attachCreateOrRefreshSessionResponseToExpressRes(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     response: CreateOrRefreshAPIResponse
 ) {
     let accessToken = response.accessToken;
     let refreshToken = response.refreshToken;
     let idRefreshToken = response.idRefreshToken;
-    setFrontTokenInHeaders(
-        recipeInstance,
-        res,
-        response.session.userId,
-        response.accessToken.expiry,
-        response.session.userDataInJWT
-    );
-    attachAccessTokenToCookie(recipeInstance, res, accessToken.token, accessToken.expiry);
-    attachRefreshTokenToCookie(recipeInstance, res, refreshToken.token, refreshToken.expiry);
-    setIdRefreshTokenInHeaderAndCookie(recipeInstance, res, idRefreshToken.token, idRefreshToken.expiry);
+    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
+    attachAccessTokenToCookie(config, res, accessToken.token, accessToken.expiry);
+    attachRefreshTokenToCookie(config, res, refreshToken.token, refreshToken.expiry);
+    setIdRefreshTokenInHeaderAndCookie(config, res, idRefreshToken.token, idRefreshToken.expiry);
     if (response.antiCsrfToken !== undefined) {
-        setAntiCsrfTokenInHeaders(recipeInstance, res, response.antiCsrfToken);
+        setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
 }

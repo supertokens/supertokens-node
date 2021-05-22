@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User, APIInterface } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
@@ -28,6 +28,8 @@ import signInUpAPI from "./api/signinup";
 import authorisationUrlAPI from "./api/authorisationUrl";
 import { send200Response } from "../../utils";
 import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
+import { Querier } from "../../querier";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -41,14 +43,10 @@ export default class Recipe extends RecipeModule {
 
     recipeInterfaceImpl: RecipeInterface;
 
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config: TypeInput,
-        rIdToCore?: string
-    ) {
-        super(recipeId, appInfo, isInServerlessEnv, rIdToCore);
+    apiImpl: APIInterface;
+
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+        super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,
@@ -58,7 +56,10 @@ export default class Recipe extends RecipeModule {
         );
 
         this.providers = this.config.signInAndUpFeature.providers;
-        this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this));
+        this.recipeInterfaceImpl = this.config.override.functions(
+            new RecipeImplementation(Querier.getNewInstanceOrThrowError(isInServerlessEnv, recipeId))
+        );
+        this.apiImpl = this.config.override.apis(new APIImplementation());
     }
 
     static init(config: TypeInput): RecipeListFunction {
@@ -67,15 +68,12 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
-                throw new STError(
-                    {
-                        type: STError.GENERAL_ERROR,
-                        payload: new Error(
-                            "ThirdParty recipe has already been initialised. Please check your code for bugs."
-                        ),
-                    },
-                    undefined
-                );
+                throw new STError({
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error(
+                        "ThirdParty recipe has already been initialised. Please check your code for bugs."
+                    ),
+                });
             }
         };
     }
@@ -84,24 +82,18 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-            },
-            undefined
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+        });
     }
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("calling testing function in non testing env"),
-                },
-                undefined
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("calling testing function in non testing env"),
+            });
         }
         Recipe.instance = undefined;
     }
@@ -110,19 +102,19 @@ export default class Recipe extends RecipeModule {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_IN_UP_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(SIGN_IN_UP_API),
                 id: SIGN_IN_UP_API,
                 disabled: this.config.signInAndUpFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_OUT_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(SIGN_OUT_API),
                 id: SIGN_OUT_API,
                 disabled: this.config.signOutFeature.disableDefaultImplementation,
             },
             {
                 method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, AUTHORISATION_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(AUTHORISATION_API),
                 id: AUTHORISATION_API,
                 disabled: this.config.signInAndUpFeature.disableDefaultImplementation,
             },
@@ -138,12 +130,21 @@ export default class Recipe extends RecipeModule {
         path: NormalisedURLPath,
         method: HTTPMethod
     ) => {
+        let options = {
+            config: this.config,
+            next,
+            recipeId: this.getRecipeId(),
+            recipeImplementation: this.recipeInterfaceImpl,
+            providers: this.providers,
+            req,
+            res,
+        };
         if (id === SIGN_IN_UP_API) {
-            return await signInUpAPI(this, req, res, next);
+            return await signInUpAPI(this.apiImpl, options);
         } else if (id === SIGN_OUT_API) {
-            return await signOutAPI(this, req, res, next);
+            return await signOutAPI(this.apiImpl, options);
         } else if (id === AUTHORISATION_API) {
-            return await authorisationUrlAPI(this, req, res, next);
+            return await authorisationUrlAPI(this.apiImpl, options);
         } else {
             return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
         }
@@ -155,27 +156,33 @@ export default class Recipe extends RecipeModule {
         response: express.Response,
         next: express.NextFunction
     ): void => {
-        if (err.type === STError.NO_EMAIL_GIVEN_BY_PROVIDER) {
-            return send200Response(response, {
-                status: "NO_EMAIL_GIVEN_BY_PROVIDER",
-            });
-        } else if (err.type === STError.FIELD_ERROR) {
-            return send200Response(response, {
-                status: "FIELD_ERROR",
-                error: err.message,
-            });
+        if (err.fromRecipe === Recipe.RECIPE_ID) {
+            if (err.type === STError.NO_EMAIL_GIVEN_BY_PROVIDER) {
+                return send200Response(response, {
+                    status: "NO_EMAIL_GIVEN_BY_PROVIDER",
+                });
+            } else if (err.type === STError.FIELD_ERROR) {
+                // Do not remove this error: This is needed so that custom error can be thrown to the frontend during sign up / in
+                return send200Response(response, {
+                    status: "FIELD_ERROR",
+                    error: err.message,
+                });
+            } else {
+                return next(err);
+            }
+        } else {
+            return this.emailVerificationRecipe.handleError(err, request, response, next);
         }
-        return this.emailVerificationRecipe.handleError(err, request, response, next);
     };
 
     getAllCORSHeaders = (): string[] => {
         return [...this.emailVerificationRecipe.getAllCORSHeaders()];
     };
 
-    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+    isErrorFromThisRecipe = (err: any): err is STError => {
         return (
             STError.isErrorFromSuperTokens(err) &&
-            (this === err.recipe || this.emailVerificationRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err))
+            (err.fromRecipe === Recipe.RECIPE_ID || this.emailVerificationRecipe.isErrorFromThisRecipe(err))
         );
     };
 
@@ -184,13 +191,10 @@ export default class Recipe extends RecipeModule {
     getEmailForUserId = async (userId: string) => {
         let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
         if (userInfo === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this
-            );
+            throw new STError({
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Unknown User ID provided",
+            });
         }
         return userInfo.email;
     };
@@ -206,13 +210,10 @@ export default class Recipe extends RecipeModule {
         let user = await this.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken(token);
         let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
         if (userInThisRecipe === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this
-            );
+            throw new STError({
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Unknown User ID provided",
+            });
         }
         return userInThisRecipe;
     };

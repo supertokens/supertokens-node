@@ -13,32 +13,23 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import STError from "../error";
+import { APIInterface, APIOptions } from "../";
 
-export default async function emailExists(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
+export default async function emailExists(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
 
-    // step 1
-    let email = req.query.email;
+    let email = options.req.query.email;
 
     if (email === undefined || typeof email !== "string") {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message: "Please provide the email as a GET param",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the email as a GET param",
+        });
     }
 
-    // step 2
-    let user = await recipeInstance.recipeInterfaceImpl.getUserByEmail(email);
+    let result = await apiImplementation.emailExistsGET(email, options);
 
-    return send200Response(res, {
-        status: "OK",
-        exists: user !== undefined,
-    });
+    return send200Response(options.res, result);
 }

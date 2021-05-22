@@ -16,13 +16,12 @@
 import { URL } from "url";
 import STError from "./error";
 import { isAnIpAddress } from "./utils";
-import RecipeModule from "./recipeModule";
 
 export default class NormalisedURLDomain {
     private value: string;
 
-    constructor(recipe: RecipeModule | undefined, url: string) {
-        this.value = normaliseURLDomainOrThrowError(recipe, url);
+    constructor(url: string) {
+        this.value = normaliseURLDomainOrThrowError(url);
     }
 
     getAsStringDangerous = () => {
@@ -30,11 +29,7 @@ export default class NormalisedURLDomain {
     };
 }
 
-export function normaliseURLDomainOrThrowError(
-    recipe: RecipeModule | undefined,
-    input: string,
-    ignoreProtocol = false
-): string {
+export function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): string {
     input = input.trim().toLowerCase();
 
     try {
@@ -59,7 +54,6 @@ export function normaliseURLDomainOrThrowError(
     if (input.startsWith("/")) {
         throw new STError({
             type: STError.GENERAL_ERROR,
-            recipe,
             payload: new Error("Please provide a valid domain name"),
         });
     }
@@ -80,13 +74,12 @@ export function normaliseURLDomainOrThrowError(
         // at this point, it should be a valid URL. So we test that before doing a recursive call
         try {
             new URL(input);
-            return normaliseURLDomainOrThrowError(recipe, input, true);
+            return normaliseURLDomainOrThrowError(input, true);
         } catch (err) {}
     }
 
     throw new STError({
         type: STError.GENERAL_ERROR,
-        recipe,
         payload: new Error("Please provide a valid domain name"),
     });
 }

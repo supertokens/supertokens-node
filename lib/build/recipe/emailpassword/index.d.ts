@@ -1,32 +1,34 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface } from "./types";
+import { RecipeInterface, User, APIOptions, APIInterface } from "./types";
+import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static signUp(email: string, password: string): Promise<import("./types").User>;
-    static signIn(email: string, password: string): Promise<import("./types").User>;
-    static getUserById(userId: string): Promise<import("./types").User | undefined>;
-    static getUserByEmail(email: string): Promise<import("./types").User | undefined>;
+    static signUp(email: string, password: string): Promise<User>;
+    static signIn(email: string, password: string): Promise<User>;
+    static getUserById(userId: string): Promise<User | undefined>;
+    static getUserByEmail(email: string): Promise<User | undefined>;
     static createResetPasswordToken(userId: string): Promise<string>;
     static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
     static getUsersOldestFirst(
         limit?: number,
         nextPaginationToken?: string
     ): Promise<{
-        users: import("./types").User[];
+        users: User[];
         nextPaginationToken?: string | undefined;
     }>;
     static getUsersNewestFirst(
         limit?: number,
         nextPaginationToken?: string
     ): Promise<{
-        users: import("./types").User[];
+        users: User[];
         nextPaginationToken?: string | undefined;
     }>;
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<import("./types").User>;
+    static verifyEmailUsingToken(token: string): Promise<User>;
     static isEmailVerified(userId: string): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;
@@ -43,4 +45,4 @@ export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
 export declare let getUsersOldestFirst: typeof Wrapper.getUsersOldestFirst;
 export declare let getUsersNewestFirst: typeof Wrapper.getUsersNewestFirst;
 export declare let getUserCount: typeof Wrapper.getUserCount;
-export type { RecipeInterface };
+export type { RecipeInterface, RecipeImplementation, User, APIOptions, APIInterface, APIImplementation };

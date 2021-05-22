@@ -3,7 +3,7 @@ import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from ".
 import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
 import STError from "./error";
-import { TypeInput, TypeNormalisedInput, User, RecipeInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, User, RecipeInterface, APIInterface } from "./types";
 import STErrorEmailPassword from "../emailpassword/error";
 import STErrorThirdParty from "../thirdparty/error";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -15,6 +15,7 @@ export default class Recipe extends RecipeModule {
     private emailPasswordRecipe;
     private thirdPartyRecipe;
     recipeInterfaceImpl: RecipeInterface;
+    apiImpl: APIInterface;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput);
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
@@ -35,7 +36,7 @@ export default class Recipe extends RecipeModule {
         next: express.NextFunction
     ) => void;
     getAllCORSHeaders: () => string[];
-    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
+    isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;
     createEmailVerificationToken: (userId: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<User>;

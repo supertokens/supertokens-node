@@ -13,8 +13,7 @@
  * under the License.
  */
 
-import SessionRecipe from "./recipe";
-import { verifySession as originalVerifySession } from "./middleware";
+import { verifySession as originalVerifySession } from "./api/middleware";
 import * as express from "express";
 import SuperTokensError from "./error";
 import {
@@ -22,16 +21,21 @@ import {
     RecipeInterface,
     SessionContainerInterface as SessionContainer,
     SessionRequest,
+    APIInterface,
+    APIOptions,
 } from "./types";
+import Recipe from "./recipe";
+import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
 
 // For Express
 export default class SessionWrapper {
-    static init = SessionRecipe.init;
+    static init = Recipe.init;
 
     static Error = SuperTokensError;
 
     static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession(
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession(
             res,
             userId,
             jwtPayload,
@@ -40,49 +44,43 @@ export default class SessionWrapper {
     }
 
     static getSession(req: express.Request, res: express.Response, options?: VerifySessionOptions) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession(req, res, options);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession(req, res, options);
     }
 
     static refreshSession(req: express.Request, res: express.Response) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession(req, res);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession(req, res);
     }
 
     static revokeAllSessionsForUser(userId: string) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser(userId);
     }
 
     static getAllSessionHandlesForUser(userId: string) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser(userId);
     }
 
     static revokeSession(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession(sessionHandle);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession(sessionHandle);
     }
 
     static revokeMultipleSessions(sessionHandles: string[]) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions(sessionHandles);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions(sessionHandles);
     }
 
     static getSessionData(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionData(sessionHandle);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionData(sessionHandle);
     }
 
     static updateSessionData(sessionHandle: string, newSessionData: any) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData(
-            sessionHandle,
-            newSessionData
-        );
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData(sessionHandle, newSessionData);
     }
 
     static getJWTPayload(sessionHandle: string) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWTPayload(sessionHandle);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWTPayload(sessionHandle);
     }
 
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-        return SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJWTPayload(
-            sessionHandle,
-            newJWTPayload
-        );
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJWTPayload(sessionHandle, newJWTPayload);
     }
 
     static verifySession = (options?: VerifySessionOptions) => {
@@ -90,7 +88,7 @@ export default class SessionWrapper {
         // https://github.com/supertokens/supertokens-node/issues/122
 
         return (req: express.Request, res: express.Response, next: express.NextFunction) =>
-            originalVerifySession(SessionRecipe.getInstanceOrThrowError(), options)(req, res, next);
+            originalVerifySession(Recipe.getInstanceOrThrowError(), options)(req, res, next);
     };
 }
 
@@ -122,4 +120,13 @@ export let verifySession = SessionWrapper.verifySession;
 
 export let Error = SessionWrapper.Error;
 
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest };
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    SessionRequest,
+    RecipeImplementation,
+    APIInterface,
+    APIOptions,
+    APIImplementation,
+};

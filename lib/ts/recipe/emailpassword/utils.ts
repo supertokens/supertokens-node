@@ -24,13 +24,13 @@ import {
     TypeInputResetPasswordUsingTokenFeature,
     TypeNormalisedInputResetPasswordUsingTokenFeature,
     NormalisedFormField,
-    TypeInputEmailVerificationFeature,
     InputSchema,
     TypeInputSessionFeature,
     TypeNormalisedInputSessionFeature,
     TypeFormField,
     TypeInputFormField,
     TypeInputSignIn,
+    APIInterface,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
@@ -42,13 +42,14 @@ import {
 } from "./passwordResetFunctions";
 import { validateTheStructureOfUserInput } from "../../utils";
 import STError from "./error";
+import { RecipeImplementation, APIImplementation } from "./";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe", recipeInstance);
+    validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe");
 
     let sessionFeature = validateAndNormaliseSessionFeatureConfig(
         recipeInstance,
@@ -82,24 +83,29 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.signOutFeature
     );
 
-    let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.emailVerificationFeature
-    );
+    let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
     let override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
+    } = {
+        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
+        apis: (originalImplementation: APIImplementation) => originalImplementation,
     };
 
-    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
-        override = {
-            functions: config.override.functions,
-        };
-    } else {
-        override = {
-            functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        };
+    if (config !== undefined && config.override !== undefined) {
+        if (config.override.functions !== undefined) {
+            override = {
+                ...override,
+                functions: config.override.functions,
+            };
+        }
+        if (config.override.apis !== undefined) {
+            override = {
+                ...override,
+                apis: config.override.apis,
+            };
+        }
     }
 
     return {
@@ -145,63 +151,63 @@ function validateAndNormaliseSessionFeatureConfig(
 export function validateAndNormaliseEmailVerificationConfig(
     recipeInstance: Recipe,
     _: NormalisedAppinfo,
-    config?: TypeInputEmailVerificationFeature
+    config?: TypeInput
 ): TypeNormalisedInputEmailVerification {
-    return config === undefined
+    return config?.emailVerificationFeature === undefined
         ? {
               getEmailForUserId: recipeInstance.getEmailForUserId,
           }
         : {
-              disableDefaultImplementation: config.disableDefaultImplementation,
-              override: config.override,
+              disableDefaultImplementation: config.emailVerificationFeature.disableDefaultImplementation,
+              override: config.override?.emailVerificationFeature,
               getEmailForUserId: recipeInstance.getEmailForUserId,
               createAndSendCustomEmail:
-                  config.createAndSendCustomEmail === undefined
+                  config.emailVerificationFeature.createAndSendCustomEmail === undefined
                       ? undefined
                       : async (user, link) => {
                             let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
-                            if (userInfo === undefined || config.createAndSendCustomEmail === undefined) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                            if (
+                                userInfo === undefined ||
+                                config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
+                            ) {
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
-                            return await config.createAndSendCustomEmail(userInfo, link);
+                            return await config.emailVerificationFeature.createAndSendCustomEmail(userInfo, link);
                         },
               getEmailVerificationURL:
-                  config.getEmailVerificationURL === undefined
+                  config.emailVerificationFeature.getEmailVerificationURL === undefined
                       ? undefined
                       : async (user) => {
                             let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
-                            if (userInfo === undefined || config.getEmailVerificationURL === undefined) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                            if (
+                                userInfo === undefined ||
+                                config?.emailVerificationFeature?.getEmailVerificationURL === undefined
+                            ) {
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
-                            return await config.getEmailVerificationURL(userInfo);
+                            return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                         },
               handlePostEmailVerification:
-                  config.handlePostEmailVerification === undefined
+                  config.emailVerificationFeature.handlePostEmailVerification === undefined
                       ? undefined
                       : async (user) => {
                             let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
-                            if (userInfo === undefined || config.handlePostEmailVerification === undefined) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                            if (
+                                userInfo === undefined ||
+                                config?.emailVerificationFeature?.handlePostEmailVerification === undefined
+                            ) {
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
-                            return await config.handlePostEmailVerification(userInfo);
+                            return await config.emailVerificationFeature.handlePostEmailVerification(userInfo);
                         },
           };
 }

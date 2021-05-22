@@ -1,6 +1,8 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface } from "./types";
+import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
+import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -13,30 +15,27 @@ export default class Wrapper {
         }
     ): Promise<{
         createdNewUser: boolean;
-        user: import("./types").User;
+        user: User;
     }>;
-    static getUserById(userId: string): Promise<import("./types").User | undefined>;
-    static getUserByThirdPartyInfo(
-        thirdPartyId: string,
-        thirdPartyUserId: string
-    ): Promise<import("./types").User | undefined>;
+    static getUserById(userId: string): Promise<User | undefined>;
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
     static getUsersOldestFirst(
         limit?: number,
         nextPaginationToken?: string
     ): Promise<{
-        users: import("./types").User[];
+        users: User[];
         nextPaginationToken?: string | undefined;
     }>;
     static getUsersNewestFirst(
         limit?: number,
         nextPaginationToken?: string
     ): Promise<{
-        users: import("./types").User[];
+        users: User[];
         nextPaginationToken?: string | undefined;
     }>;
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<import("./types").User>;
+    static verifyEmailUsingToken(token: string): Promise<User>;
     static isEmailVerified(userId: string): Promise<boolean>;
     static Google: typeof import("./providers/google").default;
     static Github: typeof import("./providers/github").default;
@@ -58,4 +57,4 @@ export declare let Google: typeof import("./providers/google").default;
 export declare let Github: typeof import("./providers/github").default;
 export declare let Facebook: typeof import("./providers/facebook").default;
 export declare let Apple: typeof import("./providers/apple").default;
-export type { RecipeInterface };
+export type { RecipeInterface, RecipeImplementation, User, APIInterface, APIOptions, APIImplementation, TypeProvider };

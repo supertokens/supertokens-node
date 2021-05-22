@@ -13,11 +13,15 @@
  * under the License.
  */
 
-import { Request } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
-    TypeInput as TypeNormalisedInputEmailVerification,
     RecipeInterface as EmailVerificationRecipeInterface,
-} from "../emailverification/types";
+    RecipeImplementation as EmailVerificationRecipeImplementation,
+    APIImplementation as EmailVerificationAPIImplementation,
+    APIInterface as EmailVerificationAPIInterface,
+} from "../emailverification";
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import { RecipeImplementation, APIImplementation } from "./";
 
 const TypeBoolean = {
     type: "boolean",
@@ -93,9 +97,6 @@ export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
-    override?: {
-        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-    };
 };
 
 const InputEmailVerificationFeatureSchema = {
@@ -105,7 +106,6 @@ const InputEmailVerificationFeatureSchema = {
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
         handlePostEmailVerification: TypeAny,
-        override: TypeAny,
     },
     additionalProperties: false,
 };
@@ -157,7 +157,14 @@ export type TypeInput = {
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis?: (originalImplementation: APIImplementation) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (
+                originalImplementation: EmailVerificationRecipeImplementation
+            ) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+        };
     };
 };
 
@@ -180,7 +187,8 @@ export type TypeNormalisedInput = {
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 
@@ -215,4 +223,41 @@ export interface RecipeInterface {
             isVerified: boolean;
         }
     ): Promise<{ createdNewUser: boolean; user: User }>;
+}
+
+export type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    config: TypeNormalisedInput;
+    recipeId: string;
+    providers: TypeProvider[];
+    req: Request;
+    res: Response;
+    next: NextFunction;
+};
+
+export interface APIInterface {
+    authorisationUrlGET(
+        provider: TypeProvider,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        url: string;
+    }>;
+
+    signInUpPOST(
+        provider: TypeProvider,
+        code: string,
+        redirectURI: string,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
+
+    signOutPOST(
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
 }

@@ -1,25 +1,19 @@
-import { RecipeInterface, User } from "./types";
-import Recipe from "./recipe";
-import EmailPasswordImplemenation from "../emailpassword/recipeImplementation";
-import EmailPasswordRecipe from "../emailpassword/recipe";
-import ThirdPartyImplemenation from "../thirdparty/recipeImplementation";
-import ThirdPartyRecipe from "../thirdparty/recipe";
-import STError from "./error";
-import { extractPaginationTokens, combinePaginationResults } from "./utils";
+import { RecipeInterface, User } from "../types";
+import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
+
+import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
+import STError from "../error";
+import { extractPaginationTokens, combinePaginationResults } from "../utils";
+import { Querier } from "../../../querier";
+
 export default class RecipeImplementation implements RecipeInterface {
-    recipeInstance: Recipe;
     emailPasswordImplementation: EmailPasswordImplemenation;
     thirdPartyImplementation: ThirdPartyImplemenation | undefined;
 
-    constructor(
-        recipeInstance: Recipe,
-        emailPasswordRecipeInstance: EmailPasswordRecipe,
-        thirdPartyRecipeInstance?: ThirdPartyRecipe
-    ) {
-        this.recipeInstance = recipeInstance;
-        this.emailPasswordImplementation = new EmailPasswordImplemenation(emailPasswordRecipeInstance);
-        if (thirdPartyRecipeInstance !== undefined) {
-            this.thirdPartyImplementation = new ThirdPartyImplemenation(thirdPartyRecipeInstance);
+    constructor(emailPasswordQuerier: Querier, thirdPartyQuerier?: Querier) {
+        this.emailPasswordImplementation = new EmailPasswordImplemenation(emailPasswordQuerier);
+        if (thirdPartyQuerier !== undefined) {
+            this.thirdPartyImplementation = new ThirdPartyImplemenation(thirdPartyQuerier);
         }
     }
 
@@ -40,13 +34,10 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     ): Promise<{ createdNewUser: boolean; user: User }> => {
         if (this.thirdPartyImplementation === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("No thirdparty provider configured"),
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("No thirdparty provider configured"),
+            });
         }
         return this.thirdPartyImplementation.signInUp(thirdPartyId, thirdPartyUserId, email);
     };
@@ -72,13 +63,10 @@ export default class RecipeImplementation implements RecipeInterface {
     getEmailForUserId = async (userId: string) => {
         let userInfo = await this.getUserById(userId);
         if (userInfo === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Unknown User ID provided",
+            });
         }
         return userInfo.email;
     };
@@ -105,7 +93,7 @@ export default class RecipeImplementation implements RecipeInterface {
             emailPasswordPaginationToken: undefined,
         };
         if (nextPaginationTokenString !== undefined) {
-            nextPaginationTokens = extractPaginationTokens(this.recipeInstance, nextPaginationTokenString);
+            nextPaginationTokens = extractPaginationTokens(nextPaginationTokenString);
         }
         let emailPasswordResultPromise = this.emailPasswordImplementation.getUsersOldestFirst(
             limit,
@@ -135,7 +123,7 @@ export default class RecipeImplementation implements RecipeInterface {
             emailPasswordPaginationToken: undefined,
         };
         if (nextPaginationTokenString !== undefined) {
-            nextPaginationTokens = extractPaginationTokens(this.recipeInstance, nextPaginationTokenString);
+            nextPaginationTokens = extractPaginationTokens(nextPaginationTokenString);
         }
         let emailPasswordResultPromise = this.emailPasswordImplementation.getUsersNewestFirst(
             limit,

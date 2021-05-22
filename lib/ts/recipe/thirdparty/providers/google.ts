@@ -59,8 +59,7 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
     validateTheStructureOfUserInput(
         config,
         InputSchemaTypeThirdPartyProviderGoogleConfig,
-        "thirdparty recipe, provider google",
-        undefined
+        "thirdparty recipe, provider google"
     );
     const id = "google";
 

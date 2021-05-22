@@ -16,7 +16,10 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import * as thirdPartyProviders from "../thirdparty/providers";
-import { RecipeInterface } from "./types";
+import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
+import { TypeProvider } from "../thirdparty/types";
+import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
 
 // For Express
 export default class Wrapper {
@@ -139,4 +142,13 @@ export let Facebook = Wrapper.Facebook;
 
 export let Apple = Wrapper.Apple;
 
-export type { RecipeInterface };
+export type {
+    RecipeInterface,
+    RecipeImplementation,
+    TypeProvider,
+    User,
+    APIInterface,
+    EmailPasswordAPIOptions,
+    ThirdPartyAPIOptions,
+    APIImplementation,
+};

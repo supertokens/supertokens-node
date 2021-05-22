@@ -1,29 +1,43 @@
 import { RecipeInterface, User } from "./types";
-import {
-    getUsers as getUsersCore,
-    getUsersCount as getUsersCountCore,
-    getUserById as getUserByIdFromCore,
-    getUserByThirdPartyInfo as getUserByThirdPartyInfoFromCore,
-    signInUp as signInUpFromCore,
-} from "./coreAPICalls";
-import Recipe from "./recipe";
+import { Querier } from "../../querier";
+import NormalisedURLPath from "../../normalisedURLPath";
 
 export default class RecipeImplementation implements RecipeInterface {
-    recipeInstance: Recipe;
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
+    querier: Querier;
+    constructor(querier: Querier) {
+        this.querier = querier;
     }
 
+    getUsers = async (
+        timeJoinedOrder: "ASC" | "DESC",
+        limit?: number,
+        paginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }> => {
+        let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/users"), {
+            timeJoinedOrder,
+            limit,
+            paginationToken,
+        });
+        return {
+            users: response.users,
+            nextPaginationToken: response.nextPaginationToken,
+        };
+    };
+
     getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
-        return getUsersCore(this.recipeInstance, "ASC", limit, nextPaginationToken);
+        return this.getUsers("ASC", limit, nextPaginationToken);
     };
 
     getUsersNewestFirst = async (limit?: number, nextPaginationToken?: string) => {
-        return getUsersCore(this.recipeInstance, "DESC", limit, nextPaginationToken);
+        return this.getUsers("DESC", limit, nextPaginationToken);
     };
 
     getUserCount = async () => {
-        return getUsersCountCore(this.recipeInstance);
+        let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/users/count"), {});
+        return Number(response.count);
     };
 
     signInUp = async (
@@ -34,14 +48,41 @@ export default class RecipeImplementation implements RecipeInterface {
             isVerified: boolean;
         }
     ): Promise<{ createdNewUser: boolean; user: User }> => {
-        return await signInUpFromCore(this.recipeInstance, thirdPartyId, thirdPartyUserId, email);
+        let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
+            thirdPartyId,
+            thirdPartyUserId,
+            email,
+        });
+        return {
+            createdNewUser: response.createdNewUser,
+            user: response.user,
+        };
     };
 
     getUserById = async (userId: string): Promise<User | undefined> => {
-        return getUserByIdFromCore(this.recipeInstance, userId);
+        let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
+            userId,
+        });
+        if (response.status === "OK") {
+            return {
+                ...response.user,
+            };
+        } else {
+            return undefined;
+        }
     };
 
     getUserByThirdPartyInfo = async (thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> => {
-        return getUserByThirdPartyInfoFromCore(this.recipeInstance, thirdPartyId, thirdPartyUserId);
+        let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
+            thirdPartyId,
+            thirdPartyUserId,
+        });
+        if (response.status === "OK") {
+            return {
+                ...response.user,
+            };
+        } else {
+            return undefined;
+        }
     };
 }

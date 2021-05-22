@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, User } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, User, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -37,6 +37,8 @@ import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
+import { Querier } from "../../querier";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -48,14 +50,10 @@ export default class Recipe extends RecipeModule {
 
     recipeInterfaceImpl: RecipeInterface;
 
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config?: TypeInput,
-        rIdToCore?: string
-    ) {
-        super(recipeId, appInfo, isInServerlessEnv, rIdToCore);
+    apiImpl: APIInterface;
+
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
+        super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,
@@ -63,20 +61,20 @@ export default class Recipe extends RecipeModule {
             isInServerlessEnv,
             this.config.emailVerificationFeature
         );
-        this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this));
+        this.recipeInterfaceImpl = this.config.override.functions(
+            new RecipeImplementation(Querier.getNewInstanceOrThrowError(isInServerlessEnv, recipeId))
+        );
+        this.apiImpl = this.config.override.apis(new APIImplementation());
     }
 
     static getInstanceOrThrowError(): Recipe {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-            },
-            undefined
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+        });
     }
 
     static init(config?: TypeInput): RecipeListFunction {
@@ -85,28 +83,22 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
-                throw new STError(
-                    {
-                        type: STError.GENERAL_ERROR,
-                        payload: new Error(
-                            "Emailpassword recipe has already been initialised. Please check your code for bugs."
-                        ),
-                    },
-                    undefined
-                );
+                throw new STError({
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error(
+                        "Emailpassword recipe has already been initialised. Please check your code for bugs."
+                    ),
+                });
             }
         };
     }
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("calling testing function in non testing env"),
-                },
-                undefined
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("calling testing function in non testing env"),
+            });
         }
         Recipe.instance = undefined;
     }
@@ -117,37 +109,37 @@ export default class Recipe extends RecipeModule {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_UP_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(SIGN_UP_API),
                 id: SIGN_UP_API,
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_IN_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(SIGN_IN_API),
                 id: SIGN_IN_API,
                 disabled: this.config.signInFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, GENERATE_PASSWORD_RESET_TOKEN_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(GENERATE_PASSWORD_RESET_TOKEN_API),
                 id: GENERATE_PASSWORD_RESET_TOKEN_API,
                 disabled: this.config.resetPasswordUsingTokenFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, PASSWORD_RESET_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(PASSWORD_RESET_API),
                 id: PASSWORD_RESET_API,
                 disabled: this.config.resetPasswordUsingTokenFeature.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGN_OUT_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(SIGN_OUT_API),
                 id: SIGN_OUT_API,
                 disabled: this.config.signOutFeature.disableDefaultImplementation,
             },
             {
                 method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, SIGNUP_EMAIL_EXISTS_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(SIGNUP_EMAIL_EXISTS_API),
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.config.signUpFeature.disableDefaultImplementation,
             },
@@ -163,18 +155,26 @@ export default class Recipe extends RecipeModule {
         path: NormalisedURLPath,
         method: HTTPMethod
     ) => {
+        let options = {
+            config: this.config,
+            next,
+            recipeId: this.getRecipeId(),
+            recipeImplementation: this.recipeInterfaceImpl,
+            req,
+            res,
+        };
         if (id === SIGN_UP_API) {
-            return await signUpAPI(this, req, res, next);
+            return await signUpAPI(this.apiImpl, options);
         } else if (id === SIGN_IN_API) {
-            return await signInAPI(this, req, res, next);
+            return await signInAPI(this.apiImpl, options);
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
-            return await generatePasswordResetTokenAPI(this, req, res, next);
+            return await generatePasswordResetTokenAPI(this.apiImpl, options);
         } else if (id === SIGN_OUT_API) {
-            return await signOutAPI(this, req, res, next);
+            return await signOutAPI(this.apiImpl, options);
         } else if (id === PASSWORD_RESET_API) {
-            return await passwordResetAPI(this, req, res, next);
+            return await passwordResetAPI(this.apiImpl, options);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
-            return await emailExistsAPI(this, req, res, next);
+            return await emailExistsAPI(this.apiImpl, options);
         } else {
             return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
         }
@@ -186,11 +186,11 @@ export default class Recipe extends RecipeModule {
         response: express.Response,
         next: express.NextFunction
     ): void => {
-        if (err.type === STError.EMAIL_ALREADY_EXISTS_ERROR) {
-            // As per point number 3a in https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
-            return this.handleError(
-                new STError(
-                    {
+        if (err.fromRecipe === Recipe.RECIPE_ID) {
+            if (err.type === STError.EMAIL_ALREADY_EXISTS_ERROR) {
+                // As per point number 3a in https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
+                return this.handleError(
+                    new STError({
                         type: STError.FIELD_ERROR,
                         payload: [
                             {
@@ -199,26 +199,27 @@ export default class Recipe extends RecipeModule {
                             },
                         ],
                         message: "Error in input formFields",
-                    },
-                    this
-                ),
-                request,
-                response,
-                next
-            );
-        } else if (err.type === STError.WRONG_CREDENTIALS_ERROR) {
-            return send200Response(response, {
-                status: "WRONG_CREDENTIALS_ERROR",
-            });
-        } else if (err.type === STError.FIELD_ERROR) {
-            return send200Response(response, {
-                status: "FIELD_ERROR",
-                formFields: err.payload,
-            });
-        } else if (err.type === STError.RESET_PASSWORD_INVALID_TOKEN_ERROR) {
-            return send200Response(response, {
-                status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
-            });
+                    }),
+                    request,
+                    response,
+                    next
+                );
+            } else if (err.type === STError.WRONG_CREDENTIALS_ERROR) {
+                return send200Response(response, {
+                    status: "WRONG_CREDENTIALS_ERROR",
+                });
+            } else if (err.type === STError.FIELD_ERROR) {
+                return send200Response(response, {
+                    status: "FIELD_ERROR",
+                    formFields: err.payload,
+                });
+            } else if (err.type === STError.RESET_PASSWORD_INVALID_TOKEN_ERROR) {
+                return send200Response(response, {
+                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
+                });
+            } else {
+                return next(err);
+            }
         } else {
             return this.emailVerificationRecipe.handleError(err, request, response, next);
         }
@@ -228,10 +229,10 @@ export default class Recipe extends RecipeModule {
         return [...this.emailVerificationRecipe.getAllCORSHeaders()];
     };
 
-    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+    isErrorFromThisRecipe = (err: any): err is STError => {
         return (
             STError.isErrorFromSuperTokens(err) &&
-            (this === err.recipe || this.emailVerificationRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err))
+            (err.fromRecipe === Recipe.RECIPE_ID || this.emailVerificationRecipe.isErrorFromThisRecipe(err))
         );
     };
 
@@ -240,13 +241,10 @@ export default class Recipe extends RecipeModule {
     getEmailForUserId = async (userId: string) => {
         let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
         if (userInfo === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this
-            );
+            throw new STError({
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Unknown User ID provided",
+            });
         }
         return userInfo.email;
     };
@@ -262,13 +260,10 @@ export default class Recipe extends RecipeModule {
         let user = await this.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken(token);
         let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
         if (userInThisRecipe === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this
-            );
+            throw new STError({
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Unknown User ID provided",
+            });
         }
         return userInThisRecipe;
     };

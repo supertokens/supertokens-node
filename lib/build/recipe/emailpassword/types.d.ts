@@ -1,7 +1,12 @@
 import {
-    TypeInput as TypeNormalisedInputEmailVerification,
     RecipeInterface as EmailVerificationRecipeInterface,
-} from "../emailverification/types";
+    RecipeImplementation as EmailVerificationRecipeImplementation,
+    APIImplementation as EmailVerificationAPIImplementation,
+    APIInterface as EmailVerificationAPIInterface,
+} from "../emailverification";
+import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import { RecipeImplementation, APIImplementation } from "./";
+import { Request, Response, NextFunction } from "express";
 export declare type TypeInputSetJwtPayloadForSession = (
     user: User,
     formFields: TypeFormField[],
@@ -38,7 +43,8 @@ export declare type TypeNormalisedInput = {
     signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 export declare type TypeInputEmailVerificationFeature = {
@@ -46,9 +52,6 @@ export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
-    override?: {
-        functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-    };
 };
 export declare type TypeInputFormField = {
     id: string;
@@ -129,7 +132,14 @@ export declare type TypeInput = {
     signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis?: (originalImplementation: APIImplementation) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (
+                originalImplementation: EmailVerificationRecipeImplementation
+            ) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+        };
     };
 };
 export declare const InputSchema: {
@@ -229,9 +239,6 @@ export declare const InputSchema: {
                 handlePostEmailVerification: {
                     type: string;
                 };
-                override: {
-                    type: string;
-                };
             };
             additionalProperties: boolean;
         };
@@ -263,4 +270,65 @@ export interface RecipeInterface {
         nextPaginationToken?: string;
     }>;
     getUserCount(): Promise<number>;
+}
+export declare type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    config: TypeNormalisedInput;
+    recipeId: string;
+    req: Request;
+    res: Response;
+    next: NextFunction;
+};
+export interface APIInterface {
+    emailExistsGET(
+        email: string,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        exists: boolean;
+    }>;
+    generatePasswordResetTokenPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    passwordResetPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        token: string,
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    signInPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        user: User;
+    }>;
+    signOutPOST(
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    signUpPOST(
+        formFields: {
+            id: string;
+            value: string;
+        }[],
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        user: User;
+    }>;
 }

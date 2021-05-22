@@ -1,3 +1,5 @@
+import { Request, Response, NextFunction } from "express";
+import { RecipeImplementation, APIImplementation } from "./";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -20,7 +22,8 @@ export type TypeInput = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis?: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 
@@ -31,7 +34,8 @@ export type TypeNormalisedInput = {
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification: (user: User) => Promise<void>;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 
@@ -46,4 +50,26 @@ export interface RecipeInterface {
     verifyEmailUsingToken(token: string): Promise<User>;
 
     isEmailVerified(userId: string, email: string): Promise<boolean>;
+}
+
+export type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    config: TypeNormalisedInput;
+    recipeId: string;
+    req: Request;
+    res: Response;
+    next: NextFunction;
+};
+
+export interface APIInterface {
+    verifyEmailPOST(token: string, options: APIOptions): Promise<{ status: "OK" }>;
+
+    isEmailVerifiedGET(
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+        isVerified: boolean;
+    }>;
+
+    generateEmailVerifyTokenPOST(options: APIOptions): Promise<{ status: "OK" }>;
 }

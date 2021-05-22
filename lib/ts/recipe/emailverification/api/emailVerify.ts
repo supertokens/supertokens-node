@@ -13,73 +13,33 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
 import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
-import Session from "../../session";
+import { APIInterface, APIOptions } from "../";
 
-export default async function emailVerify(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
-    if (normaliseHttpMethod(req.method) === "post") {
+export default async function emailVerify(apiImplementation: APIInterface, options: APIOptions) {
+    let result;
+
+    if (normaliseHttpMethod(options.req.method) === "post") {
         // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
         // step 1
-        let token = req.body.token;
+        let token = options.req.body.token;
         if (token === undefined || token === null) {
-            throw new STError(
-                {
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "Please provide the email verification token",
-                },
-                recipeInstance
-            );
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message: "Please provide the email verification token",
+            });
         }
         if (typeof token !== "string") {
-            throw new STError(
-                {
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "The email verification token must be a string",
-                },
-                recipeInstance
-            );
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message: "The email verification token must be a string",
+            });
         }
 
-        let user = await recipeInstance.recipeInterfaceImpl.verifyEmailUsingToken(token);
-
-        // step 2
-        send200Response(res, {
-            status: "OK",
-        });
-
-        try {
-            await recipeInstance.config.handlePostEmailVerification(user);
-        } catch (ignored) {}
+        result = await apiImplementation.verifyEmailPOST(token, options);
     } else {
-        // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
-
-        // step 1.
-        let session = await Session.getSession(req, res);
-
-        if (session === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("Session is undefined. Should not come here."),
-                },
-                recipeInstance
-            );
-        }
-
-        let userId = session.getUserId();
-
-        let email = await recipeInstance.config.getEmailForUserId(userId);
-
-        // step 2.
-        let isVerified = await recipeInstance.recipeInterfaceImpl.isEmailVerified(userId, email);
-
-        // step 3
-        return send200Response(res, {
-            status: "OK",
-            isVerified,
-        });
+        result = await apiImplementation.isEmailVerifiedGET(options);
     }
+    send200Response(options.res, result);
 }

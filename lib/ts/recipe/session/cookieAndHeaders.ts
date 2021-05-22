@@ -17,8 +17,8 @@ import * as express from "express";
 import { IncomingMessage, ServerResponse } from "http";
 
 import STError from "./error";
-import SessionRecipe from "./recipe";
 import { getHeader } from "../../utils";
+import { TypeNormalisedInput } from "./types";
 
 const accessTokenCookieKey = "sAccessToken";
 const refreshTokenCookieKey = "sRefreshToken";
@@ -36,36 +36,36 @@ const frontTokenHeaderKey = "front-token";
 /**
  * @description clears all the auth cookies from the response
  */
-export function clearSessionFromCookie(recipeInstance: SessionRecipe, res: express.Response) {
-    setCookie(recipeInstance, res, accessTokenCookieKey, "", 0, "accessTokenPath");
-    setCookie(recipeInstance, res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
-    setCookie(recipeInstance, res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
-    setHeader(recipeInstance, res, idRefreshTokenHeaderKey, "remove", false);
-    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
+export function clearSessionFromCookie(config: TypeNormalisedInput, res: express.Response) {
+    setCookie(config, res, accessTokenCookieKey, "", 0, "accessTokenPath");
+    setCookie(config, res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
+    setCookie(config, res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
+    setHeader(res, idRefreshTokenHeaderKey, "remove", false);
+    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 }
 
 /**
  * @param expiry: must be time in milliseconds from epoch time.
  */
 export function attachAccessTokenToCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     token: string,
     expiry: number
 ) {
-    setCookie(recipeInstance, res, accessTokenCookieKey, token, expiry, "accessTokenPath");
+    setCookie(config, res, accessTokenCookieKey, token, expiry, "accessTokenPath");
 }
 
 /**
  * @param expiry: must be time in milliseconds from epoch time.
  */
 export function attachRefreshTokenToCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     token: string,
     expiry: number
 ) {
-    setCookie(recipeInstance, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
+    setCookie(config, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
 }
 
 export function getAccessTokenFromCookie(req: express.Request): string | undefined {
@@ -88,56 +88,38 @@ export function getIdRefreshTokenFromCookie(req: express.Request): string | unde
     return getCookieValue(req, idRefreshTokenCookieKey);
 }
 
-export function setAntiCsrfTokenInHeaders(recipeInstance: SessionRecipe, res: express.Response, antiCsrfToken: string) {
-    setHeader(recipeInstance, res, antiCsrfHeaderKey, antiCsrfToken, false);
-    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
+export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string) {
+    setHeader(res, antiCsrfHeaderKey, antiCsrfToken, false);
+    setHeader(res, "Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
 }
 
 export function setIdRefreshTokenInHeaderAndCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: express.Response,
     idRefreshToken: string,
     expiry: number
 ) {
-    setHeader(recipeInstance, res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
-    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
+    setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
+    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 
-    setCookie(recipeInstance, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
+    setCookie(config, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
 }
 
-export function setFrontTokenInHeaders(
-    recipeInstance: SessionRecipe,
-    res: express.Response,
-    userId: string,
-    atExpiry: number,
-    jwtPayload: any
-) {
+export function setFrontTokenInHeaders(res: express.Response, userId: string, atExpiry: number, jwtPayload: any) {
     let tokenInfo = {
         uid: userId,
         ate: atExpiry,
         up: jwtPayload,
     };
-    setHeader(
-        recipeInstance,
-        res,
-        frontTokenHeaderKey,
-        Buffer.from(JSON.stringify(tokenInfo)).toString("base64"),
-        false
-    );
-    setHeader(recipeInstance, res, "Access-Control-Expose-Headers", frontTokenHeaderKey, true);
+    setHeader(res, frontTokenHeaderKey, Buffer.from(JSON.stringify(tokenInfo)).toString("base64"), false);
+    setHeader(res, "Access-Control-Expose-Headers", frontTokenHeaderKey, true);
 }
 
 export function getCORSAllowedHeaders(): string[] {
     return [antiCsrfHeaderKey, ridHeaderKey];
 }
 
-function setHeader(
-    recipeInstance: SessionRecipe,
-    res: express.Response,
-    key: string,
-    value: string,
-    allowDuplicateKey: boolean
-) {
+function setHeader(res: express.Response, key: string, value: string, allowDuplicateKey: boolean) {
     try {
         let existingHeaders = res.getHeaders();
         let existingValue = existingHeaders[key.toLowerCase()];
@@ -164,13 +146,10 @@ function setHeader(
             }
         }
     } catch (err) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Error while setting header with key: " + key + " and value: " + value),
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Error while setting header with key: " + key + " and value: " + value),
+        });
     }
 }
 
@@ -186,19 +165,19 @@ function setHeader(
  * @param path
  */
 export function setCookie(
-    recipeInstance: SessionRecipe,
+    config: TypeNormalisedInput,
     res: ServerResponse,
     name: string,
     value: string,
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath"
 ) {
-    let domain = recipeInstance.config.cookieDomain;
-    let secure = recipeInstance.config.cookieSecure;
-    let sameSite = recipeInstance.config.cookieSameSite;
+    let domain = config.cookieDomain;
+    let secure = config.cookieSecure;
+    let sameSite = config.cookieSameSite;
     let path = "";
     if (pathType === "refreshTokenPath") {
-        path = recipeInstance.config.refreshTokenPath.getAsStringDangerous();
+        path = config.refreshTokenPath.getAsStringDangerous();
     } else if (pathType === "accessTokenPath") {
         path = "/";
     }

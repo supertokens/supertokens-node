@@ -14,12 +14,13 @@
  */
 
 import Recipe from "./recipe";
-import { TypeInput, TypeNormalisedInput, User, RecipeInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, User, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import {
     getEmailVerificationURL as defaultGetEmailVerificationURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
 } from "./emailVerificationFunctions";
+import { RecipeImplementation, APIImplementation } from "./";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -45,17 +46,26 @@ export function validateAndNormaliseUserInput(
     let getEmailForUserId = config.getEmailForUserId;
 
     let override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
+    } = {
+        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
+        apis: (originalImplementation: APIImplementation) => originalImplementation,
     };
 
-    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
-        override = {
-            functions: config.override.functions,
-        };
-    } else {
-        override = {
-            functions: (originalImplementation: RecipeInterface) => originalImplementation,
-        };
+    if (config !== undefined && config.override !== undefined) {
+        if (config.override.functions !== undefined) {
+            override = {
+                ...override,
+                functions: config.override.functions,
+            };
+        }
+        if (config.override.apis !== undefined) {
+            override = {
+                ...override,
+                apis: config.override.apis,
+            };
+        }
     }
 
     return {

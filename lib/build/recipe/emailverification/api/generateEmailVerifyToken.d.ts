@@ -1,3 +1,2 @@
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
-export default function generateEmailVerifyToken(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction): Promise<void>;
+import { APIInterface, APIOptions } from "../";
+export default function generateEmailVerifyToken(apiImplementation: APIInterface, options: APIOptions): Promise<void>;

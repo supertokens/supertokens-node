@@ -19,14 +19,18 @@ import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import * as express from "express";
 import STError from "./error";
-import { TypeInput, TypeNormalisedInput, User, RecipeInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, User, RecipeInterface, APIInterface } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import STErrorEmailPassword from "../emailpassword/error";
 import STErrorThirdParty from "../thirdparty/error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
-import EmailPasswordRecipeImplementation from "./emailPasswordRecipeImplementation";
-import ThirdPartyRecipeImplementation from "./thirdPartyRecipeImplementation";
+import EmailPasswordRecipeImplementation from "./recipeImplementation/emailPasswordRecipeImplementation";
+import ThirdPartyRecipeImplementation from "./recipeImplementation/thirdPartyRecipeImplementation";
+import ThirdPartyAPIImplementation from "./api/thirdPartyAPIImplementation";
+import EmailPasswordAPIImplementation from "./api/emailPasswordAPIImplementation";
+import APIImplementation from "./api/implementation";
+import { Querier } from "../../querier";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -42,137 +46,138 @@ export default class Recipe extends RecipeModule {
 
     recipeInterfaceImpl: RecipeInterface;
 
+    apiImpl: APIInterface;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
-        super(recipeId, appInfo, isInServerlessEnv);
+        super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
-        this.emailPasswordRecipe = new EmailPasswordRecipe(
-            recipeId,
-            appInfo,
-            isInServerlessEnv,
-            {
+        this.recipeInterfaceImpl = this.config.override.functions(
+            new RecipeImplementation(
+                Querier.getNewInstanceOrThrowError(isInServerlessEnv, EmailPasswordRecipe.RECIPE_ID),
+                Querier.getNewInstanceOrThrowError(isInServerlessEnv, ThirdPartyRecipe.RECIPE_ID)
+            )
+        );
+
+        this.apiImpl = this.config.override.apis(new APIImplementation());
+
+        this.emailPasswordRecipe = new EmailPasswordRecipe(recipeId, appInfo, isInServerlessEnv, {
+            override: {
+                functions: (_) => {
+                    return new EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
+                },
+                apis: (_) => {
+                    return new EmailPasswordAPIImplementation(this.apiImpl);
+                },
+            },
+            sessionFeature: {
+                setJwtPayload: async (user, formfields, action) => {
+                    return this.config.sessionFeature.setJwtPayload(
+                        user,
+                        {
+                            loginType: "emailpassword",
+                            formFields: formfields,
+                        },
+                        action
+                    );
+                },
+                setSessionData: async (user, formfields, action) => {
+                    return this.config.sessionFeature.setSessionData(
+                        user,
+                        {
+                            loginType: "emailpassword",
+                            formFields: formfields,
+                        },
+                        action
+                    );
+                },
+            },
+            signUpFeature: {
+                disableDefaultImplementation: this.config.signUpFeature.disableDefaultImplementation,
+                formFields: this.config.signUpFeature.formFields,
+                handlePostSignUp: async (user, formFields) => {
+                    return await this.config.signUpFeature.handlePostSignUp(user, {
+                        loginType: "emailpassword",
+                        formFields: formFields,
+                    });
+                },
+            },
+            signInFeature: {
+                disableDefaultImplementation: this.config.signInFeature.disableDefaultImplementation,
+                handlePostSignIn: async (user) => {
+                    return await this.config.signInFeature.handlePostSignIn(user, {
+                        loginType: "emailpassword",
+                    });
+                },
+            },
+            signOutFeature: {
+                disableDefaultImplementation: this.config.signOutFeature.disableDefaultImplementation,
+            },
+            resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
+            emailVerificationFeature: {
+                disableDefaultImplementation: true,
+            },
+        });
+
+        if (this.config.providers.length !== 0) {
+            this.thirdPartyRecipe = new ThirdPartyRecipe(recipeId, appInfo, isInServerlessEnv, {
                 override: {
                     functions: (_) => {
-                        return new EmailPasswordRecipeImplementation(this);
+                        return new ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
+                    },
+                    apis: (_) => {
+                        return new ThirdPartyAPIImplementation(this.apiImpl);
                     },
                 },
                 sessionFeature: {
-                    setJwtPayload: async (user, formfields, action) => {
+                    setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
                         return this.config.sessionFeature.setJwtPayload(
                             user,
                             {
-                                loginType: "emailpassword",
-                                formFields: formfields,
+                                loginType: "thirdparty",
+                                thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
                             },
                             action
                         );
                     },
-                    setSessionData: async (user, formfields, action) => {
+                    setSessionData: async (user, thirdPartyAuthCodeResponse, action) => {
                         return this.config.sessionFeature.setSessionData(
                             user,
                             {
-                                loginType: "emailpassword",
-                                formFields: formfields,
+                                loginType: "thirdparty",
+                                thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
                             },
                             action
                         );
                     },
                 },
-                signUpFeature: {
-                    disableDefaultImplementation: this.config.signUpFeature.disableDefaultImplementation,
-                    formFields: this.config.signUpFeature.formFields,
-                    handlePostSignUp: async (user, formFields) => {
-                        return await this.config.signUpFeature.handlePostSignUp(user, {
-                            loginType: "emailpassword",
-                            formFields: formFields,
-                        });
-                    },
-                },
-                signInFeature: {
-                    disableDefaultImplementation: this.config.signInFeature.disableDefaultImplementation,
-                    handlePostSignIn: async (user) => {
-                        return await this.config.signInFeature.handlePostSignIn(user, {
-                            loginType: "emailpassword",
-                        });
+                signInAndUpFeature: {
+                    disableDefaultImplementation:
+                        this.config.signInFeature.disableDefaultImplementation ||
+                        this.config.signUpFeature.disableDefaultImplementation,
+                    providers: this.config.providers,
+                    handlePostSignUpIn: async (user, thirdPartyAuthCodeResponse, newUser) => {
+                        if (newUser) {
+                            return await this.config.signUpFeature.handlePostSignUp(user, {
+                                loginType: "thirdparty",
+                                thirdPartyAuthCodeResponse,
+                            });
+                        } else {
+                            return await this.config.signInFeature.handlePostSignIn(user, {
+                                loginType: "thirdparty",
+                                thirdPartyAuthCodeResponse,
+                            });
+                        }
                     },
                 },
                 signOutFeature: {
-                    disableDefaultImplementation: this.config.signOutFeature.disableDefaultImplementation,
+                    disableDefaultImplementation: true,
                 },
-                resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
                 emailVerificationFeature: {
                     disableDefaultImplementation: true,
                 },
-            },
-            EmailPasswordRecipe.RECIPE_ID
-        );
-
-        if (this.config.providers.length !== 0) {
-            this.thirdPartyRecipe = new ThirdPartyRecipe(
-                recipeId,
-                appInfo,
-                isInServerlessEnv,
-                {
-                    override: {
-                        functions: (_) => {
-                            return new ThirdPartyRecipeImplementation(this);
-                        },
-                    },
-                    sessionFeature: {
-                        setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
-                            return this.config.sessionFeature.setJwtPayload(
-                                user,
-                                {
-                                    loginType: "thirdparty",
-                                    thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
-                                },
-                                action
-                            );
-                        },
-                        setSessionData: async (user, thirdPartyAuthCodeResponse, action) => {
-                            return this.config.sessionFeature.setSessionData(
-                                user,
-                                {
-                                    loginType: "thirdparty",
-                                    thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
-                                },
-                                action
-                            );
-                        },
-                    },
-                    signInAndUpFeature: {
-                        disableDefaultImplementation:
-                            this.config.signInFeature.disableDefaultImplementation ||
-                            this.config.signUpFeature.disableDefaultImplementation,
-                        providers: this.config.providers,
-                        handlePostSignUpIn: async (user, thirdPartyAuthCodeResponse, newUser) => {
-                            if (newUser) {
-                                return await this.config.signUpFeature.handlePostSignUp(user, {
-                                    loginType: "thirdparty",
-                                    thirdPartyAuthCodeResponse,
-                                });
-                            } else {
-                                return await this.config.signInFeature.handlePostSignIn(user, {
-                                    loginType: "thirdparty",
-                                    thirdPartyAuthCodeResponse,
-                                });
-                            }
-                        },
-                    },
-                    signOutFeature: {
-                        disableDefaultImplementation: true,
-                    },
-                    emailVerificationFeature: {
-                        disableDefaultImplementation: true,
-                    },
-                },
-                ThirdPartyRecipe.RECIPE_ID
-            );
+            });
         }
-
-        this.recipeInterfaceImpl = this.config.override.functions(
-            new RecipeImplementation(this, this.emailPasswordRecipe, this.thirdPartyRecipe)
-        );
 
         this.emailVerificationRecipe = new EmailVerificationRecipe(
             recipeId,
@@ -188,28 +193,22 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
-                throw new STError(
-                    {
-                        type: STError.GENERAL_ERROR,
-                        payload: new Error(
-                            "ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs."
-                        ),
-                    },
-                    undefined
-                );
+                throw new STError({
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error(
+                        "ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs."
+                    ),
+                });
             }
         };
     }
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("calling testing function in non testing env"),
-                },
-                undefined
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("calling testing function in non testing env"),
+            });
         }
         Recipe.instance = undefined;
     }
@@ -218,13 +217,10 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-            },
-            undefined
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+        });
     }
 
     getAPIsHandled = (): APIHandled[] => {
@@ -264,15 +260,16 @@ export default class Recipe extends RecipeModule {
         response: express.Response,
         next: express.NextFunction
     ): void => {
-        if (this.emailPasswordRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)) {
-            return this.emailPasswordRecipe.handleError(err, request, response, next);
-        } else if (
-            this.thirdPartyRecipe !== undefined &&
-            this.thirdPartyRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)
-        ) {
-            return this.thirdPartyRecipe.handleError(err, request, response, next);
+        if (err.fromRecipe === Recipe.RECIPE_ID) {
+            next(err);
+        } else {
+            if (this.emailPasswordRecipe.isErrorFromThisRecipe(err)) {
+                return this.emailPasswordRecipe.handleError(err, request, response, next);
+            } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
+                return this.thirdPartyRecipe.handleError(err, request, response, next);
+            }
+            return this.emailVerificationRecipe.handleError(err, request, response, next);
         }
-        return this.emailVerificationRecipe.handleError(err, request, response, next);
     };
 
     getAllCORSHeaders = (): string[] => {
@@ -286,14 +283,13 @@ export default class Recipe extends RecipeModule {
         return corsHeaders;
     };
 
-    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
+    isErrorFromThisRecipe = (err: any): err is STError => {
         return (
             STError.isErrorFromSuperTokens(err) &&
-            (this === err.recipe ||
-                this.emailVerificationRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err) ||
-                this.emailPasswordRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err) ||
-                (this.thirdPartyRecipe !== undefined &&
-                    this.thirdPartyRecipe.isErrorFromThisOrChildRecipeBasedOnInstance(err)))
+            (err.fromRecipe === Recipe.RECIPE_ID ||
+                this.emailVerificationRecipe.isErrorFromThisRecipe(err) ||
+                this.emailPasswordRecipe.isErrorFromThisRecipe(err) ||
+                (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
         );
     };
 
@@ -302,13 +298,10 @@ export default class Recipe extends RecipeModule {
     getEmailForUserId = async (userId: string) => {
         let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
         if (userInfo === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this
-            );
+            throw new STError({
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Unknown User ID provided",
+            });
         }
         return userInfo.email;
     };
@@ -324,13 +317,10 @@ export default class Recipe extends RecipeModule {
         let user = await this.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken(token);
         let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
         if (userInThisRecipe === undefined) {
-            throw new STError(
-                {
-                    type: STError.UNKNOWN_USER_ID_ERROR,
-                    message: "Unknown User ID provided",
-                },
-                this
-            );
+            throw new STError({
+                type: STError.UNKNOWN_USER_ID_ERROR,
+                message: "Unknown User ID provided",
+            });
         }
         return userInThisRecipe;
     };

@@ -1,11 +1,11 @@
 import { CreateOrRefreshAPIResponse } from "./types";
-import SessionRecipe from "./recipe";
+import RecipeImplementation from "./recipeImplementation";
 /**
  * @description call this to "login" a user.
  * @throws GENERAL_ERROR in case anything fails.
  */
 export declare function createNewSession(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     userId: string,
     jwtPayload?: any,
     sessionData?: any
@@ -15,7 +15,7 @@ export declare function createNewSession(
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED and TRY_REFRESH_TOKEN
  */
 export declare function getSession(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     accessToken: string,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
@@ -38,7 +38,7 @@ export declare function getSession(
  * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
 export declare function refreshSession(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     refreshToken: string,
     antiCsrfToken: string | undefined,
     containsCustomHeader: boolean
@@ -48,25 +48,34 @@ export declare function refreshSession(
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  * @throws AuthError, GENERAL_ERROR
  */
-export declare function revokeAllSessionsForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]>;
+export declare function revokeAllSessionsForUser(
+    recipeImplementation: RecipeImplementation,
+    userId: string
+): Promise<string[]>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  * @throws AuthError, GENERAL_ERROR
  */
-export declare function getAllSessionHandlesForUser(recipeInstance: SessionRecipe, userId: string): Promise<string[]>;
+export declare function getAllSessionHandlesForUser(
+    recipeImplementation: RecipeImplementation,
+    userId: string
+): Promise<string[]>;
 /**
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  * @throws AuthError, GENERAL_ERROR
  */
-export declare function revokeSession(recipeInstance: SessionRecipe, sessionHandle: string): Promise<boolean>;
+export declare function revokeSession(
+    recipeImplementation: RecipeImplementation,
+    sessionHandle: string
+): Promise<boolean>;
 /**
  * @description call to destroy multiple sessions
  * @returns list of sessions revoked
  * @throws AuthError, GENERAL_ERROR
  */
 export declare function revokeMultipleSessions(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     sessionHandles: string[]
 ): Promise<string[]>;
 /**
@@ -74,13 +83,13 @@ export declare function revokeMultipleSessions(
  * @returns session data as provided by the user earlier
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export declare function getSessionData(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any>;
+export declare function getSessionData(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any>;
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export declare function updateSessionData(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     sessionHandle: string,
     newSessionData: any
 ): Promise<void>;
@@ -88,12 +97,12 @@ export declare function updateSessionData(
  * @returns jwt payload as provided by the user earlier
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
-export declare function getJWTPayload(recipeInstance: SessionRecipe, sessionHandle: string): Promise<any>;
+export declare function getJWTPayload(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any>;
 /**
  * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export declare function updateJWTPayload(
-    recipeInstance: SessionRecipe,
+    recipeImplementation: RecipeImplementation,
     sessionHandle: string,
     newJWTPayload: any
 ): Promise<void>;

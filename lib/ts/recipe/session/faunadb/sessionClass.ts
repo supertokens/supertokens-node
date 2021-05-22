@@ -16,18 +16,18 @@
 import OriginalSessionClass from "../sessionClass";
 import { FAUNADB_SESSION_KEY } from "./constants";
 import * as express from "express";
-import OriginalSessionRecipe from "../recipe";
+import OriginalSessionRecipe from "../recipeImplementation";
 
 export default class Session extends OriginalSessionClass {
     constructor(
-        recipeInstance: OriginalSessionRecipe,
+        recipeImplementation: OriginalSessionRecipe,
         accessToken: string,
         sessionHandle: string,
         userId: string,
         userDataInJWT: any,
         res: express.Response
     ) {
-        super(recipeInstance, accessToken, sessionHandle, userId, userDataInJWT, res);
+        super(recipeImplementation, accessToken, sessionHandle, userId, userDataInJWT, res);
     }
 
     getFaunadbToken = async (): Promise<string> => {

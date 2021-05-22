@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -9,6 +9,7 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
+    apiImpl: APIInterface;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput);
     static getInstanceOrThrowError(): Recipe;
     static init(config: TypeInput): RecipeListFunction;
@@ -24,5 +25,5 @@ export default class Recipe extends RecipeModule {
     ) => Promise<void>;
     handleError: (err: STError, _: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
-    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
+    isErrorFromThisRecipe: (err: any) => err is STError;
 }

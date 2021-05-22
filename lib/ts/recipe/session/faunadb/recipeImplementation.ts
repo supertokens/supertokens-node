@@ -1,10 +1,10 @@
-import { VerifySessionOptions, RecipeInterface } from "../types";
-import OriginalRecipeImplementation from "../recipeImplementation";
+import { VerifySessionOptions, RecipeInterface } from "../";
 import STError from "../error";
 import * as express from "express";
 import Session from "./sessionClass";
 import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
+import { RecipeImplementation as OriginalRecipeImplementation } from "../";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {
@@ -43,8 +43,7 @@ export default class RecipeImplementation implements RecipeInterface {
             return FAUNADB_TOKEN_TIME_LAG_MILLI;
         }
 
-        let accessTokenLifetime = (await this.originalImplementation.recipeInstance.getHandshakeInfo())
-            .accessTokenValidity;
+        let accessTokenLifetime = (await this.originalImplementation.getHandshakeInfo()).accessTokenValidity;
         let faunaResponse: any = await this.config.faunaDBClient.query(
             this.q.Create(this.q.Tokens(), {
                 instance: this.q.Ref(this.q.Collection(this.config.userCollectionName), session.getUserId()),
@@ -63,7 +62,7 @@ export default class RecipeImplementation implements RecipeInterface {
         // TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
         let originalSession = await this.originalImplementation.createNewSession(res, userId, jwtPayload, sessionData);
         let session = new Session(
-            this.originalImplementation.recipeInstance,
+            this.originalImplementation,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),
@@ -89,13 +88,10 @@ export default class RecipeImplementation implements RecipeInterface {
 
             return session;
         } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                },
-                this.originalImplementation.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            });
         }
     };
 
@@ -109,7 +105,7 @@ export default class RecipeImplementation implements RecipeInterface {
             return undefined;
         }
         return new Session(
-            this.originalImplementation.recipeInstance,
+            this.originalImplementation,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),
@@ -121,7 +117,7 @@ export default class RecipeImplementation implements RecipeInterface {
     refreshSession = async (req: express.Request, res: express.Response): Promise<Session> => {
         let originalSession = await this.originalImplementation.refreshSession(req, res);
         let session = new Session(
-            this.originalImplementation.recipeInstance,
+            this.originalImplementation,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),
@@ -149,13 +145,10 @@ export default class RecipeImplementation implements RecipeInterface {
 
             return session;
         } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                },
-                this.originalImplementation.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            });
         }
     };
 

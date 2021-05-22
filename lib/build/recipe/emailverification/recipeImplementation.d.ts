@@ -1,9 +1,9 @@
-import { RecipeInterface, User } from "./types";
-import Recipe from "./recipe";
+import { RecipeInterface, User } from "./";
+import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
-    recipeInstance: Recipe;
-    constructor(recipeInstance: Recipe);
+    querier: Querier;
+    constructor(querier: Querier);
     createEmailVerificationToken: (userId: string, email: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<User>;
-    isEmailVerified: (userId: string, email: string) => Promise<boolean>;
+    isEmailVerified: (userId: string, email: string) => Promise<any>;
 }

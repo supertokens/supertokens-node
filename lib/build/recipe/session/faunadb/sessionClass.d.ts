@@ -1,9 +1,9 @@
 import OriginalSessionClass from "../sessionClass";
 import * as express from "express";
-import OriginalSessionRecipe from "../recipe";
+import OriginalSessionRecipe from "../recipeImplementation";
 export default class Session extends OriginalSessionClass {
     constructor(
-        recipeInstance: OriginalSessionRecipe,
+        recipeImplementation: OriginalSessionRecipe,
         accessToken: string,
         sessionHandle: string,
         userId: string,

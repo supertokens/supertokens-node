@@ -13,58 +13,20 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
-import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
-import Session from "../../session";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
-import STError from "../error";
+import { APIInterface, APIOptions } from "../";
 
-export default async function signUpAPI(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
+export default async function signUpAPI(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
 
     // step 1
     let formFields: {
         id: string;
         value: string;
-    }[] = await validateFormFieldsOrThrowError(
-        recipeInstance,
-        recipeInstance.config.signUpFeature.formFields,
-        req.body.formFields
-    );
+    }[] = await validateFormFieldsOrThrowError(options.config.signUpFeature.formFields, options.req.body.formFields);
 
-    let email = formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value;
-    let password = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
+    let result = await apiImplementation.signUpPOST(formFields, options);
 
-    // step 2. Errors for this are caught by the error handler
-    let user = await recipeInstance.recipeInterfaceImpl.signUp(email, password);
-
-    // set 3
-    await recipeInstance.config.signUpFeature.handlePostSignUp(user, formFields);
-
-    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(user, formFields, "signup");
-    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(user, formFields, "signup");
-
-    let jwtPayload: { [key: string]: any } | undefined = undefined;
-    let sessionData: { [key: string]: any } | undefined = undefined;
-    try {
-        jwtPayload = await jwtPayloadPromise;
-        sessionData = await sessionDataPromise;
-    } catch (err) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: err,
-            },
-            recipeInstance
-        );
-    }
-
-    // step 4
-    await Session.createNewSession(res, user.id, jwtPayload, sessionData);
-    return send200Response(res, {
-        status: "OK",
-        user,
-    });
+    send200Response(options.res, result);
 }
