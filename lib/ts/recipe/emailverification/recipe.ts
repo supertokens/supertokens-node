@@ -44,7 +44,7 @@ export default class Recipe extends RecipeModule {
         this.recipeInterfaceImpl = this.config.override.functions(
             new RecipeImplementation(Querier.getNewInstanceOrThrowError(isInServerlessEnv, recipeId))
         );
-        this.apiImpl = this.config.override.apis(new APIImplementation(this));
+        this.apiImpl = this.config.override.apis(new APIImplementation());
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -117,9 +117,23 @@ export default class Recipe extends RecipeModule {
         __: HTTPMethod
     ) => {
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
-            return await generateEmailVerifyTokenAPI(this.apiImpl, this, req, res, next);
+            return await generateEmailVerifyTokenAPI(this.apiImpl, {
+                config: this.config,
+                next,
+                recipeId: this.getRecipeId(),
+                recipeImplementation: this.recipeInterfaceImpl,
+                req,
+                res,
+            });
         } else {
-            return await emailVerifyAPI(this.apiImpl, this, req, res, next);
+            return await emailVerifyAPI(this.apiImpl, {
+                config: this.config,
+                next,
+                recipeId: this.getRecipeId(),
+                recipeImplementation: this.recipeInterfaceImpl,
+                req,
+                res,
+            });
         }
     };
 

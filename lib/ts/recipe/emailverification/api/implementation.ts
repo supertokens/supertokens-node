@@ -1,20 +1,13 @@
 import { APIInterface, APIOptions } from "../";
-import Recipe from "../recipe";
 import Session from "../../session";
 import STError from "../error";
 
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
-
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
-    }
-
     verifyEmailPOST = async (token: string, options: APIOptions): Promise<{ status: "OK" }> => {
         let user = await options.recipeImplementation.verifyEmailUsingToken(token);
 
         try {
-            this.recipeInstance.config.handlePostEmailVerification(user).catch((_) => {});
+            options.config.handlePostEmailVerification(user).catch((_) => {});
         } catch (ignored) {}
 
         return {
@@ -39,7 +32,7 @@ export default class APIImplementation implements APIInterface {
 
         let userId = session.getUserId();
 
-        let email = await this.recipeInstance.config.getEmailForUserId(userId);
+        let email = await options.config.getEmailForUserId(userId);
 
         let isVerified = await options.recipeImplementation.isEmailVerified(userId, email);
 
@@ -61,21 +54,19 @@ export default class APIImplementation implements APIInterface {
 
         let userId = session.getUserId();
 
-        let email = await this.recipeInstance.config.getEmailForUserId(userId);
+        let email = await options.config.getEmailForUserId(userId);
 
         let token = await options.recipeImplementation.createEmailVerificationToken(userId, email);
 
         let emailVerifyLink =
-            (await this.recipeInstance.config.getEmailVerificationURL({ id: userId, email })) +
+            (await options.config.getEmailVerificationURL({ id: userId, email })) +
             "?token=" +
             token +
             "&rid=" +
-            this.recipeInstance.getRecipeId();
+            options.recipeId;
 
         try {
-            this.recipeInstance.config
-                .createAndSendCustomEmail({ id: userId, email }, emailVerifyLink)
-                .catch((_) => {});
+            options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink).catch((_) => {});
         } catch (ignored) {}
 
         return {

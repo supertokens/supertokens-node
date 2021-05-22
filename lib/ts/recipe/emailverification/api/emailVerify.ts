@@ -13,25 +13,17 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
 import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
-import { APIInterface } from "../";
+import { APIInterface, APIOptions } from "../";
 
-export default async function emailVerify(
-    apiImplementation: APIInterface,
-    recipeInstance: Recipe,
-    req: Request,
-    res: Response,
-    next: NextFunction
-) {
+export default async function emailVerify(apiImplementation: APIInterface, options: APIOptions) {
     let result;
 
-    if (normaliseHttpMethod(req.method) === "post") {
+    if (normaliseHttpMethod(options.req.method) === "post") {
         // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
         // step 1
-        let token = req.body.token;
+        let token = options.req.body.token;
         if (token === undefined || token === null) {
             throw new STError({
                 type: STError.BAD_INPUT_ERROR,
@@ -45,19 +37,9 @@ export default async function emailVerify(
             });
         }
 
-        result = await apiImplementation.verifyEmailPOST(token, {
-            recipeImplementation: recipeInstance.recipeInterfaceImpl,
-            req,
-            res,
-            next,
-        });
+        result = await apiImplementation.verifyEmailPOST(token, options);
     } else {
-        result = await apiImplementation.isEmailVerifiedGET({
-            recipeImplementation: recipeInstance.recipeInterfaceImpl,
-            req,
-            res,
-            next,
-        });
+        result = await apiImplementation.isEmailVerifiedGET(options);
     }
-    send200Response(res, result);
+    send200Response(options.res, result);
 }
