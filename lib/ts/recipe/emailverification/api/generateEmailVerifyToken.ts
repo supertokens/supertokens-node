@@ -13,26 +13,13 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
-import { APIInterface } from "../";
+import { APIInterface, APIOptions } from "../";
 
-export default async function generateEmailVerifyToken(
-    apiImplementation: APIInterface,
-    recipeInstance: Recipe,
-    req: Request,
-    res: Response,
-    next: NextFunction
-) {
+export default async function generateEmailVerifyToken(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
-    let result = await apiImplementation.generateEmailVerifyTokenPOST({
-        recipeImplementation: recipeInstance.recipeInterfaceImpl,
-        req,
-        res,
-        next,
-    });
+    let result = await apiImplementation.generateEmailVerifyTokenPOST(options);
 
-    send200Response(res, result);
+    send200Response(options.res, result);
 }

@@ -1,24 +1,24 @@
 import { RecipeInterface, User } from "../../emailpassword/types";
 import STError from "../error";
-import Recipe from "../recipe";
+import { RecipeInterface as ThirdPartyRecipeInterface } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
-    recipeInstance: Recipe;
+    recipeImplementation: ThirdPartyRecipeInterface;
 
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
+    constructor(recipeImplementation: ThirdPartyRecipeInterface) {
+        this.recipeImplementation = recipeImplementation;
     }
 
     signUp = async (email: string, password: string): Promise<User> => {
-        return await this.recipeInstance.recipeInterfaceImpl.signUp(email, password);
+        return await this.recipeImplementation.signUp(email, password);
     };
 
     signIn = async (email: string, password: string): Promise<User> => {
-        return this.recipeInstance.recipeInterfaceImpl.signIn(email, password);
+        return this.recipeImplementation.signIn(email, password);
     };
 
     getUserById = async (userId: string): Promise<User | undefined> => {
-        let user = await this.recipeInstance.recipeInterfaceImpl.getUserById(userId);
+        let user = await this.recipeImplementation.getUserById(userId);
         if (user === undefined || user.thirdParty !== undefined) {
             // either user is undefined or it's a thirdparty user.
             return undefined;
@@ -27,44 +27,35 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     getUserByEmail = async (email: string): Promise<User | undefined> => {
-        return this.recipeInstance.recipeInterfaceImpl.getUserByEmail(email);
+        return this.recipeImplementation.getUserByEmail(email);
     };
 
     createResetPasswordToken = async (userId: string): Promise<string> => {
-        return this.recipeInstance.recipeInterfaceImpl.createResetPasswordToken(userId);
+        return this.recipeImplementation.createResetPasswordToken(userId);
     };
 
     resetPasswordUsingToken = async (token: string, newPassword: string) => {
-        return this.recipeInstance.recipeInterfaceImpl.resetPasswordUsingToken(token, newPassword);
+        return this.recipeImplementation.resetPasswordUsingToken(token, newPassword);
     };
 
     getUsersOldestFirst = async (_?: number, __?: string) => {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Should never be called"),
-            },
-            this.recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Should never be called"),
+        });
     };
 
     getUsersNewestFirst = async (_?: number, __?: string) => {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Should never be called"),
-            },
-            this.recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Should never be called"),
+        });
     };
 
     getUserCount = async () => {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Should never be called"),
-            },
-            this.recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Should never be called"),
+        });
     };
 }

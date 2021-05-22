@@ -49,7 +49,7 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe", recipeInstance);
+    validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe");
 
     let sessionFeature = validateAndNormaliseSessionFeatureConfig(
         recipeInstance,
@@ -170,13 +170,10 @@ export function validateAndNormaliseEmailVerificationConfig(
                                 userInfo === undefined ||
                                 config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
                             ) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
                             return await config.emailVerificationFeature.createAndSendCustomEmail(userInfo, link);
                         },
@@ -189,13 +186,10 @@ export function validateAndNormaliseEmailVerificationConfig(
                                 userInfo === undefined ||
                                 config?.emailVerificationFeature?.getEmailVerificationURL === undefined
                             ) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
                             return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                         },
@@ -208,13 +202,10 @@ export function validateAndNormaliseEmailVerificationConfig(
                                 userInfo === undefined ||
                                 config?.emailVerificationFeature?.handlePostEmailVerification === undefined
                             ) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
                             return await config.emailVerificationFeature.handlePostEmailVerification(userInfo);
                         },

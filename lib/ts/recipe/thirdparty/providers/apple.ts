@@ -77,8 +77,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
     validateTheStructureOfUserInput(
         config,
         InputSchemaTypeThirdPartyProviderAppleConfig,
-        "thirdparty recipe, provider apple",
-        undefined
+        "thirdparty recipe, provider apple"
     );
     const id = "apple";
 
@@ -104,13 +103,10 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             config.clientSecret.privateKey
         );
     } catch (error) {
-        throw new STError(
-            {
-                type: STError.BAD_INPUT_ERROR,
-                message: error.message,
-            },
-            undefined
-        );
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: error.message,
+        });
     }
 
     async function get(

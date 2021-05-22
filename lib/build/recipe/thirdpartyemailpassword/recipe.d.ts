@@ -36,7 +36,7 @@ export default class Recipe extends RecipeModule {
         next: express.NextFunction
     ) => void;
     getAllCORSHeaders: () => string[];
-    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
+    isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;
     createEmailVerificationToken: (userId: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<User>;

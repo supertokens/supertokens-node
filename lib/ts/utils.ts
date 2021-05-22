@@ -7,7 +7,6 @@ import NormalisedURLPath from "./normalisedURLPath";
 import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import SuperTokensError from "./error";
-import RecipeModule from "./recipeModule";
 import { readFile, writeFile, unlink } from "fs";
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
 
@@ -42,29 +41,23 @@ export function maxVersion(version1: string, version2: string): string {
     return version2;
 }
 
-export function normaliseInputAppInfoOrThrowError(
-    recipe: RecipeModule | undefined,
-    appInfo: AppInfo
-): NormalisedAppinfo {
+export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo {
     if (appInfo === undefined) {
         throw new STError({
             type: STError.GENERAL_ERROR,
             payload: new Error("Please provide the appInfo object when calling supertokens.init"),
-            recipe,
         });
     }
     if (appInfo.apiDomain === undefined) {
         throw new STError({
             type: STError.GENERAL_ERROR,
             payload: new Error("Please provide your apiDomain inside the appInfo object when calling supertokens.init"),
-            recipe,
         });
     }
     if (appInfo.appName === undefined) {
         throw new STError({
             type: STError.GENERAL_ERROR,
             payload: new Error("Please provide your appName inside the appInfo object when calling supertokens.init"),
-            recipe,
         });
     }
     if (appInfo.websiteDomain === undefined) {
@@ -73,27 +66,25 @@ export function normaliseInputAppInfoOrThrowError(
             payload: new Error(
                 "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
             ),
-            recipe,
         });
     }
     let apiGatewayPath =
         appInfo.apiGatewayPath !== undefined
-            ? new NormalisedURLPath(undefined, appInfo.apiGatewayPath)
-            : new NormalisedURLPath(undefined, "");
+            ? new NormalisedURLPath(appInfo.apiGatewayPath)
+            : new NormalisedURLPath("");
     return {
         appName: appInfo.appName,
-        websiteDomain: new NormalisedURLDomain(recipe, appInfo.websiteDomain),
-        apiDomain: new NormalisedURLDomain(recipe, appInfo.apiDomain),
+        websiteDomain: new NormalisedURLDomain(appInfo.websiteDomain),
+        apiDomain: new NormalisedURLDomain(appInfo.apiDomain),
         apiBasePath: apiGatewayPath.appendPath(
-            recipe,
             appInfo.apiBasePath === undefined
-                ? new NormalisedURLPath(recipe, "/auth")
-                : new NormalisedURLPath(recipe, appInfo.apiBasePath)
+                ? new NormalisedURLPath("/auth")
+                : new NormalisedURLPath(appInfo.apiBasePath)
         ),
         websiteBasePath:
             appInfo.websiteBasePath === undefined
-                ? new NormalisedURLPath(recipe, "/auth")
-                : new NormalisedURLPath(recipe, appInfo.websiteBasePath),
+                ? new NormalisedURLPath("/auth")
+                : new NormalisedURLPath(appInfo.websiteBasePath),
         apiGatewayPath,
     };
 }
@@ -117,16 +108,10 @@ export function getHeader(req: express.Request, key: string): string | undefined
     return value;
 }
 
-export function sendNon200Response(
-    recipe: RecipeModule | undefined,
-    res: express.Response,
-    message: string,
-    statusCode: number
-) {
+export function sendNon200Response(res: express.Response, message: string, statusCode: number) {
     if (statusCode < 300) {
         throw new STError({
             type: STError.GENERAL_ERROR,
-            recipe,
             payload: new Error("Calling sendNon200Response with status code < 300"),
         });
     }
@@ -144,11 +129,7 @@ export function send200Response(res: express.Response, responseJson: any) {
     }
 }
 
-export async function assertThatBodyParserHasBeenUsed(
-    recipe: RecipeModule | undefined,
-    req: express.Request,
-    res: express.Response
-) {
+export async function assertThatBodyParserHasBeenUsed(req: express.Request, res: express.Response) {
     // according to https://github.com/supertokens/supertokens-node/issues/33
     let method = normaliseHttpMethod(req.method);
     if (method === "post" || method === "put") {
@@ -162,7 +143,6 @@ export async function assertThatBodyParserHasBeenUsed(
                     throw new STError({
                         type: STError.BAD_INPUT_ERROR,
                         message: "API input error: Please make sure to pass a valid JSON input in thr request body",
-                        recipe,
                     });
                 }
             }
@@ -173,7 +153,6 @@ export async function assertThatBodyParserHasBeenUsed(
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
                     message: "API input error: Please make sure to pass a valid JSON input in thr request body",
-                    recipe,
                 });
             }
         }
@@ -185,7 +164,6 @@ export async function assertThatBodyParserHasBeenUsed(
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
                     message: "API input error: Please make sure to pass valid URL query params",
-                    recipe,
                 });
             }
         }
@@ -198,12 +176,7 @@ export function isAnIpAddress(ipaddress: string) {
     );
 }
 
-export function validateTheStructureOfUserInput(
-    config: any,
-    inputSchema: any,
-    configRoot: string,
-    recipe: RecipeModule | undefined
-) {
+export function validateTheStructureOfUserInput(config: any, inputSchema: any, configRoot: string) {
     // the validation package will not throw if the given schema is undefined
     // as it is requires to validate a json object
     config = config === undefined || config === null ? {} : config;
@@ -222,7 +195,6 @@ export function validateTheStructureOfUserInput(
         }
         errorMessage = `Config schema error in ${configRoot}: ${errorMessage}`;
         throw new SuperTokensError({
-            recipe,
             payload: new Error(errorMessage),
             type: "GENERAL_ERROR",
         });

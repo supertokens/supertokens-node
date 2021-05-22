@@ -1,23 +1,13 @@
-import { APIInterface, APIOptions, User, TypeProvider } from "../";
-import Recipe from "../recipe";
-import ThirdPartyRecipe from "../../thirdparty/recipe";
-import EmailPasswordRecipe from "../../emailpassword/recipe";
+import { APIInterface, User, TypeProvider } from "../";
 import EmailPasswordImplemenation from "../../emailpassword/api/implementation";
 import ThirdPartyImplemenation from "../../thirdparty/api/implementation";
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
     emailPasswordImplementation: EmailPasswordImplemenation;
-    thirdPartyImplementation: ThirdPartyImplemenation | undefined;
-    emailPasswordRecipeInstance: EmailPasswordRecipe;
-    thirdPartyRecipeInstance?: ThirdPartyRecipe;
-    constructor(
-        recipeInstance: Recipe,
-        emailPasswordRecipeInstance: EmailPasswordRecipe,
-        thirdPartyRecipeInstance?: ThirdPartyRecipe
-    );
+    thirdPartyImplementation: ThirdPartyImplemenation;
+    constructor();
     emailExistsGET: (
         email: string,
-        options: APIOptions
+        options: import("../../emailpassword").APIOptions
     ) => Promise<{
         status: "OK";
         exists: boolean;
@@ -27,7 +17,7 @@ export default class APIImplementation implements APIInterface {
             id: string;
             value: string;
         }[],
-        options: APIOptions
+        options: import("../../emailpassword").APIOptions
     ) => Promise<{
         status: "OK";
     }>;
@@ -37,7 +27,7 @@ export default class APIImplementation implements APIInterface {
             value: string;
         }[],
         token: string,
-        options: APIOptions
+        options: import("../../emailpassword").APIOptions
     ) => Promise<{
         status: "OK";
     }>;
@@ -46,7 +36,7 @@ export default class APIImplementation implements APIInterface {
             id: string;
             value: string;
         }[],
-        options: APIOptions
+        options: import("../../emailpassword").APIOptions
     ) => Promise<{
         status: "OK";
         user: User;
@@ -56,14 +46,14 @@ export default class APIImplementation implements APIInterface {
             id: string;
             value: string;
         }[],
-        options: APIOptions
+        options: import("../../emailpassword").APIOptions
     ) => Promise<{
         status: "OK";
         user: User;
     }>;
     authorisationUrlGET: (
         provider: TypeProvider,
-        options: APIOptions
+        options: import("../../thirdparty").APIOptions
     ) => Promise<{
         status: "OK";
         url: string;
@@ -72,14 +62,14 @@ export default class APIImplementation implements APIInterface {
         provider: TypeProvider,
         code: string,
         redirectURI: string,
-        options: APIOptions
+        options: import("../../thirdparty").APIOptions
     ) => Promise<{
         status: "OK";
         createdNewUser: boolean;
         user: User;
     }>;
     signOutPOST: (
-        options: APIOptions
+        options: import("../../emailpassword").APIOptions
     ) => Promise<{
         status: "OK";
     }>;

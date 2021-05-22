@@ -33,6 +33,8 @@ export interface RecipeInterface {
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
+    config: TypeNormalisedInput;
+    recipeId: string;
     req: Request;
     res: Response;
     next: NextFunction;

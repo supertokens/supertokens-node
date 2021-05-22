@@ -1,6 +1,4 @@
-import SessionRecipe from "./recipe";
 export declare function getInfoFromAccessToken(
-    recipeInstance: SessionRecipe,
     token: string,
     jwtSigningPublicKey: string,
     doAntiCsrfCheck: boolean

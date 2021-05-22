@@ -1,5 +1,4 @@
 import { APIInterface, APIOptions, User, TypeProvider } from "../";
-import Recipe from "../recipe";
 import Session, { SessionContainer } from "../../session";
 import STError from "../error";
 import { URLSearchParams } from "url";
@@ -7,12 +6,6 @@ import * as axios from "axios";
 import * as qs from "querystring";
 
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
-
-    constructor(recipeInstance: Recipe) {
-        this.recipeInstance = recipeInstance;
-    }
-
     authorisationUrlGET = async (
         provider: TypeProvider,
         options: APIOptions
@@ -24,13 +17,10 @@ export default class APIImplementation implements APIInterface {
         try {
             providerInfo = await provider.get(undefined, undefined);
         } catch (err) {
-            throw new STError(
-                {
-                    type: "GENERAL_ERROR",
-                    payload: err,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: "GENERAL_ERROR",
+                payload: err,
+            });
         }
 
         const params = Object.entries(providerInfo.authorisationRedirect.params).reduce(
@@ -76,40 +66,34 @@ export default class APIImplementation implements APIInterface {
             });
             userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data);
         } catch (err) {
-            throw new STError(
-                {
-                    type: "GENERAL_ERROR",
-                    payload: err,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: "GENERAL_ERROR",
+                payload: err,
+            });
         }
 
         let emailInfo = userInfo.email;
         if (emailInfo === undefined) {
-            throw new STError(
-                {
-                    type: "NO_EMAIL_GIVEN_BY_PROVIDER",
-                    message: `Provider ${provider.id} returned no email info for the user.`,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: "NO_EMAIL_GIVEN_BY_PROVIDER",
+                message: `Provider ${provider.id} returned no email info for the user.`,
+            });
         }
         let user = await options.recipeImplementation.signInUp(provider.id, userInfo.id, emailInfo);
 
-        await this.recipeInstance.config.signInAndUpFeature.handlePostSignUpIn(
+        await options.config.signInAndUpFeature.handlePostSignUpIn(
             user.user,
             accessTokenAPIResponse.data,
             user.createdNewUser
         );
 
         let action: "signup" | "signin" = user.createdNewUser ? "signup" : "signin";
-        let jwtPayloadPromise = this.recipeInstance.config.sessionFeature.setJwtPayload(
+        let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(
             user.user,
             accessTokenAPIResponse.data,
             action
         );
-        let sessionDataPromise = this.recipeInstance.config.sessionFeature.setSessionData(
+        let sessionDataPromise = options.config.sessionFeature.setSessionData(
             user.user,
             accessTokenAPIResponse.data,
             action
@@ -121,13 +105,10 @@ export default class APIImplementation implements APIInterface {
             jwtPayload = await jwtPayloadPromise;
             sessionData = await sessionDataPromise;
         } catch (err) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                },
-                this.recipeInstance
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: err,
+            });
         }
 
         await Session.createNewSession(options.res, user.user.id, jwtPayload, sessionData);
@@ -156,13 +137,10 @@ export default class APIImplementation implements APIInterface {
         }
 
         if (session === undefined) {
-            throw new Session.Error(
-                {
-                    type: Session.Error.GENERAL_ERROR,
-                    payload: new Error("Session is undefined. Should not come here."),
-                },
-                this.recipeInstance
-            );
+            throw new Session.Error({
+                type: Session.Error.GENERAL_ERROR,
+                payload: new Error("Session is undefined. Should not come here."),
+            });
         }
 
         await session.revokeSession();

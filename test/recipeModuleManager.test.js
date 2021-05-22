@@ -103,7 +103,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await startST();
 
         try {
-            await Querier.getInstanceOrThrowError(false);
+            await Querier.getNewInstanceOrThrowError(false);
             assert(false);
         } catch (err) {
             if (err.type !== ST.Error.GENERAL_ERROR) {
@@ -127,7 +127,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             ],
         });
 
-        await Querier.getInstanceOrThrowError(false);
+        await Querier.getNewInstanceOrThrowError(false);
     });
 
     // Check that modules have been inited when we call supertokens.init
@@ -653,47 +653,51 @@ class TestRecipe extends RecipeModule {
         };
     }
 
+    isErrorFromThisRecipe = (err) => {
+        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === "testRecipe";
+    };
+
     getAPIsHandled() {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/"),
                 id: "/",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/hello"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/hello"),
                 id: "/hello",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/error"),
                 id: "/error",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error/api-error"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/error/api-error"),
                 id: "/error/api-error",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error/general"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/error/general"),
                 id: "/error/general",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error/badinput"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/error/badinput"),
                 id: "/error/badinput",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this.getRecipeId(), "/error/throw-error"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/error/throw-error"),
                 id: "/error/throw-error",
                 disabled: false,
             },
@@ -708,28 +712,24 @@ class TestRecipe extends RecipeModule {
             res.status(200).send("success TestRecipe /hello");
             return;
         } else if (id === "/error") {
-            throw new STError({
-                recipe: this,
+            throw new TestRecipeError({
                 message: "error from TestRecipe /error ",
                 payload: undefined,
                 type: "ERROR_FROM_TEST_RECIPE",
             });
         } else if (id === "/error/general") {
-            throw new STError({
-                recipe: this,
+            throw new TestRecipeError({
                 payload: new Error("General error from TestRecipe"),
                 type: STError.GENERAL_ERROR,
             });
         } else if (id === "/error/badinput") {
-            throw new STError({
-                recipe: this,
+            throw new TestRecipeError({
                 message: "Bad input error from TestRecipe",
                 payload: undefined,
                 type: STError.BAD_INPUT_ERROR,
             });
         } else if (id === "/error/throw-error") {
-            throw new STError({
-                recipe: this,
+            throw new TestRecipeError({
                 message: "Error thrown from recipe error",
                 payload: undefined,
                 type: "ERROR_FROM_TEST_RECIPE_ERROR_HANDLER",
@@ -756,6 +756,13 @@ class TestRecipe extends RecipeModule {
     }
 }
 
+class TestRecipeError extends STError {
+    constructor(err) {
+        super(err);
+        this.fromRecipe = "testRecipe";
+    }
+}
+
 class TestRecipe1 extends RecipeModule {
     constructor(recipeId, appInfo) {
         super(recipeId, appInfo);
@@ -772,35 +779,39 @@ class TestRecipe1 extends RecipeModule {
         };
     }
 
+    isErrorFromThisRecipe = (err) => {
+        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === "testRecipe1";
+    };
+
     getAPIsHandled() {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, "/"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/"),
                 id: "/",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, "/hello"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/hello"),
                 id: "/hello",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, "/hello1"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/hello1"),
                 id: "/hello1",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, "/error"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/error"),
                 id: "/error",
                 disabled: false,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, "/default-route-disabled"),
+                pathWithoutApiBasePath: new NormalisedURLPath("/default-route-disabled"),
                 id: "/default-route-disabled",
                 disabled: true,
             },
@@ -818,8 +829,7 @@ class TestRecipe1 extends RecipeModule {
             res.status(200).send("success TestRecipe1 /hello1");
             return;
         } else if (id === "/error") {
-            throw new STError({
-                recipe: this,
+            throw new TestRecipe1Error({
                 message: "error from TestRecipe1 /error ",
                 payload: undefined,
                 type: "ERROR_FROM_TEST_RECIPE1",
@@ -842,6 +852,13 @@ class TestRecipe1 extends RecipeModule {
 
     static reset() {
         this.instance = undefined;
+    }
+}
+
+class TestRecipe1Error extends STError {
+    constructor(err) {
+        super(err);
+        this.fromRecipe = "testRecipe1";
     }
 }
 

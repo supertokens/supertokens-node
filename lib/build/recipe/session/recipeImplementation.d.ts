@@ -1,10 +1,13 @@
-import { RecipeInterface, VerifySessionOptions } from "./types";
-import Recipe from "./recipe";
+import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo } from "./types";
 import * as express from "express";
 import Session from "./sessionClass";
+import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
-    recipeInstance: Recipe;
-    constructor(recipeInstance: Recipe);
+    querier: Querier;
+    config: TypeNormalisedInput;
+    handshakeInfo: HandshakeInfo | undefined;
+    isInServerlessEnv: boolean;
+    constructor(querier: Querier, config: TypeNormalisedInput, isInServerlessEnv: boolean);
     createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
     getSession: (
         req: express.Request,
@@ -20,4 +23,6 @@ export default class RecipeImplementation implements RecipeInterface {
     updateSessionData: (sessionHandle: string, newSessionData: any) => Promise<void>;
     getJWTPayload: (sessionHandle: string) => Promise<any>;
     updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
+    getHandshakeInfo: () => Promise<HandshakeInfo>;
+    updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
 }

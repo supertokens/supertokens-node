@@ -12,27 +12,13 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
-import { APIInterface } from "../";
+import { APIInterface, APIOptions } from "../";
 
-export default async function signOutAPI(
-    apiImplementation: APIInterface,
-    recipeInstance: Recipe,
-    req: Request,
-    res: Response,
-    next: NextFunction
-) {
+export default async function signOutAPI(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 
-    let result = await apiImplementation.signOutPOST({
-        recipeImplementation: recipeInstance.recipeInterfaceImpl,
-        req,
-        res,
-        next,
-    });
+    let result = await apiImplementation.signOutPOST(options);
 
-    send200Response(res, result);
+    send200Response(options.res, result);
 }

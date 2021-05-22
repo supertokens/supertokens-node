@@ -13,19 +13,11 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
-import { APIInterface } from "../";
+import { APIInterface, APIOptions } from "../";
 
-export default async function generatePasswordResetToken(
-    apiImplementation: APIInterface,
-    recipeInstance: Recipe,
-    req: Request,
-    res: Response,
-    next: NextFunction
-) {
+export default async function generatePasswordResetToken(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
     // step 1
@@ -33,17 +25,11 @@ export default async function generatePasswordResetToken(
         id: string;
         value: string;
     }[] = await validateFormFieldsOrThrowError(
-        recipeInstance,
-        recipeInstance.config.resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm,
-        req.body.formFields
+        options.config.resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm,
+        options.req.body.formFields
     );
 
-    let result = await apiImplementation.generatePasswordResetTokenPOST(formFields, {
-        recipeImplementation: recipeInstance.recipeInterfaceImpl,
-        req,
-        res,
-        next,
-    });
+    let result = await apiImplementation.generatePasswordResetTokenPOST(formFields, options);
 
-    send200Response(res, result);
+    send200Response(options.res, result);
 }

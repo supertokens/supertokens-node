@@ -1,15 +1,15 @@
 import * as express from "express";
-import SessionRecipe from "./recipe";
 import { SessionContainerInterface } from "./types";
+import RecipeImplementation from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {
     private sessionHandle;
     private userId;
     private userDataInJWT;
     private res;
     private accessToken;
-    private recipeInstance;
+    private recipeImplementation;
     constructor(
-        recipeInstance: SessionRecipe,
+        recipeImplementation: RecipeImplementation,
         accessToken: string,
         sessionHandle: string,
         userId: string,

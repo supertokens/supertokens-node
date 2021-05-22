@@ -36,13 +36,10 @@ export default async function signOutAPI(recipeInstance: Recipe, req: Request, r
     }
 
     if (session === undefined) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Session is undefined. Should not come here."),
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Session is undefined. Should not come here."),
+        });
     }
 
     // step 2

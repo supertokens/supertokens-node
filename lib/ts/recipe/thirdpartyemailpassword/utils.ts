@@ -47,7 +47,7 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "thirdpartyemailpassword recipe", recipeInstance);
+    validateTheStructureOfUserInput(config, InputSchema, "thirdpartyemailpassword recipe");
 
     let sessionFeature = validateAndNormaliseSessionFeatureConfig(
         recipeInstance,
@@ -223,13 +223,10 @@ function validateAndNormaliseEmailVerificationConfig(
                                 userInfo === undefined ||
                                 config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
                             ) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
                             return await config.emailVerificationFeature.createAndSendCustomEmail(userInfo, link);
                         },
@@ -242,13 +239,10 @@ function validateAndNormaliseEmailVerificationConfig(
                                 userInfo === undefined ||
                                 config?.emailVerificationFeature?.getEmailVerificationURL === undefined
                             ) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
                             return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                         },
@@ -261,13 +255,10 @@ function validateAndNormaliseEmailVerificationConfig(
                                 userInfo === undefined ||
                                 config?.emailVerificationFeature?.handlePostEmailVerification === undefined
                             ) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
+                                throw new STError({
+                                    type: STError.UNKNOWN_USER_ID_ERROR,
+                                    message: "User ID unknown",
+                                });
                             }
                             return await config.emailVerificationFeature.handlePostEmailVerification(userInfo);
                         },
@@ -301,7 +292,6 @@ export function combinePaginationTokens(
 }
 
 export function extractPaginationTokens(
-    recipe: Recipe,
     nextPaginationToken: string
 ): {
     thirdPartyPaginationToken: string | undefined;
@@ -309,13 +299,10 @@ export function extractPaginationTokens(
 } {
     let extractedTokens = Buffer.from(nextPaginationToken, "base64").toString().split(";");
     if (extractedTokens.length !== 2) {
-        throw new STError(
-            {
-                type: "INVALID_PAGINATION_TOKEN",
-                message: "nextPaginationToken is invalid",
-            },
-            recipe
-        );
+        throw new STError({
+            type: "INVALID_PAGINATION_TOKEN",
+            message: "nextPaginationToken is invalid",
+        });
     }
     return {
         thirdPartyPaginationToken: extractedTokens[0] === "null" ? undefined : extractedTokens[0],

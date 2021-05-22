@@ -25,5 +25,5 @@ export default class Recipe extends RecipeModule {
     ) => Promise<void>;
     handleError: (err: STError, _: express.Request, response: express.Response, next: express.NextFunction) => void;
     getAllCORSHeaders: () => string[];
-    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
+    isErrorFromThisRecipe: (err: any) => err is STError;
 }

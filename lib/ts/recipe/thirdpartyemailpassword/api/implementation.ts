@@ -1,44 +1,24 @@
-import { APIInterface, APIOptions, User, TypeProvider } from "../";
-import STError from "../error";
-import Recipe from "../recipe";
-import ThirdPartyRecipe from "../../thirdparty/recipe";
-import EmailPasswordRecipe from "../../emailpassword/recipe";
+import { APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions, User, TypeProvider } from "../";
 import EmailPasswordImplemenation from "../../emailpassword/api/implementation";
 import ThirdPartyImplemenation from "../../thirdparty/api/implementation";
 
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
-
     emailPasswordImplementation: EmailPasswordImplemenation;
-    thirdPartyImplementation: ThirdPartyImplemenation | undefined;
-    emailPasswordRecipeInstance: EmailPasswordRecipe;
-    thirdPartyRecipeInstance?: ThirdPartyRecipe;
+    thirdPartyImplementation: ThirdPartyImplemenation;
 
-    constructor(
-        recipeInstance: Recipe,
-        emailPasswordRecipeInstance: EmailPasswordRecipe,
-        thirdPartyRecipeInstance?: ThirdPartyRecipe
-    ) {
-        this.recipeInstance = recipeInstance;
-        this.emailPasswordRecipeInstance = emailPasswordRecipeInstance;
-        this.thirdPartyRecipeInstance = thirdPartyRecipeInstance;
-        this.emailPasswordImplementation = new EmailPasswordImplemenation(emailPasswordRecipeInstance);
-        if (thirdPartyRecipeInstance !== undefined) {
-            this.thirdPartyImplementation = new ThirdPartyImplemenation(thirdPartyRecipeInstance);
-        }
+    constructor() {
+        this.emailPasswordImplementation = new EmailPasswordImplemenation();
+        this.thirdPartyImplementation = new ThirdPartyImplemenation();
     }
 
     emailExistsGET = async (
         email: string,
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
         exists: boolean;
     }> => {
-        return this.emailPasswordImplementation.emailExistsGET(email, {
-            ...options,
-            recipeImplementation: this.emailPasswordRecipeInstance.recipeInterfaceImpl,
-        });
+        return this.emailPasswordImplementation.emailExistsGET(email, options);
     };
 
     generatePasswordResetTokenPOST = async (
@@ -46,14 +26,11 @@ export default class APIImplementation implements APIInterface {
             id: string;
             value: string;
         }[],
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
     }> => {
-        return this.emailPasswordImplementation.generatePasswordResetTokenPOST(formFields, {
-            ...options,
-            recipeImplementation: this.emailPasswordRecipeInstance.recipeInterfaceImpl,
-        });
+        return this.emailPasswordImplementation.generatePasswordResetTokenPOST(formFields, options);
     };
 
     passwordResetPOST = async (
@@ -62,14 +39,11 @@ export default class APIImplementation implements APIInterface {
             value: string;
         }[],
         token: string,
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
     }> => {
-        return this.emailPasswordImplementation.passwordResetPOST(formFields, token, {
-            ...options,
-            recipeImplementation: this.emailPasswordRecipeInstance.recipeInterfaceImpl,
-        });
+        return this.emailPasswordImplementation.passwordResetPOST(formFields, token, options);
     };
 
     signInPOST = async (
@@ -77,15 +51,12 @@ export default class APIImplementation implements APIInterface {
             id: string;
             value: string;
         }[],
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
         user: User;
     }> => {
-        return this.emailPasswordImplementation.signInPOST(formFields, {
-            ...options,
-            recipeImplementation: this.emailPasswordRecipeInstance.recipeInterfaceImpl,
-        });
+        return this.emailPasswordImplementation.signInPOST(formFields, options);
     };
 
     signUpPOST = async (
@@ -93,72 +64,42 @@ export default class APIImplementation implements APIInterface {
             id: string;
             value: string;
         }[],
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
         user: User;
     }> => {
-        return this.emailPasswordImplementation.signUpPOST(formFields, {
-            ...options,
-            recipeImplementation: this.emailPasswordRecipeInstance.recipeInterfaceImpl,
-        });
+        return this.emailPasswordImplementation.signUpPOST(formFields, options);
     };
 
     authorisationUrlGET = async (
         provider: TypeProvider,
-        options: APIOptions
+        options: ThirdPartyAPIOptions
     ): Promise<{
         status: "OK";
         url: string;
     }> => {
-        if (this.thirdPartyImplementation === undefined || this.thirdPartyRecipeInstance === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("No thirdparty provider configured"),
-                },
-                this.recipeInstance
-            );
-        }
-        return this.thirdPartyImplementation.authorisationUrlGET(provider, {
-            ...options,
-            recipeImplementation: this.thirdPartyRecipeInstance.recipeInterfaceImpl,
-        });
+        return this.thirdPartyImplementation.authorisationUrlGET(provider, options);
     };
 
     signInUpPOST = async (
         provider: TypeProvider,
         code: string,
         redirectURI: string,
-        options: APIOptions
+        options: ThirdPartyAPIOptions
     ): Promise<{
         status: "OK";
         createdNewUser: boolean;
         user: User;
     }> => {
-        if (this.thirdPartyImplementation === undefined || this.thirdPartyRecipeInstance === undefined) {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("No thirdparty provider configured"),
-                },
-                this.recipeInstance
-            );
-        }
-        return this.thirdPartyImplementation.signInUpPOST(provider, code, redirectURI, {
-            ...options,
-            recipeImplementation: this.thirdPartyRecipeInstance.recipeInterfaceImpl,
-        });
+        return this.thirdPartyImplementation.signInUpPOST(provider, code, redirectURI, options);
     };
 
     signOutPOST = async (
-        options: APIOptions
+        options: EmailPasswordAPIOptions
     ): Promise<{
         status: "OK";
     }> => {
-        return this.emailPasswordImplementation.signOutPOST({
-            ...options,
-            recipeImplementation: this.emailPasswordRecipeInstance.recipeInterfaceImpl,
-        });
+        return this.emailPasswordImplementation.signOutPOST(options);
     };
 }

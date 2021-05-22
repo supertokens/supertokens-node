@@ -26,6 +26,7 @@ import generateEmailVerifyTokenAPI from "./api/generateEmailVerifyToken";
 import emailVerifyAPI from "./api/emailVerify";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
+import { Querier } from "../../querier";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -38,23 +39,22 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
-        super(recipeId, appInfo, isInServerlessEnv);
+        super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
-        this.recipeInterfaceImpl = this.config.override.functions(new RecipeImplementation(this));
-        this.apiImpl = this.config.override.apis(new APIImplementation(this));
+        this.recipeInterfaceImpl = this.config.override.functions(
+            new RecipeImplementation(Querier.getNewInstanceOrThrowError(isInServerlessEnv, recipeId))
+        );
+        this.apiImpl = this.config.override.apis(new APIImplementation());
     }
 
     static getInstanceOrThrowError(): Recipe {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-            },
-            undefined
-        );
+        throw new STError({
+            type: STError.GENERAL_ERROR,
+            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
+        });
     }
 
     static init(config: TypeInput): RecipeListFunction {
@@ -63,28 +63,22 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
-                throw new STError(
-                    {
-                        type: STError.GENERAL_ERROR,
-                        payload: new Error(
-                            "Emailverification recipe has already been initialised. Please check your code for bugs."
-                        ),
-                    },
-                    undefined
-                );
+                throw new STError({
+                    type: STError.GENERAL_ERROR,
+                    payload: new Error(
+                        "Emailverification recipe has already been initialised. Please check your code for bugs."
+                    ),
+                });
             }
         };
     }
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError(
-                {
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("calling testing function in non testing env"),
-                },
-                undefined
-            );
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error("calling testing function in non testing env"),
+            });
         }
         Recipe.instance = undefined;
     }
@@ -95,19 +89,19 @@ export default class Recipe extends RecipeModule {
         return [
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, GENERATE_EMAIL_VERIFY_TOKEN_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(GENERATE_EMAIL_VERIFY_TOKEN_API),
                 id: GENERATE_EMAIL_VERIFY_TOKEN_API,
                 disabled: this.config.disableDefaultImplementation,
             },
             {
                 method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, EMAIL_VERIFY_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(EMAIL_VERIFY_API),
                 id: EMAIL_VERIFY_API,
                 disabled: this.config.disableDefaultImplementation,
             },
             {
                 method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(this, EMAIL_VERIFY_API),
+                pathWithoutApiBasePath: new NormalisedURLPath(EMAIL_VERIFY_API),
                 id: EMAIL_VERIFY_API,
                 disabled: this.config.disableDefaultImplementation,
             },
@@ -122,22 +116,34 @@ export default class Recipe extends RecipeModule {
         _: NormalisedURLPath,
         __: HTTPMethod
     ) => {
+        let options = {
+            config: this.config,
+            next,
+            recipeId: this.getRecipeId(),
+            recipeImplementation: this.recipeInterfaceImpl,
+            req,
+            res,
+        };
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
-            return await generateEmailVerifyTokenAPI(this.apiImpl, this, req, res, next);
+            return await generateEmailVerifyTokenAPI(this.apiImpl, options);
         } else {
-            return await emailVerifyAPI(this.apiImpl, this, req, res, next);
+            return await emailVerifyAPI(this.apiImpl, options);
         }
     };
 
     handleError = (err: STError, _: express.Request, response: express.Response, next: express.NextFunction): void => {
-        if (err.type === STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR) {
-            return send200Response(response, {
-                status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",
-            });
-        } else if (err.type === STError.EMAIL_ALREADY_VERIFIED_ERROR) {
-            return send200Response(response, {
-                status: "EMAIL_ALREADY_VERIFIED_ERROR",
-            });
+        if (err.fromRecipe === Recipe.RECIPE_ID) {
+            if (err.type === STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR) {
+                return send200Response(response, {
+                    status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",
+                });
+            } else if (err.type === STError.EMAIL_ALREADY_VERIFIED_ERROR) {
+                return send200Response(response, {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                });
+            } else {
+                return next(err);
+            }
         } else {
             return next(err);
         }
@@ -147,7 +153,7 @@ export default class Recipe extends RecipeModule {
         return [];
     };
 
-    isErrorFromThisOrChildRecipeBasedOnInstance = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && this === err.recipe;
+    isErrorFromThisRecipe = (err: any): err is STError => {
+        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 }

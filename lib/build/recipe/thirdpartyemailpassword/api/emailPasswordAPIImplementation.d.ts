@@ -1,8 +1,8 @@
 import { APIInterface, APIOptions, User } from "../../emailpassword";
-import Recipe from "../recipe";
+import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
-    constructor(recipeInstance: Recipe);
+    apiImplmentation: ThirdPartyEmailPasswordAPIInterface;
+    constructor(apiImplmentation: ThirdPartyEmailPasswordAPIInterface);
     emailExistsGET: (
         email: string,
         options: APIOptions

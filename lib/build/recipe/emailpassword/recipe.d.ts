@@ -12,13 +12,7 @@ export default class Recipe extends RecipeModule {
     emailVerificationRecipe: EmailVerificationRecipe;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config?: TypeInput,
-        rIdToCore?: string
-    );
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): Recipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
@@ -38,7 +32,7 @@ export default class Recipe extends RecipeModule {
         next: express.NextFunction
     ) => void;
     getAllCORSHeaders: () => string[];
-    isErrorFromThisOrChildRecipeBasedOnInstance: (err: any) => err is STError;
+    isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;
     createEmailVerificationToken: (userId: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<User>;

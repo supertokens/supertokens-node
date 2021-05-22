@@ -1,8 +1,5 @@
 import { APIInterface, APIOptions, User } from "../";
-import Recipe from "../recipe";
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
-    constructor(recipeInstance: Recipe);
     emailExistsGET: (
         email: string,
         options: APIOptions

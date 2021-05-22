@@ -1,8 +1,8 @@
 import { APIInterface, APIOptions, User, TypeProvider } from "../../thirdparty";
-import Recipe from "../recipe";
+import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 export default class APIImplementation implements APIInterface {
-    recipeInstance: Recipe;
-    constructor(recipeInstance: Recipe);
+    apiImplmentation: ThirdPartyEmailPasswordAPIInterface;
+    constructor(apiImplmentation: ThirdPartyEmailPasswordAPIInterface);
     authorisationUrlGET: (
         provider: TypeProvider,
         options: APIOptions
@@ -21,7 +21,7 @@ export default class APIImplementation implements APIInterface {
         user: User;
     }>;
     signOutPOST: (
-        options: APIOptions
+        _: APIOptions
     ) => Promise<{
         status: "OK";
     }>;
