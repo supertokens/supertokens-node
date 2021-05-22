@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import NormalisedURLPath from "../../normalisedURLPath";
 import * as express from "express";
-import { RecipeImplementation } from "./";
+import { RecipeImplementation, APIImplementation } from "./";
 export declare type HandshakeInfo = {
     jwtSigningPublicKey: string;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
@@ -64,6 +64,7 @@ export declare type TypeInput = {
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override?: {
         functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis?: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 export declare const InputSchema: {
@@ -136,6 +137,7 @@ export declare type TypeNormalisedInput = {
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
     };
 };
 export interface SessionRequest extends Request {
@@ -187,4 +189,21 @@ export interface SessionContainerInterface {
     getHandle(): string;
     getAccessToken(): string;
     updateJWTPayload(newJWTPayload: any): Promise<void>;
+}
+export declare type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    config: TypeNormalisedInput;
+    recipeId: string;
+    req: Request;
+    res: Response;
+    next: NextFunction;
+};
+export interface APIInterface {
+    refreshPOST(options: APIOptions): Promise<void>;
+    signOutPOST(
+        options: APIOptions
+    ): Promise<{
+        status: "OK";
+    }>;
+    verifySession(verifySessionOptions: VerifySessionOptions | undefined, options: APIOptions): Promise<void>;
 }

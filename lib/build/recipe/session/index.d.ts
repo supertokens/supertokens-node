@@ -5,9 +5,12 @@ import {
     RecipeInterface,
     SessionContainerInterface as SessionContainer,
     SessionRequest,
+    APIInterface,
+    APIOptions,
 } from "./types";
 import Recipe from "./recipe";
 import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -51,4 +54,13 @@ export declare let verifySession: (
     options?: VerifySessionOptions | undefined
 ) => (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
 export declare let Error: typeof SuperTokensError;
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, RecipeImplementation };
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    SessionRequest,
+    RecipeImplementation,
+    APIInterface,
+    APIOptions,
+    APIImplementation,
+};

@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import * as express from "express";
@@ -26,6 +26,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } from "./cookieAndHeaders";
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
+import APIImplementation from "./api/implementation";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -35,6 +36,8 @@ export default class SessionRecipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
+
+    apiImpl: APIInterface;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
@@ -46,6 +49,7 @@ export default class SessionRecipe extends RecipeModule {
                 isInServerlessEnv
             )
         );
+        this.apiImpl = this.config.override.apis(new APIImplementation());
     }
 
     static getInstanceOrThrowError(): SessionRecipe {
@@ -109,10 +113,18 @@ export default class SessionRecipe extends RecipeModule {
         __: NormalisedURLPath,
         ___: HTTPMethod
     ) => {
+        let options = {
+            config: this.config,
+            next,
+            recipeId: this.getRecipeId(),
+            recipeImplementation: this.recipeInterfaceImpl,
+            req,
+            res,
+        };
         if (id === REFRESH_API_PATH) {
-            return await handleRefreshAPI(this, req, res, next);
+            return await handleRefreshAPI(this.apiImpl, options);
         } else {
-            return await signOutAPI(this, req, res, next);
+            return await signOutAPI(this.apiImpl, options);
         }
     };
 

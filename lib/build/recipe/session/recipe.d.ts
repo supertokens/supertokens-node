@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import STError from "./error";
 import * as express from "express";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
@@ -9,6 +9,7 @@ export default class SessionRecipe extends RecipeModule {
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
+    apiImpl: APIInterface;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config?: TypeInput): RecipeListFunction;

@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { verifySession as originalVerifySession } from "./middleware";
+import { verifySession as originalVerifySession } from "./api/middleware";
 import * as express from "express";
 import SuperTokensError from "./error";
 import {
@@ -21,9 +21,12 @@ import {
     RecipeInterface,
     SessionContainerInterface as SessionContainer,
     SessionRequest,
+    APIInterface,
+    APIOptions,
 } from "./types";
 import Recipe from "./recipe";
 import RecipeImplementation from "./recipeImplementation";
+import APIImplementation from "./api/implementation";
 
 // For Express
 export default class SessionWrapper {
@@ -117,4 +120,13 @@ export let verifySession = SessionWrapper.verifySession;
 
 export let Error = SessionWrapper.Error;
 
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, RecipeImplementation };
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    SessionRequest,
+    RecipeImplementation,
+    APIInterface,
+    APIOptions,
+    APIImplementation,
+};

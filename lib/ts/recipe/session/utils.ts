@@ -31,13 +31,17 @@ import * as express from "express";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
 import STError from "./error";
-import { sendTryRefreshTokenResponse, sendTokenTheftDetectedResponse, sendUnauthorisedResponse } from "./middleware";
+import {
+    sendTryRefreshTokenResponse,
+    sendTokenTheftDetectedResponse,
+    sendUnauthorisedResponse,
+} from "./api/middleware";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
-import { RecipeImplementation, RecipeInterface } from "./";
+import { RecipeImplementation, RecipeInterface, APIImplementation, APIInterface } from "./";
 
 export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -218,16 +222,25 @@ export function validateAndNormaliseUserInput(
 
     let override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
+        apis: (originalImplementation: APIImplementation) => APIInterface;
+    } = {
+        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
+        apis: (originalImplementation: APIImplementation) => originalImplementation,
     };
 
-    if (config !== undefined && config.override !== undefined && config.override.functions !== undefined) {
-        override = {
-            functions: config.override.functions,
-        };
-    } else {
-        override = {
-            functions: (originalImplementation: RecipeImplementation) => originalImplementation,
-        };
+    if (config !== undefined && config.override !== undefined) {
+        if (config.override.functions !== undefined) {
+            override = {
+                ...override,
+                functions: config.override.functions,
+            };
+        }
+        if (config.override.apis !== undefined) {
+            override = {
+                ...override,
+                apis: config.override.apis,
+            };
+        }
     }
 
     return {
