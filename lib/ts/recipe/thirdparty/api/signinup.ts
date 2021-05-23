@@ -18,6 +18,10 @@ import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 
 export default async function signInUpAPI(apiImplementation: APIInterface, options: APIOptions) {
+    if (apiImplementation.signInUpPOST === undefined) {
+        return options.next();
+    }
+
     let bodyParams = options.req.body;
     let thirdPartyId = bodyParams.thirdPartyId;
     let code = bodyParams.code;

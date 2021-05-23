@@ -113,7 +113,6 @@ export type TypeNormalisedInputSessionFeature = {
 };
 
 export type TypeInputSignUp = {
-    disableDefaultImplementation?: boolean;
     formFields?: TypeInputFormField[];
     handlePostSignUp?: TypeInputHandlePostSignUp;
 };
@@ -121,7 +120,6 @@ export type TypeInputSignUp = {
 const InputSignUpSchema = {
     type: "object",
     properties: {
-        disableDefaultImplementation: TypeBoolean,
         formFields: {
             type: "array",
             items: {
@@ -141,44 +139,24 @@ const InputSignUpSchema = {
 };
 
 export type TypeNormalisedInputSignUp = {
-    disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
     handlePostSignUp: TypeInputHandlePostSignUp;
 };
 
 export type TypeInputSignIn = {
-    disableDefaultImplementation?: boolean;
     handlePostSignIn?: TypeInputHandlePostSignIn;
 };
 
 const InputSignInSchema = {
     type: "object",
     properties: {
-        disableDefaultImplementation: TypeBoolean,
         handlePostSignIn: TypeAny,
     },
     additionalProperties: false,
 };
 
 export type TypeNormalisedInputSignIn = {
-    disableDefaultImplementation: boolean;
     handlePostSignIn: TypeInputHandlePostSignIn;
-};
-
-export type TypeInputSignOut = {
-    disableDefaultImplementation?: boolean;
-};
-
-const InputSignOutSchema = {
-    type: "object",
-    properties: {
-        disableDefaultImplementation: TypeBoolean,
-    },
-    additionalProperties: false,
-};
-
-export type TypeNormalisedInputSignOut = {
-    disableDefaultImplementation: boolean;
 };
 
 export type TypeInputEmailVerificationFeature = {
@@ -202,7 +180,6 @@ export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
     providers?: TypeProvider[];
-    signOutFeature?: TypeInputSignOut;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -226,7 +203,6 @@ export const InputSchema = {
     signUpFeature: InputSignUpSchema,
     signInFeature: InputSignInSchema,
     providers: InputProvidersSchema,
-    signOutFeature: InputSignOutSchema,
     resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
     emailVerificationFeature: InputEmailVerificationFeatureSchema,
     override: TypeAny,
@@ -237,7 +213,6 @@ export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     providers: TypeProvider[];
-    signOutFeature: TypeNormalisedInputSignOut;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {

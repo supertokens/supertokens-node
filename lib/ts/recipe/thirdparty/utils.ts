@@ -24,8 +24,6 @@ import {
     InputSchema,
     TypeNormalisedInput,
     TypeInputSignInAndUp,
-    TypeInputSignOutFeature,
-    TypeNormalisedInputSignOutFeature,
     TypeNormalisedInputSignInAndUp,
     TypeInputSessionFeature,
     TypeNormalisedInputSessionFeature,
@@ -53,8 +51,6 @@ export function validateAndNormaliseUserInput(
 
     let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
 
-    let signOutFeature = validateAndNormaliseSignOutConfig(recipeInstance, appInfo, config.signOutFeature);
-
     let override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
         apis: (originalImplementation: APIImplementation) => APIInterface;
@@ -81,7 +77,6 @@ export function validateAndNormaliseUserInput(
     return {
         sessionFeature,
         emailVerificationFeature,
-        signOutFeature,
         signInAndUpFeature,
         override,
     };
@@ -120,9 +115,6 @@ function validateAndNormaliseSignInAndUpConfig(
     _: NormalisedAppinfo,
     config: TypeInputSignInAndUp
 ): TypeNormalisedInputSignInAndUp {
-    let disableDefaultImplementation =
-        config.disableDefaultImplementation === undefined ? false : config.disableDefaultImplementation;
-
     let handlePostSignUpIn =
         config.handlePostSignUpIn === undefined ? defaultHandlePostSignUpIn : config.handlePostSignUpIn;
 
@@ -136,24 +128,8 @@ function validateAndNormaliseSignInAndUpConfig(
         });
     }
     return {
-        disableDefaultImplementation,
         handlePostSignUpIn,
         providers,
-    };
-}
-
-function validateAndNormaliseSignOutConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSignOutFeature
-): TypeNormalisedInputSignOutFeature {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
-    return {
-        disableDefaultImplementation,
     };
 }
 

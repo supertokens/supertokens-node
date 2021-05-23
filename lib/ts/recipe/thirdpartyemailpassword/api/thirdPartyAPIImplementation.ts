@@ -45,14 +45,5 @@ export default class APIImplementation implements APIInterface {
         };
     };
 
-    signOutPOST = async (
-        _: APIOptions
-    ): Promise<{
-        status: "OK";
-    }> => {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Should never come here"),
-        });
-    };
+    signOutPOST = undefined;
 }

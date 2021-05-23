@@ -20,7 +20,7 @@ export default async function generateEmailVerifyToken(apiImplementation: APIInt
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
     if (apiImplementation.generateEmailVerifyTokenPOST === undefined) {
-        return;
+        return options.next();
     }
 
     let result = await apiImplementation.generateEmailVerifyTokenPOST(options);

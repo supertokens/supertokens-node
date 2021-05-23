@@ -27,8 +27,6 @@ import {
     TypeContextEmailPasswordSignUp,
     TypeContextThirdParty,
     TypeNormalisedInputSignIn,
-    TypeInputSignOut,
-    TypeNormalisedInputSignOut,
     TypeNormalisedInputSessionFeature,
     TypeInputSessionFeature,
     TypeContextEmailPasswordSignIn,
@@ -71,12 +69,6 @@ export function validateAndNormaliseUserInput(
 
     let providers = config === undefined || config.providers === undefined ? [] : config.providers;
 
-    let signOutFeature = validateAndNormaliseSignOutConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.signOutFeature
-    );
-
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
     let override: {
@@ -108,7 +100,6 @@ export function validateAndNormaliseUserInput(
         signUpFeature,
         signInFeature,
         providers,
-        signOutFeature,
         resetPasswordUsingTokenFeature,
         emailVerificationFeature,
     };
@@ -139,11 +130,6 @@ function validateAndNormaliseSignUpConfig(
     __: NormalisedAppinfo,
     config?: TypeInputSignUp
 ): TypeNormalisedInputSignUp {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
     let formFields: NormalisedFormField[] = normaliseSignUpFormFields(
         config === undefined ? undefined : config.formFields
     );
@@ -153,7 +139,6 @@ function validateAndNormaliseSignUpConfig(
             : config.handlePostSignUp;
 
     return {
-        disableDefaultImplementation,
         formFields,
         handlePostSignUp,
     };
@@ -185,18 +170,12 @@ function validateAndNormaliseSignInConfig(
     __: NormalisedAppinfo,
     config?: TypeInputSignIn
 ): TypeNormalisedInputSignIn {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
     let handlePostSignIn =
         config === undefined || config.handlePostSignIn === undefined
             ? defaultHandlePostSignIn
             : config.handlePostSignIn;
 
     return {
-        disableDefaultImplementation,
         handlePostSignIn,
     };
 }
@@ -262,21 +241,6 @@ function validateAndNormaliseEmailVerificationConfig(
                             return await config.emailVerificationFeature.handlePostEmailVerification(userInfo);
                         },
           };
-}
-
-function validateAndNormaliseSignOutConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSignOut
-): TypeNormalisedInputSignOut {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
-    return {
-        disableDefaultImplementation,
-    };
 }
 
 export function createNewPaginationToken(userId: string, timeJoined: number): string {

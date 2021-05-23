@@ -104,19 +104,19 @@ export default class Recipe extends RecipeModule {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(SIGN_IN_UP_API),
                 id: SIGN_IN_UP_API,
-                disabled: this.config.signInAndUpFeature.disableDefaultImplementation,
+                disabled: this.apiImpl.signInUpPOST === undefined,
             },
             {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(SIGN_OUT_API),
                 id: SIGN_OUT_API,
-                disabled: this.config.signOutFeature.disableDefaultImplementation,
+                disabled: this.apiImpl.signOutPOST === undefined,
             },
             {
                 method: "get",
                 pathWithoutApiBasePath: new NormalisedURLPath(AUTHORISATION_API),
                 id: AUTHORISATION_API,
-                disabled: this.config.signInAndUpFeature.disableDefaultImplementation,
+                disabled: this.apiImpl.authorisationUrlGET === undefined,
             },
             ...this.emailVerificationRecipe.getAPIsHandled(),
         ];

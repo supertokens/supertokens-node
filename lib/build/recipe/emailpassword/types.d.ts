@@ -40,7 +40,6 @@ export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
-    signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
@@ -62,7 +61,6 @@ export declare type TypeFormField = {
     value: any;
 };
 export declare type TypeInputSignUp = {
-    disableDefaultImplementation?: boolean;
     formFields?: TypeInputFormField[];
     handlePostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
@@ -72,36 +70,23 @@ export declare type NormalisedFormField = {
     optional: boolean;
 };
 export declare type TypeNormalisedInputSignUp = {
-    disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
     handlePostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 export declare type TypeInputSignIn = {
-    disableDefaultImplementation?: boolean;
     handlePostSignIn?: (user: User) => Promise<void>;
 };
 export declare type TypeNormalisedInputSignIn = {
-    disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
     handlePostSignIn: (user: User) => Promise<void>;
 };
-export declare type TypeInputSignOutFeature = {
-    disableDefaultImplementation?: boolean;
-};
-export declare type TypeNormalisedInputSignOutFeature = {
-    disableDefaultImplementation: boolean;
-};
 export declare type TypeInputResetPasswordUsingTokenFeature = {
-    disableDefaultImplementation?: boolean;
     getResetPasswordURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string) => Promise<void>;
 };
 export declare const InputResetPasswordUsingTokenFeatureSchema: {
     type: string;
     properties: {
-        disableDefaultImplementation: {
-            type: string;
-        };
         getResetPasswordURL: {
             type: string;
         };
@@ -112,7 +97,6 @@ export declare const InputResetPasswordUsingTokenFeatureSchema: {
     additionalProperties: boolean;
 };
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
-    disableDefaultImplementation: boolean;
     getResetPasswordURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string) => Promise<void>;
     formFieldsForGenerateTokenForm: NormalisedFormField[];
@@ -128,7 +112,6 @@ export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
-    signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
@@ -159,9 +142,6 @@ export declare const InputSchema: {
         signUpFeature: {
             type: string;
             properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
                 formFields: {
                     type: string;
                     items: {
@@ -190,9 +170,6 @@ export declare const InputSchema: {
         signInFeature: {
             type: string;
             properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
                 handlePostSignIn: {
                     type: string;
                 };
@@ -202,22 +179,10 @@ export declare const InputSchema: {
         resetPasswordUsingTokenFeature: {
             type: string;
             properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
                 getResetPasswordURL: {
                     type: string;
                 };
                 createAndSendCustomEmail: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
-        signOutFeature: {
-            type: string;
-            properties: {
-                disableDefaultImplementation: {
                     type: string;
                 };
             };
@@ -276,55 +241,67 @@ export declare type APIOptions = {
     next: NextFunction;
 };
 export interface APIInterface {
-    emailExistsGET(
-        email: string,
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-        exists: boolean;
-    }>;
-    generatePasswordResetTokenPOST(
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-    }>;
-    passwordResetPOST(
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        token: string,
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-    }>;
-    signInPOST(
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-        user: User;
-    }>;
-    signOutPOST(
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-    }>;
-    signUpPOST(
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-        user: User;
-    }>;
+    emailExistsGET:
+        | undefined
+        | ((
+              email: string,
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+              exists: boolean;
+          }>);
+    generatePasswordResetTokenPOST:
+        | undefined
+        | ((
+              formFields: {
+                  id: string;
+                  value: string;
+              }[],
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+          }>);
+    passwordResetPOST:
+        | undefined
+        | ((
+              formFields: {
+                  id: string;
+                  value: string;
+              }[],
+              token: string,
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+          }>);
+    signInPOST:
+        | undefined
+        | ((
+              formFields: {
+                  id: string;
+                  value: string;
+              }[],
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+              user: User;
+          }>);
+    signOutPOST:
+        | undefined
+        | ((
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+          }>);
+    signUpPOST:
+        | undefined
+        | ((
+              formFields: {
+                  id: string;
+                  value: string;
+              }[],
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+              user: User;
+          }>);
 }

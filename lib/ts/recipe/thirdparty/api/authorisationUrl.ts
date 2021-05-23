@@ -18,6 +18,10 @@ import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 
 export default async function authorisationUrlAPI(apiImplementation: APIInterface, options: APIOptions) {
+    if (apiImplementation.authorisationUrlGET === undefined) {
+        return options.next();
+    }
+
     let queryParams = options.req.query;
     let thirdPartyId = queryParams.thirdPartyId;
 

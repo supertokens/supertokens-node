@@ -20,6 +20,10 @@ import { APIInterface, APIOptions } from "../";
 export default async function emailExists(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
 
+    if (apiImplementation.emailExistsGET === undefined) {
+        return options.next();
+    }
+
     let email = options.req.query.email;
 
     if (email === undefined || typeof email !== "string") {

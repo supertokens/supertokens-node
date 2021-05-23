@@ -24,7 +24,7 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
         // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
         if (apiImplementation.verifyEmailPOST === undefined) {
-            return;
+            return options.next();
         }
 
         let token = options.req.body.token;
@@ -44,7 +44,7 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
         result = await apiImplementation.verifyEmailPOST(token, options);
     } else {
         if (apiImplementation.isEmailVerifiedGET === undefined) {
-            return;
+            return options.next();
         }
 
         result = await apiImplementation.isEmailVerifiedGET(options);

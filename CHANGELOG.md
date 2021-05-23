@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Sign up / sign in callbacks' `formField` param includes email & password.
 -   Adds API interfaces to all recipes
 -   Provides a way to override API logic easily.
+-   Replaces `disableDefaultImplementation` with setting functions in `override > apis` to `undefined`.
 
 ## [5.0.1] - 2021-05-06
 

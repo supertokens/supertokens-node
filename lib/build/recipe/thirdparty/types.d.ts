@@ -76,25 +76,16 @@ export declare type TypeInputEmailVerificationFeature = {
     handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 export declare type TypeInputSignInAndUp = {
-    disableDefaultImplementation?: boolean;
     handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 export declare type TypeNormalisedInputSignInAndUp = {
-    disableDefaultImplementation: boolean;
     handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
-};
-export declare type TypeInputSignOutFeature = {
-    disableDefaultImplementation?: boolean;
-};
-export declare type TypeNormalisedInputSignOutFeature = {
-    disableDefaultImplementation: boolean;
 };
 export declare type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
     signInAndUpFeature: TypeInputSignInAndUp;
-    signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
@@ -125,9 +116,6 @@ export declare const InputSchema: {
         signInAndUpFeature: {
             type: string;
             properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
                 providers: {
                     type: string;
                 };
@@ -136,15 +124,6 @@ export declare const InputSchema: {
                 };
             };
             required: string[];
-            additionalProperties: boolean;
-        };
-        signOutFeature: {
-            type: string;
-            properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
-            };
             additionalProperties: boolean;
         };
         emailVerificationFeature: {
@@ -172,7 +151,6 @@ export declare const InputSchema: {
 export declare type TypeNormalisedInput = {
     sessionFeature: TypeNormalisedInputSessionFeature;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
-    signOutFeature: TypeNormalisedInputSignOutFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
     override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
@@ -219,26 +197,32 @@ export declare type APIOptions = {
     next: NextFunction;
 };
 export interface APIInterface {
-    authorisationUrlGET(
-        provider: TypeProvider,
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-        url: string;
-    }>;
-    signInUpPOST(
-        provider: TypeProvider,
-        code: string,
-        redirectURI: string,
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-    }>;
-    signOutPOST(
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-    }>;
+    authorisationUrlGET:
+        | undefined
+        | ((
+              provider: TypeProvider,
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+              url: string;
+          }>);
+    signInUpPOST:
+        | undefined
+        | ((
+              provider: TypeProvider,
+              code: string,
+              redirectURI: string,
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }>);
+    signOutPOST:
+        | undefined
+        | ((
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+          }>);
 }

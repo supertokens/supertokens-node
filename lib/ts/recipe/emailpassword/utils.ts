@@ -34,7 +34,7 @@ import {
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
-import { TypeNormalisedInputSignOutFeature, TypeInputSignOutFeature, RecipeInterface } from "./types";
+import { RecipeInterface } from "./types";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import {
     getResetPasswordURL as defaultGetResetPasswordURL,
@@ -77,12 +77,6 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.resetPasswordUsingTokenFeature
     );
 
-    let signOutFeature = validateAndNormaliseSignOutConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.signOutFeature
-    );
-
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
     let override: {
@@ -113,7 +107,6 @@ export function validateAndNormaliseUserInput(
         signUpFeature,
         signInFeature,
         resetPasswordUsingTokenFeature,
-        signOutFeature,
         emailVerificationFeature,
         override,
     };
@@ -211,32 +204,12 @@ export function validateAndNormaliseEmailVerificationConfig(
           };
 }
 
-function validateAndNormaliseSignOutConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSignOutFeature
-): TypeNormalisedInputSignOutFeature {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
-    return {
-        disableDefaultImplementation,
-    };
-}
-
 function validateAndNormaliseResetPasswordUsingTokenConfig(
     _: Recipe,
     appInfo: NormalisedAppinfo,
     signUpConfig: TypeNormalisedInputSignUp,
     config?: TypeInputResetPasswordUsingTokenFeature
 ): TypeNormalisedInputResetPasswordUsingTokenFeature {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
     let formFieldsForPasswordResetForm: NormalisedFormField[] = signUpConfig.formFields
         .filter((filter) => filter.id === FORM_FIELD_PASSWORD_ID)
         .map((field) => {
@@ -268,7 +241,6 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
             : config.createAndSendCustomEmail;
 
     return {
-        disableDefaultImplementation,
         formFieldsForPasswordResetForm,
         formFieldsForGenerateTokenForm,
         getResetPasswordURL,
@@ -295,11 +267,6 @@ function validateAndNormaliseSignInConfig(
     signUpConfig: TypeNormalisedInputSignUp,
     config?: TypeInputSignIn
 ): TypeNormalisedInputSignIn {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
     let formFields: NormalisedFormField[] = normaliseSignInFormFields(signUpConfig.formFields);
 
     let handlePostSignIn =
@@ -307,7 +274,6 @@ function validateAndNormaliseSignInConfig(
             ? defaultHandlePostSignIn
             : config.handlePostSignIn;
     return {
-        disableDefaultImplementation,
         formFields,
         handlePostSignIn,
     };
@@ -362,11 +328,6 @@ function validateAndNormaliseSignupConfig(
     __: NormalisedAppinfo,
     config?: TypeInputSignUp
 ): TypeNormalisedInputSignUp {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
     let formFields: NormalisedFormField[] = normaliseSignUpFormFields(
         config === undefined ? undefined : config.formFields
     );
@@ -377,7 +338,6 @@ function validateAndNormaliseSignupConfig(
             : config.handlePostSignUp;
 
     return {
-        disableDefaultImplementation,
         formFields,
         handlePostSignUp,
     };

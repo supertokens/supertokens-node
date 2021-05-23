@@ -20,6 +20,10 @@ import { APIInterface, APIOptions } from "../";
 export default async function signInAPI(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
 
+    if (apiImplementation.signInPOST === undefined) {
+        return options.next();
+    }
+
     // step 1
     let formFields: {
         id: string;

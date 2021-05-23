@@ -102,7 +102,6 @@ export default class Recipe extends RecipeModule {
                 },
             },
             signUpFeature: {
-                disableDefaultImplementation: this.config.signUpFeature.disableDefaultImplementation,
                 formFields: this.config.signUpFeature.formFields,
                 handlePostSignUp: async (user, formFields) => {
                     return await this.config.signUpFeature.handlePostSignUp(user, {
@@ -112,15 +111,11 @@ export default class Recipe extends RecipeModule {
                 },
             },
             signInFeature: {
-                disableDefaultImplementation: this.config.signInFeature.disableDefaultImplementation,
                 handlePostSignIn: async (user) => {
                     return await this.config.signInFeature.handlePostSignIn(user, {
                         loginType: "emailpassword",
                     });
                 },
-            },
-            signOutFeature: {
-                disableDefaultImplementation: this.config.signOutFeature.disableDefaultImplementation,
             },
             resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
         });
@@ -167,9 +162,6 @@ export default class Recipe extends RecipeModule {
                     },
                 },
                 signInAndUpFeature: {
-                    disableDefaultImplementation:
-                        this.config.signInFeature.disableDefaultImplementation ||
-                        this.config.signUpFeature.disableDefaultImplementation,
                     providers: this.config.providers,
                     handlePostSignUpIn: async (user, thirdPartyAuthCodeResponse, newUser) => {
                         if (newUser) {
@@ -184,9 +176,6 @@ export default class Recipe extends RecipeModule {
                             });
                         }
                     },
-                },
-                signOutFeature: {
-                    disableDefaultImplementation: true,
                 },
             });
         }

@@ -20,6 +20,10 @@ import { APIInterface, APIOptions } from "../";
 export default async function generatePasswordResetToken(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
+    if (apiImplementation.generatePasswordResetTokenPOST === undefined) {
+        return options.next();
+    }
+
     // step 1
     let formFields: {
         id: string;
