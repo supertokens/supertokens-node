@@ -32,8 +32,6 @@ import {
 } from "./types";
 import { RecipeImplementation, APIImplementation } from "./";
 
-async function defaultHandlePostSignUpIn(_: User, __: any, ___: boolean) {}
-
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
@@ -115,9 +113,6 @@ function validateAndNormaliseSignInAndUpConfig(
     _: NormalisedAppinfo,
     config: TypeInputSignInAndUp
 ): TypeNormalisedInputSignInAndUp {
-    let handlePostSignUpIn =
-        config.handlePostSignUpIn === undefined ? defaultHandlePostSignUpIn : config.handlePostSignUpIn;
-
     let providers = config.providers;
 
     if (providers === undefined || providers.length === 0) {
@@ -128,7 +123,6 @@ function validateAndNormaliseSignInAndUpConfig(
         });
     }
     return {
-        handlePostSignUpIn,
         providers,
     };
 }

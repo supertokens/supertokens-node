@@ -75,11 +75,9 @@ export declare type TypeInputEmailVerificationFeature = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
 };
 export declare type TypeInputSignInAndUp = {
-    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 export declare type TypeNormalisedInputSignInAndUp = {
-    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 export declare type TypeInput = {

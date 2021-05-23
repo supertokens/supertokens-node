@@ -150,19 +150,6 @@ export default class Recipe extends RecipeModule {
                 },
                 signInAndUpFeature: {
                     providers: this.config.providers,
-                    handlePostSignUpIn: async (user, thirdPartyAuthCodeResponse, newUser) => {
-                        if (newUser) {
-                            return await this.config.signUpFeature.handlePostSignUp(user, {
-                                loginType: "thirdparty",
-                                thirdPartyAuthCodeResponse,
-                            });
-                        } else {
-                            return await this.config.signInFeature.handlePostSignIn(user, {
-                                loginType: "thirdparty",
-                                thirdPartyAuthCodeResponse,
-                            });
-                        }
-                    },
                 },
             });
         }

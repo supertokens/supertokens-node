@@ -81,12 +81,6 @@ export default class APIImplementation implements APIInterface {
         }
         let user = await options.recipeImplementation.signInUp(provider.id, userInfo.id, emailInfo);
 
-        await options.config.signInAndUpFeature.handlePostSignUpIn(
-            user.user,
-            accessTokenAPIResponse.data,
-            user.createdNewUser
-        );
-
         let action: "signup" | "signin" = user.createdNewUser ? "signup" : "signin";
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(
             user.user,

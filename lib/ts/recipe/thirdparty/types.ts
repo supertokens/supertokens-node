@@ -103,7 +103,6 @@ const InputEmailVerificationFeatureSchema = {
 };
 
 export type TypeInputSignInAndUp = {
-    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 
@@ -120,7 +119,6 @@ const InputSignInAndUpSchema = {
 };
 
 export type TypeNormalisedInputSignInAndUp = {
-    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 
