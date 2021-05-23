@@ -269,79 +269,95 @@ export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 
 export interface APIInterface {
-    authorisationUrlGET(
-        provider: TypeProvider,
-        options: ThirdPartyAPIOptions
-    ): Promise<{
-        status: "OK";
-        url: string;
-    }>;
+    authorisationUrlGET:
+        | undefined
+        | ((
+              provider: TypeProvider,
+              options: ThirdPartyAPIOptions
+          ) => Promise<{
+              status: "OK";
+              url: string;
+          }>);
 
-    signInUpPOST(
-        provider: TypeProvider,
-        code: string,
-        redirectURI: string,
-        options: ThirdPartyAPIOptions
-    ): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-    }>;
+    signInUpPOST:
+        | undefined
+        | ((
+              provider: TypeProvider,
+              code: string,
+              redirectURI: string,
+              options: ThirdPartyAPIOptions
+          ) => Promise<{
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }>);
 
-    signOutPOST(
-        options: EmailPasswordAPIOptions
-    ): Promise<{
-        status: "OK";
-    }>;
+    signOutPOST:
+        | undefined
+        | ((
+              options: EmailPasswordAPIOptions
+          ) => Promise<{
+              status: "OK";
+          }>);
 
-    emailExistsGET(
-        email: string,
-        options: EmailPasswordAPIOptions
-    ): Promise<{
-        status: "OK";
-        exists: boolean;
-    }>;
+    emailExistsGET:
+        | undefined
+        | ((
+              email: string,
+              options: EmailPasswordAPIOptions
+          ) => Promise<{
+              status: "OK";
+              exists: boolean;
+          }>);
 
-    generatePasswordResetTokenPOST(
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: EmailPasswordAPIOptions
-    ): Promise<{
-        status: "OK";
-    }>;
+    generatePasswordResetTokenPOST:
+        | undefined
+        | ((
+              formFields: {
+                  id: string;
+                  value: string;
+              }[],
+              options: EmailPasswordAPIOptions
+          ) => Promise<{
+              status: "OK";
+          }>);
 
-    passwordResetPOST(
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        token: string,
-        options: EmailPasswordAPIOptions
-    ): Promise<{
-        status: "OK";
-    }>;
+    passwordResetPOST:
+        | undefined
+        | ((
+              formFields: {
+                  id: string;
+                  value: string;
+              }[],
+              token: string,
+              options: EmailPasswordAPIOptions
+          ) => Promise<{
+              status: "OK";
+          }>);
 
-    signInPOST(
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: EmailPasswordAPIOptions
-    ): Promise<{
-        status: "OK";
-        user: User;
-    }>;
+    signInPOST:
+        | undefined
+        | ((
+              formFields: {
+                  id: string;
+                  value: string;
+              }[],
+              options: EmailPasswordAPIOptions
+          ) => Promise<{
+              status: "OK";
+              user: User;
+          }>);
 
-    signUpPOST(
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: EmailPasswordAPIOptions
-    ): Promise<{
-        status: "OK";
-        user: User;
-    }>;
+    signUpPOST:
+        | undefined
+        | ((
+              formFields: {
+                  id: string;
+                  value: string;
+              }[],
+              options: EmailPasswordAPIOptions
+          ) => Promise<{
+              status: "OK";
+              user: User;
+          }>);
 }

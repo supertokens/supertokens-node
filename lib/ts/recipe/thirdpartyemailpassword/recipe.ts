@@ -27,8 +27,8 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
 import EmailPasswordRecipeImplementation from "./recipeImplementation/emailPasswordRecipeImplementation";
 import ThirdPartyRecipeImplementation from "./recipeImplementation/thirdPartyRecipeImplementation";
-import ThirdPartyAPIImplementation from "./api/thirdPartyAPIImplementation";
-import EmailPasswordAPIImplementation from "./api/emailPasswordAPIImplementation";
+import getThirdPartyIterfaceImpl from "./api/thirdPartyAPIImplementation";
+import getEmailPasswordIterfaceImpl from "./api/emailPasswordAPIImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 
@@ -67,7 +67,7 @@ export default class Recipe extends RecipeModule {
                     return new EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
                 },
                 apis: (_) => {
-                    return new EmailPasswordAPIImplementation(this.apiImpl);
+                    return getEmailPasswordIterfaceImpl(this.apiImpl);
                 },
                 emailVerificationFeature: {
                     apis: (_) => {
@@ -127,7 +127,7 @@ export default class Recipe extends RecipeModule {
                         return new ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
                     },
                     apis: (_) => {
-                        return new ThirdPartyAPIImplementation(this.apiImpl);
+                        return getThirdPartyIterfaceImpl(this.apiImpl);
                     },
                     emailVerificationFeature: {
                         apis: (_) => {
