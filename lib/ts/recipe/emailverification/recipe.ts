@@ -91,19 +91,19 @@ export default class Recipe extends RecipeModule {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(GENERATE_EMAIL_VERIFY_TOKEN_API),
                 id: GENERATE_EMAIL_VERIFY_TOKEN_API,
-                disabled: this.config.disableDefaultImplementation,
+                disabled: this.apiImpl.generateEmailVerifyTokenPOST === undefined,
             },
             {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(EMAIL_VERIFY_API),
                 id: EMAIL_VERIFY_API,
-                disabled: this.config.disableDefaultImplementation,
+                disabled: this.apiImpl.verifyEmailPOST === undefined,
             },
             {
                 method: "get",
                 pathWithoutApiBasePath: new NormalisedURLPath(EMAIL_VERIFY_API),
                 id: EMAIL_VERIFY_API,
-                disabled: this.config.disableDefaultImplementation,
+                disabled: this.apiImpl.isEmailVerifiedGET === undefined,
             },
         ];
     };

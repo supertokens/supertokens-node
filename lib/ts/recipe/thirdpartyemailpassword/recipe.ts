@@ -69,6 +69,15 @@ export default class Recipe extends RecipeModule {
                 apis: (_) => {
                     return new EmailPasswordAPIImplementation(this.apiImpl);
                 },
+                emailVerificationFeature: {
+                    apis: (_) => {
+                        return {
+                            generateEmailVerifyTokenPOST: undefined,
+                            isEmailVerifiedGET: undefined,
+                            verifyEmailPOST: undefined,
+                        };
+                    },
+                },
             },
             sessionFeature: {
                 setJwtPayload: async (user, formfields, action) => {
@@ -114,9 +123,6 @@ export default class Recipe extends RecipeModule {
                 disableDefaultImplementation: this.config.signOutFeature.disableDefaultImplementation,
             },
             resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
-            emailVerificationFeature: {
-                disableDefaultImplementation: true,
-            },
         });
 
         if (this.config.providers.length !== 0) {
@@ -127,6 +133,15 @@ export default class Recipe extends RecipeModule {
                     },
                     apis: (_) => {
                         return new ThirdPartyAPIImplementation(this.apiImpl);
+                    },
+                    emailVerificationFeature: {
+                        apis: (_) => {
+                            return {
+                                generateEmailVerifyTokenPOST: undefined,
+                                isEmailVerifiedGET: undefined,
+                                verifyEmailPOST: undefined,
+                            };
+                        },
                     },
                 },
                 sessionFeature: {
@@ -171,9 +186,6 @@ export default class Recipe extends RecipeModule {
                     },
                 },
                 signOutFeature: {
-                    disableDefaultImplementation: true,
-                },
-                emailVerificationFeature: {
                     disableDefaultImplementation: true,
                 },
             });

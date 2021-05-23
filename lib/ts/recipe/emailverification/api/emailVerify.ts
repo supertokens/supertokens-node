@@ -22,7 +22,11 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
 
     if (normaliseHttpMethod(options.req.method) === "post") {
         // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
-        // step 1
+
+        if (apiImplementation.verifyEmailPOST === undefined) {
+            return;
+        }
+
         let token = options.req.body.token;
         if (token === undefined || token === null) {
             throw new STError({
@@ -39,6 +43,10 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
 
         result = await apiImplementation.verifyEmailPOST(token, options);
     } else {
+        if (apiImplementation.isEmailVerifiedGET === undefined) {
+            return;
+        }
+
         result = await apiImplementation.isEmailVerifiedGET(options);
     }
     send200Response(options.res, result);

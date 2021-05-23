@@ -19,6 +19,10 @@ import { APIInterface, APIOptions } from "../";
 export default async function generateEmailVerifyToken(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
+    if (apiImplementation.generateEmailVerifyTokenPOST === undefined) {
+        return;
+    }
+
     let result = await apiImplementation.generateEmailVerifyTokenPOST(options);
 
     send200Response(options.res, result);

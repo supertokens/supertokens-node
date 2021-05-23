@@ -48,7 +48,6 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type TypeInputEmailVerificationFeature = {
-    disableDefaultImplementation?: boolean;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     handlePostEmailVerification?: (user: User) => Promise<void>;
@@ -227,9 +226,6 @@ export declare const InputSchema: {
         emailVerificationFeature: {
             type: string;
             properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
                 getEmailVerificationURL: {
                     type: string;
                 };

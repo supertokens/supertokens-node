@@ -211,7 +211,6 @@ function validateAndNormaliseEmailVerificationConfig(
               getEmailForUserId: recipeInstance.getEmailForUserId,
           }
         : {
-              disableDefaultImplementation: config.emailVerificationFeature.disableDefaultImplementation,
               override: config.override?.emailVerificationFeature,
               getEmailForUserId: recipeInstance.getEmailForUserId,
               createAndSendCustomEmail:

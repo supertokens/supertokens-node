@@ -132,3 +132,32 @@ Supertokens.init({
         connectionURI: "",
     },
 });
+
+Supertokens.init({
+    appInfo: {
+        apiDomain: "",
+        appName: "",
+        websiteDomain: "",
+    },
+    recipeList: [
+        Session.init(),
+        EmailPassword.init({
+            override: {
+                apis: (oI) => {
+                    return {
+                        ...oI,
+                        emailExistsGET: async (email, option) => {
+                            return {
+                                status: "OK",
+                                exists: true,
+                            };
+                        },
+                    };
+                },
+            },
+        }),
+    ],
+    supertokens: {
+        connectionURI: "",
+    },
+});

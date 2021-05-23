@@ -27,9 +27,6 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    let disableDefaultImplementation =
-        config.disableDefaultImplementation === undefined ? false : config.disableDefaultImplementation;
-
     let getEmailVerificationURL =
         config.getEmailVerificationURL === undefined
             ? defaultGetEmailVerificationURL(appInfo)
@@ -70,7 +67,6 @@ export function validateAndNormaliseUserInput(
 
     return {
         getEmailForUserId,
-        disableDefaultImplementation,
         getEmailVerificationURL,
         createAndSendCustomEmail,
         handlePostEmailVerification,
