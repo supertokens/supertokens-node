@@ -220,22 +220,6 @@ function validateAndNormaliseEmailVerificationConfig(
                       }
                       return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                   },
-        handlePostEmailVerification:
-            config?.emailVerificationFeature?.handlePostEmailVerification === undefined
-                ? undefined
-                : async (user) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
-                      if (
-                          userInfo === undefined ||
-                          config?.emailVerificationFeature?.handlePostEmailVerification === undefined
-                      ) {
-                          throw new STError({
-                              type: STError.UNKNOWN_USER_ID_ERROR,
-                              message: "User ID unknown",
-                          });
-                      }
-                      return await config.emailVerificationFeature.handlePostEmailVerification(userInfo);
-                  },
     };
 }
 

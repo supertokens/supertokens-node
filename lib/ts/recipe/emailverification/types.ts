@@ -19,7 +19,6 @@ export type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
     override?: {
         functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
         apis?: (originalImplementation: APIImplementation) => APIInterface;
@@ -30,7 +29,6 @@ export type TypeNormalisedInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
     getEmailVerificationURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification: (user: User) => Promise<void>;
     override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
         apis: (originalImplementation: APIImplementation) => APIInterface;
@@ -60,7 +58,7 @@ export type APIOptions = {
 };
 
 export interface APIInterface {
-    verifyEmailPOST: undefined | ((token: string, options: APIOptions) => Promise<{ status: "OK" }>);
+    verifyEmailPOST: undefined | ((token: string, options: APIOptions) => Promise<{ status: "OK"; user: User }>);
 
     isEmailVerifiedGET:
         | undefined

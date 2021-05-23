@@ -91,7 +91,6 @@ export declare type TypeNormalisedInputSignIn = {
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 export declare type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
@@ -183,9 +182,6 @@ export declare const InputSchema: {
                 type: string;
             };
             createAndSendCustomEmail: {
-                type: string;
-            };
-            handlePostEmailVerification: {
                 type: string;
             };
         };

@@ -91,7 +91,6 @@ export type TypeNormalisedInputSessionFeature = {
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 
 const InputEmailVerificationFeatureSchema = {
@@ -99,7 +98,6 @@ const InputEmailVerificationFeatureSchema = {
     properties: {
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
-        handlePostEmailVerification: TypeAny,
     },
     additionalProperties: false,
 };
