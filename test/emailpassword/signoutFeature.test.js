@@ -137,8 +137,13 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             },
             recipeList: [
                 EmailPassword.init({
-                    signOutFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signOutPOST: undefined,
+                            };
+                        },
                     },
                 }),
                 Session.init(),

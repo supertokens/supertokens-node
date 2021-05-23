@@ -50,8 +50,13 @@ function getConfig(enableAntiCsrf) {
                     },
                 },
                 antiCsrf: enableAntiCsrf ? "VIA_TOKEN" : "NONE",
-                sessionRefreshFeature: {
-                    disableDefaultImplementation: true,
+                override: {
+                    apis: (oI) => {
+                        return {
+                            ...oI,
+                            refreshPOST: undefined,
+                        };
+                    },
                 },
             }),
         ],

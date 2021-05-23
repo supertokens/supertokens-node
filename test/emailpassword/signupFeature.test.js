@@ -55,8 +55,8 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
         await cleanST();
     });
 
-    // * check if disableDefaultImplementation is true, the default signup API does not work - you get a 404
-    it("test that if disableDefaultImplementation is true, the default signup API does not work", async function () {
+    // * check if disable api, the default signup API does not work - you get a 404
+    it("test that if disable api, the default signup API does not work", async function () {
         await startST();
 
         STExpress.init({
@@ -70,8 +70,13 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    signUpFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signUpPOST: undefined,
+                            };
+                        },
                     },
                 }),
                 Session.init(),

@@ -132,7 +132,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         await cleanST();
     });
 
-    it("test that disableDefaultImplementation is true, the default signinup API does not work", async function () {
+    it("test that disable api, the default signinup API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -145,8 +145,15 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 ThirdParty.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: undefined,
+                            };
+                        },
+                    },
                     signInAndUpFeature: {
-                        disableDefaultImplementation: true,
                         providers: [
                             ThirdParty.Google({
                                 clientId: "test",

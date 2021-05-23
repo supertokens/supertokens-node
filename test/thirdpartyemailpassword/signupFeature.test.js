@@ -132,7 +132,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         await cleanST();
     });
 
-    it("test that disableDefaultImplementation is true, the default signinup API does not work", async function () {
+    it("test that disable api, the default signinup API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -145,8 +145,13 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signUpFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signUpPOST: undefined,
+                            };
+                        },
                     },
                     providers: [
                         ThirdPartyEmailPassword.Google({
@@ -183,7 +188,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.status, 404);
     });
 
-    it("test that if disableDefaultImplementation is true, the default signup API does not work", async function () {
+    it("test that if disable api, the default signup API does not work", async function () {
         await startST();
 
         STExpress.init({
@@ -197,8 +202,13 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signUpFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signUpPOST: undefined,
+                            };
+                        },
                     },
                 }),
                 Session.init(),

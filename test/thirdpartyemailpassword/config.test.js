@@ -101,11 +101,8 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
         assert.notStrictEqual(signInFeature.formFields.filter((f) => f.id === "email")[0].validate, undefined);
         assert.notStrictEqual(signInFeature.formFields.filter((f) => f.id === "password")[0].validate, undefined);
 
-        assert.strictEqual(emailpassword.config.signOutFeature.disableDefaultImplementation, false);
-
         let resetPasswordUsingTokenFeature = emailpassword.config.resetPasswordUsingTokenFeature;
 
-        assert.strictEqual(resetPasswordUsingTokenFeature.disableDefaultImplementation, false);
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm.length, 1);
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm[0].id, "email");
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm.length, 1);
@@ -113,11 +110,7 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
 
         let emailVerificationFeatureEP = emailpassword.config.emailVerificationFeature;
 
-        assert.strictEqual(emailVerificationFeatureEP.disableDefaultImplementation, true);
-
         let emailVerificationRecipe = thirdpartyemailpassword.emailVerificationRecipe;
-
-        assert.strictEqual(emailVerificationRecipe.config.disableDefaultImplementation, false);
 
         assert.deepStrictEqual(await thirdpartyemailpassword.config.sessionFeature.setJwtPayload(), {});
         assert.deepStrictEqual(await thirdpartyemailpassword.config.sessionFeature.setSessionData(), {});
@@ -147,11 +140,7 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
         let thirdParty = thirdpartyemailpassword.thirdPartyRecipe;
 
         assert.notStrictEqual(thirdParty, undefined);
-        assert.strictEqual(thirdParty.config.signOutFeature.disableDefaultImplementation, true);
-
         let emailVerificationFeatureTP = thirdpartyemailpassword.thirdPartyRecipe.config.emailVerificationFeature;
-
-        assert.strictEqual(emailVerificationFeatureTP.disableDefaultImplementation, true);
 
         let emailpassword = thirdpartyemailpassword.emailPasswordRecipe;
 
@@ -169,11 +158,8 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
         assert.notStrictEqual(signInFeature.formFields.filter((f) => f.id === "email")[0].validate, undefined);
         assert.notStrictEqual(signInFeature.formFields.filter((f) => f.id === "password")[0].validate, undefined);
 
-        assert.strictEqual(emailpassword.config.signOutFeature.disableDefaultImplementation, false);
-
         let resetPasswordUsingTokenFeature = emailpassword.config.resetPasswordUsingTokenFeature;
 
-        assert.strictEqual(resetPasswordUsingTokenFeature.disableDefaultImplementation, false);
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm.length, 1);
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm[0].id, "email");
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm.length, 1);
@@ -181,11 +167,8 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
 
         let emailVerificationFeatureEP = emailpassword.config.emailVerificationFeature;
 
-        assert.strictEqual(emailVerificationFeatureEP.disableDefaultImplementation, true);
-
         let emailVerificationRecipe = thirdpartyemailpassword.emailVerificationRecipe;
 
-        assert.strictEqual(emailVerificationRecipe.config.disableDefaultImplementation, false);
         assert.deepStrictEqual(await thirdpartyemailpassword.config.sessionFeature.setJwtPayload(), {});
         assert.deepStrictEqual(await thirdpartyemailpassword.config.sessionFeature.setSessionData(), {});
         assert.deepStrictEqual(await emailpassword.config.sessionFeature.setJwtPayload(), {});

@@ -46,9 +46,8 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         await cleanST();
     });
 
-    // check if disableDefaultImplementation is true, the default refresh API does not work - you get a 404
-    //Failure condition: if disableDefaultImplementation is false, the test will fail
-    it("test that if disableDefaultImplementation is true the default refresh API does not work", async function () {
+    // check if disabling api, the default refresh API does not work - you get a 404
+    it("test that if disabling api, the default refresh API does not work", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -61,8 +60,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    sessionRefreshFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                refreshPOST: undefined,
+                            };
+                        },
                     },
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -108,7 +112,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res2.status === 404);
     });
 
-    it("test that if disableDefaultImplementation is true the default sign out API does not work", async function () {
+    it("test that if disabling api, the default sign out API does not work", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -121,8 +125,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
-                    signOutFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signOutPOST: undefined,
+                            };
+                        },
                     },
                     antiCsrf: "VIA_TOKEN",
                 }),

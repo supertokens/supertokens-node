@@ -56,12 +56,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         await cleanST();
     });
 
-    // check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
+    // check if disabling api, the default signin API does not work - you get a 404
     /*
-    Failure condition:
-    Set  disableDefaultImplementation to false in the signInFeature
-    */
-    it("test that disableDefaultImplementation is true, the default signin API does not work", async function () {
+     */
+    it("test that disabling api, the default signin API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -74,8 +72,13 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    signInFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInPOST: undefined,
+                            };
+                        },
                     },
                 }),
             ],

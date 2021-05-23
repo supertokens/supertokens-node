@@ -51,7 +51,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     // check that disabling default API actually disables it (for session)
-    //Failure condition: setting the sessionRefreshFeatures disableDefaultImplementation to false will cause the test to fail
     it("test disabling default API actually disables it", async function () {
         await startST();
         SuperTokens.init({
@@ -65,8 +64,13 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    sessionRefreshFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                refreshPOST: undefined,
+                            };
+                        },
                     },
                     antiCsrf: "VIA_TOKEN",
                 }),

@@ -82,19 +82,14 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
         assert(signInFeature.formFields.filter((f) => f.id === "email")[0].validate !== undefined);
         assert(signInFeature.formFields.filter((f) => f.id === "password")[0].validate !== undefined);
 
-        assert(emailpassword.config.signOutFeature.disableDefaultImplementation === false);
-
         let resetPasswordUsingTokenFeature = emailpassword.config.resetPasswordUsingTokenFeature;
 
-        assert(resetPasswordUsingTokenFeature.disableDefaultImplementation === false);
         assert(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm.length === 1);
         assert(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm[0].id === "email");
         assert(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm.length === 1);
         assert(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm[0].id === "password");
 
         let emailVerificationFeature = emailpassword.config.emailVerificationFeature;
-
-        assert(emailVerificationFeature.disableDefaultImplementation === undefined);
     });
 
     // Failure condition: passing data of invalid type/ syntax to the module
@@ -111,15 +106,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
             },
             recipeList: [
                 EmailPassword.init({
-                    signInFeature: {
-                        disableDefaultImplementation: true,
-                    },
-                    resetPasswordUsingTokenFeature: {
-                        disableDefaultImplementation: true,
-                    },
-                    signOutFeature: {
-                        disableDefaultImplementation: true,
-                    },
                     signUpFeature: {
                         formFields: [
                             {
@@ -144,10 +130,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
         assert(testFormField !== undefined);
         assert(testFormField.optional === false);
         assert(testFormField.validate("") === "test");
-
-        assert(emailpassword.config.signInFeature.disableDefaultImplementation);
-        assert(emailpassword.config.resetPasswordUsingTokenFeature.disableDefaultImplementation);
-        assert(emailpassword.config.signOutFeature.disableDefaultImplementation);
     });
 
     /*
@@ -287,72 +269,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                     err.type !== EmailPassword.Error.GENERAL_ERROR ||
                     err.message !==
                         'Config schema error in emailpassword recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
-                ) {
-                    throw err;
-                }
-            }
-            resetAll();
-        }
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                    },
-                    recipeList: [
-                        EmailPassword.init({
-                            signInFeature: {
-                                disableDefaultImplementation: false,
-                                a: true,
-                            },
-                        }),
-                    ],
-                });
-                assert(false);
-            } catch (err) {
-                if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
-                    err.message !==
-                        'Config schema error in emailpassword recipe: signInFeature is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
-                ) {
-                    throw err;
-                }
-            }
-            resetAll();
-        }
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                    },
-                    recipeList: [
-                        EmailPassword.init({
-                            signInFeature: {
-                                disableDefaultImplementation: false,
-                                a: true,
-                            },
-                        }),
-                    ],
-                });
-                assert(false);
-            } catch (err) {
-                if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
-                    err.message !==
-                        'Config schema error in emailpassword recipe: signInFeature is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
                 ) {
                     throw err;
                 }

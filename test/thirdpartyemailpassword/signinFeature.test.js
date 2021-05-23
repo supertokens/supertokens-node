@@ -73,7 +73,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         await cleanST();
     });
 
-    it("test that disableDefaultImplementation is true, the default signinup API does not work", async function () {
+    it("test that disable api, the default signinup API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -86,8 +86,13 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signInFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInPOST: undefined,
+                            };
+                        },
                     },
                     providers: [
                         ThirdPartyEmailPassword.Google({
@@ -124,7 +129,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         assert.strictEqual(response.status, 404);
     });
 
-    it("test that disableDefaultImplementation is true, the default signin API does not work", async function () {
+    it("test that disable api, the default signin API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -137,8 +142,13 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signInFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInPOST: undefined,
+                            };
+                        },
                     },
                 }),
             ],

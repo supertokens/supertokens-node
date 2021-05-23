@@ -172,8 +172,13 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
                     },
-                    signOutFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signOutPOST: undefined,
+                            };
+                        },
                     },
                 }),
                 Session.init(),

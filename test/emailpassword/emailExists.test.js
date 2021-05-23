@@ -68,7 +68,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
     });
 
     // disable the email exists API, and check that calling it returns a 404.
-    it("test that if disableDefaultImplementation is true, the default email exists API does not work", async function () {
+    it("test that if disableing api, the default email exists API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -81,8 +81,13 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             },
             recipeList: [
                 EmailPassword.init({
-                    signUpFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signUpPOST: undefined,
+                            };
+                        },
                     },
                 }),
                 Session.init(),
