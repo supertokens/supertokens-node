@@ -132,28 +132,6 @@ export function validateAndNormaliseUserInput(
     let sessionExpiredStatusCode =
         config === undefined || config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
 
-    let sessionRefreshFeature = {
-        disableDefaultImplementation: false,
-    };
-    if (
-        config !== undefined &&
-        config.sessionRefreshFeature !== undefined &&
-        config.sessionRefreshFeature.disableDefaultImplementation !== undefined
-    ) {
-        sessionRefreshFeature.disableDefaultImplementation = config.sessionRefreshFeature.disableDefaultImplementation;
-    }
-
-    let signOutFeature = {
-        disableDefaultImplementation: false,
-    };
-    if (
-        config !== undefined &&
-        config.signOutFeature !== undefined &&
-        config.signOutFeature.disableDefaultImplementation !== undefined
-    ) {
-        signOutFeature.disableDefaultImplementation = config.signOutFeature.disableDefaultImplementation;
-    }
-
     if (config !== undefined && config.antiCsrf !== undefined) {
         if (config.antiCsrf !== "NONE" && config.antiCsrf !== "VIA_CUSTOM_HEADER" && config.antiCsrf !== "VIA_TOKEN") {
             throw new STError({
@@ -249,10 +227,8 @@ export function validateAndNormaliseUserInput(
         cookieSameSite,
         cookieSecure,
         sessionExpiredStatusCode,
-        sessionRefreshFeature,
         errorHandlers,
         antiCsrf,
-        signOutFeature,
         override,
     };
 }

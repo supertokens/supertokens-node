@@ -17,6 +17,10 @@ import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 
 export default async function handleRefreshAPI(apiImplementation: APIInterface, options: APIOptions) {
+    if (apiImplementation.refreshPOST === undefined) {
+        return options.next();
+    }
+
     await apiImplementation.refreshPOST(options);
     send200Response(options.res, {});
 }

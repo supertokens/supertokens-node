@@ -19,6 +19,10 @@ import { APIInterface, APIOptions } from "../";
 export default async function signOutAPI(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 
+    if (apiImplementation.signOutPOST === undefined) {
+        return options.next();
+    }
+
     let result = await apiImplementation.signOutPOST(options);
 
     return send200Response(options.res, result);

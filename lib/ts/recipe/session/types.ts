@@ -85,12 +85,6 @@ export type TypeInput = {
     cookieSameSite?: "strict" | "lax" | "none";
     sessionExpiredStatusCode?: number;
     cookieDomain?: string;
-    sessionRefreshFeature?: {
-        disableDefaultImplementation?: boolean;
-    };
-    signOutFeature?: {
-        disableDefaultImplementation?: boolean;
-    };
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override?: {
@@ -106,20 +100,6 @@ export const InputSchema = {
         cookieSameSite: TypeString,
         sessionExpiredStatusCode: TypeNumber,
         cookieDomain: TypeString,
-        sessionRefreshFeature: {
-            type: "object",
-            properties: {
-                disableDefaultImplementation: TypeBoolean,
-            },
-            additionalProperties: false,
-        },
-        signOutFeature: {
-            type: "object",
-            properties: {
-                disableDefaultImplementation: TypeBoolean,
-            },
-            additionalProperties: false,
-        },
         errorHandlers: InputSchemaErrorHandlers,
         antiCsrf: TypeString,
         override: TypeAny,
@@ -133,12 +113,6 @@ export type TypeNormalisedInput = {
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
-    sessionRefreshFeature: {
-        disableDefaultImplementation: boolean;
-    };
-    signOutFeature: {
-        disableDefaultImplementation: boolean;
-    };
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override: {
@@ -231,13 +205,15 @@ export type APIOptions = {
 };
 
 export interface APIInterface {
-    refreshPOST(options: APIOptions): Promise<void>;
+    refreshPOST: undefined | ((options: APIOptions) => Promise<void>);
 
-    signOutPOST(
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-    }>;
+    signOutPOST:
+        | undefined
+        | ((
+              options: APIOptions
+          ) => Promise<{
+              status: "OK";
+          }>);
 
     verifySession(verifySessionOptions: VerifySessionOptions | undefined, options: APIOptions): Promise<void>;
 }

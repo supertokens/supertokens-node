@@ -94,13 +94,13 @@ export default class SessionRecipe extends RecipeModule {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(REFRESH_API_PATH),
                 id: REFRESH_API_PATH,
-                disabled: this.config.sessionRefreshFeature.disableDefaultImplementation,
+                disabled: this.apiImpl.refreshPOST === undefined,
             },
             {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(SIGNOUT_API_PATH),
                 id: SIGNOUT_API_PATH,
-                disabled: this.config.signOutFeature.disableDefaultImplementation,
+                disabled: this.apiImpl.signOutPOST === undefined,
             },
         ];
     };
