@@ -149,7 +149,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signUpPOST: undefined,
+                                signInUpPOST: undefined,
                             };
                         },
                     },

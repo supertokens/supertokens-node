@@ -90,7 +90,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInPOST: undefined,
+                                signInUpPOST: undefined,
                             };
                         },
                     },
