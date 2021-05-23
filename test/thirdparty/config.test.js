@@ -158,42 +158,6 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                                 }),
                             ],
                         },
-                        signOutFeature: {
-                            a: "b",
-                        },
-                    }),
-                ],
-            });
-            assert(false);
-        } catch (err) {
-            assert.strictEqual(
-                err.message,
-                'Config schema error in thirdparty recipe: signOutFeature is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
-            );
-        }
-
-        resetAll();
-
-        try {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    ThirPartyRecipe.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                ThirParty.Google({
-                                    clientId: "test",
-                                    clientSecret: "test-secret",
-                                }),
-                            ],
-                        },
                         emailVerificationFeature: {
                             a: "b",
                         },

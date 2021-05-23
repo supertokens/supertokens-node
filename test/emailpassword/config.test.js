@@ -289,38 +289,6 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                     },
                     recipeList: [
                         EmailPassword.init({
-                            signOutFeature: {
-                                b: true,
-                            },
-                        }),
-                    ],
-                });
-                assert(false);
-            } catch (err) {
-                if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
-                    err.message !==
-                        'Config schema error in emailpassword recipe: signOutFeature is not allowed to have the additional property "b". Did you mean to set this on the frontend side?'
-                ) {
-                    throw err;
-                }
-            }
-            resetAll();
-        }
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                    },
-                    recipeList: [
-                        EmailPassword.init({
                             signUpFeature: {
                                 c: "test",
                             },

@@ -85,7 +85,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signUpPOST: undefined,
+                                emailExistsGET: undefined,
                             };
                         },
                     },
