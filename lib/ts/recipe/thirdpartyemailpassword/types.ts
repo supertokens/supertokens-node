@@ -244,6 +244,39 @@ export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 
 export type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 
+export type SignInUpAPIInput =
+    | {
+          type: "emailpassword";
+          isSignIn: boolean;
+          formFields: {
+              id: string;
+              value: string;
+          }[];
+          options: EmailPasswordAPIOptions;
+      }
+    | {
+          type: "thirdparty";
+          provider: TypeProvider;
+          code: string;
+          redirectURI: string;
+          options: ThirdPartyAPIOptions;
+      };
+
+export type SignInUpAPIOutput =
+    | {
+          type: "emailpassword";
+          status: "OK";
+          user: User;
+          createdNewUser: boolean;
+      }
+    | {
+          type: "thirdparty";
+          status: "OK";
+          createdNewUser: boolean;
+          user: User;
+          authCodeResponse: any;
+      };
+
 export interface APIInterface {
     authorisationUrlGET:
         | undefined
@@ -253,19 +286,6 @@ export interface APIInterface {
           ) => Promise<{
               status: "OK";
               url: string;
-          }>);
-
-    signInUpPOST:
-        | undefined
-        | ((
-              provider: TypeProvider,
-              code: string,
-              redirectURI: string,
-              options: ThirdPartyAPIOptions
-          ) => Promise<{
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
           }>);
 
     signOutPOST:
@@ -311,29 +331,5 @@ export interface APIInterface {
               status: "OK";
           }>);
 
-    signInPOST:
-        | undefined
-        | ((
-              formFields: {
-                  id: string;
-                  value: string;
-              }[],
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
-              status: "OK";
-              user: User;
-          }>);
-
-    signUpPOST:
-        | undefined
-        | ((
-              formFields: {
-                  id: string;
-                  value: string;
-              }[],
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
-              status: "OK";
-              user: User;
-          }>);
+    signInUpPOST: undefined | ((input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>);
 }

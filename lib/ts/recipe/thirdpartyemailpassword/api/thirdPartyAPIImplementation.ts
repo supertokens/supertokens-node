@@ -3,12 +3,12 @@ import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 import STError from "../error";
 
 export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswordAPIInterface): APIInterface {
-    const signInUpPOST = apiImplmentation.signInUpPOST;
+    const signInUpPOSTFromThirdPartyEmailPassword = apiImplmentation.signInUpPOST;
     return {
         authorisationUrlGET: apiImplmentation.authorisationUrlGET,
         signOutPOST: undefined,
         signInUpPOST:
-            signInUpPOST === undefined
+            signInUpPOSTFromThirdPartyEmailPassword === undefined
                 ? undefined
                 : async (
                       provider: TypeProvider,
@@ -19,9 +19,16 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
                       status: "OK";
                       createdNewUser: boolean;
                       user: User;
+                      authCodeResponse: any;
                   }> => {
-                      let result = await signInUpPOST(provider, code, redirectURI, options);
-                      if (result.user.thirdParty === undefined) {
+                      let result = await signInUpPOSTFromThirdPartyEmailPassword({
+                          type: "thirdparty",
+                          code,
+                          provider,
+                          redirectURI,
+                          options,
+                      });
+                      if (result.user.thirdParty === undefined || result.type === "emailpassword") {
                           throw new STError({
                               type: STError.GENERAL_ERROR,
                               payload: new Error("Should never come here"),

@@ -211,6 +211,7 @@ export interface APIInterface {
               status: "OK";
               createdNewUser: boolean;
               user: User;
+              authCodeResponse: any;
           }>);
     signOutPOST:
         | undefined

@@ -1,4 +1,4 @@
-import { APIInterface, User, TypeProvider } from "../";
+import { APIInterface, TypeProvider, SignInUpAPIInput, SignInUpAPIOutput } from "../";
 import EmailPasswordImplemenation from "../../emailpassword/api/implementation";
 import ThirdPartyImplemenation from "../../thirdparty/api/implementation";
 export default class APIImplementation implements APIInterface {
@@ -31,42 +31,13 @@ export default class APIImplementation implements APIInterface {
     ) => Promise<{
         status: "OK";
     }>;
-    signInPOST: (
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: import("../../emailpassword").APIOptions
-    ) => Promise<{
-        status: "OK";
-        user: User;
-    }>;
-    signUpPOST: (
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: import("../../emailpassword").APIOptions
-    ) => Promise<{
-        status: "OK";
-        user: User;
-    }>;
+    signInUpPOST: (input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>;
     authorisationUrlGET: (
         provider: TypeProvider,
         options: import("../../thirdparty").APIOptions
     ) => Promise<{
         status: "OK";
         url: string;
-    }>;
-    signInUpPOST: (
-        provider: TypeProvider,
-        code: string,
-        redirectURI: string,
-        options: import("../../thirdparty").APIOptions
-    ) => Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
     }>;
     signOutPOST: (
         options: import("../../emailpassword").APIOptions

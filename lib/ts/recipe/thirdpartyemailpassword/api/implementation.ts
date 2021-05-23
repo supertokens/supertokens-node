@@ -1,4 +1,11 @@
-import { APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions, User, TypeProvider } from "../";
+import {
+    APIInterface,
+    EmailPasswordAPIOptions,
+    ThirdPartyAPIOptions,
+    TypeProvider,
+    SignInUpAPIInput,
+    SignInUpAPIOutput,
+} from "../";
 import EmailPasswordImplemenation from "../../emailpassword/api/implementation";
 import ThirdPartyImplemenation from "../../thirdparty/api/implementation";
 
@@ -46,30 +53,35 @@ export default class APIImplementation implements APIInterface {
         return this.emailPasswordImplementation.passwordResetPOST(formFields, token, options);
     };
 
-    signInPOST = async (
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: EmailPasswordAPIOptions
-    ): Promise<{
-        status: "OK";
-        user: User;
-    }> => {
-        return this.emailPasswordImplementation.signInPOST(formFields, options);
-    };
-
-    signUpPOST = async (
-        formFields: {
-            id: string;
-            value: string;
-        }[],
-        options: EmailPasswordAPIOptions
-    ): Promise<{
-        status: "OK";
-        user: User;
-    }> => {
-        return this.emailPasswordImplementation.signUpPOST(formFields, options);
+    signInUpPOST = async (input: SignInUpAPIInput): Promise<SignInUpAPIOutput> => {
+        if (input.type === "emailpassword") {
+            if (input.isSignIn) {
+                let response = await this.emailPasswordImplementation.signInPOST(input.formFields, input.options);
+                return {
+                    ...response,
+                    createdNewUser: false,
+                    type: "emailpassword",
+                };
+            } else {
+                let response = await this.emailPasswordImplementation.signUpPOST(input.formFields, input.options);
+                return {
+                    ...response,
+                    createdNewUser: true,
+                    type: "emailpassword",
+                };
+            }
+        } else {
+            let response = await this.thirdPartyImplementation.signInUpPOST(
+                input.provider,
+                input.code,
+                input.redirectURI,
+                input.options
+            );
+            return {
+                ...response,
+                type: "thirdparty",
+            };
+        }
     };
 
     authorisationUrlGET = async (
@@ -80,19 +92,6 @@ export default class APIImplementation implements APIInterface {
         url: string;
     }> => {
         return this.thirdPartyImplementation.authorisationUrlGET(provider, options);
-    };
-
-    signInUpPOST = async (
-        provider: TypeProvider,
-        code: string,
-        redirectURI: string,
-        options: ThirdPartyAPIOptions
-    ): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-    }> => {
-        return this.thirdPartyImplementation.signInUpPOST(provider, code, redirectURI, options);
     };
 
     signOutPOST = async (

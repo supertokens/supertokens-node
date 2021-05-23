@@ -50,6 +50,7 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         createdNewUser: boolean;
         user: User;
+        authCodeResponse: any;
     }> => {
         let userInfo;
         let accessTokenAPIResponse: any;
@@ -109,6 +110,7 @@ export default class APIImplementation implements APIInterface {
         return {
             status: "OK",
             ...user,
+            authCodeResponse: accessTokenAPIResponse,
         };
     };
 

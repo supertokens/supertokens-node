@@ -16,6 +16,7 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         createdNewUser: boolean;
         user: User;
+        authCodeResponse: any;
     }>;
     signOutPOST: (
         options: APIOptions
