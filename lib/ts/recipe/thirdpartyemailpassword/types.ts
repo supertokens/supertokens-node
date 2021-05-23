@@ -114,7 +114,6 @@ export type TypeNormalisedInputSessionFeature = {
 
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
-    handlePostSignUp?: TypeInputHandlePostSignUp;
 };
 
 const InputSignUpSchema = {
@@ -133,30 +132,12 @@ const InputSignUpSchema = {
                 additionalProperties: false,
             },
         },
-        handlePostSignUp: TypeAny,
     },
     additionalProperties: false,
 };
 
 export type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
-    handlePostSignUp: TypeInputHandlePostSignUp;
-};
-
-export type TypeInputSignIn = {
-    handlePostSignIn?: TypeInputHandlePostSignIn;
-};
-
-const InputSignInSchema = {
-    type: "object",
-    properties: {
-        handlePostSignIn: TypeAny,
-    },
-    additionalProperties: false,
-};
-
-export type TypeNormalisedInputSignIn = {
-    handlePostSignIn: TypeInputHandlePostSignIn;
 };
 
 export type TypeInputEmailVerificationFeature = {
@@ -176,7 +157,6 @@ const InputEmailVerificationFeatureSchema = {
 export type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
-    signInFeature?: TypeInputSignIn;
     providers?: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
@@ -199,7 +179,6 @@ const InputProvidersSchema = {
 export const InputSchema = {
     sessionFeature: InputSessionFeatureSchema,
     signUpFeature: InputSignUpSchema,
-    signInFeature: InputSignInSchema,
     providers: InputProvidersSchema,
     resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
     emailVerificationFeature: InputEmailVerificationFeatureSchema,
@@ -209,7 +188,6 @@ export const InputSchema = {
 export type TypeNormalisedInput = {
     sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
-    signInFeature: TypeNormalisedInputSignIn;
     providers: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;

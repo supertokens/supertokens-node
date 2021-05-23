@@ -76,17 +76,9 @@ export declare type TypeNormalisedInputSessionFeature = {
 };
 export declare type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
-    handlePostSignUp?: TypeInputHandlePostSignUp;
 };
 export declare type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
-    handlePostSignUp: TypeInputHandlePostSignUp;
-};
-export declare type TypeInputSignIn = {
-    handlePostSignIn?: TypeInputHandlePostSignIn;
-};
-export declare type TypeNormalisedInputSignIn = {
-    handlePostSignIn: TypeInputHandlePostSignIn;
 };
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
@@ -95,7 +87,6 @@ export declare type TypeInputEmailVerificationFeature = {
 export declare type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
-    signInFeature?: TypeInputSignIn;
     providers?: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
@@ -145,18 +136,6 @@ export declare const InputSchema: {
                     additionalProperties: boolean;
                 };
             };
-            handlePostSignUp: {
-                type: string;
-            };
-        };
-        additionalProperties: boolean;
-    };
-    signInFeature: {
-        type: string;
-        properties: {
-            handlePostSignIn: {
-                type: string;
-            };
         };
         additionalProperties: boolean;
     };
@@ -194,7 +173,6 @@ export declare const InputSchema: {
 export declare type TypeNormalisedInput = {
     sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
-    signInFeature: TypeNormalisedInputSignIn;
     providers: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;

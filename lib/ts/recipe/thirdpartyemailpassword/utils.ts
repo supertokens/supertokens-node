@@ -22,14 +22,10 @@ import {
     InputSchema,
     TypeNormalisedInput,
     TypeInputSignUp,
-    TypeInputSignIn,
     TypeNormalisedInputSignUp,
-    TypeContextEmailPasswordSignUp,
     TypeContextThirdParty,
-    TypeNormalisedInputSignIn,
     TypeNormalisedInputSessionFeature,
     TypeInputSessionFeature,
-    TypeContextEmailPasswordSignIn,
     TypeContextEmailPasswordSessionDataAndJWT,
     RecipeInterface,
     APIInterface,
@@ -57,12 +53,6 @@ export function validateAndNormaliseUserInput(
         recipeInstance,
         appInfo,
         config === undefined ? undefined : config.signUpFeature
-    );
-
-    let signInFeature = validateAndNormaliseSignInConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.signInFeature
     );
 
     let resetPasswordUsingTokenFeature = config === undefined ? undefined : config.resetPasswordUsingTokenFeature;
@@ -98,16 +88,11 @@ export function validateAndNormaliseUserInput(
         override,
         sessionFeature,
         signUpFeature,
-        signInFeature,
         providers,
         resetPasswordUsingTokenFeature,
         emailVerificationFeature,
     };
 }
-
-async function defaultHandlePostSignUp(_: User, __: TypeContextEmailPasswordSignUp | TypeContextThirdParty) {}
-
-async function defaultHandlePostSignIn(_: User, __: TypeContextEmailPasswordSignIn | TypeContextThirdParty) {}
 
 async function defaultSetSessionDataForSession(
     _: User,
@@ -133,14 +118,9 @@ function validateAndNormaliseSignUpConfig(
     let formFields: NormalisedFormField[] = normaliseSignUpFormFields(
         config === undefined ? undefined : config.formFields
     );
-    let handlePostSignUp =
-        config === undefined || config.handlePostSignUp === undefined
-            ? defaultHandlePostSignUp
-            : config.handlePostSignUp;
 
     return {
         formFields,
-        handlePostSignUp,
     };
 }
 
@@ -162,21 +142,6 @@ function validateAndNormaliseSessionFeatureConfig(
     return {
         setJwtPayload,
         setSessionData,
-    };
-}
-
-function validateAndNormaliseSignInConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSignIn
-): TypeNormalisedInputSignIn {
-    let handlePostSignIn =
-        config === undefined || config.handlePostSignIn === undefined
-            ? defaultHandlePostSignIn
-            : config.handlePostSignIn;
-
-    return {
-        handlePostSignIn,
     };
 }
 
