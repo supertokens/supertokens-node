@@ -206,7 +206,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signUpPOST: undefined,
+                                signInUpPOST: undefined,
                             };
                         },
                     },
@@ -337,10 +337,17 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                 }),
                 ThirdPartyEmailPassword.init({
                     providers: [this.customProvider1],
-                    signUpFeature: {
-                        handlePostSignUp: async (user, context) => {
-                            process.env.userId = user.id;
-                            process.env.loginType = context.loginType;
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    process.env.userId = response.user.id;
+                                    process.env.loginType = input.type;
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
@@ -396,10 +403,17 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signUpFeature: {
-                        handlePostSignUp: async (user, context) => {
-                            process.env.userId = user.id;
-                            process.env.loginType = context.loginType;
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    process.env.userId = response.user.id;
+                                    process.env.loginType = input.type;
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),

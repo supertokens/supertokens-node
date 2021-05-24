@@ -1031,9 +1031,16 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    signInFeature: {
-                        handlePostSignIn: (user) => {
-                            customUser = user;
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInPOST: async (formFields, options) => {
+                                    let response = await oI.signInPOST(formFields, options);
+                                    customUser = response.user;
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
