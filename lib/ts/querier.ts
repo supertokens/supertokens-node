@@ -35,13 +35,13 @@ export class Querier {
     private static lastTriedIndex = 0;
     private static hostsAliveForTesting: Set<string> = new Set<string>();
 
-    private __hosts: NormalisedURLDomain[];
+    private __hosts: NormalisedURLDomain[] | undefined;
     private rIdToCore: string | undefined;
     private isInServerlessEnv: boolean;
 
     // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
     // to support multiple rIds per API
-    private constructor(hosts: NormalisedURLDomain[], isInServerlessEnv: boolean, rIdToCore?: string) {
+    private constructor(hosts: NormalisedURLDomain[] | undefined, isInServerlessEnv: boolean, rIdToCore?: string) {
         this.__hosts = hosts;
         this.rIdToCore = rIdToCore;
         this.isInServerlessEnv = isInServerlessEnv;
@@ -73,7 +73,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts.length
+            this.__hosts?.length || 0
         );
         let cdiSupportedByServer: string[] = response.versions;
         let supportedVersion = getLargestVersionFromIntersection(cdiSupportedByServer, cdiSupported);
@@ -113,7 +113,7 @@ export class Querier {
     };
 
     static getNewInstanceOrThrowError(isInServerlessEnv: boolean, rIdToCore?: string): Querier {
-        if (!Querier.initCalled || Querier.hosts === undefined) {
+        if (!Querier.initCalled) {
             throw new STError({
                 type: STError.GENERAL_ERROR,
                 payload: new Error("Please call the supertokens.init function before using SuperTokens"),
@@ -122,7 +122,7 @@ export class Querier {
         return new Querier(Querier.hosts, isInServerlessEnv, rIdToCore);
     }
 
-    static init(hosts: NormalisedURLDomain[], apiKey?: string) {
+    static init(hosts?: NormalisedURLDomain[], apiKey?: string) {
         if (!Querier.initCalled) {
             Querier.initCalled = true;
             Querier.hosts = hosts;
@@ -160,7 +160,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts.length
+            this.__hosts?.length || 0
         );
     };
 
@@ -191,7 +191,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts.length
+            this.__hosts?.length || 0
         );
     };
 
@@ -220,7 +220,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts.length
+            this.__hosts?.length || 0
         );
     };
 
@@ -251,7 +251,7 @@ export class Querier {
                     headers,
                 });
             },
-            this.__hosts.length
+            this.__hosts?.length || 0
         );
     };
 
@@ -262,6 +262,14 @@ export class Querier {
         axiosFunction: (url: string) => Promise<any>,
         numberOfTries: number
     ): Promise<any> => {
+        if (this.__hosts === undefined) {
+            throw new STError({
+                type: STError.GENERAL_ERROR,
+                payload: new Error(
+                    "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
+                ),
+            });
+        }
         if (numberOfTries === 0) {
             throw new STError({
                 type: STError.GENERAL_ERROR,

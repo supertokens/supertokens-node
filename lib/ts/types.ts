@@ -36,7 +36,7 @@ export type NormalisedAppinfo = {
 };
 
 export type TypeInput = {
-    supertokens: {
+    supertokens?: {
         connectionURI: string;
         apiKey?: string;
     };
@@ -85,7 +85,7 @@ export const InputSchema = {
         telemetry: TypeBoolean,
         isInServerlessEnv: TypeBoolean,
     },
-    required: ["supertokens", "appInfo", "recipeList"],
+    required: ["appInfo", "recipeList"],
     additionalProperties: false,
 };
 

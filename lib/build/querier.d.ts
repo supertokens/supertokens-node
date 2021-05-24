@@ -15,7 +15,7 @@ export declare class Querier {
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
     static getNewInstanceOrThrowError(isInServerlessEnv: boolean, rIdToCore?: string): Querier;
-    static init(hosts: NormalisedURLDomain[], apiKey?: string): void;
+    static init(hosts?: NormalisedURLDomain[], apiKey?: string): void;
     sendPostRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
     sendDeleteRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
     sendGetRequest: (path: NormalisedURLPath, params: any) => Promise<any>;

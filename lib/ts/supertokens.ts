@@ -48,11 +48,11 @@ export default class SuperTokens {
         this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
 
         Querier.init(
-            config.supertokens.connectionURI
+            config.supertokens?.connectionURI
                 .split(";")
                 .filter((h) => h !== "")
                 .map((h) => new NormalisedURLDomain(h.trim())),
-            config.supertokens.apiKey
+            config.supertokens?.apiKey
         );
 
         if (config.recipeList === undefined || config.recipeList.length === 0) {

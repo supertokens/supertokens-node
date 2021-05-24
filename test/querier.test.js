@@ -258,4 +258,58 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         assert.equal(hostsAlive.has("http://localhost:8081"), false);
         assert.equal(hostsAlive.has("http://localhost:8082"), true);
     });
+
+    it("test that no connectionURI given, but recipe used throws an error", async function () {
+        await startST();
+        ST.init({
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        try {
+            await Session.getSessionData("");
+            assert(false);
+        } catch (err) {
+            assert(
+                err.message ===
+                    "No SuperTokens core available to query. Please pass supertokens > connectionURI to the init function, or override all the functions of the recipe you are using."
+            );
+        }
+    });
+
+    it("test that no connectionURI given, recipe override and used doesn't thrown an error", async function () {
+        await startST();
+        ST.init({
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                getSessionData: async (handle) => {
+                                    return handle;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        assert((await Session.getSessionData("someHandle")) === "someHandle");
+    });
 });

@@ -61,9 +61,6 @@ Supertokens.init({
             override: {},
         }),
     ],
-    supertokens: {
-        connectionURI: "",
-    },
 });
 
 app.use(Supertokens.middleware());

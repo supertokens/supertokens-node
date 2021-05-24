@@ -18,7 +18,7 @@ export declare type NormalisedAppinfo = {
     websiteBasePath: NormalisedURLPath;
 };
 export declare type TypeInput = {
-    supertokens: {
+    supertokens?: {
         connectionURI: string;
         apiKey?: string;
     };
