@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Adds API interfaces to all recipes
 -   Provides a way to override API logic easily.
 -   Replaces `disableDefaultImplementation` with setting functions in `override > apis` to `undefined`.
+-   Removes explicit post API callback functions since now users can override apis and emulate post api callbacks easily.
 
 ## [5.0.1] - 2021-05-06
 
