@@ -83,7 +83,6 @@ const InputEmailVerificationFeatureSchema = {
     properties: {
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
-        handlePostEmailVerification: TypeAny,
     },
     additionalProperties: false,
 };
@@ -91,7 +90,6 @@ const InputEmailVerificationFeatureSchema = {
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 
 export type TypeInputFormField = {
@@ -104,7 +102,6 @@ export type TypeFormField = { id: string; value: any };
 
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
-    handlePostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 
 const InputSignUpSchema = {
@@ -123,7 +120,6 @@ const InputSignUpSchema = {
                 additionalProperties: false,
             },
         },
-        handlePostSignUp: TypeAny,
     },
     additionalProperties: false,
 };
@@ -136,24 +132,10 @@ export type NormalisedFormField = {
 
 export type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
-    handlePostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
-};
-
-export type TypeInputSignIn = {
-    handlePostSignIn?: (user: User) => Promise<void>;
-};
-
-const InputSignInSchema = {
-    type: "object",
-    properties: {
-        handlePostSignIn: TypeAny,
-    },
-    additionalProperties: false,
 };
 
 export type TypeNormalisedInputSignIn = {
     formFields: NormalisedFormField[];
-    handlePostSignIn: (user: User) => Promise<void>;
 };
 
 export type TypeInputResetPasswordUsingTokenFeature = {
@@ -186,7 +168,6 @@ export type User = {
 export type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
-    signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -206,7 +187,6 @@ export const InputSchema = {
     properties: {
         sessionFeature: InputSessionFeatureSchema,
         signUpFeature: InputSignUpSchema,
-        signInFeature: InputSignInSchema,
         resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
         emailVerificationFeature: InputEmailVerificationFeatureSchema,
         override: TypeAny,

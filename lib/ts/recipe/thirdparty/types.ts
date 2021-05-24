@@ -91,7 +91,6 @@ export type TypeNormalisedInputSessionFeature = {
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 
 const InputEmailVerificationFeatureSchema = {
@@ -99,13 +98,11 @@ const InputEmailVerificationFeatureSchema = {
     properties: {
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
-        handlePostEmailVerification: TypeAny,
     },
     additionalProperties: false,
 };
 
 export type TypeInputSignInAndUp = {
-    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 
@@ -122,7 +119,6 @@ const InputSignInAndUpSchema = {
 };
 
 export type TypeNormalisedInputSignInAndUp = {
-    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 
@@ -229,6 +225,7 @@ export interface APIInterface {
               status: "OK";
               createdNewUser: boolean;
               user: User;
+              authCodeResponse: any;
           }>);
 
     signOutPOST:

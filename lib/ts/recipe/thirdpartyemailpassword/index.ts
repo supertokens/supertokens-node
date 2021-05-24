@@ -16,7 +16,15 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import * as thirdPartyProviders from "../thirdparty/providers";
-import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
+import {
+    RecipeInterface,
+    User,
+    APIInterface,
+    EmailPasswordAPIOptions,
+    ThirdPartyAPIOptions,
+    SignInUpAPIInput,
+    SignInUpAPIOutput,
+} from "./types";
 import { TypeProvider } from "../thirdparty/types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
@@ -151,4 +159,6 @@ export type {
     EmailPasswordAPIOptions,
     ThirdPartyAPIOptions,
     APIImplementation,
+    SignInUpAPIInput,
+    SignInUpAPIOutput,
 };

@@ -29,7 +29,6 @@ import {
     TypeNormalisedInputSessionFeature,
     TypeFormField,
     TypeInputFormField,
-    TypeInputSignIn,
     APIInterface,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
@@ -63,12 +62,7 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.signUpFeature
     );
 
-    let signInFeature = validateAndNormaliseSignInConfig(
-        recipeInstance,
-        appInfo,
-        signUpFeature,
-        config === undefined ? undefined : config.signInFeature
-    );
+    let signInFeature = validateAndNormaliseSignInConfig(recipeInstance, appInfo, signUpFeature);
 
     let resetPasswordUsingTokenFeature = validateAndNormaliseResetPasswordUsingTokenConfig(
         recipeInstance,
@@ -181,22 +175,6 @@ export function validateAndNormaliseEmailVerificationConfig(
                       }
                       return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                   },
-        handlePostEmailVerification:
-            config?.emailVerificationFeature?.handlePostEmailVerification === undefined
-                ? undefined
-                : async (user) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
-                      if (
-                          userInfo === undefined ||
-                          config?.emailVerificationFeature?.handlePostEmailVerification === undefined
-                      ) {
-                          throw new STError({
-                              type: STError.UNKNOWN_USER_ID_ERROR,
-                              message: "User ID unknown",
-                          });
-                      }
-                      return await config.emailVerificationFeature.handlePostEmailVerification(userInfo);
-                  },
     };
 }
 
@@ -260,18 +238,12 @@ function normaliseSignInFormFields(formFields: NormalisedFormField[]) {
 function validateAndNormaliseSignInConfig(
     _: Recipe,
     __: NormalisedAppinfo,
-    signUpConfig: TypeNormalisedInputSignUp,
-    config?: TypeInputSignIn
+    signUpConfig: TypeNormalisedInputSignUp
 ): TypeNormalisedInputSignIn {
     let formFields: NormalisedFormField[] = normaliseSignInFormFields(signUpConfig.formFields);
 
-    let handlePostSignIn =
-        config === undefined || config.handlePostSignIn === undefined
-            ? defaultHandlePostSignIn
-            : config.handlePostSignIn;
     return {
         formFields,
-        handlePostSignIn,
     };
 }
 
@@ -328,24 +300,14 @@ function validateAndNormaliseSignupConfig(
         config === undefined ? undefined : config.formFields
     );
 
-    let handlePostSignUp =
-        config === undefined || config.handlePostSignUp === undefined
-            ? defaultHandlePostSignUp
-            : config.handlePostSignUp;
-
     return {
         formFields,
-        handlePostSignUp,
     };
 }
 
 async function defaultValidator(_: any): Promise<string | undefined> {
     return undefined;
 }
-
-async function defaultHandlePostSignUp(_: User, __: { id: string; value: any }[]) {}
-
-async function defaultHandlePostSignIn(_: User) {}
 
 export async function defaultPasswordValidator(value: any) {
     // length >= 8 && < 100

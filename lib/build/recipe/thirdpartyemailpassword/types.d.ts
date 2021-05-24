@@ -76,27 +76,17 @@ export declare type TypeNormalisedInputSessionFeature = {
 };
 export declare type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
-    handlePostSignUp?: TypeInputHandlePostSignUp;
 };
 export declare type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
-    handlePostSignUp: TypeInputHandlePostSignUp;
-};
-export declare type TypeInputSignIn = {
-    handlePostSignIn?: TypeInputHandlePostSignIn;
-};
-export declare type TypeNormalisedInputSignIn = {
-    handlePostSignIn: TypeInputHandlePostSignIn;
 };
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 export declare type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
-    signInFeature?: TypeInputSignIn;
     providers?: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
@@ -146,18 +136,6 @@ export declare const InputSchema: {
                     additionalProperties: boolean;
                 };
             };
-            handlePostSignUp: {
-                type: string;
-            };
-        };
-        additionalProperties: boolean;
-    };
-    signInFeature: {
-        type: string;
-        properties: {
-            handlePostSignIn: {
-                type: string;
-            };
         };
         additionalProperties: boolean;
     };
@@ -185,9 +163,6 @@ export declare const InputSchema: {
             createAndSendCustomEmail: {
                 type: string;
             };
-            handlePostEmailVerification: {
-                type: string;
-            };
         };
         additionalProperties: boolean;
     };
@@ -198,7 +173,6 @@ export declare const InputSchema: {
 export declare type TypeNormalisedInput = {
     sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
-    signInFeature: TypeNormalisedInputSignIn;
     providers: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
@@ -244,6 +218,37 @@ export interface RecipeInterface {
 }
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
+export declare type SignInUpAPIInput =
+    | {
+          type: "emailpassword";
+          isSignIn: boolean;
+          formFields: {
+              id: string;
+              value: string;
+          }[];
+          options: EmailPasswordAPIOptions;
+      }
+    | {
+          type: "thirdparty";
+          provider: TypeProvider;
+          code: string;
+          redirectURI: string;
+          options: ThirdPartyAPIOptions;
+      };
+export declare type SignInUpAPIOutput =
+    | {
+          type: "emailpassword";
+          status: "OK";
+          user: User;
+          createdNewUser: boolean;
+      }
+    | {
+          type: "thirdparty";
+          status: "OK";
+          createdNewUser: boolean;
+          user: User;
+          authCodeResponse: any;
+      };
 export interface APIInterface {
     authorisationUrlGET:
         | undefined
@@ -253,18 +258,6 @@ export interface APIInterface {
           ) => Promise<{
               status: "OK";
               url: string;
-          }>);
-    signInUpPOST:
-        | undefined
-        | ((
-              provider: TypeProvider,
-              code: string,
-              redirectURI: string,
-              options: ThirdPartyAPIOptions
-          ) => Promise<{
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
           }>);
     signOutPOST:
         | undefined
@@ -305,28 +298,5 @@ export interface APIInterface {
           ) => Promise<{
               status: "OK";
           }>);
-    signInPOST:
-        | undefined
-        | ((
-              formFields: {
-                  id: string;
-                  value: string;
-              }[],
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
-              status: "OK";
-              user: User;
-          }>);
-    signUpPOST:
-        | undefined
-        | ((
-              formFields: {
-                  id: string;
-                  value: string;
-              }[],
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
-              status: "OK";
-              user: User;
-          }>);
+    signInUpPOST: undefined | ((input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>);
 }

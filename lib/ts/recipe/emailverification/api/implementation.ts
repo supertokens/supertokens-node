@@ -1,17 +1,14 @@
-import { APIInterface, APIOptions } from "../";
+import { APIInterface, APIOptions, User } from "../";
 import Session from "../../session";
 import STError from "../error";
 
 export default class APIImplementation implements APIInterface {
-    verifyEmailPOST = async (token: string, options: APIOptions): Promise<{ status: "OK" }> => {
+    verifyEmailPOST = async (token: string, options: APIOptions): Promise<{ status: "OK"; user: User }> => {
         let user = await options.recipeImplementation.verifyEmailUsingToken(token);
-
-        try {
-            options.config.handlePostEmailVerification(user).catch((_) => {});
-        } catch (ignored) {}
 
         return {
             status: "OK",
+            user,
         };
     };
 

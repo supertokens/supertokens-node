@@ -32,8 +32,6 @@ import {
 } from "./types";
 import { RecipeImplementation, APIImplementation } from "./";
 
-async function defaultHandlePostSignUpIn(_: User, __: any, ___: boolean) {}
-
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
@@ -115,9 +113,6 @@ function validateAndNormaliseSignInAndUpConfig(
     _: NormalisedAppinfo,
     config: TypeInputSignInAndUp
 ): TypeNormalisedInputSignInAndUp {
-    let handlePostSignUpIn =
-        config.handlePostSignUpIn === undefined ? defaultHandlePostSignUpIn : config.handlePostSignUpIn;
-
     let providers = config.providers;
 
     if (providers === undefined || providers.length === 0) {
@@ -128,7 +123,6 @@ function validateAndNormaliseSignInAndUpConfig(
         });
     }
     return {
-        handlePostSignUpIn,
         providers,
     };
 }
@@ -172,22 +166,6 @@ function validateAndNormaliseEmailVerificationConfig(
                           });
                       }
                       return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
-                  },
-        handlePostEmailVerification:
-            config?.emailVerificationFeature?.handlePostEmailVerification === undefined
-                ? undefined
-                : async (user) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
-                      if (
-                          userInfo === undefined ||
-                          config?.emailVerificationFeature?.handlePostEmailVerification === undefined
-                      ) {
-                          throw new STError({
-                              type: STError.UNKNOWN_USER_ID_ERROR,
-                              message: "User ID unknown",
-                          });
-                      }
-                      return await config.emailVerificationFeature.handlePostEmailVerification(userInfo);
                   },
     };
 }

@@ -49,7 +49,6 @@ export declare type TypeNormalisedInput = {
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 export declare type TypeInputFormField = {
     id: string;
@@ -62,7 +61,6 @@ export declare type TypeFormField = {
 };
 export declare type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
-    handlePostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 export declare type NormalisedFormField = {
     id: string;
@@ -71,14 +69,9 @@ export declare type NormalisedFormField = {
 };
 export declare type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
-    handlePostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
-};
-export declare type TypeInputSignIn = {
-    handlePostSignIn?: (user: User) => Promise<void>;
 };
 export declare type TypeNormalisedInputSignIn = {
     formFields: NormalisedFormField[];
-    handlePostSignIn: (user: User) => Promise<void>;
 };
 export declare type TypeInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL?: (user: User) => Promise<string>;
@@ -110,7 +103,6 @@ export declare type User = {
 export declare type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
-    signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -161,18 +153,6 @@ export declare const InputSchema: {
                         additionalProperties: boolean;
                     };
                 };
-                handlePostSignUp: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
-        signInFeature: {
-            type: string;
-            properties: {
-                handlePostSignIn: {
-                    type: string;
-                };
             };
             additionalProperties: boolean;
         };
@@ -195,9 +175,6 @@ export declare const InputSchema: {
                     type: string;
                 };
                 createAndSendCustomEmail: {
-                    type: string;
-                };
-                handlePostEmailVerification: {
                     type: string;
                 };
             };

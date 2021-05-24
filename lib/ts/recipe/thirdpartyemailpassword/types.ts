@@ -114,7 +114,6 @@ export type TypeNormalisedInputSessionFeature = {
 
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
-    handlePostSignUp?: TypeInputHandlePostSignUp;
 };
 
 const InputSignUpSchema = {
@@ -133,36 +132,17 @@ const InputSignUpSchema = {
                 additionalProperties: false,
             },
         },
-        handlePostSignUp: TypeAny,
     },
     additionalProperties: false,
 };
 
 export type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
-    handlePostSignUp: TypeInputHandlePostSignUp;
-};
-
-export type TypeInputSignIn = {
-    handlePostSignIn?: TypeInputHandlePostSignIn;
-};
-
-const InputSignInSchema = {
-    type: "object",
-    properties: {
-        handlePostSignIn: TypeAny,
-    },
-    additionalProperties: false,
-};
-
-export type TypeNormalisedInputSignIn = {
-    handlePostSignIn: TypeInputHandlePostSignIn;
 };
 
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 
 const InputEmailVerificationFeatureSchema = {
@@ -170,7 +150,6 @@ const InputEmailVerificationFeatureSchema = {
     properties: {
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
-        handlePostEmailVerification: TypeAny,
     },
     additionalProperties: false,
 };
@@ -178,7 +157,6 @@ const InputEmailVerificationFeatureSchema = {
 export type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
-    signInFeature?: TypeInputSignIn;
     providers?: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
@@ -201,7 +179,6 @@ const InputProvidersSchema = {
 export const InputSchema = {
     sessionFeature: InputSessionFeatureSchema,
     signUpFeature: InputSignUpSchema,
-    signInFeature: InputSignInSchema,
     providers: InputProvidersSchema,
     resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
     emailVerificationFeature: InputEmailVerificationFeatureSchema,
@@ -211,7 +188,6 @@ export const InputSchema = {
 export type TypeNormalisedInput = {
     sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
-    signInFeature: TypeNormalisedInputSignIn;
     providers: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeNormalisedInputEmailVerification;
@@ -268,6 +244,39 @@ export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 
 export type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 
+export type SignInUpAPIInput =
+    | {
+          type: "emailpassword";
+          isSignIn: boolean;
+          formFields: {
+              id: string;
+              value: string;
+          }[];
+          options: EmailPasswordAPIOptions;
+      }
+    | {
+          type: "thirdparty";
+          provider: TypeProvider;
+          code: string;
+          redirectURI: string;
+          options: ThirdPartyAPIOptions;
+      };
+
+export type SignInUpAPIOutput =
+    | {
+          type: "emailpassword";
+          status: "OK";
+          user: User;
+          createdNewUser: boolean;
+      }
+    | {
+          type: "thirdparty";
+          status: "OK";
+          createdNewUser: boolean;
+          user: User;
+          authCodeResponse: any;
+      };
+
 export interface APIInterface {
     authorisationUrlGET:
         | undefined
@@ -277,19 +286,6 @@ export interface APIInterface {
           ) => Promise<{
               status: "OK";
               url: string;
-          }>);
-
-    signInUpPOST:
-        | undefined
-        | ((
-              provider: TypeProvider,
-              code: string,
-              redirectURI: string,
-              options: ThirdPartyAPIOptions
-          ) => Promise<{
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
           }>);
 
     signOutPOST:
@@ -335,29 +331,5 @@ export interface APIInterface {
               status: "OK";
           }>);
 
-    signInPOST:
-        | undefined
-        | ((
-              formFields: {
-                  id: string;
-                  value: string;
-              }[],
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
-              status: "OK";
-              user: User;
-          }>);
-
-    signUpPOST:
-        | undefined
-        | ((
-              formFields: {
-                  id: string;
-                  value: string;
-              }[],
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
-              status: "OK";
-              user: User;
-          }>);
+    signInUpPOST: undefined | ((input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>);
 }

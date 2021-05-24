@@ -550,8 +550,17 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                                 id: "testField",
                             },
                         ],
-                        handlePostSignUp: (user, formFields) => {
-                            customFormFields = formFields;
+                    },
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signUpPOST: async (formFields, options) => {
+                                    let response = await oI.signUpPOST(formFields, options);
+                                    customFormFields = formFields;
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
@@ -619,9 +628,16 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    signUpFeature: {
-                        handlePostSignUp: (user, formFields) => {
-                            customFormFields = formFields;
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signUpPOST: async (formFields, options) => {
+                                    let response = await oI.signUpPOST(formFields, options);
+                                    customFormFields = formFields;
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
@@ -1389,8 +1405,17 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                                 id: "testField",
                             },
                         ],
-                        handlePostSignUp: (user, formFields) => {
-                            customFormFields = formFields;
+                    },
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signUpPOST: async (formFields, options) => {
+                                    let response = await oI.signUpPOST(formFields, options);
+                                    customFormFields = formFields;
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),

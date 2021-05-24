@@ -545,11 +545,22 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailPassword.init({
                     emailVerificationFeature: {
-                        handlePostEmailVerification: (user) => {
-                            userInfoFromCallback = user;
-                        },
                         createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
                             token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
+                    },
+                    override: {
+                        emailVerificationFeature: {
+                            apis: (oI) => {
+                                return {
+                                    ...oI,
+                                    verifyEmailPOST: async (token, options) => {
+                                        let response = await oI.verifyEmailPOST(token, options);
+                                        userInfoFromCallback = response.user;
+                                        return response;
+                                    },
+                                };
+                            },
                         },
                     },
                 }),

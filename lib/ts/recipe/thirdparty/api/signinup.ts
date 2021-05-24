@@ -61,5 +61,9 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
 
     let result = await apiImplementation.signInUpPOST(provider, code, redirectURI, options);
 
-    return send200Response(options.res, result);
+    return send200Response(options.res, {
+        status: result.status,
+        user: result.user,
+        createdNewUser: result.createdNewUser,
+    });
 }

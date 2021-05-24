@@ -101,8 +101,6 @@ export default class APIImplementation implements APIInterface {
 
         let user = await options.recipeImplementation.signIn(email, password);
 
-        await options.config.signInFeature.handlePostSignIn(user);
-
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signin");
         let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signin");
 
@@ -171,8 +169,6 @@ export default class APIImplementation implements APIInterface {
         let password = formFields.filter((f) => f.id === "password")[0].value;
 
         let user = await options.recipeImplementation.signUp(email, password);
-
-        await options.config.signUpFeature.handlePostSignUp(user, formFields);
 
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signup");
         let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signup");
