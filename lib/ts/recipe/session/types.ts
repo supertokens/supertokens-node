@@ -146,6 +146,7 @@ export interface VerifySessionOptions {
 
 export interface RecipeInterface {
     createNewSession(
+        req: express.Request,
         res: express.Response,
         userId: string,
         jwtPayload?: any,

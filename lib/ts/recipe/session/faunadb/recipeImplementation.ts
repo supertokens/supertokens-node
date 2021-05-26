@@ -54,20 +54,28 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     createNewSession = async (
+        req: express.Request,
         res: express.Response,
         userId: string,
         jwtPayload: any = {},
         sessionData: any = {}
     ): Promise<Session> => {
         // TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
-        let originalSession = await this.originalImplementation.createNewSession(res, userId, jwtPayload, sessionData);
+        let originalSession = await this.originalImplementation.createNewSession(
+            req,
+            res,
+            userId,
+            jwtPayload,
+            sessionData
+        );
         let session = new Session(
             this.originalImplementation,
             originalSession.getAccessToken(),
             originalSession.getHandle(),
             originalSession.getUserId(),
             originalSession.getJWTPayload(),
-            res
+            res,
+            req
         );
         try {
             let fdat = await this.getFDAT(session);
@@ -110,7 +118,8 @@ export default class RecipeImplementation implements RecipeInterface {
             originalSession.getHandle(),
             originalSession.getUserId(),
             originalSession.getJWTPayload(),
-            res
+            res,
+            req
         );
     };
 
@@ -122,7 +131,8 @@ export default class RecipeImplementation implements RecipeInterface {
             originalSession.getHandle(),
             originalSession.getUserId(),
             originalSession.getJWTPayload(),
-            res
+            res,
+            req
         );
         try {
             let fdat = await this.getFDAT(session);

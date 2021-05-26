@@ -25,6 +25,8 @@ export default class Session implements SessionContainerInterface {
     private userId: string;
     private userDataInJWT: any;
     private res: express.Response;
+    // @ts-ignore
+    private req: express.Request;
     private accessToken: string;
     private recipeImplementation: RecipeImplementation;
 
@@ -34,7 +36,8 @@ export default class Session implements SessionContainerInterface {
         sessionHandle: string,
         userId: string,
         userDataInJWT: any,
-        res: express.Response
+        res: express.Response,
+        req: express.Request
     ) {
         this.sessionHandle = sessionHandle;
         this.userId = userId;
@@ -42,6 +45,7 @@ export default class Session implements SessionContainerInterface {
         this.res = res;
         this.accessToken = accessToken;
         this.recipeImplementation = recipeImplementation;
+        this.req = req;
     }
 
     revokeSession = async () => {

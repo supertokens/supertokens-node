@@ -116,7 +116,7 @@ export default class APIImplementation implements APIInterface {
             });
         }
 
-        await Session.createNewSession(options.res, user.id, jwtPayload, sessionData);
+        await Session.createNewSession(options.req, options.res, user.id, jwtPayload, sessionData);
         return {
             status: "OK",
             user,
@@ -185,7 +185,7 @@ export default class APIImplementation implements APIInterface {
             });
         }
 
-        await Session.createNewSession(options.res, user.id, jwtPayload, sessionData);
+        await Session.createNewSession(options.req, options.res, user.id, jwtPayload, sessionData);
         return {
             status: "OK",
             user,

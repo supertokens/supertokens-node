@@ -34,8 +34,15 @@ export default class SessionWrapper {
 
     static Error = SuperTokensError;
 
-    static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
+    static createNewSession(
+        req: express.Request,
+        res: express.Response,
+        userId: string,
+        jwtPayload: any = {},
+        sessionData: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession(
+            req,
             res,
             userId,
             jwtPayload,
