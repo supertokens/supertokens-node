@@ -76,7 +76,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -141,7 +141,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -196,7 +196,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -315,7 +315,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -420,7 +420,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -589,7 +589,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -658,7 +658,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -825,7 +825,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -907,7 +907,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -991,11 +991,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
         app.post("/usercreate", async (req, res) => {
-            await Session.createNewSession(res, "someUniqueUserId", {}, {});
+            await Session.createNewSession(req, res, "someUniqueUserId", {}, {});
             res.status(200).send("");
         });
         app.post("/session/revoke", async (req, res) => {
@@ -1137,7 +1137,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
         app.post("/updateSessionData", async (req, res) => {
@@ -1301,7 +1301,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "user1", {}, {});
+            await Session.createNewSession(req, res, "user1", {}, {});
             res.status(200).send("");
         });
         app.post("/updateJWTPayload", async (req, res) => {
@@ -1530,7 +1530,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.post("/create", async (req, res) => {
             res.header("testHeader", "testValue");
             res.header("Access-Control-Expose-Headers", "customValue");
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -1584,7 +1584,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -1775,7 +1775,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -1898,7 +1898,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -1970,7 +1970,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 

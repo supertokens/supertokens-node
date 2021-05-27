@@ -32,7 +32,7 @@ Supertokens.init({
                     return {
                         getSession: originalImpl.getSession,
                         createNewSession: async (res, userId, jwtPayload, sessionData) => {
-                            let session = await originalImpl.createNewSession(res, userId);
+                            let session = await originalImpl.createNewSession(req, res, userId);
                             return {
                                 getAccessToken: session.getAccessToken,
                                 getHandle: session.getHandle,

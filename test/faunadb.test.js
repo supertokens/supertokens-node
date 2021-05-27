@@ -85,7 +85,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(req, res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
@@ -211,7 +211,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(req, res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
@@ -288,7 +288,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(req, res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
@@ -419,7 +419,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(req, res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
@@ -507,7 +507,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(req, res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
@@ -632,7 +632,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(req, res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
@@ -736,7 +736,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(req, res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 
@@ -895,7 +895,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "277082848991642117", {}, {});
+            await Session.createNewSession(req, res, "277082848991642117", {}, {});
             res.status(200).send("");
         });
 

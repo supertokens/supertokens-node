@@ -24,7 +24,7 @@ const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddlewa
 const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
 const { removeServerlessCache } = require("../lib/build/utils");
 
-describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.js]")}`, function () {
+describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
     describe("with superTokensNextWrapper", function () {
         before(async function () {
             await killAllST();
@@ -381,7 +381,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/helpers/nextjs/index.test.j
 
             const session = await superTokensNextWrapper(
                 async () => {
-                    return await Session.createNewSession(response, "1", {}, {});
+                    return await Session.createNewSession(request, response, "1", {}, {});
                 },
                 request,
                 response
