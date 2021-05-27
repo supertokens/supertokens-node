@@ -1,6 +1,5 @@
 import { APIInterface, APIOptions, User, TypeProvider } from "../";
 import Session, { SessionContainer } from "../../session";
-import STError from "../error";
 import { URLSearchParams } from "url";
 import * as axios from "axios";
 import * as qs from "querystring";
@@ -13,15 +12,7 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         url: string;
     }> => {
-        let providerInfo;
-        try {
-            providerInfo = await provider.get(undefined, undefined);
-        } catch (err) {
-            throw new STError({
-                type: "GENERAL_ERROR",
-                payload: err,
-            });
-        }
+        let providerInfo = await provider.get(undefined, undefined);
 
         const params = Object.entries(providerInfo.authorisationRedirect.params).reduce(
             (acc, [key, value]) => ({
@@ -61,24 +52,17 @@ export default class APIImplementation implements APIInterface {
     > => {
         let userInfo;
         let accessTokenAPIResponse: any;
-        try {
-            let providerInfo = await provider.get(redirectURI, code);
-            accessTokenAPIResponse = await axios.default({
-                method: "post",
-                url: providerInfo.accessTokenAPI.url,
-                data: qs.stringify(providerInfo.accessTokenAPI.params),
-                headers: {
-                    "content-type": "application/x-www-form-urlencoded",
-                    accept: "application/json", // few providers like github don't send back json response by default
-                },
-            });
-            userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data);
-        } catch (err) {
-            throw new STError({
-                type: "GENERAL_ERROR",
-                payload: err,
-            });
-        }
+        let providerInfo = await provider.get(redirectURI, code);
+        accessTokenAPIResponse = await axios.default({
+            method: "post",
+            url: providerInfo.accessTokenAPI.url,
+            data: qs.stringify(providerInfo.accessTokenAPI.params),
+            headers: {
+                "content-type": "application/x-www-form-urlencoded",
+                accept: "application/json", // few providers like github don't send back json response by default
+            },
+        });
+        userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data);
 
         let emailInfo = userInfo.email;
         if (emailInfo === undefined) {
@@ -100,17 +84,8 @@ export default class APIImplementation implements APIInterface {
             action
         );
 
-        let jwtPayload: { [key: string]: any } | undefined = undefined;
-        let sessionData: { [key: string]: any } | undefined = undefined;
-        try {
-            jwtPayload = await jwtPayloadPromise;
-            sessionData = await sessionDataPromise;
-        } catch (err) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: err,
-            });
-        }
+        let jwtPayload: { [key: string]: any } | undefined = await jwtPayloadPromise;
+        let sessionData: { [key: string]: any } | undefined = await sessionDataPromise;
 
         await Session.createNewSession(options.req, options.res, user.user.id, jwtPayload, sessionData);
         return {
@@ -139,10 +114,7 @@ export default class APIImplementation implements APIInterface {
         }
 
         if (session === undefined) {
-            throw new Session.Error({
-                type: Session.Error.GENERAL_ERROR,
-                payload: new Error("Session is undefined. Should not come here."),
-            });
+            throw new Error("Session is undefined. Should not come here.");
         }
 
         await session.revokeSession();

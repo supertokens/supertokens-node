@@ -444,9 +444,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             throw new Error("should not have come here");
         } catch (err) {
             if (
-                err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                    "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
+                "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
             ) {
                 throw err;
             }
@@ -950,9 +949,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             assert(false);
         } catch (err) {
             if (
-                err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                    'Config schema error in session recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
+                'Config schema error in session recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
             ) {
                 throw err;
             }

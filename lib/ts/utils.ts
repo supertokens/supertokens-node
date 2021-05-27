@@ -6,7 +6,6 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
-import SuperTokensError from "./error";
 import { readFile, writeFile, unlink } from "fs";
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
 
@@ -43,30 +42,16 @@ export function maxVersion(version1: string, version2: string): string {
 
 export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo {
     if (appInfo === undefined) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Please provide the appInfo object when calling supertokens.init"),
-        });
+        throw new Error("Please provide the appInfo object when calling supertokens.init");
     }
     if (appInfo.apiDomain === undefined) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Please provide your apiDomain inside the appInfo object when calling supertokens.init"),
-        });
+        throw new Error("Please provide your apiDomain inside the appInfo object when calling supertokens.init");
     }
     if (appInfo.appName === undefined) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Please provide your appName inside the appInfo object when calling supertokens.init"),
-        });
+        throw new Error("Please provide your appName inside the appInfo object when calling supertokens.init");
     }
     if (appInfo.websiteDomain === undefined) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error(
-                "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
-            ),
-        });
+        throw new Error("Please provide your websiteDomain inside the appInfo object when calling supertokens.init");
     }
     let apiGatewayPath =
         appInfo.apiGatewayPath !== undefined
@@ -110,10 +95,7 @@ export function getHeader(req: express.Request, key: string): string | undefined
 
 export function sendNon200Response(res: express.Response, message: string, statusCode: number) {
     if (statusCode < 300) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Calling sendNon200Response with status code < 300"),
-        });
+        throw new Error("Calling sendNon200Response with status code < 300");
     }
     if (!res.writableEnded) {
         res.statusCode = statusCode;
@@ -194,10 +176,7 @@ export function validateTheStructureOfUserInput(config: any, inputSchema: any, c
             errorMessage = `${errorMessage}. Did you mean to set this on the frontend side?`;
         }
         errorMessage = `Config schema error in ${configRoot}: ${errorMessage}`;
-        throw new SuperTokensError({
-            payload: new Error(errorMessage),
-            type: "GENERAL_ERROR",
-        });
+        throw new Error(errorMessage);
     }
 }
 

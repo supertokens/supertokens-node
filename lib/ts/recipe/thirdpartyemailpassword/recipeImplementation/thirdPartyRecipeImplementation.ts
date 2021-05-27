@@ -1,5 +1,4 @@
 import { RecipeInterface, User } from "../../thirdparty/types";
-import STError from "../error";
 import { RecipeInterface as ThirdPartyRecipeInterface } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
@@ -32,10 +31,7 @@ export default class RecipeImplementation implements RecipeInterface {
     ): Promise<{ createdNewUser: boolean; user: User }> => {
         let result = await this.recipeImplementation.signInUp(thirdPartyId, thirdPartyUserId, email);
         if (result.user.thirdParty === undefined) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Should never come here"),
-            });
+            throw new Error("Should never come here");
         }
         return {
             createdNewUser: result.createdNewUser,
@@ -63,23 +59,14 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     getUsersOldestFirst = async (_?: number, __?: string) => {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Should never be called"),
-        });
+        throw new Error("Should never be called");
     };
 
     getUsersNewestFirst = async (_?: number, __?: string) => {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Should never be called"),
-        });
+        throw new Error("Should never be called");
     };
 
     getUserCount = async () => {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Should never be called"),
-        });
+        throw new Error("Should never be called");
     };
 }

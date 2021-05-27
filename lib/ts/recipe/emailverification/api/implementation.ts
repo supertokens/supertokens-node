@@ -1,6 +1,5 @@
 import { APIInterface, APIOptions, User } from "../";
 import Session from "../../session";
-import STError from "../error";
 
 export default class APIImplementation implements APIInterface {
     verifyEmailPOST = async (
@@ -19,10 +18,7 @@ export default class APIImplementation implements APIInterface {
         let session = await Session.getSession(options.req, options.res);
 
         if (session === undefined) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Session is undefined. Should not come here."),
-            });
+            throw new Error("Session is undefined. Should not come here.");
         }
 
         let userId = session.getUserId();
@@ -41,10 +37,7 @@ export default class APIImplementation implements APIInterface {
         let session = await Session.getSession(options.req, options.res);
 
         if (session === undefined) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Session is undefined. Should not come here."),
-            });
+            throw new Error("Session is undefined. Should not come here.");
         }
 
         let userId = session.getUserId();

@@ -84,7 +84,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
             await Session.createNewSession("", {}, {});
             throw new Error("should not have come here");
         } catch (err) {
-            if (err.type !== Session.Error.GENERAL_ERROR || err.message !== "No SuperTokens core available to query") {
+            if (err.message !== "No SuperTokens core available to query") {
                 throw err;
             }
         }

@@ -14,7 +14,6 @@
  */
 
 import { URL } from "url";
-import STError from "./error";
 import { isAnIpAddress } from "./utils";
 
 export default class NormalisedURLDomain {
@@ -52,10 +51,7 @@ export function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = f
     // not a valid URL
 
     if (input.startsWith("/")) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Please provide a valid domain name"),
-        });
+        throw Error("Please provide a valid domain name");
     }
 
     if (input.indexOf(".") === 0) {
@@ -78,8 +74,5 @@ export function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = f
         } catch (err) {}
     }
 
-    throw new STError({
-        type: STError.GENERAL_ERROR,
-        payload: new Error("Please provide a valid domain name"),
-    });
+    throw Error("Please provide a valid domain name");
 }

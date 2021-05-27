@@ -2,7 +2,6 @@ import { RecipeInterface, User } from "../types";
 import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
 
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
-import STError from "../error";
 import { extractPaginationTokens, combinePaginationResults } from "../utils";
 import { Querier } from "../../../querier";
 
@@ -40,10 +39,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     ): Promise<{ createdNewUser: boolean; user: User }> => {
         if (this.thirdPartyImplementation === undefined) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("No thirdparty provider configured"),
-            });
+            throw new Error("No thirdparty provider configured");
         }
         return this.thirdPartyImplementation.signInUp(thirdPartyId, thirdPartyUserId, email);
     };

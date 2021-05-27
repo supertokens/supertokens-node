@@ -61,10 +61,7 @@ export default class APIImplementation implements APIInterface {
         }
 
         if (session === undefined) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Session is undefined. Should not come here."),
-            });
+            throw new Error("Session is undefined. Should not come here.");
         }
 
         await session.revokeSession();

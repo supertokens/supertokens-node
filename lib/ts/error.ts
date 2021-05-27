@@ -15,7 +15,6 @@
 
 export default class SuperTokensError {
     private static errMagic = "ndskajfasndlfkj435234krjdsa";
-    static GENERAL_ERROR: "GENERAL_ERROR" = "GENERAL_ERROR";
     static BAD_INPUT_ERROR: "BAD_INPUT_ERROR" = "BAD_INPUT_ERROR";
 
     public type: string;
@@ -40,17 +39,13 @@ export default class SuperTokensError {
                   type: string;
               }
             | {
-                  payload: Error;
-                  type: "GENERAL_ERROR";
-              }
-            | {
                   message: string;
                   type: "BAD_INPUT_ERROR";
                   payload: undefined;
               }
     ) {
         this.type = options.type;
-        this.message = options.type === "GENERAL_ERROR" ? options.payload.message : (options as any).message;
+        this.message = options.message;
         this.payload = options.payload;
         this.errMagic = SuperTokensError.errMagic;
     }

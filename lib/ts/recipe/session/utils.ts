@@ -30,7 +30,6 @@ import {
 import * as express from "express";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
-import STError from "./error";
 import {
     sendTryRefreshTokenResponse,
     sendTokenTheftDetectedResponse,
@@ -56,22 +55,15 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
             sessionScope = "http://" + sessionScope;
         }
 
-        try {
-            let urlObj = new URL(sessionScope);
-            sessionScope = urlObj.hostname;
+        let urlObj = new URL(sessionScope);
+        sessionScope = urlObj.hostname;
 
-            // remove leading dot
-            if (sessionScope.startsWith(".")) {
-                sessionScope = sessionScope.substr(1);
-            }
-
-            return sessionScope;
-        } catch (err) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Please provide a valid sessionScope"),
-            });
+        // remove leading dot
+        if (sessionScope.startsWith(".")) {
+            sessionScope = sessionScope.substr(1);
         }
+
+        return sessionScope;
     }
 
     let noDotNormalised = helper(sessionScope);
@@ -96,10 +88,7 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
     }
     let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
     if (parsedURL.domain === null) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Please make sure that the apiDomain and websiteDomain have correct values"),
-        });
+        throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");
     }
     return parsedURL.domain;
 }
@@ -134,10 +123,7 @@ export function validateAndNormaliseUserInput(
 
     if (config !== undefined && config.antiCsrf !== undefined) {
         if (config.antiCsrf !== "NONE" && config.antiCsrf !== "VIA_CUSTOM_HEADER" && config.antiCsrf !== "VIA_TOKEN") {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("antiCsrf config must be one of 'NONE' or 'VIA_CUSTOM_HEADER' or 'VIA_TOKEN'"),
-            });
+            throw new Error("antiCsrf config must be one of 'NONE' or 'VIA_CUSTOM_HEADER' or 'VIA_TOKEN'");
         }
     }
 
@@ -190,12 +176,9 @@ export function validateAndNormaliseUserInput(
         !(topLevelAPIDomain === "localhost" || isAnIpAddress(topLevelAPIDomain)) &&
         !(topLevelWebsiteDomain === "localhost" || isAnIpAddress(topLevelWebsiteDomain))
     ) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error(
-                "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
-            ),
-        });
+        throw new Error(
+            "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
+        );
     }
 
     let override: {
@@ -237,10 +220,7 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
     sameSite = sameSite.trim();
     sameSite = sameSite.toLocaleLowerCase();
     if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error('cookie same site must be one of "strict", "lax", or "none"'),
-        });
+        throw new Error('cookie same site must be one of "strict", "lax", or "none"');
     }
     return sameSite;
 }

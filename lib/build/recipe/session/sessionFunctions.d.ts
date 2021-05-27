@@ -2,7 +2,6 @@ import { CreateOrRefreshAPIResponse } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 /**
  * @description call this to "login" a user.
- * @throws GENERAL_ERROR in case anything fails.
  */
 export declare function createNewSession(
     recipeImplementation: RecipeImplementation,
@@ -12,7 +11,6 @@ export declare function createNewSession(
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
- * @throws AuthError, GENERAL_ERROR, UNAUTHORISED and TRY_REFRESH_TOKEN
  */
 export declare function getSession(
     recipeImplementation: RecipeImplementation,
@@ -35,7 +33,6 @@ export declare function getSession(
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
- * @throws AuthError, GENERAL_ERROR, UNAUTHORISED, TOKEN_THEFT_DETECTED
  */
 export declare function refreshSession(
     recipeImplementation: RecipeImplementation,
@@ -46,7 +43,6 @@ export declare function refreshSession(
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
- * @throws AuthError, GENERAL_ERROR
  */
 export declare function revokeAllSessionsForUser(
     recipeImplementation: RecipeImplementation,
@@ -54,7 +50,6 @@ export declare function revokeAllSessionsForUser(
 ): Promise<string[]>;
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
- * @throws AuthError, GENERAL_ERROR
  */
 export declare function getAllSessionHandlesForUser(
     recipeImplementation: RecipeImplementation,
@@ -63,7 +58,6 @@ export declare function getAllSessionHandlesForUser(
 /**
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
- * @throws AuthError, GENERAL_ERROR
  */
 export declare function revokeSession(
     recipeImplementation: RecipeImplementation,
@@ -72,7 +66,6 @@ export declare function revokeSession(
 /**
  * @description call to destroy multiple sessions
  * @returns list of sessions revoked
- * @throws AuthError, GENERAL_ERROR
  */
 export declare function revokeMultipleSessions(
     recipeImplementation: RecipeImplementation,
@@ -81,12 +74,10 @@ export declare function revokeMultipleSessions(
 /**
  * @description: this function reads from the database every time. It provides no locking mechanism in case other processes are updating session data for this session as well, so please take of that by yourself.
  * @returns session data as provided by the user earlier
- * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export declare function getSessionData(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any>;
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
- * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export declare function updateSessionData(
     recipeImplementation: RecipeImplementation,
@@ -95,12 +86,8 @@ export declare function updateSessionData(
 ): Promise<void>;
 /**
  * @returns jwt payload as provided by the user earlier
- * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
  */
 export declare function getJWTPayload(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any>;
-/**
- * @throws AuthError GENERAL_ERROR, UNAUTHORISED.
- */
 export declare function updateJWTPayload(
     recipeImplementation: RecipeImplementation,
     sessionHandle: string,

@@ -56,10 +56,7 @@ export default class SessionRecipe extends RecipeModule {
         if (SessionRecipe.instance !== undefined) {
             return SessionRecipe.instance;
         }
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-        });
+        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
 
     static init(config?: TypeInput): RecipeListFunction {
@@ -68,20 +65,14 @@ export default class SessionRecipe extends RecipeModule {
                 SessionRecipe.instance = new SessionRecipe(SessionRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return SessionRecipe.instance;
             } else {
-                throw new STError({
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("Session recipe has already been initialised. Please check your code for bugs."),
-                });
+                throw new Error("Session recipe has already been initialised. Please check your code for bugs.");
             }
         };
     }
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("calling testing function in non testing env"),
-            });
+            throw new Error("calling testing function in non testing env");
         }
         SessionRecipe.instance = undefined;
     }

@@ -1,6 +1,5 @@
 import { APIInterface, APIOptions, User } from "../";
 import Session, { SessionContainer } from "../../session";
-import STError from "../error";
 
 export default class APIImplementation implements APIInterface {
     emailExistsGET = async (
@@ -105,17 +104,8 @@ export default class APIImplementation implements APIInterface {
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signin");
         let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signin");
 
-        let jwtPayload: { [key: string]: any } | undefined = undefined;
-        let sessionData: { [key: string]: any } | undefined = undefined;
-        try {
-            jwtPayload = await jwtPayloadPromise;
-            sessionData = await sessionDataPromise;
-        } catch (err) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: err,
-            });
-        }
+        let jwtPayload: { [key: string]: any } | undefined = await jwtPayloadPromise;
+        let sessionData: { [key: string]: any } | undefined = await sessionDataPromise;
 
         await Session.createNewSession(options.req, options.res, user.id, jwtPayload, sessionData);
         return {
@@ -143,10 +133,7 @@ export default class APIImplementation implements APIInterface {
         }
 
         if (session === undefined) {
-            throw new Session.Error({
-                type: Session.Error.GENERAL_ERROR,
-                payload: new Error("Session is undefined. Should not come here."),
-            });
+            throw new Error("Session is undefined. Should not come here.");
         }
 
         await session.revokeSession();
@@ -183,17 +170,8 @@ export default class APIImplementation implements APIInterface {
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signup");
         let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signup");
 
-        let jwtPayload: { [key: string]: any } | undefined = undefined;
-        let sessionData: { [key: string]: any } | undefined = undefined;
-        try {
-            jwtPayload = await jwtPayloadPromise;
-            sessionData = await sessionDataPromise;
-        } catch (err) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: err,
-            });
-        }
+        let jwtPayload: { [key: string]: any } | undefined = await jwtPayloadPromise;
+        let sessionData: { [key: string]: any } | undefined = await sessionDataPromise;
 
         await Session.createNewSession(options.req, options.res, user.id, jwtPayload, sessionData);
         return {

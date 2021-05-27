@@ -31,7 +31,6 @@ import * as express from "express";
 import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import SuperTokensError from "./error";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -56,10 +55,7 @@ export default class SuperTokens {
         );
 
         if (config.recipeList === undefined || config.recipeList.length === 0) {
-            throw new SuperTokensError({
-                type: "GENERAL_ERROR",
-                payload: new Error("Please provide at least one recipe to the supertokens.init function call"),
-            });
+            throw new Error("Please provide at least one recipe to the supertokens.init function call");
         }
 
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
@@ -96,10 +92,7 @@ export default class SuperTokens {
                 .filter((i) => i !== "");
             let findDuplicates = (arr: string[]) => arr.filter((item, index) => arr.indexOf(item) != index);
             if (findDuplicates(stringifiedApisHandled).length !== 0) {
-                throw new STError({
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("Duplicate APIs exposed from recipe. Please combine them into one API"),
-                });
+                throw new Error("Duplicate APIs exposed from recipe. Please combine them into one API");
             }
         }
 
@@ -141,10 +134,7 @@ export default class SuperTokens {
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("calling testing function in non testing env"),
-            });
+            throw new Error("calling testing function in non testing env");
         }
         Querier.reset();
         SuperTokens.instance = undefined;
@@ -154,10 +144,7 @@ export default class SuperTokens {
         if (SuperTokens.instance !== undefined) {
             return SuperTokens.instance;
         }
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-        });
+        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
 
     // instance functions below......
@@ -225,12 +212,6 @@ export default class SuperTokens {
             await assertThatBodyParserHasBeenUsed(request, response);
             return await matchedRecipe.handleAPIRequest(id, request, response, next, path, method);
         } catch (err) {
-            if (!STError.isErrorFromSuperTokens(err)) {
-                err = new STError({
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                });
-            }
             return next(err);
         }
     };
@@ -238,11 +219,6 @@ export default class SuperTokens {
     errorHandler = () => {
         return async (err: any, request: express.Request, response: express.Response, next: express.NextFunction) => {
             if (STError.isErrorFromSuperTokens(err)) {
-                // if it's a general error, we extract the actual error and call the user's error handler
-                if (err.type === STError.GENERAL_ERROR) {
-                    return next(err.payload);
-                }
-
                 if (err.type === STError.BAD_INPUT_ERROR) {
                     return sendNon200Response(response, err.message, 400);
                 }

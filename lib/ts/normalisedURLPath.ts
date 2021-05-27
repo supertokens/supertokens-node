@@ -14,7 +14,6 @@
  */
 
 import { URL } from "url";
-import STError from "./error";
 
 export default class NormalisedURLPath {
     private value: string;
@@ -84,10 +83,7 @@ export function normaliseURLPathOrThrowError(input: string): string {
 
         return normaliseURLPathOrThrowError("http://example.com" + input);
     } catch (err) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Please provide a valid URL path"),
-        });
+        throw Error("Please provide a valid URL path");
     }
 }
 

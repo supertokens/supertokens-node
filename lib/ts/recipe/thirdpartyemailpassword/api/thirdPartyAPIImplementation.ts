@@ -1,6 +1,5 @@
 import { APIInterface, APIOptions, TypeProvider } from "../../thirdparty";
 import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
-import STError from "../error";
 
 export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswordAPIInterface): APIInterface {
     const signInUpPOSTFromThirdPartyEmailPassword = apiImplmentation.signInUpPOST;
@@ -20,10 +19,7 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
                       });
                       if (result.status === "OK") {
                           if (result.user.thirdParty === undefined || result.type === "emailpassword") {
-                              throw new STError({
-                                  type: STError.GENERAL_ERROR,
-                                  payload: new Error("Should never come here"),
-                              });
+                              throw Error("Should never come here");
                           }
                           return {
                               ...result,

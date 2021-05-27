@@ -266,9 +266,8 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                 assert(false);
             } catch (err) {
                 if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
                     err.message !==
-                        'Config schema error in emailpassword recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
+                    'Config schema error in emailpassword recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
                 ) {
                     throw err;
                 }
@@ -298,9 +297,8 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                 assert(false);
             } catch (err) {
                 if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
                     err.message !==
-                        'Config schema error in emailpassword recipe: signUpFeature is not allowed to have the additional property "c". Did you mean to set this on the frontend side?'
+                    'Config schema error in emailpassword recipe: signUpFeature is not allowed to have the additional property "c". Did you mean to set this on the frontend side?'
                 ) {
                     throw err;
                 }
@@ -330,9 +328,8 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                 assert(false);
             } catch (err) {
                 if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
                     err.message !==
-                        'Config schema error in emailpassword recipe: emailVerificationFeature is not allowed to have the additional property "e". Did you mean to set this on the frontend side?'
+                    'Config schema error in emailpassword recipe: emailVerificationFeature is not allowed to have the additional property "e". Did you mean to set this on the frontend side?'
                 ) {
                     throw err;
                 }
@@ -362,9 +359,8 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                 assert(false);
             } catch (err) {
                 if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
                     err.message !==
-                        'Config schema error in emailpassword recipe: resetPasswordUsingTokenFeature is not allowed to have the additional property "r". Did you mean to set this on the frontend side?'
+                    'Config schema error in emailpassword recipe: resetPasswordUsingTokenFeature is not allowed to have the additional property "r". Did you mean to set this on the frontend side?'
                 ) {
                     throw err;
                 }
@@ -398,9 +394,8 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                 assert(false);
             } catch (err) {
                 if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
                     err.message !==
-                        "Config schema error in emailpassword recipe: signUpFeature.formFields is not of a type(s) array"
+                    "Config schema error in emailpassword recipe: signUpFeature.formFields is not of a type(s) array"
                 ) {
                     throw err;
                 }
@@ -434,9 +429,8 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                 assert(false);
             } catch (err) {
                 if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
                     err.message !==
-                        "Config schema error in emailpassword recipe: signUpFeature.formFields.0.id is not of a type(s) string"
+                    "Config schema error in emailpassword recipe: signUpFeature.formFields.0.id is not of a type(s) string"
                 ) {
                     throw err;
                 }
@@ -471,9 +465,8 @@ describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, func
                 assert(false);
             } catch (err) {
                 if (
-                    err.type !== EmailPassword.Error.GENERAL_ERROR ||
                     err.message !==
-                        'Config schema error in emailpassword recipe: signUpFeature.formFields.0 is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
+                    'Config schema error in emailpassword recipe: signUpFeature.formFields.0 is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
                 ) {
                     throw err;
                 }

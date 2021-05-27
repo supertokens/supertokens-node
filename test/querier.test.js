@@ -39,44 +39,6 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         await cleanST();
     });
 
-    // Test that if the querier throws an error from a recipe, that recipe's ID is not there
-    it("test that if the querier throws an error from a recipe, that recipe's ID is not there", async function () {
-        await startST();
-        ST.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080;",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({
-                    antiCsrf: "VIA_TOKEN",
-                }),
-                EmailPassword.init(),
-            ],
-        });
-        try {
-            await Session.getAllSessionHandlesForUser();
-            assert(false);
-        } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR || err.fromRecipe === "session") {
-                throw err;
-            }
-        }
-
-        try {
-            await EmailPassword.getUserByEmail();
-            assert(false);
-        } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR || err.fromRecipe === "emailpassword") {
-                throw err;
-            }
-        }
-    });
-
     // Check that once the API version is there, it doesn't need to query again
     it("test that if that once API version is there, it doesn't need to query again", async function () {
         await startST();
@@ -190,7 +152,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             await q.sendGetRequest(new NormalisedURLPath("", "/"), {});
             throw new Error();
         } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR || err.message !== "No SuperTokens core available to query") {
+            if (err.message !== "No SuperTokens core available to query") {
                 throw err;
             }
         }

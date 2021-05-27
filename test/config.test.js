@@ -352,10 +352,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
                 assert(false);
             } catch (err) {
-                if (
-                    err.type !== STExpress.Error.GENERAL_ERROR ||
-                    err.message !== 'cookie same site must be one of "strict", "lax", or "none"'
-                ) {
+                if (err.message !== 'cookie same site must be one of "strict", "lax", or "none"') {
                     throw error;
                 }
             }
@@ -382,10 +379,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
                 assert(false);
             } catch (err) {
-                if (
-                    err.type !== STExpress.Error.GENERAL_ERROR ||
-                    err.message !== 'cookie same site must be one of "strict", "lax", or "none"'
-                ) {
+                if (err.message !== 'cookie same site must be one of "strict", "lax", or "none"') {
                     throw error;
                 }
             }

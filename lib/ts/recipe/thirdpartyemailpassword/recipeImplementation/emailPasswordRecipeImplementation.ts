@@ -1,5 +1,4 @@
 import { RecipeInterface, User } from "../../emailpassword/types";
-import STError from "../error";
 import { RecipeInterface as ThirdPartyRecipeInterface } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
@@ -47,23 +46,14 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     getUsersOldestFirst = async (_?: number, __?: string) => {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Should never be called"),
-        });
+        throw new Error("Should never be called");
     };
 
     getUsersNewestFirst = async (_?: number, __?: string) => {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Should never be called"),
-        });
+        throw new Error("Should never be called");
     };
 
     getUserCount = async () => {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Should never be called"),
-        });
+        throw new Error("Should never be called");
     };
 }

@@ -1,5 +1,4 @@
 import { VerifySessionOptions, RecipeInterface } from "../";
-import STError from "../error";
 import * as express from "express";
 import Session from "./sessionClass";
 import * as faunadb from "faunadb";
@@ -77,30 +76,23 @@ export default class RecipeImplementation implements RecipeInterface {
             res,
             req
         );
-        try {
-            let fdat = await this.getFDAT(session);
+        let fdat = await this.getFDAT(session);
 
-            if (this.config.accessFaunadbTokenFromFrontend) {
-                let newPayload = {
-                    ...jwtPayload,
-                };
-                newPayload[FAUNADB_SESSION_KEY] = fdat;
-                await session.updateJWTPayload(newPayload);
-            } else {
-                let newPayload = {
-                    ...sessionData,
-                };
-                newPayload[FAUNADB_SESSION_KEY] = fdat;
-                await session.updateSessionData(newPayload);
-            }
-
-            return session;
-        } catch (err) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: err,
-            });
+        if (this.config.accessFaunadbTokenFromFrontend) {
+            let newPayload = {
+                ...jwtPayload,
+            };
+            newPayload[FAUNADB_SESSION_KEY] = fdat;
+            await session.updateJWTPayload(newPayload);
+        } else {
+            let newPayload = {
+                ...sessionData,
+            };
+            newPayload[FAUNADB_SESSION_KEY] = fdat;
+            await session.updateSessionData(newPayload);
         }
+
+        return session;
     };
 
     getSession = async (
@@ -134,32 +126,25 @@ export default class RecipeImplementation implements RecipeInterface {
             res,
             req
         );
-        try {
-            let fdat = await this.getFDAT(session);
+        let fdat = await this.getFDAT(session);
 
-            // we do not use the accessFaunaDBTokenFromFrontend boolean here so that
-            // it can be changed without affecting existing sessions.
-            if (session.getJWTPayload()[FAUNADB_SESSION_KEY] !== undefined) {
-                let newPayload = {
-                    ...session.getJWTPayload(),
-                };
-                newPayload[FAUNADB_SESSION_KEY] = fdat;
-                await session.updateJWTPayload(newPayload);
-            } else {
-                let newPayload = {
-                    ...(await session.getSessionData()),
-                };
-                newPayload[FAUNADB_SESSION_KEY] = fdat;
-                await session.updateSessionData(newPayload);
-            }
-
-            return session;
-        } catch (err) {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: err,
-            });
+        // we do not use the accessFaunaDBTokenFromFrontend boolean here so that
+        // it can be changed without affecting existing sessions.
+        if (session.getJWTPayload()[FAUNADB_SESSION_KEY] !== undefined) {
+            let newPayload = {
+                ...session.getJWTPayload(),
+            };
+            newPayload[FAUNADB_SESSION_KEY] = fdat;
+            await session.updateJWTPayload(newPayload);
+        } else {
+            let newPayload = {
+                ...(await session.getSessionData()),
+            };
+            newPayload[FAUNADB_SESSION_KEY] = fdat;
+            await session.updateSessionData(newPayload);
         }
+
+        return session;
     };
 
     revokeAllSessionsForUser = (userId: string) => {

@@ -168,22 +168,16 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
-                throw new STError({
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error(
-                        "ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs."
-                    ),
-                });
+                throw new Error(
+                    "ThirdPartyEmailPassword recipe has already been initialised. Please check your code for bugs."
+                );
             }
         };
     }
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                payload: new Error("calling testing function in non testing env"),
-            });
+            throw new Error("calling testing function in non testing env");
         }
         Recipe.instance = undefined;
     }
@@ -192,10 +186,7 @@ export default class Recipe extends RecipeModule {
         if (Recipe.instance !== undefined) {
             return Recipe.instance;
         }
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-        });
+        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
 
     getAPIsHandled = (): APIHandled[] => {

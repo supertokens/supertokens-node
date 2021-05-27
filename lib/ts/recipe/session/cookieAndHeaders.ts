@@ -16,7 +16,6 @@ import { parse, serialize } from "cookie";
 import * as express from "express";
 import { IncomingMessage, ServerResponse } from "http";
 
-import STError from "./error";
 import { getHeader } from "../../utils";
 import { TypeNormalisedInput } from "./types";
 
@@ -146,10 +145,7 @@ function setHeader(res: express.Response, key: string, value: string, allowDupli
             }
         }
     } catch (err) {
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            payload: new Error("Error while setting header with key: " + key + " and value: " + value),
-        });
+        throw new Error("Error while setting header with key: " + key + " and value: " + value);
     }
 }
 

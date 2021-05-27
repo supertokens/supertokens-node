@@ -21,9 +21,5 @@ export default class SessionError extends STError {
                       sessionHandle: string;
                   };
               }
-            | {
-                  type: "GENERAL_ERROR";
-                  payload: Error;
-              }
     );
 }

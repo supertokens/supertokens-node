@@ -106,7 +106,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             await Querier.getNewInstanceOrThrowError(false);
             assert(false);
         } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR) {
+            if (err.message !== "Please call the supertokens.init function before using SuperTokens") {
                 throw err;
             }
         }
@@ -139,7 +139,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             await SessionRecipe.getInstanceOrThrowError();
             assert(false);
         } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR || err.recipe !== undefined) {
+            if (err.message !== "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
                 throw err;
             }
         }
@@ -148,7 +148,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             await EmailPasswordRecipe.getInstanceOrThrowError();
             assert(false);
         } catch (err) {
-            if (err.type !== ST.Error.GENERAL_ERROR || err.recipe !== undefined) {
+            if (err.message !== "Initialisation not done. Did you forget to call the SuperTokens.init function?") {
                 throw err;
             }
         }
@@ -718,10 +718,7 @@ class TestRecipe extends RecipeModule {
                 type: "ERROR_FROM_TEST_RECIPE",
             });
         } else if (id === "/error/general") {
-            throw new TestRecipeError({
-                payload: new Error("General error from TestRecipe"),
-                type: STError.GENERAL_ERROR,
-            });
+            throw new Error("General error from TestRecipe");
         } else if (id === "/error/badinput") {
             throw new TestRecipeError({
                 message: "Bad input error from TestRecipe",

@@ -32,10 +32,6 @@ export default class SessionError extends STError {
                   type: "BAD_INPUT_ERROR";
                   message: string;
               }
-            | {
-                  type: "GENERAL_ERROR";
-                  payload: Error;
-              }
     ) {
         super({
             ...options,
