@@ -3,10 +3,15 @@ export default class APIImplementation implements APIInterface {
     verifyEmailPOST: (
         token: string,
         options: APIOptions
-    ) => Promise<{
-        status: "OK";
-        user: User;
-    }>;
+    ) => Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+    >;
     isEmailVerifiedGET: (
         options: APIOptions
     ) => Promise<{
@@ -16,6 +21,6 @@ export default class APIImplementation implements APIInterface {
     generateEmailVerifyTokenPOST: (
         options: APIOptions
     ) => Promise<{
-        status: "OK";
+        status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR";
     }>;
 }

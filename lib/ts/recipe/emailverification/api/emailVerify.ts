@@ -41,10 +41,7 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
             });
         }
 
-        await apiImplementation.verifyEmailPOST(token, options);
-        result = {
-            status: "OK",
-        };
+        result = await apiImplementation.verifyEmailPOST(token, options);
     } else {
         if (apiImplementation.isEmailVerifiedGET === undefined) {
             return options.next();

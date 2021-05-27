@@ -282,14 +282,11 @@ export default class Recipe extends RecipeModule {
     };
 
     createEmailVerificationToken = async (userId: string): Promise<string> => {
-        return this.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken(
-            userId,
-            await this.getEmailForUserId(userId)
-        );
+        return this.emailVerificationRecipe.createEmailVerificationToken(userId, await this.getEmailForUserId(userId));
     };
 
     verifyEmailUsingToken = async (token: string): Promise<User> => {
-        let user = await this.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken(token);
+        let user = await this.emailVerificationRecipe.verifyEmailUsingToken(token);
         let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
         if (userInThisRecipe === undefined) {
             throw new STError({

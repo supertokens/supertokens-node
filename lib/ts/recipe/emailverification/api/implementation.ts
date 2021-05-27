@@ -3,13 +3,11 @@ import Session from "../../session";
 import STError from "../error";
 
 export default class APIImplementation implements APIInterface {
-    verifyEmailPOST = async (token: string, options: APIOptions): Promise<{ status: "OK"; user: User }> => {
-        let user = await options.recipeImplementation.verifyEmailUsingToken(token);
-
-        return {
-            status: "OK",
-            user,
-        };
+    verifyEmailPOST = async (
+        token: string,
+        options: APIOptions
+    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> => {
+        return await options.recipeImplementation.verifyEmailUsingToken(token);
     };
 
     isEmailVerifiedGET = async (
@@ -31,15 +29,12 @@ export default class APIImplementation implements APIInterface {
 
         let email = await options.config.getEmailForUserId(userId);
 
-        let isVerified = await options.recipeImplementation.isEmailVerified(userId, email);
-
-        return {
-            status: "OK",
-            isVerified,
-        };
+        return await options.recipeImplementation.isEmailVerified(userId, email);
     };
 
-    generateEmailVerifyTokenPOST = async (options: APIOptions): Promise<{ status: "OK" }> => {
+    generateEmailVerifyTokenPOST = async (
+        options: APIOptions
+    ): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" }> => {
         let session = await Session.getSession(options.req, options.res);
 
         if (session === undefined) {
@@ -53,12 +48,16 @@ export default class APIImplementation implements APIInterface {
 
         let email = await options.config.getEmailForUserId(userId);
 
-        let token = await options.recipeImplementation.createEmailVerificationToken(userId, email);
+        let response = await options.recipeImplementation.createEmailVerificationToken(userId, email);
+
+        if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+            return response;
+        }
 
         let emailVerifyLink =
             (await options.config.getEmailVerificationURL({ id: userId, email })) +
             "?token=" +
-            token +
+            response.token +
             "&rid=" +
             options.recipeId;
 

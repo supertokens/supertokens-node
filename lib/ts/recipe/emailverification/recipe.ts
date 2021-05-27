@@ -14,14 +14,13 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { GENERATE_EMAIL_VERIFY_TOKEN_API, EMAIL_VERIFY_API } from "./constants";
-import { send200Response } from "../../utils";
 import generateEmailVerifyTokenAPI from "./api/generateEmailVerifyToken";
 import emailVerifyAPI from "./api/emailVerify";
 import RecipeImplementation from "./recipeImplementation";
@@ -131,22 +130,8 @@ export default class Recipe extends RecipeModule {
         }
     };
 
-    handleError = (err: STError, _: express.Request, response: express.Response, next: express.NextFunction): void => {
-        if (err.fromRecipe === Recipe.RECIPE_ID) {
-            if (err.type === STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR) {
-                return send200Response(response, {
-                    status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",
-                });
-            } else if (err.type === STError.EMAIL_ALREADY_VERIFIED_ERROR) {
-                return send200Response(response, {
-                    status: "EMAIL_ALREADY_VERIFIED_ERROR",
-                });
-            } else {
-                return next(err);
-            }
-        } else {
-            return next(err);
-        }
+    handleError = (err: STError, _: express.Request, __: express.Response, next: express.NextFunction): void => {
+        return next(err);
     };
 
     getAllCORSHeaders = (): string[] => {
@@ -155,5 +140,26 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
+    };
+
+    createEmailVerificationToken = async (userId: string, email: string): Promise<string> => {
+        let response = await this.recipeInterfaceImpl.createEmailVerificationToken(userId, email);
+        if (response.status === "OK") {
+            return response.token;
+        }
+        throw new Error("Email already verified");
+    };
+
+    verifyEmailUsingToken = async (token: string): Promise<User> => {
+        let response = await this.recipeInterfaceImpl.verifyEmailUsingToken(token);
+        if (response.status === "OK") {
+            return response.user;
+        }
+        throw new Error("Invalid token");
+    };
+
+    isEmailVerified = async (userId: string, email: string): Promise<boolean> => {
+        let response = await this.recipeInterfaceImpl.isEmailVerified(userId, email);
+        return response.isVerified;
     };
 }

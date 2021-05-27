@@ -1,7 +1,6 @@
 import { RecipeInterface, User } from "./";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import STError from "./error";
 
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
@@ -9,44 +8,68 @@ export default class RecipeImplementation implements RecipeInterface {
         this.querier = querier;
     }
 
-    createEmailVerificationToken = async (userId: string, email: string): Promise<string> => {
+    createEmailVerificationToken = async (
+        userId: string,
+        email: string
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
+    > => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token"), {
             userId,
             email,
         });
         if (response.status === "OK") {
-            return response.token;
+            return {
+                status: "OK",
+                token: response.token,
+            };
         } else {
-            throw new STError({
-                type: STError.EMAIL_ALREADY_VERIFIED_ERROR,
-                message: "Failed to generated email verification token as the email is already verified",
-            });
+            return {
+                status: "EMAIL_ALREADY_VERIFIED_ERROR",
+            };
         }
     };
 
-    verifyEmailUsingToken = async (token: string): Promise<User> => {
+    verifyEmailUsingToken = async (
+        token: string
+    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
             method: "token",
             token,
         });
         if (response.status === "OK") {
             return {
-                id: response.userId,
-                email: response.email,
+                status: "OK",
+                user: {
+                    id: response.userId,
+                    email: response.email,
+                },
             };
         } else {
-            throw new STError({
-                type: STError.EMAIL_VERIFICATION_INVALID_TOKEN_ERROR,
-                message: "Failed to verify email as the the token has expired or is invalid",
-            });
+            return {
+                status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR",
+            };
         }
     };
 
-    isEmailVerified = async (userId: string, email: string) => {
+    isEmailVerified = async (
+        userId: string,
+        email: string
+    ): Promise<{
+        status: "OK";
+        isVerified: boolean;
+    }> => {
         let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
             userId,
             email,
         });
-        return response.isVerified;
+        return {
+            status: "OK",
+            isVerified: response.isVerified,
+        };
     };
 }

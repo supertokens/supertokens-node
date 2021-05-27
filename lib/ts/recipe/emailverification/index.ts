@@ -24,16 +24,16 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static createEmailVerificationToken(userId: string, email: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken(userId, email);
+    static async createEmailVerificationToken(userId: string, email: string): Promise<string> {
+        return await Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId, email);
     }
 
-    static verifyEmailUsingToken(token: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken(token);
+    static async verifyEmailUsingToken(token: string): Promise<User> {
+        return await Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
     }
 
-    static isEmailVerified(userId: string, email: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified(userId, email);
+    static async isEmailVerified(userId: string, email: string): Promise<boolean> {
+        return await Recipe.getInstanceOrThrowError().isEmailVerified(userId, email);
     }
 }
 

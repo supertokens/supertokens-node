@@ -23,9 +23,36 @@ export declare type User = {
     email: string;
 };
 export interface RecipeInterface {
-    createEmailVerificationToken(userId: string, email: string): Promise<string>;
-    verifyEmailUsingToken(token: string): Promise<User>;
-    isEmailVerified(userId: string, email: string): Promise<boolean>;
+    createEmailVerificationToken(
+        userId: string,
+        email: string
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
+    verifyEmailUsingToken(
+        token: string
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+    >;
+    isEmailVerified(
+        userId: string,
+        email: string
+    ): Promise<{
+        status: "OK";
+        isVerified: boolean;
+    }>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -41,10 +68,15 @@ export interface APIInterface {
         | ((
               token: string,
               options: APIOptions
-          ) => Promise<{
-              status: "OK";
-              user: User;
-          }>);
+          ) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | {
+                    status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+                }
+          >);
     isEmailVerifiedGET:
         | undefined
         | ((
@@ -58,6 +90,6 @@ export interface APIInterface {
         | ((
               options: APIOptions
           ) => Promise<{
-              status: "OK";
+              status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
           }>);
 }
