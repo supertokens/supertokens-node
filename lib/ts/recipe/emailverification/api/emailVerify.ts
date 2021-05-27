@@ -41,7 +41,12 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
             });
         }
 
-        result = await apiImplementation.verifyEmailPOST(token, options);
+        let response = await apiImplementation.verifyEmailPOST(token, options);
+        if (response.status === "OK") {
+            result = { status: "OK" };
+        } else {
+            result = response;
+        }
     } else {
         if (apiImplementation.isEmailVerifiedGET === undefined) {
             return options.next();
