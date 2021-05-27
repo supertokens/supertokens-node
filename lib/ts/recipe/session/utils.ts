@@ -55,15 +55,19 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
             sessionScope = "http://" + sessionScope;
         }
 
-        let urlObj = new URL(sessionScope);
-        sessionScope = urlObj.hostname;
+        try {
+            let urlObj = new URL(sessionScope);
+            sessionScope = urlObj.hostname;
 
-        // remove leading dot
-        if (sessionScope.startsWith(".")) {
-            sessionScope = sessionScope.substr(1);
+            // remove leading dot
+            if (sessionScope.startsWith(".")) {
+                sessionScope = sessionScope.substr(1);
+            }
+
+            return sessionScope;
+        } catch (err) {
+            throw new Error("Please provide a valid sessionScope");
         }
-
-        return sessionScope;
     }
 
     let noDotNormalised = helper(sessionScope);
