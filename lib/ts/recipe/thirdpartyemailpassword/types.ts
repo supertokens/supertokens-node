@@ -288,6 +288,12 @@ export type SignInUpAPIOutput =
           createdNewUser: boolean;
           user: User;
           authCodeResponse: any;
+      }
+    | { type: "thirdparty"; status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+    | {
+          type: "thirdparty";
+          status: "FIELD_ERROR";
+          error: string;
       };
 
 export interface APIInterface {

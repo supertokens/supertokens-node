@@ -24,14 +24,14 @@ export default class Wrapper {
         nextPaginationToken?: string
     ): Promise<{
         users: User[];
-        nextPaginationToken?: string | undefined;
+        nextPaginationToken?: string;
     }>;
     static getUsersNewestFirst(
         limit?: number,
         nextPaginationToken?: string
     ): Promise<{
         users: User[];
-        nextPaginationToken?: string | undefined;
+        nextPaginationToken?: string;
     }>;
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;

@@ -46,12 +46,19 @@ export default class APIImplementation implements APIInterface {
         code: string,
         redirectURI: string,
         options: APIOptions
-    ): Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-        authCodeResponse: any;
-    }> => {
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+              authCodeResponse: any;
+          }
+        | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    > => {
         let userInfo;
         let accessTokenAPIResponse: any;
         try {
@@ -75,10 +82,9 @@ export default class APIImplementation implements APIInterface {
 
         let emailInfo = userInfo.email;
         if (emailInfo === undefined) {
-            throw new STError({
-                type: "NO_EMAIL_GIVEN_BY_PROVIDER",
-                message: `Provider ${provider.id} returned no email info for the user.`,
-            });
+            return {
+                status: "NO_EMAIL_GIVEN_BY_PROVIDER",
+            };
         }
         let user = await options.recipeImplementation.signInUp(provider.id, userInfo.id, emailInfo);
 

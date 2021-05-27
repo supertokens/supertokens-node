@@ -1,4 +1,4 @@
-import { APIInterface, APIOptions, User, TypeProvider } from "../../thirdparty";
+import { APIInterface, APIOptions, TypeProvider } from "../../thirdparty";
 import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 import STError from "../error";
 
@@ -10,17 +10,7 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
         signInUpPOST:
             signInUpPOSTFromThirdPartyEmailPassword === undefined
                 ? undefined
-                : async (
-                      provider: TypeProvider,
-                      code: string,
-                      redirectURI: string,
-                      options: APIOptions
-                  ): Promise<{
-                      status: "OK";
-                      createdNewUser: boolean;
-                      user: User;
-                      authCodeResponse: any;
-                  }> => {
+                : async (provider: TypeProvider, code: string, redirectURI: string, options: APIOptions) => {
                       let result = await signInUpPOSTFromThirdPartyEmailPassword({
                           type: "thirdparty",
                           code,
@@ -41,6 +31,15 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
                                   ...result.user,
                                   thirdParty: result.user.thirdParty,
                               },
+                          };
+                      } else if (result.status === "NO_EMAIL_GIVEN_BY_PROVIDER") {
+                          return {
+                              status: "NO_EMAIL_GIVEN_BY_PROVIDER",
+                          };
+                      } else if (result.status === "FIELD_ERROR") {
+                          return {
+                              status: "FIELD_ERROR",
+                              error: result.error,
                           };
                       } else {
                           throw Error("Should never come here");

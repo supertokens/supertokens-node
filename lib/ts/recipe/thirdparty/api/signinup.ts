@@ -61,9 +61,20 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
 
     let result = await apiImplementation.signInUpPOST(provider, code, redirectURI, options);
 
-    return send200Response(options.res, {
-        status: result.status,
-        user: result.user,
-        createdNewUser: result.createdNewUser,
-    });
+    if (result.status === "OK") {
+        return send200Response(options.res, {
+            status: result.status,
+            user: result.user,
+            createdNewUser: result.createdNewUser,
+        });
+    } else if (result.status === "NO_EMAIL_GIVEN_BY_PROVIDER") {
+        send200Response(options.res, {
+            status: "NO_EMAIL_GIVEN_BY_PROVIDER",
+        });
+    } else {
+        send200Response(options.res, {
+            status: "FIELD_ERROR",
+            error: result.error,
+        });
+    }
 }

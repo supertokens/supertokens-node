@@ -33,42 +33,54 @@ export default class Wrapper {
             id: string;
             isVerified: boolean;
         }
-    ) {
+    ): Promise<{ createdNewUser: boolean; user: User }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp(thirdPartyId, thirdPartyUserId, email);
     }
 
-    static getUserById(userId: string) {
+    static getUserById(userId: string): Promise<User | undefined> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById(userId);
     }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string) {
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo(
             thirdPartyId,
             thirdPartyUserId
         );
     }
 
-    static getUsersOldestFirst(limit?: number, nextPaginationToken?: string) {
+    static getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst(limit, nextPaginationToken);
     }
 
-    static getUsersNewestFirst(limit?: number, nextPaginationToken?: string) {
+    static getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst(limit, nextPaginationToken);
     }
 
-    static getUserCount() {
+    static getUserCount(): Promise<number> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
-    static createEmailVerificationToken(userId: string) {
+    static createEmailVerificationToken(userId: string): Promise<string> {
         return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
     }
 
-    static verifyEmailUsingToken(token: string) {
+    static verifyEmailUsingToken(token: string): Promise<User> {
         return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
     }
 
-    static isEmailVerified(userId: string) {
+    static isEmailVerified(userId: string): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
     }
 

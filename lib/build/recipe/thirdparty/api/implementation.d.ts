@@ -12,12 +12,21 @@ export default class APIImplementation implements APIInterface {
         code: string,
         redirectURI: string,
         options: APIOptions
-    ) => Promise<{
-        status: "OK";
-        createdNewUser: boolean;
-        user: User;
-        authCodeResponse: any;
-    }>;
+    ) => Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+              authCodeResponse: any;
+          }
+        | {
+              status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+          }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
     signOutPOST: (
         options: APIOptions
     ) => Promise<{

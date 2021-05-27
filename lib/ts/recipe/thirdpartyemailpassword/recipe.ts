@@ -273,10 +273,7 @@ export default class Recipe extends RecipeModule {
     getEmailForUserId = async (userId: string) => {
         let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
         if (userInfo === undefined) {
-            throw new STError({
-                type: STError.UNKNOWN_USER_ID_ERROR,
-                message: "Unknown User ID provided",
-            });
+            throw new Error("Unknown User ID provided");
         }
         return userInfo.email;
     };
@@ -289,10 +286,7 @@ export default class Recipe extends RecipeModule {
         let user = await this.emailVerificationRecipe.verifyEmailUsingToken(token);
         let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
         if (userInThisRecipe === undefined) {
-            throw new STError({
-                type: STError.UNKNOWN_USER_ID_ERROR,
-                message: "Unknown User ID provided",
-            });
+            throw new Error("Unknown User ID provided");
         }
         return userInThisRecipe;
     };

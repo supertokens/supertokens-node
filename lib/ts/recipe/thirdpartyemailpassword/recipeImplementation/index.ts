@@ -69,10 +69,7 @@ export default class RecipeImplementation implements RecipeInterface {
     getEmailForUserId = async (userId: string) => {
         let userInfo = await this.getUserById(userId);
         if (userInfo === undefined) {
-            throw new STError({
-                type: STError.UNKNOWN_USER_ID_ERROR,
-                message: "Unknown User ID provided",
-            });
+            throw new Error("Unknown User ID provided");
         }
         return userInfo.email;
     };

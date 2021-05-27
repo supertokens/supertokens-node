@@ -32,7 +32,6 @@ import {
 } from "./types";
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
-import STError from "./error";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
 import { RecipeImplementation, APIImplementation } from "./";
 
@@ -162,10 +161,7 @@ function validateAndNormaliseEmailVerificationConfig(
                           userInfo === undefined ||
                           config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
                       ) {
-                          throw new STError({
-                              type: STError.UNKNOWN_USER_ID_ERROR,
-                              message: "User ID unknown",
-                          });
+                          throw new Error("Unknown User ID provided");
                       }
                       return await config.emailVerificationFeature.createAndSendCustomEmail(userInfo, link);
                   },
@@ -178,10 +174,7 @@ function validateAndNormaliseEmailVerificationConfig(
                           userInfo === undefined ||
                           config?.emailVerificationFeature?.getEmailVerificationURL === undefined
                       ) {
-                          throw new STError({
-                              type: STError.UNKNOWN_USER_ID_ERROR,
-                              message: "User ID unknown",
-                          });
+                          throw new Error("Unknown User ID provided");
                       }
                       return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                   },
@@ -207,10 +200,7 @@ export function extractPaginationTokens(
 } {
     let extractedTokens = Buffer.from(nextPaginationToken, "base64").toString().split(";");
     if (extractedTokens.length !== 2) {
-        throw new STError({
-            type: "INVALID_PAGINATION_TOKEN",
-            message: "nextPaginationToken is invalid",
-        });
+        throw new Error("Pagination token is invalid");
     }
     return {
         thirdPartyPaginationToken: extractedTokens[0] === "null" ? undefined : extractedTokens[0],

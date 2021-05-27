@@ -26,7 +26,6 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import signOutAPI from "./api/signout";
 import signInUpAPI from "./api/signinup";
 import authorisationUrlAPI from "./api/authorisationUrl";
-import { send200Response } from "../../utils";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
@@ -157,19 +156,7 @@ export default class Recipe extends RecipeModule {
         next: express.NextFunction
     ): void => {
         if (err.fromRecipe === Recipe.RECIPE_ID) {
-            if (err.type === STError.NO_EMAIL_GIVEN_BY_PROVIDER) {
-                return send200Response(response, {
-                    status: "NO_EMAIL_GIVEN_BY_PROVIDER",
-                });
-            } else if (err.type === STError.FIELD_ERROR) {
-                // Do not remove this error: This is needed so that custom error can be thrown to the frontend during sign up / in
-                return send200Response(response, {
-                    status: "FIELD_ERROR",
-                    error: err.message,
-                });
-            } else {
-                return next(err);
-            }
+            return next(err);
         } else {
             return this.emailVerificationRecipe.handleError(err, request, response, next);
         }
@@ -191,10 +178,7 @@ export default class Recipe extends RecipeModule {
     getEmailForUserId = async (userId: string) => {
         let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
         if (userInfo === undefined) {
-            throw new STError({
-                type: STError.UNKNOWN_USER_ID_ERROR,
-                message: "Unknown User ID provided",
-            });
+            throw Error("Unknown User ID provided");
         }
         return userInfo.email;
     };
@@ -207,10 +191,7 @@ export default class Recipe extends RecipeModule {
         let user = await this.emailVerificationRecipe.verifyEmailUsingToken(token);
         let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
         if (userInThisRecipe === undefined) {
-            throw new STError({
-                type: STError.UNKNOWN_USER_ID_ERROR,
-                message: "Unknown User ID provided",
-            });
+            throw Error("Unknown User ID provided");
         }
         return userInThisRecipe;
     };
