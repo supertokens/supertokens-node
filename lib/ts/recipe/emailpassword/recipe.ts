@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, User, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -187,35 +187,10 @@ export default class Recipe extends RecipeModule {
         next: express.NextFunction
     ): void => {
         if (err.fromRecipe === Recipe.RECIPE_ID) {
-            if (err.type === STError.EMAIL_ALREADY_EXISTS_ERROR) {
-                // As per point number 3a in https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
-                return this.handleError(
-                    new STError({
-                        type: STError.FIELD_ERROR,
-                        payload: [
-                            {
-                                id: "email",
-                                error: "This email already exists. Please sign in instead.",
-                            },
-                        ],
-                        message: "Error in input formFields",
-                    }),
-                    request,
-                    response,
-                    next
-                );
-            } else if (err.type === STError.WRONG_CREDENTIALS_ERROR) {
-                return send200Response(response, {
-                    status: "WRONG_CREDENTIALS_ERROR",
-                });
-            } else if (err.type === STError.FIELD_ERROR) {
+            if (err.type === STError.FIELD_ERROR) {
                 return send200Response(response, {
                     status: "FIELD_ERROR",
                     formFields: err.payload,
-                });
-            } else if (err.type === STError.RESET_PASSWORD_INVALID_TOKEN_ERROR) {
-                return send200Response(response, {
-                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR",
                 });
             } else {
                 return next(err);
@@ -241,26 +216,20 @@ export default class Recipe extends RecipeModule {
     getEmailForUserId = async (userId: string) => {
         let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
         if (userInfo === undefined) {
-            throw new STError({
-                type: STError.UNKNOWN_USER_ID_ERROR,
-                message: "Unknown User ID provided",
-            });
+            throw Error("Unknown User ID provided");
         }
         return userInfo.email;
     };
 
-    createEmailVerificationToken = async (userId: string): Promise<string> => {
+    createEmailVerificationToken = async (userId: string) => {
         return this.emailVerificationRecipe.createEmailVerificationToken(userId, await this.getEmailForUserId(userId));
     };
 
-    verifyEmailUsingToken = async (token: string): Promise<User> => {
+    verifyEmailUsingToken = async (token: string) => {
         let user = await this.emailVerificationRecipe.verifyEmailUsingToken(token);
         let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
         if (userInThisRecipe === undefined) {
-            throw new STError({
-                type: STError.UNKNOWN_USER_ID_ERROR,
-                message: "Unknown User ID provided",
-            });
+            throw Error("Unknown User ID provided");
         }
         return userInThisRecipe;
     };
@@ -270,5 +239,37 @@ export default class Recipe extends RecipeModule {
             userId,
             await this.getEmailForUserId(userId)
         );
+    };
+
+    signUp = async (email: string, password: string) => {
+        let response = await this.recipeInterfaceImpl.signUp(email, password);
+        if (response.status === "OK") {
+            return response.user;
+        }
+        throw Error("Sign up error: Email already exists");
+    };
+
+    signIn = async (email: string, password: string) => {
+        let response = await this.recipeInterfaceImpl.signIn(email, password);
+        if (response.status === "OK") {
+            return response.user;
+        } else {
+            throw Error("Sign in error: Wrong credentials");
+        }
+    };
+
+    createResetPasswordToken = async (userId: string) => {
+        let response = await this.recipeInterfaceImpl.createResetPasswordToken(userId);
+        if (response.status === "OK") {
+            return response.token;
+        }
+        throw Error("Unknown User ID provided");
+    };
+
+    resetPasswordUsingToken = async (token: string, newPassword: string) => {
+        let response = await this.recipeInterfaceImpl.resetPasswordUsingToken(token, newPassword);
+        if (response.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
+            throw Error("Invalid password reset token");
+        }
     };
 }

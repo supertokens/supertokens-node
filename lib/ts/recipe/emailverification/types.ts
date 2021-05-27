@@ -56,13 +56,7 @@ export interface RecipeInterface {
         token: string
     ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
 
-    isEmailVerified(
-        userId: string,
-        email: string
-    ): Promise<{
-        status: "OK";
-        isVerified: boolean;
-    }>;
+    isEmailVerified(userId: string, email: string): Promise<boolean>;
 }
 
 export type APIOptions = {

@@ -1037,7 +1037,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
                                 ...oI,
                                 signInPOST: async (formFields, options) => {
                                     let response = await oI.signInPOST(formFields, options);
-                                    customUser = response.user;
+                                    if (response.status === "OK") {
+                                        customUser = response.user;
+                                    }
                                     return response;
                                 },
                             };

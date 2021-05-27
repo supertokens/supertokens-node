@@ -56,20 +56,11 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    isEmailVerified = async (
-        userId: string,
-        email: string
-    ): Promise<{
-        status: "OK";
-        isVerified: boolean;
-    }> => {
+    isEmailVerified = async (userId: string, email: string): Promise<boolean> => {
         let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
             userId,
             email,
         });
-        return {
-            status: "OK",
-            isVerified: response.isVerified,
-        };
+        return response.isVerified;
     };
 }

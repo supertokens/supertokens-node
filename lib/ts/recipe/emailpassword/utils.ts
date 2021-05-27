@@ -40,7 +40,6 @@ import {
     createAndSendCustomEmail as defaultCreateAndSendCustomPasswordResetEmail,
 } from "./passwordResetFunctions";
 import { validateTheStructureOfUserInput } from "../../utils";
-import STError from "./error";
 import { RecipeImplementation, APIImplementation } from "./";
 
 export function validateAndNormaliseUserInput(
@@ -152,10 +151,7 @@ export function validateAndNormaliseEmailVerificationConfig(
                           userInfo === undefined ||
                           config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
                       ) {
-                          throw new STError({
-                              type: STError.UNKNOWN_USER_ID_ERROR,
-                              message: "User ID unknown",
-                          });
+                          throw new Error("Unknown User ID provided");
                       }
                       return await config.emailVerificationFeature.createAndSendCustomEmail(userInfo, link);
                   },
@@ -168,10 +164,7 @@ export function validateAndNormaliseEmailVerificationConfig(
                           userInfo === undefined ||
                           config?.emailVerificationFeature?.getEmailVerificationURL === undefined
                       ) {
-                          throw new STError({
-                              type: STError.UNKNOWN_USER_ID_ERROR,
-                              message: "User ID unknown",
-                          });
+                          throw new Error("Unknown User ID provided");
                       }
                       return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                   },

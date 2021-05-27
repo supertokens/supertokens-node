@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, User, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import * as express from "express";
 import STError from "./error";
@@ -35,11 +35,10 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;
     createEmailVerificationToken: (userId: string) => Promise<string>;
-    verifyEmailUsingToken: (token: string) => Promise<User>;
-    isEmailVerified: (
-        userId: string
-    ) => Promise<{
-        status: "OK";
-        isVerified: boolean;
-    }>;
+    verifyEmailUsingToken: (token: string) => Promise<import("./types").User>;
+    isEmailVerified: (userId: string) => Promise<boolean>;
+    signUp: (email: string, password: string) => Promise<import("./types").User>;
+    signIn: (email: string, password: string) => Promise<import("./types").User>;
+    createResetPasswordToken: (userId: string) => Promise<string>;
+    resetPasswordUsingToken: (token: string, newPassword: string) => Promise<void>;
 }

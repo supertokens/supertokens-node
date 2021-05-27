@@ -28,5 +28,4 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe: (err: any) => err is STError;
     createEmailVerificationToken: (userId: string, email: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<User>;
-    isEmailVerified: (userId: string, email: string) => Promise<boolean>;
 }

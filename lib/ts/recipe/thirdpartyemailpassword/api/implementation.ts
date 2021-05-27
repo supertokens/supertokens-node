@@ -48,7 +48,7 @@ export default class APIImplementation implements APIInterface {
         token: string,
         options: EmailPasswordAPIOptions
     ): Promise<{
-        status: "OK";
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }> => {
         return this.emailPasswordImplementation.passwordResetPOST(formFields, token, options);
     };
@@ -57,18 +57,32 @@ export default class APIImplementation implements APIInterface {
         if (input.type === "emailpassword") {
             if (input.isSignIn) {
                 let response = await this.emailPasswordImplementation.signInPOST(input.formFields, input.options);
-                return {
-                    ...response,
-                    createdNewUser: false,
-                    type: "emailpassword",
-                };
+                if (response.status === "OK") {
+                    return {
+                        ...response,
+                        createdNewUser: false,
+                        type: "emailpassword",
+                    };
+                } else {
+                    return {
+                        ...response,
+                        type: "emailpassword",
+                    };
+                }
             } else {
                 let response = await this.emailPasswordImplementation.signUpPOST(input.formFields, input.options);
-                return {
-                    ...response,
-                    createdNewUser: true,
-                    type: "emailpassword",
-                };
+                if (response.status === "OK") {
+                    return {
+                        ...response,
+                        createdNewUser: true,
+                        type: "emailpassword",
+                    };
+                } else {
+                    return {
+                        ...response,
+                        type: "emailpassword",
+                    };
+                }
             }
         } else {
             let response = await this.thirdPartyImplementation.signInUpPOST(

@@ -26,11 +26,5 @@ export default class RecipeImplementation implements RecipeInterface {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    isEmailVerified: (
-        userId: string,
-        email: string
-    ) => Promise<{
-        status: "OK";
-        isVerified: boolean;
-    }>;
+    isEmailVerified: (userId: string, email: string) => Promise<boolean>;
 }

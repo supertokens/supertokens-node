@@ -556,7 +556,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                                     ...oI,
                                     verifyEmailPOST: async (token, options) => {
                                         let response = await oI.verifyEmailPOST(token, options);
-                                        userInfoFromCallback = response.user;
+                                        if (response.status === "OK") {
+                                            userInfoFromCallback = response.user;
+                                        }
                                         return response;
                                     },
                                 };

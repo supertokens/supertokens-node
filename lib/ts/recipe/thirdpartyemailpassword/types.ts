@@ -229,15 +229,24 @@ export interface RecipeInterface {
         }
     ): Promise<{ createdNewUser: boolean; user: User }>;
 
-    signUp(email: string, password: string): Promise<User>;
+    signUp(
+        email: string,
+        password: string
+    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
-    signIn(email: string, password: string): Promise<User>;
+    signIn(
+        email: string,
+        password: string
+    ): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
     getUserByEmail(email: string): Promise<User | undefined>;
 
-    createResetPasswordToken(userId: string): Promise<string>;
+    createResetPasswordToken(userId: string): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }>;
 
-    resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+    resetPasswordUsingToken(
+        token: string,
+        newPassword: string
+    ): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }>;
 }
 
 export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
@@ -268,6 +277,10 @@ export type SignInUpAPIOutput =
           status: "OK";
           user: User;
           createdNewUser: boolean;
+      }
+    | {
+          type: "emailpassword";
+          status: "WRONG_CREDENTIALS_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
       }
     | {
           type: "thirdparty";
@@ -328,7 +341,7 @@ export interface APIInterface {
               token: string,
               options: EmailPasswordAPIOptions
           ) => Promise<{
-              status: "OK";
+              status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }>);
 
     signInUpPOST: undefined | ((input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>);

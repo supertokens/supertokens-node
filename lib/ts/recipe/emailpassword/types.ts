@@ -195,17 +195,26 @@ export const InputSchema = {
 };
 
 export interface RecipeInterface {
-    signUp(email: string, password: string): Promise<User>;
+    signUp(
+        email: string,
+        password: string
+    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
-    signIn(email: string, password: string): Promise<User>;
+    signIn(
+        email: string,
+        password: string
+    ): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
     getUserById(userId: string): Promise<User | undefined>;
 
     getUserByEmail(email: string): Promise<User | undefined>;
 
-    createResetPasswordToken(userId: string): Promise<string>;
+    createResetPasswordToken(userId: string): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }>;
 
-    resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+    resetPasswordUsingToken(
+        token: string,
+        newPassword: string
+    ): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }>;
 
     getUsersOldestFirst(
         limit?: number,
@@ -268,7 +277,7 @@ export interface APIInterface {
               token: string,
               options: APIOptions
           ) => Promise<{
-              status: "OK";
+              status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }>);
 
     signInPOST:
@@ -279,10 +288,15 @@ export interface APIInterface {
                   value: string;
               }[],
               options: APIOptions
-          ) => Promise<{
-              status: "OK";
-              user: User;
-          }>);
+          ) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | {
+                    status: "WRONG_CREDENTIALS_ERROR";
+                }
+          >);
 
     signOutPOST:
         | undefined
@@ -300,8 +314,13 @@ export interface APIInterface {
                   value: string;
               }[],
               options: APIOptions
-          ) => Promise<{
-              status: "OK";
-              user: User;
-          }>);
+          ) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+          >);
 }

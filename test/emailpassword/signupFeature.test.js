@@ -557,7 +557,9 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                                 ...oI,
                                 signUpPOST: async (formFields, options) => {
                                     let response = await oI.signUpPOST(formFields, options);
-                                    customFormFields = formFields;
+                                    if (response.status === "OK") {
+                                        customFormFields = formFields;
+                                    }
                                     return response;
                                 },
                             };
@@ -634,7 +636,9 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                                 ...oI,
                                 signUpPOST: async (formFields, options) => {
                                     let response = await oI.signUpPOST(formFields, options);
-                                    customFormFields = formFields;
+                                    if (response.status === "OK") {
+                                        customFormFields = formFields;
+                                    }
                                     return response;
                                 },
                             };
@@ -1412,7 +1416,9 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                                 ...oI,
                                 signUpPOST: async (formFields, options) => {
                                     let response = await oI.signUpPOST(formFields, options);
-                                    customFormFields = formFields;
+                                    if (response.status === "OK") {
+                                        customFormFields = formFields;
+                                    }
                                     return response;
                                 },
                             };

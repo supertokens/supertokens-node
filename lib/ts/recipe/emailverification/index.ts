@@ -33,7 +33,7 @@ export default class Wrapper {
     }
 
     static async isEmailVerified(userId: string, email: string): Promise<boolean> {
-        return await Recipe.getInstanceOrThrowError().isEmailVerified(userId, email);
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified(userId, email);
     }
 }
 

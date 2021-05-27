@@ -157,9 +157,4 @@ export default class Recipe extends RecipeModule {
         }
         throw new Error("Invalid token");
     };
-
-    isEmailVerified = async (userId: string, email: string): Promise<boolean> => {
-        let response = await this.recipeInterfaceImpl.isEmailVerified(userId, email);
-        return response.isVerified;
-    };
 }

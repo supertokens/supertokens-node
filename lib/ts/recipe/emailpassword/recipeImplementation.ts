@@ -1,7 +1,6 @@
 import { RecipeInterface, User } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import STError from "./error";
 
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
@@ -9,37 +8,37 @@ export default class RecipeImplementation implements RecipeInterface {
         this.querier = querier;
     }
 
-    signUp = async (email: string, password: string): Promise<User> => {
+    signUp = async (
+        email: string,
+        password: string
+    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
             email,
             password,
         });
         if (response.status === "OK") {
-            return {
-                ...response.user,
-            };
+            return response;
         } else {
-            throw new STError({
-                message: "Sign up failed because the email, " + email + ", is already taken",
-                type: STError.EMAIL_ALREADY_EXISTS_ERROR,
-            });
+            return {
+                status: "EMAIL_ALREADY_EXISTS_ERROR",
+            };
         }
     };
 
-    signIn = async (email: string, password: string): Promise<User> => {
+    signIn = async (
+        email: string,
+        password: string
+    ): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
             email,
             password,
         });
         if (response.status === "OK") {
-            return {
-                ...response.user,
-            };
+            return response;
         } else {
-            throw new STError({
-                message: "Sign in failed because of incorrect email & password combination",
-                type: STError.WRONG_CREDENTIALS_ERROR,
-            });
+            return {
+                status: "WRONG_CREDENTIALS_ERROR",
+            };
         }
     };
 
@@ -69,32 +68,34 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    createResetPasswordToken = async (userId: string): Promise<string> => {
+    createResetPasswordToken = async (
+        userId: string
+    ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
             userId,
         });
         if (response.status === "OK") {
-            return response.token;
+            return {
+                status: "OK",
+                token: response.token,
+            };
         } else {
-            throw new STError({
-                type: STError.UNKNOWN_USER_ID_ERROR,
-                message: "Failed to generated password reset token as the user ID is unknown",
-            });
+            return {
+                status: "UNKNOWN_USER_ID",
+            };
         }
     };
 
-    resetPasswordUsingToken = async (token: string, newPassword: string) => {
+    resetPasswordUsingToken = async (
+        token: string,
+        newPassword: string
+    ): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset"), {
             method: "token",
             token,
             newPassword,
         });
-        if (response.status !== "OK") {
-            throw new STError({
-                type: STError.RESET_PASSWORD_INVALID_TOKEN_ERROR,
-                message: "Failed to reset password as the the token has expired or is invalid",
-            });
-        }
+        return response;
     };
 
     getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {

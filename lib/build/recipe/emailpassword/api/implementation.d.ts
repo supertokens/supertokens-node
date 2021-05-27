@@ -24,7 +24,7 @@ export default class APIImplementation implements APIInterface {
         token: string,
         options: APIOptions
     ) => Promise<{
-        status: "OK";
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
     signInPOST: (
         formFields: {
@@ -32,10 +32,15 @@ export default class APIImplementation implements APIInterface {
             value: string;
         }[],
         options: APIOptions
-    ) => Promise<{
-        status: "OK";
-        user: User;
-    }>;
+    ) => Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
     signOutPOST: (
         options: APIOptions
     ) => Promise<{
@@ -47,8 +52,13 @@ export default class APIImplementation implements APIInterface {
             value: string;
         }[],
         options: APIOptions
-    ) => Promise<{
-        status: "OK";
-        user: User;
-    }>;
+    ) => Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
 }

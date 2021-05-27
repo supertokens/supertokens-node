@@ -6,8 +6,30 @@ export default class RecipeImplementation implements RecipeInterface {
     emailPasswordImplementation: EmailPasswordImplemenation;
     thirdPartyImplementation: ThirdPartyImplemenation | undefined;
     constructor(emailPasswordQuerier: Querier, thirdPartyQuerier?: Querier);
-    signUp: (email: string, password: string) => Promise<User>;
-    signIn: (email: string, password: string) => Promise<User>;
+    signUp: (
+        email: string,
+        password: string
+    ) => Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    signIn: (
+        email: string,
+        password: string
+    ) => Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
     signInUp: (
         thirdPartyId: string,
         thirdPartyUserId: string,
@@ -23,8 +45,23 @@ export default class RecipeImplementation implements RecipeInterface {
     getUserByThirdPartyInfo: (thirdPartyId: string, thirdPartyUserId: string) => Promise<User | undefined>;
     getEmailForUserId: (userId: string) => Promise<string>;
     getUserByEmail: (email: string) => Promise<User | undefined>;
-    createResetPasswordToken: (userId: string) => Promise<string>;
-    resetPasswordUsingToken: (token: string, newPassword: string) => Promise<void>;
+    createResetPasswordToken: (
+        userId: string
+    ) => Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID";
+          }
+    >;
+    resetPasswordUsingToken: (
+        token: string,
+        newPassword: string
+    ) => Promise<{
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
     getUsersOldestFirst: (
         limit?: number | undefined,
         nextPaginationTokenString?: string | undefined

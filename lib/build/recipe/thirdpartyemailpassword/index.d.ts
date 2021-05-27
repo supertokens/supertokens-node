@@ -27,12 +27,49 @@ export default class Wrapper {
         user: User;
     }>;
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
-    static signUp(email: string, password: string): Promise<User>;
-    static signIn(email: string, password: string): Promise<User>;
+    static signUp(
+        email: string,
+        password: string
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    static signIn(
+        email: string,
+        password: string
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
     static getUserById(userId: string): Promise<User | undefined>;
     static getUserByEmail(email: string): Promise<User | undefined>;
-    static createResetPasswordToken(userId: string): Promise<string>;
-    static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+    static createResetPasswordToken(
+        userId: string
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID";
+          }
+    >;
+    static resetPasswordUsingToken(
+        token: string,
+        newPassword: string
+    ): Promise<{
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
     static getUsersOldestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -50,12 +87,7 @@ export default class Wrapper {
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;
-    static isEmailVerified(
-        userId: string
-    ): Promise<{
-        status: "OK";
-        isVerified: boolean;
-    }>;
+    static isEmailVerified(userId: string): Promise<boolean>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;

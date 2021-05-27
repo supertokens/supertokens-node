@@ -9,11 +9,17 @@ export default class RecipeImplementation implements RecipeInterface {
         this.recipeImplementation = recipeImplementation;
     }
 
-    signUp = async (email: string, password: string): Promise<User> => {
+    signUp = async (
+        email: string,
+        password: string
+    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> => {
         return await this.recipeImplementation.signUp(email, password);
     };
 
-    signIn = async (email: string, password: string): Promise<User> => {
+    signIn = async (
+        email: string,
+        password: string
+    ): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> => {
         return this.recipeImplementation.signIn(email, password);
     };
 
@@ -30,7 +36,9 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.recipeImplementation.getUserByEmail(email);
     };
 
-    createResetPasswordToken = async (userId: string): Promise<string> => {
+    createResetPasswordToken = async (
+        userId: string
+    ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
         return this.recipeImplementation.createResetPasswordToken(userId);
     };
 

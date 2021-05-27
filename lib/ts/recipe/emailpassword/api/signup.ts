@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
+import STError from "../error";
 
 export default async function signUpAPI(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
@@ -31,6 +32,18 @@ export default async function signUpAPI(apiImplementation: APIInterface, options
     }[] = await validateFormFieldsOrThrowError(options.config.signUpFeature.formFields, options.req.body.formFields);
 
     let result = await apiImplementation.signUpPOST(formFields, options);
-
-    send200Response(options.res, result);
+    if (result.status === "OK") {
+        send200Response(options.res, result);
+    } else {
+        throw new STError({
+            type: STError.FIELD_ERROR,
+            payload: [
+                {
+                    id: "email",
+                    error: "This email already exists. Please sign in instead.",
+                },
+            ],
+            message: "Error in input formFields",
+        });
+    }
 }

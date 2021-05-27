@@ -216,8 +216,10 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                                 ...oI,
                                 signInUpPOST: async (input) => {
                                     let response = await oI.signInUpPOST(input);
-                                    process.env.userId = response.user.id;
-                                    process.env.loginType = input.type;
+                                    if (response.status === "OK") {
+                                        process.env.userId = response.user.id;
+                                        process.env.loginType = input.type;
+                                    }
                                     return response;
                                 },
                             };

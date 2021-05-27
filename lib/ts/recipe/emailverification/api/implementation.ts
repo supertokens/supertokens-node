@@ -29,7 +29,10 @@ export default class APIImplementation implements APIInterface {
 
         let email = await options.config.getEmailForUserId(userId);
 
-        return await options.recipeImplementation.isEmailVerified(userId, email);
+        return {
+            status: "OK",
+            isVerified: await options.recipeImplementation.isEmailVerified(userId, email),
+        };
     };
 
     generateEmailVerifyTokenPOST = async (

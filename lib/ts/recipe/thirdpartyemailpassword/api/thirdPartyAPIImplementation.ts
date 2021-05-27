@@ -28,19 +28,23 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
                           redirectURI,
                           options,
                       });
-                      if (result.user.thirdParty === undefined || result.type === "emailpassword") {
-                          throw new STError({
-                              type: STError.GENERAL_ERROR,
-                              payload: new Error("Should never come here"),
-                          });
+                      if (result.status === "OK") {
+                          if (result.user.thirdParty === undefined || result.type === "emailpassword") {
+                              throw new STError({
+                                  type: STError.GENERAL_ERROR,
+                                  payload: new Error("Should never come here"),
+                              });
+                          }
+                          return {
+                              ...result,
+                              user: {
+                                  ...result.user,
+                                  thirdParty: result.user.thirdParty,
+                              },
+                          };
+                      } else {
+                          throw Error("Should never come here");
                       }
-                      return {
-                          ...result,
-                          user: {
-                              ...result.user,
-                              thirdParty: result.user.thirdParty,
-                          },
-                      };
                   },
     };
 }

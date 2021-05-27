@@ -25,51 +25,63 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signUp(email: string, password: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp(email, password);
+    static signUp(email: string, password: string): Promise<User> {
+        return Recipe.getInstanceOrThrowError().signUp(email, password);
     }
 
-    static signIn(email: string, password: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn(email, password);
+    static signIn(email: string, password: string): Promise<User> {
+        return Recipe.getInstanceOrThrowError().signIn(email, password);
     }
 
-    static getUserById(userId: string) {
+    static getUserById(userId: string): Promise<User | undefined> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById(userId);
     }
 
-    static getUserByEmail(email: string) {
+    static getUserByEmail(email: string): Promise<User | undefined> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail(email);
     }
 
-    static createResetPasswordToken(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken(userId);
+    static createResetPasswordToken(userId: string): Promise<string> {
+        return Recipe.getInstanceOrThrowError().createResetPasswordToken(userId);
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken(token, newPassword);
+    static resetPasswordUsingToken(token: string, newPassword: string): Promise<void> {
+        return Recipe.getInstanceOrThrowError().resetPasswordUsingToken(token, newPassword);
     }
 
-    static getUsersOldestFirst(limit?: number, nextPaginationToken?: string) {
+    static getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string | undefined;
+    }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst(limit, nextPaginationToken);
     }
 
-    static getUsersNewestFirst(limit?: number, nextPaginationToken?: string) {
+    static getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string | undefined;
+    }> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst(limit, nextPaginationToken);
     }
 
-    static getUserCount() {
+    static getUserCount(): Promise<number> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
-    static createEmailVerificationToken(userId: string) {
+    static createEmailVerificationToken(userId: string): Promise<string> {
         return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
     }
 
-    static verifyEmailUsingToken(token: string) {
+    static verifyEmailUsingToken(token: string): Promise<User> {
         return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
     }
 
-    static isEmailVerified(userId: string) {
+    static isEmailVerified(userId: string): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
     }
 }

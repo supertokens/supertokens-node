@@ -36,22 +36,17 @@ export default class APIImplementation implements APIInterface {
             };
         }
 
-        let token: string;
-        try {
-            token = await options.recipeImplementation.createResetPasswordToken(user.id);
-        } catch (err) {
-            if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNKNOWN_USER_ID_ERROR) {
-                return {
-                    status: "OK",
-                };
-            }
-            throw err;
+        let response = await options.recipeImplementation.createResetPasswordToken(user.id);
+        if (response.status === "UNKNOWN_USER_ID") {
+            return {
+                status: "OK",
+            };
         }
 
         let passwordResetLink =
             (await options.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user)) +
             "?token=" +
-            token +
+            response.token +
             "&rid=" +
             options.recipeId;
 
@@ -74,16 +69,13 @@ export default class APIImplementation implements APIInterface {
         token: string,
         options: APIOptions
     ): Promise<{
-        status: "OK";
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }> => {
         let newPassword = formFields.filter((f) => f.id === "password")[0].value;
 
-        await options.recipeImplementation.resetPasswordUsingToken(token, newPassword);
+        let response = await options.recipeImplementation.resetPasswordUsingToken(token, newPassword);
 
-        // step 3
-        return {
-            status: "OK",
-        };
+        return response;
     };
 
     signInPOST = async (
@@ -92,14 +84,23 @@ export default class APIImplementation implements APIInterface {
             value: string;
         }[],
         options: APIOptions
-    ): Promise<{
-        status: "OK";
-        user: User;
-    }> => {
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    > => {
         let email = formFields.filter((f) => f.id === "email")[0].value;
         let password = formFields.filter((f) => f.id === "password")[0].value;
 
-        let user = await options.recipeImplementation.signIn(email, password);
+        let response = await options.recipeImplementation.signIn(email, password);
+        if (response.status === "WRONG_CREDENTIALS_ERROR") {
+            return response;
+        }
+        let user = response.user;
 
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signin");
         let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signin");
@@ -161,14 +162,23 @@ export default class APIImplementation implements APIInterface {
             value: string;
         }[],
         options: APIOptions
-    ): Promise<{
-        status: "OK";
-        user: User;
-    }> => {
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    > => {
         let email = formFields.filter((f) => f.id === "email")[0].value;
         let password = formFields.filter((f) => f.id === "password")[0].value;
 
-        let user = await options.recipeImplementation.signUp(email, password);
+        let response = await options.recipeImplementation.signUp(email, password);
+        if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+            return response;
+        }
+        let user = response.user;
 
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signup");
         let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signup");

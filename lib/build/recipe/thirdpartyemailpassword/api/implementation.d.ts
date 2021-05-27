@@ -29,7 +29,7 @@ export default class APIImplementation implements APIInterface {
         token: string,
         options: import("../../emailpassword").APIOptions
     ) => Promise<{
-        status: "OK";
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
     signInUpPOST: (input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>;
     authorisationUrlGET: (

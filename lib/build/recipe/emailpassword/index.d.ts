@@ -29,12 +29,7 @@ export default class Wrapper {
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;
-    static isEmailVerified(
-        userId: string
-    ): Promise<{
-        status: "OK";
-        isVerified: boolean;
-    }>;
+    static isEmailVerified(userId: string): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
