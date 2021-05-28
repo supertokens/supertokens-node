@@ -8,8 +8,7 @@ export default class Session extends OriginalSessionClass {
         sessionHandle: string,
         userId: string,
         userDataInJWT: any,
-        res: express.Response,
-        req: express.Request
+        res: express.Response
     );
     getFaunadbToken: () => Promise<string>;
 }

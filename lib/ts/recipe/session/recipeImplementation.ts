@@ -39,7 +39,6 @@ export default class RecipeImplementation implements RecipeInterface {
     }
 
     createNewSession = async (
-        req: express.Request,
         res: express.Response,
         userId: string,
         jwtPayload: any = {},
@@ -53,8 +52,7 @@ export default class RecipeImplementation implements RecipeInterface {
             response.session.handle,
             response.session.userId,
             response.session.userDataInJWT,
-            res,
-            req
+            res
         );
     };
 
@@ -119,8 +117,7 @@ export default class RecipeImplementation implements RecipeInterface {
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                res,
-                req
+                res
             );
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
@@ -164,8 +161,7 @@ export default class RecipeImplementation implements RecipeInterface {
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                res,
-                req
+                res
             );
         } catch (err) {
             if (err.type === STError.UNAUTHORISED || err.type === STError.TOKEN_THEFT_DETECTED) {

@@ -6,7 +6,6 @@ export default class Session implements SessionContainerInterface {
     private userId;
     private userDataInJWT;
     private res;
-    private req;
     private accessToken;
     private recipeImplementation;
     constructor(
@@ -15,8 +14,7 @@ export default class Session implements SessionContainerInterface {
         sessionHandle: string,
         userId: string,
         userDataInJWT: any,
-        res: express.Response,
-        req: express.Request
+        res: express.Response
     );
     revokeSession: () => Promise<void>;
     getSessionData: () => Promise<any>;

@@ -87,7 +87,7 @@ export default class APIImplementation implements APIInterface {
         let jwtPayload: { [key: string]: any } | undefined = await jwtPayloadPromise;
         let sessionData: { [key: string]: any } | undefined = await sessionDataPromise;
 
-        await Session.createNewSession(options.req, options.res, user.user.id, jwtPayload, sessionData);
+        await Session.createNewSession(options.res, user.user.id, jwtPayload, sessionData);
         return {
             status: "OK",
             ...user,

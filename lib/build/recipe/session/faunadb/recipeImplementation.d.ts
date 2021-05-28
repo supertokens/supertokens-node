@@ -20,13 +20,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     );
     getFDAT: (session: Session) => Promise<any>;
-    createNewSession: (
-        req: express.Request,
-        res: express.Response,
-        userId: string,
-        jwtPayload?: any,
-        sessionData?: any
-    ) => Promise<Session>;
+    createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
     getSession: (
         req: express.Request,
         res: express.Response,

@@ -25,10 +25,9 @@ export default class Session extends OriginalSessionClass {
         sessionHandle: string,
         userId: string,
         userDataInJWT: any,
-        res: express.Response,
-        req: express.Request
+        res: express.Response
     ) {
-        super(recipeImplementation, accessToken, sessionHandle, userId, userDataInJWT, res, req);
+        super(recipeImplementation, accessToken, sessionHandle, userId, userDataInJWT, res);
     }
 
     getFaunadbToken = async (): Promise<string> => {

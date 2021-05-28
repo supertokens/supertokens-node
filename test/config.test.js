@@ -1425,7 +1425,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             app.use(ST.middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(req, res, "", {}, {});
+                await Session.createNewSession(res, "", {}, {});
                 res.status(200).send("");
             });
 
@@ -1492,7 +1492,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             app.use(ST.middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(req, res, "", {}, {});
+                await Session.createNewSession(res, "", {}, {});
                 res.status(200).send("");
             });
 
@@ -1559,7 +1559,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             app.use(ST.middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(req, res, "", {}, {});
+                await Session.createNewSession(res, "", {}, {});
                 res.status(200).send("");
             });
 

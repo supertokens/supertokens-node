@@ -543,7 +543,7 @@
 //                 constants.AUTH0_CLIENT_ID,
 //                 constants.AUTH0_CLIENT_SECRET,
 //                 async (userId, idToken, accessToken, refreshToken) => {
-//                     await STExpress.createNewSession(req, res, userId, {}, {});
+//                     await STExpress.createNewSession(res, userId, {}, {});
 //                 }
 //             );
 //         });

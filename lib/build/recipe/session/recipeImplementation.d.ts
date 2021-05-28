@@ -8,13 +8,7 @@ export default class RecipeImplementation implements RecipeInterface {
     handshakeInfo: HandshakeInfo | undefined;
     isInServerlessEnv: boolean;
     constructor(querier: Querier, config: TypeNormalisedInput, isInServerlessEnv: boolean);
-    createNewSession: (
-        req: express.Request,
-        res: express.Response,
-        userId: string,
-        jwtPayload?: any,
-        sessionData?: any
-    ) => Promise<Session>;
+    createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
     getSession: (
         req: express.Request,
         res: express.Response,

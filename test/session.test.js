@@ -83,7 +83,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -142,7 +142,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -218,7 +218,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -276,7 +276,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         app.use(SuperTokens.middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(req, res, "", {}, {});
+            await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
 

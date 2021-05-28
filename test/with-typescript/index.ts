@@ -31,8 +31,8 @@ Supertokens.init({
                 functions: (originalImpl: RecipeInterface) => {
                     return {
                         getSession: originalImpl.getSession,
-                        createNewSession: async (req, res, userId, jwtPayload, sessionData) => {
-                            let session = await originalImpl.createNewSession(req, res, userId);
+                        createNewSession: async (res, userId, jwtPayload, sessionData) => {
+                            let session = await originalImpl.createNewSession(res, userId);
                             return {
                                 getAccessToken: session.getAccessToken,
                                 getHandle: session.getHandle,

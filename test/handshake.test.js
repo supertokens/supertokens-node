@@ -81,7 +81,7 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
             recipeList: [Session.init()],
         });
         try {
-            await Session.createNewSession("", {}, {});
+            await Session.revokeSession("");
             throw new Error("should not have come here");
         } catch (err) {
             if (err.message !== "No SuperTokens core available to query") {
