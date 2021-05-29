@@ -27,8 +27,6 @@ import {
     TypeNormalisedInputSignInAndUp,
     TypeInputSessionFeature,
     TypeNormalisedInputSessionFeature,
-    RecipeInterface,
-    APIInterface,
 } from "./types";
 import { RecipeImplementation, APIImplementation } from "./";
 
@@ -49,20 +47,11 @@ export function validateAndNormaliseUserInput(
 
     let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
 
-    let override: {
-        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis: (originalImplementation: APIImplementation) => APIInterface;
-    } = {
+    let override = {
         functions: (originalImplementation: RecipeImplementation) => originalImplementation,
         apis: (originalImplementation: APIImplementation) => originalImplementation,
+        ...config.override,
     };
-
-    if (config !== undefined && config.override !== undefined) {
-        override = {
-            ...override,
-            ...config.override,
-        };
-    }
 
     return {
         sessionFeature,

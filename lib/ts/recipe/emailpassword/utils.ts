@@ -29,11 +29,9 @@ import {
     TypeNormalisedInputSessionFeature,
     TypeFormField,
     TypeInputFormField,
-    APIInterface,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
-import { RecipeInterface } from "./types";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import {
     getResetPasswordURL as defaultGetResetPasswordURL,
@@ -72,20 +70,11 @@ export function validateAndNormaliseUserInput(
 
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
-    let override: {
-        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis: (originalImplementation: APIImplementation) => APIInterface;
-    } = {
+    let override = {
         functions: (originalImplementation: RecipeImplementation) => originalImplementation,
         apis: (originalImplementation: APIImplementation) => originalImplementation,
+        ...config?.override,
     };
-
-    if (config !== undefined && config.override !== undefined) {
-        override = {
-            ...override,
-            ...config.override,
-        };
-    }
 
     return {
         sessionFeature,

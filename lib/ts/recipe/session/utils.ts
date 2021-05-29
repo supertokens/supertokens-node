@@ -40,7 +40,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
-import { RecipeImplementation, RecipeInterface, APIImplementation, APIInterface } from "./";
+import { RecipeImplementation, APIImplementation } from "./";
 
 export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -185,20 +185,11 @@ export function validateAndNormaliseUserInput(
         );
     }
 
-    let override: {
-        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis: (originalImplementation: APIImplementation) => APIInterface;
-    } = {
+    let override = {
         functions: (originalImplementation: RecipeImplementation) => originalImplementation,
         apis: (originalImplementation: APIImplementation) => originalImplementation,
+        ...config?.override,
     };
-
-    if (config !== undefined && config.override !== undefined) {
-        override = {
-            ...override,
-            ...config.override,
-        };
-    }
 
     return {
         refreshTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(REFRESH_API_PATH)),

@@ -27,8 +27,6 @@ import {
     TypeNormalisedInputSessionFeature,
     TypeInputSessionFeature,
     TypeContextEmailPasswordSessionDataAndJWT,
-    RecipeInterface,
-    APIInterface,
 } from "./types";
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
@@ -60,20 +58,11 @@ export function validateAndNormaliseUserInput(
 
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
-    let override: {
-        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis: (originalImplementation: APIImplementation) => APIInterface;
-    } = {
+    let override = {
         functions: (originalImplementation: RecipeImplementation) => originalImplementation,
         apis: (originalImplementation: APIImplementation) => originalImplementation,
+        ...config?.override,
     };
-
-    if (config !== undefined && config.override !== undefined) {
-        override = {
-            ...override,
-            ...config.override,
-        };
-    }
 
     return {
         override,
