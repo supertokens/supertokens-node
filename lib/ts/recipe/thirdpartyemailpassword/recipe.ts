@@ -76,7 +76,6 @@ export default class Recipe extends RecipeModule {
                 ? recipes.emailVerificationInstance
                 : new EmailVerificationRecipe(recipeId, appInfo, isInServerlessEnv, {
                       ...this.config.emailVerificationFeature,
-                      override: this.config.override.emailVerificationFeature,
                   });
 
         this.emailPasswordRecipe =

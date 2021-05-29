@@ -115,6 +115,7 @@ function validateAndNormaliseEmailVerificationConfig(
 ): TypeNormalisedInputEmailVerification {
     return {
         getEmailForUserId: recipeInstance.getEmailForUserId,
+        override: config?.override?.emailVerificationFeature,
         createAndSendCustomEmail:
             config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
                 ? undefined
