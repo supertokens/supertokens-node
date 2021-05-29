@@ -20,7 +20,7 @@ import {
     APIImplementation as EmailVerificationAPIImplementation,
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { RecipeImplementation, APIImplementation } from "./";
 
 const TypeAny = {
@@ -153,10 +153,16 @@ export const InputSchema = {
 export type TypeNormalisedInput = {
     sessionFeature: TypeNormalisedInputSessionFeature;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
-    emailVerificationFeature: TypeNormalisedInputEmailVerification;
+    emailVerificationFeature: TypeInputEmailVerification;
     override: {
         functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
         apis: (originalImplementation: APIImplementation) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (
+                originalImplementation: EmailVerificationRecipeImplementation
+            ) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+        };
     };
 };
 

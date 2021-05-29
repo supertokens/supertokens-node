@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Removes explicit post API callback functions since now users can override apis and emulate post api callbacks easily.
 -   Removes the use of GENERAL_ERROR and throws a normal JS Error instead.
 -   Allows recipes to be passed in constructor so that child recipes do not create multiple instances of the same recipe.
+-   Removes checking of duplicate APIs since we are now using interfaces for APIs which won't allow for duplicates anyway...
 
 ## [5.0.1] - 2021-05-06
 

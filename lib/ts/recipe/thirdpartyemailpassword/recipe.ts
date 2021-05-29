@@ -74,12 +74,10 @@ export default class Recipe extends RecipeModule {
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined
                 ? recipes.emailVerificationInstance
-                : new EmailVerificationRecipe(
-                      recipeId,
-                      appInfo,
-                      isInServerlessEnv,
-                      this.config.emailVerificationFeature
-                  );
+                : new EmailVerificationRecipe(recipeId, appInfo, isInServerlessEnv, {
+                      ...this.config.emailVerificationFeature,
+                      override: this.config.override.emailVerificationFeature,
+                  });
 
         this.emailPasswordRecipe =
             recipes.emailPasswordInstance !== undefined
@@ -123,7 +121,6 @@ export default class Recipe extends RecipeModule {
                               formFields: this.config.signUpFeature.formFields,
                           },
                           resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
-                          emailVerificationFeature: this.config.emailVerificationFeature,
                       },
                       { emailVerificationInstance: this.emailVerificationRecipe }
                   );
@@ -170,7 +167,6 @@ export default class Recipe extends RecipeModule {
                               signInAndUpFeature: {
                                   providers: this.config.providers,
                               },
-                              emailVerificationFeature: this.config.emailVerificationFeature,
                           },
                           {
                               emailVerificationInstance: this.emailVerificationRecipe,

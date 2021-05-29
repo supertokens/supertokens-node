@@ -78,24 +78,6 @@ export default class SuperTokens {
             return func(this.appInfo, this.isInServerlessEnv);
         });
 
-        // check if duplicate APIs are exposed by any recipe by mistake
-        for (let i = 0; i < this.recipeModules.length; i++) {
-            let recipe = this.recipeModules[i];
-            let apisHandled = recipe.getAPIsHandled();
-            let stringifiedApisHandled: string[] = apisHandled
-                .map((api) => {
-                    if (api.disabled) {
-                        return "";
-                    }
-                    return api.method + ";" + api.pathWithoutApiBasePath.getAsStringDangerous();
-                })
-                .filter((i) => i !== "");
-            let findDuplicates = (arr: string[]) => arr.filter((item, index) => arr.indexOf(item) != index);
-            if (findDuplicates(stringifiedApisHandled).length !== 0) {
-                throw new Error("Duplicate APIs exposed from recipe. Please combine them into one API");
-            }
-        }
-
         let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
 
         if (telemetry) {

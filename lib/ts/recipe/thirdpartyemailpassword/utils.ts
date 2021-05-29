@@ -69,18 +69,10 @@ export function validateAndNormaliseUserInput(
     };
 
     if (config !== undefined && config.override !== undefined) {
-        if (config.override.functions !== undefined) {
-            override = {
-                ...override,
-                functions: config.override.functions,
-            };
-        }
-        if (config.override.apis !== undefined) {
-            override = {
-                ...override,
-                apis: config.override.apis,
-            };
-        }
+        override = {
+            ...override,
+            ...config.override,
+        };
     }
 
     return {
@@ -150,7 +142,6 @@ function validateAndNormaliseEmailVerificationConfig(
     config?: TypeInput
 ): TypeNormalisedInputEmailVerification {
     return {
-        override: config?.override?.emailVerificationFeature,
         getEmailForUserId: recipeInstance.getEmailForUserId,
         createAndSendCustomEmail:
             config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
