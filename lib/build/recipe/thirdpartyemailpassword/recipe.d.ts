@@ -1,6 +1,8 @@
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import EmailVerificationRecipe from "../emailverification/recipe";
+import EmailPasswordRecipe from "../emailpassword/recipe";
+import ThirdPartyRecipe from "../thirdparty/recipe";
 import * as express from "express";
 import STError from "./error";
 import { TypeInput, TypeNormalisedInput, User, RecipeInterface, APIInterface } from "./types";
@@ -16,7 +18,17 @@ export default class Recipe extends RecipeModule {
     private thirdPartyRecipe;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput);
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput,
+        recipes: {
+            emailVerificationInstance: EmailVerificationRecipe | undefined;
+            thirdPartyInstance: ThirdPartyRecipe | undefined;
+            emailPasswordInstance: EmailPasswordRecipe | undefined;
+        }
+    );
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     static getInstanceOrThrowError(): Recipe;

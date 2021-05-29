@@ -44,15 +44,26 @@ export default class Recipe extends RecipeModule {
 
     apiImpl: APIInterface;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput,
+        recipes: {
+            emailVerificationInstance: EmailVerificationRecipe | undefined;
+        }
+    ) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
-        this.emailVerificationRecipe = new EmailVerificationRecipe(
-            recipeId,
-            appInfo,
-            isInServerlessEnv,
-            this.config.emailVerificationFeature
-        );
+        this.emailVerificationRecipe =
+            recipes.emailVerificationInstance !== undefined
+                ? recipes.emailVerificationInstance
+                : new EmailVerificationRecipe(
+                      recipeId,
+                      appInfo,
+                      isInServerlessEnv,
+                      this.config.emailVerificationFeature
+                  );
 
         this.providers = this.config.signInAndUpFeature.providers;
         this.recipeInterfaceImpl = this.config.override.functions(
@@ -64,7 +75,9 @@ export default class Recipe extends RecipeModule {
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
+                    emailVerificationInstance: undefined,
+                });
                 return Recipe.instance;
             } else {
                 throw new Error("ThirdParty recipe has already been initialised. Please check your code for bugs.");

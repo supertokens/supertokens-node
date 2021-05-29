@@ -48,7 +48,17 @@ export default class Recipe extends RecipeModule {
 
     apiImpl: APIInterface;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput,
+        recipes: {
+            emailVerificationInstance: EmailVerificationRecipe | undefined;
+            thirdPartyInstance: ThirdPartyRecipe | undefined;
+            emailPasswordInstance: EmailPasswordRecipe | undefined;
+        }
+    ) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
@@ -61,111 +71,122 @@ export default class Recipe extends RecipeModule {
 
         this.apiImpl = this.config.override.apis(new APIImplementation());
 
-        this.emailPasswordRecipe = new EmailPasswordRecipe(recipeId, appInfo, isInServerlessEnv, {
-            override: {
-                functions: (_) => {
-                    return new EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
-                },
-                apis: (_) => {
-                    return getEmailPasswordIterfaceImpl(this.apiImpl);
-                },
-                emailVerificationFeature: {
-                    apis: (_) => {
-                        return {
-                            generateEmailVerifyTokenPOST: undefined,
-                            isEmailVerifiedGET: undefined,
-                            verifyEmailPOST: undefined,
-                        };
-                    },
-                },
-            },
-            sessionFeature: {
-                setJwtPayload: async (user, formfields, action) => {
-                    return this.config.sessionFeature.setJwtPayload(
-                        user,
-                        {
-                            loginType: "emailpassword",
-                            formFields: formfields,
-                        },
-                        action
-                    );
-                },
-                setSessionData: async (user, formfields, action) => {
-                    return this.config.sessionFeature.setSessionData(
-                        user,
-                        {
-                            loginType: "emailpassword",
-                            formFields: formfields,
-                        },
-                        action
-                    );
-                },
-            },
-            signUpFeature: {
-                formFields: this.config.signUpFeature.formFields,
-            },
-            resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
-        });
+        this.emailVerificationRecipe =
+            recipes.emailVerificationInstance !== undefined
+                ? recipes.emailVerificationInstance
+                : new EmailVerificationRecipe(
+                      recipeId,
+                      appInfo,
+                      isInServerlessEnv,
+                      this.config.emailVerificationFeature
+                  );
+
+        this.emailPasswordRecipe =
+            recipes.emailPasswordInstance !== undefined
+                ? recipes.emailPasswordInstance
+                : new EmailPasswordRecipe(
+                      recipeId,
+                      appInfo,
+                      isInServerlessEnv,
+                      {
+                          override: {
+                              functions: (_) => {
+                                  return new EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
+                              },
+                              apis: (_) => {
+                                  return getEmailPasswordIterfaceImpl(this.apiImpl);
+                              },
+                          },
+                          sessionFeature: {
+                              setJwtPayload: async (user, formfields, action) => {
+                                  return this.config.sessionFeature.setJwtPayload(
+                                      user,
+                                      {
+                                          loginType: "emailpassword",
+                                          formFields: formfields,
+                                      },
+                                      action
+                                  );
+                              },
+                              setSessionData: async (user, formfields, action) => {
+                                  return this.config.sessionFeature.setSessionData(
+                                      user,
+                                      {
+                                          loginType: "emailpassword",
+                                          formFields: formfields,
+                                      },
+                                      action
+                                  );
+                              },
+                          },
+                          signUpFeature: {
+                              formFields: this.config.signUpFeature.formFields,
+                          },
+                          resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
+                          emailVerificationFeature: this.config.emailVerificationFeature,
+                      },
+                      { emailVerificationInstance: this.emailVerificationRecipe }
+                  );
 
         if (this.config.providers.length !== 0) {
-            this.thirdPartyRecipe = new ThirdPartyRecipe(recipeId, appInfo, isInServerlessEnv, {
-                override: {
-                    functions: (_) => {
-                        return new ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
-                    },
-                    apis: (_) => {
-                        return getThirdPartyIterfaceImpl(this.apiImpl);
-                    },
-                    emailVerificationFeature: {
-                        apis: (_) => {
-                            return {
-                                generateEmailVerifyTokenPOST: undefined,
-                                isEmailVerifiedGET: undefined,
-                                verifyEmailPOST: undefined,
-                            };
-                        },
-                    },
-                },
-                sessionFeature: {
-                    setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
-                        return this.config.sessionFeature.setJwtPayload(
-                            user,
-                            {
-                                loginType: "thirdparty",
-                                thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
-                            },
-                            action
-                        );
-                    },
-                    setSessionData: async (user, thirdPartyAuthCodeResponse, action) => {
-                        return this.config.sessionFeature.setSessionData(
-                            user,
-                            {
-                                loginType: "thirdparty",
-                                thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
-                            },
-                            action
-                        );
-                    },
-                },
-                signInAndUpFeature: {
-                    providers: this.config.providers,
-                },
-            });
+            this.thirdPartyRecipe =
+                recipes.thirdPartyInstance !== undefined
+                    ? recipes.thirdPartyInstance
+                    : new ThirdPartyRecipe(
+                          recipeId,
+                          appInfo,
+                          isInServerlessEnv,
+                          {
+                              override: {
+                                  functions: (_) => {
+                                      return new ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
+                                  },
+                                  apis: (_) => {
+                                      return getThirdPartyIterfaceImpl(this.apiImpl);
+                                  },
+                              },
+                              sessionFeature: {
+                                  setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
+                                      return this.config.sessionFeature.setJwtPayload(
+                                          user,
+                                          {
+                                              loginType: "thirdparty",
+                                              thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
+                                          },
+                                          action
+                                      );
+                                  },
+                                  setSessionData: async (user, thirdPartyAuthCodeResponse, action) => {
+                                      return this.config.sessionFeature.setSessionData(
+                                          user,
+                                          {
+                                              loginType: "thirdparty",
+                                              thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
+                                          },
+                                          action
+                                      );
+                                  },
+                              },
+                              signInAndUpFeature: {
+                                  providers: this.config.providers,
+                              },
+                              emailVerificationFeature: this.config.emailVerificationFeature,
+                          },
+                          {
+                              emailVerificationInstance: this.emailVerificationRecipe,
+                          }
+                      );
         }
-
-        this.emailVerificationRecipe = new EmailVerificationRecipe(
-            recipeId,
-            appInfo,
-            isInServerlessEnv,
-            this.config.emailVerificationFeature
-        );
     }
 
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
+                    emailPasswordInstance: undefined,
+                    emailVerificationInstance: undefined,
+                    thirdPartyInstance: undefined,
+                });
                 return Recipe.instance;
             } else {
                 throw new Error(

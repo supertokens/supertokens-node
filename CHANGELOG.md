@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Replaces `disableDefaultImplementation` with setting functions in `override > apis` to `undefined`.
 -   Removes explicit post API callback functions since now users can override apis and emulate post api callbacks easily.
 -   Removes the use of GENERAL_ERROR and throws a normal JS Error instead.
+-   Allows recipes to be passed in constructor so that child recipes do not create multiple instances of the same recipe.
 
 ## [5.0.1] - 2021-05-06
 
