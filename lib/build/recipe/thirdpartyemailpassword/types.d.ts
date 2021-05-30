@@ -315,13 +315,6 @@ export interface APIInterface {
               status: "OK";
               url: string;
           }>);
-    signOutPOST:
-        | undefined
-        | ((
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
-              status: "OK";
-          }>);
     emailExistsGET:
         | undefined
         | ((

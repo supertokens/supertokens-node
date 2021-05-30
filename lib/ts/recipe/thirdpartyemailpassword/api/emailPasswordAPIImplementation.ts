@@ -30,7 +30,6 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
                           throw Error("Should never come here");
                       }
                   },
-        signOutPOST: apiImplmentation.signOutPOST,
         signUpPOST:
             signInUpPOST === undefined
                 ? undefined

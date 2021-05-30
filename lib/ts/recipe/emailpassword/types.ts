@@ -304,14 +304,6 @@ export interface APIInterface {
                 }
           >);
 
-    signOutPOST:
-        | undefined
-        | ((
-              options: APIOptions
-          ) => Promise<{
-              status: "OK";
-          }>);
-
     signUpPOST:
         | undefined
         | ((

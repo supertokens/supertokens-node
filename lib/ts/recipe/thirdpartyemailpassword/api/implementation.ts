@@ -107,12 +107,4 @@ export default class APIImplementation implements APIInterface {
     }> => {
         return this.thirdPartyImplementation.authorisationUrlGET(provider, options);
     };
-
-    signOutPOST = async (
-        options: EmailPasswordAPIOptions
-    ): Promise<{
-        status: "OK";
-    }> => {
-        return this.emailPasswordImplementation.signOutPOST(options);
-    };
 }

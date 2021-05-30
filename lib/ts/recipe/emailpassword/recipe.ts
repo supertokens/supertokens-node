@@ -25,14 +25,12 @@ import {
     SIGN_IN_API,
     GENERATE_PASSWORD_RESET_TOKEN_API,
     PASSWORD_RESET_API,
-    SIGN_OUT_API,
     SIGNUP_EMAIL_EXISTS_API,
 } from "./constants";
 import signUpAPI from "./api/signup";
 import signInAPI from "./api/signin";
 import generatePasswordResetTokenAPI from "./api/generatePasswordResetToken";
 import passwordResetAPI from "./api/passwordReset";
-import signOutAPI from "./api/signout";
 import { send200Response } from "../../utils";
 import emailExistsAPI from "./api/emailExists";
 import EmailVerificationRecipe from "../emailverification/recipe";
@@ -131,12 +129,6 @@ export default class Recipe extends RecipeModule {
                 disabled: this.apiImpl.passwordResetPOST === undefined,
             },
             {
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(SIGN_OUT_API),
-                id: SIGN_OUT_API,
-                disabled: this.apiImpl.signOutPOST === undefined,
-            },
-            {
                 method: "get",
                 pathWithoutApiBasePath: new NormalisedURLPath(SIGNUP_EMAIL_EXISTS_API),
                 id: SIGNUP_EMAIL_EXISTS_API,
@@ -168,8 +160,6 @@ export default class Recipe extends RecipeModule {
             return await signInAPI(this.apiImpl, options);
         } else if (id === GENERATE_PASSWORD_RESET_TOKEN_API) {
             return await generatePasswordResetTokenAPI(this.apiImpl, options);
-        } else if (id === SIGN_OUT_API) {
-            return await signOutAPI(this.apiImpl, options);
         } else if (id === PASSWORD_RESET_API) {
             return await passwordResetAPI(this.apiImpl, options);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {

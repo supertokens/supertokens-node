@@ -39,9 +39,4 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         url: string;
     }>;
-    signOutPOST: (
-        options: import("../../emailpassword").APIOptions
-    ) => Promise<{
-        status: "OK";
-    }>;
 }

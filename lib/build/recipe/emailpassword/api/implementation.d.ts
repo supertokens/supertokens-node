@@ -41,11 +41,6 @@ export default class APIImplementation implements APIInterface {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    signOutPOST: (
-        options: APIOptions
-    ) => Promise<{
-        status: "OK";
-    }>;
     signUpPOST: (
         formFields: {
             id: string;

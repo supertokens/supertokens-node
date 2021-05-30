@@ -310,13 +310,6 @@ export interface APIInterface {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
           >);
-    signOutPOST:
-        | undefined
-        | ((
-              options: APIOptions
-          ) => Promise<{
-              status: "OK";
-          }>);
     signUpPOST:
         | undefined
         | ((
