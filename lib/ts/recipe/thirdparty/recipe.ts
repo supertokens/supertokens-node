@@ -21,9 +21,8 @@ import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
 import STError from "./error";
 
-import { SIGN_IN_UP_API, SIGN_OUT_API, AUTHORISATION_API } from "./constants";
+import { SIGN_IN_UP_API, AUTHORISATION_API } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
-import signOutAPI from "./api/signout";
 import signInUpAPI from "./api/signinup";
 import authorisationUrlAPI from "./api/authorisationUrl";
 import RecipeImplementation from "./recipeImplementation";
@@ -105,12 +104,6 @@ export default class Recipe extends RecipeModule {
                 disabled: this.apiImpl.signInUpPOST === undefined,
             },
             {
-                method: "post",
-                pathWithoutApiBasePath: new NormalisedURLPath(SIGN_OUT_API),
-                id: SIGN_OUT_API,
-                disabled: this.apiImpl.signOutPOST === undefined,
-            },
-            {
                 method: "get",
                 pathWithoutApiBasePath: new NormalisedURLPath(AUTHORISATION_API),
                 id: AUTHORISATION_API,
@@ -139,8 +132,6 @@ export default class Recipe extends RecipeModule {
         };
         if (id === SIGN_IN_UP_API) {
             return await signInUpAPI(this.apiImpl, options);
-        } else if (id === SIGN_OUT_API) {
-            return await signOutAPI(this.apiImpl, options);
         } else if (id === AUTHORISATION_API) {
             return await authorisationUrlAPI(this.apiImpl, options);
         } else {

@@ -5,7 +5,6 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
     const signInUpPOSTFromThirdPartyEmailPassword = apiImplmentation.signInUpPOST;
     return {
         authorisationUrlGET: apiImplmentation.authorisationUrlGET,
-        signOutPOST: undefined,
         signInUpPOST:
             signInUpPOSTFromThirdPartyEmailPassword === undefined
                 ? undefined

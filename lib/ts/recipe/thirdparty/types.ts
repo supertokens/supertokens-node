@@ -240,12 +240,4 @@ export interface APIInterface {
                     error: string;
                 }
           >);
-
-    signOutPOST:
-        | undefined
-        | ((
-              options: APIOptions
-          ) => Promise<{
-              status: "OK";
-          }>);
 }

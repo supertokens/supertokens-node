@@ -1,5 +1,5 @@
 import { APIInterface, APIOptions, User, TypeProvider } from "../";
-import Session, { SessionContainer } from "../../session";
+import Session from "../../session";
 import { URLSearchParams } from "url";
 import * as axios from "axios";
 import * as qs from "querystring";
@@ -92,35 +92,6 @@ export default class APIImplementation implements APIInterface {
             status: "OK",
             ...user,
             authCodeResponse: accessTokenAPIResponse,
-        };
-    };
-
-    signOutPOST = async (
-        options: APIOptions
-    ): Promise<{
-        status: "OK";
-    }> => {
-        let session: SessionContainer | undefined;
-        try {
-            session = await Session.getSession(options.req, options.res);
-        } catch (err) {
-            if (Session.Error.isErrorFromSuperTokens(err) && err.type === Session.Error.UNAUTHORISED) {
-                // The session is expired / does not exist anyway. So we return OK
-                return {
-                    status: "OK",
-                };
-            }
-            throw err;
-        }
-
-        if (session === undefined) {
-            throw new Error("Session is undefined. Should not come here.");
-        }
-
-        await session.revokeSession();
-
-        return {
-            status: "OK",
         };
     };
 }

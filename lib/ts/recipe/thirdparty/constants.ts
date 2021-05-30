@@ -15,6 +15,4 @@
 
 export const AUTHORISATION_API = "/authorisationurl";
 
-export const SIGN_OUT_API = "/signout";
-
 export const SIGN_IN_UP_API = "/signinup";

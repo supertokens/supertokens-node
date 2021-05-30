@@ -27,9 +27,4 @@ export default class APIImplementation implements APIInterface {
               error: string;
           }
     >;
-    signOutPOST: (
-        options: APIOptions
-    ) => Promise<{
-        status: "OK";
-    }>;
 }
