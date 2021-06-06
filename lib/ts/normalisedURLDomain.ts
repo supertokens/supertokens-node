@@ -28,7 +28,7 @@ export default class NormalisedURLDomain {
     };
 }
 
-export function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): string {
+function normaliseURLDomainOrThrowError(input: string, ignoreProtocol = false): string {
     input = input.trim().toLowerCase();
 
     try {

@@ -31,6 +31,10 @@ export default class NormalisedURLPath {
     };
 
     getAsStringDangerous = () => {
+        // In case path is empty, add slash.
+        if (this.value.length === 0) {
+            return "/";
+        }
         return this.value;
     };
 
@@ -43,7 +47,7 @@ export default class NormalisedURLPath {
     };
 }
 
-export function normaliseURLPathOrThrowError(input: string): string {
+function normaliseURLPathOrThrowError(input: string): string {
     input = input.trim().toLowerCase();
 
     try {

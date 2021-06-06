@@ -3,4 +3,3 @@ export default class NormalisedURLDomain {
     constructor(url: string);
     getAsStringDangerous: () => string;
 }
-export declare function normaliseURLDomainOrThrowError(input: string, ignoreProtocol?: boolean): string;
