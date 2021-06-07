@@ -242,4 +242,12 @@ export default class RecipeImplementation implements RecipeInterface {
             this.handshakeInfo.jwtSigningPublicKeyExpiryTime = newExpiry;
         }
     };
+
+    getAccessTokenLifeTimeMS = async (): Promise<number> => {
+        return (await this.getHandshakeInfo()).accessTokenValidity;
+    };
+
+    getRefreshTokenLifeTimeMS = async (): Promise<number> => {
+        return (await this.getHandshakeInfo()).refreshTokenValidity;
+    };
 }

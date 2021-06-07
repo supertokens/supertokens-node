@@ -1,9 +1,9 @@
 import { VerifySessionOptions, RecipeInterface } from "../";
 import * as express from "express";
-import Session from "./sessionClass";
+import { SessionContainerInterface } from "../types";
 import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
-import { RecipeImplementation as OriginalRecipeImplementation } from "../";
+import { Session as FaunaDBSessionContainer } from "./types";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {
@@ -14,10 +14,10 @@ export default class RecipeImplementation implements RecipeInterface {
 
     q = faunadb.query;
 
-    originalImplementation: OriginalRecipeImplementation;
+    originalImplementation: RecipeInterface;
 
     constructor(
-        originalImplementation: OriginalRecipeImplementation,
+        originalImplementation: RecipeInterface,
         config: {
             accessFaunadbTokenFromFrontend?: boolean;
             userCollectionName: string;
@@ -33,7 +33,7 @@ export default class RecipeImplementation implements RecipeInterface {
         };
     }
 
-    getFDAT = async (session: Session) => {
+    getFDAT = async (userId: string) => {
         function getFaunadbTokenTimeLag() {
             if (process.env.INSTALL_PATH !== undefined) {
                 // if in testing...
@@ -42,10 +42,10 @@ export default class RecipeImplementation implements RecipeInterface {
             return FAUNADB_TOKEN_TIME_LAG_MILLI;
         }
 
-        let accessTokenLifetime = (await this.originalImplementation.getHandshakeInfo()).accessTokenValidity;
+        let accessTokenLifetime = await this.originalImplementation.getAccessTokenLifeTimeMS();
         let faunaResponse: any = await this.config.faunaDBClient.query(
             this.q.Create(this.q.Tokens(), {
-                instance: this.q.Ref(this.q.Collection(this.config.userCollectionName), session.getUserId()),
+                instance: this.q.Ref(this.q.Collection(this.config.userCollectionName), userId),
                 ttl: this.q.TimeAdd(this.q.Now(), accessTokenLifetime + getFaunadbTokenTimeLag(), "millisecond"),
             })
         );
@@ -57,66 +57,41 @@ export default class RecipeImplementation implements RecipeInterface {
         userId: string,
         jwtPayload: any = {},
         sessionData: any = {}
-    ): Promise<Session> => {
-        // TODO: HandshakeInfo should give the access token lifetime so that we do not have to do a double query
-        let originalSession = await this.originalImplementation.createNewSession(res, userId, jwtPayload, sessionData);
-        let session = new Session(
-            this.originalImplementation,
-            originalSession.getAccessToken(),
-            originalSession.getHandle(),
-            originalSession.getUserId(),
-            originalSession.getJWTPayload(),
-            res
-        );
-        let fdat = await this.getFDAT(session);
-
+    ): Promise<FaunaDBSessionContainer> => {
+        let fdat = await this.getFDAT(userId);
         if (this.config.accessFaunadbTokenFromFrontend) {
-            let newPayload = {
+            jwtPayload = {
                 ...jwtPayload,
             };
-            newPayload[FAUNADB_SESSION_KEY] = fdat;
-            await session.updateJWTPayload(newPayload);
+            jwtPayload[FAUNADB_SESSION_KEY] = fdat;
         } else {
-            let newPayload = {
+            sessionData = {
                 ...sessionData,
             };
-            newPayload[FAUNADB_SESSION_KEY] = fdat;
-            await session.updateSessionData(newPayload);
+            sessionData[FAUNADB_SESSION_KEY] = fdat;
         }
 
-        return session;
+        return getModifiedSession(
+            await this.originalImplementation.createNewSession(res, userId, jwtPayload, sessionData)
+        );
     };
 
     getSession = async (
         req: express.Request,
         res: express.Response,
         options?: VerifySessionOptions
-    ): Promise<Session | undefined> => {
+    ): Promise<FaunaDBSessionContainer | undefined> => {
         let originalSession = await this.originalImplementation.getSession(req, res, options);
         if (originalSession === undefined) {
             return undefined;
         }
-        return new Session(
-            this.originalImplementation,
-            originalSession.getAccessToken(),
-            originalSession.getHandle(),
-            originalSession.getUserId(),
-            originalSession.getJWTPayload(),
-            res
-        );
+        return getModifiedSession(originalSession);
     };
 
-    refreshSession = async (req: express.Request, res: express.Response): Promise<Session> => {
+    refreshSession = async (req: express.Request, res: express.Response): Promise<FaunaDBSessionContainer> => {
         let originalSession = await this.originalImplementation.refreshSession(req, res);
-        let session = new Session(
-            this.originalImplementation,
-            originalSession.getAccessToken(),
-            originalSession.getHandle(),
-            originalSession.getUserId(),
-            originalSession.getJWTPayload(),
-            res
-        );
-        let fdat = await this.getFDAT(session);
+        let session = getModifiedSession(originalSession);
+        let fdat = await this.getFDAT(session.getUserId());
 
         // we do not use the accessFaunaDBTokenFromFrontend boolean here so that
         // it can be changed without affecting existing sessions.
@@ -167,5 +142,29 @@ export default class RecipeImplementation implements RecipeInterface {
 
     updateJWTPayload = (sessionHandle: string, newJWTPayload: any) => {
         return this.originalImplementation.updateJWTPayload(sessionHandle, newJWTPayload);
+    };
+
+    getAccessTokenLifeTimeMS = async (): Promise<number> => {
+        return this.originalImplementation.getAccessTokenLifeTimeMS();
+    };
+
+    getRefreshTokenLifeTimeMS = async (): Promise<number> => {
+        return this.originalImplementation.getRefreshTokenLifeTimeMS();
+    };
+}
+
+function getModifiedSession(session: SessionContainerInterface): FaunaDBSessionContainer {
+    return {
+        ...session,
+        getFaunadbToken: async (): Promise<string> => {
+            let jwtPayload = session.getJWTPayload();
+            if (jwtPayload[FAUNADB_SESSION_KEY] !== undefined) {
+                // this operation costs nothing. So we can check
+                return jwtPayload[FAUNADB_SESSION_KEY];
+            } else {
+                let sessionData = await session.getSessionData();
+                return sessionData[FAUNADB_SESSION_KEY];
+            }
+        },
     };
 }

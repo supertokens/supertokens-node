@@ -1,8 +1,7 @@
 import { VerifySessionOptions, RecipeInterface } from "../";
 import * as express from "express";
-import Session from "./sessionClass";
 import * as faunadb from "faunadb";
-import { RecipeImplementation as OriginalRecipeImplementation } from "../";
+import { Session as FaunaDBSessionContainer } from "./types";
 export default class RecipeImplementation implements RecipeInterface {
     config: {
         accessFaunadbTokenFromFrontend: boolean;
@@ -10,23 +9,28 @@ export default class RecipeImplementation implements RecipeInterface {
         faunaDBClient: faunadb.Client;
     };
     q: typeof faunadb.query;
-    originalImplementation: OriginalRecipeImplementation;
+    originalImplementation: RecipeInterface;
     constructor(
-        originalImplementation: OriginalRecipeImplementation,
+        originalImplementation: RecipeInterface,
         config: {
             accessFaunadbTokenFromFrontend?: boolean;
             userCollectionName: string;
             faunaDBClient: faunadb.Client;
         }
     );
-    getFDAT: (session: Session) => Promise<any>;
-    createNewSession: (res: express.Response, userId: string, jwtPayload?: any, sessionData?: any) => Promise<Session>;
+    getFDAT: (userId: string) => Promise<any>;
+    createNewSession: (
+        res: express.Response,
+        userId: string,
+        jwtPayload?: any,
+        sessionData?: any
+    ) => Promise<FaunaDBSessionContainer>;
     getSession: (
         req: express.Request,
         res: express.Response,
         options?: VerifySessionOptions | undefined
-    ) => Promise<Session | undefined>;
-    refreshSession: (req: express.Request, res: express.Response) => Promise<Session>;
+    ) => Promise<FaunaDBSessionContainer | undefined>;
+    refreshSession: (req: express.Request, res: express.Response) => Promise<FaunaDBSessionContainer>;
     revokeAllSessionsForUser: (userId: string) => Promise<string[]>;
     getAllSessionHandlesForUser: (userId: string) => Promise<string[]>;
     revokeSession: (sessionHandle: string) => Promise<boolean>;
@@ -35,4 +39,6 @@ export default class RecipeImplementation implements RecipeInterface {
     updateSessionData: (sessionHandle: string, newSessionData: any) => Promise<void>;
     getJWTPayload: (sessionHandle: string) => Promise<any>;
     updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
+    getAccessTokenLifeTimeMS: () => Promise<number>;
+    getRefreshTokenLifeTimeMS: () => Promise<number>;
 }

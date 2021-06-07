@@ -36,7 +36,7 @@ let faunadb = require("faunadb");
 const q = faunadb.query;
 const { removeServerlessCache } = require("../lib/build/utils");
 
-describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
+describe.only(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

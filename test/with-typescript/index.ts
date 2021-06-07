@@ -12,7 +12,10 @@ import EmailPassword, {
     RecipeImplementation as EPRecipeImplementation,
 } from "../../recipe/emailpassword";
 import NextJS from "../../nextjs";
-import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
+import {
+    RecipeImplementation as FaunaDBImplementation,
+    SessionContainer as FaunaDBSessionContainer,
+} from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");
 
 let app = express();
@@ -53,6 +56,8 @@ Supertokens.init({
                         revokeSession: originalImpl.revokeSession,
                         updateJWTPayload: originalImpl.updateJWTPayload,
                         updateSessionData: originalImpl.updateSessionData,
+                        getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
+                        getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
                     };
                 },
             },
@@ -114,10 +119,16 @@ Supertokens.init({
             cookieDomain: "",
             override: {
                 functions: (originalImpl: SessionRecipeImplementation) => {
-                    return new FaunaDBImplementation(originalImpl, {
+                    let faunaDBMod = new FaunaDBImplementation(originalImpl, {
                         faunaDBClient: new faunadb(),
                         userCollectionName: "users",
                     });
+                    return {
+                        ...faunaDBMod,
+                        createNewSession: (r, u, j, s) => {
+                            return faunaDBMod.createNewSession(r, u, j, s);
+                        },
+                    };
                 },
             },
         }),

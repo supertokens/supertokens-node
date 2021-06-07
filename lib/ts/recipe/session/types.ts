@@ -175,6 +175,10 @@ export interface RecipeInterface {
     getJWTPayload(sessionHandle: string): Promise<any>;
 
     updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
+
+    getAccessTokenLifeTimeMS(): Promise<number>;
+
+    getRefreshTokenLifeTimeMS(): Promise<number>;
 }
 
 export interface SessionContainerInterface {
