@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Allows recipes to be passed in constructor so that child recipes do not create multiple instances of the same recipe.
 -   Removes checking of duplicate APIs since we are now using interfaces for APIs which won't allow for duplicates anyway...
 -   Removes duplicate signout APIs from all auth recipes since it's already exposed from the session recipe.
+-   Marked `setJwtPayload` and `setSessionData` as deprecated.
 
 ## [5.0.1] - 2021-05-06
 

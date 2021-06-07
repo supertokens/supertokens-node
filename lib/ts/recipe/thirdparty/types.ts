@@ -70,7 +70,14 @@ export type TypeInputSetSessionDataForSession = (
 ) => Promise<{ [key: string]: any } | undefined>;
 
 export type TypeInputSessionFeature = {
+    /**
+     * @deprecated Use override functions instead for >= v6.0
+     *   */
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
+
+    /**
+     * @deprecated Use override functions instead for >= v6.0
+     *   */
     setSessionData?: TypeInputSetSessionDataForSession;
 };
 

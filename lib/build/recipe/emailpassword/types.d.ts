@@ -28,7 +28,13 @@ export declare type TypeInputSetSessionDataForSession = (
     | undefined
 >;
 export declare type TypeInputSessionFeature = {
+    /**
+     * @deprecated Use override functions instead for >= v6.0
+     *   */
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    /**
+     * @deprecated Use override functions instead for >= v6.0
+     *   */
     setSessionData?: TypeInputSetSessionDataForSession;
 };
 export declare type TypeNormalisedInputSessionFeature = {
