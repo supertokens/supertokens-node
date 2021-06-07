@@ -1,6 +1,6 @@
 import { VerifySessionOptions, RecipeInterface } from "../";
 import * as express from "express";
-import { SessionContainerInterface } from "../types";
+import { SessionContainer } from "../";
 import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 import { Session as FaunaDBSessionContainer } from "./types";
@@ -153,7 +153,7 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 }
 
-function getModifiedSession(session: SessionContainerInterface): FaunaDBSessionContainer {
+function getModifiedSession(session: SessionContainer): FaunaDBSessionContainer {
     return {
         ...session,
         getFaunadbToken: async (): Promise<string> => {
