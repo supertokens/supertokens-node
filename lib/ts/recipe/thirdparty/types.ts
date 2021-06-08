@@ -119,7 +119,6 @@ const InputSignInAndUpSchema = {
         providers: {
             type: "array",
         },
-        handlePostSignUpIn: TypeAny,
     },
     required: ["providers"],
     additionalProperties: false,

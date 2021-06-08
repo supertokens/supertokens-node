@@ -122,9 +122,6 @@ export declare const InputSchema: {
                 providers: {
                     type: string;
                 };
-                handlePostSignUpIn: {
-                    type: string;
-                };
             };
             required: string[];
             additionalProperties: boolean;

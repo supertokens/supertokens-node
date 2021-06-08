@@ -11,10 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Refactor code to use recipeImplementations that can be override by the user
 -   `getSession` third param is no longer a boolean
 -   Provides FaunaDB's session implementation as a modification to the original session recipe.
--   Removes deprecated `handleCustomFormFieldsPostSignUp`. Instead, use `handlePostSignUp`
+-   Removes deprecated `handleCustomFormFieldsPostSignUp`.
 -   Removes `superTokensMiddleware` from NextJS as it is no longer needed and was deprecated.
 -   Fixes NextJS type for `superTokensNextWrapper` function
--   Sign up / sign in callbacks' `formField` param includes email & password.
+-   `setJwtPayload` and `setSessionData` get all `formFields` param
 -   Adds API interfaces to all recipes
 -   Provides a way to override API logic easily.
 -   Replaces `disableDefaultImplementation` with setting functions in `override > apis` to `undefined`.
