@@ -1,4 +1,4 @@
-import { APIInterface, APIOptions, TypeProvider } from "../../thirdparty";
+import { APIInterface } from "../../thirdparty";
 import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 
 export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswordAPIInterface): APIInterface {
@@ -8,13 +8,13 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
         signInUpPOST:
             signInUpPOSTFromThirdPartyEmailPassword === undefined
                 ? undefined
-                : async (provider: TypeProvider, code: string, redirectURI: string, options: APIOptions) => {
+                : async (input) => {
                       let result = await signInUpPOSTFromThirdPartyEmailPassword({
                           type: "thirdparty",
-                          code,
-                          provider,
-                          redirectURI,
-                          options,
+                          code: input.code,
+                          provider: input.provider,
+                          redirectURI: input.redirectURI,
+                          options: input.options,
                       });
                       if (result.status === "OK") {
                           if (result.user.thirdParty === undefined || result.type === "emailpassword") {

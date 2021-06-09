@@ -1,38 +1,51 @@
 import { APIInterface, APIOptions, User } from "../";
 export default class APIImplementation implements APIInterface {
-    emailExistsGET: (
-        email: string,
-        options: APIOptions
-    ) => Promise<{
+    emailExistsGET: ({
+        email,
+        options,
+    }: {
+        email: string;
+        options: APIOptions;
+    }) => Promise<{
         status: "OK";
         exists: boolean;
     }>;
-    generatePasswordResetTokenPOST: (
+    generatePasswordResetTokenPOST: ({
+        formFields,
+        options,
+    }: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        options: APIOptions
-    ) => Promise<{
+        }[];
+        options: APIOptions;
+    }) => Promise<{
         status: "OK";
     }>;
-    passwordResetPOST: (
+    passwordResetPOST: ({
+        formFields,
+        token,
+        options,
+    }: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        token: string,
-        options: APIOptions
-    ) => Promise<{
+        }[];
+        token: string;
+        options: APIOptions;
+    }) => Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
-    signInPOST: (
+    signInPOST: ({
+        formFields,
+        options,
+    }: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        options: APIOptions
-    ) => Promise<
+        }[];
+        options: APIOptions;
+    }) => Promise<
         | {
               status: "OK";
               user: User;
@@ -41,13 +54,16 @@ export default class APIImplementation implements APIInterface {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    signUpPOST: (
+    signUpPOST: ({
+        formFields,
+        options,
+    }: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        options: APIOptions
-    ) => Promise<
+        }[];
+        options: APIOptions;
+    }) => Promise<
         | {
               status: "OK";
               user: User;

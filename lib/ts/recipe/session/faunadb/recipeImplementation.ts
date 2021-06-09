@@ -52,12 +52,17 @@ export default class RecipeImplementation implements RecipeInterface {
         return faunaResponse.secret;
     };
 
-    createNewSession = async (
-        res: express.Response,
-        userId: string,
-        jwtPayload: any = {},
-        sessionData: any = {}
-    ): Promise<FaunaDBSessionContainer> => {
+    createNewSession = async ({
+        res,
+        userId,
+        jwtPayload = {},
+        sessionData = {},
+    }: {
+        res: express.Response;
+        userId: string;
+        jwtPayload?: any;
+        sessionData?: any;
+    }): Promise<FaunaDBSessionContainer> => {
         let fdat = await this.getFDAT(userId);
         if (this.config.accessFaunadbTokenFromFrontend) {
             jwtPayload = {
@@ -72,24 +77,34 @@ export default class RecipeImplementation implements RecipeInterface {
         }
 
         return getModifiedSession(
-            await this.originalImplementation.createNewSession(res, userId, jwtPayload, sessionData)
+            await this.originalImplementation.createNewSession({ res, userId, jwtPayload, sessionData })
         );
     };
 
-    getSession = async (
-        req: express.Request,
-        res: express.Response,
-        options?: VerifySessionOptions
-    ): Promise<FaunaDBSessionContainer | undefined> => {
-        let originalSession = await this.originalImplementation.getSession(req, res, options);
+    getSession = async ({
+        req,
+        res,
+        options,
+    }: {
+        req: express.Request;
+        res: express.Response;
+        options?: VerifySessionOptions;
+    }): Promise<FaunaDBSessionContainer | undefined> => {
+        let originalSession = await this.originalImplementation.getSession({ req, res, options });
         if (originalSession === undefined) {
             return undefined;
         }
         return getModifiedSession(originalSession);
     };
 
-    refreshSession = async (req: express.Request, res: express.Response): Promise<FaunaDBSessionContainer> => {
-        let originalSession = await this.originalImplementation.refreshSession(req, res);
+    refreshSession = async ({
+        req,
+        res,
+    }: {
+        req: express.Request;
+        res: express.Response;
+    }): Promise<FaunaDBSessionContainer> => {
+        let originalSession = await this.originalImplementation.refreshSession({ req, res });
         let session = getModifiedSession(originalSession);
         let fdat = await this.getFDAT(session.getUserId());
 
@@ -112,36 +127,36 @@ export default class RecipeImplementation implements RecipeInterface {
         return session;
     };
 
-    revokeAllSessionsForUser = (userId: string) => {
-        return this.originalImplementation.revokeAllSessionsForUser(userId);
+    revokeAllSessionsForUser = ({ userId }: { userId: string }) => {
+        return this.originalImplementation.revokeAllSessionsForUser({ userId });
     };
 
-    getAllSessionHandlesForUser = (userId: string): Promise<string[]> => {
-        return this.originalImplementation.getAllSessionHandlesForUser(userId);
+    getAllSessionHandlesForUser = ({ userId }: { userId: string }): Promise<string[]> => {
+        return this.originalImplementation.getAllSessionHandlesForUser({ userId });
     };
 
-    revokeSession = (sessionHandle: string): Promise<boolean> => {
-        return this.originalImplementation.revokeSession(sessionHandle);
+    revokeSession = ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> => {
+        return this.originalImplementation.revokeSession({ sessionHandle });
     };
 
-    revokeMultipleSessions = (sessionHandles: string[]) => {
-        return this.originalImplementation.revokeMultipleSessions(sessionHandles);
+    revokeMultipleSessions = ({ sessionHandles }: { sessionHandles: string[] }) => {
+        return this.originalImplementation.revokeMultipleSessions({ sessionHandles });
     };
 
-    getSessionData = (sessionHandle: string): Promise<any> => {
-        return this.originalImplementation.getSessionData(sessionHandle);
+    getSessionData = ({ sessionHandle }: { sessionHandle: string }): Promise<any> => {
+        return this.originalImplementation.getSessionData({ sessionHandle });
     };
 
-    updateSessionData = (sessionHandle: string, newSessionData: any) => {
-        return this.originalImplementation.updateSessionData(sessionHandle, newSessionData);
+    updateSessionData = ({ sessionHandle, newSessionData }: { sessionHandle: string; newSessionData: any }) => {
+        return this.originalImplementation.updateSessionData({ sessionHandle, newSessionData });
     };
 
-    getJWTPayload = (sessionHandle: string): Promise<any> => {
-        return this.originalImplementation.getJWTPayload(sessionHandle);
+    getJWTPayload = (input: { sessionHandle: string }): Promise<any> => {
+        return this.originalImplementation.getJWTPayload(input);
     };
 
-    updateJWTPayload = (sessionHandle: string, newJWTPayload: any) => {
-        return this.originalImplementation.updateJWTPayload(sessionHandle, newJWTPayload);
+    updateJWTPayload = (input: { sessionHandle: string; newJWTPayload: any }) => {
+        return this.originalImplementation.updateJWTPayload(input);
     };
 
     getAccessTokenLifeTimeMS = async (): Promise<number> => {

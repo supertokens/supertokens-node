@@ -199,10 +199,10 @@ export declare const InputSchema: {
     additionalProperties: boolean;
 };
 export interface RecipeInterface {
-    signUp(
-        email: string,
-        password: string
-    ): Promise<
+    signUp(input: {
+        email: string;
+        password: string;
+    }): Promise<
         | {
               status: "OK";
               user: User;
@@ -211,10 +211,10 @@ export interface RecipeInterface {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
     >;
-    signIn(
-        email: string,
-        password: string
-    ): Promise<
+    signIn(input: {
+        email: string;
+        password: string;
+    }): Promise<
         | {
               status: "OK";
               user: User;
@@ -223,11 +223,11 @@ export interface RecipeInterface {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    getUserById(userId: string): Promise<User | undefined>;
-    getUserByEmail(email: string): Promise<User | undefined>;
-    createResetPasswordToken(
-        userId: string
-    ): Promise<
+    getUserById(input: { userId: string }): Promise<User | undefined>;
+    getUserByEmail(input: { email: string }): Promise<User | undefined>;
+    createResetPasswordToken(input: {
+        userId: string;
+    }): Promise<
         | {
               status: "OK";
               token: string;
@@ -236,23 +236,23 @@ export interface RecipeInterface {
               status: "UNKNOWN_USER_ID";
           }
     >;
-    resetPasswordUsingToken(
-        token: string,
-        newPassword: string
-    ): Promise<{
+    resetPasswordUsingToken(input: {
+        token: string;
+        newPassword: string;
+    }): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
-    getUsersOldestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
+    getUsersOldestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
         users: User[];
         nextPaginationToken?: string;
     }>;
-    getUsersNewestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
+    getUsersNewestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
         users: User[];
         nextPaginationToken?: string;
     }>;
@@ -269,45 +269,45 @@ export declare type APIOptions = {
 export interface APIInterface {
     emailExistsGET:
         | undefined
-        | ((
-              email: string,
-              options: APIOptions
-          ) => Promise<{
+        | ((input: {
+              email: string;
+              options: APIOptions;
+          }) => Promise<{
               status: "OK";
               exists: boolean;
           }>);
     generatePasswordResetTokenPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              options: APIOptions
-          ) => Promise<{
+              }[];
+              options: APIOptions;
+          }) => Promise<{
               status: "OK";
           }>);
     passwordResetPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              token: string,
-              options: APIOptions
-          ) => Promise<{
+              }[];
+              token: string;
+              options: APIOptions;
+          }) => Promise<{
               status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }>);
     signInPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              options: APIOptions
-          ) => Promise<
+              }[];
+              options: APIOptions;
+          }) => Promise<
               | {
                     status: "OK";
                     user: User;
@@ -318,13 +318,13 @@ export interface APIInterface {
           >);
     signUpPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              options: APIOptions
-          ) => Promise<
+              }[];
+              options: APIOptions;
+          }) => Promise<
               | {
                     status: "OK";
                     user: User;

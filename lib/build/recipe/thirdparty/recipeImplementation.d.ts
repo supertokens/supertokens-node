@@ -11,32 +11,48 @@ export default class RecipeImplementation implements RecipeInterface {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
-    getUsersOldestFirst: (
-        limit?: number | undefined,
-        nextPaginationToken?: string | undefined
-    ) => Promise<{
+    getUsersOldestFirst: ({
+        limit,
+        nextPaginationToken,
+    }: {
+        limit?: number | undefined;
+        nextPaginationToken?: string | undefined;
+    }) => Promise<{
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
-    getUsersNewestFirst: (
-        limit?: number | undefined,
-        nextPaginationToken?: string | undefined
-    ) => Promise<{
+    getUsersNewestFirst: ({
+        limit,
+        nextPaginationToken,
+    }: {
+        limit?: number | undefined;
+        nextPaginationToken?: string | undefined;
+    }) => Promise<{
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
     getUserCount: () => Promise<number>;
-    signInUp: (
-        thirdPartyId: string,
-        thirdPartyUserId: string,
+    signInUp: ({
+        thirdPartyId,
+        thirdPartyUserId,
+        email,
+    }: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
         email: {
             id: string;
             isVerified: boolean;
-        }
-    ) => Promise<{
+        };
+    }) => Promise<{
         createdNewUser: boolean;
         user: User;
     }>;
-    getUserById: (userId: string) => Promise<User | undefined>;
-    getUserByThirdPartyInfo: (thirdPartyId: string, thirdPartyUserId: string) => Promise<User | undefined>;
+    getUserById: ({ userId }: { userId: string }) => Promise<User | undefined>;
+    getUserByThirdPartyInfo: ({
+        thirdPartyId,
+        thirdPartyUserId,
+    }: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+    }) => Promise<User | undefined>;
 }

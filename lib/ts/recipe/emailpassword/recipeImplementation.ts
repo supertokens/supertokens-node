@@ -8,10 +8,13 @@ export default class RecipeImplementation implements RecipeInterface {
         this.querier = querier;
     }
 
-    signUp = async (
-        email: string,
-        password: string
-    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> => {
+    signUp = async ({
+        email,
+        password,
+    }: {
+        email: string;
+        password: string;
+    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
             email,
             password,
@@ -25,10 +28,13 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    signIn = async (
-        email: string,
-        password: string
-    ): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> => {
+    signIn = async ({
+        email,
+        password,
+    }: {
+        email: string;
+        password: string;
+    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
             email,
             password,
@@ -42,7 +48,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    getUserById = async (userId: string): Promise<User | undefined> => {
+    getUserById = async ({ userId }: { userId: string }): Promise<User | undefined> => {
         let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
             userId,
         });
@@ -55,7 +61,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    getUserByEmail = async (email: string): Promise<User | undefined> => {
+    getUserByEmail = async ({ email }: { email: string }): Promise<User | undefined> => {
         let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
             email,
         });
@@ -68,9 +74,11 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    createResetPasswordToken = async (
-        userId: string
-    ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
+    createResetPasswordToken = async ({
+        userId,
+    }: {
+        userId: string;
+    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
             userId,
         });
@@ -86,10 +94,13 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    resetPasswordUsingToken = async (
-        token: string,
-        newPassword: string
-    ): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }> => {
+    resetPasswordUsingToken = async ({
+        token,
+        newPassword,
+    }: {
+        token: string;
+        newPassword: string;
+    }): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset"), {
             method: "token",
             token,
@@ -98,11 +109,11 @@ export default class RecipeImplementation implements RecipeInterface {
         return response;
     };
 
-    getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
+    getUsersOldestFirst = async ({ limit, nextPaginationToken }: { limit?: number; nextPaginationToken?: string }) => {
         return this.getUsers("ASC", limit, nextPaginationToken);
     };
 
-    getUsersNewestFirst = async (limit?: number, nextPaginationToken?: string) => {
+    getUsersNewestFirst = async ({ limit, nextPaginationToken }: { limit?: number; nextPaginationToken?: string }) => {
         return this.getUsers("DESC", limit, nextPaginationToken);
     };
 

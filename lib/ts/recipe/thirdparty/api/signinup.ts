@@ -59,7 +59,7 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    let result = await apiImplementation.signInUpPOST(provider, code, redirectURI, options);
+    let result = await apiImplementation.signInUpPOST({ provider, code, redirectURI, options });
 
     if (result.status === "OK") {
         return send200Response(options.res, {

@@ -33,7 +33,7 @@ export default async function generatePasswordResetToken(apiImplementation: APII
         options.req.body.formFields
     );
 
-    let result = await apiImplementation.generatePasswordResetTokenPOST(formFields, options);
+    let result = await apiImplementation.generatePasswordResetTokenPOST({ formFields, options });
 
     send200Response(options.res, result);
 }

@@ -18,45 +18,45 @@ export default class APIImplementation implements APIInterface {
         this.thirdPartyImplementation = new ThirdPartyImplemenation();
     }
 
-    emailExistsGET = async (
-        email: string,
-        options: EmailPasswordAPIOptions
-    ): Promise<{
+    emailExistsGET = async (input: {
+        email: string;
+        options: EmailPasswordAPIOptions;
+    }): Promise<{
         status: "OK";
         exists: boolean;
     }> => {
-        return this.emailPasswordImplementation.emailExistsGET(email, options);
+        return this.emailPasswordImplementation.emailExistsGET(input);
     };
 
-    generatePasswordResetTokenPOST = async (
+    generatePasswordResetTokenPOST = async (input: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        options: EmailPasswordAPIOptions
-    ): Promise<{
+        }[];
+        options: EmailPasswordAPIOptions;
+    }): Promise<{
         status: "OK";
     }> => {
-        return this.emailPasswordImplementation.generatePasswordResetTokenPOST(formFields, options);
+        return this.emailPasswordImplementation.generatePasswordResetTokenPOST(input);
     };
 
-    passwordResetPOST = async (
+    passwordResetPOST = async (input: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        token: string,
-        options: EmailPasswordAPIOptions
-    ): Promise<{
+        }[];
+        token: string;
+        options: EmailPasswordAPIOptions;
+    }): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }> => {
-        return this.emailPasswordImplementation.passwordResetPOST(formFields, token, options);
+        return this.emailPasswordImplementation.passwordResetPOST(input);
     };
 
     signInUpPOST = async (input: SignInUpAPIInput): Promise<SignInUpAPIOutput> => {
         if (input.type === "emailpassword") {
             if (input.isSignIn) {
-                let response = await this.emailPasswordImplementation.signInPOST(input.formFields, input.options);
+                let response = await this.emailPasswordImplementation.signInPOST(input);
                 if (response.status === "OK") {
                     return {
                         ...response,
@@ -70,7 +70,7 @@ export default class APIImplementation implements APIInterface {
                     };
                 }
             } else {
-                let response = await this.emailPasswordImplementation.signUpPOST(input.formFields, input.options);
+                let response = await this.emailPasswordImplementation.signUpPOST(input);
                 if (response.status === "OK") {
                     return {
                         ...response,
@@ -85,12 +85,7 @@ export default class APIImplementation implements APIInterface {
                 }
             }
         } else {
-            let response = await this.thirdPartyImplementation.signInUpPOST(
-                input.provider,
-                input.code,
-                input.redirectURI,
-                input.options
-            );
+            let response = await this.thirdPartyImplementation.signInUpPOST(input);
             return {
                 ...response,
                 type: "thirdparty",
@@ -98,13 +93,13 @@ export default class APIImplementation implements APIInterface {
         }
     };
 
-    authorisationUrlGET = async (
-        provider: TypeProvider,
-        options: ThirdPartyAPIOptions
-    ): Promise<{
+    authorisationUrlGET = async (input: {
+        provider: TypeProvider;
+        options: ThirdPartyAPIOptions;
+    }): Promise<{
         status: "OK";
         url: string;
     }> => {
-        return this.thirdPartyImplementation.authorisationUrlGET(provider, options);
+        return this.thirdPartyImplementation.authorisationUrlGET(input);
     };
 }

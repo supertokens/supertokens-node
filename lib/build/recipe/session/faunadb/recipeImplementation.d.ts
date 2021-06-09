@@ -19,26 +19,41 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     );
     getFDAT: (userId: string) => Promise<any>;
-    createNewSession: (
-        res: express.Response,
-        userId: string,
-        jwtPayload?: any,
-        sessionData?: any
-    ) => Promise<FaunaDBSessionContainer>;
-    getSession: (
-        req: express.Request,
-        res: express.Response,
-        options?: VerifySessionOptions | undefined
-    ) => Promise<FaunaDBSessionContainer | undefined>;
-    refreshSession: (req: express.Request, res: express.Response) => Promise<FaunaDBSessionContainer>;
-    revokeAllSessionsForUser: (userId: string) => Promise<string[]>;
-    getAllSessionHandlesForUser: (userId: string) => Promise<string[]>;
-    revokeSession: (sessionHandle: string) => Promise<boolean>;
-    revokeMultipleSessions: (sessionHandles: string[]) => Promise<string[]>;
-    getSessionData: (sessionHandle: string) => Promise<any>;
-    updateSessionData: (sessionHandle: string, newSessionData: any) => Promise<void>;
-    getJWTPayload: (sessionHandle: string) => Promise<any>;
-    updateJWTPayload: (sessionHandle: string, newJWTPayload: any) => Promise<void>;
+    createNewSession: ({
+        res,
+        userId,
+        jwtPayload,
+        sessionData,
+    }: {
+        res: express.Response;
+        userId: string;
+        jwtPayload?: any;
+        sessionData?: any;
+    }) => Promise<FaunaDBSessionContainer>;
+    getSession: ({
+        req,
+        res,
+        options,
+    }: {
+        req: express.Request;
+        res: express.Response;
+        options?: VerifySessionOptions | undefined;
+    }) => Promise<FaunaDBSessionContainer | undefined>;
+    refreshSession: ({ req, res }: { req: express.Request; res: express.Response }) => Promise<FaunaDBSessionContainer>;
+    revokeAllSessionsForUser: ({ userId }: { userId: string }) => Promise<string[]>;
+    getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;
+    revokeSession: ({ sessionHandle }: { sessionHandle: string }) => Promise<boolean>;
+    revokeMultipleSessions: ({ sessionHandles }: { sessionHandles: string[] }) => Promise<string[]>;
+    getSessionData: ({ sessionHandle }: { sessionHandle: string }) => Promise<any>;
+    updateSessionData: ({
+        sessionHandle,
+        newSessionData,
+    }: {
+        sessionHandle: string;
+        newSessionData: any;
+    }) => Promise<void>;
+    getJWTPayload: (input: { sessionHandle: string }) => Promise<any>;
+    updateJWTPayload: (input: { sessionHandle: string; newJWTPayload: any }) => Promise<void>;
     getAccessTokenLifeTimeMS: () => Promise<number>;
     getRefreshTokenLifeTimeMS: () => Promise<number>;
 }

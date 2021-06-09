@@ -16,75 +16,84 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     }
 
-    signUp = async (
-        email: string,
-        password: string
-    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> => {
-        return await this.emailPasswordImplementation.signUp(email, password);
+    signUp = async (input: {
+        email: string;
+        password: string;
+    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> => {
+        return await this.emailPasswordImplementation.signUp(input);
     };
 
-    signIn = async (
-        email: string,
-        password: string
-    ): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> => {
-        return this.emailPasswordImplementation.signIn(email, password);
+    signIn = async (input: {
+        email: string;
+        password: string;
+    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> => {
+        return this.emailPasswordImplementation.signIn(input);
     };
 
-    signInUp = async (
-        thirdPartyId: string,
-        thirdPartyUserId: string,
+    signInUp = async (input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
         email: {
             id: string;
             isVerified: boolean;
-        }
-    ): Promise<{ createdNewUser: boolean; user: User }> => {
+        };
+    }): Promise<{ createdNewUser: boolean; user: User }> => {
         if (this.thirdPartyImplementation === undefined) {
             throw new Error("No thirdparty provider configured");
         }
-        return this.thirdPartyImplementation.signInUp(thirdPartyId, thirdPartyUserId, email);
+        return this.thirdPartyImplementation.signInUp(input);
     };
 
-    getUserById = async (userId: string): Promise<User | undefined> => {
-        let user: User | undefined = await this.emailPasswordImplementation.getUserById(userId);
+    getUserById = async (input: { userId: string }): Promise<User | undefined> => {
+        let user: User | undefined = await this.emailPasswordImplementation.getUserById(input);
         if (user !== undefined) {
             return user;
         }
         if (this.thirdPartyImplementation === undefined) {
             return undefined;
         }
-        return await this.thirdPartyImplementation.getUserById(userId);
+        return await this.thirdPartyImplementation.getUserById(input);
     };
 
-    getUserByThirdPartyInfo = async (thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> => {
+    getUserByThirdPartyInfo = async (input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+    }): Promise<User | undefined> => {
         if (this.thirdPartyImplementation === undefined) {
             return undefined;
         }
-        return this.thirdPartyImplementation.getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
+        return this.thirdPartyImplementation.getUserByThirdPartyInfo(input);
     };
 
-    getEmailForUserId = async (userId: string) => {
-        let userInfo = await this.getUserById(userId);
+    getEmailForUserId = async (input: { userId: string }) => {
+        let userInfo = await this.getUserById(input);
         if (userInfo === undefined) {
             throw new Error("Unknown User ID provided");
         }
         return userInfo.email;
     };
 
-    getUserByEmail = async (email: string): Promise<User | undefined> => {
-        return this.emailPasswordImplementation.getUserByEmail(email);
+    getUserByEmail = async (input: { email: string }): Promise<User | undefined> => {
+        return this.emailPasswordImplementation.getUserByEmail(input);
     };
 
-    createResetPasswordToken = async (
-        userId: string
-    ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
-        return this.emailPasswordImplementation.createResetPasswordToken(userId);
+    createResetPasswordToken = async (input: {
+        userId: string;
+    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
+        return this.emailPasswordImplementation.createResetPasswordToken(input);
     };
 
-    resetPasswordUsingToken = async (token: string, newPassword: string) => {
-        return this.emailPasswordImplementation.resetPasswordUsingToken(token, newPassword);
+    resetPasswordUsingToken = async (input: { token: string; newPassword: string }) => {
+        return this.emailPasswordImplementation.resetPasswordUsingToken(input);
     };
 
-    getUsersOldestFirst = async (limit?: number, nextPaginationTokenString?: string) => {
+    getUsersOldestFirst = async ({
+        limit,
+        nextPaginationTokenString,
+    }: {
+        limit?: number;
+        nextPaginationTokenString?: string;
+    }) => {
         limit = limit === undefined ? 100 : limit;
         let nextPaginationTokens: {
             thirdPartyPaginationToken: string | undefined;
@@ -96,25 +105,31 @@ export default class RecipeImplementation implements RecipeInterface {
         if (nextPaginationTokenString !== undefined) {
             nextPaginationTokens = extractPaginationTokens(nextPaginationTokenString);
         }
-        let emailPasswordResultPromise = this.emailPasswordImplementation.getUsersOldestFirst(
+        let emailPasswordResultPromise = this.emailPasswordImplementation.getUsersOldestFirst({
             limit,
-            nextPaginationTokens.emailPasswordPaginationToken
-        );
+            nextPaginationToken: nextPaginationTokens.emailPasswordPaginationToken,
+        });
         let thirdPartyResultPromise =
             this.thirdPartyImplementation === undefined
                 ? {
                       users: [],
                   }
-                : this.thirdPartyImplementation.getUsersOldestFirst(
+                : this.thirdPartyImplementation.getUsersOldestFirst({
                       limit,
-                      nextPaginationTokens.thirdPartyPaginationToken
-                  );
+                      nextPaginationToken: nextPaginationTokens.thirdPartyPaginationToken,
+                  });
         let emailPasswordResult = await emailPasswordResultPromise;
         let thirdPartyResult = await thirdPartyResultPromise;
         return combinePaginationResults(thirdPartyResult, emailPasswordResult, limit, true);
     };
 
-    getUsersNewestFirst = async (limit?: number, nextPaginationTokenString?: string) => {
+    getUsersNewestFirst = async ({
+        limit,
+        nextPaginationTokenString,
+    }: {
+        limit?: number;
+        nextPaginationTokenString?: string;
+    }) => {
         limit = limit === undefined ? 100 : limit;
         let nextPaginationTokens: {
             thirdPartyPaginationToken: string | undefined;
@@ -126,19 +141,19 @@ export default class RecipeImplementation implements RecipeInterface {
         if (nextPaginationTokenString !== undefined) {
             nextPaginationTokens = extractPaginationTokens(nextPaginationTokenString);
         }
-        let emailPasswordResultPromise = this.emailPasswordImplementation.getUsersNewestFirst(
+        let emailPasswordResultPromise = this.emailPasswordImplementation.getUsersNewestFirst({
             limit,
-            nextPaginationTokens.emailPasswordPaginationToken
-        );
+            nextPaginationToken: nextPaginationTokens.emailPasswordPaginationToken,
+        });
         let thirdPartyResultPromise =
             this.thirdPartyImplementation === undefined
                 ? {
                       users: [],
                   }
-                : this.thirdPartyImplementation.getUsersNewestFirst(
+                : this.thirdPartyImplementation.getUsersNewestFirst({
                       limit,
-                      nextPaginationTokens.thirdPartyPaginationToken
-                  );
+                      nextPaginationToken: nextPaginationTokens.thirdPartyPaginationToken,
+                  });
         let emailPasswordResult = await emailPasswordResultPromise;
         let thirdPartyResult = await thirdPartyResultPromise;
         return combinePaginationResults(thirdPartyResult, emailPasswordResult, limit, false);

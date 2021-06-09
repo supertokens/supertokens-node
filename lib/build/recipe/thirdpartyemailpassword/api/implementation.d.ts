@@ -5,37 +5,37 @@ export default class APIImplementation implements APIInterface {
     emailPasswordImplementation: EmailPasswordImplemenation;
     thirdPartyImplementation: ThirdPartyImplemenation;
     constructor();
-    emailExistsGET: (
-        email: string,
-        options: import("../../emailpassword").APIOptions
-    ) => Promise<{
+    emailExistsGET: (input: {
+        email: string;
+        options: import("../../emailpassword").APIOptions;
+    }) => Promise<{
         status: "OK";
         exists: boolean;
     }>;
-    generatePasswordResetTokenPOST: (
+    generatePasswordResetTokenPOST: (input: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        options: import("../../emailpassword").APIOptions
-    ) => Promise<{
+        }[];
+        options: import("../../emailpassword").APIOptions;
+    }) => Promise<{
         status: "OK";
     }>;
-    passwordResetPOST: (
+    passwordResetPOST: (input: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        token: string,
-        options: import("../../emailpassword").APIOptions
-    ) => Promise<{
+        }[];
+        token: string;
+        options: import("../../emailpassword").APIOptions;
+    }) => Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
     signInUpPOST: (input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>;
-    authorisationUrlGET: (
-        provider: TypeProvider,
-        options: import("../../thirdparty").APIOptions
-    ) => Promise<{
+    authorisationUrlGET: (input: {
+        provider: TypeProvider;
+        options: import("../../thirdparty").APIOptions;
+    }) => Promise<{
         status: "OK";
         url: string;
     }>;

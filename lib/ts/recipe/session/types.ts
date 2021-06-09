@@ -145,36 +145,36 @@ export interface VerifySessionOptions {
 }
 
 export interface RecipeInterface {
-    createNewSession(
-        res: express.Response,
-        userId: string,
-        jwtPayload?: any,
-        sessionData?: any
-    ): Promise<SessionContainerInterface>;
+    createNewSession(input: {
+        res: express.Response;
+        userId: string;
+        jwtPayload?: any;
+        sessionData?: any;
+    }): Promise<SessionContainerInterface>;
 
-    getSession(
-        req: express.Request,
-        res: express.Response,
-        options?: VerifySessionOptions
-    ): Promise<SessionContainerInterface | undefined>;
+    getSession(input: {
+        req: express.Request;
+        res: express.Response;
+        options?: VerifySessionOptions;
+    }): Promise<SessionContainerInterface | undefined>;
 
-    refreshSession(req: express.Request, res: express.Response): Promise<SessionContainerInterface>;
+    refreshSession(input: { req: express.Request; res: express.Response }): Promise<SessionContainerInterface>;
 
-    revokeAllSessionsForUser(userId: string): Promise<string[]>;
+    revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
 
-    getAllSessionHandlesForUser(userId: string): Promise<string[]>;
+    getAllSessionHandlesForUser(input: { userId: string }): Promise<string[]>;
 
-    revokeSession(sessionHandle: string): Promise<boolean>;
+    revokeSession(input: { sessionHandle: string }): Promise<boolean>;
 
-    revokeMultipleSessions(sessionHandles: string[]): Promise<string[]>;
+    revokeMultipleSessions(input: { sessionHandles: string[] }): Promise<string[]>;
 
-    getSessionData(sessionHandle: string): Promise<any>;
+    getSessionData(input: { sessionHandle: string }): Promise<any>;
 
-    updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
+    updateSessionData(input: { sessionHandle: string; newSessionData: any }): Promise<void>;
 
-    getJWTPayload(sessionHandle: string): Promise<any>;
+    getJWTPayload(input: { sessionHandle: string }): Promise<any>;
 
-    updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
+    updateJWTPayload(input: { sessionHandle: string; newJWTPayload: any }): Promise<void>;
 
     getAccessTokenLifeTimeMS(): Promise<number>;
 
@@ -209,15 +209,18 @@ export type APIOptions = {
 };
 
 export interface APIInterface {
-    refreshPOST: undefined | ((options: APIOptions) => Promise<void>);
+    refreshPOST: undefined | ((input: { options: APIOptions }) => Promise<void>);
 
     signOutPOST:
         | undefined
-        | ((
-              options: APIOptions
-          ) => Promise<{
+        | ((input: {
+              options: APIOptions;
+          }) => Promise<{
               status: "OK";
           }>);
 
-    verifySession(verifySessionOptions: VerifySessionOptions | undefined, options: APIOptions): Promise<void>;
+    verifySession(input: {
+        verifySessionOptions: VerifySessionOptions | undefined;
+        options: APIOptions;
+    }): Promise<void>;
 }

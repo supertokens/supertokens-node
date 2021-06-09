@@ -120,7 +120,7 @@ function validateAndNormaliseEmailVerificationConfig(
             config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
                 ? undefined
                 : async (user, link) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
+                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: user.id });
                       if (
                           userInfo === undefined ||
                           config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
@@ -133,7 +133,7 @@ function validateAndNormaliseEmailVerificationConfig(
             config?.emailVerificationFeature?.getEmailVerificationURL === undefined
                 ? undefined
                 : async (user) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById(user.id);
+                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: user.id });
                       if (
                           userInfo === undefined ||
                           config?.emailVerificationFeature?.getEmailVerificationURL === undefined

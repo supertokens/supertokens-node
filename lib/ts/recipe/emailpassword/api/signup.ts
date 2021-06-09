@@ -31,7 +31,7 @@ export default async function signUpAPI(apiImplementation: APIInterface, options
         value: string;
     }[] = await validateFormFieldsOrThrowError(options.config.signUpFeature.formFields, options.req.body.formFields);
 
-    let result = await apiImplementation.signUpPOST(formFields, options);
+    let result = await apiImplementation.signUpPOST({ formFields, options });
     if (result.status === "OK") {
         send200Response(options.res, result);
     } else {

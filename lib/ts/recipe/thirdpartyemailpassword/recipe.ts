@@ -278,7 +278,7 @@ export default class Recipe extends RecipeModule {
     // helper functions...
 
     getEmailForUserId = async (userId: string) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
+        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId });
         if (userInfo === undefined) {
             throw new Error("Unknown User ID provided");
         }
@@ -291,7 +291,7 @@ export default class Recipe extends RecipeModule {
 
     verifyEmailUsingToken = async (token: string): Promise<User> => {
         let user = await this.emailVerificationRecipe.verifyEmailUsingToken(token);
-        let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
+        let userInThisRecipe = await this.recipeInterfaceImpl.getUserById({ userId: user.id });
         if (userInThisRecipe === undefined) {
             throw new Error("Unknown User ID provided");
         }
@@ -299,9 +299,9 @@ export default class Recipe extends RecipeModule {
     };
 
     isEmailVerified = async (userId: string) => {
-        return this.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified(
+        return this.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
             userId,
-            await this.getEmailForUserId(userId)
-        );
+            email: await this.getEmailForUserId(userId),
+        });
     };
 }

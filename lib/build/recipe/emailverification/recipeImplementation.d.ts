@@ -3,10 +3,13 @@ import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
     constructor(querier: Querier);
-    createEmailVerificationToken: (
-        userId: string,
-        email: string
-    ) => Promise<
+    createEmailVerificationToken: ({
+        userId,
+        email,
+    }: {
+        userId: string;
+        email: string;
+    }) => Promise<
         | {
               status: "OK";
               token: string;
@@ -15,9 +18,11 @@ export default class RecipeImplementation implements RecipeInterface {
               status: "EMAIL_ALREADY_VERIFIED_ERROR";
           }
     >;
-    verifyEmailUsingToken: (
-        token: string
-    ) => Promise<
+    verifyEmailUsingToken: ({
+        token,
+    }: {
+        token: string;
+    }) => Promise<
         | {
               status: "OK";
               user: User;
@@ -26,5 +31,5 @@ export default class RecipeImplementation implements RecipeInterface {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    isEmailVerified: (userId: string, email: string) => Promise<boolean>;
+    isEmailVerified: ({ userId, email }: { userId: string; email: string }) => Promise<boolean>;
 }

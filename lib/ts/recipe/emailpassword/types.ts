@@ -208,39 +208,41 @@ export const InputSchema = {
 };
 
 export interface RecipeInterface {
-    signUp(
-        email: string,
-        password: string
-    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    signUp(input: {
+        email: string;
+        password: string;
+    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
-    signIn(
-        email: string,
-        password: string
-    ): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
+    signIn(input: {
+        email: string;
+        password: string;
+    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }>;
 
-    getUserById(userId: string): Promise<User | undefined>;
+    getUserById(input: { userId: string }): Promise<User | undefined>;
 
-    getUserByEmail(email: string): Promise<User | undefined>;
+    getUserByEmail(input: { email: string }): Promise<User | undefined>;
 
-    createResetPasswordToken(userId: string): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }>;
+    createResetPasswordToken(input: {
+        userId: string;
+    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }>;
 
-    resetPasswordUsingToken(
-        token: string,
-        newPassword: string
-    ): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }>;
+    resetPasswordUsingToken(input: {
+        token: string;
+        newPassword: string;
+    }): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }>;
 
-    getUsersOldestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
+    getUsersOldestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
         users: User[];
         nextPaginationToken?: string;
     }>;
 
-    getUsersNewestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
+    getUsersNewestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
         users: User[];
         nextPaginationToken?: string;
     }>;
@@ -260,48 +262,48 @@ export type APIOptions = {
 export interface APIInterface {
     emailExistsGET:
         | undefined
-        | ((
-              email: string,
-              options: APIOptions
-          ) => Promise<{
+        | ((input: {
+              email: string;
+              options: APIOptions;
+          }) => Promise<{
               status: "OK";
               exists: boolean;
           }>);
 
     generatePasswordResetTokenPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              options: APIOptions
-          ) => Promise<{
+              }[];
+              options: APIOptions;
+          }) => Promise<{
               status: "OK";
           }>);
 
     passwordResetPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              token: string,
-              options: APIOptions
-          ) => Promise<{
+              }[];
+              token: string;
+              options: APIOptions;
+          }) => Promise<{
               status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }>);
 
     signInPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              options: APIOptions
-          ) => Promise<
+              }[];
+              options: APIOptions;
+          }) => Promise<
               | {
                     status: "OK";
                     user: User;
@@ -313,13 +315,13 @@ export interface APIInterface {
 
     signUpPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              options: APIOptions
-          ) => Promise<
+              }[];
+              options: APIOptions;
+          }) => Promise<
               | {
                     status: "OK";
                     user: User;

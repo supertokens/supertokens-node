@@ -38,12 +38,17 @@ export default class RecipeImplementation implements RecipeInterface {
         });
     }
 
-    createNewSession = async (
-        res: express.Response,
-        userId: string,
-        jwtPayload: any = {},
-        sessionData: any = {}
-    ): Promise<Session> => {
+    createNewSession = async ({
+        res,
+        userId,
+        jwtPayload = {},
+        sessionData = {},
+    }: {
+        res: express.Response;
+        userId: string;
+        jwtPayload: any;
+        sessionData: any;
+    }): Promise<Session> => {
         let response = await SessionFunctions.createNewSession(this, userId, jwtPayload, sessionData);
         attachCreateOrRefreshSessionResponseToExpressRes(this.config, res, response);
         return new Session(
@@ -56,11 +61,15 @@ export default class RecipeImplementation implements RecipeInterface {
         );
     };
 
-    getSession = async (
-        req: express.Request,
-        res: express.Response,
-        options?: VerifySessionOptions
-    ): Promise<Session | undefined> => {
+    getSession = async ({
+        req,
+        res,
+        options,
+    }: {
+        req: express.Request;
+        res: express.Response;
+        options?: VerifySessionOptions;
+    }): Promise<Session | undefined> => {
         let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
 
         let idRefreshToken = getIdRefreshTokenFromCookie(req);
@@ -127,7 +136,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    refreshSession = async (req: express.Request, res: express.Response): Promise<Session> => {
+    refreshSession = async ({ req, res }: { req: express.Request; res: express.Response }): Promise<Session> => {
         let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
         if (inputIdRefreshToken === undefined) {
             // we do not clear cookies here because of a
@@ -171,35 +180,35 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    revokeAllSessionsForUser = (userId: string) => {
+    revokeAllSessionsForUser = ({ userId }: { userId: string }) => {
         return SessionFunctions.revokeAllSessionsForUser(this, userId);
     };
 
-    getAllSessionHandlesForUser = (userId: string): Promise<string[]> => {
+    getAllSessionHandlesForUser = ({ userId }: { userId: string }): Promise<string[]> => {
         return SessionFunctions.getAllSessionHandlesForUser(this, userId);
     };
 
-    revokeSession = (sessionHandle: string): Promise<boolean> => {
+    revokeSession = ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> => {
         return SessionFunctions.revokeSession(this, sessionHandle);
     };
 
-    revokeMultipleSessions = (sessionHandles: string[]) => {
+    revokeMultipleSessions = ({ sessionHandles }: { sessionHandles: string[] }) => {
         return SessionFunctions.revokeMultipleSessions(this, sessionHandles);
     };
 
-    getSessionData = (sessionHandle: string): Promise<any> => {
+    getSessionData = ({ sessionHandle }: { sessionHandle: string }): Promise<any> => {
         return SessionFunctions.getSessionData(this, sessionHandle);
     };
 
-    updateSessionData = (sessionHandle: string, newSessionData: any) => {
+    updateSessionData = ({ sessionHandle, newSessionData }: { sessionHandle: string; newSessionData: any }) => {
         return SessionFunctions.updateSessionData(this, sessionHandle, newSessionData);
     };
 
-    getJWTPayload = (sessionHandle: string): Promise<any> => {
+    getJWTPayload = ({ sessionHandle }: { sessionHandle: string }): Promise<any> => {
         return SessionFunctions.getJWTPayload(this, sessionHandle);
     };
 
-    updateJWTPayload = (sessionHandle: string, newJWTPayload: any) => {
+    updateJWTPayload = ({ sessionHandle, newJWTPayload }: { sessionHandle: string; newJWTPayload: any }) => {
         return SessionFunctions.updateJWTPayload(this, sessionHandle, newJWTPayload);
     };
 

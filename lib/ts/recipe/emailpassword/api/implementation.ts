@@ -2,14 +2,17 @@ import { APIInterface, APIOptions, User } from "../";
 import Session from "../../session";
 
 export default class APIImplementation implements APIInterface {
-    emailExistsGET = async (
-        email: string,
-        options: APIOptions
-    ): Promise<{
+    emailExistsGET = async ({
+        email,
+        options,
+    }: {
+        email: string;
+        options: APIOptions;
+    }): Promise<{
         status: "OK";
         exists: boolean;
     }> => {
-        let user = await options.recipeImplementation.getUserByEmail(email);
+        let user = await options.recipeImplementation.getUserByEmail({ email });
 
         return {
             status: "OK",
@@ -17,25 +20,28 @@ export default class APIImplementation implements APIInterface {
         };
     };
 
-    generatePasswordResetTokenPOST = async (
+    generatePasswordResetTokenPOST = async ({
+        formFields,
+        options,
+    }: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        options: APIOptions
-    ): Promise<{
+        }[];
+        options: APIOptions;
+    }): Promise<{
         status: "OK";
     }> => {
         let email = formFields.filter((f) => f.id === "email")[0].value;
 
-        let user = await options.recipeImplementation.getUserByEmail(email);
+        let user = await options.recipeImplementation.getUserByEmail({ email });
         if (user === undefined) {
             return {
                 status: "OK",
             };
         }
 
-        let response = await options.recipeImplementation.createResetPasswordToken(user.id);
+        let response = await options.recipeImplementation.createResetPasswordToken({ userId: user.id });
         if (response.status === "UNKNOWN_USER_ID") {
             return {
                 status: "OK",
@@ -60,30 +66,37 @@ export default class APIImplementation implements APIInterface {
         };
     };
 
-    passwordResetPOST = async (
+    passwordResetPOST = async ({
+        formFields,
+        token,
+        options,
+    }: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        token: string,
-        options: APIOptions
-    ): Promise<{
+        }[];
+        token: string;
+        options: APIOptions;
+    }): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }> => {
         let newPassword = formFields.filter((f) => f.id === "password")[0].value;
 
-        let response = await options.recipeImplementation.resetPasswordUsingToken(token, newPassword);
+        let response = await options.recipeImplementation.resetPasswordUsingToken({ token, newPassword });
 
         return response;
     };
 
-    signInPOST = async (
+    signInPOST = async ({
+        formFields,
+        options,
+    }: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        options: APIOptions
-    ): Promise<
+        }[];
+        options: APIOptions;
+    }): Promise<
         | {
               status: "OK";
               user: User;
@@ -95,7 +108,7 @@ export default class APIImplementation implements APIInterface {
         let email = formFields.filter((f) => f.id === "email")[0].value;
         let password = formFields.filter((f) => f.id === "password")[0].value;
 
-        let response = await options.recipeImplementation.signIn(email, password);
+        let response = await options.recipeImplementation.signIn({ email, password });
         if (response.status === "WRONG_CREDENTIALS_ERROR") {
             return response;
         }
@@ -114,13 +127,16 @@ export default class APIImplementation implements APIInterface {
         };
     };
 
-    signUpPOST = async (
+    signUpPOST = async ({
+        formFields,
+        options,
+    }: {
         formFields: {
             id: string;
             value: string;
-        }[],
-        options: APIOptions
-    ): Promise<
+        }[];
+        options: APIOptions;
+    }): Promise<
         | {
               status: "OK";
               user: User;
@@ -132,7 +148,7 @@ export default class APIImplementation implements APIInterface {
         let email = formFields.filter((f) => f.id === "email")[0].value;
         let password = formFields.filter((f) => f.id === "password")[0].value;
 
-        let response = await options.recipeImplementation.signUp(email, password);
+        let response = await options.recipeImplementation.signUp({ email, password });
         if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
             return response;
         }

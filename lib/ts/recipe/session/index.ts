@@ -35,52 +35,55 @@ export default class SessionWrapper {
     static Error = SuperTokensError;
 
     static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession(
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
             jwtPayload,
-            sessionData
-        );
+            sessionData,
+        });
     }
 
     static getSession(req: express.Request, res: express.Response, options?: VerifySessionOptions) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession(req, res, options);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession({ req, res, options });
     }
 
     static refreshSession(req: express.Request, res: express.Response) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession(req, res);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res });
     }
 
     static revokeAllSessionsForUser(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId });
     }
 
     static getAllSessionHandlesForUser(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({ userId });
     }
 
     static revokeSession(sessionHandle: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession(sessionHandle);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({ sessionHandle });
     }
 
     static revokeMultipleSessions(sessionHandles: string[]) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions(sessionHandles);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({ sessionHandles });
     }
 
     static getSessionData(sessionHandle: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionData(sessionHandle);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionData({ sessionHandle });
     }
 
     static updateSessionData(sessionHandle: string, newSessionData: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData(sessionHandle, newSessionData);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData({
+            sessionHandle,
+            newSessionData,
+        });
     }
 
     static getJWTPayload(sessionHandle: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWTPayload(sessionHandle);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWTPayload({ sessionHandle });
     }
 
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJWTPayload(sessionHandle, newJWTPayload);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJWTPayload({ sessionHandle, newJWTPayload });
     }
 
     static verifySession = (options?: VerifySessionOptions) => {

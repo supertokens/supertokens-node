@@ -5,10 +5,13 @@ import * as axios from "axios";
 import * as qs from "querystring";
 
 export default class APIImplementation implements APIInterface {
-    authorisationUrlGET = async (
-        provider: TypeProvider,
-        options: APIOptions
-    ): Promise<{
+    authorisationUrlGET = async ({
+        provider,
+        options,
+    }: {
+        provider: TypeProvider;
+        options: APIOptions;
+    }): Promise<{
         status: "OK";
         url: string;
     }> => {
@@ -32,12 +35,17 @@ export default class APIImplementation implements APIInterface {
         };
     };
 
-    signInUpPOST = async (
-        provider: TypeProvider,
-        code: string,
-        redirectURI: string,
-        options: APIOptions
-    ): Promise<
+    signInUpPOST = async ({
+        provider,
+        code,
+        redirectURI,
+        options,
+    }: {
+        provider: TypeProvider;
+        code: string;
+        redirectURI: string;
+        options: APIOptions;
+    }): Promise<
         | {
               status: "OK";
               createdNewUser: boolean;
@@ -70,7 +78,11 @@ export default class APIImplementation implements APIInterface {
                 status: "NO_EMAIL_GIVEN_BY_PROVIDER",
             };
         }
-        let user = await options.recipeImplementation.signInUp(provider.id, userInfo.id, emailInfo);
+        let user = await options.recipeImplementation.signInUp({
+            thirdPartyId: provider.id,
+            thirdPartyUserId: userInfo.id,
+            email: emailInfo,
+        });
 
         let action: "signup" | "signin" = user.createdNewUser ? "signup" : "signin";
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(

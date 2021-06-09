@@ -203,7 +203,7 @@ export default class Recipe extends RecipeModule {
     // extra instance functions below...............
 
     getEmailForUserId = async (userId: string) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById(userId);
+        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId });
         if (userInfo === undefined) {
             throw Error("Unknown User ID provided");
         }
@@ -216,7 +216,7 @@ export default class Recipe extends RecipeModule {
 
     verifyEmailUsingToken = async (token: string) => {
         let user = await this.emailVerificationRecipe.verifyEmailUsingToken(token);
-        let userInThisRecipe = await this.recipeInterfaceImpl.getUserById(user.id);
+        let userInThisRecipe = await this.recipeInterfaceImpl.getUserById({ userId: user.id });
         if (userInThisRecipe === undefined) {
             throw Error("Unknown User ID provided");
         }
@@ -224,14 +224,14 @@ export default class Recipe extends RecipeModule {
     };
 
     isEmailVerified = async (userId: string) => {
-        return this.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified(
+        return this.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
             userId,
-            await this.getEmailForUserId(userId)
-        );
+            email: await this.getEmailForUserId(userId),
+        });
     };
 
     signUp = async (email: string, password: string) => {
-        let response = await this.recipeInterfaceImpl.signUp(email, password);
+        let response = await this.recipeInterfaceImpl.signUp({ email, password });
         if (response.status === "OK") {
             return response.user;
         }
@@ -239,7 +239,7 @@ export default class Recipe extends RecipeModule {
     };
 
     signIn = async (email: string, password: string) => {
-        let response = await this.recipeInterfaceImpl.signIn(email, password);
+        let response = await this.recipeInterfaceImpl.signIn({ email, password });
         if (response.status === "OK") {
             return response.user;
         } else {
@@ -248,7 +248,7 @@ export default class Recipe extends RecipeModule {
     };
 
     createResetPasswordToken = async (userId: string) => {
-        let response = await this.recipeInterfaceImpl.createResetPasswordToken(userId);
+        let response = await this.recipeInterfaceImpl.createResetPasswordToken({ userId });
         if (response.status === "OK") {
             return response.token;
         }
@@ -256,7 +256,7 @@ export default class Recipe extends RecipeModule {
     };
 
     resetPasswordUsingToken = async (token: string, newPassword: string) => {
-        let response = await this.recipeInterfaceImpl.resetPasswordUsingToken(token, newPassword);
+        let response = await this.recipeInterfaceImpl.resetPasswordUsingToken({ token, newPassword });
         if (response.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
             throw Error("Invalid password reset token");
         }

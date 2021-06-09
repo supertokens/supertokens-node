@@ -30,7 +30,7 @@ export default async function signInAPI(apiImplementation: APIInterface, options
         value: string;
     }[] = await validateFormFieldsOrThrowError(options.config.signInFeature.formFields, options.req.body.formFields);
 
-    let result = await apiImplementation.signInPOST(formFields, options);
+    let result = await apiImplementation.signInPOST({ formFields, options });
 
     send200Response(options.res, result);
 }

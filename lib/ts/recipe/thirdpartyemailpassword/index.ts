@@ -43,46 +43,46 @@ export default class Wrapper {
             isVerified: boolean;
         }
     ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp(thirdPartyId, thirdPartyUserId, email);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({ thirdPartyId, thirdPartyUserId, email });
     }
 
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo(
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
-            thirdPartyUserId
-        );
+            thirdPartyUserId,
+        });
     }
 
     static signUp(email: string, password: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp(email, password);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({ email, password });
     }
 
     static signIn(email: string, password: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn(email, password);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({ email, password });
     }
 
     static getUserById(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
     static getUserByEmail(email: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail(email);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({ email });
     }
 
     static createResetPasswordToken(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId });
     }
 
     static resetPasswordUsingToken(token: string, newPassword: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken(token, newPassword);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({ token, newPassword });
     }
 
     static getUsersOldestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst({ limit, nextPaginationToken });
     }
 
     static getUsersNewestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst({ limit, nextPaginationToken });
     }
 
     static getUserCount() {

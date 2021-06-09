@@ -23,7 +23,7 @@ export default async function generateEmailVerifyToken(apiImplementation: APIInt
         return options.next();
     }
 
-    let result = await apiImplementation.generateEmailVerifyTokenPOST(options);
+    let result = await apiImplementation.generateEmailVerifyTokenPOST({ options });
 
     send200Response(options.res, result);
 }

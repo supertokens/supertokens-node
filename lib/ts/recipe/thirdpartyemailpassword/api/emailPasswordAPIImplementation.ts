@@ -10,11 +10,11 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
         signInPOST:
             signInUpPOST === undefined
                 ? undefined
-                : async (formFields, options) => {
+                : async (input) => {
                       let response = await signInUpPOST({
                           type: "emailpassword",
-                          formFields,
-                          options,
+                          formFields: input.formFields,
+                          options: input.options,
                           isSignIn: true,
                       });
                       if (response.status === "OK") {
@@ -33,11 +33,11 @@ export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswor
         signUpPOST:
             signInUpPOST === undefined
                 ? undefined
-                : async (formFields, options) => {
+                : async (input) => {
                       let response = await signInUpPOST({
                           type: "emailpassword",
-                          formFields,
-                          options,
+                          formFields: input.formFields,
+                          options: input.options,
                           isSignIn: false,
                       });
                       if (response.status === "OK") {

@@ -23,10 +23,10 @@ export declare type User = {
     email: string;
 };
 export interface RecipeInterface {
-    createEmailVerificationToken(
-        userId: string,
-        email: string
-    ): Promise<
+    createEmailVerificationToken(input: {
+        userId: string;
+        email: string;
+    }): Promise<
         | {
               status: "OK";
               token: string;
@@ -35,9 +35,9 @@ export interface RecipeInterface {
               status: "EMAIL_ALREADY_VERIFIED_ERROR";
           }
     >;
-    verifyEmailUsingToken(
-        token: string
-    ): Promise<
+    verifyEmailUsingToken(input: {
+        token: string;
+    }): Promise<
         | {
               status: "OK";
               user: User;
@@ -46,7 +46,7 @@ export interface RecipeInterface {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    isEmailVerified(userId: string, email: string): Promise<boolean>;
+    isEmailVerified(input: { userId: string; email: string }): Promise<boolean>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -59,10 +59,10 @@ export declare type APIOptions = {
 export interface APIInterface {
     verifyEmailPOST:
         | undefined
-        | ((
-              token: string,
-              options: APIOptions
-          ) => Promise<
+        | ((input: {
+              token: string;
+              options: APIOptions;
+          }) => Promise<
               | {
                     status: "OK";
                     user: User;
@@ -73,17 +73,17 @@ export interface APIInterface {
           >);
     isEmailVerifiedGET:
         | undefined
-        | ((
-              options: APIOptions
-          ) => Promise<{
+        | ((input: {
+              options: APIOptions;
+          }) => Promise<{
               status: "OK";
               isVerified: boolean;
           }>);
     generateEmailVerifyTokenPOST:
         | undefined
-        | ((
-              options: APIOptions
-          ) => Promise<{
+        | ((input: {
+              options: APIOptions;
+          }) => Promise<{
               status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
           }>);
 }

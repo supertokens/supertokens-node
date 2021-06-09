@@ -3,10 +3,13 @@ import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
     constructor(querier: Querier);
-    signUp: (
-        email: string,
-        password: string
-    ) => Promise<
+    signUp: ({
+        email,
+        password,
+    }: {
+        email: string;
+        password: string;
+    }) => Promise<
         | {
               status: "OK";
               user: User;
@@ -15,10 +18,13 @@ export default class RecipeImplementation implements RecipeInterface {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
     >;
-    signIn: (
-        email: string,
-        password: string
-    ) => Promise<
+    signIn: ({
+        email,
+        password,
+    }: {
+        email: string;
+        password: string;
+    }) => Promise<
         | {
               status: "OK";
               user: User;
@@ -27,11 +33,13 @@ export default class RecipeImplementation implements RecipeInterface {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    getUserById: (userId: string) => Promise<User | undefined>;
-    getUserByEmail: (email: string) => Promise<User | undefined>;
-    createResetPasswordToken: (
-        userId: string
-    ) => Promise<
+    getUserById: ({ userId }: { userId: string }) => Promise<User | undefined>;
+    getUserByEmail: ({ email }: { email: string }) => Promise<User | undefined>;
+    createResetPasswordToken: ({
+        userId,
+    }: {
+        userId: string;
+    }) => Promise<
         | {
               status: "OK";
               token: string;
@@ -40,23 +48,32 @@ export default class RecipeImplementation implements RecipeInterface {
               status: "UNKNOWN_USER_ID";
           }
     >;
-    resetPasswordUsingToken: (
-        token: string,
-        newPassword: string
-    ) => Promise<{
+    resetPasswordUsingToken: ({
+        token,
+        newPassword,
+    }: {
+        token: string;
+        newPassword: string;
+    }) => Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
-    getUsersOldestFirst: (
-        limit?: number | undefined,
-        nextPaginationToken?: string | undefined
-    ) => Promise<{
+    getUsersOldestFirst: ({
+        limit,
+        nextPaginationToken,
+    }: {
+        limit?: number | undefined;
+        nextPaginationToken?: string | undefined;
+    }) => Promise<{
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
-    getUsersNewestFirst: (
-        limit?: number | undefined,
-        nextPaginationToken?: string | undefined
-    ) => Promise<{
+    getUsersNewestFirst: ({
+        limit,
+        nextPaginationToken,
+    }: {
+        limit?: number | undefined;
+        nextPaginationToken?: string | undefined;
+    }) => Promise<{
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;

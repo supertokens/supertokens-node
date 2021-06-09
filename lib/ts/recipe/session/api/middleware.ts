@@ -20,13 +20,16 @@ import { sendNon200Response } from "../../../utils";
 export function verifySession(recipeInstance: SessionRecipe, options?: VerifySessionOptions) {
     // We know this should be Request but then Type
     return async (req: SessionRequest, res: Response, next: NextFunction) => {
-        return await recipeInstance.apiImpl.verifySession(options, {
-            config: recipeInstance.config,
-            next,
-            req,
-            res,
-            recipeId: recipeInstance.getRecipeId(),
-            recipeImplementation: recipeInstance.recipeInterfaceImpl,
+        return await recipeInstance.apiImpl.verifySession({
+            verifySessionOptions: options,
+            options: {
+                config: recipeInstance.config,
+                next,
+                req,
+                res,
+                recipeId: recipeInstance.getRecipeId(),
+                recipeImplementation: recipeInstance.recipeInterfaceImpl,
+            },
         });
     };
 }
@@ -68,7 +71,7 @@ export async function sendTokenTheftDetectedResponse(
     next: NextFunction
 ) {
     try {
-        await recipeInstance.recipeInterfaceImpl.revokeSession(sessionHandle);
+        await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle });
         sendNon200Response(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
     } catch (err) {
         next(err);

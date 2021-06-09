@@ -8,8 +8,11 @@ export default class RecipeImplementation implements RecipeInterface {
         this.recipeImplementation = recipeImplementation;
     }
 
-    getUserByThirdPartyInfo = async (thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> => {
-        let user = await this.recipeImplementation.getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
+    getUserByThirdPartyInfo = async (input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+    }): Promise<User | undefined> => {
+        let user = await this.recipeImplementation.getUserByThirdPartyInfo(input);
         if (user === undefined || user.thirdParty === undefined) {
             return undefined;
         }
@@ -21,15 +24,15 @@ export default class RecipeImplementation implements RecipeInterface {
         };
     };
 
-    signInUp = async (
-        thirdPartyId: string,
-        thirdPartyUserId: string,
+    signInUp = async (input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
         email: {
             id: string;
             isVerified: boolean;
-        }
-    ): Promise<{ createdNewUser: boolean; user: User }> => {
-        let result = await this.recipeImplementation.signInUp(thirdPartyId, thirdPartyUserId, email);
+        };
+    }): Promise<{ createdNewUser: boolean; user: User }> => {
+        let result = await this.recipeImplementation.signInUp(input);
         if (result.user.thirdParty === undefined) {
             throw new Error("Should never come here");
         }
@@ -44,8 +47,8 @@ export default class RecipeImplementation implements RecipeInterface {
         };
     };
 
-    getUserById = async (userId: string): Promise<User | undefined> => {
-        let user = await this.recipeImplementation.getUserById(userId);
+    getUserById = async (input: { userId: string }): Promise<User | undefined> => {
+        let user = await this.recipeImplementation.getUserById(input);
         if (user === undefined || user.thirdParty === undefined) {
             // either user is undefined or it's an email password user.
             return undefined;
@@ -58,11 +61,11 @@ export default class RecipeImplementation implements RecipeInterface {
         };
     };
 
-    getUsersOldestFirst = async (_?: number, __?: string) => {
+    getUsersOldestFirst = async (_: { limit?: number; nextPaginationToken?: string }) => {
         throw new Error("Should never be called");
     };
 
-    getUsersNewestFirst = async (_?: number, __?: string) => {
+    getUsersNewestFirst = async (_: { limit?: number; nextPaginationToken?: string }) => {
         throw new Error("Should never be called");
     };
 

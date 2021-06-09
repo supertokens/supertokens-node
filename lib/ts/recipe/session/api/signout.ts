@@ -23,7 +23,7 @@ export default async function signOutAPI(apiImplementation: APIInterface, option
         return options.next();
     }
 
-    let result = await apiImplementation.signOutPOST(options);
+    let result = await apiImplementation.signOutPOST({ options });
 
     return send200Response(options.res, result);
 }

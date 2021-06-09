@@ -48,7 +48,7 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
         });
     }
 
-    let result = await apiImplementation.passwordResetPOST(formFields, token, options);
+    let result = await apiImplementation.passwordResetPOST({ formFields, token, options });
 
     send200Response(options.res, result);
 }

@@ -8,10 +8,13 @@ export default class RecipeImplementation implements RecipeInterface {
         this.querier = querier;
     }
 
-    createEmailVerificationToken = async (
-        userId: string,
-        email: string
-    ): Promise<
+    createEmailVerificationToken = async ({
+        userId,
+        email,
+    }: {
+        userId: string;
+        email: string;
+    }): Promise<
         | {
               status: "OK";
               token: string;
@@ -34,9 +37,11 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    verifyEmailUsingToken = async (
-        token: string
-    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> => {
+    verifyEmailUsingToken = async ({
+        token,
+    }: {
+        token: string;
+    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
             method: "token",
             token,
@@ -56,7 +61,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    isEmailVerified = async (userId: string, email: string): Promise<boolean> => {
+    isEmailVerified = async ({ userId, email }: { userId: string; email: string }): Promise<boolean> => {
         let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/user/email/verify"), {
             userId,
             email,

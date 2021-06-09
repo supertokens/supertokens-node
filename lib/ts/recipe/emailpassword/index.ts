@@ -34,11 +34,11 @@ export default class Wrapper {
     }
 
     static getUserById(userId: string): Promise<User | undefined> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
     static getUserByEmail(email: string): Promise<User | undefined> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail(email);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({ email });
     }
 
     static createResetPasswordToken(userId: string): Promise<string> {
@@ -56,7 +56,7 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string | undefined;
     }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst({ limit, nextPaginationToken });
     }
 
     static getUsersNewestFirst(
@@ -66,7 +66,7 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string | undefined;
     }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst({ limit, nextPaginationToken });
     }
 
     static getUserCount(): Promise<number> {

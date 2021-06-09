@@ -35,8 +35,8 @@ Supertokens.init({
                 functions: (originalImpl: RecipeInterface) => {
                     return {
                         getSession: originalImpl.getSession,
-                        createNewSession: async (res, userId, jwtPayload, sessionData) => {
-                            let session = await originalImpl.createNewSession(res, userId);
+                        createNewSession: async (input) => {
+                            let session = await originalImpl.createNewSession(input);
                             return {
                                 getAccessToken: session.getAccessToken,
                                 getHandle: session.getHandle,
@@ -126,8 +126,8 @@ Supertokens.init({
                     });
                     return {
                         ...faunaDBMod,
-                        createNewSession: (r, u, j, s) => {
-                            return faunaDBMod.createNewSession(r, u, j, s);
+                        createNewSession: (input) => {
+                            return faunaDBMod.createNewSession(input);
                         },
                     };
                 },
@@ -155,7 +155,7 @@ Supertokens.init({
                 apis: (oI) => {
                     return {
                         ...oI,
-                        emailExistsGET: async (email, option) => {
+                        emailExistsGET: async (input) => {
                             return {
                                 status: "OK",
                                 exists: true,

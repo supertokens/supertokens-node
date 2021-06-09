@@ -194,38 +194,38 @@ export declare type TypeNormalisedInput = {
     };
 };
 export interface RecipeInterface {
-    getUserById(userId: string): Promise<User | undefined>;
-    getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
-    getUsersOldestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
+    getUserById(input: { userId: string }): Promise<User | undefined>;
+    getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
+    getUsersOldestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
         users: User[];
         nextPaginationToken?: string;
     }>;
-    getUsersNewestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
+    getUsersNewestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
         users: User[];
         nextPaginationToken?: string;
     }>;
     getUserCount(): Promise<number>;
-    signInUp(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
+    signInUp(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
         email: {
             id: string;
             isVerified: boolean;
-        }
-    ): Promise<{
+        };
+    }): Promise<{
         createdNewUser: boolean;
         user: User;
     }>;
-    signUp(
-        email: string,
-        password: string
-    ): Promise<
+    signUp(input: {
+        email: string;
+        password: string;
+    }): Promise<
         | {
               status: "OK";
               user: User;
@@ -234,10 +234,10 @@ export interface RecipeInterface {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
     >;
-    signIn(
-        email: string,
-        password: string
-    ): Promise<
+    signIn(input: {
+        email: string;
+        password: string;
+    }): Promise<
         | {
               status: "OK";
               user: User;
@@ -246,10 +246,10 @@ export interface RecipeInterface {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    getUserByEmail(email: string): Promise<User | undefined>;
-    createResetPasswordToken(
-        userId: string
-    ): Promise<
+    getUserByEmail(input: { email: string }): Promise<User | undefined>;
+    createResetPasswordToken(input: {
+        userId: string;
+    }): Promise<
         | {
               status: "OK";
               token: string;
@@ -258,10 +258,10 @@ export interface RecipeInterface {
               status: "UNKNOWN_USER_ID";
           }
     >;
-    resetPasswordUsingToken(
-        token: string,
-        newPassword: string
-    ): Promise<{
+    resetPasswordUsingToken(input: {
+        token: string;
+        newPassword: string;
+    }): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
 }
@@ -314,43 +314,43 @@ export declare type SignInUpAPIOutput =
 export interface APIInterface {
     authorisationUrlGET:
         | undefined
-        | ((
-              provider: TypeProvider,
-              options: ThirdPartyAPIOptions
-          ) => Promise<{
+        | ((input: {
+              provider: TypeProvider;
+              options: ThirdPartyAPIOptions;
+          }) => Promise<{
               status: "OK";
               url: string;
           }>);
     emailExistsGET:
         | undefined
-        | ((
-              email: string,
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
+        | ((input: {
+              email: string;
+              options: EmailPasswordAPIOptions;
+          }) => Promise<{
               status: "OK";
               exists: boolean;
           }>);
     generatePasswordResetTokenPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
+              }[];
+              options: EmailPasswordAPIOptions;
+          }) => Promise<{
               status: "OK";
           }>);
     passwordResetPOST:
         | undefined
-        | ((
+        | ((input: {
               formFields: {
                   id: string;
                   value: string;
-              }[],
-              token: string,
-              options: EmailPasswordAPIOptions
-          ) => Promise<{
+              }[];
+              token: string;
+              options: EmailPasswordAPIOptions;
+          }) => Promise<{
               status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }>);
     signInUpPOST: undefined | ((input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>);

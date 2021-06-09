@@ -34,18 +34,18 @@ export default class Wrapper {
             isVerified: boolean;
         }
     ): Promise<{ createdNewUser: boolean; user: User }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp(thirdPartyId, thirdPartyUserId, email);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({ thirdPartyId, thirdPartyUserId, email });
     }
 
     static getUserById(userId: string): Promise<User | undefined> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo(
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
-            thirdPartyUserId
-        );
+            thirdPartyUserId,
+        });
     }
 
     static getUsersOldestFirst(
@@ -55,7 +55,10 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string;
     }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst({
+            limit,
+            nextPaginationToken,
+        });
     }
 
     static getUsersNewestFirst(
@@ -65,7 +68,10 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string;
     }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst({
+            limit,
+            nextPaginationToken,
+        });
     }
 
     static getUserCount(): Promise<number> {

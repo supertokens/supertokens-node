@@ -27,11 +27,11 @@ export default class RecipeImplementation implements RecipeInterface {
         };
     };
 
-    getUsersOldestFirst = async (limit?: number, nextPaginationToken?: string) => {
+    getUsersOldestFirst = async ({ limit, nextPaginationToken }: { limit?: number; nextPaginationToken?: string }) => {
         return this.getUsers("ASC", limit, nextPaginationToken);
     };
 
-    getUsersNewestFirst = async (limit?: number, nextPaginationToken?: string) => {
+    getUsersNewestFirst = async ({ limit, nextPaginationToken }: { limit?: number; nextPaginationToken?: string }) => {
         return this.getUsers("DESC", limit, nextPaginationToken);
     };
 
@@ -40,14 +40,18 @@ export default class RecipeImplementation implements RecipeInterface {
         return Number(response.count);
     };
 
-    signInUp = async (
-        thirdPartyId: string,
-        thirdPartyUserId: string,
+    signInUp = async ({
+        thirdPartyId,
+        thirdPartyUserId,
+        email,
+    }: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
         email: {
             id: string;
             isVerified: boolean;
-        }
-    ): Promise<{ createdNewUser: boolean; user: User }> => {
+        };
+    }): Promise<{ createdNewUser: boolean; user: User }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
             thirdPartyId,
             thirdPartyUserId,
@@ -59,7 +63,7 @@ export default class RecipeImplementation implements RecipeInterface {
         };
     };
 
-    getUserById = async (userId: string): Promise<User | undefined> => {
+    getUserById = async ({ userId }: { userId: string }): Promise<User | undefined> => {
         let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
             userId,
         });
@@ -72,7 +76,13 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    getUserByThirdPartyInfo = async (thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> => {
+    getUserByThirdPartyInfo = async ({
+        thirdPartyId,
+        thirdPartyUserId,
+    }: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+    }): Promise<User | undefined> => {
         let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
             thirdPartyId,
             thirdPartyUserId,

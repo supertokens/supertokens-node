@@ -134,7 +134,7 @@ export default class Recipe extends RecipeModule {
     };
 
     createEmailVerificationToken = async (userId: string, email: string): Promise<string> => {
-        let response = await this.recipeInterfaceImpl.createEmailVerificationToken(userId, email);
+        let response = await this.recipeInterfaceImpl.createEmailVerificationToken({ userId, email });
         if (response.status === "OK") {
             return response.token;
         }
@@ -142,7 +142,7 @@ export default class Recipe extends RecipeModule {
     };
 
     verifyEmailUsingToken = async (token: string): Promise<User> => {
-        let response = await this.recipeInterfaceImpl.verifyEmailUsingToken(token);
+        let response = await this.recipeInterfaceImpl.verifyEmailUsingToken({ token });
         if (response.status === "OK") {
             return response.user;
         }

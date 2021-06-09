@@ -161,31 +161,31 @@ export declare type TypeNormalisedInput = {
     };
 };
 export interface RecipeInterface {
-    getUserById(userId: string): Promise<User | undefined>;
-    getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
-    getUsersOldestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
+    getUserById(input: { userId: string }): Promise<User | undefined>;
+    getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
+    getUsersOldestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
         users: User[];
         nextPaginationToken?: string;
     }>;
-    getUsersNewestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
+    getUsersNewestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
         users: User[];
         nextPaginationToken?: string;
     }>;
     getUserCount(): Promise<number>;
-    signInUp(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
+    signInUp(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
         email: {
             id: string;
             isVerified: boolean;
-        }
-    ): Promise<{
+        };
+    }): Promise<{
         createdNewUser: boolean;
         user: User;
     }>;
@@ -202,21 +202,21 @@ export declare type APIOptions = {
 export interface APIInterface {
     authorisationUrlGET:
         | undefined
-        | ((
-              provider: TypeProvider,
-              options: APIOptions
-          ) => Promise<{
+        | ((input: {
+              provider: TypeProvider;
+              options: APIOptions;
+          }) => Promise<{
               status: "OK";
               url: string;
           }>);
     signInUpPOST:
         | undefined
-        | ((
-              provider: TypeProvider,
-              code: string,
-              redirectURI: string,
-              options: APIOptions
-          ) => Promise<
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              options: APIOptions;
+          }) => Promise<
               | {
                     status: "OK";
                     createdNewUser: boolean;

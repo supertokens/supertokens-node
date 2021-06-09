@@ -8,22 +8,28 @@ export default class RecipeImplementation implements RecipeInterface {
         this.recipeImplementation = recipeImplementation;
     }
 
-    signUp = async (
-        email: string,
-        password: string
-    ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> => {
-        return await this.recipeImplementation.signUp(email, password);
+    signUp = async ({
+        email,
+        password,
+    }: {
+        email: string;
+        password: string;
+    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> => {
+        return await this.recipeImplementation.signUp({ email, password });
     };
 
-    signIn = async (
-        email: string,
-        password: string
-    ): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> => {
-        return this.recipeImplementation.signIn(email, password);
+    signIn = async ({
+        email,
+        password,
+    }: {
+        email: string;
+        password: string;
+    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> => {
+        return this.recipeImplementation.signIn({ email, password });
     };
 
-    getUserById = async (userId: string): Promise<User | undefined> => {
-        let user = await this.recipeImplementation.getUserById(userId);
+    getUserById = async ({ userId }: { userId: string }): Promise<User | undefined> => {
+        let user = await this.recipeImplementation.getUserById({ userId });
         if (user === undefined || user.thirdParty !== undefined) {
             // either user is undefined or it's a thirdparty user.
             return undefined;
@@ -31,25 +37,27 @@ export default class RecipeImplementation implements RecipeInterface {
         return user;
     };
 
-    getUserByEmail = async (email: string): Promise<User | undefined> => {
-        return this.recipeImplementation.getUserByEmail(email);
+    getUserByEmail = async ({ email }: { email: string }): Promise<User | undefined> => {
+        return this.recipeImplementation.getUserByEmail({ email });
     };
 
-    createResetPasswordToken = async (
-        userId: string
-    ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
-        return this.recipeImplementation.createResetPasswordToken(userId);
+    createResetPasswordToken = async ({
+        userId,
+    }: {
+        userId: string;
+    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
+        return this.recipeImplementation.createResetPasswordToken({ userId });
     };
 
-    resetPasswordUsingToken = async (token: string, newPassword: string) => {
-        return this.recipeImplementation.resetPasswordUsingToken(token, newPassword);
+    resetPasswordUsingToken = async ({ token, newPassword }: { token: string; newPassword: string }) => {
+        return this.recipeImplementation.resetPasswordUsingToken({ token, newPassword });
     };
 
-    getUsersOldestFirst = async (_?: number, __?: string) => {
+    getUsersOldestFirst = async (_: { limit?: number; nextPaginationToken?: string }) => {
         throw new Error("Should never be called");
     };
 
-    getUsersNewestFirst = async (_?: number, __?: string) => {
+    getUsersNewestFirst = async (_: { limit?: number; nextPaginationToken?: string }) => {
         throw new Error("Should never be called");
     };
 

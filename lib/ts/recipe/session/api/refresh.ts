@@ -21,6 +21,6 @@ export default async function handleRefreshAPI(apiImplementation: APIInterface, 
         return options.next();
     }
 
-    await apiImplementation.refreshPOST(options);
+    await apiImplementation.refreshPOST({ options });
     send200Response(options.res, {});
 }

@@ -4,14 +4,17 @@ import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
 
 export default class APIImplementation implements APIInterface {
-    refreshPOST = async (options: APIOptions): Promise<void> => {
-        await options.recipeImplementation.refreshSession(options.req, options.res);
+    refreshPOST = async ({ options }: { options: APIOptions }): Promise<void> => {
+        await options.recipeImplementation.refreshSession({ req: options.req, res: options.res });
     };
 
-    verifySession = async (
-        verifySessionOptions: VerifySessionOptions | undefined,
-        options: APIOptions
-    ): Promise<void> => {
+    verifySession = async ({
+        verifySessionOptions,
+        options,
+    }: {
+        verifySessionOptions: VerifySessionOptions | undefined;
+        options: APIOptions;
+    }): Promise<void> => {
         try {
             let method = normaliseHttpMethod(options.req.method);
             if (method === "options" || method === "trace") {
@@ -25,16 +28,16 @@ export default class APIImplementation implements APIInterface {
             let refreshTokenPath = options.config.refreshTokenPath;
 
             if (incomingPath.equals(refreshTokenPath) && method === "post") {
-                (options.req as SessionRequest).session = await options.recipeImplementation.refreshSession(
-                    options.req,
-                    options.res
-                );
+                (options.req as SessionRequest).session = await options.recipeImplementation.refreshSession({
+                    req: options.req,
+                    res: options.res,
+                });
             } else {
-                (options.req as SessionRequest).session = await options.recipeImplementation.getSession(
-                    options.req,
-                    options.res,
-                    verifySessionOptions
-                );
+                (options.req as SessionRequest).session = await options.recipeImplementation.getSession({
+                    req: options.req,
+                    res: options.res,
+                    options: verifySessionOptions,
+                });
             }
             return options.next();
         } catch (err) {
@@ -42,14 +45,16 @@ export default class APIImplementation implements APIInterface {
         }
     };
 
-    signOutPOST = async (
-        options: APIOptions
-    ): Promise<{
+    signOutPOST = async ({
+        options,
+    }: {
+        options: APIOptions;
+    }): Promise<{
         status: "OK";
     }> => {
         let session;
         try {
-            session = await options.recipeImplementation.getSession(options.req, options.res);
+            session = await options.recipeImplementation.getSession({ req: options.req, res: options.res });
         } catch (err) {
             if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNAUTHORISED) {
                 // The session is expired / does not exist anyway. So we return OK

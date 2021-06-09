@@ -41,7 +41,7 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
             });
         }
 
-        let response = await apiImplementation.verifyEmailPOST(token, options);
+        let response = await apiImplementation.verifyEmailPOST({ token, options });
         if (response.status === "OK") {
             result = { status: "OK" };
         } else {
@@ -52,7 +52,7 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
             return options.next();
         }
 
-        result = await apiImplementation.isEmailVerifiedGET(options);
+        result = await apiImplementation.isEmailVerifiedGET({ options });
     }
     send200Response(options.res, result);
 }
