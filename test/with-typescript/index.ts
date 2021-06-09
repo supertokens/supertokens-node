@@ -17,6 +17,7 @@ import {
     SessionContainer as FaunaDBSessionContainer,
 } from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");
+import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 
 let app = express();
 
@@ -167,5 +168,41 @@ Supertokens.init({
     ],
     supertokens: {
         connectionURI: "",
+    },
+});
+
+ThirdPartyEmailPassword.init({
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+                signInUpPOST: async (input) => {
+                    let response = await oI.signInUpPOST(input);
+                    if (response.status === "OK") {
+                        let { id, email } = response.user;
+
+                        let newUser = response.createdNewUser;
+                        // newUser is a boolean value, if true, then the user has signed up, else they have signed in.
+
+                        if (response.type === "thirdparty") {
+                            // this is the response from the OAuth 2 provider that contains their tokens or user info.
+                            let thirdPartyAuthCodeResponse = response.authCodeResponse;
+                        }
+                        if (input.type === "emailpassword") {
+                            // these are the input form fields values that the user used while signing up / in
+                            let formFields = input.formFields;
+                        }
+
+                        if (newUser) {
+                            // TODO: post sign up logic
+                        } else {
+                            // TODO: post sign in logic
+                        }
+
+                        return response;
+                    }
+                },
+            };
+        },
     },
 });
