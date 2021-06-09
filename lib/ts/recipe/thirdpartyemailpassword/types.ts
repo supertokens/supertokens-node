@@ -71,16 +71,6 @@ export type TypeContextThirdParty = {
     thirdPartyAuthCodeResponse: any;
 };
 
-export type TypeInputHandlePostSignUp = (
-    user: User,
-    context: TypeContextEmailPasswordSignUp | TypeContextThirdParty
-) => Promise<void>;
-
-export type TypeInputHandlePostSignIn = (
-    user: User,
-    context: TypeContextEmailPasswordSignIn | TypeContextThirdParty
-) => Promise<void>; // same as signup to keep the signature consistent
-
 export type TypeInputSetJwtPayloadForSession = (
     user: User,
     context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,

@@ -38,14 +38,6 @@ export declare type TypeContextThirdParty = {
     loginType: "thirdparty";
     thirdPartyAuthCodeResponse: any;
 };
-export declare type TypeInputHandlePostSignUp = (
-    user: User,
-    context: TypeContextEmailPasswordSignUp | TypeContextThirdParty
-) => Promise<void>;
-export declare type TypeInputHandlePostSignIn = (
-    user: User,
-    context: TypeContextEmailPasswordSignIn | TypeContextThirdParty
-) => Promise<void>;
 export declare type TypeInputSetJwtPayloadForSession = (
     user: User,
     context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
