@@ -262,8 +262,8 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                         functions: (oI) => {
                             return {
                                 ...oI,
-                                getSessionData: async (handle) => {
-                                    return handle;
+                                getSessionData: async (input) => {
+                                    return input.sessionHandle;
                                 },
                             };
                         },

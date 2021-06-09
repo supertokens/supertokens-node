@@ -555,8 +555,8 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signUpPOST: async (formFields, options) => {
-                                    let response = await oI.signUpPOST(formFields, options);
+                                signUpPOST: async (input) => {
+                                    let response = await oI.signUpPOST(input);
                                     if (response.status === "OK") {
                                         customFormFields = formFields;
                                     }
@@ -634,8 +634,8 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signUpPOST: async (formFields, options) => {
-                                    let response = await oI.signUpPOST(formFields, options);
+                                signUpPOST: async (input) => {
+                                    let response = await oI.signUpPOST(input);
                                     if (response.status === "OK") {
                                         customFormFields = formFields;
                                     }
@@ -1414,8 +1414,8 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signUpPOST: async (formFields, options) => {
-                                    let response = await oI.signUpPOST(formFields, options);
+                                signUpPOST: async (input) => {
+                                    let response = await oI.signUpPOST(input);
                                     if (response.status === "OK") {
                                         customFormFields = formFields;
                                     }
