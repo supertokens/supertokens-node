@@ -16,8 +16,6 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIOptions, APIInterface } from "./types";
-import RecipeImplementation from "./recipeImplementation";
-import APIImplementation from "./api/implementation";
 
 // For Express
 export default class Wrapper {
@@ -114,4 +112,4 @@ export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
 
 export let getUserCount = Wrapper.getUserCount;
 
-export type { RecipeInterface, RecipeImplementation, User, APIOptions, APIInterface, APIImplementation };
+export type { RecipeInterface, User, APIOptions, APIInterface };

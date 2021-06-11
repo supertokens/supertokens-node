@@ -16,8 +16,6 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, User } from "./types";
-import RecipeImplementation from "./recipeImplementation";
-import APIImplementation from "./api/implementation";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -47,4 +45,4 @@ export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
 
-export type { RecipeInterface, APIOptions, APIInterface, User, RecipeImplementation, APIImplementation };
+export type { RecipeInterface, APIOptions, APIInterface, User };

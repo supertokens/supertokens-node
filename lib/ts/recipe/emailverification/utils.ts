@@ -14,13 +14,12 @@
  */
 
 import Recipe from "./recipe";
-import { TypeInput, TypeNormalisedInput } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import {
     getEmailVerificationURL as defaultGetEmailVerificationURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
 } from "./emailVerificationFunctions";
-import { RecipeImplementation, APIImplementation } from "./";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -40,8 +39,8 @@ export function validateAndNormaliseUserInput(
     let getEmailForUserId = config.getEmailForUserId;
 
     let override = {
-        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
-        apis: (originalImplementation: APIImplementation) => originalImplementation,
+        functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        apis: (originalImplementation: APIInterface) => originalImplementation,
         ...config.override,
     };
 

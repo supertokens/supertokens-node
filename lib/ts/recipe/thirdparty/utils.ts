@@ -18,6 +18,7 @@ import { validateTheStructureOfUserInput } from "../../utils";
 import Recipe from "./recipe";
 import STError from "./error";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
+import { RecipeInterface, APIInterface } from "./types";
 import {
     User,
     TypeInput,
@@ -28,7 +29,6 @@ import {
     TypeInputSessionFeature,
     TypeNormalisedInputSessionFeature,
 } from "./types";
-import { RecipeImplementation, APIImplementation } from "./";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -48,8 +48,8 @@ export function validateAndNormaliseUserInput(
     let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
 
     let override = {
-        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
-        apis: (originalImplementation: APIImplementation) => originalImplementation,
+        functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        apis: (originalImplementation: APIInterface) => originalImplementation,
         ...config.override,
     };
 

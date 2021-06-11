@@ -60,34 +60,37 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init({
-                override: {
-                    functions: (oI) => {
-                        return {
-                            ...oI,
-                            signUp: async (input) => {
-                                let response = await oI.signUp(input);
-                                if (response.status === "OK") {
-                                    user = response.user;
-                                }
-                                return response;
-                            },
-                            signIn: async (input) => {
-                                let response = await oI.signIn(input);
-                                if (response.status === "OK") {
-                                    user = response.user;
-                                }
-                                return response;
-                            },
-                            getUserById: async (input) => {
-                                let response = await oI.getUserById(input);
-                                user = response;
-                                return response;
-                            }
-                        }
-                    }
-                }
-            }), Session.init()],
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                signUp: async (input) => {
+                                    let response = await oI.signUp(input);
+                                    if (response.status === "OK") {
+                                        user = response.user;
+                                    }
+                                    return response;
+                                },
+                                signIn: async (input) => {
+                                    let response = await oI.signIn(input);
+                                    if (response.status === "OK") {
+                                        user = response.user;
+                                    }
+                                    return response;
+                                },
+                                getUserById: async (input) => {
+                                    let response = await oI.getUserById(input);
+                                    user = response;
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         let app = express();
@@ -99,41 +102,41 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
             res.json(await ThirdPartyEmailPassword.getUserById(userId));
-        })
+        });
 
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
 
         assert.notStrictEqual(user, undefined);
         assert.deepStrictEqual(signUpResponse.body.user, user);
-        
+
         user = undefined;
         assert.strictEqual(user, undefined);
 
         let signInResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signin")
-                    .send({
-                        formFields: [
-                            {
-                                id: "password",
-                                value: "test123!",
-                            },
-                            {
-                                id: "email",
-                                value: "user@test.com",
-                            },
-                        ],
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
-        
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "test123!",
+                        },
+                        {
+                            id: "email",
+                            value: "user@test.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+
         assert.notStrictEqual(user, undefined);
         assert.deepStrictEqual(signInResponse.user, user);
 
@@ -141,20 +144,20 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
         assert.strictEqual(user, undefined);
 
         let userByIdResponse = await new Promise((resolve) =>
-                request(app)
-                    .get("/user")
-                    .query({
-                        userId: signInResponse.user.id
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
+            request(app)
+                .get("/user")
+                .query({
+                    userId: signInResponse.user.id,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
 
         assert.notStrictEqual(user, undefined);
         assert.deepStrictEqual(userByIdResponse, user);
@@ -175,29 +178,32 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init({
-                override: {
-                    apis: (oI) => {
-                        return {
-                            ...oI,
-                            signInUpPOST: async (input) => {
-                                let response = await oI.signInUpPOST(input);
-                                if (response.status === "OK") {
-                                    user = response.user;
-                                    newUser = response.createdNewUser;
-                                    type = response.type;
-                                }
-                                return response;
-                            },
-                            emailExistsGET: async (input) => {
-                                let response = await oI.emailExistsGET(input);
-                                emailExists = response.exists;
-                                return response;
-                            }
-                        }
-                    }
-                }
-            }), Session.init()],
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    if (response.status === "OK") {
+                                        user = response.user;
+                                        newUser = response.createdNewUser;
+                                        type = response.type;
+                                    }
+                                    return response;
+                                },
+                                emailExistsGET: async (input) => {
+                                    let response = await oI.emailExistsGET(input);
+                                    emailExists = response.exists;
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         let app = express();
@@ -209,23 +215,23 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
             res.json(await ThirdPartyEmailPassword.getUserById(userId));
-        })
+        });
 
         let emailExistsResponse = await new Promise((resolve) =>
-                request(app)
-                    .get("/auth/signup/email/exists")
-                    .query({
-                        email: "user@test.com"
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
+            request(app)
+                .get("/auth/signup/email/exists")
+                .query({
+                    email: "user@test.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
         assert.strictEqual(emailExistsResponse.exists, false);
         assert.strictEqual(emailExists, false);
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
@@ -236,51 +242,51 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
         assert.deepStrictEqual(signUpResponse.body.user, user);
 
         emailExistsResponse = await new Promise((resolve) =>
-                request(app)
-                    .get("/auth/signup/email/exists")
-                    .query({
-                        email: "user@test.com"
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
+            request(app)
+                .get("/auth/signup/email/exists")
+                .query({
+                    email: "user@test.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
         assert.strictEqual(emailExistsResponse.exists, true);
         assert.strictEqual(emailExists, true);
-        
+
         user = undefined;
         assert.strictEqual(user, undefined);
 
         let signInResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signin")
-                    .send({
-                        formFields: [
-                            {
-                                id: "password",
-                                value: "test123!",
-                            },
-                            {
-                                id: "email",
-                                value: "user@test.com",
-                            },
-                        ],
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
-        
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "test123!",
+                        },
+                        {
+                            id: "email",
+                            value: "user@test.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, false);
         assert.strictEqual(type, "emailpassword");
@@ -299,34 +305,37 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init({
-                override: {
-                    functions: (oI) => {
-                        return {
-                            ...oI,
-                            signUp: async (input) => {
-                                let response = await oI.signUp(input);
-                                user = response.user;
-                                throw {
-                                    error: "signup error"
-                                };
-                            },
-                            signIn: async (input) => {
-                                await oI.signIn(input);
-                                throw {
-                                    error: "signin error"
-                                };
-                            },
-                            getUserById: async (input) => {
-                                await oI.getUserById(input);
-                                throw {
-                                    error: "get user error"
-                                };
-                            }
-                        }
-                    }
-                }
-            }), Session.init()],
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                signUp: async (input) => {
+                                    let response = await oI.signUp(input);
+                                    user = response.user;
+                                    throw {
+                                        error: "signup error",
+                                    };
+                                },
+                                signIn: async (input) => {
+                                    await oI.signIn(input);
+                                    throw {
+                                        error: "signin error",
+                                    };
+                                },
+                                getUserById: async (input) => {
+                                    await oI.getUserById(input);
+                                    throw {
+                                        error: "get user error",
+                                    };
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         let app = express();
@@ -342,64 +351,64 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
             } catch (err) {
                 next(err);
             }
-        })
+        });
 
         app.use((err, req, res, next) => {
             res.json({
                 ...err,
-                customError: true
+                customError: true,
             });
         });
 
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signUpResponse.body, {error: "signup error", customError: true});
-        
+        assert.deepStrictEqual(signUpResponse.body, { error: "signup error", customError: true });
+
         let signInResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signin")
-                    .send({
-                        formFields: [
-                            {
-                                id: "password",
-                                value: "test123!",
-                            },
-                            {
-                                id: "email",
-                                value: "user@test.com",
-                            },
-                        ],
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(err.response.body);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
-        
-        assert.deepStrictEqual(signInResponse, {error: "signin error", customError: true});
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "test123!",
+                        },
+                        {
+                            id: "email",
+                            value: "user@test.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err.response.body);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+
+        assert.deepStrictEqual(signInResponse, { error: "signin error", customError: true });
 
         let userByIdResponse = await new Promise((resolve) =>
-                request(app)
-                    .get("/user")
-                    .query({
-                        userId: user.id
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(err.response.body);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
+            request(app)
+                .get("/user")
+                .query({
+                    userId: user.id,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err.response.body);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
 
-        assert.deepStrictEqual(userByIdResponse, {error: "get user error", customError: true});
+        assert.deepStrictEqual(userByIdResponse, { error: "get user error", customError: true });
     });
 
     it("overriding api tests, throws error", async () => {
@@ -417,36 +426,39 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init({
-                override: {
-                    apis: (oI) => {
-                        return {
-                            ...oI,
-                            signInUpPOST: async (input) => {
-                                let response = await oI.signInUpPOST(input);
-                                user = response.user;
-                                newUser = response.createdNewUser;
-                                type = response.type;
-                                if (newUser) {
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    user = response.user;
+                                    newUser = response.createdNewUser;
+                                    type = response.type;
+                                    if (newUser) {
+                                        throw {
+                                            error: "signup error",
+                                        };
+                                    }
                                     throw {
-                                        error: "signup error"
+                                        error: "signin error",
                                     };
-                                }
-                                throw {
-                                    error: "signin error"
-                                };
-                            },
-                            emailExistsGET: async (input) => {
-                                let response = await oI.emailExistsGET(input);
-                                emailExists = response.exists;
-                                throw {
-                                    error: "email exists error"
-                                };
-                            }
-                        }
-                    }
-                }
-            }), Session.init()],
+                                },
+                                emailExistsGET: async (input) => {
+                                    let response = await oI.emailExistsGET(input);
+                                    emailExists = response.exists;
+                                    throw {
+                                        error: "email exists error",
+                                    };
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         let app = express();
@@ -463,78 +475,78 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
         app.use((err, req, res, next) => {
             res.json({
                 ...err,
-                customError: true
+                customError: true,
             });
         });
 
         let emailExistsResponse = await new Promise((resolve) =>
-                request(app)
-                    .get("/auth/signup/email/exists")
-                    .query({
-                        email: "user@test.com"
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(err.response.body);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
-        assert.deepStrictEqual(emailExistsResponse, {error: "email exists error", customError: true});
+            request(app)
+                .get("/auth/signup/email/exists")
+                .query({
+                    email: "user@test.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err.response.body);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+        assert.deepStrictEqual(emailExistsResponse, { error: "email exists error", customError: true });
         assert.strictEqual(emailExists, false);
         let signUpResponse = await signUPRequest(app, "user@test.com", "test123!");
 
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, true);
         assert.strictEqual(type, "emailpassword");
-        assert.deepStrictEqual(signUpResponse.body, {error: "signup error", customError: true});
+        assert.deepStrictEqual(signUpResponse.body, { error: "signup error", customError: true });
 
         emailExistsResponse = await new Promise((resolve) =>
-                request(app)
-                    .get("/auth/signup/email/exists")
-                    .query({
-                        email: "user@test.com"
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
-        assert.deepStrictEqual(emailExistsResponse, {error: "email exists error", customError: true});
+            request(app)
+                .get("/auth/signup/email/exists")
+                .query({
+                    email: "user@test.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+        assert.deepStrictEqual(emailExistsResponse, { error: "email exists error", customError: true });
         assert.strictEqual(emailExists, true);
 
         let signInResponse = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signin")
-                    .send({
-                        formFields: [
-                            {
-                                id: "password",
-                                value: "test123!",
-                            },
-                            {
-                                id: "email",
-                                value: "user@test.com",
-                            },
-                        ],
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
-        
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "test123!",
+                        },
+                        {
+                            id: "email",
+                            value: "user@test.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+
         assert.strictEqual(newUser, false);
-        assert.deepStrictEqual(signInResponse, {error: "signin error", customError: true});
+        assert.deepStrictEqual(signInResponse, { error: "signin error", customError: true });
     });
 });

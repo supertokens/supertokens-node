@@ -1,16 +1,7 @@
 import express from "express";
 import Supertokens from "../..";
-import Session, {
-    RecipeInterface,
-    VerifySessionOptions,
-    SessionContainer,
-    SessionRequest,
-    RecipeImplementation as SessionRecipeImplementation,
-} from "../../recipe/session";
-import EmailPassword, {
-    RecipeInterface as EPRecipeInterface,
-    RecipeImplementation as EPRecipeImplementation,
-} from "../../recipe/emailpassword";
+import Session, { RecipeInterface, VerifySessionOptions, SessionContainer, SessionRequest } from "../../recipe/session";
+import EmailPassword, { RecipeInterface as EPRecipeInterface } from "../../recipe/emailpassword";
 import NextJS from "../../nextjs";
 import {
     RecipeImplementation as FaunaDBImplementation,
@@ -119,7 +110,7 @@ Supertokens.init({
             antiCsrf: "NONE",
             cookieDomain: "",
             override: {
-                functions: (originalImpl: SessionRecipeImplementation) => {
+                functions: (originalImpl: RecipeInterface) => {
                     let faunaDBMod = new FaunaDBImplementation(originalImpl, {
                         faunaDBClient: new faunadb(),
                         userCollectionName: "users",
@@ -149,7 +140,30 @@ Supertokens.init({
         websiteDomain: "",
     },
     recipeList: [
-        Session.init(),
+        Session.init({
+            override: {
+                functions: (originalImplementation) => {
+                    return {
+                        ...originalImplementation,
+                        createNewSession: async (input) => {
+                            let userId = input.userId;
+
+                            input.jwtPayload = {
+                                ...input.jwtPayload,
+                                someKey: "someValue",
+                            };
+
+                            input.sessionData = {
+                                ...input.sessionData,
+                                someKey: "someValue",
+                            };
+
+                            return originalImplementation.createNewSession(input);
+                        },
+                    };
+                },
+            },
+        }),
         EmailPassword.init({
             override: {
                 apis: (oI) => {

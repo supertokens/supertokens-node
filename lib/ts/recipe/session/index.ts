@@ -25,8 +25,6 @@ import {
     APIOptions,
 } from "./types";
 import Recipe from "./recipe";
-import RecipeImplementation from "./recipeImplementation";
-import APIImplementation from "./api/implementation";
 
 // For Express
 export default class SessionWrapper {
@@ -123,13 +121,4 @@ export let verifySession = SessionWrapper.verifySession;
 
 export let Error = SessionWrapper.Error;
 
-export type {
-    VerifySessionOptions,
-    RecipeInterface,
-    SessionContainer,
-    SessionRequest,
-    RecipeImplementation,
-    APIInterface,
-    APIOptions,
-    APIImplementation,
-};
+export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, APIInterface, APIOptions };

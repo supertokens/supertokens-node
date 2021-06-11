@@ -44,20 +44,23 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     apiBasePath: "/api/auth",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init(), Session.init({
-                    override: {
-                        functions: (oI) => {
-                            return {
-                                ...oI,
-                                createNewSession: async (input) => {
-                                    let response = await oI.createNewSession(input);
-                                    process.env.user = response.getUserId();
-                                    return response;
-                                }
-                            }
-                        }
-                    }
-                })],
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        override: {
+                            functions: (oI) => {
+                                return {
+                                    ...oI,
+                                    createNewSession: async (input) => {
+                                        let response = await oI.createNewSession(input);
+                                        process.env.user = response.getUserId();
+                                        return response;
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                ],
             });
         });
 
@@ -425,22 +428,25 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     apiBasePath: "/api/auth",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init(), Session.init({
-                    override: {
-                        functions: (oI) => {
-                            return {
-                                ...oI,
-                                createNewSession: async (input) => {
-                                    let response = await oI.createNewSession(input);
-                                    process.env.user = response.getUserId();
-                                    throw {
-                                        error: "sign up error"
-                                    };
-                                }
-                            }
-                        }
-                    }
-                })],
+                recipeList: [
+                    EmailPassword.init(),
+                    Session.init({
+                        override: {
+                            functions: (oI) => {
+                                return {
+                                    ...oI,
+                                    createNewSession: async (input) => {
+                                        let response = await oI.createNewSession(input);
+                                        process.env.user = response.getUserId();
+                                        throw {
+                                            error: "sign up error",
+                                        };
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                ],
             });
         });
 
@@ -477,14 +483,14 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             try {
                 await superTokensNextWrapper(
                     async (next) => {
-                        return (SuperTokens.middleware())(request, response, next);
+                        return SuperTokens.middleware()(request, response, next);
                     },
                     request,
                     response
                 );
                 assert(false);
             } catch (err) {
-                assert.deepStrictEqual(err, {error: "sign up error"})
+                assert.deepStrictEqual(err, { error: "sign up error" });
             }
         });
     });

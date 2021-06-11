@@ -918,7 +918,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     emailVerificationFeature: {
                         createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
                             token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        }
+                        },
                     },
                     override: {
                         emailVerificationFeature: {
@@ -929,11 +929,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                                         let response = await oI.verifyEmailPOST(input);
                                         user = response.user;
                                         return response;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                    },
+                                };
+                            },
+                        },
+                    },
                 }),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
@@ -1006,7 +1006,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     emailVerificationFeature: {
                         createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
                             token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        }
+                        },
                     },
                     override: {
                         emailVerificationFeature: {
@@ -1017,11 +1017,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                                         let response = await oI.verifyEmailUsingToken(input);
                                         user = response.user;
                                         return response;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                    },
+                                };
+                            },
+                        },
+                    },
                 }),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
@@ -1094,7 +1094,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     emailVerificationFeature: {
                         createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
                             token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        }
+                        },
                     },
                     override: {
                         emailVerificationFeature: {
@@ -1105,13 +1105,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                                         let response = await oI.verifyEmailPOST(input);
                                         user = response.user;
                                         throw {
-                                            error: "verify email error"
+                                            error: "verify email error",
                                         };
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                    },
+                                };
+                            },
+                        },
+                    },
                 }),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
@@ -1128,7 +1128,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         app.use((err, req, res, next) => {
             res.json({
                 customError: true,
-                ...err
+                ...err,
             });
         });
 
@@ -1166,7 +1166,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
         );
 
-        assert.deepStrictEqual(response2, {customError: true, error: "verify email error"});
+        assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
         assert.strictEqual(user.id, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
@@ -1190,7 +1190,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                     emailVerificationFeature: {
                         createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
                             token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        }
+                        },
                     },
                     override: {
                         emailVerificationFeature: {
@@ -1201,13 +1201,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                                         let response = await oI.verifyEmailUsingToken(input);
                                         user = response.user;
                                         throw {
-                                            error: "verify email error"
+                                            error: "verify email error",
                                         };
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                    },
+                                };
+                            },
+                        },
+                    },
                 }),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
@@ -1224,7 +1224,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         app.use((err, req, res, next) => {
             res.json({
                 customError: true,
-                ...err
+                ...err,
             });
         });
 
@@ -1262,7 +1262,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 })
         );
 
-        assert.deepStrictEqual(response2, {customError: true, error: "verify email error"});
+        assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
         assert.strictEqual(user.id, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });

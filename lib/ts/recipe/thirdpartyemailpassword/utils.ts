@@ -31,7 +31,7 @@ import {
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
-import { RecipeImplementation, APIImplementation } from "./";
+import { RecipeInterface, APIInterface } from "./types";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -59,8 +59,8 @@ export function validateAndNormaliseUserInput(
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
     let override = {
-        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
-        apis: (originalImplementation: APIImplementation) => originalImplementation,
+        functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        apis: (originalImplementation: APIInterface) => originalImplementation,
         ...config?.override,
     };
 

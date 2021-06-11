@@ -16,12 +16,9 @@
 import { Request, Response, NextFunction } from "express";
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
-    RecipeImplementation as EmailVerificationRecipeImplementation,
-    APIImplementation as EmailVerificationAPIImplementation,
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
-import { RecipeImplementation, APIImplementation } from "./";
 
 const TypeAny = {
     type: "any",
@@ -133,13 +130,11 @@ export type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis?: (originalImplementation: APIImplementation) => APIInterface;
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeImplementation
-            ) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -161,13 +156,11 @@ export type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis: (originalImplementation: APIImplementation) => APIInterface;
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeImplementation
-            ) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };

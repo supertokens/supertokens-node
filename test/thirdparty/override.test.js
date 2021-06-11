@@ -73,7 +73,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         await cleanST();
     });
 
-    it("overriding functions tests", async function() {
+    it("overriding functions tests", async function () {
         await startST();
         let user = undefined;
         let newUser = undefined;
@@ -86,29 +86,32 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdParty.init({
-                signInAndUpFeature: {
-                    providers: [this.customProvider1],
-                },
-                override: {
-                    functions: (oI) => {
-                        return {
-                            ...oI,
-                            signInUp: async (input) => {
-                                let response = await oI.signInUp(input);
-                                user = response.user;
-                                newUser = response.createdNewUser;
-                                return response;
-                            },
-                            getUserById: async (input) => {
-                                let response = await oI.getUserById(input);
-                                user = response;
-                                return response;
-                            }
-                        }
-                    }
-                }
-            }), Session.init()],
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                signInUp: async (input) => {
+                                    let response = await oI.signInUp(input);
+                                    user = response.user;
+                                    newUser = response.createdNewUser;
+                                    return response;
+                                },
+                                getUserById: async (input) => {
+                                    let response = await oI.getUserById(input);
+                                    user = response;
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         let app = express();
@@ -122,7 +125,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
             res.json(await ThirdParty.getUserById(userId));
-        })
+        });
 
         let signUpResponse = await new Promise((resolve) =>
             request(app)
@@ -144,7 +147,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, true);
         assert.deepStrictEqual(signUpResponse.user, user);
-        
+
         user = undefined;
         assert.strictEqual(user, undefined);
 
@@ -164,7 +167,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                     }
                 })
         );
-        
+
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, false);
         assert.deepStrictEqual(signInResponse.user, user);
@@ -173,20 +176,20 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         assert.strictEqual(user, undefined);
 
         let userByIdResponse = await new Promise((resolve) =>
-                request(app)
-                    .get("/user")
-                    .query({
-                        userId: signInResponse.user.id
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
+            request(app)
+                .get("/user")
+                .query({
+                    userId: signInResponse.user.id,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
 
         assert.notStrictEqual(user, undefined);
         assert.deepStrictEqual(userByIdResponse, user);
@@ -205,26 +208,29 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdParty.init({
-                signInAndUpFeature: {
-                    providers: [this.customProvider1],
-                },
-                override: {
-                    apis: (oI) => {
-                        return {
-                            ...oI,
-                            signInUpPOST: async (input) => {
-                                let response = await oI.signInUpPOST(input);
-                                if (response.status === "OK") {
-                                    user = response.user;
-                                    newUser = response.createdNewUser;
-                                }
-                                return response;
-                            }
-                        }
-                    }
-                }
-            }), Session.init()],
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    if (response.status === "OK") {
+                                        user = response.user;
+                                        newUser = response.createdNewUser;
+                                    }
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         let app = express();
@@ -236,7 +242,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
             res.json(await ThirdParty.getUserById(userId));
-        })
+        });
 
         nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
 
@@ -260,7 +266,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, true);
         assert.deepStrictEqual(signUpResponse.user, user);
-        
+
         user = undefined;
         assert.strictEqual(user, undefined);
 
@@ -280,7 +286,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                     }
                 })
         );
-        
+
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, false);
         assert.deepStrictEqual(signInResponse.user, user);
@@ -298,37 +304,40 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdParty.init({
-                signInAndUpFeature: {
-                    providers: [this.customProvider1],
-                },
-                override: {
-                    functions: (oI) => {
-                        return {
-                            ...oI,
-                            signInUp: async (input) => {
-                                let response = await oI.signInUp(input);
-                                user = response.user;
-                                newUser = response.createdNewUser;
-                                if (newUser) {
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                signInUp: async (input) => {
+                                    let response = await oI.signInUp(input);
+                                    user = response.user;
+                                    newUser = response.createdNewUser;
+                                    if (newUser) {
+                                        throw {
+                                            error: "signup error",
+                                        };
+                                    }
                                     throw {
-                                        error: "signup error"
+                                        error: "signin error",
                                     };
-                                }
-                                throw {
-                                    error: "signin error"
-                                };
-                            },
-                            getUserById: async (input) => {
-                                await oI.getUserById(input);
-                                throw {
-                                    error: "get user error"
-                                };
-                            }
-                        }
-                    }
-                }
-            }), Session.init()],
+                                },
+                                getUserById: async (input) => {
+                                    await oI.getUserById(input);
+                                    throw {
+                                        error: "get user error",
+                                    };
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         let app = express();
@@ -344,14 +353,14 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
             } catch (err) {
                 next(err);
             }
-        })
+        });
 
         nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
 
         app.use((err, req, res, next) => {
             res.json({
                 ...err,
-                customError: true
+                customError: true,
             });
         });
 
@@ -373,8 +382,8 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         );
 
         assert.notStrictEqual(user, undefined);
-        assert.deepStrictEqual(signUpResponse, {error: "signup error", customError: true});
-        
+        assert.deepStrictEqual(signUpResponse, { error: "signup error", customError: true });
+
         let signInResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signinup")
@@ -391,26 +400,26 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                     }
                 })
         );
-        
-        assert.deepStrictEqual(signInResponse, {error: "signin error", customError: true});
+
+        assert.deepStrictEqual(signInResponse, { error: "signin error", customError: true });
 
         let userByIdResponse = await new Promise((resolve) =>
-                request(app)
-                    .get("/user")
-                    .query({
-                        userId: user.id
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(err.response.body);
-                        } else {
-                            resolve(res.body);
-                        }
-                    })
-            );
+            request(app)
+                .get("/user")
+                .query({
+                    userId: user.id,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err.response.body);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
 
-        assert.deepStrictEqual(userByIdResponse, {error: "get user error", customError: true});
+        assert.deepStrictEqual(userByIdResponse, { error: "get user error", customError: true });
     });
 
     it("overriding api tests, throws error", async function () {
@@ -427,31 +436,34 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdParty.init({
-                signInAndUpFeature: {
-                    providers: [this.customProvider1],
-                },
-                override: {
-                    apis: (oI) => {
-                        return {
-                            ...oI,
-                            signInUpPOST: async (input) => {
-                                let response = await oI.signInUpPOST(input);
-                                user = response.user;
-                                newUser = response.createdNewUser;
-                                if (newUser) {
+            recipeList: [
+                ThirdParty.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider1],
+                    },
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    user = response.user;
+                                    newUser = response.createdNewUser;
+                                    if (newUser) {
+                                        throw {
+                                            error: "signup error",
+                                        };
+                                    }
                                     throw {
-                                        error: "signup error"
+                                        error: "signin error",
                                     };
-                                }
-                                throw {
-                                    error: "signin error"
-                                };
-                            }
-                        }
-                    }
-                }
-            }), Session.init()],
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
         });
 
         let app = express();
@@ -465,7 +477,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
         app.use((err, req, res, next) => {
             res.json({
                 ...err,
-                customError: true
+                customError: true,
             });
         });
 
@@ -488,7 +500,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
 
         assert.notStrictEqual(user, undefined);
         assert.strictEqual(newUser, true);
-        assert.deepStrictEqual(signUpResponse, {error: "signup error", customError: true});
+        assert.deepStrictEqual(signUpResponse, { error: "signup error", customError: true });
 
         let signInResponse = await new Promise((resolve) =>
             request(app)
@@ -506,8 +518,8 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                     }
                 })
         );
-        
+
         assert.strictEqual(newUser, false);
-        assert.deepStrictEqual(signInResponse, {error: "signin error", customError: true});
+        assert.deepStrictEqual(signInResponse, { error: "signin error", customError: true });
     });
 });

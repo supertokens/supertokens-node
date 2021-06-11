@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { RecipeImplementation, APIImplementation } from "./";
 export declare type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override?: {
-        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis?: (originalImplementation: APIImplementation) => APIInterface;
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
@@ -14,8 +13,8 @@ export declare type TypeNormalisedInput = {
     getEmailVerificationURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override: {
-        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis: (originalImplementation: APIImplementation) => APIInterface;
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis: (originalImplementation: APIInterface) => APIInterface;
     };
 };
 export declare type User = {

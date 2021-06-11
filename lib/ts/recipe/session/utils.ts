@@ -40,7 +40,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
-import { RecipeImplementation, APIImplementation } from "./";
+import { RecipeInterface, APIInterface } from "./types";
 
 export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -186,8 +186,8 @@ export function validateAndNormaliseUserInput(
     }
 
     let override = {
-        functions: (originalImplementation: RecipeImplementation) => originalImplementation,
-        apis: (originalImplementation: APIImplementation) => originalImplementation,
+        functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        apis: (originalImplementation: APIInterface) => originalImplementation,
         ...config?.override,
     };
 

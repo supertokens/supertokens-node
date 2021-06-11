@@ -16,8 +16,8 @@ export default class RecipeImplementation implements RecipeInterface {
     }: {
         res: express.Response;
         userId: string;
-        jwtPayload: any;
-        sessionData: any;
+        jwtPayload?: any;
+        sessionData?: any;
     }) => Promise<Session>;
     getSession: ({
         req,

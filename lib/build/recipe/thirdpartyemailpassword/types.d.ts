@@ -1,9 +1,7 @@
 import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import {
-    RecipeImplementation as EmailVerificationRecipeImplementation,
     RecipeInterface as EmailVerificationRecipeInterface,
-    APIImplementation as EmailVerificationAPIImplementation,
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import {
@@ -13,7 +11,6 @@ import {
     TypeInputResetPasswordUsingTokenFeature,
     APIOptions as EmailPasswordAPIOptionsOriginal,
 } from "../emailpassword/types";
-import { RecipeImplementation, APIImplementation } from "./";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -89,13 +86,11 @@ export declare type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis?: (originalImplementation: APIImplementation) => APIInterface;
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeImplementation
-            ) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -175,13 +170,11 @@ export declare type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis: (originalImplementation: APIImplementation) => APIInterface;
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeImplementation
-            ) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIImplementation) => EmailVerificationAPIInterface;
+            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };

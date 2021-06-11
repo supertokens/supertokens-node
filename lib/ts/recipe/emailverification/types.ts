@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { RecipeImplementation, APIImplementation } from "./";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -20,8 +19,8 @@ export type TypeInput = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override?: {
-        functions?: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis?: (originalImplementation: APIImplementation) => APIInterface;
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface) => APIInterface;
     };
 };
 
@@ -30,8 +29,8 @@ export type TypeNormalisedInput = {
     getEmailVerificationURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override: {
-        functions: (originalImplementation: RecipeImplementation) => RecipeInterface;
-        apis: (originalImplementation: APIImplementation) => APIInterface;
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis: (originalImplementation: APIInterface) => APIInterface;
     };
 };
 

@@ -26,8 +26,6 @@ import {
     SignInUpAPIOutput,
 } from "./types";
 import { TypeProvider } from "../thirdparty/types";
-import RecipeImplementation from "./recipeImplementation";
-import APIImplementation from "./api/implementation";
 
 // For Express
 export default class Wrapper {
@@ -152,13 +150,11 @@ export let Apple = Wrapper.Apple;
 
 export type {
     RecipeInterface,
-    RecipeImplementation,
     TypeProvider,
     User,
     APIInterface,
     EmailPasswordAPIOptions,
     ThirdPartyAPIOptions,
-    APIImplementation,
     SignInUpAPIInput,
     SignInUpAPIOutput,
 };

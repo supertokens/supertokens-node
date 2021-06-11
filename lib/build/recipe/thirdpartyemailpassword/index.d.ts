@@ -10,8 +10,6 @@ import {
     SignInUpAPIOutput,
 } from "./types";
 import { TypeProvider } from "../thirdparty/types";
-import RecipeImplementation from "./recipeImplementation";
-import APIImplementation from "./api/implementation";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -115,13 +113,11 @@ export declare let Facebook: typeof import("../thirdparty/providers/facebook").d
 export declare let Apple: typeof import("../thirdparty/providers/apple").default;
 export type {
     RecipeInterface,
-    RecipeImplementation,
     TypeProvider,
     User,
     APIInterface,
     EmailPasswordAPIOptions,
     ThirdPartyAPIOptions,
-    APIImplementation,
     SignInUpAPIInput,
     SignInUpAPIOutput,
 };

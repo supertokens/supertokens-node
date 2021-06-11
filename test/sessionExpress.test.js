@@ -2094,10 +2094,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                                     refreshSessionCalled = true;
                                     session = response;
                                     return response;
-                                }
-                            }
-                        }
-                    }
+                                },
+                            };
+                        },
+                    },
                 }),
             ],
         });
@@ -2289,10 +2289,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                                     let response = await oI.signOutPOST(input);
                                     signoutCalled = true;
                                     return response;
-                                }
-                            }
-                        }
-                    }
+                                },
+                            };
+                        },
+                    },
                 }),
             ],
         });
@@ -2336,9 +2336,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/signout")
-                .set("Cookie", [
-                    "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -2387,12 +2385,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                                     createNewSessionCalled = true;
                                     session = response;
                                     throw {
-                                        error: "create new session error"
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        error: "create new session error",
+                                    };
+                                },
+                            };
+                        },
+                    },
                 }),
             ],
         });
@@ -2415,9 +2413,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use((err, req, res, next) => {
             res.json({
                 customError: true,
-                ...err
+                ...err,
             });
-        })
+        });
 
         let res = await new Promise((resolve) =>
             request(app)
@@ -2434,7 +2432,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         assert.strictEqual(createNewSessionCalled, true);
         assert.notStrictEqual(session, undefined);
-        assert.deepStrictEqual(res, {customError: true, error: "create new session error"});
+        assert.deepStrictEqual(res, { customError: true, error: "create new session error" });
     });
 
     it("test overriding of sessions apis, error thrown", async function () {
@@ -2462,12 +2460,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                                     let response = await oI.signOutPOST(input);
                                     signoutCalled = true;
                                     throw {
-                                        error: "signout error"
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        error: "signout error",
+                                    };
+                                },
+                            };
+                        },
+                    },
                 }),
             ],
         });
@@ -2490,7 +2488,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use((err, req, res, next) => {
             res.json({
                 customError: true,
-                ...err
+                ...err,
             });
         });
 
@@ -2518,9 +2516,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionRevokedResponse = await new Promise((resolve) =>
             request(app)
                 .post("/signout")
-                .set("Cookie", [
-                    "sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                ])
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
                 .set("anti-csrf", res.antiCsrf)
                 .expect(200)
                 .end((err, res) => {
@@ -2532,6 +2528,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
                 })
         );
         assert.strictEqual(signoutCalled, true);
-        assert.deepStrictEqual(sessionRevokedResponse, {customError: true, error: "signout error"});
+        assert.deepStrictEqual(sessionRevokedResponse, { customError: true, error: "signout error" });
     });
 });
