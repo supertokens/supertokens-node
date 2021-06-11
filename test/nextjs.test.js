@@ -27,6 +27,7 @@ const { removeServerlessCache } = require("../lib/build/utils");
 describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
     describe("with superTokensNextWrapper", function () {
         before(async function () {
+            process.env.user = undefined;
             await killAllST();
             await setupST();
             await startST();
@@ -43,7 +44,20 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                     apiBasePath: "/api/auth",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPassword.init(), Session.init()],
+                recipeList: [EmailPassword.init(), Session.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                createNewSession: async (input) => {
+                                    let response = await oI.createNewSession(input);
+                                    process.env.user = response.getUserId();
+                                    return response;
+                                }
+                            }
+                        }
+                    }
+                })],
             });
         });
 
@@ -80,6 +94,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             response.on("end", () => {
                 assert.deepStrictEqual(response._getJSONData().status, "OK");
                 assert.deepStrictEqual(response._getJSONData().user.email, "john.doe@supertokens.io");
+                assert.strictEqual(response._getJSONData().user.id, process.env.user);
                 assert(response._getHeaders()["front-token"] !== undefined);
                 assert(response._getHeaders()["set-cookie"][0].startsWith("sAccessToken="));
                 assert(response._getHeaders()["set-cookie"][1].startsWith("sRefreshToken="));
@@ -388,6 +403,89 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             );
             assert.notDeepStrictEqual(session, undefined);
             assert.deepStrictEqual(session.userId, "1");
+        });
+    });
+
+    describe("with superTokensNextWrapper, overriding throws error", function () {
+        before(async function () {
+            process.env.user = undefined;
+            await killAllST();
+            await setupST();
+            await startST();
+            await createServerlessCacheForTesting();
+            await removeServerlessCache();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPassword.init(), Session.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                createNewSession: async (input) => {
+                                    let response = await oI.createNewSession(input);
+                                    process.env.user = response.getUserId();
+                                    throw {
+                                        error: "sign up error"
+                                    };
+                                }
+                            }
+                        }
+                    }
+                })],
+            });
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("Sign Up", async function () {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/signup/",
+                body: {
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "john.doe@supertokens.io",
+                        },
+                        {
+                            id: "password",
+                            value: "P@sSW0rd",
+                        },
+                    ],
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            try {
+                await superTokensNextWrapper(
+                    async (next) => {
+                        return (SuperTokens.middleware())(request, response, next);
+                    },
+                    request,
+                    response
+                );
+                assert(false);
+            } catch (err) {
+                assert.deepStrictEqual(err, {error: "sign up error"})
+            }
         });
     });
 });
