@@ -166,6 +166,47 @@ Supertokens.init({
         }),
         EmailPassword.init({
             override: {
+                functions: (supertokensImpl) => {
+                    return {
+                        ...supertokensImpl,
+                        signIn: async (input) => {
+                            // we check if the email exists in SuperTokens. If not,
+                            // then the sign in should be handled by you.
+                            if ((await supertokensImpl.getUserByEmail({ email: input.email })) === undefined) {
+                                // TODO: sign in from your db
+                            } else {
+                                return supertokensImpl.signIn(input);
+                            }
+                        },
+                        signUp: async (input) => {
+                            // all new users are created in SuperTokens;
+                            return supertokensImpl.signUp(input);
+                        },
+                        getUserByEmail: async (input) => {
+                            let superTokensUser = await supertokensImpl.getUserByEmail(input);
+                            if (superTokensUser === undefined) {
+                                let email = input.email;
+                                // TODO: fetch and return user info from your database...
+                            } else {
+                                return superTokensUser;
+                            }
+                        },
+                        getUserById: async (input) => {
+                            let superTokensUser = await supertokensImpl.getUserById(input);
+                            if (superTokensUser === undefined) {
+                                let userId = input.userId;
+                                // TODO: fetch and return user info from your database...
+                            } else {
+                                return superTokensUser;
+                            }
+                        },
+                        getUserCount: async () => {
+                            let supertokensCount = await supertokensImpl.getUserCount();
+                            let yourUsersCount = 0; // TODO: fetch the count from your db
+                            return yourUsersCount + supertokensCount;
+                        },
+                    };
+                },
                 apis: (oI) => {
                     return {
                         ...oI,
