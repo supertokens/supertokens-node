@@ -56,10 +56,15 @@ export default class APIImplementation implements APIInterface {
             options.recipeId;
 
         try {
-            options.config.resetPasswordUsingTokenFeature
-                .createAndSendCustomEmail(user, passwordResetLink)
-                .catch((_) => {});
-        } catch (ignored) {}
+            if (!options.isInServerlessEnv) {
+                options.config.resetPasswordUsingTokenFeature
+                    .createAndSendCustomEmail(user, passwordResetLink)
+                    .catch((_) => {});
+            } else {
+                // see https://github.com/supertokens/supertokens-node/pull/135
+                await options.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(user, passwordResetLink);
+            }
+        } catch (_) {}
 
         return {
             status: "OK",

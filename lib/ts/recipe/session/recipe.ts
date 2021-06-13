@@ -39,9 +39,12 @@ export default class SessionRecipe extends RecipeModule {
 
     apiImpl: APIInterface;
 
+    isInServerlessEnv: boolean;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
+        this.isInServerlessEnv = isInServerlessEnv;
         this.recipeInterfaceImpl = this.config.override.functions(
             new RecipeImplementation(
                 Querier.getNewInstanceOrThrowError(isInServerlessEnv, recipeId),
@@ -108,6 +111,7 @@ export default class SessionRecipe extends RecipeModule {
             config: this.config,
             next,
             recipeId: this.getRecipeId(),
+            isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
             req,
             res,

@@ -28,6 +28,7 @@ export function verifySession(recipeInstance: SessionRecipe, options?: VerifySes
                 req,
                 res,
                 recipeId: recipeInstance.getRecipeId(),
+                isInServerlessEnv: recipeInstance.isInServerlessEnv,
                 recipeImplementation: recipeInstance.recipeInterfaceImpl,
             },
         });

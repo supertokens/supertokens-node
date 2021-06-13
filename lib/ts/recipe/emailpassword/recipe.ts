@@ -50,6 +50,8 @@ export default class Recipe extends RecipeModule {
 
     apiImpl: APIInterface;
 
+    isInServerlessEnv: boolean;
+
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
@@ -60,6 +62,7 @@ export default class Recipe extends RecipeModule {
         }
     ) {
         super(recipeId, appInfo);
+        this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined
@@ -150,6 +153,7 @@ export default class Recipe extends RecipeModule {
             config: this.config,
             next,
             recipeId: this.getRecipeId(),
+            isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
             req,
             res,

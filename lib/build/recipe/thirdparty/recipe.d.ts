@@ -13,6 +13,7 @@ export default class Recipe extends RecipeModule {
     providers: TypeProvider[];
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
+    isInServerlessEnv: boolean;
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,

@@ -25,6 +25,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Removes duplicate signout APIs from all auth recipes since it's already exposed from the session recipe.
 -   Marked `setJwtPayload` and `setSessionData` as deprecated.
 
+## [5.1.0] - 2021-06-13
+
+### Fixes:
+
+-   https://github.com/supertokens/supertokens-node/pull/135: In serverless env, waits for email to be sent before returning the response cause sometimes, serverless envs quite the process early on.
+-   https://github.com/supertokens/supertokens-node/issues/127: In serverless env, sends telemetry with a 30% probability.
+
 ## [5.0.1] - 2021-05-06
 
 ### Fixes:

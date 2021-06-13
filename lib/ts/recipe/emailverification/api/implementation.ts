@@ -65,8 +65,13 @@ export default class APIImplementation implements APIInterface {
             options.recipeId;
 
         try {
-            options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink).catch((_) => {});
-        } catch (ignored) {}
+            if (!options.isInServerlessEnv) {
+                options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink).catch((_) => {});
+            } else {
+                // see https://github.com/supertokens/supertokens-node/pull/135
+                await options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink);
+            }
+        } catch (_) {}
 
         return {
             status: "OK",

@@ -247,6 +247,7 @@ export type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
+    isInServerlessEnv: boolean;
     req: Request;
     res: Response;
     next: NextFunction;

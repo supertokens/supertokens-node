@@ -12,6 +12,7 @@ export default class Recipe extends RecipeModule {
     emailVerificationRecipe: EmailVerificationRecipe;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
+    isInServerlessEnv: boolean;
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
