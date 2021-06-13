@@ -69,13 +69,24 @@ export default async function generatePasswordResetToken(
         "&rid=" +
         recipeInstance.getRecipeId();
 
-    // step 5
-    send200Response(res, {
-        status: "OK",
-    });
+    // step 5 - respond before email sending if not in a serverless environment
+    const isInServerlessEnv = recipeInstance.checkIfInServerlessEnv();
+    if (!isInServerlessEnv) {
+        send200Response(res, {
+            status: "OK",
+        });
+    }
 
     // step 6 & 7
     try {
         await recipeInstance.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(user, passwordResetLink);
     } catch (ignored) {}
+
+    // step 8 - respond after email sending in a serverless environment
+    // This ensures the program does not exist prior to the email being sent
+    if (isInServerlessEnv) {
+        send200Response(res, {
+            status: "OK",
+        });
+    }
 }

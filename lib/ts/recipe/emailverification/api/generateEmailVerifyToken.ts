@@ -64,13 +64,24 @@ export default async function generateEmailVerifyToken(
         "&rid=" +
         recipeInstance.getRecipeId();
 
-    // step 4
-    send200Response(res, {
-        status: "OK",
-    });
+    // step 4 - respond before email sending if not in a serverless environment
+    const isInServerlessEnv = recipeInstance.checkIfInServerlessEnv();
+    if (!isInServerlessEnv) {
+        send200Response(res, {
+            status: "OK",
+        });
+    }
 
     // step 5 & 6
     try {
         await recipeInstance.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink);
     } catch (ignored) {}
+
+    // step 7 - respond after email sending in a serverless environment
+    // This ensures the program does not exist prior to the email being sent
+    if (isInServerlessEnv) {
+        send200Response(res, {
+            status: "OK",
+        });
+    }
 }
