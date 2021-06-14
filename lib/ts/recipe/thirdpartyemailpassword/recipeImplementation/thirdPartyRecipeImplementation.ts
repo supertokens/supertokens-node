@@ -31,12 +31,22 @@ export default class RecipeImplementation implements RecipeInterface {
             id: string;
             isVerified: boolean;
         };
-    }): Promise<{ createdNewUser: boolean; user: User }> => {
+    }): Promise<
+        | { status: "OK"; createdNewUser: boolean; user: User }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    > => {
         let result = await this.recipeImplementation.signInUp(input);
+        if (result.status === "FIELD_ERROR") {
+            return result;
+        }
         if (result.user.thirdParty === undefined) {
             throw new Error("Should never come here");
         }
         return {
+            status: "OK",
             createdNewUser: result.createdNewUser,
             user: {
                 email: result.user.email,

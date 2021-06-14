@@ -51,13 +51,20 @@ export default class RecipeImplementation implements RecipeInterface {
             id: string;
             isVerified: boolean;
         };
-    }): Promise<{ createdNewUser: boolean; user: User }> => {
+    }): Promise<
+        | { status: "OK"; createdNewUser: boolean; user: User }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    > => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
             thirdPartyId,
             thirdPartyUserId,
             email,
         });
         return {
+            status: "OK",
             createdNewUser: response.createdNewUser,
             user: response.user,
         };

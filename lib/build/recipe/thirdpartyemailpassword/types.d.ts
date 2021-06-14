@@ -203,10 +203,17 @@ export interface RecipeInterface {
             id: string;
             isVerified: boolean;
         };
-    }): Promise<{
-        createdNewUser: boolean;
-        user: User;
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
     signUp(input: {
         email: string;
         password: string;

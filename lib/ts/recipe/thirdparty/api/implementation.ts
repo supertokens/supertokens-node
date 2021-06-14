@@ -78,20 +78,24 @@ export default class APIImplementation implements APIInterface {
                 status: "NO_EMAIL_GIVEN_BY_PROVIDER",
             };
         }
-        let user = await options.recipeImplementation.signInUp({
+        let response = await options.recipeImplementation.signInUp({
             thirdPartyId: provider.id,
             thirdPartyUserId: userInfo.id,
             email: emailInfo,
         });
 
-        let action: "signup" | "signin" = user.createdNewUser ? "signup" : "signin";
+        if (response.status === "FIELD_ERROR") {
+            return response;
+        }
+
+        let action: "signup" | "signin" = response.createdNewUser ? "signup" : "signin";
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(
-            user.user,
+            response.user,
             accessTokenAPIResponse.data,
             action
         );
         let sessionDataPromise = options.config.sessionFeature.setSessionData(
-            user.user,
+            response.user,
             accessTokenAPIResponse.data,
             action
         );
@@ -99,10 +103,11 @@ export default class APIImplementation implements APIInterface {
         let jwtPayload: { [key: string]: any } | undefined = await jwtPayloadPromise;
         let sessionData: { [key: string]: any } | undefined = await sessionDataPromise;
 
-        await Session.createNewSession(options.res, user.user.id, jwtPayload, sessionData);
+        await Session.createNewSession(options.res, response.user.id, jwtPayload, sessionData);
         return {
             status: "OK",
-            ...user,
+            createdNewUser: response.createdNewUser,
+            user: response.user,
             authCodeResponse: accessTokenAPIResponse,
         };
     };

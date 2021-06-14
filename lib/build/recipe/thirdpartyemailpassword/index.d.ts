@@ -20,10 +20,17 @@ export default class Wrapper {
             id: string;
             isVerified: boolean;
         }
-    ): Promise<{
-        createdNewUser: boolean;
-        user: User;
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
     static signUp(
         email: string,

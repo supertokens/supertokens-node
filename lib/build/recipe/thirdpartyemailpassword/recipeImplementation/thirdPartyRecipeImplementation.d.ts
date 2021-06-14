@@ -11,10 +11,17 @@ export default class RecipeImplementation implements RecipeInterface {
             id: string;
             isVerified: boolean;
         };
-    }) => Promise<{
-        createdNewUser: boolean;
-        user: User;
-    }>;
+    }) => Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
     getUserById: (input: { userId: string }) => Promise<User | undefined>;
     getUsersOldestFirst: (_: {
         limit?: number | undefined;

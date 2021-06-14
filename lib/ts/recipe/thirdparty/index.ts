@@ -24,7 +24,7 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signInUp(
+    static async signInUp(
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: {
@@ -32,7 +32,15 @@ export default class Wrapper {
             isVerified: boolean;
         }
     ): Promise<{ createdNewUser: boolean; user: User }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({ thirdPartyId, thirdPartyUserId, email });
+        let result = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
+            thirdPartyId,
+            thirdPartyUserId,
+            email,
+        });
+        if (result.status === "OK") {
+            return result;
+        }
+        throw new global.Error(result.error);
     }
 
     static getUserById(userId: string): Promise<User | undefined> {
