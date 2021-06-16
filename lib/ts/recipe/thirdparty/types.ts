@@ -13,12 +13,12 @@
  * under the License.
  */
 
-import { Request } from "express";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-
-const TypeBoolean = {
-    type: "boolean",
-};
+import { Request, Response, NextFunction } from "express";
+import {
+    RecipeInterface as EmailVerificationRecipeInterface,
+    APIInterface as EmailVerificationAPIInterface,
+} from "../emailverification";
+import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 
 const TypeAny = {
     type: "any",
@@ -67,7 +67,14 @@ export type TypeInputSetSessionDataForSession = (
 ) => Promise<{ [key: string]: any } | undefined>;
 
 export type TypeInputSessionFeature = {
+    /**
+     * @deprecated Use override functions instead for >= v6.0
+     *   */
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
+
+    /**
+     * @deprecated Use override functions instead for >= v6.0
+     *   */
     setSessionData?: TypeInputSetSessionDataForSession;
 };
 
@@ -86,69 +93,50 @@ export type TypeNormalisedInputSessionFeature = {
 };
 
 export type TypeInputEmailVerificationFeature = {
-    disableDefaultImplementation?: boolean;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 
 const InputEmailVerificationFeatureSchema = {
     type: "object",
     properties: {
-        disableDefaultImplementation: TypeBoolean,
         getEmailVerificationURL: TypeAny,
         createAndSendCustomEmail: TypeAny,
-        handlePostEmailVerification: TypeAny,
     },
     additionalProperties: false,
 };
 
 export type TypeInputSignInAndUp = {
-    disableDefaultImplementation?: boolean;
-    handlePostSignUpIn?: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
 };
 
 const InputSignInAndUpSchema = {
     type: "object",
     properties: {
-        disableDefaultImplementation: TypeBoolean,
         providers: {
             type: "array",
         },
-        handlePostSignUpIn: TypeAny,
     },
     required: ["providers"],
     additionalProperties: false,
 };
 
 export type TypeNormalisedInputSignInAndUp = {
-    disableDefaultImplementation: boolean;
-    handlePostSignUpIn: (user: User, thirdPartyAuthCodeResponse: any, newUser: boolean) => Promise<void>;
     providers: TypeProvider[];
-};
-
-export type TypeInputSignOutFeature = {
-    disableDefaultImplementation?: boolean;
-};
-
-const InputSignOutSchema = {
-    type: "object",
-    properties: {
-        disableDefaultImplementation: TypeBoolean,
-    },
-    additionalProperties: false,
-};
-
-export type TypeNormalisedInputSignOutFeature = {
-    disableDefaultImplementation: boolean;
 };
 
 export type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
     signInAndUpFeature: TypeInputSignInAndUp;
-    signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
+    override?: {
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+        };
+    };
 };
 
 export const InputSchema = {
@@ -156,8 +144,8 @@ export const InputSchema = {
     properties: {
         sessionFeature: InputSessionFeatureSchema,
         signInAndUpFeature: InputSignInAndUpSchema,
-        signOutFeature: InputSignOutSchema,
         emailVerificationFeature: InputEmailVerificationFeatureSchema,
+        override: TypeAny,
     },
     required: ["signInAndUpFeature"],
     additionalProperties: false,
@@ -166,6 +154,96 @@ export const InputSchema = {
 export type TypeNormalisedInput = {
     sessionFeature: TypeNormalisedInputSessionFeature;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
-    signOutFeature: TypeNormalisedInputSignOutFeature;
-    emailVerificationFeature: TypeNormalisedInputEmailVerification;
+    emailVerificationFeature: TypeInputEmailVerification;
+    override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis: (originalImplementation: APIInterface) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+        };
+    };
 };
+
+export interface RecipeInterface {
+    getUserById(input: { userId: string }): Promise<User | undefined>;
+
+    getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
+
+    getUsersOldestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+
+    getUsersNewestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+
+    getUserCount(): Promise<number>;
+
+    signInUp(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        email: {
+            id: string;
+            isVerified: boolean;
+        };
+    }): Promise<
+        | { status: "OK"; createdNewUser: boolean; user: User }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
+}
+
+export type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    config: TypeNormalisedInput;
+    recipeId: string;
+    isInServerlessEnv: boolean;
+    providers: TypeProvider[];
+    req: Request;
+    res: Response;
+    next: NextFunction;
+};
+
+export interface APIInterface {
+    authorisationUrlGET:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              options: APIOptions;
+          }) => Promise<{
+              status: "OK";
+              url: string;
+          }>);
+
+    signInUpPOST:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              options: APIOptions;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    createdNewUser: boolean;
+                    user: User;
+                    authCodeResponse: any;
+                }
+              | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+              | {
+                    status: "FIELD_ERROR";
+                    error: string;
+                }
+          >);
+}

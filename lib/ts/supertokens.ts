@@ -31,7 +31,6 @@ import * as express from "express";
 import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import SuperTokensError from "./error";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -43,24 +42,20 @@ export default class SuperTokens {
     recipeModules: RecipeModule[];
 
     constructor(config: TypeInput) {
-        validateTheStructureOfUserInput(config, InputSchema, "init function", undefined);
+        validateTheStructureOfUserInput(config, InputSchema, "init function");
 
-        this.appInfo = normaliseInputAppInfoOrThrowError(undefined, config.appInfo);
+        this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
 
         Querier.init(
-            config.supertokens.connectionURI
+            config.supertokens?.connectionURI
                 .split(";")
                 .filter((h) => h !== "")
-                .map((h) => new NormalisedURLDomain(undefined, h.trim())),
-            config.supertokens.apiKey
+                .map((h) => new NormalisedURLDomain(h.trim())),
+            config.supertokens?.apiKey
         );
 
         if (config.recipeList === undefined || config.recipeList.length === 0) {
-            throw new SuperTokensError({
-                recipe: undefined,
-                type: "GENERAL_ERROR",
-                payload: new Error("Please provide at least one recipe to the supertokens.init function call"),
-            });
+            throw new Error("Please provide at least one recipe to the supertokens.init function call");
         }
 
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
@@ -83,39 +78,25 @@ export default class SuperTokens {
             return func(this.appInfo, this.isInServerlessEnv);
         });
 
-        // check if duplicate APIs are exposed by any recipe by mistake
-        for (let i = 0; i < this.recipeModules.length; i++) {
-            let recipe = this.recipeModules[i];
-            let apisHandled = recipe.getAPIsHandled();
-            let stringifiedApisHandled: string[] = apisHandled
-                .map((api) => {
-                    if (api.disabled) {
-                        return "";
-                    }
-                    return api.method + ";" + api.pathWithoutApiBasePath.getAsStringDangerous();
-                })
-                .filter((i) => i !== "");
-            let findDuplicates = (arr: string[]) => arr.filter((item, index) => arr.indexOf(item) != index);
-            if (findDuplicates(stringifiedApisHandled).length !== 0) {
-                throw new STError({
-                    recipe,
-                    type: STError.GENERAL_ERROR,
-                    payload: new Error("Duplicate APIs exposed from recipe. Please combine them into one API"),
-                });
-            }
-        }
-
         let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
 
         if (telemetry) {
-            this.sendTelemetry();
+            if (this.isInServerlessEnv) {
+                // see https://github.com/supertokens/supertokens-node/issues/127
+                let randomNum = Math.random() * 10;
+                if (randomNum > 7) {
+                    this.sendTelemetry();
+                }
+            } else {
+                this.sendTelemetry();
+            }
         }
     }
 
     sendTelemetry = async () => {
         try {
-            let querier = Querier.getInstanceOrThrowError(this.isInServerlessEnv, undefined);
-            let response = await querier.sendGetRequest(new NormalisedURLPath(undefined, "/telemetry"), {});
+            let querier = Querier.getNewInstanceOrThrowError(this.isInServerlessEnv, undefined);
+            let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {});
             let telemetryId: string | undefined;
             if (response.exists) {
                 telemetryId = response.telemetryId;
@@ -143,11 +124,7 @@ export default class SuperTokens {
 
     static reset() {
         if (process.env.TEST_MODE !== "testing") {
-            throw new STError({
-                type: STError.GENERAL_ERROR,
-                recipe: undefined,
-                payload: new Error("calling testing function in non testing env"),
-            });
+            throw new Error("calling testing function in non testing env");
         }
         Querier.reset();
         SuperTokens.instance = undefined;
@@ -157,11 +134,7 @@ export default class SuperTokens {
         if (SuperTokens.instance !== undefined) {
             return SuperTokens.instance;
         }
-        throw new STError({
-            type: STError.GENERAL_ERROR,
-            recipe: undefined,
-            payload: new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?"),
-        });
+        throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
 
     // instance functions below......
@@ -169,8 +142,7 @@ export default class SuperTokens {
     middleware = () => {
         return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
             let path = this.appInfo.apiGatewayPath.appendPath(
-                undefined,
-                new NormalisedURLPath(undefined, request.originalUrl === undefined ? request.url : request.originalUrl)
+                new NormalisedURLPath(request.originalUrl === undefined ? request.url : request.originalUrl)
             );
             let method: HTTPMethod = normaliseHttpMethod(request.method);
 
@@ -227,16 +199,9 @@ export default class SuperTokens {
         method: HTTPMethod
     ) => {
         try {
-            await assertThatBodyParserHasBeenUsed(matchedRecipe, request, response);
+            await assertThatBodyParserHasBeenUsed(request, response);
             return await matchedRecipe.handleAPIRequest(id, request, response, next, path, method);
         } catch (err) {
-            if (!STError.isErrorFromSuperTokens(err)) {
-                err = new STError({
-                    type: STError.GENERAL_ERROR,
-                    payload: err,
-                    recipe: matchedRecipe,
-                });
-            }
             return next(err);
         }
     };
@@ -244,18 +209,13 @@ export default class SuperTokens {
     errorHandler = () => {
         return async (err: any, request: express.Request, response: express.Response, next: express.NextFunction) => {
             if (STError.isErrorFromSuperTokens(err)) {
-                // if it's a general error, we extract the actual error and call the user's error handler
-                if (err.type === STError.GENERAL_ERROR) {
-                    return next(err.payload);
-                }
-
                 if (err.type === STError.BAD_INPUT_ERROR) {
-                    return sendNon200Response(err.recipe, response, err.message, 400);
+                    return sendNon200Response(response, err.message, 400);
                 }
 
                 // we loop through all the recipes and pass the error to the one that matches the rId
                 for (let i = 0; i < this.recipeModules.length; i++) {
-                    if (this.recipeModules[i].isErrorFromThisRecipeBasedOnRid(err)) {
+                    if (this.recipeModules[i].isErrorFromThisRecipe(err)) {
                         try {
                             return this.recipeModules[i].handleError(err, request, response, next);
                         } catch (error) {

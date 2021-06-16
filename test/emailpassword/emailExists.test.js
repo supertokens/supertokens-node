@@ -25,7 +25,7 @@ const {
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
+let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
@@ -68,7 +68,7 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
     });
 
     // disable the email exists API, and check that calling it returns a 404.
-    it("test that if disableDefaultImplementation is true, the default email exists API does not work", async function () {
+    it("test that if disableing api, the default email exists API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -81,8 +81,13 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
             },
             recipeList: [
                 EmailPassword.init({
-                    signUpFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: undefined,
+                            };
+                        },
                     },
                 }),
                 Session.init(),

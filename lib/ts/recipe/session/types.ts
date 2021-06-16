@@ -13,8 +13,8 @@
  * under the License.
  */
 import { Request, Response, NextFunction } from "express";
-import Session from "./sessionClass";
 import NormalisedURLPath from "../../normalisedURLPath";
+import * as express from "express";
 
 export type HandshakeInfo = {
     jwtSigningPublicKey: string;
@@ -84,14 +84,12 @@ export type TypeInput = {
     cookieSameSite?: "strict" | "lax" | "none";
     sessionExpiredStatusCode?: number;
     cookieDomain?: string;
-    sessionRefreshFeature?: {
-        disableDefaultImplementation?: boolean;
-    };
-    signOutFeature?: {
-        disableDefaultImplementation?: boolean;
-    };
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    override?: {
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface) => APIInterface;
+    };
 };
 
 export const InputSchema = {
@@ -101,26 +99,9 @@ export const InputSchema = {
         cookieSameSite: TypeString,
         sessionExpiredStatusCode: TypeNumber,
         cookieDomain: TypeString,
-        sessionRefreshFeature: {
-            type: "object",
-            properties: {
-                disableDefaultImplementation: TypeBoolean,
-            },
-            additionalProperties: false,
-        },
-        signOutFeature: {
-            type: "object",
-            properties: {
-                disableDefaultImplementation: TypeBoolean,
-            },
-            additionalProperties: false,
-        },
         errorHandlers: InputSchemaErrorHandlers,
         antiCsrf: TypeString,
-        faunadbSecret: TypeString,
-        userCollectionName: TypeString,
-        accessFaunadbTokenFromFrontend: TypeBoolean,
-        faunadbClient: TypeAny,
+        override: TypeAny,
     },
     additionalProperties: false,
 };
@@ -131,18 +112,16 @@ export type TypeNormalisedInput = {
     cookieSameSite: "strict" | "lax" | "none";
     cookieSecure: boolean;
     sessionExpiredStatusCode: number;
-    sessionRefreshFeature: {
-        disableDefaultImplementation: boolean;
-    };
-    signOutFeature: {
-        disableDefaultImplementation: boolean;
-    };
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis: (originalImplementation: APIInterface) => APIInterface;
+    };
 };
 
 export interface SessionRequest extends Request {
-    session?: Session;
+    session?: SessionContainerInterface;
 }
 
 export interface ErrorHandlerMiddleware {
@@ -162,4 +141,86 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
+}
+
+export interface RecipeInterface {
+    createNewSession(input: {
+        res: express.Response;
+        userId: string;
+        jwtPayload?: any;
+        sessionData?: any;
+    }): Promise<SessionContainerInterface>;
+
+    getSession(input: {
+        req: express.Request;
+        res: express.Response;
+        options?: VerifySessionOptions;
+    }): Promise<SessionContainerInterface | undefined>;
+
+    refreshSession(input: { req: express.Request; res: express.Response }): Promise<SessionContainerInterface>;
+
+    revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
+
+    getAllSessionHandlesForUser(input: { userId: string }): Promise<string[]>;
+
+    revokeSession(input: { sessionHandle: string }): Promise<boolean>;
+
+    revokeMultipleSessions(input: { sessionHandles: string[] }): Promise<string[]>;
+
+    getSessionData(input: { sessionHandle: string }): Promise<any>;
+
+    updateSessionData(input: { sessionHandle: string; newSessionData: any }): Promise<void>;
+
+    getJWTPayload(input: { sessionHandle: string }): Promise<any>;
+
+    updateJWTPayload(input: { sessionHandle: string; newJWTPayload: any }): Promise<void>;
+
+    getAccessTokenLifeTimeMS(): Promise<number>;
+
+    getRefreshTokenLifeTimeMS(): Promise<number>;
+}
+
+export interface SessionContainerInterface {
+    revokeSession(): Promise<void>;
+
+    getSessionData(): Promise<any>;
+
+    updateSessionData(newSessionData: any): Promise<any>;
+
+    getUserId(): string;
+
+    getJWTPayload(): any;
+
+    getHandle(): string;
+
+    getAccessToken(): string;
+
+    updateJWTPayload(newJWTPayload: any): Promise<void>;
+}
+
+export type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    config: TypeNormalisedInput;
+    recipeId: string;
+    isInServerlessEnv: boolean;
+    req: Request;
+    res: Response;
+    next: NextFunction;
+};
+
+export interface APIInterface {
+    refreshPOST: undefined | ((input: { options: APIOptions }) => Promise<void>);
+
+    signOutPOST:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+          }) => Promise<{
+              status: "OK";
+          }>);
+
+    verifySession(input: {
+        verifySessionOptions: VerifySessionOptions | undefined;
+        options: APIOptions;
+    }): Promise<void>;
 }

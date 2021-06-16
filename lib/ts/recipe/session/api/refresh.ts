@@ -12,16 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { Response, NextFunction, Request } from "express";
-import SessionRecipe from "../sessionRecipe";
-import { send200Response } from "../../../utils";
 
-export default async function handleRefreshAPI(
-    recipeInstance: SessionRecipe,
-    request: Request,
-    response: Response,
-    _: NextFunction
-) {
-    await recipeInstance.refreshSession(request, response);
-    send200Response(response, {});
+import { send200Response } from "../../../utils";
+import { APIInterface, APIOptions } from "../";
+
+export default async function handleRefreshAPI(apiImplementation: APIInterface, options: APIOptions) {
+    if (apiImplementation.refreshPOST === undefined) {
+        return options.next();
+    }
+
+    await apiImplementation.refreshPOST({ options });
+    send200Response(options.res, {});
 }

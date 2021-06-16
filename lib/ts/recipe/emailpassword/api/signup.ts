@@ -13,69 +13,37 @@
  * under the License.
  */
 
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
-import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "../constants";
-import Session from "../../session";
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
+import { APIInterface, APIOptions } from "../";
 import STError from "../error";
 
-export default async function signUpAPI(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
+export default async function signUpAPI(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
+
+    if (apiImplementation.signUpPOST === undefined) {
+        return options.next();
+    }
 
     // step 1
     let formFields: {
         id: string;
         value: string;
-    }[] = await validateFormFieldsOrThrowError(
-        recipeInstance,
-        recipeInstance.config.signUpFeature.formFields,
-        req.body.formFields
-    );
+    }[] = await validateFormFieldsOrThrowError(options.config.signUpFeature.formFields, options.req.body.formFields);
 
-    let email = formFields.filter((f) => f.id === FORM_FIELD_EMAIL_ID)[0].value;
-    let password = formFields.filter((f) => f.id === FORM_FIELD_PASSWORD_ID)[0].value;
-
-    // step 2. Errors for this are caught by the error handler
-    let user = await recipeInstance.signUp(email, password);
-
-    // set 3
-    await recipeInstance.config.signUpFeature.handlePostSignUp(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID)
-    );
-
-    let jwtPayloadPromise = recipeInstance.config.sessionFeature.setJwtPayload(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
-        "signup"
-    );
-    let sessionDataPromise = recipeInstance.config.sessionFeature.setSessionData(
-        user,
-        formFields.filter((field) => field.id !== FORM_FIELD_EMAIL_ID && field.id !== FORM_FIELD_PASSWORD_ID),
-        "signup"
-    );
-
-    let jwtPayload: { [key: string]: any } | undefined = undefined;
-    let sessionData: { [key: string]: any } | undefined = undefined;
-    try {
-        jwtPayload = await jwtPayloadPromise;
-        sessionData = await sessionDataPromise;
-    } catch (err) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: err,
-            },
-            recipeInstance
-        );
+    let result = await apiImplementation.signUpPOST({ formFields, options });
+    if (result.status === "OK") {
+        send200Response(options.res, result);
+    } else {
+        throw new STError({
+            type: STError.FIELD_ERROR,
+            payload: [
+                {
+                    id: "email",
+                    error: "This email already exists. Please sign in instead.",
+                },
+            ],
+            message: "Error in input formFields",
+        });
     }
-
-    // step 4
-    await Session.createNewSession(res, user.id, jwtPayload, sessionData);
-    return send200Response(res, {
-        status: "OK",
-        user,
-    });
 }

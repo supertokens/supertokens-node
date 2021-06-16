@@ -73,7 +73,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         await cleanST();
     });
 
-    it("test that disableDefaultImplementation is true, the default signinup API does not work", async function () {
+    it("test that disable api, the default signinup API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -86,8 +86,13 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signInFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: undefined,
+                            };
+                        },
                     },
                     providers: [
                         ThirdPartyEmailPassword.Google({
@@ -124,7 +129,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         assert.strictEqual(response.status, 404);
     });
 
-    it("test that disableDefaultImplementation is true, the default signin API does not work", async function () {
+    it("test that disable api, the default signin API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -137,8 +142,13 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signInFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: undefined,
+                            };
+                        },
                     },
                 }),
             ],
@@ -200,10 +210,19 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                 }),
                 ThirdPartyEmailPassword.init({
                     providers: [this.customProvider1],
-                    signInFeature: {
-                        handlePostSignIn: async (user, context) => {
-                            process.env.userId = user.id;
-                            process.env.loginType = context.loginType;
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    if (response.status === "OK") {
+                                        process.env.userId = response.user.id;
+                                        process.env.loginType = input.type;
+                                    }
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
@@ -217,26 +236,6 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         app.use(STExpress.errorHandler());
 
         nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
-
-        await new Promise((resolve) =>
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "custom",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-
-        assert.strictEqual(process.env.userId, "");
-        assert.strictEqual(process.env.loginType, "");
 
         let response1 = await new Promise((resolve) =>
             request(app)

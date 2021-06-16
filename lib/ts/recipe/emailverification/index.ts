@@ -15,23 +15,23 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
+import { RecipeInterface, APIOptions, APIInterface, User } from "./types";
 
-// For Express
 export default class Wrapper {
     static init = Recipe.init;
 
     static Error = SuperTokensError;
 
-    static createEmailVerificationToken(userId: string, email: string) {
-        return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId, email);
+    static async createEmailVerificationToken(userId: string, email: string): Promise<string> {
+        return await Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId, email);
     }
 
-    static verifyEmailUsingToken(token: string) {
-        return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
+    static async verifyEmailUsingToken(token: string): Promise<User> {
+        return await Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
     }
 
-    static isEmailVerified(userId: string, email: string) {
-        return Recipe.getInstanceOrThrowError().isEmailVerified(userId, email);
+    static async isEmailVerified(userId: string, email: string): Promise<boolean> {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified({ userId, email });
     }
 }
 
@@ -44,3 +44,5 @@ export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
 export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
+
+export type { RecipeInterface, APIOptions, APIInterface, User };

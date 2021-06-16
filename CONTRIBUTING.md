@@ -70,3 +70,12 @@ Additional resources you might find useful:
 
 -   [SuperTokens Docs](https://supertokens.io/docs/community/getting-started/installation)
 -   [Blog Posts](https://supertokens.io/blog/)
+
+## Implementing RecipeInterfaces
+
+-   Make sure all CRUD operations are available on the objects of that recipe
+-   Make sure the implementation of that interface takes types imports from the `index.ts` file of that recipe. This is so that if a user wants to copy / paste that code into their project, they can do so via the normal import statement.
+
+## Implementing APIInterfaces
+
+-   Make sure the implementation of that interface takes types imports from the `index.ts` file of that recipe. This is so that if a user wants to copy / paste that code into their project, they can do so via the normal import statement.

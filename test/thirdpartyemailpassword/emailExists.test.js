@@ -48,7 +48,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
     });
 
     // disable the email exists API, and check that calling it returns a 404.
-    it("test that if disableDefaultImplementation is true, the default email exists API does not work", async function () {
+    it("test that if disable api, the default email exists API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -61,8 +61,13 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signUpFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: undefined,
+                            };
+                        },
                     },
                 }),
                 Session.init(),

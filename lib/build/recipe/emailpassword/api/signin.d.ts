@@ -1,3 +1,2 @@
-import Recipe from "../recipe";
-import { Request, Response, NextFunction } from "express";
-export default function signInAPI(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction): Promise<void>;
+import { APIInterface, APIOptions } from "../";
+export default function signInAPI(apiImplementation: APIInterface, options: APIOptions): Promise<void>;

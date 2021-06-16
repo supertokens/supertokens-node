@@ -132,7 +132,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         await cleanST();
     });
 
-    it("test that disableDefaultImplementation is true, the default signinup API does not work", async function () {
+    it("test that disable api, the default signinup API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -145,8 +145,13 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signUpFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: undefined,
+                            };
+                        },
                     },
                     providers: [
                         ThirdPartyEmailPassword.Google({
@@ -183,7 +188,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.status, 404);
     });
 
-    it("test that if disableDefaultImplementation is true, the default signup API does not work", async function () {
+    it("test that if disable api, the default signup API does not work", async function () {
         await startST();
 
         STExpress.init({
@@ -197,8 +202,13 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signUpFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: undefined,
+                            };
+                        },
                     },
                 }),
                 Session.init(),
@@ -327,10 +337,19 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                 }),
                 ThirdPartyEmailPassword.init({
                     providers: [this.customProvider1],
-                    signUpFeature: {
-                        handlePostSignUp: async (user, context) => {
-                            process.env.userId = user.id;
-                            process.env.loginType = context.loginType;
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    if (response.status === "OK") {
+                                        process.env.userId = response.user.id;
+                                        process.env.loginType = input.type;
+                                    }
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
@@ -366,7 +385,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(process.env.loginType, "thirdparty");
     });
 
-    it("test handleCustomFormFieldsPostSignUp gets set correctly", async function () {
+    it("test handlePostSignUp gets set correctly", async function () {
         await startST();
 
         process.env.userId = "";
@@ -386,10 +405,19 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             },
             recipeList: [
                 ThirdPartyEmailPassword.init({
-                    signUpFeature: {
-                        handlePostSignUp: async (user, context) => {
-                            process.env.userId = user.id;
-                            process.env.loginType = context.loginType;
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: async (input) => {
+                                    let response = await oI.signInUpPOST(input);
+                                    if (response.status === "OK") {
+                                        process.env.userId = response.user.id;
+                                        process.env.loginType = input.type;
+                                    }
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
@@ -628,7 +656,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await thirdPartyRecipe.getUserById("randomID"), undefined);
+        assert.strictEqual(await ThirdPartyEmailPassword.getUserById("randomID"), undefined);
 
         const app = express();
 
@@ -657,7 +685,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await thirdPartyRecipe.getUserById(signUpUserInfo.id);
+        let userInfo = await ThirdPartyEmailPassword.getUserById(signUpUserInfo.id);
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
@@ -685,7 +713,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await thirdPartyRecipe.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user"), undefined);
 
         const app = express();
 
@@ -714,7 +742,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await thirdPartyRecipe.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user");
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);

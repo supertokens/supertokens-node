@@ -218,9 +218,8 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             assert(false);
         } catch (error) {
             if (
-                error.type !== ThirParty.Error.GENERAL_ERROR ||
                 error.message !==
-                    `Config schema error in thirdparty recipe, provider google: input config requires property "clientId"`
+                `Config schema error in thirdparty recipe, provider google: input config requires property "clientId"`
             ) {
                 throw error;
             }
@@ -346,9 +345,8 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             assert(false);
         } catch (error) {
             if (
-                error.type !== ThirParty.Error.GENERAL_ERROR ||
                 error.message !==
-                    `Config schema error in thirdparty recipe, provider facebook: input config requires property "clientId"`
+                `Config schema error in thirdparty recipe, provider facebook: input config requires property "clientId"`
             ) {
                 throw error;
             }
@@ -512,9 +510,8 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             assert(false);
         } catch (error) {
             if (
-                error.type !== ThirParty.Error.GENERAL_ERROR ||
                 error.message !==
-                    `Config schema error in thirdparty recipe, provider github: input config requires property "clientId"`
+                `Config schema error in thirdparty recipe, provider github: input config requires property "clientId"`
             ) {
                 throw error;
             }
@@ -654,9 +651,8 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             assert(false);
         } catch (error) {
             if (
-                error.type !== ThirParty.Error.GENERAL_ERROR ||
                 error.message !==
-                    `Config schema error in thirdparty recipe, provider apple: input config requires property "clientId"`
+                `Config schema error in thirdparty recipe, provider apple: input config requires property "clientId"`
             ) {
                 throw error;
             }

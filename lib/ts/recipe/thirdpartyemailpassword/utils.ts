@@ -22,30 +22,23 @@ import {
     InputSchema,
     TypeNormalisedInput,
     TypeInputSignUp,
-    TypeInputSignIn,
     TypeNormalisedInputSignUp,
-    TypeContextEmailPasswordSignUp,
     TypeContextThirdParty,
-    TypeNormalisedInputSignIn,
-    TypeInputEmailVerificationFeature,
-    TypeInputSignOut,
-    TypeNormalisedInputSignOut,
     TypeNormalisedInputSessionFeature,
     TypeInputSessionFeature,
-    TypeContextEmailPasswordSignIn,
     TypeContextEmailPasswordSessionDataAndJWT,
 } from "./types";
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
-import STError from "./error";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
+import { RecipeInterface, APIInterface } from "./types";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "thirdpartyemailpassword recipe", recipeInstance);
+    validateTheStructureOfUserInput(config, InputSchema, "thirdpartyemailpassword recipe");
 
     let sessionFeature = validateAndNormaliseSessionFeatureConfig(
         recipeInstance,
@@ -59,42 +52,27 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.signUpFeature
     );
 
-    let signInFeature = validateAndNormaliseSignInConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.signInFeature
-    );
-
     let resetPasswordUsingTokenFeature = config === undefined ? undefined : config.resetPasswordUsingTokenFeature;
 
     let providers = config === undefined || config.providers === undefined ? [] : config.providers;
 
-    let signOutFeature = validateAndNormaliseSignOutConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.signOutFeature
-    );
+    let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
-    let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.emailVerificationFeature
-    );
+    let override = {
+        functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        apis: (originalImplementation: APIInterface) => originalImplementation,
+        ...config?.override,
+    };
 
     return {
+        override,
         sessionFeature,
         signUpFeature,
-        signInFeature,
         providers,
-        signOutFeature,
         resetPasswordUsingTokenFeature,
         emailVerificationFeature,
     };
 }
-
-async function defaultHandlePostSignUp(_: User, __: TypeContextEmailPasswordSignUp | TypeContextThirdParty) {}
-
-async function defaultHandlePostSignIn(_: User, __: TypeContextEmailPasswordSignIn | TypeContextThirdParty) {}
 
 async function defaultSetSessionDataForSession(
     _: User,
@@ -117,23 +95,12 @@ function validateAndNormaliseSignUpConfig(
     __: NormalisedAppinfo,
     config?: TypeInputSignUp
 ): TypeNormalisedInputSignUp {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
     let formFields: NormalisedFormField[] = normaliseSignUpFormFields(
         config === undefined ? undefined : config.formFields
     );
-    let handlePostSignUp =
-        config === undefined || config.handlePostSignUp === undefined
-            ? defaultHandlePostSignUp
-            : config.handlePostSignUp;
 
     return {
-        disableDefaultImplementation,
         formFields,
-        handlePostSignUp,
     };
 }
 
@@ -158,102 +125,40 @@ function validateAndNormaliseSessionFeatureConfig(
     };
 }
 
-function validateAndNormaliseSignInConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSignIn
-): TypeNormalisedInputSignIn {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
-    let handlePostSignIn =
-        config === undefined || config.handlePostSignIn === undefined
-            ? defaultHandlePostSignIn
-            : config.handlePostSignIn;
-
-    return {
-        disableDefaultImplementation,
-        handlePostSignIn,
-    };
-}
-
 function validateAndNormaliseEmailVerificationConfig(
     recipeInstance: Recipe,
     _: NormalisedAppinfo,
-    config?: TypeInputEmailVerificationFeature
+    config?: TypeInput
 ): TypeNormalisedInputEmailVerification {
-    return config === undefined
-        ? {
-              getEmailForUserId: recipeInstance.getEmailForUserId,
-          }
-        : {
-              disableDefaultImplementation: config.disableDefaultImplementation,
-              getEmailForUserId: recipeInstance.getEmailForUserId,
-              createAndSendCustomEmail:
-                  config.createAndSendCustomEmail === undefined
-                      ? undefined
-                      : async (user, link) => {
-                            let userInfo = await recipeInstance.getUserById(user.id);
-                            if (userInfo === undefined || config.createAndSendCustomEmail === undefined) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
-                            }
-                            return await config.createAndSendCustomEmail(userInfo, link);
-                        },
-              getEmailVerificationURL:
-                  config.getEmailVerificationURL === undefined
-                      ? undefined
-                      : async (user) => {
-                            let userInfo = await recipeInstance.getUserById(user.id);
-                            if (userInfo === undefined || config.getEmailVerificationURL === undefined) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
-                            }
-                            return await config.getEmailVerificationURL(userInfo);
-                        },
-              handlePostEmailVerification:
-                  config.handlePostEmailVerification === undefined
-                      ? undefined
-                      : async (user) => {
-                            let userInfo = await recipeInstance.getUserById(user.id);
-                            if (userInfo === undefined || config.handlePostEmailVerification === undefined) {
-                                throw new STError(
-                                    {
-                                        type: STError.UNKNOWN_USER_ID_ERROR,
-                                        message: "User ID unknown",
-                                    },
-                                    recipeInstance
-                                );
-                            }
-                            return await config.handlePostEmailVerification(userInfo);
-                        },
-          };
-}
-
-function validateAndNormaliseSignOutConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSignOut
-): TypeNormalisedInputSignOut {
-    let disableDefaultImplementation =
-        config === undefined || config.disableDefaultImplementation === undefined
-            ? false
-            : config.disableDefaultImplementation;
-
     return {
-        disableDefaultImplementation,
+        getEmailForUserId: recipeInstance.getEmailForUserId,
+        override: config?.override?.emailVerificationFeature,
+        createAndSendCustomEmail:
+            config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
+                ? undefined
+                : async (user, link) => {
+                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: user.id });
+                      if (
+                          userInfo === undefined ||
+                          config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
+                      ) {
+                          throw new Error("Unknown User ID provided");
+                      }
+                      return await config.emailVerificationFeature.createAndSendCustomEmail(userInfo, link);
+                  },
+        getEmailVerificationURL:
+            config?.emailVerificationFeature?.getEmailVerificationURL === undefined
+                ? undefined
+                : async (user) => {
+                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: user.id });
+                      if (
+                          userInfo === undefined ||
+                          config?.emailVerificationFeature?.getEmailVerificationURL === undefined
+                      ) {
+                          throw new Error("Unknown User ID provided");
+                      }
+                      return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
+                  },
     };
 }
 
@@ -269,7 +174,6 @@ export function combinePaginationTokens(
 }
 
 export function extractPaginationTokens(
-    recipe: Recipe,
     nextPaginationToken: string
 ): {
     thirdPartyPaginationToken: string | undefined;
@@ -277,13 +181,7 @@ export function extractPaginationTokens(
 } {
     let extractedTokens = Buffer.from(nextPaginationToken, "base64").toString().split(";");
     if (extractedTokens.length !== 2) {
-        throw new STError(
-            {
-                type: "INVALID_PAGINATION_TOKEN",
-                message: "nextPaginationToken is invalid",
-            },
-            recipe
-        );
+        throw new Error("Pagination token is invalid");
     }
     return {
         thirdPartyPaginationToken: extractedTokens[0] === "null" ? undefined : extractedTokens[0],

@@ -15,7 +15,7 @@
 let SuperTokens = require("../../");
 let Session = require("../../recipe/session");
 let SuperTokensRaw = require("../../lib/build/supertokens").default;
-let SessionRecipeRaw = require("../../lib/build/recipe/session/sessionRecipe").default;
+let SessionRecipeRaw = require("../../lib/build/recipe/session/recipe").default;
 let express = require("express");
 let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
@@ -50,8 +50,13 @@ function getConfig(enableAntiCsrf) {
                     },
                 },
                 antiCsrf: enableAntiCsrf ? "VIA_TOKEN" : "NONE",
-                sessionRefreshFeature: {
-                    disableDefaultImplementation: true,
+                override: {
+                    apis: (oI) => {
+                        return {
+                            ...oI,
+                            refreshPOST: undefined,
+                        };
+                    },
                 },
             }),
         ],

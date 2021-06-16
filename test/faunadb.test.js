@@ -24,7 +24,8 @@ const {
     createServerlessCacheForTesting,
 } = require("./utils");
 let SuperTokens = require("../");
-let Session = require("../recipe/session/faunadb");
+let Session = require("../recipe/session");
+let RecipeImplementation = require("../recipe/session/faunadb").default;
 let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
@@ -64,10 +65,18 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    userCollectionName: "users",
-                    accessFaunadbTokenFromFrontend: true,
                     antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return new RecipeImplementation(oI, {
+                                userCollectionName: "users",
+                                accessFaunadbTokenFromFrontend: true,
+                                faunaDBClient: new faunadb.Client({
+                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                }),
+                            });
+                        },
+                    },
                 }),
             ],
         });
@@ -183,10 +192,18 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    userCollectionName: "users",
-                    accessFaunadbTokenFromFrontend: true,
                     antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return new RecipeImplementation(oI, {
+                                userCollectionName: "users",
+                                accessFaunadbTokenFromFrontend: true,
+                                faunaDBClient: new faunadb.Client({
+                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                }),
+                            });
+                        },
+                    },
                 }),
             ],
         });
@@ -237,129 +254,6 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
-    it("testing passing faunadb client directly", async function () {
-        await setKeyValueInConfig("access_token_validity", "3");
-        await startST();
-
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({
-                    faunadbClient: new faunadb.Client({
-                        secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    }),
-                    userCollectionName: "users",
-                    accessFaunadbTokenFromFrontend: true,
-                    antiCsrf: "VIA_TOKEN",
-                }),
-            ],
-        });
-
-        const app = express();
-        app.use(SuperTokens.middleware());
-
-        app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "277082848991642117", {}, {});
-            res.status(200).send("");
-        });
-
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
-            let jwtPayload = req.session.getJWTPayload();
-            let token = await req.session.getFaunadbToken();
-            if (token === undefined) {
-                res.status(200).send("fail");
-            } else {
-                if (token === jwtPayload.faunadbToken) {
-                    res.status(200).send("pass");
-                } else {
-                    res.status(200).send("fail");
-                }
-            }
-        });
-
-        let res = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/create")
-                    .expect(200)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        let frontToken = JSON.parse(Buffer.from(res.frontToken, "base64").toString());
-
-        let token = frontToken.up.faunadbToken;
-
-        let faunaDBClient = new faunadb.Client({
-            secret: token,
-        });
-
-        let faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-
-        assert(faunaResponse.data.name === "test user 1");
-
-        await new Promise((r) => setTimeout(r, 7000));
-
-        try {
-            await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-            throw new Error("fail");
-        } catch (err) {
-            if (err.message !== "unauthorized" || err.name !== "Unauthorized") {
-                throw new Error("fail");
-            }
-        }
-
-        // refresh session and repeat the above
-        let res3 = extractInfoFromResponse(
-            await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/session/refresh")
-                    .set("Cookie", [
-                        "sRefreshToken=" + res.refreshToken,
-                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
-                    ])
-                    .set("anti-csrf", res.antiCsrf)
-                    .end((err, res) => {
-                        resolve(res);
-                    })
-            )
-        );
-
-        let frontToken2 = JSON.parse(Buffer.from(res3.frontToken, "base64").toString());
-
-        let token2 = frontToken2.up.faunadbToken;
-
-        assert(token2 !== token);
-
-        faunaDBClient = new faunadb.Client({
-            secret: token2,
-        });
-
-        faunaResponse = await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-
-        assert(faunaResponse.data.name === "test user 1");
-
-        await new Promise((r) => setTimeout(r, 7000));
-
-        try {
-            await faunaDBClient.query(q.Get(q.Ref(q.Collection("users"), "277082848991642117")));
-            throw new Error("fail");
-        } catch (err) {
-            if (err.message !== "unauthorized" || err.name !== "Unauthorized") {
-                throw new Error("fail");
-            }
-        }
-    });
-
     it("getting FDAT from JWT payload", async function () {
         await startST();
 
@@ -374,10 +268,18 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    userCollectionName: "users",
-                    accessFaunadbTokenFromFrontend: true,
                     antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return new RecipeImplementation(oI, {
+                                userCollectionName: "users",
+                                accessFaunadbTokenFromFrontend: true,
+                                faunaDBClient: new faunadb.Client({
+                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                }),
+                            });
+                        },
+                    },
                 }),
             ],
         });
@@ -498,9 +400,17 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    userCollectionName: "users",
                     antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return new RecipeImplementation(oI, {
+                                userCollectionName: "users",
+                                faunaDBClient: new faunadb.Client({
+                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                }),
+                            });
+                        },
+                    },
                 }),
             ],
         });
@@ -580,9 +490,17 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    userCollectionName: "users",
                     antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return new RecipeImplementation(oI, {
+                                userCollectionName: "users",
+                                faunaDBClient: new faunadb.Client({
+                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                }),
+                            });
+                        },
+                    },
                 }),
             ],
         });
@@ -667,7 +585,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         assert.deepEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
         assert.deepEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
-        let currCDIVersion = await Querier.getInstanceOrThrowError(false).getAPIVersion();
+        let currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
         if (maxVersion(currCDIVersion, "2.1") === "2.1") {
             assert(cookies.accessTokenDomain === "localhost" || cookies.accessTokenDomain === "supertokens.io");
             assert(cookies.refreshTokenDomain === "localhost" || cookies.refreshTokenDomain === "supertokens.io");
@@ -695,10 +613,18 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    userCollectionName: "users",
-                    accessFaunadbTokenFromFrontend: true,
                     antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return new RecipeImplementation(oI, {
+                                userCollectionName: "users",
+                                accessFaunadbTokenFromFrontend: true,
+                                faunaDBClient: new faunadb.Client({
+                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                }),
+                            });
+                        },
+                    },
                 }),
             ],
         });
@@ -791,10 +717,18 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    userCollectionName: "users",
-                    accessFaunadbTokenFromFrontend: true,
                     antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return new RecipeImplementation(oI, {
+                                userCollectionName: "users",
+                                accessFaunadbTokenFromFrontend: true,
+                                faunaDBClient: new faunadb.Client({
+                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                }),
+                            });
+                        },
+                    },
                 }),
             ],
         });
@@ -943,9 +877,17 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    faunadbSecret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                    userCollectionName: "users",
                     antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => {
+                            return new RecipeImplementation(oI, {
+                                userCollectionName: "users",
+                                faunaDBClient: new faunadb.Client({
+                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                }),
+                            });
+                        },
+                    },
                 }),
             ],
         });

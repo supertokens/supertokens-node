@@ -32,7 +32,7 @@ let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
-let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 const { removeServerlessCache } = require("../lib/build/utils");
 
 /* TODO:
@@ -330,16 +330,21 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let response = await SessionFunctions.createNewSession(SessionRecipe.getInstanceOrThrowError(), "", {}, {});
+        let response = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
 
         let response2 = await SessionFunctions.refreshSession(
-            SessionRecipe.getInstanceOrThrowError(),
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             response.refreshToken.token,
             response.antiCsrfToken
         );
 
         await SessionFunctions.getSession(
-            SessionRecipe.getInstanceOrThrowError(),
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             response2.accessToken.token,
             response2.antiCsrfToken,
             true,
@@ -348,7 +353,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         try {
             await SessionFunctions.refreshSession(
-                SessionRecipe.getInstanceOrThrowError(),
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
                 response.refreshToken.token,
                 response.antiCsrfToken
             );
@@ -380,16 +385,21 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let response = await SessionFunctions.createNewSession(SessionRecipe.getInstanceOrThrowError(), "", {}, {});
+        let response = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
 
         let response2 = await SessionFunctions.refreshSession(
-            SessionRecipe.getInstanceOrThrowError(),
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             response.refreshToken.token,
             response.antiCsrfToken
         );
 
         await SessionFunctions.getSession(
-            SessionRecipe.getInstanceOrThrowError(),
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             response2.accessToken.token,
             response2.antiCsrfToken,
             true,
@@ -398,7 +408,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         try {
             await SessionFunctions.refreshSession(
-                SessionRecipe.getInstanceOrThrowError(),
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
                 response.refreshToken.token,
                 response.antiCsrfToken
             );
@@ -430,13 +440,12 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         try {
-            await Querier.getInstanceOrThrowError(false, undefined).getAPIVersion();
+            await Querier.getNewInstanceOrThrowError(false, undefined).getAPIVersion();
             throw new Error("should not have come here");
         } catch (err) {
             if (
-                err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                    "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
+                "SuperTokens core threw an error for a GET request to path: '/apiversion' with status code: 401 and message: Invalid API key\n"
             ) {
                 throw err;
             }
@@ -464,7 +473,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
-        let response = await SessionFunctions.createNewSession(s, "", {}, {});
+        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl, "", {}, {});
         assert(response.session !== undefined);
         assert(response.accessToken !== undefined);
         assert(response.refreshToken !== undefined);
@@ -473,7 +482,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(Object.keys(response).length === 5);
 
         await SessionFunctions.getSession(
-            s,
+            s.recipeInterfaceImpl,
             response.accessToken.token,
             response.antiCsrfToken,
             true,
@@ -482,7 +491,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
         assert(verifyState3 === undefined);
 
-        let response2 = await SessionFunctions.refreshSession(s, response.refreshToken.token, response.antiCsrfToken);
+        let response2 = await SessionFunctions.refreshSession(
+            s.recipeInterfaceImpl,
+            response.refreshToken.token,
+            response.antiCsrfToken
+        );
         assert(response2.session !== undefined);
         assert(response2.accessToken !== undefined);
         assert(response2.refreshToken !== undefined);
@@ -491,7 +504,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(Object.keys(response2).length === 5);
 
         let response3 = await SessionFunctions.getSession(
-            s,
+            s.recipeInterfaceImpl,
             response2.accessToken.token,
             response2.antiCsrfToken,
             true,
@@ -506,7 +519,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         ProcessState.getInstance().reset();
 
         let response4 = await SessionFunctions.getSession(
-            s,
+            s.recipeInterfaceImpl,
             response3.accessToken.token,
             response2.antiCsrfToken,
             true,
@@ -518,7 +531,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response4.accessToken === undefined);
         assert(Object.keys(response4).length === 1);
 
-        let response5 = await SessionFunctions.revokeSession(s, response4.session.handle);
+        let response5 = await SessionFunctions.revokeSession(s.recipeInterfaceImpl, response4.session.handle);
         assert(response5 === true);
     });
 
@@ -543,10 +556,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
-        let response = await SessionFunctions.createNewSession(s, "", {}, {});
+        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl, "", {}, {});
 
         let response2 = await SessionFunctions.getSession(
-            s,
+            s.recipeInterfaceImpl,
             response.accessToken.token,
             response.antiCsrfToken,
             true,
@@ -556,7 +569,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(Object.keys(response2.session).length === 3);
 
         let response3 = await SessionFunctions.getSession(
-            s,
+            s.recipeInterfaceImpl,
             response.accessToken.token,
             response.antiCsrfToken,
             false,
@@ -587,11 +600,11 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let s = SessionRecipe.getInstanceOrThrowError();
 
-        let response = await SessionFunctions.createNewSession(s, "", {}, {});
+        let response = await SessionFunctions.createNewSession(s.recipeInterfaceImpl, "", {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false
         let response2 = await SessionFunctions.getSession(
-            s,
+            s.recipeInterfaceImpl,
             response.accessToken.token,
             undefined,
             false,
@@ -602,7 +615,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         //passing anti-csrf token as undefined and anti-csrf check as true
         try {
-            await SessionFunctions.getSession(s, response.accessToken.token, undefined, true, response.idRefreshToken);
+            await SessionFunctions.getSession(
+                s.recipeInterfaceImpl,
+                response.accessToken.token,
+                undefined,
+                true,
+                response.idRefreshToken
+            );
             throw new Error("should not have come here");
         } catch (err) {
             if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
@@ -630,7 +649,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let s = SessionRecipe.getInstanceOrThrowError();
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //create a single session and  revoke using the session handle
         let res = await SessionFunctions.createNewSession(s, "someUniqueUserId", {}, {});
         let res2 = await SessionFunctions.revokeSession(s, res.session.handle);
@@ -680,7 +699,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let s = SessionRecipe.getInstanceOrThrowError();
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(s, "", {}, {});
         await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value" });
@@ -723,7 +742,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let s = SessionRecipe.getInstanceOrThrowError();
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(s, "", {}, null);
 
@@ -770,7 +789,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let s = SessionRecipe.getInstanceOrThrowError();
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
         let res = await SessionFunctions.createNewSession(s, "", {}, {});
 
@@ -814,7 +833,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let s = SessionRecipe.getInstanceOrThrowError();
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
         let res = await SessionFunctions.createNewSession(s, "", null, {});
 
@@ -861,7 +880,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let s = SessionRecipe.getInstanceOrThrowError();
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         let response = await SessionFunctions.createNewSession(s, "", {}, {});
 
         //passing anti-csrf token as undefined and anti-csrf check as false
@@ -930,9 +949,8 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             assert(false);
         } catch (err) {
             if (
-                err.type !== Session.Error.GENERAL_ERROR ||
                 err.message !==
-                    'Config schema error in session recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
+                'Config schema error in session recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
             ) {
                 throw err;
             }
@@ -958,7 +976,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let s = SessionRecipe.getInstanceOrThrowError();
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         await SessionFunctions.createNewSession(s, "", {}, {});
     });
 
@@ -981,7 +999,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let s = SessionRecipe.getInstanceOrThrowError();
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         await SessionFunctions.createNewSession(s, "", {}, {});
     });
 });

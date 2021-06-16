@@ -16,6 +16,7 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import * as thirdPartyProviders from "./providers";
+import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
 
 // For Express
 export default class Wrapper {
@@ -23,46 +24,75 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signInUp(
+    static async signInUp(
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: {
             id: string;
             isVerified: boolean;
         }
-    ) {
-        return Recipe.getInstanceOrThrowError().signInUp(thirdPartyId, thirdPartyUserId, email);
+    ): Promise<{ createdNewUser: boolean; user: User }> {
+        let result = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
+            thirdPartyId,
+            thirdPartyUserId,
+            email,
+        });
+        if (result.status === "OK") {
+            return result;
+        }
+        throw new global.Error(result.error);
     }
 
-    static getUserById(userId: string) {
-        return Recipe.getInstanceOrThrowError().getUserById(userId);
+    static getUserById(userId: string): Promise<User | undefined> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string) {
-        return Recipe.getInstanceOrThrowError().getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
+            thirdPartyId,
+            thirdPartyUserId,
+        });
     }
 
-    static getUsersOldestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().getUsersOldestFirst(limit, nextPaginationToken);
+    static getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst({
+            limit,
+            nextPaginationToken,
+        });
     }
 
-    static getUsersNewestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().getUsersNewestFirst(limit, nextPaginationToken);
+    static getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst({
+            limit,
+            nextPaginationToken,
+        });
     }
 
-    static getUserCount() {
-        return Recipe.getInstanceOrThrowError().getUserCount();
+    static getUserCount(): Promise<number> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
-    static createEmailVerificationToken(userId: string) {
+    static createEmailVerificationToken(userId: string): Promise<string> {
         return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
     }
 
-    static verifyEmailUsingToken(token: string) {
+    static verifyEmailUsingToken(token: string): Promise<User> {
         return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
     }
 
-    static isEmailVerified(userId: string) {
+    static isEmailVerified(userId: string): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
     }
 
@@ -104,3 +134,5 @@ export let Github = Wrapper.Github;
 export let Facebook = Wrapper.Facebook;
 
 export let Apple = Wrapper.Apple;
+
+export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };

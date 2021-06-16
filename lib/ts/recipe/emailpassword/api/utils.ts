@@ -12,13 +12,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import Recipe from "../recipe";
 import { NormalisedFormField } from "../types";
 import STError from "../error";
 import { FORM_FIELD_EMAIL_ID } from "../constants";
 
 export async function validateFormFieldsOrThrowError(
-    recipeInstance: Recipe,
     configFormFields: NormalisedFormField[],
     formFieldsRaw: any
 ): Promise<
@@ -29,11 +27,11 @@ export async function validateFormFieldsOrThrowError(
 > {
     // first we check syntax ----------------------------
     if (formFieldsRaw === undefined) {
-        throw newBadRequestError(recipeInstance, "Missing input param: formFields");
+        throw newBadRequestError("Missing input param: formFields");
     }
 
     if (!Array.isArray(formFieldsRaw)) {
-        throw newBadRequestError(recipeInstance, "formFields must be an array");
+        throw newBadRequestError("formFields must be an array");
     }
 
     let formFields: {
@@ -44,13 +42,10 @@ export async function validateFormFieldsOrThrowError(
     for (let i = 0; i < formFieldsRaw.length; i++) {
         let curr = formFieldsRaw[i];
         if (typeof curr !== "object" || curr === null) {
-            throw newBadRequestError(recipeInstance, "All elements of formFields must be an object");
+            throw newBadRequestError("All elements of formFields must be an object");
         }
         if (typeof curr.id !== "string" || curr.value === undefined) {
-            throw newBadRequestError(
-                recipeInstance,
-                "All elements of formFields must contain an 'id' and 'value' field"
-            );
+            throw newBadRequestError("All elements of formFields must contain an 'id' and 'value' field");
         }
         formFields.push(curr);
     }
@@ -67,25 +62,21 @@ export async function validateFormFieldsOrThrowError(
     });
 
     // then run validators through them-----------------------
-    await validateFormOrThrowError(recipeInstance, formFields, configFormFields);
+    await validateFormOrThrowError(formFields, configFormFields);
 
     return formFields;
 }
 
-function newBadRequestError(recipeInstance: Recipe, message: string) {
-    return new STError(
-        {
-            type: STError.BAD_INPUT_ERROR,
-            message,
-        },
-        recipeInstance
-    );
+function newBadRequestError(message: string) {
+    return new STError({
+        type: STError.BAD_INPUT_ERROR,
+        message,
+    });
 }
 
 // We check that the number of fields in input and config form field is the same.
 // We check that each item in the config form field is also present in the input form field
 async function validateFormOrThrowError(
-    recipeInstance: Recipe,
     inputs: {
         id: string;
         value: string;
@@ -95,7 +86,7 @@ async function validateFormOrThrowError(
     let validationErrors: { id: string; error: string }[] = [];
 
     if (configFormFields.length !== inputs.length) {
-        throw newBadRequestError(recipeInstance, "Are you sending too many / too few formFields?");
+        throw newBadRequestError("Are you sending too many / too few formFields?");
     }
 
     // Loop through all form fields.
@@ -125,13 +116,10 @@ async function validateFormOrThrowError(
     }
 
     if (validationErrors.length !== 0) {
-        throw new STError(
-            {
-                type: STError.FIELD_ERROR,
-                payload: validationErrors,
-                message: "Error in input formFields",
-            },
-            recipeInstance
-        );
+        throw new STError({
+            type: STError.FIELD_ERROR,
+            payload: validationErrors,
+            message: "Error in input formFields",
+        });
     }
 }

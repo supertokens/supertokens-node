@@ -14,7 +14,7 @@
  */
 
 import Recipe from "./recipe";
-import { TypeInput, TypeNormalisedInput, User } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import {
     getEmailVerificationURL as defaultGetEmailVerificationURL,
@@ -26,9 +26,6 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    let disableDefaultImplementation =
-        config.disableDefaultImplementation === undefined ? false : config.disableDefaultImplementation;
-
     let getEmailVerificationURL =
         config.getEmailVerificationURL === undefined
             ? defaultGetEmailVerificationURL(appInfo)
@@ -39,16 +36,18 @@ export function validateAndNormaliseUserInput(
             ? defaultCreateAndSendCustomVerificationEmail(appInfo)
             : config.createAndSendCustomEmail;
 
-    let handlePostEmailVerification =
-        config.handlePostEmailVerification === undefined ? async (_: User) => {} : config.handlePostEmailVerification;
-
     let getEmailForUserId = config.getEmailForUserId;
+
+    let override = {
+        functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        apis: (originalImplementation: APIInterface) => originalImplementation,
+        ...config.override,
+    };
 
     return {
         getEmailForUserId,
-        disableDefaultImplementation,
         getEmailVerificationURL,
         createAndSendCustomEmail,
-        handlePostEmailVerification,
+        override,
     };
 }

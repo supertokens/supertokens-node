@@ -29,7 +29,7 @@ let { Querier } = require("../lib/build/querier");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
-let SessionRecipe = require("../lib/build/recipe/session/sessionRecipe").default;
+let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 const { removeServerlessCache } = require("../lib/build/utils");
 
 /**
@@ -51,7 +51,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     });
 
     // check that disabling default API actually disables it (for session)
-    //Failure condition: setting the sessionRefreshFeatures disableDefaultImplementation to false will cause the test to fail
     it("test disabling default API actually disables it", async function () {
         await startST();
         SuperTokens.init({
@@ -65,8 +64,13 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
-                    sessionRefreshFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                refreshPOST: undefined,
+                            };
+                        },
                     },
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -127,7 +131,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handleV0", Session.verifySession(true), async (req, res) => {
+        app.get("/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
@@ -467,7 +471,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handleV0", Session.verifySession(true), async (req, res) => {
+        app.get("/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
@@ -808,7 +812,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handleV0", Session.verifySession(true), async (req, res) => {
+        app.get("/custom/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
@@ -1158,7 +1162,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handleV0", Session.verifySession(true), async (req, res) => {
+        app.get("/custom/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 

@@ -28,7 +28,7 @@ const {
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
+let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
@@ -137,8 +137,13 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
             },
             recipeList: [
                 EmailPassword.init({
-                    signOutFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signOutPOST: undefined,
+                            };
+                        },
                     },
                 }),
                 Session.init(),

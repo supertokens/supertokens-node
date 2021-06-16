@@ -16,6 +16,16 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import * as thirdPartyProviders from "../thirdparty/providers";
+import {
+    RecipeInterface,
+    User,
+    APIInterface,
+    EmailPasswordAPIOptions,
+    ThirdPartyAPIOptions,
+    SignInUpAPIInput,
+    SignInUpAPIOutput,
+} from "./types";
+import { TypeProvider } from "../thirdparty/types";
 
 // For Express
 export default class Wrapper {
@@ -31,47 +41,50 @@ export default class Wrapper {
             isVerified: boolean;
         }
     ) {
-        return Recipe.getInstanceOrThrowError().signInUp(thirdPartyId, thirdPartyUserId, email);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({ thirdPartyId, thirdPartyUserId, email });
     }
 
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string) {
-        return Recipe.getInstanceOrThrowError().getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
+            thirdPartyId,
+            thirdPartyUserId,
+        });
     }
 
     static signUp(email: string, password: string) {
-        return Recipe.getInstanceOrThrowError().signUp(email, password);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({ email, password });
     }
 
     static signIn(email: string, password: string) {
-        return Recipe.getInstanceOrThrowError().signIn(email, password);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({ email, password });
     }
 
     static getUserById(userId: string) {
-        return Recipe.getInstanceOrThrowError().getUserById(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
     static getUserByEmail(email: string) {
-        return Recipe.getInstanceOrThrowError().getUserByEmail(email);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({ email });
     }
 
     static createResetPasswordToken(userId: string) {
-        return Recipe.getInstanceOrThrowError().createResetPasswordToken(userId);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId });
     }
 
     static resetPasswordUsingToken(token: string, newPassword: string) {
-        return Recipe.getInstanceOrThrowError().resetPasswordUsingToken(token, newPassword);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({ token, newPassword });
     }
 
     static getUsersOldestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().getUsersOldestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst({ limit, nextPaginationToken });
     }
 
     static getUsersNewestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().getUsersNewestFirst(limit, nextPaginationToken);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst({ limit, nextPaginationToken });
     }
 
     static getUserCount() {
-        return Recipe.getInstanceOrThrowError().getUserCount();
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
     static createEmailVerificationToken(userId: string) {
@@ -134,3 +147,14 @@ export let Github = Wrapper.Github;
 export let Facebook = Wrapper.Facebook;
 
 export let Apple = Wrapper.Apple;
+
+export type {
+    RecipeInterface,
+    TypeProvider,
+    User,
+    APIInterface,
+    EmailPasswordAPIOptions,
+    ThirdPartyAPIOptions,
+    SignInUpAPIInput,
+    SignInUpAPIOutput,
+};

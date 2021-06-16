@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import { Querier } from "./querier";
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import * as express from "express";
@@ -22,19 +21,11 @@ import NormalisedURLPath from "./normalisedURLPath";
 export default abstract class RecipeModule {
     private recipeId: string;
 
-    private querier: Querier | undefined;
-
     private appInfo: NormalisedAppinfo;
 
-    private isInServerlessEnv: boolean;
-
-    private rIdToCore: string | undefined;
-
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, rIdToCore?: string) {
+    constructor(recipeId: string, appInfo: NormalisedAppinfo) {
         this.recipeId = recipeId;
         this.appInfo = appInfo;
-        this.isInServerlessEnv = isInServerlessEnv;
-        this.rIdToCore = rIdToCore;
     }
 
     getRecipeId = (): string => {
@@ -45,21 +36,6 @@ export default abstract class RecipeModule {
         return this.appInfo;
     };
 
-    checkIfInServerlessEnv = (): boolean => {
-        return this.isInServerlessEnv;
-    };
-
-    getQuerier = (): Querier => {
-        if (this.querier === undefined) {
-            this.querier = Querier.getInstanceOrThrowError(this.isInServerlessEnv, this, this.rIdToCore);
-        }
-        return this.querier;
-    };
-
-    isErrorFromThisRecipeBasedOnRid = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && err.getRecipeId() === this.recipeId;
-    };
-
     returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
         let apisHandled = this.getAPIsHandled();
         for (let i = 0; i < apisHandled.length; i++) {
@@ -67,15 +43,13 @@ export default abstract class RecipeModule {
             if (
                 !currAPI.disabled &&
                 currAPI.method === method &&
-                this.appInfo.apiBasePath.appendPath(this, currAPI.pathWithoutApiBasePath).equals(path)
+                this.appInfo.apiBasePath.appendPath(currAPI.pathWithoutApiBasePath).equals(path)
             ) {
                 return currAPI.id;
             }
         }
         return undefined;
     };
-
-    abstract isErrorFromThisOrChildRecipeBasedOnInstance(err: any): err is STError;
 
     abstract getAPIsHandled(): APIHandled[];
 
@@ -96,4 +70,6 @@ export default abstract class RecipeModule {
     ): void;
 
     abstract getAllCORSHeaders(): string[];
+
+    abstract isErrorFromThisRecipe(err: any): err is STError;
 }

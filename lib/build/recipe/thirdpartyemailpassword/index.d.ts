@@ -1,33 +1,97 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
+import {
+    RecipeInterface,
+    User,
+    APIInterface,
+    EmailPasswordAPIOptions,
+    ThirdPartyAPIOptions,
+    SignInUpAPIInput,
+    SignInUpAPIOutput,
+} from "./types";
+import { TypeProvider } from "../thirdparty/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static signInUp(thirdPartyId: string, thirdPartyUserId: string, email: {
-        id: string;
-        isVerified: boolean;
-    }): Promise<{
-        createdNewUser: boolean;
-        user: import("./types").User;
+    static signInUp(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        email: {
+            id: string;
+            isVerified: boolean;
+        }
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
+    static signUp(
+        email: string,
+        password: string
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    static signIn(
+        email: string,
+        password: string
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
+    static getUserById(userId: string): Promise<User | undefined>;
+    static getUserByEmail(email: string): Promise<User | undefined>;
+    static createResetPasswordToken(
+        userId: string
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID";
+          }
+    >;
+    static resetPasswordUsingToken(
+        token: string,
+        newPassword: string
+    ): Promise<{
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<import("./types").User | undefined>;
-    static signUp(email: string, password: string): Promise<import("./types").User>;
-    static signIn(email: string, password: string): Promise<import("./types").User>;
-    static getUserById(userId: string): Promise<import("./types").User | undefined>;
-    static getUserByEmail(email: string): Promise<import("./types").User | undefined>;
-    static createResetPasswordToken(userId: string): Promise<string>;
-    static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
-    static getUsersOldestFirst(limit?: number, nextPaginationToken?: string): Promise<{
-        users: import("./types").User[];
+    static getUsersOldestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
         nextPaginationToken?: string | undefined;
     }>;
-    static getUsersNewestFirst(limit?: number, nextPaginationToken?: string): Promise<{
-        users: import("./types").User[];
+    static getUsersNewestFirst(
+        limit?: number,
+        nextPaginationToken?: string
+    ): Promise<{
+        users: User[];
         nextPaginationToken?: string | undefined;
     }>;
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<import("../emailverification/types").User>;
+    static verifyEmailUsingToken(token: string): Promise<User>;
     static isEmailVerified(userId: string): Promise<boolean>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
@@ -54,3 +118,13 @@ export declare let Google: typeof import("../thirdparty/providers/google").defau
 export declare let Github: typeof import("../thirdparty/providers/github").default;
 export declare let Facebook: typeof import("../thirdparty/providers/facebook").default;
 export declare let Apple: typeof import("../thirdparty/providers/apple").default;
+export type {
+    RecipeInterface,
+    TypeProvider,
+    User,
+    APIInterface,
+    EmailPasswordAPIOptions,
+    ThirdPartyAPIOptions,
+    SignInUpAPIInput,
+    SignInUpAPIOutput,
+};

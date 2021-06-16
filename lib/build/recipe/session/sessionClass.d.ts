@@ -1,13 +1,21 @@
 import * as express from "express";
-import SessionRecipe from "./sessionRecipe";
-export default class Session {
+import { SessionContainerInterface } from "./types";
+import RecipeImplementation from "./recipeImplementation";
+export default class Session implements SessionContainerInterface {
     private sessionHandle;
     private userId;
     private userDataInJWT;
     private res;
     private accessToken;
-    private recipeInstance;
-    constructor(recipeInstance: SessionRecipe, accessToken: string, sessionHandle: string, userId: string, userDataInJWT: any, res: express.Response);
+    private recipeImplementation;
+    constructor(
+        recipeImplementation: RecipeImplementation,
+        accessToken: string,
+        sessionHandle: string,
+        userId: string,
+        userDataInJWT: any,
+        res: express.Response
+    );
     revokeSession: () => Promise<void>;
     getSessionData: () => Promise<any>;
     updateSessionData: (newSessionData: any) => Promise<void>;

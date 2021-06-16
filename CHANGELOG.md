@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2021-05-18
+
+-   Uses `getSession` function instead of `verifySession` middleware in prebuilt APIs
+-   Refactor code to use recipeImplementations that can be override by the user
+-   `getSession` third param is no longer a boolean
+-   Provides FaunaDB's session implementation as a modification to the original session recipe.
+-   Removes deprecated `handleCustomFormFieldsPostSignUp`.
+-   Removes `superTokensMiddleware` from NextJS as it is no longer needed and was deprecated.
+-   Fixes NextJS type for `superTokensNextWrapper` function
+-   `setJwtPayload` and `setSessionData` get all `formFields` param
+-   Adds API interfaces to all recipes
+-   Provides a way to override API logic easily.
+-   Replaces `disableDefaultImplementation` with setting functions in `override > apis` to `undefined`.
+-   Removes explicit post API callback functions since now users can override apis and emulate post api callbacks easily.
+-   Removes the use of GENERAL_ERROR and throws a normal JS Error instead.
+-   Allows recipes to be passed in constructor so that child recipes do not create multiple instances of the same recipe.
+-   Removes checking of duplicate APIs since we are now using interfaces for APIs which won't allow for duplicates anyway...
+-   Removes duplicate signout APIs from all auth recipes since it's already exposed from the session recipe.
+-   Marked `setJwtPayload` and `setSessionData` as deprecated.
+
+## [5.1.0] - 2021-06-13
+
+### Fixes:
+
+-   https://github.com/supertokens/supertokens-node/pull/135: In serverless env, waits for email to be sent before returning the response cause sometimes, serverless envs quite the process early on.
+-   https://github.com/supertokens/supertokens-node/issues/127: In serverless env, sends telemetry with a 30% probability.
+
 ## [5.0.1] - 2021-05-06
 
 ### Fixes:

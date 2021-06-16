@@ -33,12 +33,12 @@ function next(
     };
 }
 export default class NextJS {
-    static async superTokensNextWrapper(
-        middleware: (next: (middlewareError?: any) => void) => Promise<unknown>,
+    static async superTokensNextWrapper<T>(
+        middleware: (next: (middlewareError?: any) => void) => Promise<T>,
         request: any,
         response: any
-    ): Promise<unknown> {
-        return new Promise(async (resolve: any, reject: any) => {
+    ): Promise<T> {
+        return new Promise<T>(async (resolve: any, reject: any) => {
             try {
                 let callbackCalled = false;
                 const result = await middleware((err) => {
@@ -58,12 +58,5 @@ export default class NextJS {
             }
         });
     }
-    /* Backward compatibility */
-    static superTokensMiddleware(request: any, response: any): Promise<any> {
-        return new Promise((resolve: any, reject: any) => {
-            return SuperTokens.middleware()(request, response, next(request, response, resolve, reject));
-        });
-    }
 }
-export let superTokensMiddleware = NextJS.superTokensMiddleware;
 export let superTokensNextWrapper = NextJS.superTokensNextWrapper;

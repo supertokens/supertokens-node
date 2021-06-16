@@ -13,43 +13,17 @@
  * under the License.
  */
 
-import Recipe from "../sessionRecipe";
-import { Request, Response, NextFunction } from "express";
 import { send200Response } from "../../../utils";
-import STError from "../error";
+import { APIInterface, APIOptions } from "../";
 
-export default async function signOutAPI(recipeInstance: Recipe, req: Request, res: Response, _: NextFunction) {
+export default async function signOutAPI(apiImplementation: APIInterface, options: APIOptions) {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 
-    // step 1
-    let session;
-    try {
-        session = await recipeInstance.getSession(req, res);
-    } catch (err) {
-        if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNAUTHORISED) {
-            // The session is expired / does not exist anyway. So we return OK
-            return send200Response(res, {
-                status: "OK",
-            });
-        }
-        throw err;
+    if (apiImplementation.signOutPOST === undefined) {
+        return options.next();
     }
 
-    if (session === undefined) {
-        throw new STError(
-            {
-                type: STError.GENERAL_ERROR,
-                payload: new Error("Session is undefined. Should not come here."),
-            },
-            recipeInstance
-        );
-    }
+    let result = await apiImplementation.signOutPOST({ options });
 
-    // step 2
-    await session.revokeSession();
-
-    // step 3
-    return send200Response(res, {
-        status: "OK",
-    });
+    return send200Response(options.res, result);
 }

@@ -545,11 +545,24 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             recipeList: [
                 EmailPassword.init({
                     emailVerificationFeature: {
-                        handlePostEmailVerification: (user) => {
-                            userInfoFromCallback = user;
-                        },
                         createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
                             token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
+                    },
+                    override: {
+                        emailVerificationFeature: {
+                            apis: (oI) => {
+                                return {
+                                    ...oI,
+                                    verifyEmailPOST: async (token, options) => {
+                                        let response = await oI.verifyEmailPOST(token, options);
+                                        if (response.status === "OK") {
+                                            userInfoFromCallback = response.user;
+                                        }
+                                        return response;
+                                    },
+                                };
+                            },
                         },
                     },
                 }),
@@ -884,5 +897,373 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(JSON.parse(response4.text).status === "OK");
         assert(JSON.parse(response4.text).isVerified === true);
         assert(Object.keys(JSON.parse(response.text)).length === 1);
+    });
+
+    it("test the email verify API with valid input, overriding apis", async function () {
+        await startST();
+
+        let user = undefined;
+        let token = null;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
+                    },
+                    override: {
+                        emailVerificationFeature: {
+                            apis: (oI) => {
+                                return {
+                                    ...oI,
+                                    verifyEmailPOST: async (input) => {
+                                        let response = await oI.verifyEmailPOST(input);
+                                        user = response.user;
+                                        return response;
+                                    },
+                                };
+                            },
+                        },
+                    },
+                }),
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(response.body.status === "OK");
+        assert(response.status === 200);
+
+        let userId = response.body.user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        response = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
+        assert(response.body.status === "OK");
+        assert(Object.keys(response.body).length === 1);
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify")
+                .send({
+                    method: "token",
+                    token,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+
+        assert(response2.status === "OK");
+        assert(Object.keys(response2).length === 1);
+        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.email, "test@gmail.com");
+    });
+
+    it("test the email verify API with valid input, overriding functions", async function () {
+        await startST();
+
+        let user = undefined;
+        let token = null;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
+                    },
+                    override: {
+                        emailVerificationFeature: {
+                            functions: (oI) => {
+                                return {
+                                    ...oI,
+                                    verifyEmailUsingToken: async (input) => {
+                                        let response = await oI.verifyEmailUsingToken(input);
+                                        user = response.user;
+                                        return response;
+                                    },
+                                };
+                            },
+                        },
+                    },
+                }),
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(response.body.status === "OK");
+        assert(response.status === 200);
+
+        let userId = response.body.user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        response = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
+        assert(response.body.status === "OK");
+        assert(Object.keys(response.body).length === 1);
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify")
+                .send({
+                    method: "token",
+                    token,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+
+        assert(response2.status === "OK");
+        assert(Object.keys(response2).length === 1);
+        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.email, "test@gmail.com");
+    });
+
+    it("test the email verify API with valid input, overriding apis throws error", async function () {
+        await startST();
+
+        let user = undefined;
+        let token = null;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
+                    },
+                    override: {
+                        emailVerificationFeature: {
+                            apis: (oI) => {
+                                return {
+                                    ...oI,
+                                    verifyEmailPOST: async (input) => {
+                                        let response = await oI.verifyEmailPOST(input);
+                                        user = response.user;
+                                        throw {
+                                            error: "verify email error",
+                                        };
+                                    },
+                                };
+                            },
+                        },
+                    },
+                }),
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        app.use((err, req, res, next) => {
+            res.json({
+                customError: true,
+                ...err,
+            });
+        });
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(response.body.status === "OK");
+        assert(response.status === 200);
+
+        let userId = response.body.user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        response = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
+        assert(response.body.status === "OK");
+        assert(Object.keys(response.body).length === 1);
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify")
+                .send({
+                    method: "token",
+                    token,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+
+        assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
+        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.email, "test@gmail.com");
+    });
+
+    it("test the email verify API with valid input, overriding functions throws error", async function () {
+        await startST();
+
+        let user = undefined;
+        let token = null;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                        },
+                    },
+                    override: {
+                        emailVerificationFeature: {
+                            functions: (oI) => {
+                                return {
+                                    ...oI,
+                                    verifyEmailUsingToken: async (input) => {
+                                        let response = await oI.verifyEmailUsingToken(input);
+                                        user = response.user;
+                                        throw {
+                                            error: "verify email error",
+                                        };
+                                    },
+                                };
+                            },
+                        },
+                    },
+                }),
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        app.use((err, req, res, next) => {
+            res.json({
+                customError: true,
+                ...err,
+            });
+        });
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(response.body.status === "OK");
+        assert(response.status === 200);
+
+        let userId = response.body.user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        response = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
+        assert(response.body.status === "OK");
+        assert(Object.keys(response.body).length === 1);
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/user/email/verify")
+                .send({
+                    method: "token",
+                    token,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(err);
+                    } else {
+                        resolve(res.body);
+                    }
+                })
+        );
+
+        assert.deepStrictEqual(response2, { customError: true, error: "verify email error" });
+        assert.strictEqual(user.id, userId);
+        assert.strictEqual(user.email, "test@gmail.com");
     });
 });

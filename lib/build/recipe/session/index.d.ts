@@ -1,23 +1,29 @@
-import SessionRecipe from "./sessionRecipe";
 import * as express from "express";
 import SuperTokensError from "./error";
-import SessionClass from "./sessionClass";
-import { VerifySessionOptions } from "./types";
+import {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainerInterface as SessionContainer,
+    SessionRequest,
+    APIInterface,
+    APIOptions,
+} from "./types";
+import Recipe from "./recipe";
 export default class SessionWrapper {
-    static init: typeof SessionRecipe.init;
+    static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
     static createNewSession(
         res: express.Response,
         userId: string,
         jwtPayload?: any,
         sessionData?: any
-    ): Promise<SessionClass>;
+    ): Promise<SessionContainer>;
     static getSession(
         req: express.Request,
         res: express.Response,
-        doAntiCsrfCheck?: boolean
-    ): Promise<SessionClass | undefined>;
-    static refreshSession(req: express.Request, res: express.Response): Promise<SessionClass>;
+        options?: VerifySessionOptions
+    ): Promise<SessionContainer | undefined>;
+    static refreshSession(req: express.Request, res: express.Response): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string): Promise<string[]>;
     static revokeSession(sessionHandle: string): Promise<boolean>;
@@ -27,10 +33,10 @@ export default class SessionWrapper {
     static getJWTPayload(sessionHandle: string): Promise<any>;
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
     static verifySession: (
-        options?: boolean | VerifySessionOptions | undefined
+        options?: VerifySessionOptions | undefined
     ) => (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
 }
-export declare let init: typeof SessionRecipe.init;
+export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
 export declare let getSession: typeof SessionWrapper.getSession;
 export declare let refreshSession: typeof SessionWrapper.refreshSession;
@@ -43,7 +49,7 @@ export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
 export declare let getJWTPayload: typeof SessionWrapper.getJWTPayload;
 export declare let updateJWTPayload: typeof SessionWrapper.updateJWTPayload;
 export declare let verifySession: (
-    options?: boolean | VerifySessionOptions | undefined
+    options?: VerifySessionOptions | undefined
 ) => (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
 export declare let Error: typeof SuperTokensError;
-export declare type SessionContainer = SessionClass;
+export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, APIInterface, APIOptions };

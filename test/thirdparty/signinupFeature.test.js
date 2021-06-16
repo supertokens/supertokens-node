@@ -24,8 +24,8 @@ const {
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
-let ThirParty = require("../../lib/build/recipe/thirdparty");
+let ThirdPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
+let ThirdParty = require("../../lib/build/recipe/thirdparty");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
@@ -132,7 +132,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         await cleanST();
     });
 
-    it("test that disableDefaultImplementation is true, the default signinup API does not work", async function () {
+    it("test that disable api, the default signinup API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -144,11 +144,18 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirParty.init({
+                ThirdParty.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInUpPOST: undefined,
+                            };
+                        },
+                    },
                     signInAndUpFeature: {
-                        disableDefaultImplementation: true,
                         providers: [
-                            ThirParty.Google({
+                            ThirdParty.Google({
                                 clientId: "test",
                                 clientSecret: "test-secret",
                             }),
@@ -198,7 +205,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
                     },
@@ -253,7 +260,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
         assert.strictEqual(
-            await ThirPartyRecipe.getInstanceOrThrowError().isEmailVerified(response1.body.user.id),
+            await ThirdPartyRecipe.getInstanceOrThrowError().isEmailVerified(response1.body.user.id),
             true
         );
 
@@ -314,7 +321,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider5],
                     },
@@ -369,7 +376,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
         assert.strictEqual(
-            await ThirPartyRecipe.getInstanceOrThrowError().isEmailVerified(response1.body.user.id),
+            await ThirdPartyRecipe.getInstanceOrThrowError().isEmailVerified(response1.body.user.id),
             false
         );
     });
@@ -387,7 +394,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 Session.init(),
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
                     },
@@ -437,7 +444,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 Session.init(),
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider2],
                     },
@@ -490,7 +497,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 Session.init(),
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider3],
                     },
@@ -539,7 +546,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 Session.init(),
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider4],
                     },
@@ -594,7 +601,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             },
             recipeList: [
                 Session.init(),
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
                     },
@@ -762,7 +769,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
                     },
@@ -771,9 +778,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             ],
         });
 
-        let thirdPartyRecipe = ThirPartyRecipe.getInstanceOrThrowError();
+        let thirdPartyRecipe = ThirdPartyRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await thirdPartyRecipe.getUserById("randomID"), undefined);
+        assert.strictEqual(await ThirdParty.getUserById("randomID"), undefined);
 
         const app = express();
 
@@ -802,7 +809,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await thirdPartyRecipe.getUserById(signUpUserInfo.id);
+        let userInfo = await ThirdParty.getUserById(signUpUserInfo.id);
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
@@ -821,7 +828,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
                         providers: [this.customProvider1],
                     },
@@ -830,9 +837,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
             ],
         });
 
-        let thirdPartyRecipe = ThirPartyRecipe.getInstanceOrThrowError();
+        let thirdPartyRecipe = ThirdPartyRecipe.getInstanceOrThrowError();
 
-        assert.strictEqual(await thirdPartyRecipe.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(await ThirdParty.getUserByThirdPartyInfo("custom", "user"), undefined);
 
         const app = express();
 
@@ -861,7 +868,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await thirdPartyRecipe.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await ThirdParty.getUserByThirdPartyInfo("custom", "user");
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);

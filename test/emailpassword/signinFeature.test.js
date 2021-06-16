@@ -27,7 +27,7 @@ const {
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
-let SessionRecipe = require("../../lib/build/recipe/session/sessionRecipe").default;
+let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let { normaliseURLPathOrThrowError } = require("../../lib/build/normalisedURLPath");
@@ -56,12 +56,10 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         await cleanST();
     });
 
-    // check if disableDefaultImplementation is true, the default signin API does not work - you get a 404
+    // check if disabling api, the default signin API does not work - you get a 404
     /*
-    Failure condition:
-    Set  disableDefaultImplementation to false in the signInFeature
-    */
-    it("test that disableDefaultImplementation is true, the default signin API does not work", async function () {
+     */
+    it("test that disabling api, the default signin API does not work", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -74,8 +72,13 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    signInFeature: {
-                        disableDefaultImplementation: true,
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInPOST: undefined,
+                            };
+                        },
                     },
                 }),
             ],
@@ -953,7 +956,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert((await emailpassword.getUserByEmail("random@gmail.com")) === undefined);
+        assert((await EmailPassword.getUserByEmail("random@gmail.com")) === undefined);
 
         const app = express();
 
@@ -966,7 +969,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(signUpResponse.status === 200);
 
         let signUpUserInfo = JSON.parse(signUpResponse.text).user;
-        let userInfo = await emailpassword.getUserByEmail("random@gmail.com");
+        let userInfo = await EmailPassword.getUserByEmail("random@gmail.com");
 
         assert(userInfo.email === signUpUserInfo.email);
         assert(userInfo.id === signUpUserInfo.id);
@@ -994,7 +997,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         let emailpassword = EmailPasswordRecipe.getInstanceOrThrowError();
 
-        assert((await emailpassword.getUserById("randomID")) === undefined);
+        assert((await EmailPassword.getUserById("randomID")) === undefined);
 
         const app = express();
 
@@ -1007,7 +1010,7 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         assert(signUpResponse.status === 200);
 
         let signUpUserInfo = JSON.parse(signUpResponse.text).user;
-        let userInfo = await emailpassword.getUserById(signUpUserInfo.id);
+        let userInfo = await EmailPassword.getUserById(signUpUserInfo.id);
 
         assert(userInfo.email === signUpUserInfo.email);
         assert(userInfo.id === signUpUserInfo.id);
@@ -1028,9 +1031,18 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
             },
             recipeList: [
                 EmailPassword.init({
-                    signInFeature: {
-                        handlePostSignIn: (user) => {
-                            customUser = user;
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInPOST: async (formFields, options) => {
+                                    let response = await oI.signInPOST(formFields, options);
+                                    if (response.status === "OK") {
+                                        customUser = response.user;
+                                    }
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),

@@ -1,12 +1,37 @@
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-export declare type TypeInputSetJwtPayloadForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
-    [key: string]: any;
-} | undefined>;
-export declare type TypeInputSetSessionDataForSession = (user: User, formFields: TypeFormField[], action: "signin" | "signup") => Promise<{
-    [key: string]: any;
-} | undefined>;
+import {
+    RecipeInterface as EmailVerificationRecipeInterface,
+    APIInterface as EmailVerificationAPIInterface,
+} from "../emailverification";
+import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
+import { Request, Response, NextFunction } from "express";
+export declare type TypeInputSetJwtPayloadForSession = (
+    user: User,
+    formFields: TypeFormField[],
+    action: "signin" | "signup"
+) => Promise<
+    | {
+          [key: string]: any;
+      }
+    | undefined
+>;
+export declare type TypeInputSetSessionDataForSession = (
+    user: User,
+    formFields: TypeFormField[],
+    action: "signin" | "signup"
+) => Promise<
+    | {
+          [key: string]: any;
+      }
+    | undefined
+>;
 export declare type TypeInputSessionFeature = {
+    /**
+     * @deprecated Use override functions instead for >= v6.0
+     *   */
     setJwtPayload?: TypeInputSetJwtPayloadForSession;
+    /**
+     * @deprecated Use override functions instead for >= v6.0
+     *   */
     setSessionData?: TypeInputSetSessionDataForSession;
 };
 export declare type TypeNormalisedInputSessionFeature = {
@@ -18,14 +43,19 @@ export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
-    signOutFeature: TypeNormalisedInputSignOutFeature;
-    emailVerificationFeature: TypeNormalisedInputEmailVerification;
+    emailVerificationFeature: TypeInputEmailVerification;
+    override: {
+        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis: (originalImplementation: APIInterface) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+        };
+    };
 };
 export declare type TypeInputEmailVerificationFeature = {
-    disableDefaultImplementation?: boolean;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification?: (user: User) => Promise<void>;
 };
 export declare type TypeInputFormField = {
     id: string;
@@ -37,10 +67,7 @@ export declare type TypeFormField = {
     value: any;
 };
 export declare type TypeInputSignUp = {
-    disableDefaultImplementation?: boolean;
     formFields?: TypeInputFormField[];
-    handleCustomFormFieldsPostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
-    handlePostSignUp?: (user: User, formFields: TypeFormField[]) => Promise<void>;
 };
 export declare type NormalisedFormField = {
     id: string;
@@ -48,36 +75,18 @@ export declare type NormalisedFormField = {
     optional: boolean;
 };
 export declare type TypeNormalisedInputSignUp = {
-    disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
-    handlePostSignUp: (user: User, formFields: TypeFormField[]) => Promise<void>;
-};
-export declare type TypeInputSignIn = {
-    disableDefaultImplementation?: boolean;
-    handlePostSignIn?: (user: User) => Promise<void>;
 };
 export declare type TypeNormalisedInputSignIn = {
-    disableDefaultImplementation: boolean;
     formFields: NormalisedFormField[];
-    handlePostSignIn: (user: User) => Promise<void>;
-};
-export declare type TypeInputSignOutFeature = {
-    disableDefaultImplementation?: boolean;
-};
-export declare type TypeNormalisedInputSignOutFeature = {
-    disableDefaultImplementation: boolean;
 };
 export declare type TypeInputResetPasswordUsingTokenFeature = {
-    disableDefaultImplementation?: boolean;
     getResetPasswordURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string) => Promise<void>;
 };
 export declare const InputResetPasswordUsingTokenFeatureSchema: {
     type: string;
     properties: {
-        disableDefaultImplementation: {
-            type: string;
-        };
         getResetPasswordURL: {
             type: string;
         };
@@ -88,17 +97,10 @@ export declare const InputResetPasswordUsingTokenFeatureSchema: {
     additionalProperties: boolean;
 };
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
-    disableDefaultImplementation: boolean;
     getResetPasswordURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string) => Promise<void>;
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
-};
-export declare type TypeNormalisedInputEmailVerificationFeature = {
-    disableDefaultImplementation: boolean;
-    getEmailVerificationURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
-    handlePostEmailVerification: (user: User) => Promise<void>;
 };
 export declare type User = {
     id: string;
@@ -108,10 +110,16 @@ export declare type User = {
 export declare type TypeInput = {
     sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
-    signInFeature?: TypeInputSignIn;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
-    signOutFeature?: TypeInputSignOutFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
+    override?: {
+        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+        };
+    };
 };
 export declare const InputSchema: {
     type: string;
@@ -131,9 +139,6 @@ export declare const InputSchema: {
         signUpFeature: {
             type: string;
             properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
                 formFields: {
                     type: string;
                     items: {
@@ -153,33 +158,12 @@ export declare const InputSchema: {
                         additionalProperties: boolean;
                     };
                 };
-                handleCustomFormFieldsPostSignUp: {
-                    type: string;
-                };
-                handlePostSignUp: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
-        signInFeature: {
-            type: string;
-            properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
-                handlePostSignIn: {
-                    type: string;
-                };
             };
             additionalProperties: boolean;
         };
         resetPasswordUsingTokenFeature: {
             type: string;
             properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
                 getResetPasswordURL: {
                     type: string;
                 };
@@ -189,33 +173,158 @@ export declare const InputSchema: {
             };
             additionalProperties: boolean;
         };
-        signOutFeature: {
-            type: string;
-            properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
         emailVerificationFeature: {
             type: string;
             properties: {
-                disableDefaultImplementation: {
-                    type: string;
-                };
                 getEmailVerificationURL: {
                     type: string;
                 };
                 createAndSendCustomEmail: {
                     type: string;
                 };
-                handlePostEmailVerification: {
-                    type: string;
-                };
             };
             additionalProperties: boolean;
+        };
+        override: {
+            type: string;
         };
     };
     additionalProperties: boolean;
 };
+export interface RecipeInterface {
+    signUp(input: {
+        email: string;
+        password: string;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    signIn(input: {
+        email: string;
+        password: string;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
+    getUserById(input: { userId: string }): Promise<User | undefined>;
+    getUserByEmail(input: { email: string }): Promise<User | undefined>;
+    createResetPasswordToken(input: {
+        userId: string;
+    }): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID";
+          }
+    >;
+    resetPasswordUsingToken(input: {
+        token: string;
+        newPassword: string;
+    }): Promise<{
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
+    getUsersOldestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+    getUsersNewestFirst(input: {
+        limit?: number;
+        nextPaginationToken?: string;
+    }): Promise<{
+        users: User[];
+        nextPaginationToken?: string;
+    }>;
+    getUserCount(): Promise<number>;
+}
+export declare type APIOptions = {
+    recipeImplementation: RecipeInterface;
+    config: TypeNormalisedInput;
+    recipeId: string;
+    isInServerlessEnv: boolean;
+    req: Request;
+    res: Response;
+    next: NextFunction;
+};
+export interface APIInterface {
+    emailExistsGET:
+        | undefined
+        | ((input: {
+              email: string;
+              options: APIOptions;
+          }) => Promise<{
+              status: "OK";
+              exists: boolean;
+          }>);
+    generatePasswordResetTokenPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: APIOptions;
+          }) => Promise<{
+              status: "OK";
+          }>);
+    passwordResetPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              token: string;
+              options: APIOptions;
+          }) => Promise<{
+              status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }>);
+    signInPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: APIOptions;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | {
+                    status: "WRONG_CREDENTIALS_ERROR";
+                }
+          >);
+    signUpPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: APIOptions;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+          >);
+}
