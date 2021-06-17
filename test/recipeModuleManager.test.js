@@ -653,9 +653,9 @@ class TestRecipe extends RecipeModule {
         };
     }
 
-    isErrorFromThisRecipe = (err) => {
+    isErrorFromThisRecipe(err) {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === "testRecipe";
-    };
+    }
 
     getAPIsHandled() {
         return [
