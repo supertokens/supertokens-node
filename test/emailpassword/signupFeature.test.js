@@ -558,7 +558,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                                 signUpPOST: async (input) => {
                                     let response = await oI.signUpPOST(input);
                                     if (response.status === "OK") {
-                                        customFormFields = formFields;
+                                        customFormFields = input.formFields;
                                     }
                                     return response;
                                 },
@@ -637,7 +637,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                                 signUpPOST: async (input) => {
                                     let response = await oI.signUpPOST(input);
                                     if (response.status === "OK") {
-                                        customFormFields = formFields;
+                                        customFormFields = input.formFields;
                                     }
                                     return response;
                                 },
@@ -1417,7 +1417,7 @@ describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]
                                 signUpPOST: async (input) => {
                                     let response = await oI.signUpPOST(input);
                                     if (response.status === "OK") {
-                                        customFormFields = formFields;
+                                        customFormFields = input.formFields;
                                     }
                                     return response;
                                 },
