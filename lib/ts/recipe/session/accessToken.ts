@@ -29,9 +29,11 @@ export async function getInfoFromAccessToken(
     antiCsrfToken: string | undefined;
     expiryTime: number;
     timeCreated: number;
+    verified: boolean;
 }> {
     try {
-        let payload = verifyJWTAndGetPayload(token, jwtSigningPublicKey);
+        let verificationResult = verifyJWTAndGetPayload(token, jwtSigningPublicKey);
+        let payload = verificationResult.payload;
 
         let sessionHandle = sanitizeStringInput(payload.sessionHandle);
         let userId = sanitizeStringInput(payload.userId);
@@ -65,6 +67,7 @@ export async function getInfoFromAccessToken(
             antiCsrfToken,
             expiryTime,
             timeCreated,
+            verified: verificationResult.verified,
         };
     } catch (err) {
         throw new STError({

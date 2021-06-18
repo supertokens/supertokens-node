@@ -223,6 +223,7 @@ export default class RecipeImplementation implements RecipeInterface {
                     handshakeInfo = {
                         ...handshakeInfo,
                         antiCsrf,
+                        signingKeyLastUpdated: Date.now(),
                     };
                     this.handshakeInfo = handshakeInfo;
                     return this.handshakeInfo;
@@ -231,6 +232,7 @@ export default class RecipeImplementation implements RecipeInterface {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
             this.handshakeInfo = {
+                signingKeyLastUpdated: Date.now(),
                 jwtSigningPublicKey: response.jwtSigningPublicKey,
                 antiCsrf,
                 accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
@@ -247,6 +249,12 @@ export default class RecipeImplementation implements RecipeInterface {
 
     updateJwtSigningPublicKeyInfo = (newKey: string, newExpiry: number) => {
         if (this.handshakeInfo !== undefined) {
+            if (
+                this.handshakeInfo.jwtSigningPublicKeyExpiryTime !== newExpiry ||
+                this.handshakeInfo.jwtSigningPublicKey !== newKey
+            ) {
+                this.handshakeInfo.signingKeyLastUpdated = Date.now();
+            }
             this.handshakeInfo.jwtSigningPublicKey = newKey;
             this.handshakeInfo.jwtSigningPublicKeyExpiryTime = newExpiry;
         }

@@ -23,6 +23,7 @@ export type HandshakeInfo = {
     jwtSigningPublicKeyExpiryTime: number;
     accessTokenValidity: number;
     refreshTokenValidity: number;
+    signingKeyLastUpdated: number;
 };
 
 export type CreateOrRefreshAPIResponse = {

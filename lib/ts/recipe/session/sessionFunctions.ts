@@ -80,30 +80,47 @@ export async function getSession(
     };
 }> {
     let handShakeInfo = await recipeImplementation.getHandshakeInfo();
+    let accessTokenInfo;
+    /**
+     * if jwtSigningPublicKeyExpiryTime is expired, we call core
+     */
+    if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
+        /**
+         * get access token info using existing signingKey
+         */
+        accessTokenInfo = await getInfoFromAccessToken(
+            accessToken,
+            handShakeInfo.jwtSigningPublicKey,
+            handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
+        );
 
-    let fallbackToCore = true;
-    try {
-        if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
-            let accessTokenInfo;
-            try {
-                accessTokenInfo = await getInfoFromAccessToken(
-                    accessToken,
-                    handShakeInfo.jwtSigningPublicKey,
-                    handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
-                );
-            } catch (err) {
-                if (err.type === STError.TRY_REFRESH_TOKEN) {
-                    // if it comes here, it means that we failed verification
-                    // of an access token that signed by an older key.
-                    // In this case, we must not query the core again and
-                    // just return TRY_REFRESH_TOKEN to the client.
-                    fallbackToCore = false;
-                }
-                throw err;
+        /**
+         * check if token verification failed due signing key
+         * if so, we check when was the last time signing key was
+         * updated. if signing key was updated after the token was
+         * created, we simply return TRY_REFRESH_TOKEN to the user
+         *
+         * if signing key was updated before the token was
+         * created, we set accessTokenInfo to undefined and let
+         * core handle the request
+         */
+        if (!accessTokenInfo.verified) {
+            if (handShakeInfo.signingKeyLastUpdated > accessTokenInfo.timeCreated) {
+                throw new STError({
+                    message: "Failed to verify access token",
+                    type: STError.TRY_REFRESH_TOKEN,
+                });
             }
-
-            // anti-csrf check
-            if (handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck) {
+            accessTokenInfo = undefined;
+        }
+    }
+    /**
+     * anti-csrf check if accesstokenInfo is not undefined,
+     * which means token verification was successful
+     */
+    if (doAntiCsrfCheck) {
+        if (handShakeInfo.antiCsrf === "VIA_TOKEN") {
+            if (accessTokenInfo !== undefined) {
                 if (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken) {
                     if (antiCsrfToken === undefined) {
                         throw new STError({
@@ -118,34 +135,29 @@ export async function getSession(
                         });
                     }
                 }
-            } else if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && doAntiCsrfCheck) {
-                if (!containsCustomHeader) {
-                    fallbackToCore = false;
-                    throw new STError({
-                        message:
-                            "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API",
-                        type: STError.TRY_REFRESH_TOKEN,
-                    });
-                }
             }
-
-            if (
-                !handShakeInfo.accessTokenBlacklistingEnabled &&
-                accessTokenInfo.parentRefreshTokenHash1 === undefined
-            ) {
-                return {
-                    session: {
-                        handle: accessTokenInfo.sessionHandle,
-                        userId: accessTokenInfo.userId,
-                        userDataInJWT: accessTokenInfo.userData,
-                    },
-                };
+        } else if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
+            if (!containsCustomHeader) {
+                throw new STError({
+                    message:
+                        "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API",
+                    type: STError.TRY_REFRESH_TOKEN,
+                });
             }
         }
-    } catch (err) {
-        if (err.type !== STError.TRY_REFRESH_TOKEN || !fallbackToCore) {
-            throw err;
-        }
+    }
+    if (
+        accessTokenInfo !== undefined &&
+        !handShakeInfo.accessTokenBlacklistingEnabled &&
+        accessTokenInfo.parentRefreshTokenHash1 === undefined
+    ) {
+        return {
+            session: {
+                handle: accessTokenInfo.sessionHandle,
+                userId: accessTokenInfo.userId,
+                userDataInJWT: accessTokenInfo.userData,
+            },
+        };
     }
 
     ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
