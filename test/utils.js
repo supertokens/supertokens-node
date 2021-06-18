@@ -203,7 +203,8 @@ module.exports.startST = async function (host = "localhost", port = 8080) {
                     ` && java -Djava.security.egd=file:/dev/urandom -classpath "./core/*:./plugin-interface/*" io.supertokens.Main ./ DEV host=` +
                     host +
                     " port=" +
-                    port
+                    port +
+                    " test_mode"
             )
             .catch((err) => {
                 if (!returned) {

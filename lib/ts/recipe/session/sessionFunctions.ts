@@ -84,11 +84,24 @@ export async function getSession(
     let fallbackToCore = true;
     try {
         if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
-            let accessTokenInfo = await getInfoFromAccessToken(
-                accessToken,
-                handShakeInfo.jwtSigningPublicKey,
-                handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
-            );
+            let accessTokenInfo;
+            try {
+                accessTokenInfo = await getInfoFromAccessToken(
+                    accessToken,
+                    handShakeInfo.jwtSigningPublicKey,
+                    handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
+                );
+            } catch (err) {
+                if (err.type === STError.TRY_REFRESH_TOKEN) {
+                    // if it comes here, it means that we failed verification
+                    // of an access token that signed by an older key.
+                    // In this case, we must not query the core again and
+                    // just return TRY_REFRESH_TOKEN to the client.
+                    fallbackToCore = false;
+                }
+                throw err;
+            }
+
             // anti-csrf check
             if (handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck) {
                 if (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken) {
@@ -168,6 +181,12 @@ export async function getSession(
             type: STError.UNAUTHORISED,
         });
     } else {
+        if (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined) {
+            recipeImplementation.updateJwtSigningPublicKeyInfo(
+                response.jwtSigningPublicKey,
+                response.jwtSigningPublicKeyExpiryTime
+            );
+        }
         throw new STError({
             message: response.message,
             type: STError.TRY_REFRESH_TOKEN,
