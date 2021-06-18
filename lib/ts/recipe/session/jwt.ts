@@ -31,10 +31,7 @@ const HEADERS = new Set([
     ).toString("base64"),
 ]);
 
-export function verifyJWTAndGetPayload(
-    jwt: string,
-    jwtSigningPublicKey: string
-): { verified: boolean; payload: { [key: string]: any } } {
+export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string): { [key: string]: any } {
     const splittedInput = jwt.split(".");
     if (splittedInput.length !== 3) {
         throw new Error("Invalid JWT");
@@ -51,7 +48,6 @@ export function verifyJWTAndGetPayload(
     // convert the jwtSigningPublicKey into .pem format
 
     verifier.update(splittedInput[0] + "." + payload);
-    let verified = true;
     if (
         !verifier.verify(
             "-----BEGIN PUBLIC KEY-----\n" + jwtSigningPublicKey + "\n-----END PUBLIC KEY-----",
@@ -59,12 +55,20 @@ export function verifyJWTAndGetPayload(
             "base64"
         )
     ) {
-        verified = false;
+        throw new Error("JWT verification failed");
     }
     // sending payload
     payload = Buffer.from(payload, "base64").toString();
-    return {
-        payload: JSON.parse(payload),
-        verified,
-    };
+    return JSON.parse(payload);
+}
+
+export function getPayloadWithoutVerifiying(jwt: string): { [key: string]: any } {
+    const splittedInput = jwt.split(".");
+    if (splittedInput.length !== 3) {
+        throw new Error("Invalid JWT");
+    }
+
+    let payload = splittedInput[1];
+    payload = Buffer.from(payload, "base64").toString();
+    return JSON.parse(payload);
 }

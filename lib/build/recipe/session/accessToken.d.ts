@@ -11,5 +11,5 @@ export declare function getInfoFromAccessToken(
     antiCsrfToken: string | undefined;
     expiryTime: number;
     timeCreated: number;
-    verified: boolean;
 }>;
+export declare function sanitizeNumberInput(field: any): number | undefined;

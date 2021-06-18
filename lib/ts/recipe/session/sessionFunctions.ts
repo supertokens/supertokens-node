@@ -12,7 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { getInfoFromAccessToken } from "./accessToken";
+import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
+import { getPayloadWithoutVerifiying } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse } from "./types";
@@ -85,33 +86,58 @@ export async function getSession(
      * if jwtSigningPublicKeyExpiryTime is expired, we call core
      */
     if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
-        /**
-         * get access token info using existing signingKey
-         */
-        accessTokenInfo = await getInfoFromAccessToken(
-            accessToken,
-            handShakeInfo.jwtSigningPublicKey,
-            handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
-        );
-
-        /**
-         * check if token verification failed due signing key
-         * if so, we check when was the last time signing key was
-         * updated. if signing key was updated after the token was
-         * created, we simply return TRY_REFRESH_TOKEN to the user
-         *
-         * if signing key was updated before the token was
-         * created, we set accessTokenInfo to undefined and let
-         * core handle the request
-         */
-        if (!accessTokenInfo.verified) {
-            if (handShakeInfo.signingKeyLastUpdated > accessTokenInfo.timeCreated) {
-                throw new STError({
-                    message: "Failed to verify access token",
-                    type: STError.TRY_REFRESH_TOKEN,
-                });
+        try {
+            /**
+             * get access token info using existing signingKey
+             */
+            accessTokenInfo = await getInfoFromAccessToken(
+                accessToken,
+                handShakeInfo.jwtSigningPublicKey,
+                handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
+            );
+        } catch (err) {
+            /**
+             * if error type is not TRY_REFRESH_TOKEN, we return the
+             * error to the user
+             */
+            if (err.type !== STError.TRY_REFRESH_TOKEN) {
+                throw err;
             }
-            accessTokenInfo = undefined;
+            /**
+             * if it comes here, it means token verification has failed.
+             * It may be due to:
+             *  - signing key was updated and this token was signed with new key
+             *  - access token is actually expired
+             *  - access token was signed with the older signing key
+             *
+             * if access token is actually expired, we don't need to call core and
+             * just return TRY_REFRESH_TOKEN to the client
+             *
+             * if access token creation time is after the signing key was last
+             * updated, we need to call core as there are chances that the token
+             * was signed with the updated signing key
+             *
+             * if access token creation time is before the signing key was last
+             * updated, we just return TRY_REFRESH_TOKEN to the client
+             */
+            let payload;
+            try {
+                payload = getPayloadWithoutVerifiying(accessToken);
+            } catch (_) {
+                throw err;
+            }
+            if (payload === undefined) {
+                throw err;
+            }
+            let expiryTime = sanitizeNumberInput(payload.expiryTime);
+            let timeCreated = sanitizeNumberInput(payload.timeCreated);
+
+            if (expiryTime === undefined || expiryTime < Date.now()) {
+                throw err;
+            }
+            if (timeCreated === undefined || handShakeInfo.signingKeyLastUpdated > timeCreated) {
+                throw err;
+            }
         }
     }
     /**
@@ -193,12 +219,7 @@ export async function getSession(
             type: STError.UNAUTHORISED,
         });
     } else {
-        if (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined) {
-            recipeImplementation.updateJwtSigningPublicKeyInfo(
-                response.jwtSigningPublicKey,
-                response.jwtSigningPublicKeyExpiryTime
-            );
-        }
+        await recipeImplementation.getHandshakeInfo(true);
         throw new STError({
             message: response.message,
             type: STError.TRY_REFRESH_TOKEN,

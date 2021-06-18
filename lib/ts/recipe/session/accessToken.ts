@@ -29,11 +29,9 @@ export async function getInfoFromAccessToken(
     antiCsrfToken: string | undefined;
     expiryTime: number;
     timeCreated: number;
-    verified: boolean;
 }> {
     try {
-        let verificationResult = verifyJWTAndGetPayload(token, jwtSigningPublicKey);
-        let payload = verificationResult.payload;
+        let payload = verifyJWTAndGetPayload(token, jwtSigningPublicKey);
 
         let sessionHandle = sanitizeStringInput(payload.sessionHandle);
         let userId = sanitizeStringInput(payload.userId);
@@ -67,7 +65,6 @@ export async function getInfoFromAccessToken(
             antiCsrfToken,
             expiryTime,
             timeCreated,
-            verified: verificationResult.verified,
         };
     } catch (err) {
         throw new STError({
@@ -91,7 +88,7 @@ function sanitizeStringInput(field: any): string | undefined {
     return undefined;
 }
 
-function sanitizeNumberInput(field: any): number | undefined {
+export function sanitizeNumberInput(field: any): number | undefined {
     if (typeof field === "number") {
         return field;
     }

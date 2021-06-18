@@ -2,8 +2,10 @@ export declare function verifyJWTAndGetPayload(
     jwt: string,
     jwtSigningPublicKey: string
 ): {
-    verified: boolean;
-    payload: {
-        [key: string]: any;
-    };
+    [key: string]: any;
+};
+export declare function getPayloadWithoutVerifiying(
+    jwt: string
+): {
+    [key: string]: any;
 };
