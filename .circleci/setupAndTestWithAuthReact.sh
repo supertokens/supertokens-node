@@ -48,12 +48,10 @@ cd ../
 git clone git@github.com:supertokens/supertokens-auth-react.git
 cd supertokens-auth-react
 git checkout $2
-npm i -d
-cd ../supertokens-auth-react/test/server/
+npm run init
+cd ./test/server/
 npm i -d
 npm i git+https://github.com:supertokens/supertokens-node.git#$3
-cd ../react-test-app/
-npm i -d
 cd ../../
 SKIP_OAUTH=true npm run test
 if [[ $? -ne 0 ]]
