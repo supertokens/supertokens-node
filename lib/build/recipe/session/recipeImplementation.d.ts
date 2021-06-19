@@ -49,7 +49,7 @@ export default class RecipeImplementation implements RecipeInterface {
         sessionHandle: string;
         newJWTPayload: any;
     }) => Promise<void>;
-    getHandshakeInfo: () => Promise<HandshakeInfo>;
+    getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
     getAccessTokenLifeTimeMS: () => Promise<number>;
     getRefreshTokenLifeTimeMS: () => Promise<number>;

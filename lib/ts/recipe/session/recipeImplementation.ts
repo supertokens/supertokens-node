@@ -212,10 +212,10 @@ export default class RecipeImplementation implements RecipeInterface {
         return SessionFunctions.updateJWTPayload(this, sessionHandle, newJWTPayload);
     };
 
-    getHandshakeInfo = async (): Promise<HandshakeInfo> => {
-        if (this.handshakeInfo === undefined) {
+    getHandshakeInfo = async (forceRefetch = false): Promise<HandshakeInfo> => {
+        if (this.handshakeInfo === undefined || forceRefetch) {
             let antiCsrf = this.config.antiCsrf;
-            if (this.isInServerlessEnv) {
+            if (this.isInServerlessEnv && !forceRefetch) {
                 let handshakeInfo = await getDataFromFileForServerlessCache<HandshakeInfo>(
                     SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH
                 );
@@ -230,7 +230,17 @@ export default class RecipeImplementation implements RecipeInterface {
             }
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
+            let signingKeyLastUpdated = Date.now();
+            if (this.handshakeInfo !== undefined) {
+                if (
+                    response.jwtSigningPublicKeyExpiryTime === this.handshakeInfo.jwtSigningPublicKeyExpiryTime &&
+                    response.jwtSigningPublicKey === this.handshakeInfo.jwtSigningPublicKey
+                ) {
+                    signingKeyLastUpdated = this.handshakeInfo.signingKeyLastUpdated;
+                }
+            }
             this.handshakeInfo = {
+                signingKeyLastUpdated,
                 jwtSigningPublicKey: response.jwtSigningPublicKey,
                 antiCsrf,
                 accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
@@ -247,6 +257,12 @@ export default class RecipeImplementation implements RecipeInterface {
 
     updateJwtSigningPublicKeyInfo = (newKey: string, newExpiry: number) => {
         if (this.handshakeInfo !== undefined) {
+            if (
+                this.handshakeInfo.jwtSigningPublicKeyExpiryTime !== newExpiry ||
+                this.handshakeInfo.jwtSigningPublicKey !== newKey
+            ) {
+                this.handshakeInfo.signingKeyLastUpdated = Date.now();
+            }
             this.handshakeInfo.jwtSigningPublicKey = newKey;
             this.handshakeInfo.jwtSigningPublicKeyExpiryTime = newExpiry;
         }
