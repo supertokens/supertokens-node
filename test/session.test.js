@@ -25,7 +25,6 @@ const {
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
 const nock = require("nock");
-let { version } = require("../lib/build/version");
 const express = require("express");
 const request = require("supertest");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
@@ -1002,7 +1001,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await SessionFunctions.createNewSession(s, "", {}, {});
     });
 
-    it("check that if signing key changes, things are still fine", async function () {
+    it.only("check that if signing key changes, things are still fine", async function () {
         await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
@@ -1088,7 +1087,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(verifyState === undefined);
     });
 
-    it("check that if signing key changes, after new key is fetched - via one old token query, old tokens don't query the core", async function () {
+    it.only("check that if signing key changes, after new key is fetched - via one old token query, old tokens don't query the core", async function () {
         await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
@@ -1137,6 +1136,166 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                     throw err;
                 }
             }
+
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1500
+            );
+            assert(verifyState !== undefined);
+        }
+
+        await ProcessState.getInstance().reset();
+
+        {
+            try {
+                await SessionFunctions.getSession(
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    response2.accessToken.token,
+                    response2.antiCsrfToken,
+                    true,
+                    response2.idRefreshToken.token
+                );
+            } catch (err) {
+                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
+                    throw err;
+                }
+            }
+
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1500
+            );
+            assert(verifyState === undefined);
+        }
+    });
+
+    it.only("check that if signing key changes, after new key is fetched - via creation of new token, old tokens don't query the core", async function () {
+        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let response2 = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
+
+        await new Promise((r) => setTimeout(r, 6000));
+
+        let response = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
+
+        {
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                response.accessToken.token,
+                response.antiCsrfToken,
+                true,
+                response.idRefreshToken.token
+            );
+
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1500
+            );
+            assert(verifyState === undefined);
+        }
+
+        await ProcessState.getInstance().reset();
+
+        {
+            try {
+                await SessionFunctions.getSession(
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    response2.accessToken.token,
+                    response2.antiCsrfToken,
+                    true,
+                    response2.idRefreshToken.token
+                );
+            } catch (err) {
+                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
+                    throw err;
+                }
+            }
+
+            let verifyState = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1500
+            );
+            assert(verifyState === undefined);
+        }
+    });
+
+    it.only("check that if signing key changes, after new key is fetched - via verification of old token, old tokens don't query the core", async function () {
+        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let response2 = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
+
+        await new Promise((r) => setTimeout(r, 6000));
+
+        let originalHandShakeInfo = {
+            ...SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo,
+        };
+
+        let response = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
+
+        // we reset the handshake info to before the session creation so it's
+        // like the above session was created from another server.
+        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo = originalHandShakeInfo;
+
+        {
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                response.accessToken.token,
+                response.antiCsrfToken,
+                true,
+                response.idRefreshToken.token
+            );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,

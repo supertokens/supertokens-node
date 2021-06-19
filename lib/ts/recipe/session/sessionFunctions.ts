@@ -219,7 +219,16 @@ export async function getSession(
             type: STError.UNAUTHORISED,
         });
     } else {
-        await recipeImplementation.getHandshakeInfo(true);
+        if (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined) {
+            // in CDI 2.7.1, the API returns the new keys
+            recipeImplementation.updateJwtSigningPublicKeyInfo(
+                response.jwtSigningPublicKey,
+                response.jwtSigningPublicKeyExpiryTime
+            );
+        } else {
+            // we force update the signing keys...
+            await recipeImplementation.getHandshakeInfo(true);
+        }
         throw new STError({
             message: response.message,
             type: STError.TRY_REFRESH_TOKEN,
