@@ -1001,7 +1001,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         await SessionFunctions.createNewSession(s, "", {}, {});
     });
 
-    it.only("check that if signing key changes, things are still fine", async function () {
+    it("check that if signing key changes, things are still fine", async function () {
         await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
@@ -1087,7 +1087,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(verifyState === undefined);
     });
 
-    it.only("check that if signing key changes, after new key is fetched - via one old token query, old tokens don't query the core", async function () {
+    it("check that if signing key changes, after new key is fetched - via one old token query, old tokens don't query the core", async function () {
         await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
@@ -1169,7 +1169,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         }
     });
 
-    it.only("check that if signing key changes, after new key is fetched - via creation of new token, old tokens don't query the core", async function () {
+    it("check that if signing key changes, after new key is fetched - via creation of new token, old tokens don't query the core", async function () {
         await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
@@ -1245,7 +1245,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         }
     });
 
-    it.only("check that if signing key changes, after new key is fetched - via verification of old token, old tokens don't query the core", async function () {
+    it("check that if signing key changes, after new key is fetched - via verification of old token, old tokens don't query the core", async function () {
         await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
