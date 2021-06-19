@@ -49,6 +49,7 @@ git clone git@github.com:supertokens/supertokens-auth-react.git
 cd supertokens-auth-react
 git checkout $2
 npm run init
+(cd ./examples/for-tests && npm run link) # this is there because in linux machine, postinstall in npm doesn't work..
 cd ./test/server/
 npm i -d
 npm i git+https://github.com:supertokens/supertokens-node.git#$3
