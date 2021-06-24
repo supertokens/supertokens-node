@@ -162,10 +162,16 @@ function validateAndNormaliseEmailVerificationConfig(
     };
 }
 
+/**
+ * @deprecated Please do not override this function
+ *   */
 export function createNewPaginationToken(userId: string, timeJoined: number): string {
     return Buffer.from(`${userId};${timeJoined}`).toString("base64");
 }
 
+/**
+ * @deprecated Please do not override this function
+ *   */
 export function combinePaginationTokens(
     thirdPartyPaginationToken: string | null,
     emailPasswordPaginationToken: string | null
@@ -173,6 +179,9 @@ export function combinePaginationTokens(
     return Buffer.from(`${thirdPartyPaginationToken};${emailPasswordPaginationToken}`).toString("base64");
 }
 
+/**
+ * @deprecated
+ *   */
 export function extractPaginationTokens(
     nextPaginationToken: string
 ): {
@@ -189,6 +198,9 @@ export function extractPaginationTokens(
     };
 }
 
+/**
+ * @deprecated Please do not override this function
+ *   */
 export function combinePaginationResults(
     thirdPartyResult: {
         users: User[];

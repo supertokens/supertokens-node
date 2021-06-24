@@ -235,6 +235,9 @@ export interface RecipeInterface {
     }): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersOldestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -242,6 +245,9 @@ export interface RecipeInterface {
         users: User[];
         nextPaginationToken?: string;
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersNewestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -249,6 +255,9 @@ export interface RecipeInterface {
         users: User[];
         nextPaginationToken?: string;
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserCount(): Promise<number>;
 }
 export declare type APIOptions = {
