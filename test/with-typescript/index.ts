@@ -269,12 +269,12 @@ async function f() {
     await Supertokens.getUsersNewestFirst({
         includeRecipeIds: [""],
         limit: 1,
-        nextPaginationToken: "",
+        paginationToken: "",
     });
 
     await Supertokens.getUsersNewestFirst({
         includeRecipeIds: [""],
         limit: 1,
-        nextPaginationToken: "",
+        paginationToken: "",
     });
 }
