@@ -267,7 +267,7 @@ export default class SuperTokens {
         paginationToken?: string;
         includeRecipeIds?: string[];
     }): Promise<{
-        users: any[];
+        users: { recipeId: string; user: any }[];
         nextPaginationToken?: string;
     }> => {
         let querier = Querier.getNewInstanceOrThrowError(this.isInServerlessEnv, undefined);

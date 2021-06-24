@@ -48,7 +48,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
     }): Promise<{
-        users: any[];
+        users: { recipeId: string; user: any }[];
         nextPaginationToken?: string;
     }> {
         return SuperTokens.getInstanceOrThrowError().getUsers({
@@ -62,7 +62,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
     }): Promise<{
-        users: any[];
+        users: { recipeId: string; user: any }[];
         nextPaginationToken?: string;
     }> {
         return SuperTokens.getInstanceOrThrowError().getUsers({

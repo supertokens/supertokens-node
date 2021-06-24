@@ -40,7 +40,10 @@ export default class SuperTokens {
         paginationToken?: string | undefined;
         includeRecipeIds?: string[] | undefined;
     }) => Promise<{
-        users: any[];
+        users: {
+            recipeId: string;
+            user: any;
+        }[];
         nextPaginationToken?: string | undefined;
     }>;
 }
