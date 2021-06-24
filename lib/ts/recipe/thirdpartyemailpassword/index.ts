@@ -75,14 +75,23 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({ token, newPassword });
     }
 
+    /**
+     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersOldestFirst(limit?: number, nextPaginationToken?: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst({ limit, nextPaginationToken });
     }
 
+    /**
+     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersNewestFirst(limit?: number, nextPaginationToken?: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst({ limit, nextPaginationToken });
     }
 
+    /**
+     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+     *   */
     static getUserCount() {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
@@ -134,10 +143,19 @@ export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
 
+/**
+ * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+ *   */
 export let getUsersOldestFirst = Wrapper.getUsersOldestFirst;
 
+/**
+ * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+ *   */
 export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
 
+/**
+ * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+ *   */
 export let getUserCount = Wrapper.getUserCount;
 
 export let Google = Wrapper.Google;

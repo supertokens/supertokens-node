@@ -38,6 +38,38 @@ export default class SuperTokensWrapper {
     static getAllCORSHeaders() {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
     }
+
+    static getUserCount(includeRecipeIds?: string[]) {
+        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds);
+    }
+
+    static getUsersOldestFirst(input?: {
+        limit?: number;
+        paginationToken?: string;
+        includeRecipeIds?: string[];
+    }): Promise<{
+        users: any[];
+        nextPaginationToken?: string;
+    }> {
+        return SuperTokens.getInstanceOrThrowError().getUsers({
+            timeJoinedOrder: "ASC",
+            ...input,
+        });
+    }
+
+    static getUsersNewestFirst(input?: {
+        limit?: number;
+        paginationToken?: string;
+        includeRecipeIds?: string[];
+    }): Promise<{
+        users: any[];
+        nextPaginationToken?: string;
+    }> {
+        return SuperTokens.getInstanceOrThrowError().getUsers({
+            timeJoinedOrder: "DESC",
+            ...input,
+        });
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -47,5 +79,11 @@ export let middleware = SuperTokensWrapper.middleware;
 export let errorHandler = SuperTokensWrapper.errorHandler;
 
 export let getAllCORSHeaders = SuperTokensWrapper.getAllCORSHeaders;
+
+export let getUserCount = SuperTokensWrapper.getUserCount;
+
+export let getUsersOldestFirst = SuperTokensWrapper.getUsersOldestFirst;
+
+export let getUsersNewestFirst = SuperTokensWrapper.getUsersNewestFirst;
 
 export let Error = SuperTokensWrapper.Error;

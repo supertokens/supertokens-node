@@ -23,13 +23,22 @@ export default class RecipeImplementation implements RecipeInterface {
           }
     >;
     getUserById: (input: { userId: string }) => Promise<User | undefined>;
+    /**
+     * @deprecated
+     *   */
     getUsersOldestFirst: (_: {
         limit?: number | undefined;
         nextPaginationToken?: string | undefined;
     }) => Promise<never>;
+    /**
+     * @deprecated
+     *   */
     getUsersNewestFirst: (_: {
         limit?: number | undefined;
         nextPaginationToken?: string | undefined;
     }) => Promise<never>;
+    /**
+     * @deprecated
+     *   */
     getUserCount: () => Promise<never>;
 }

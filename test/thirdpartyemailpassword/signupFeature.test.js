@@ -747,4 +747,68 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
     });
+
+    it("test getUserCount and pagination works fine", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        assert((await STExpress.getUserCount()) === 0);
+
+        await signUPRequest(app, "random@gmail.com", "validpass123");
+
+        assert((await STExpress.getUserCount()) === 1);
+        assert((await STExpress.getUserCount(["emailpassword"])) === 1);
+        assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 1);
+
+        await ThirdPartyEmailPassword.signInUp("google", "randomUserId", {
+            id: "test@example.com",
+            isVerified: false,
+        });
+
+        assert((await STExpress.getUserCount()) === 2);
+        assert((await STExpress.getUserCount(["emailpassword"])) === 1);
+        assert((await STExpress.getUserCount(["thirdparty"])) === 1);
+        assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 2);
+
+        await signUPRequest(app, "random1@gmail.com", "validpass123");
+
+        let usersOldest = await STExpress.getUsersOldestFirst();
+        assert(usersOldest.nextPaginationToken === undefined);
+        assert(usersOldest.users.length === 3);
+        assert(usersOldest.users[0].recipeId === "emailpassword");
+        assert(usersOldest.users[0].user.email === "random@gmail.com");
+
+        let usersNewest = await STExpress.getUsersNewestFirst({
+            limit: 2,
+        });
+        assert(usersNewest.nextPaginationToken !== undefined);
+        assert(usersNewest.users.length === 2);
+        assert(usersNewest.users[0].recipeId === "emailpassword");
+        assert(usersNewest.users[0].user.email === "random1@gmail.com");
+
+        let usersNewest2 = await STExpress.getUsersNewestFirst({
+            paginationToken: usersNewest.nextPaginationToken,
+        });
+        assert(usersNewest2.nextPaginationToken === undefined);
+        assert(usersNewest2.users.length === 1);
+        assert(usersNewest2.users[0].recipeId === "emailpassword");
+        assert(usersNewest2.users[0].user.email === "random@gmail.com");
+    });
 });
