@@ -747,4 +747,44 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
     });
+
+    it("test getUserCount works fine", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        assert((await STExpress.getUserCount()) === 0);
+
+        await signUPRequest(app, "random@gmail.com", "validpass123");
+
+        assert((await STExpress.getUserCount()) === 1);
+        assert((await STExpress.getUserCount(["emailpassword"])) === 1);
+        assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 1);
+
+        await ThirdPartyEmailPassword.signInUp("google", "randomUserId", {
+            id: "test@example.com",
+            isVerified: false,
+        });
+
+        assert((await STExpress.getUserCount()) === 2);
+        assert((await STExpress.getUserCount(["emailpassword"])) === 1);
+        assert((await STExpress.getUserCount(["thirdparty"])) === 1);
+        assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 2);
+    });
 });

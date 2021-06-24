@@ -12,9 +12,11 @@ export default class SuperTokensWrapper {
         next: express.NextFunction
     ) => Promise<void>;
     static getAllCORSHeaders(): string[];
+    static getUserCount(includeRecipeIds?: string[]): Promise<number>;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let middleware: typeof SuperTokensWrapper.middleware;
 export declare let errorHandler: typeof SuperTokensWrapper.errorHandler;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
+export declare let getUserCount: typeof SuperTokensWrapper.getUserCount;
 export declare let Error: typeof SuperTokensError;

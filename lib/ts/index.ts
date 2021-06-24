@@ -38,6 +38,10 @@ export default class SuperTokensWrapper {
     static getAllCORSHeaders() {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
     }
+
+    static getUserCount(includeRecipeIds?: string[]) {
+        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds);
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -47,5 +51,7 @@ export let middleware = SuperTokensWrapper.middleware;
 export let errorHandler = SuperTokensWrapper.errorHandler;
 
 export let getAllCORSHeaders = SuperTokensWrapper.getAllCORSHeaders;
+
+export let getUserCount = SuperTokensWrapper.getUserCount;
 
 export let Error = SuperTokensWrapper.Error;

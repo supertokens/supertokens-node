@@ -12,8 +12,26 @@ export default class SuperTokens {
     static init(config: TypeInput): void;
     static reset(): void;
     static getInstanceOrThrowError(): SuperTokens;
-    middleware: () => (request: express.Request, response: express.Response, next: express.NextFunction) => Promise<void>;
-    handleAPI: (matchedRecipe: RecipeModule, id: string, request: express.Request, response: express.Response, next: express.NextFunction, path: NormalisedURLPath, method: HTTPMethod) => Promise<void>;
-    errorHandler: () => (err: any, request: express.Request, response: express.Response, next: express.NextFunction) => Promise<void>;
+    middleware: () => (
+        request: express.Request,
+        response: express.Response,
+        next: express.NextFunction
+    ) => Promise<void>;
+    handleAPI: (
+        matchedRecipe: RecipeModule,
+        id: string,
+        request: express.Request,
+        response: express.Response,
+        next: express.NextFunction,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => Promise<void>;
+    errorHandler: () => (
+        err: any,
+        request: express.Request,
+        response: express.Response,
+        next: express.NextFunction
+    ) => Promise<void>;
     getAllCORSHeaders: () => string[];
+    getUserCount: (includeRecipeIds?: string[] | undefined) => Promise<number>;
 }
