@@ -120,8 +120,17 @@ export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingTok
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
+/**
+ * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+ *   */
 export declare let getUsersOldestFirst: typeof Wrapper.getUsersOldestFirst;
+/**
+ * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+ *   */
 export declare let getUsersNewestFirst: typeof Wrapper.getUsersNewestFirst;
+/**
+ * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+ *   */
 export declare let getUserCount: typeof Wrapper.getUserCount;
 export declare let Google: typeof import("../thirdparty/providers/google").default;
 export declare let Github: typeof import("../thirdparty/providers/github").default;

@@ -115,10 +115,19 @@ export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
 
+/**
+ * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+ *   */
 export let getUsersOldestFirst = Wrapper.getUsersOldestFirst;
 
+/**
+ * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+ *   */
 export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
 
+/**
+ * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+ *   */
 export let getUserCount = Wrapper.getUserCount;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };
