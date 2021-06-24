@@ -31,6 +31,8 @@ const express = require("express");
 const request = require("supertest");
 let Session = require("../../recipe/session");
 const { removeServerlessCache } = require("../../lib/build/utils");
+let { Querier } = require("../../lib/build/querier");
+let { maxVersion } = require("../../lib/build/utils");
 
 describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.test.js]")}`, function () {
     before(function () {
@@ -762,6 +764,13 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
             },
             recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
         });
+
+        let currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.7") === "2.7") {
+            // we don't run the tests below for older versions of the core since it
+            // was introduced in >= 2.8 CDI
+            return;
+        }
 
         const app = express();
 
