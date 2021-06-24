@@ -10,6 +10,9 @@ export default class Wrapper {
     static getUserByEmail(email: string): Promise<User | undefined>;
     static createResetPasswordToken(userId: string): Promise<string>;
     static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+    /**
+     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersOldestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -17,6 +20,9 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
+    /**
+     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersNewestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -24,6 +30,9 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
+    /**
+     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+     *   */
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;

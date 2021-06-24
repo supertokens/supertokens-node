@@ -47,6 +47,9 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().resetPasswordUsingToken(token, newPassword);
     }
 
+    /**
+     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersOldestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -57,6 +60,9 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst({ limit, nextPaginationToken });
     }
 
+    /**
+     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersNewestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -67,6 +73,9 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst({ limit, nextPaginationToken });
     }
 
+    /**
+     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+     *   */
     static getUserCount(): Promise<number> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }

@@ -75,6 +75,9 @@ export default class Wrapper {
     ): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
+    /**
+     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersOldestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -82,6 +85,9 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
+    /**
+     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersNewestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -89,6 +95,9 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
+    /**
+     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+     *   */
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;

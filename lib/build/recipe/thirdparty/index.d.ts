@@ -17,6 +17,9 @@ export default class Wrapper {
     }>;
     static getUserById(userId: string): Promise<User | undefined>;
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
+    /**
+     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersOldestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -24,6 +27,9 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string;
     }>;
+    /**
+     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersNewestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -31,6 +37,9 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string;
     }>;
+    /**
+     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+     *   */
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;
