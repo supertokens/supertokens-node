@@ -2659,7 +2659,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             assert.deepStrictEqual(res2.status, 401);
             assert.deepStrictEqual(res2.text, '{"message":"unauthorised"}');
             let sessionRevokedResponseExtracted = extractInfoFromResponse(res2);
-            assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader !== "remove");
+            assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
         }
     });
 });

@@ -281,10 +281,6 @@ export async function refreshSession(
         throw new STError({
             message: response.message,
             type: STError.UNAUTHORISED,
-            payload: {
-                // see https://github.com/supertokens/supertokens-node/issues/141
-                clearCookies: response.message !== "Anti CSRF token missing, or not matching",
-            },
         });
     } else {
         throw new STError({
