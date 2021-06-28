@@ -8,6 +8,9 @@ export default class SessionError extends STError {
             | {
                   message: string;
                   type: "UNAUTHORISED";
+                  payload?: {
+                      clearCookies: boolean;
+                  };
               }
             | {
                   message: string;
