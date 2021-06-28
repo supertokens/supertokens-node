@@ -263,6 +263,9 @@ export async function refreshSession(
             throw new STError({
                 message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
                 type: STError.UNAUTHORISED,
+                payload: {
+                    clearCookies: false, // see https://github.com/supertokens/supertokens-node/issues/141
+                },
             });
         }
     }
@@ -278,6 +281,10 @@ export async function refreshSession(
         throw new STError({
             message: response.message,
             type: STError.UNAUTHORISED,
+            payload: {
+                // see https://github.com/supertokens/supertokens-node/issues/141
+                clearCookies: response.message !== "Anti CSRF token missing, or not matching",
+            },
         });
     } else {
         throw new STError({

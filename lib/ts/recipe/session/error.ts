@@ -25,6 +25,9 @@ export default class SessionError extends STError {
             | {
                   message: string;
                   type: "UNAUTHORISED";
+                  payload?: {
+                      clearCookies: boolean;
+                  };
               }
             | {
                   message: string;
@@ -39,9 +42,16 @@ export default class SessionError extends STError {
                   };
               }
     ) {
-        super({
-            ...options,
-        });
+        super(
+            options.type === "UNAUTHORISED" && options.payload === undefined
+                ? {
+                      ...options,
+                      payload: {
+                          clearCookies: true,
+                      },
+                  }
+                : { ...options }
+        );
         this.fromRecipe = "session";
     }
 }

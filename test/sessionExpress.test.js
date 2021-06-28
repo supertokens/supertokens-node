@@ -2530,4 +2530,136 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(signoutCalled, true);
         assert.deepStrictEqual(sessionRevokedResponse, { customError: true, error: "signout error" });
     });
+
+    it("check that refresh doesn't clear cookies if missing anti csrf via custom header", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_CUSTOM_HEADER",
+                }),
+            ],
+        });
+        const app = express();
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(SuperTokens.errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        {
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(res2.status, 401);
+            assert.deepStrictEqual(res2.text, '{"message":"unauthorised"}');
+            let sessionRevokedResponseExtracted = extractInfoFromResponse(res2);
+            assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader !== "remove");
+        }
+    });
+
+    it("check that refresh doesn't clear cookies if missing anti csrf via token", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+        const app = express();
+        app.use(SuperTokens.middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(SuperTokens.errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        {
+            let res2 = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+
+            assert.deepStrictEqual(res2.status, 401);
+            assert.deepStrictEqual(res2.text, '{"message":"unauthorised"}');
+            let sessionRevokedResponseExtracted = extractInfoFromResponse(res2);
+            assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader !== "remove");
+        }
+    });
 });
