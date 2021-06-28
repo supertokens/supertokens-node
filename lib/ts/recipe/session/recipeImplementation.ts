@@ -173,7 +173,10 @@ export default class RecipeImplementation implements RecipeInterface {
                 res
             );
         } catch (err) {
-            if (err.type === STError.UNAUTHORISED || err.type === STError.TOKEN_THEFT_DETECTED) {
+            if (
+                (err.type === STError.UNAUTHORISED && err.payload.clearCookies) ||
+                err.type === STError.TOKEN_THEFT_DETECTED
+            ) {
                 clearSessionFromCookie(this.config, res);
             }
             throw err;
