@@ -1,17 +1,15 @@
-/// <reference types="node" />
-import * as express from "express";
-import { IncomingMessage, ServerResponse } from "http";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 import { TypeNormalisedInput } from "./types";
 /**
  * @description clears all the auth cookies from the response
  */
-export declare function clearSessionFromCookie(config: TypeNormalisedInput, res: express.Response): void;
+export declare function clearSessionFromCookie(config: TypeNormalisedInput, res: BaseResponse): void;
 /**
  * @param expiry: must be time in milliseconds from epoch time.
  */
 export declare function attachAccessTokenToCookie(
     config: TypeNormalisedInput,
-    res: express.Response,
+    res: BaseResponse,
     token: string,
     expiry: number
 ): void;
@@ -20,24 +18,24 @@ export declare function attachAccessTokenToCookie(
  */
 export declare function attachRefreshTokenToCookie(
     config: TypeNormalisedInput,
-    res: express.Response,
+    res: BaseResponse,
     token: string,
     expiry: number
 ): void;
-export declare function getAccessTokenFromCookie(req: express.Request): string | undefined;
-export declare function getRefreshTokenFromCookie(req: express.Request): string | undefined;
-export declare function getAntiCsrfTokenFromHeaders(req: express.Request): string | undefined;
-export declare function getRidFromHeader(req: express.Request): string | undefined;
-export declare function getIdRefreshTokenFromCookie(req: express.Request): string | undefined;
-export declare function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string): void;
+export declare function getAccessTokenFromCookie(req: BaseRequest): string | undefined;
+export declare function getRefreshTokenFromCookie(req: BaseRequest): string | undefined;
+export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
+export declare function getRidFromHeader(req: BaseRequest): string | undefined;
+export declare function getIdRefreshTokenFromCookie(req: BaseRequest): string | undefined;
+export declare function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string): void;
 export declare function setIdRefreshTokenInHeaderAndCookie(
     config: TypeNormalisedInput,
-    res: express.Response,
+    res: BaseResponse,
     idRefreshToken: string,
     expiry: number
 ): void;
 export declare function setFrontTokenInHeaders(
-    res: express.Response,
+    res: BaseResponse,
     userId: string,
     atExpiry: number,
     jwtPayload: any
@@ -56,10 +54,9 @@ export declare function getCORSAllowedHeaders(): string[];
  */
 export declare function setCookie(
     config: TypeNormalisedInput,
-    res: ServerResponse,
+    res: BaseResponse,
     name: string,
     value: string,
     expires: number,
     pathType: "refreshTokenPath" | "accessTokenPath"
-): ServerResponse;
-export declare function getCookieValue(req: IncomingMessage, key: string): string | undefined;
+): void;

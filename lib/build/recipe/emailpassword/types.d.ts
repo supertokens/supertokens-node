@@ -3,7 +3,7 @@ import {
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
-import { Request, Response, NextFunction } from "express";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 export declare type TypeInputSetJwtPayloadForSession = (
     user: User,
     formFields: TypeFormField[],
@@ -235,6 +235,9 @@ export interface RecipeInterface {
     }): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersOldestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -242,6 +245,9 @@ export interface RecipeInterface {
         users: User[];
         nextPaginationToken?: string;
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersNewestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -249,6 +255,9 @@ export interface RecipeInterface {
         users: User[];
         nextPaginationToken?: string;
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserCount(): Promise<number>;
 }
 export declare type APIOptions = {
@@ -256,9 +265,8 @@ export declare type APIOptions = {
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
-    req: Request;
-    res: Response;
-    next: NextFunction;
+    req: BaseRequest;
+    res: BaseResponse;
 };
 export interface APIInterface {
     emailExistsGET:

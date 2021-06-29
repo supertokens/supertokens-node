@@ -653,9 +653,9 @@ class TestRecipe extends RecipeModule {
         };
     }
 
-    isErrorFromThisRecipe = (err) => {
+    isErrorFromThisRecipe(err) {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === "testRecipe";
-    };
+    }
 
     getAPIsHandled() {
         return [
@@ -776,9 +776,9 @@ class TestRecipe1 extends RecipeModule {
         };
     }
 
-    isErrorFromThisRecipe = (err) => {
+    isErrorFromThisRecipe(err) {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === "testRecipe1";
-    };
+    }
 
     getAPIsHandled() {
         return [

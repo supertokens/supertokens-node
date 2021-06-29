@@ -12,11 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { parse, serialize } from "cookie";
-import * as express from "express";
-import { IncomingMessage, ServerResponse } from "http";
-
-import { getHeader } from "../../utils";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 import { TypeNormalisedInput } from "./types";
 
 const accessTokenCookieKey = "sAccessToken";
@@ -35,12 +31,12 @@ const frontTokenHeaderKey = "front-token";
 /**
  * @description clears all the auth cookies from the response
  */
-export function clearSessionFromCookie(config: TypeNormalisedInput, res: express.Response) {
+export function clearSessionFromCookie(config: TypeNormalisedInput, res: BaseResponse) {
     setCookie(config, res, accessTokenCookieKey, "", 0, "accessTokenPath");
     setCookie(config, res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
     setCookie(config, res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
-    setHeader(res, idRefreshTokenHeaderKey, "remove", false);
-    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
+    res.setHeader(idRefreshTokenHeaderKey, "remove", false);
+    res.setHeader("Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 }
 
 /**
@@ -48,7 +44,7 @@ export function clearSessionFromCookie(config: TypeNormalisedInput, res: express
  */
 export function attachAccessTokenToCookie(
     config: TypeNormalisedInput,
-    res: express.Response,
+    res: BaseResponse,
     token: string,
     expiry: number
 ) {
@@ -60,93 +56,62 @@ export function attachAccessTokenToCookie(
  */
 export function attachRefreshTokenToCookie(
     config: TypeNormalisedInput,
-    res: express.Response,
+    res: BaseResponse,
     token: string,
     expiry: number
 ) {
     setCookie(config, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
 }
 
-export function getAccessTokenFromCookie(req: express.Request): string | undefined {
-    return getCookieValue(req, accessTokenCookieKey);
+export function getAccessTokenFromCookie(req: BaseRequest): string | undefined {
+    return req.getCookieValue(accessTokenCookieKey);
 }
 
-export function getRefreshTokenFromCookie(req: express.Request): string | undefined {
-    return getCookieValue(req, refreshTokenCookieKey);
+export function getRefreshTokenFromCookie(req: BaseRequest): string | undefined {
+    return req.getCookieValue(refreshTokenCookieKey);
 }
 
-export function getAntiCsrfTokenFromHeaders(req: express.Request): string | undefined {
-    return getHeader(req, antiCsrfHeaderKey);
+export function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined {
+    return req.getHeaderValue(antiCsrfHeaderKey);
 }
 
-export function getRidFromHeader(req: express.Request): string | undefined {
-    return getHeader(req, ridHeaderKey);
+export function getRidFromHeader(req: BaseRequest): string | undefined {
+    return req.getHeaderValue(ridHeaderKey);
 }
 
-export function getIdRefreshTokenFromCookie(req: express.Request): string | undefined {
-    return getCookieValue(req, idRefreshTokenCookieKey);
+export function getIdRefreshTokenFromCookie(req: BaseRequest): string | undefined {
+    return req.getCookieValue(idRefreshTokenCookieKey);
 }
 
-export function setAntiCsrfTokenInHeaders(res: express.Response, antiCsrfToken: string) {
-    setHeader(res, antiCsrfHeaderKey, antiCsrfToken, false);
-    setHeader(res, "Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
+export function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string) {
+    res.setHeader(antiCsrfHeaderKey, antiCsrfToken, false);
+    res.setHeader("Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
 }
 
 export function setIdRefreshTokenInHeaderAndCookie(
     config: TypeNormalisedInput,
-    res: express.Response,
+    res: BaseResponse,
     idRefreshToken: string,
     expiry: number
 ) {
-    setHeader(res, idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
-    setHeader(res, "Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
+    res.setHeader(idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
+    res.setHeader("Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
 
     setCookie(config, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
 }
 
-export function setFrontTokenInHeaders(res: express.Response, userId: string, atExpiry: number, jwtPayload: any) {
+export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpiry: number, jwtPayload: any) {
     let tokenInfo = {
         uid: userId,
         ate: atExpiry,
         up: jwtPayload,
     };
-    setHeader(res, frontTokenHeaderKey, Buffer.from(JSON.stringify(tokenInfo)).toString("base64"), false);
-    setHeader(res, "Access-Control-Expose-Headers", frontTokenHeaderKey, true);
+    res.setHeader(frontTokenHeaderKey, Buffer.from(JSON.stringify(tokenInfo)).toString("base64"), false);
+    res.setHeader("Access-Control-Expose-Headers", frontTokenHeaderKey, true);
 }
 
 export function getCORSAllowedHeaders(): string[] {
     return [antiCsrfHeaderKey, ridHeaderKey];
-}
-
-function setHeader(res: express.Response, key: string, value: string, allowDuplicateKey: boolean) {
-    try {
-        let existingHeaders = res.getHeaders();
-        let existingValue = existingHeaders[key.toLowerCase()];
-
-        // we have the res.header for compatibility with nextJS
-        if (existingValue === undefined) {
-            if (res.header !== undefined) {
-                res.header(key, value);
-            } else {
-                res.setHeader(key, value);
-            }
-        } else if (allowDuplicateKey) {
-            if (res.header !== undefined) {
-                res.header(key, existingValue + ", " + value);
-            } else {
-                res.setHeader(key, existingValue + ", " + value);
-            }
-        } else {
-            // we overwrite the current one with the new one
-            if (res.header !== undefined) {
-                res.header(key, value);
-            } else {
-                res.setHeader(key, value);
-            }
-        }
-    } catch (err) {
-        throw new Error("Error while setting header with key: " + key + " and value: " + value);
-    }
 }
 
 /**
@@ -162,7 +127,7 @@ function setHeader(res: express.Response, key: string, value: string, allowDupli
  */
 export function setCookie(
     config: TypeNormalisedInput,
-    res: ServerResponse,
+    res: BaseResponse,
     name: string,
     value: string,
     expires: number,
@@ -178,120 +143,6 @@ export function setCookie(
         path = "/";
     }
     let httpOnly = true;
-    let opts = {
-        domain,
-        secure,
-        httpOnly,
-        expires: new Date(expires),
-        path,
-        sameSite,
-    };
 
-    return append(res, "Set-Cookie", serialize(name, value, opts), name);
-}
-
-/**
- * Append additional header `field` with value `val`.
- *
- * Example:
- *
- *    res.append('Set-Cookie', 'foo=bar; Path=/; HttpOnly');
- *
- * @param {ServerResponse} res
- * @param {string} field
- * @param {string| string[]} val
- */
-function append(res: ServerResponse, field: string, val: string | string[], key: string) {
-    let prev: string | string[] | undefined = res.getHeader(field) as string | string[] | undefined;
-    let value = val;
-
-    if (prev !== undefined) {
-        // removing existing cookie with the same name
-        if (Array.isArray(prev)) {
-            let removedDuplicate = [];
-            for (let i = 0; i < prev.length; i++) {
-                let curr = prev[i];
-                if (!curr.startsWith(key)) {
-                    removedDuplicate.push(curr);
-                }
-            }
-            prev = removedDuplicate;
-        } else {
-            if (prev.startsWith(key)) {
-                prev = undefined;
-            }
-        }
-        if (prev !== undefined) {
-            value = Array.isArray(prev) ? prev.concat(val) : Array.isArray(val) ? [prev].concat(val) : [prev, val];
-        }
-    }
-
-    value = Array.isArray(value) ? value.map(String) : String(value);
-
-    res.setHeader(field, value);
-    return res;
-}
-
-export function getCookieValue(req: IncomingMessage, key: string): string | undefined {
-    if ((req as any).cookies) {
-        return (req as any).cookies[key];
-    }
-
-    let cookies: any = req.headers.cookie;
-
-    if (cookies === undefined) {
-        return undefined;
-    }
-
-    cookies = parse(cookies);
-
-    // parse JSON cookies
-    cookies = JSONCookies(cookies);
-
-    return (cookies as any)[key];
-}
-
-/**
- * Parse JSON cookie string.
- *
- * @param {String} str
- * @return {Object} Parsed object or undefined if not json cookie
- * @public
- */
-
-function JSONCookie(str: string) {
-    if (typeof str !== "string" || str.substr(0, 2) !== "j:") {
-        return undefined;
-    }
-
-    try {
-        return JSON.parse(str.slice(2));
-    } catch (err) {
-        return undefined;
-    }
-}
-
-/**
- * Parse JSON cookies.
- *
- * @param {Object} obj
- * @return {Object}
- * @public
- */
-
-function JSONCookies(obj: any) {
-    let cookies = Object.keys(obj);
-    let key;
-    let val;
-
-    for (let i = 0; i < cookies.length; i++) {
-        key = cookies[i];
-        val = JSONCookie(obj[key]);
-
-        if (val) {
-            obj[key] = val;
-        }
-    }
-
-    return obj;
+    return res.setCookie(name, value, domain, secure, httpOnly, expires, path, sameSite);
 }

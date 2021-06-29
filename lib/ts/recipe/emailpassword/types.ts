@@ -18,7 +18,7 @@ import {
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
-import { Request, Response, NextFunction } from "express";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 
 const TypeString = {
     type: "string",
@@ -224,6 +224,9 @@ export interface RecipeInterface {
         newPassword: string;
     }): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }>;
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersOldestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -232,6 +235,9 @@ export interface RecipeInterface {
         nextPaginationToken?: string;
     }>;
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersNewestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -240,6 +246,9 @@ export interface RecipeInterface {
         nextPaginationToken?: string;
     }>;
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserCount(): Promise<number>;
 }
 
@@ -248,9 +257,8 @@ export type APIOptions = {
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
-    req: Request;
-    res: Response;
-    next: NextFunction;
+    req: BaseRequest;
+    res: BaseResponse;
 };
 
 export interface APIInterface {

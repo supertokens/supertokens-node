@@ -10,6 +10,9 @@ export default class Wrapper {
     static getUserByEmail(email: string): Promise<User | undefined>;
     static createResetPasswordToken(userId: string): Promise<string>;
     static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+    /**
+     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersOldestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -17,6 +20,9 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
+    /**
+     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+     *   */
     static getUsersNewestFirst(
         limit?: number,
         nextPaginationToken?: string
@@ -24,6 +30,9 @@ export default class Wrapper {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
+    /**
+     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+     *   */
     static getUserCount(): Promise<number>;
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;
@@ -40,7 +49,16 @@ export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingTok
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
+/**
+ * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
+ *   */
 export declare let getUsersOldestFirst: typeof Wrapper.getUsersOldestFirst;
+/**
+ * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+ *   */
 export declare let getUsersNewestFirst: typeof Wrapper.getUsersNewestFirst;
+/**
+ * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
+ *   */
 export declare let getUserCount: typeof Wrapper.getUserCount;
 export type { RecipeInterface, User, APIOptions, APIInterface };

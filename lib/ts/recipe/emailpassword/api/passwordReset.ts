@@ -18,11 +18,11 @@ import { validateFormFieldsOrThrowError } from "./utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 
-export default async function passwordReset(apiImplementation: APIInterface, options: APIOptions) {
+export default async function passwordReset(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/22#issuecomment-710512442
 
     if (apiImplementation.passwordResetPOST === undefined) {
-        return options.next();
+        return false;
     }
 
     // step 1
@@ -31,10 +31,10 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
         value: string;
     }[] = await validateFormFieldsOrThrowError(
         options.config.resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm,
-        options.req.body.formFields
+        (await options.req.getJSONBody()).formFields
     );
 
-    let token = options.req.body.token;
+    let token = (await options.req.getJSONBody()).token;
     if (token === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
@@ -51,4 +51,5 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
     let result = await apiImplementation.passwordResetPOST({ formFields, token, options });
 
     send200Response(options.res, result);
+    return true;
 }

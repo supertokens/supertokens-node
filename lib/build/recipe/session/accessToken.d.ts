@@ -12,3 +12,5 @@ export declare function getInfoFromAccessToken(
     expiryTime: number;
     timeCreated: number;
 }>;
+export declare function sanitizeStringInput(field: any): string | undefined;
+export declare function sanitizeNumberInput(field: any): number | undefined;

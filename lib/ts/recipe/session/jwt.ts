@@ -45,7 +45,7 @@ export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string)
     let payload = splittedInput[1];
 
     let verifier = crypto.createVerify("sha256");
-    //convert the jwtSigningPublicKey into .pem format
+    // convert the jwtSigningPublicKey into .pem format
 
     verifier.update(splittedInput[0] + "." + payload);
     if (
@@ -58,6 +58,17 @@ export function verifyJWTAndGetPayload(jwt: string, jwtSigningPublicKey: string)
         throw new Error("JWT verification failed");
     }
     // sending payload
+    payload = Buffer.from(payload, "base64").toString();
+    return JSON.parse(payload);
+}
+
+export function getPayloadWithoutVerifiying(jwt: string): { [key: string]: any } {
+    const splittedInput = jwt.split(".");
+    if (splittedInput.length !== 3) {
+        throw new Error("Invalid JWT");
+    }
+
+    let payload = splittedInput[1];
     payload = Buffer.from(payload, "base64").toString();
     return JSON.parse(payload);
 }

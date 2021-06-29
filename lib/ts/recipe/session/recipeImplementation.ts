@@ -10,7 +10,7 @@ import {
     setFrontTokenInHeaders,
     getRidFromHeader,
 } from "./cookieAndHeaders";
-import * as express from "express";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
@@ -44,7 +44,7 @@ export default class RecipeImplementation implements RecipeInterface {
         jwtPayload = {},
         sessionData = {},
     }: {
-        res: express.Response;
+        res: BaseResponse;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
@@ -66,8 +66,8 @@ export default class RecipeImplementation implements RecipeInterface {
         res,
         options,
     }: {
-        req: express.Request;
-        res: express.Response;
+        req: BaseRequest;
+        res: BaseResponse;
         options?: VerifySessionOptions;
     }): Promise<Session | undefined> => {
         let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
@@ -100,7 +100,7 @@ export default class RecipeImplementation implements RecipeInterface {
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
 
             if (doAntiCsrfCheck === undefined) {
-                doAntiCsrfCheck = normaliseHttpMethod(req.method) !== "get";
+                doAntiCsrfCheck = normaliseHttpMethod(req.getMethod()) !== "get";
             }
 
             let response = await SessionFunctions.getSession(
@@ -136,7 +136,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    refreshSession = async ({ req, res }: { req: express.Request; res: express.Response }): Promise<Session> => {
+    refreshSession = async ({ req, res }: { req: BaseRequest; res: BaseResponse }): Promise<Session> => {
         let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
         if (inputIdRefreshToken === undefined) {
             // we do not clear cookies here because of a
@@ -173,7 +173,10 @@ export default class RecipeImplementation implements RecipeInterface {
                 res
             );
         } catch (err) {
-            if (err.type === STError.UNAUTHORISED || err.type === STError.TOKEN_THEFT_DETECTED) {
+            if (
+                (err.type === STError.UNAUTHORISED && err.payload.clearCookies) ||
+                err.type === STError.TOKEN_THEFT_DETECTED
+            ) {
                 clearSessionFromCookie(this.config, res);
             }
             throw err;
@@ -212,10 +215,10 @@ export default class RecipeImplementation implements RecipeInterface {
         return SessionFunctions.updateJWTPayload(this, sessionHandle, newJWTPayload);
     };
 
-    getHandshakeInfo = async (): Promise<HandshakeInfo> => {
-        if (this.handshakeInfo === undefined) {
+    getHandshakeInfo = async (forceRefetch = false): Promise<HandshakeInfo> => {
+        if (this.handshakeInfo === undefined || forceRefetch) {
             let antiCsrf = this.config.antiCsrf;
-            if (this.isInServerlessEnv) {
+            if (this.isInServerlessEnv && !forceRefetch) {
                 let handshakeInfo = await getDataFromFileForServerlessCache<HandshakeInfo>(
                     SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH
                 );
@@ -230,7 +233,17 @@ export default class RecipeImplementation implements RecipeInterface {
             }
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
+            let signingKeyLastUpdated = Date.now();
+            if (this.handshakeInfo !== undefined) {
+                if (
+                    response.jwtSigningPublicKeyExpiryTime === this.handshakeInfo.jwtSigningPublicKeyExpiryTime &&
+                    response.jwtSigningPublicKey === this.handshakeInfo.jwtSigningPublicKey
+                ) {
+                    signingKeyLastUpdated = this.handshakeInfo.signingKeyLastUpdated;
+                }
+            }
             this.handshakeInfo = {
+                signingKeyLastUpdated,
                 jwtSigningPublicKey: response.jwtSigningPublicKey,
                 antiCsrf,
                 accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
@@ -247,6 +260,12 @@ export default class RecipeImplementation implements RecipeInterface {
 
     updateJwtSigningPublicKeyInfo = (newKey: string, newExpiry: number) => {
         if (this.handshakeInfo !== undefined) {
+            if (
+                this.handshakeInfo.jwtSigningPublicKeyExpiryTime !== newExpiry ||
+                this.handshakeInfo.jwtSigningPublicKey !== newKey
+            ) {
+                this.handshakeInfo.signingKeyLastUpdated = Date.now();
+            }
             this.handshakeInfo.jwtSigningPublicKey = newKey;
             this.handshakeInfo.jwtSigningPublicKeyExpiryTime = newExpiry;
         }

@@ -17,17 +17,17 @@ import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 
-export default async function emailVerify(apiImplementation: APIInterface, options: APIOptions) {
+export default async function emailVerify(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     let result;
 
-    if (normaliseHttpMethod(options.req.method) === "post") {
+    if (normaliseHttpMethod(options.req.getMethod()) === "post") {
         // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
 
         if (apiImplementation.verifyEmailPOST === undefined) {
-            return options.next();
+            return false;
         }
 
-        let token = options.req.body.token;
+        let token = (await options.req.getJSONBody()).token;
         if (token === undefined || token === null) {
             throw new STError({
                 type: STError.BAD_INPUT_ERROR,
@@ -49,10 +49,11 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
         }
     } else {
         if (apiImplementation.isEmailVerifiedGET === undefined) {
-            return options.next();
+            return false;
         }
 
         result = await apiImplementation.isEmailVerifiedGET({ options });
     }
     send200Response(options.res, result);
+    return true;
 }

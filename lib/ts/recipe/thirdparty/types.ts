@@ -13,12 +13,12 @@
  * under the License.
  */
 
-import { Request, Response, NextFunction } from "express";
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 
 const TypeAny = {
     type: "any",
@@ -33,7 +33,7 @@ export type TypeProviderGetResponse = {
     };
     authorisationRedirect: {
         url: string;
-        params: { [key: string]: string | ((request: Request) => string) };
+        params: { [key: string]: string | ((request: BaseRequest) => string) };
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
 };
@@ -170,6 +170,9 @@ export interface RecipeInterface {
 
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersOldestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -178,6 +181,9 @@ export interface RecipeInterface {
         nextPaginationToken?: string;
     }>;
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersNewestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -186,6 +192,9 @@ export interface RecipeInterface {
         nextPaginationToken?: string;
     }>;
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserCount(): Promise<number>;
 
     signInUp(input: {
@@ -210,9 +219,8 @@ export type APIOptions = {
     recipeId: string;
     isInServerlessEnv: boolean;
     providers: TypeProvider[];
-    req: Request;
-    res: Response;
-    next: NextFunction;
+    req: BaseRequest;
+    res: BaseResponse;
 };
 
 export interface APIInterface {

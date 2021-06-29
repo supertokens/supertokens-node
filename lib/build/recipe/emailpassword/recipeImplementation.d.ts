@@ -57,6 +57,9 @@ export default class RecipeImplementation implements RecipeInterface {
     }) => Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersOldestFirst: ({
         limit,
         nextPaginationToken,
@@ -67,6 +70,9 @@ export default class RecipeImplementation implements RecipeInterface {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersNewestFirst: ({
         limit,
         nextPaginationToken,
@@ -77,6 +83,9 @@ export default class RecipeImplementation implements RecipeInterface {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserCount: () => Promise<number>;
     getUsers: (
         timeJoinedOrder: "ASC" | "DESC",

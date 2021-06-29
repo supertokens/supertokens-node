@@ -15,7 +15,7 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import * as express from "express";
+import wrappers from "./wrappers";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -23,29 +23,57 @@ export default class SuperTokensWrapper {
 
     static Error = SuperTokensError;
 
-    static middleware() {
-        // See https://github.com/supertokens/supertokens-node/issues/122
-        return (req: express.Request, res: express.Response, next: express.NextFunction) =>
-            SuperTokens.getInstanceOrThrowError().middleware()(req, res, next);
-    }
-
-    static errorHandler() {
-        // See https://github.com/supertokens/supertokens-node/issues/122
-        return (err: any, req: express.Request, res: express.Response, next: express.NextFunction) =>
-            SuperTokens.getInstanceOrThrowError().errorHandler()(err, req, res, next);
-    }
-
     static getAllCORSHeaders() {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
+    }
+
+    static getUserCount(includeRecipeIds?: string[]) {
+        return SuperTokens.getInstanceOrThrowError().getUserCount(includeRecipeIds);
+    }
+
+    static getUsersOldestFirst(input?: {
+        limit?: number;
+        paginationToken?: string;
+        includeRecipeIds?: string[];
+    }): Promise<{
+        users: { recipeId: string; user: any }[];
+        nextPaginationToken?: string;
+    }> {
+        return SuperTokens.getInstanceOrThrowError().getUsers({
+            timeJoinedOrder: "ASC",
+            ...input,
+        });
+    }
+
+    static getUsersNewestFirst(input?: {
+        limit?: number;
+        paginationToken?: string;
+        includeRecipeIds?: string[];
+    }): Promise<{
+        users: { recipeId: string; user: any }[];
+        nextPaginationToken?: string;
+    }> {
+        return SuperTokens.getInstanceOrThrowError().getUsers({
+            timeJoinedOrder: "DESC",
+            ...input,
+        });
     }
 }
 
 export let init = SuperTokensWrapper.init;
 
-export let middleware = SuperTokensWrapper.middleware;
+export let middleware = wrappers.express.middleware;
 
-export let errorHandler = SuperTokensWrapper.errorHandler;
+export let errorHandler = wrappers.express.errorHandler;
 
 export let getAllCORSHeaders = SuperTokensWrapper.getAllCORSHeaders;
 
+export let getUserCount = SuperTokensWrapper.getUserCount;
+
+export let getUsersOldestFirst = SuperTokensWrapper.getUsersOldestFirst;
+
+export let getUsersNewestFirst = SuperTokensWrapper.getUsersNewestFirst;
+
 export let Error = SuperTokensWrapper.Error;
+
+export let Wrappers = wrappers;

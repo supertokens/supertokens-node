@@ -27,7 +27,6 @@ import {
     setIdRefreshTokenInHeaderAndCookie,
     setAntiCsrfTokenInHeaders,
 } from "./cookieAndHeaders";
-import * as express from "express";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
 import {
@@ -41,6 +40,7 @@ import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 
 export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
     function helper(sessionScope: string): string {
@@ -139,30 +139,14 @@ export function validateAndNormaliseUserInput(
             : config.antiCsrf;
 
     let errorHandlers: NormalisedErrorHandlers = {
-        onTokenTheftDetected: (
-            sessionHandle: string,
-            userId: string,
-            request: express.Request,
-            response: express.Response,
-            next: express.NextFunction
-        ) => {
-            return sendTokenTheftDetectedResponse(recipeInstance, sessionHandle, userId, request, response, next);
+        onTokenTheftDetected: (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse) => {
+            return sendTokenTheftDetectedResponse(recipeInstance, sessionHandle, userId, request, response);
         },
-        onTryRefreshToken: (
-            message: string,
-            request: express.Request,
-            response: express.Response,
-            next: express.NextFunction
-        ) => {
-            return sendTryRefreshTokenResponse(recipeInstance, message, request, response, next);
+        onTryRefreshToken: (message: string, request: BaseRequest, response: BaseResponse) => {
+            return sendTryRefreshTokenResponse(recipeInstance, message, request, response);
         },
-        onUnauthorised: (
-            message: string,
-            request: express.Request,
-            response: express.Response,
-            next: express.NextFunction
-        ) => {
-            return sendUnauthorisedResponse(recipeInstance, message, request, response, next);
+        onUnauthorised: (message: string, request: BaseRequest, response: BaseResponse) => {
+            return sendUnauthorisedResponse(recipeInstance, message, request, response);
         },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {
@@ -207,14 +191,14 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
     sameSite = sameSite.trim();
     sameSite = sameSite.toLocaleLowerCase();
     if (sameSite !== "strict" && sameSite !== "lax" && sameSite !== "none") {
-        throw new Error('cookie same site must be one of "strict", "lax", or "none"');
+        throw new Error(`cookie same site must be one of "strict", "lax", or "none"`);
     }
     return sameSite;
 }
 
 export function attachCreateOrRefreshSessionResponseToExpressRes(
     config: TypeNormalisedInput,
-    res: express.Response,
+    res: BaseResponse,
     response: CreateOrRefreshAPIResponse
 ) {
     let accessToken = response.accessToken;

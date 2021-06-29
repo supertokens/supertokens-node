@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import SuperTokens from ".";
+import { errorHandler } from ".";
 function next(
     request: any,
     response: any,
@@ -23,7 +23,7 @@ function next(
         if (middlewareError === undefined) {
             return resolve();
         }
-        SuperTokens.errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
+        errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
             if (errorHandlerError !== undefined) {
                 return reject(errorHandlerError);
             }
@@ -49,7 +49,7 @@ export default class NextJS {
                     return resolve(result);
                 }
             } catch (err) {
-                SuperTokens.errorHandler()(err, request, response, (errorHandlerError: any) => {
+                errorHandler()(err, request, response, (errorHandlerError: any) => {
                     if (errorHandlerError !== undefined) {
                         return reject(errorHandlerError);
                     }

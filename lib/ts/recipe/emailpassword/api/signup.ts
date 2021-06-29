@@ -18,18 +18,21 @@ import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import STError from "../error";
 
-export default async function signUpAPI(apiImplementation: APIInterface, options: APIOptions) {
+export default async function signUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
 
     if (apiImplementation.signUpPOST === undefined) {
-        return options.next();
+        return false;
     }
 
     // step 1
     let formFields: {
         id: string;
         value: string;
-    }[] = await validateFormFieldsOrThrowError(options.config.signUpFeature.formFields, options.req.body.formFields);
+    }[] = await validateFormFieldsOrThrowError(
+        options.config.signUpFeature.formFields,
+        (await options.req.getJSONBody()).formFields
+    );
 
     let result = await apiImplementation.signUpPOST({ formFields, options });
     if (result.status === "OK") {
@@ -46,4 +49,5 @@ export default async function signUpAPI(apiImplementation: APIInterface, options
             message: "Error in input formFields",
         });
     }
+    return true;
 }

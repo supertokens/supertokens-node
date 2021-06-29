@@ -13,24 +13,20 @@
  * under the License.
  */
 
-import STError from "./error";
 import { TypeInput, NormalisedAppinfo, HTTPMethod, InputSchema } from "./types";
 import axios from "axios";
 import {
     normaliseInputAppInfoOrThrowError,
-    getRIDFromRequest,
-    normaliseHttpMethod,
-    sendNon200Response,
-    assertThatBodyParserHasBeenUsed,
     validateTheStructureOfUserInput,
     removeServerlessCache,
+    maxVersion,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
-import * as express from "express";
 import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
+import { BaseRequest, BaseResponse } from "./wrappers";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -137,96 +133,15 @@ export default class SuperTokens {
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
 
-    // instance functions below......
-
-    middleware = () => {
-        return async (request: express.Request, response: express.Response, next: express.NextFunction) => {
-            let path = this.appInfo.apiGatewayPath.appendPath(
-                new NormalisedURLPath(request.originalUrl === undefined ? request.url : request.originalUrl)
-            );
-            let method: HTTPMethod = normaliseHttpMethod(request.method);
-
-            // if the prefix of the URL doesn't match the base path, we skip
-            if (!path.startsWith(this.appInfo.apiBasePath)) {
-                return next();
-            }
-
-            let requestRID = getRIDFromRequest(request);
-            if (requestRID !== undefined) {
-                let matchedRecipe: RecipeModule | undefined = undefined;
-
-                // we loop through all recipe modules to find the one with the matching rId
-                for (let i = 0; i < this.recipeModules.length; i++) {
-                    if (this.recipeModules[i].getRecipeId() === requestRID) {
-                        matchedRecipe = this.recipeModules[i];
-                        break;
-                    }
-                }
-
-                if (matchedRecipe === undefined) {
-                    // we could not find one, so we skip
-                    return next();
-                }
-
-                let id = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method);
-                if (id === undefined) {
-                    // the matched recipe doesn't handle this path and http method
-                    return next();
-                }
-
-                // give task to the matched recipe
-                return await this.handleAPI(matchedRecipe, id, request, response, next, path, method);
-            } else {
-                // we loop through all recipe modules to find the one with the matching path and method
-                for (let i = 0; i < this.recipeModules.length; i++) {
-                    let id = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
-                    if (id !== undefined) {
-                        return await this.handleAPI(this.recipeModules[i], id, request, response, next, path, method);
-                    }
-                }
-                return next();
-            }
-        };
-    };
-
     handleAPI = async (
         matchedRecipe: RecipeModule,
         id: string,
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction,
+        request: BaseRequest,
+        response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod
     ) => {
-        try {
-            await assertThatBodyParserHasBeenUsed(request, response);
-            return await matchedRecipe.handleAPIRequest(id, request, response, next, path, method);
-        } catch (err) {
-            return next(err);
-        }
-    };
-
-    errorHandler = () => {
-        return async (err: any, request: express.Request, response: express.Response, next: express.NextFunction) => {
-            if (STError.isErrorFromSuperTokens(err)) {
-                if (err.type === STError.BAD_INPUT_ERROR) {
-                    return sendNon200Response(response, err.message, 400);
-                }
-
-                // we loop through all the recipes and pass the error to the one that matches the rId
-                for (let i = 0; i < this.recipeModules.length; i++) {
-                    if (this.recipeModules[i].isErrorFromThisRecipe(err)) {
-                        try {
-                            return this.recipeModules[i].handleError(err, request, response, next);
-                        } catch (error) {
-                            return next(error);
-                        }
-                    }
-                }
-            }
-
-            return next(err);
-        };
+        return await matchedRecipe.handleAPIRequest(id, request, response, path, method);
     };
 
     getAllCORSHeaders = (): string[] => {
@@ -240,5 +155,55 @@ export default class SuperTokens {
             });
         });
         return Array.from(headerSet);
+    };
+
+    getUserCount = async (includeRecipeIds?: string[]): Promise<number> => {
+        let querier = Querier.getNewInstanceOrThrowError(this.isInServerlessEnv, undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            throw new Error(
+                "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUserCount() instead (for example, EmailPassword.getUserCount())"
+            );
+        }
+        let includeRecipeIdsStr = undefined;
+        if (includeRecipeIds !== undefined) {
+            includeRecipeIdsStr = includeRecipeIds.join(",");
+        }
+        let response = await querier.sendGetRequest(new NormalisedURLPath("/users/count"), {
+            includeRecipeIds: includeRecipeIdsStr,
+        });
+        return Number(response.count);
+    };
+
+    getUsers = async (input: {
+        timeJoinedOrder: "ASC" | "DESC";
+        limit?: number;
+        paginationToken?: string;
+        includeRecipeIds?: string[];
+    }): Promise<{
+        users: { recipeId: string; user: any }[];
+        nextPaginationToken?: string;
+    }> => {
+        let querier = Querier.getNewInstanceOrThrowError(this.isInServerlessEnv, undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            throw new Error(
+                "Please use core version >= 3.5 to call this function. Otherwise, you can call <YourRecipe>.getUsersOldestFirst() or <YourRecipe>.getUsersNewestFirst() instead (for example, EmailPassword.getUsersOldestFirst())"
+            );
+        }
+        let includeRecipeIdsStr = undefined;
+        if (input.includeRecipeIds !== undefined) {
+            includeRecipeIdsStr = input.includeRecipeIds.join(",");
+        }
+        let response = await querier.sendGetRequest(new NormalisedURLPath("/users"), {
+            includeRecipeIds: includeRecipeIdsStr,
+            timeJoinedOrder: input.timeJoinedOrder,
+            limit: input.limit,
+            paginationToken: input.paginationToken,
+        });
+        return {
+            users: response.users,
+            nextPaginationToken: response.nextPaginationToken,
+        };
     };
 }

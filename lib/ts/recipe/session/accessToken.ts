@@ -74,7 +74,7 @@ export async function getInfoFromAccessToken(
     }
 }
 
-function sanitizeStringInput(field: any): string | undefined {
+export function sanitizeStringInput(field: any): string | undefined {
     if (field === "") {
         return "";
     }
@@ -88,7 +88,7 @@ function sanitizeStringInput(field: any): string | undefined {
     return undefined;
 }
 
-function sanitizeNumberInput(field: any): number | undefined {
+export function sanitizeNumberInput(field: any): number | undefined {
     if (typeof field === "number") {
         return field;
     }

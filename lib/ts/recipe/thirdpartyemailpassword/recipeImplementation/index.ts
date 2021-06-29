@@ -93,6 +93,9 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.emailPasswordImplementation.resetPasswordUsingToken(input);
     };
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersOldestFirst = async ({
         limit,
         nextPaginationTokenString,
@@ -129,6 +132,9 @@ export default class RecipeImplementation implements RecipeInterface {
         return combinePaginationResults(thirdPartyResult, emailPasswordResult, limit, true);
     };
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersNewestFirst = async ({
         limit,
         nextPaginationTokenString,
@@ -165,6 +171,9 @@ export default class RecipeImplementation implements RecipeInterface {
         return combinePaginationResults(thirdPartyResult, emailPasswordResult, limit, false);
     };
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserCount = async () => {
         let promise1 = this.emailPasswordImplementation.getUserCount();
         let promise2 = this.thirdPartyImplementation !== undefined ? this.thirdPartyImplementation.getUserCount() : 0;

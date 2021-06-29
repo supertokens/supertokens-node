@@ -1,4 +1,4 @@
-import * as express from "express";
+import { BaseResponse } from "../../wrappers";
 import { SessionContainerInterface } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {
@@ -14,7 +14,7 @@ export default class Session implements SessionContainerInterface {
         sessionHandle: string,
         userId: string,
         userDataInJWT: any,
-        res: express.Response
+        res: BaseResponse
     );
     revokeSession: () => Promise<void>;
     getSessionData: () => Promise<any>;

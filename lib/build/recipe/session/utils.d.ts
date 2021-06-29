@@ -1,7 +1,7 @@
 import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
-import * as express from "express";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
+import { BaseResponse } from "../../wrappers";
 export declare function normaliseSessionScopeOrThrowError(sessionScope: string): string;
 export declare function getTopLevelDomainForSameSiteResolution(url: string): string;
 export declare function validateAndNormaliseUserInput(
@@ -12,6 +12,6 @@ export declare function validateAndNormaliseUserInput(
 export declare function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none";
 export declare function attachCreateOrRefreshSessionResponseToExpressRes(
     config: TypeNormalisedInput,
-    res: express.Response,
+    res: BaseResponse,
     response: CreateOrRefreshAPIResponse
 ): void;

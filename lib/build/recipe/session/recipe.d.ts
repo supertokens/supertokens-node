@@ -1,9 +1,9 @@
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import STError from "./error";
-import * as express from "express";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -18,18 +18,12 @@ export default class SessionRecipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction,
+        req: BaseRequest,
+        res: BaseResponse,
         __: NormalisedURLPath,
         ___: HTTPMethod
-    ) => Promise<void>;
-    handleError: (
-        err: STError,
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction
-    ) => void;
+    ) => Promise<boolean>;
+    handleError: (err: STError, request: BaseRequest, response: BaseResponse) => void;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
 }

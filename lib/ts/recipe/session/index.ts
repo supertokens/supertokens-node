@@ -13,8 +13,7 @@
  * under the License.
  */
 
-import { verifySession as originalVerifySession } from "./api/middleware";
-import * as express from "express";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,
@@ -25,6 +24,7 @@ import {
     APIOptions,
 } from "./types";
 import Recipe from "./recipe";
+import Wrappers from "../../wrappers";
 
 // For Express
 export default class SessionWrapper {
@@ -32,7 +32,7 @@ export default class SessionWrapper {
 
     static Error = SuperTokensError;
 
-    static createNewSession(res: express.Response, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
+    static createNewSession(res: BaseResponse, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
@@ -41,11 +41,11 @@ export default class SessionWrapper {
         });
     }
 
-    static getSession(req: express.Request, res: express.Response, options?: VerifySessionOptions) {
+    static getSession(req: BaseRequest, res: BaseResponse, options?: VerifySessionOptions) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession({ req, res, options });
     }
 
-    static refreshSession(req: express.Request, res: express.Response) {
+    static refreshSession(req: BaseRequest, res: BaseResponse) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res });
     }
 
@@ -83,14 +83,6 @@ export default class SessionWrapper {
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJWTPayload({ sessionHandle, newJWTPayload });
     }
-
-    static verifySession = (options?: VerifySessionOptions) => {
-        // We do not directly return originVerifySession func cause of
-        // https://github.com/supertokens/supertokens-node/issues/122
-
-        return (req: express.Request, res: express.Response, next: express.NextFunction) =>
-            originalVerifySession(Recipe.getInstanceOrThrowError(), options)(req, res, next);
-    };
 }
 
 export let init = SessionWrapper.init;
@@ -117,7 +109,7 @@ export let getJWTPayload = SessionWrapper.getJWTPayload;
 
 export let updateJWTPayload = SessionWrapper.updateJWTPayload;
 
-export let verifySession = SessionWrapper.verifySession;
+export let verifySession = Wrappers.express.verifySession;
 
 export let Error = SessionWrapper.Error;
 

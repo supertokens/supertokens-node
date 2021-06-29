@@ -261,3 +261,20 @@ ThirdPartyEmailPassword.init({
         },
     },
 });
+
+async function f() {
+    let n: number = await Supertokens.getUserCount(["a", "b"]);
+    let n2: number = await Supertokens.getUserCount();
+
+    await Supertokens.getUsersOldestFirst({
+        includeRecipeIds: [""],
+        limit: 1,
+        paginationToken: "",
+    });
+
+    await Supertokens.getUsersNewestFirst({
+        includeRecipeIds: [""],
+        limit: 1,
+        paginationToken: "",
+    });
+}

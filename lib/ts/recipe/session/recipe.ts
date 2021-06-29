@@ -17,7 +17,6 @@ import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
-import * as express from "express";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import handleRefreshAPI from "./api/refresh";
 import signOutAPI from "./api/signout";
@@ -27,6 +26,7 @@ import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } f
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -101,15 +101,13 @@ export default class SessionRecipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction,
+        req: BaseRequest,
+        res: BaseResponse,
         __: NormalisedURLPath,
         ___: HTTPMethod
-    ) => {
+    ): Promise<boolean> => {
         let options = {
             config: this.config,
-            next,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
@@ -123,25 +121,24 @@ export default class SessionRecipe extends RecipeModule {
         }
     };
 
-    handleError = (err: STError, request: express.Request, response: express.Response, next: express.NextFunction) => {
+    handleError = (err: STError, request: BaseRequest, response: BaseResponse) => {
         if (err.fromRecipe === SessionRecipe.RECIPE_ID) {
             if (err.type === STError.UNAUTHORISED) {
-                return this.config.errorHandlers.onUnauthorised(err.message, request, response, next);
+                return this.config.errorHandlers.onUnauthorised(err.message, request, response);
             } else if (err.type === STError.TRY_REFRESH_TOKEN) {
-                return this.config.errorHandlers.onTryRefreshToken(err.message, request, response, next);
+                return this.config.errorHandlers.onTryRefreshToken(err.message, request, response);
             } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
                 return this.config.errorHandlers.onTokenTheftDetected(
                     err.payload.sessionHandle,
                     err.payload.userId,
                     request,
-                    response,
-                    next
+                    response
                 );
             } else {
-                return next(err);
+                throw err;
             }
         } else {
-            next(err);
+            throw err;
         }
     };
 

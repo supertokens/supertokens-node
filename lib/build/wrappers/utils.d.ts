@@ -1,0 +1,42 @@
+/// <reference types="node" />
+import type { Request, Response } from "express";
+import type { IncomingMessage } from "http";
+import { ServerResponse } from "http";
+import type { HTTPMethod } from "../types";
+import { NextApiRequest } from "next";
+export declare function getCookieValueFromHeaders(headers: any, key: string): string | undefined;
+export declare function getCookieValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined;
+export declare function getHeaderValueFromIncomingMessage(request: IncomingMessage, key: string): string | undefined;
+export declare function normalizeHeaderValue(value: string | string[] | undefined): string | undefined;
+export declare function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
+    method: HTTPMethod,
+    request: Request | NextApiRequest
+): Promise<void>;
+export declare function setHeaderForExpressLikeResponse(
+    res: Response,
+    key: string,
+    value: string,
+    allowDuplicateKey: boolean
+): void;
+/**
+ *
+ * @param res
+ * @param name
+ * @param value
+ * @param domain
+ * @param secure
+ * @param httpOnly
+ * @param expires
+ * @param path
+ */
+export declare function setCookieForServerResponse(
+    res: ServerResponse,
+    key: string,
+    value: string,
+    domain: string | undefined,
+    secure: boolean,
+    httpOnly: boolean,
+    expires: number,
+    path: string,
+    sameSite: "strict" | "lax" | "none"
+): ServerResponse;

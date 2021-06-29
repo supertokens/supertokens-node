@@ -17,14 +17,14 @@ import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 
-export default async function emailExists(apiImplementation: APIInterface, options: APIOptions) {
+export default async function emailExists(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
 
     if (apiImplementation.emailExistsGET === undefined) {
-        return options.next();
+        return false;
     }
 
-    let email = options.req.query.email;
+    let email = await options.req.getKeyValueFromQuery("email");
 
     if (email === undefined || typeof email !== "string") {
         throw new STError({
@@ -35,5 +35,6 @@ export default async function emailExists(apiImplementation: APIInterface, optio
 
     let result = await apiImplementation.emailExistsGET({ email, options });
 
-    return send200Response(options.res, result);
+    send200Response(options.res, result);
+    return true;
 }

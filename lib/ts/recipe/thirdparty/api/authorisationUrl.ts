@@ -17,13 +17,15 @@ import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 
-export default async function authorisationUrlAPI(apiImplementation: APIInterface, options: APIOptions) {
+export default async function authorisationUrlAPI(
+    apiImplementation: APIInterface,
+    options: APIOptions
+): Promise<boolean> {
     if (apiImplementation.authorisationUrlGET === undefined) {
-        return options.next();
+        return false;
     }
 
-    let queryParams = options.req.query;
-    let thirdPartyId = queryParams.thirdPartyId;
+    let thirdPartyId = await options.req.getKeyValueFromQuery("thirdPartyId");
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError({
@@ -45,5 +47,6 @@ export default async function authorisationUrlAPI(apiImplementation: APIInterfac
 
     let result = await apiImplementation.authorisationUrlGET({ provider, options });
 
-    return send200Response(options.res, result);
+    send200Response(options.res, result);
+    return true;
 }

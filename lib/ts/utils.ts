@@ -8,6 +8,7 @@ import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import { readFile, writeFile, unlink } from "fs";
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
+import { BaseResponse } from "./wrappers";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -93,22 +94,17 @@ export function getHeader(req: express.Request, key: string): string | undefined
     return value;
 }
 
-export function sendNon200Response(res: express.Response, message: string, statusCode: number) {
+export function sendNon200Response(res: BaseResponse, message: string, statusCode: number) {
     if (statusCode < 300) {
         throw new Error("Calling sendNon200Response with status code < 300");
     }
-    if (!res.writableEnded) {
-        res.statusCode = statusCode;
-        res.json({
-            message,
-        });
-    }
+    res.setStatusCode(statusCode);
+    res.sendJSONResponse({ message });
 }
 
-export function send200Response(res: express.Response, responseJson: any) {
-    if (!res.writableEnded) {
-        res.status(200).json(responseJson);
-    }
+export function send200Response(res: BaseResponse, responseJson: any) {
+    res.setStatusCode(200);
+    res.sendJSONResponse(responseJson);
 }
 
 export async function assertThatBodyParserHasBeenUsed(req: express.Request, res: express.Response) {

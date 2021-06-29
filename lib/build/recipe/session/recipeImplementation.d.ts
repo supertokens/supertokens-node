@@ -1,5 +1,5 @@
 import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo } from "./types";
-import * as express from "express";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 import Session from "./sessionClass";
 import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
@@ -14,7 +14,7 @@ export default class RecipeImplementation implements RecipeInterface {
         jwtPayload,
         sessionData,
     }: {
-        res: express.Response;
+        res: BaseResponse;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
@@ -24,11 +24,11 @@ export default class RecipeImplementation implements RecipeInterface {
         res,
         options,
     }: {
-        req: express.Request;
-        res: express.Response;
+        req: BaseRequest;
+        res: BaseResponse;
         options?: VerifySessionOptions | undefined;
     }) => Promise<Session | undefined>;
-    refreshSession: ({ req, res }: { req: express.Request; res: express.Response }) => Promise<Session>;
+    refreshSession: ({ req, res }: { req: BaseRequest; res: BaseResponse }) => Promise<Session>;
     revokeAllSessionsForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     revokeSession: ({ sessionHandle }: { sessionHandle: string }) => Promise<boolean>;
@@ -49,7 +49,7 @@ export default class RecipeImplementation implements RecipeInterface {
         sessionHandle: string;
         newJWTPayload: any;
     }) => Promise<void>;
-    getHandshakeInfo: () => Promise<HandshakeInfo>;
+    getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
     getAccessTokenLifeTimeMS: () => Promise<number>;
     getRefreshTokenLifeTimeMS: () => Promise<number>;

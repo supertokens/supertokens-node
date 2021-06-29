@@ -12,7 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { getInfoFromAccessToken } from "./accessToken";
+import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
+import { getPayloadWithoutVerifiying } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse } from "./types";
@@ -80,17 +81,72 @@ export async function getSession(
     };
 }> {
     let handShakeInfo = await recipeImplementation.getHandshakeInfo();
-
-    let fallbackToCore = true;
-    try {
-        if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
-            let accessTokenInfo = await getInfoFromAccessToken(
+    let accessTokenInfo;
+    /**
+     * if jwtSigningPublicKeyExpiryTime is expired, we call core
+     */
+    if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
+        try {
+            /**
+             * get access token info using existing signingKey
+             */
+            accessTokenInfo = await getInfoFromAccessToken(
                 accessToken,
                 handShakeInfo.jwtSigningPublicKey,
                 handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
             );
-            // anti-csrf check
-            if (handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck) {
+        } catch (err) {
+            /**
+             * if error type is not TRY_REFRESH_TOKEN, we return the
+             * error to the user
+             */
+            if (err.type !== STError.TRY_REFRESH_TOKEN) {
+                throw err;
+            }
+            /**
+             * if it comes here, it means token verification has failed.
+             * It may be due to:
+             *  - signing key was updated and this token was signed with new key
+             *  - access token is actually expired
+             *  - access token was signed with the older signing key
+             *
+             * if access token is actually expired, we don't need to call core and
+             * just return TRY_REFRESH_TOKEN to the client
+             *
+             * if access token creation time is after the signing key was last
+             * updated, we need to call core as there are chances that the token
+             * was signed with the updated signing key
+             *
+             * if access token creation time is before the signing key was last
+             * updated, we just return TRY_REFRESH_TOKEN to the client
+             */
+            let payload;
+            try {
+                payload = getPayloadWithoutVerifiying(accessToken);
+            } catch (_) {
+                throw err;
+            }
+            if (payload === undefined) {
+                throw err;
+            }
+            let expiryTime = sanitizeNumberInput(payload.expiryTime);
+            let timeCreated = sanitizeNumberInput(payload.timeCreated);
+
+            if (expiryTime === undefined || expiryTime < Date.now()) {
+                throw err;
+            }
+            if (timeCreated === undefined || handShakeInfo.signingKeyLastUpdated > timeCreated) {
+                throw err;
+            }
+        }
+    }
+    /**
+     * anti-csrf check if accesstokenInfo is not undefined,
+     * which means token verification was successful
+     */
+    if (doAntiCsrfCheck) {
+        if (handShakeInfo.antiCsrf === "VIA_TOKEN") {
+            if (accessTokenInfo !== undefined) {
                 if (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken) {
                     if (antiCsrfToken === undefined) {
                         throw new STError({
@@ -105,34 +161,29 @@ export async function getSession(
                         });
                     }
                 }
-            } else if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && doAntiCsrfCheck) {
-                if (!containsCustomHeader) {
-                    fallbackToCore = false;
-                    throw new STError({
-                        message:
-                            "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API",
-                        type: STError.TRY_REFRESH_TOKEN,
-                    });
-                }
             }
-
-            if (
-                !handShakeInfo.accessTokenBlacklistingEnabled &&
-                accessTokenInfo.parentRefreshTokenHash1 === undefined
-            ) {
-                return {
-                    session: {
-                        handle: accessTokenInfo.sessionHandle,
-                        userId: accessTokenInfo.userId,
-                        userDataInJWT: accessTokenInfo.userData,
-                    },
-                };
+        } else if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
+            if (!containsCustomHeader) {
+                throw new STError({
+                    message:
+                        "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API",
+                    type: STError.TRY_REFRESH_TOKEN,
+                });
             }
         }
-    } catch (err) {
-        if (err.type !== STError.TRY_REFRESH_TOKEN || !fallbackToCore) {
-            throw err;
-        }
+    }
+    if (
+        accessTokenInfo !== undefined &&
+        !handShakeInfo.accessTokenBlacklistingEnabled &&
+        accessTokenInfo.parentRefreshTokenHash1 === undefined
+    ) {
+        return {
+            session: {
+                handle: accessTokenInfo.sessionHandle,
+                userId: accessTokenInfo.userId,
+                userDataInJWT: accessTokenInfo.userData,
+            },
+        };
     }
 
     ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
@@ -168,6 +219,16 @@ export async function getSession(
             type: STError.UNAUTHORISED,
         });
     } else {
+        if (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined) {
+            // in CDI 2.7.1, the API returns the new keys
+            recipeImplementation.updateJwtSigningPublicKeyInfo(
+                response.jwtSigningPublicKey,
+                response.jwtSigningPublicKeyExpiryTime
+            );
+        } else {
+            // we force update the signing keys...
+            await recipeImplementation.getHandshakeInfo(true);
+        }
         throw new STError({
             message: response.message,
             type: STError.TRY_REFRESH_TOKEN,
@@ -202,6 +263,9 @@ export async function refreshSession(
             throw new STError({
                 message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
                 type: STError.UNAUTHORISED,
+                payload: {
+                    clearCookies: false, // see https://github.com/supertokens/supertokens-node/issues/141
+                },
             });
         }
     }

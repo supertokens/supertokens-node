@@ -12,69 +12,35 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { Response, NextFunction, Request } from "express";
-import { SessionRequest, VerifySessionOptions } from "../types";
 import SessionRecipe from "../recipe";
 import { sendNon200Response } from "../../../utils";
-
-export function verifySession(recipeInstance: SessionRecipe, options?: VerifySessionOptions) {
-    // We know this should be Request but then Type
-    return async (req: SessionRequest, res: Response, next: NextFunction) => {
-        return await recipeInstance.apiImpl.verifySession({
-            verifySessionOptions: options,
-            options: {
-                config: recipeInstance.config,
-                next,
-                req,
-                res,
-                recipeId: recipeInstance.getRecipeId(),
-                isInServerlessEnv: recipeInstance.isInServerlessEnv,
-                recipeImplementation: recipeInstance.recipeInterfaceImpl,
-            },
-        });
-    };
-}
+import { BaseRequest, BaseResponse } from "../../../wrappers";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
     _: string,
-    __: Request,
-    response: Response,
-    next: NextFunction
+    __: BaseRequest,
+    response: BaseResponse
 ) {
-    try {
-        sendNon200Response(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
-    } catch (err) {
-        next(err);
-    }
+    sendNon200Response(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
 }
 
 export async function sendUnauthorisedResponse(
     recipeInstance: SessionRecipe,
     _: string,
-    __: Request,
-    response: Response,
-    next: NextFunction
+    __: BaseRequest,
+    response: BaseResponse
 ) {
-    try {
-        sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
-    } catch (err) {
-        next(err);
-    }
+    sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
 }
 
 export async function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
     sessionHandle: string,
     _: string,
-    __: Request,
-    response: Response,
-    next: NextFunction
+    __: BaseRequest,
+    response: BaseResponse
 ) {
-    try {
-        await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle });
-        sendNon200Response(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
-    } catch (err) {
-        next(err);
-    }
+    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle });
+    sendNon200Response(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
 }

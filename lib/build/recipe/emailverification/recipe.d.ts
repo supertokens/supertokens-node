@@ -1,9 +1,9 @@
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import * as express from "express";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -18,13 +18,12 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction,
+        req: BaseRequest,
+        res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod
-    ) => Promise<void>;
-    handleError: (err: STError, _: express.Request, __: express.Response, next: express.NextFunction) => void;
+    ) => Promise<boolean>;
+    handleError: (err: STError, _: BaseRequest, __: BaseResponse) => void;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     createEmailVerificationToken: (userId: string, email: string) => Promise<string>;

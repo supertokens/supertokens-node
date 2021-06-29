@@ -1,10 +1,10 @@
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import * as express from "express";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import EmailVerificationRecipe from "../emailverification/recipe";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -28,18 +28,12 @@ export default class Recipe extends RecipeModule {
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction,
+        req: BaseRequest,
+        res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod
-    ) => Promise<void>;
-    handleError: (
-        err: STError,
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction
-    ) => void;
+    ) => Promise<boolean>;
+    handleError: (err: STError, request: BaseRequest, response: BaseResponse) => void;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;

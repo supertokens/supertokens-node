@@ -1,5 +1,5 @@
 import { TypeProvider } from "../types";
-import { Request } from "express";
+import { BaseRequest } from "../../../wrappers";
 declare type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
     clientSecret: {
@@ -10,7 +10,7 @@ declare type TypeThirdPartyProviderAppleConfig = {
     scope?: string[];
     authorisationRedirect?: {
         params?: {
-            [key: string]: string | ((request: Request) => string);
+            [key: string]: string | ((request: BaseRequest) => string);
         };
     };
 };

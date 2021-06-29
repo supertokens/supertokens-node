@@ -16,7 +16,6 @@
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, User } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -26,6 +25,7 @@ import emailVerifyAPI from "./api/emailVerify";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
+import { BaseRequest, BaseResponse } from "../../wrappers";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -103,15 +103,13 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction,
+        req: BaseRequest,
+        res: BaseResponse,
         _: NormalisedURLPath,
         __: HTTPMethod
-    ) => {
+    ): Promise<boolean> => {
         let options = {
             config: this.config,
-            next,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
@@ -125,8 +123,8 @@ export default class Recipe extends RecipeModule {
         }
     };
 
-    handleError = (err: STError, _: express.Request, __: express.Response, next: express.NextFunction): void => {
-        return next(err);
+    handleError = (err: STError, _: BaseRequest, __: BaseResponse): void => {
+        throw err;
     };
 
     getAllCORSHeaders = (): string[] => {
