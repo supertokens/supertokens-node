@@ -221,5 +221,5 @@ export interface APIInterface {
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
-    }): Promise<void>;
+    }): Promise<SessionContainerInterface | undefined>;
 }

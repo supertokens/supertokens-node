@@ -14,6 +14,12 @@
  */
 export type TypeWrapper = "express";
 import { VerifySessionOptions } from "../recipe/session";
+import { BaseRequest, BaseResponse } from ".";
+
+export let SchemaWrapper = {
+    type: "string",
+    enum: ["express"],
+};
 
 export interface Wrapper {
     middleware: () => any;
@@ -21,4 +27,8 @@ export interface Wrapper {
     errorHandler: () => any;
 
     verifySession: (options?: VerifySessionOptions) => any;
+
+    wrapRequest: (unwrapped: any) => BaseRequest;
+
+    wrapReresponse: (unwrapped: any) => BaseResponse;
 }

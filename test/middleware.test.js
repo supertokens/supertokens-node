@@ -110,9 +110,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             recipeList: [
                 Session.init({
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
-                            res.statusCode = 403;
-                            return res.json({
+                        onTokenTheftDetected: (sessionHandle, userId, req, res) => {
+                            res.setStatusCode(403);
+                            return res.sendJSONResponse({
                                 message: "token theft detected",
                             });
                         },
@@ -447,9 +447,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
-                            res.statusCode = 403;
-                            return res.json({
+                        onTokenTheftDetected: (sessionHandle, userId, req, res) => {
+                            res.setStatusCode(403);
+                            return res.sendJSONResponse({
                                 message: "token theft detected",
                             });
                         },
@@ -790,9 +790,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     cookieSecure: true,
                     cookieSameSite: "strict",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
-                            res.statusCode = 403;
-                            return res.json({
+                        onTokenTheftDetected: (sessionHandle, userId, req, res) => {
+                            res.setStatusCode(403);
+                            return res.sendJSONResponse({
                                 message: "token theft detected",
                             });
                         },
@@ -1137,9 +1137,9 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
                     cookieSecure: true,
                     cookieSameSite: "strict",
                     errorHandlers: {
-                        onTokenTheftDetected: (sessionHandle, userId, req, res, next) => {
-                            res.statusCode = 403;
-                            return res.json({
+                        onTokenTheftDetected: (sessionHandle, userId, req, res) => {
+                            res.setStatusCode(403);
+                            return res.sendJSONResponse({
                                 message: "token theft detected",
                             });
                         },

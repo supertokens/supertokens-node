@@ -19,6 +19,7 @@ interface Response {
     sendJSONResponse: (content: any) => void;
 }
 export declare abstract class BaseResponse implements Response {
+    wrapperUsed: boolean;
     constructor();
     abstract setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     abstract setCookie: (

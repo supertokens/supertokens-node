@@ -1,7 +1,8 @@
-import { APIInterface, APIOptions, VerifySessionOptions, SessionRequest } from "../";
+import { APIInterface, APIOptions, VerifySessionOptions } from "../";
 import STError from "../error";
 import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
+import { SessionContainerInterface } from "../types";
 
 export default class APIImplementation implements APIInterface {
     refreshPOST = async ({ options }: { options: APIOptions }): Promise<void> => {
@@ -14,10 +15,10 @@ export default class APIImplementation implements APIInterface {
     }: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
-    }): Promise<void> => {
+    }): Promise<SessionContainerInterface | undefined> => {
         let method = normaliseHttpMethod(options.req.getMethod());
         if (method === "options" || method === "trace") {
-            return;
+            return undefined;
         }
 
         let incomingPath = new NormalisedURLPath(options.req.getOriginalURL());
@@ -25,12 +26,12 @@ export default class APIImplementation implements APIInterface {
         let refreshTokenPath = options.config.refreshTokenPath;
 
         if (incomingPath.equals(refreshTokenPath) && method === "post") {
-            (options.req as SessionRequest).session = await options.recipeImplementation.refreshSession({
+            return await options.recipeImplementation.refreshSession({
                 req: options.req,
                 res: options.res,
             });
         } else {
-            (options.req as SessionRequest).session = await options.recipeImplementation.getSession({
+            return await options.recipeImplementation.getSession({
                 req: options.req,
                 res: options.res,
                 options: verifySessionOptions,

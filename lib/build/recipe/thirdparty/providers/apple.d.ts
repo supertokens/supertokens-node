@@ -10,7 +10,7 @@ declare type TypeThirdPartyProviderAppleConfig = {
     scope?: string[];
     authorisationRedirect?: {
         params?: {
-            [key: string]: string | ((request: BaseRequest) => string);
+            [key: string]: string | ((request: BaseRequest) => Promise<string>);
         };
     };
 };

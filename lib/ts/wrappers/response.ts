@@ -37,7 +37,10 @@ interface Response {
 }
 
 export abstract class BaseResponse implements Response {
-    constructor() {}
+    wrapperUsed: boolean;
+    constructor() {
+        this.wrapperUsed = true;
+    }
     abstract setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     abstract setCookie: (
         key: string,

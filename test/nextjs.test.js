@@ -18,6 +18,7 @@ let assert = require("assert");
 const httpMocks = require("node-mocks-http");
 let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../lib/build/").default;
+let { middleware } = require("../lib/build");
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
@@ -106,7 +107,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
             superTokensNextWrapper(
                 async (next) => {
-                    return SuperTokens.middleware()(request, response, next);
+                    return middleware()(request, response, next);
                 },
                 request,
                 response
@@ -195,7 +196,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
             superTokensNextWrapper(
                 async (next) => {
-                    return SuperTokens.middleware()(loginRequest, loginResponse, next);
+                    return middleware()(loginRequest, loginResponse, next);
                 },
                 loginRequest,
                 loginResponse
@@ -230,7 +231,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
             superTokensNextWrapper(
                 async (next) => {
-                    return SuperTokens.middleware()(request, response, next);
+                    return middleware()(request, response, next);
                 },
                 request,
                 response
@@ -266,7 +267,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
             superTokensNextWrapper(
                 async (next) => {
-                    return SuperTokens.middleware()(request, response, next);
+                    return middleware()(request, response, next);
                 },
                 request,
                 response
@@ -296,7 +297,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
             superTokensNextWrapper(
                 async (next) => {
-                    return SuperTokens.middleware()(request, response, next);
+                    return middleware()(request, response, next);
                 },
                 request,
                 response
@@ -326,7 +327,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
             superTokensNextWrapper(
                 async (next) => {
-                    return SuperTokens.middleware()(request, response, next);
+                    return middleware()(request, response, next);
                 },
                 request,
                 response
@@ -483,7 +484,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             try {
                 await superTokensNextWrapper(
                     async (next) => {
-                        return SuperTokens.middleware()(request, response, next);
+                        return middleware()(request, response, next);
                     },
                     request,
                     response

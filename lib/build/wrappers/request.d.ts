@@ -8,6 +8,7 @@ interface Request {
     getOriginalURL: () => string;
 }
 export declare abstract class BaseRequest implements Request {
+    wrapperUsed: boolean;
     constructor();
     abstract getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
     abstract getJSONBody: () => Promise<any>;

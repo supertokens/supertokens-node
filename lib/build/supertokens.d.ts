@@ -2,8 +2,10 @@ import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./wrappers";
+import { TypeWrapper } from "./wrappers/types";
 export default class SuperTokens {
     private static instance;
+    wrapper: TypeWrapper;
     appInfo: NormalisedAppinfo;
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];

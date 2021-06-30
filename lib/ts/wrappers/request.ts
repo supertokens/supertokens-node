@@ -30,7 +30,10 @@ interface Request {
 }
 
 export abstract class BaseRequest implements Request {
-    constructor() {}
+    wrapperUsed: boolean;
+    constructor() {
+        this.wrapperUsed = true;
+    }
     abstract getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
     abstract getJSONBody: () => Promise<any>;
     abstract getMethod: () => HTTPMethod;

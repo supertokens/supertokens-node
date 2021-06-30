@@ -20,6 +20,8 @@ import { getDataFromFileForServerlessCache, storeIntoTempFolderForServerlessCach
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./constants";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
+import SuperTokens from "../../supertokens";
+import Wrappers from "../../wrappers";
 
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
@@ -49,6 +51,9 @@ export default class RecipeImplementation implements RecipeInterface {
         jwtPayload?: any;
         sessionData?: any;
     }): Promise<Session> => {
+        if (!res.wrapperUsed) {
+            res = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapReresponse(res);
+        }
         let response = await SessionFunctions.createNewSession(this, userId, jwtPayload, sessionData);
         attachCreateOrRefreshSessionResponseToExpressRes(this.config, res, response);
         return new Session(
@@ -70,6 +75,12 @@ export default class RecipeImplementation implements RecipeInterface {
         res: BaseResponse;
         options?: VerifySessionOptions;
     }): Promise<Session | undefined> => {
+        if (!res.wrapperUsed) {
+            res = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapReresponse(res);
+        }
+        if (!req.wrapperUsed) {
+            req = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapRequest(req);
+        }
         let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
 
         let idRefreshToken = getIdRefreshTokenFromCookie(req);
@@ -137,6 +148,12 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     refreshSession = async ({ req, res }: { req: BaseRequest; res: BaseResponse }): Promise<Session> => {
+        if (!res.wrapperUsed) {
+            res = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapReresponse(res);
+        }
+        if (!req.wrapperUsed) {
+            req = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapRequest(req);
+        }
         let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
         if (inputIdRefreshToken === undefined) {
             // we do not clear cookies here because of a

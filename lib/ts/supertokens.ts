@@ -27,9 +27,12 @@ import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./wrappers";
+import { TypeWrapper } from "./wrappers/types";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
+
+    wrapper: TypeWrapper;
 
     appInfo: NormalisedAppinfo;
 
@@ -40,6 +43,7 @@ export default class SuperTokens {
     constructor(config: TypeInput) {
         validateTheStructureOfUserInput(config, InputSchema, "init function");
 
+        this.wrapper = config.wrapper !== undefined ? config.wrapper : "express";
         this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
 
         Querier.init(

@@ -1,4 +1,5 @@
 import { APIInterface, APIOptions, VerifySessionOptions } from "../";
+import { SessionContainerInterface } from "../types";
 export default class APIImplementation implements APIInterface {
     refreshPOST: ({ options }: { options: APIOptions }) => Promise<void>;
     verifySession: ({
@@ -7,7 +8,7 @@ export default class APIImplementation implements APIInterface {
     }: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
-    }) => Promise<void>;
+    }) => Promise<SessionContainerInterface | undefined>;
     signOutPOST: ({
         options,
     }: {

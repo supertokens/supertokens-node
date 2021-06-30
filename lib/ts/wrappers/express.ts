@@ -235,22 +235,33 @@ const ExpressWrapper: Wrapper = {
     },
     verifySession: (options) => {
         return async (req: SessionRequest, res: Response, next: NextFunction) => {
-            let session = Session.getInstanceOrThrowError();
-            let request = new ExpressRequest(req);
-            let response = new ExpressResponse(res);
-            await session.apiImpl.verifySession({
-                verifySessionOptions: options,
-                options: {
-                    config: session.config,
-                    req: request,
-                    res: response,
-                    recipeId: session.getRecipeId(),
-                    isInServerlessEnv: session.isInServerlessEnv,
-                    recipeImplementation: session.recipeInterfaceImpl,
-                },
-            });
-            next();
+            try {
+                let sessionRecipe = Session.getInstanceOrThrowError();
+                let request = new ExpressRequest(req);
+                let response = new ExpressResponse(res);
+                let session = await sessionRecipe.apiImpl.verifySession({
+                    verifySessionOptions: options,
+                    options: {
+                        config: sessionRecipe.config,
+                        req: request,
+                        res: response,
+                        recipeId: sessionRecipe.getRecipeId(),
+                        isInServerlessEnv: sessionRecipe.isInServerlessEnv,
+                        recipeImplementation: sessionRecipe.recipeInterfaceImpl,
+                    },
+                });
+                req.session = session;
+                next();
+            } catch (err) {
+                next(err);
+            }
         };
+    },
+    wrapRequest: (unwrapped) => {
+        return new ExpressRequest(unwrapped);
+    },
+    wrapReresponse: (unwrapped) => {
+        return new ExpressResponse(unwrapped);
     },
 };
 

@@ -27,7 +27,7 @@ type TypeThirdPartyProviderAppleConfig = {
     };
     scope?: string[];
     authorisationRedirect?: {
-        params?: { [key: string]: string | ((request: BaseRequest) => string) };
+        params?: { [key: string]: string | ((request: BaseRequest) => Promise<string>) };
     };
 };
 

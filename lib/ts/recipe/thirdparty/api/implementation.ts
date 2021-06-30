@@ -17,13 +17,13 @@ export default class APIImplementation implements APIInterface {
     }> => {
         let providerInfo = await provider.get(undefined, undefined);
 
-        const params = Object.entries(providerInfo.authorisationRedirect.params).reduce(
-            (acc, [key, value]) => ({
-                ...acc,
-                [key]: typeof value === "function" ? value(options.req) : value,
-            }),
-            {}
-        );
+        let params: { [key: string]: string } = {};
+        let keys = Object.keys(providerInfo.authorisationRedirect.params);
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            let value = providerInfo.authorisationRedirect.params[key];
+            params[key] = typeof value === "function" ? await value(options.req) : value;
+        }
 
         let paramsString = new URLSearchParams(params).toString();
 
