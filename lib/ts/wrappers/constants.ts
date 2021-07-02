@@ -12,12 +12,4 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export { BaseRequest } from "./request";
-export { BaseResponse } from "./response";
-import express from "./express";
-import fastify from "./fastify";
-
-export default {
-    express,
-    fastify,
-};
+export const COOKIE_HEADER = "Set-Cookie";

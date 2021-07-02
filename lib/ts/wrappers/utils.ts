@@ -21,6 +21,7 @@ import { ServerResponse } from "http";
 import STError from "../error";
 import type { HTTPMethod } from "../types";
 import { NextApiRequest } from "next";
+import { COOKIE_HEADER } from "./constants";
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
     let cookies: any = headers.cookie;
@@ -200,16 +201,12 @@ export function setCookieForServerResponse(
     path: string,
     sameSite: "strict" | "lax" | "none"
 ) {
-    let opts = {
-        domain,
-        secure,
-        httpOnly,
-        expires: new Date(expires),
-        path,
-        sameSite,
-    };
-
-    return appendToServerResponse(res, "Set-Cookie", serialize(key, value, opts), key);
+    return appendToServerResponse(
+        res,
+        COOKIE_HEADER,
+        serializeCookieValue(key, value, domain, secure, httpOnly, expires, path, sameSite),
+        key
+    );
 }
 
 /**
@@ -225,6 +222,15 @@ export function setCookieForServerResponse(
  */
 function appendToServerResponse(res: ServerResponse, field: string, val: string | string[], key: string) {
     let prev: string | string[] | undefined = res.getHeader(field) as string | string[] | undefined;
+    res.setHeader(field, getCookieValueToSetInHeader(prev, val, key));
+    return res;
+}
+
+export function getCookieValueToSetInHeader(
+    prev: string | string[] | undefined,
+    val: string | string[],
+    key: string
+): string | string[] {
     let value = val;
 
     if (prev !== undefined) {
@@ -249,7 +255,27 @@ function appendToServerResponse(res: ServerResponse, field: string, val: string 
     }
 
     value = Array.isArray(value) ? value.map(String) : String(value);
+    return value;
+}
 
-    res.setHeader(field, value);
-    return res;
+export function serializeCookieValue(
+    key: string,
+    value: string,
+    domain: string | undefined,
+    secure: boolean,
+    httpOnly: boolean,
+    expires: number,
+    path: string,
+    sameSite: "strict" | "lax" | "none"
+): string {
+    let opts = {
+        domain,
+        secure,
+        httpOnly,
+        expires: new Date(expires),
+        path,
+        sameSite,
+    };
+
+    return serialize(key, value, opts);
 }

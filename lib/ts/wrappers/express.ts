@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { Request, Response, NextFunction } from "express";
+import type { Request, Response, NextFunction } from "express";
 import { HTTPMethod } from "../types";
 import { normaliseHttpMethod, sendNon200Response } from "../utils";
 import { BaseRequest } from "./request";

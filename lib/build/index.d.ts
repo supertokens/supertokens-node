@@ -38,4 +38,5 @@ export declare let getUsersNewestFirst: typeof SuperTokensWrapper.getUsersNewest
 export declare let Error: typeof SuperTokensError;
 export declare let Wrappers: {
     express: import("./wrappers/types").Wrapper;
+    fastify: import("./wrappers/types").Wrapper;
 };

@@ -1,13 +1,12 @@
-import type { Request, Response } from "express";
+import type { FastifyRequest as OriginalFastifyRequest, FastifyReply } from "fastify";
 import { HTTPMethod } from "../types";
 import { BaseRequest } from "./request";
 import { BaseResponse } from "./response";
 import { Wrapper } from "./types";
 import { SessionContainerInterface } from "../recipe/session/types";
-export declare class ExpressRequest extends BaseRequest {
+export declare class FastifyRequest extends BaseRequest {
     private request;
-    private parserChecked;
-    constructor(request: Request);
+    constructor(request: OriginalFastifyRequest);
     getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
     getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
@@ -15,10 +14,10 @@ export declare class ExpressRequest extends BaseRequest {
     getHeaderValue: (key: string) => string | undefined;
     getOriginalURL: () => string;
 }
-export declare class ExpressResponse extends BaseResponse {
+export declare class FastifyResponse extends BaseResponse {
     private response;
     private statusCode;
-    constructor(response: Response);
+    constructor(response: FastifyReply);
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,
@@ -34,10 +33,13 @@ export declare class ExpressResponse extends BaseResponse {
      * @param {number} statusCode
      */
     setStatusCode: (statusCode: number) => void;
+    /**
+     * @param {any} content
+     */
     sendJSONResponse: (content: any) => void;
 }
-export interface SessionRequest extends Request {
+export interface SessionRequest extends OriginalFastifyRequest {
     session?: SessionContainerInterface;
 }
-declare const ExpressWrapper: Wrapper;
-export default ExpressWrapper;
+declare const FastifyWrapper: Wrapper;
+export default FastifyWrapper;

@@ -40,3 +40,18 @@ export declare function setCookieForServerResponse(
     path: string,
     sameSite: "strict" | "lax" | "none"
 ): ServerResponse;
+export declare function getCookieValueToSetInHeader(
+    prev: string | string[] | undefined,
+    val: string | string[],
+    key: string
+): string | string[];
+export declare function serializeCookieValue(
+    key: string,
+    value: string,
+    domain: string | undefined,
+    secure: boolean,
+    httpOnly: boolean,
+    expires: number,
+    path: string,
+    sameSite: "strict" | "lax" | "none"
+): string;
