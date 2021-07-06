@@ -3,7 +3,7 @@ import { SessionContainer } from "../";
 import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 import { Session as FaunaDBSessionContainer } from "./types";
-import { BaseRequest, BaseResponse } from "../../../wrappers";
+import { BaseRequest, BaseResponse } from "../../../frameworks";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {

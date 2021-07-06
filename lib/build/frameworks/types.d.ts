@@ -1,14 +1,14 @@
-export declare type TypeWrapper = "express";
+export declare type TypeFramework = "express" | "fastify" | "hapi";
 import { VerifySessionOptions } from "../recipe/session";
 import { BaseRequest, BaseResponse } from ".";
-export declare let SchemaWrapper: {
+export declare let SchemaFramework: {
     type: string;
     enum: string[];
 };
-export interface Wrapper {
+export interface Framework {
     middleware: () => any;
     errorHandler: () => any;
     verifySession: (options?: VerifySessionOptions) => any;
     wrapRequest: (unwrapped: any) => BaseRequest;
-    wrapReresponse: (unwrapped: any) => BaseResponse;
+    wrapResponse: (unwrapped: any) => BaseResponse;
 }

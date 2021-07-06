@@ -8,7 +8,7 @@ import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import { readFile, writeFile, unlink } from "fs";
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
-import { BaseResponse } from "./wrappers";
+import { BaseResponse } from "./frameworks";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);

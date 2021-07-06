@@ -1,7 +1,7 @@
 import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { TypeWrapper } from "./wrappers/types";
+import { TypeFramework } from "./frameworks/types";
 export declare type AppInfo = {
     appName: string;
     websiteDomain: string;
@@ -23,7 +23,7 @@ export declare type TypeInput = {
         connectionURI: string;
         apiKey?: string;
     };
-    wrapper?: TypeWrapper;
+    framework?: TypeFramework;
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
@@ -32,7 +32,7 @@ export declare type TypeInput = {
 export declare const InputSchema: {
     type: string;
     properties: {
-        wrapper: {
+        framework: {
             type: string;
             enum: string[];
         };

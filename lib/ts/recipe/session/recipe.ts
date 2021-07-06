@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, VerifySessionOptions } from "./types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
@@ -26,7 +26,7 @@ import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } f
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -148,5 +148,19 @@ export default class SessionRecipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === SessionRecipe.RECIPE_ID;
+    };
+
+    verifySession = async (options: VerifySessionOptions | undefined, request: BaseRequest, response: BaseResponse) => {
+        return await this.apiImpl.verifySession({
+            verifySessionOptions: options,
+            options: {
+                config: this.config,
+                req: request,
+                res: response,
+                recipeId: this.getRecipeId(),
+                isInServerlessEnv: this.isInServerlessEnv,
+                recipeImplementation: this.recipeInterfaceImpl,
+            },
+        });
     };
 }

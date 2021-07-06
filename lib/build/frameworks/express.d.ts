@@ -1,9 +1,9 @@
-import type { Request, Response } from "express";
-import { HTTPMethod } from "../types";
+import type { Request, Response, NextFunction } from "express";
+import type { HTTPMethod } from "../types";
 import { BaseRequest } from "./request";
 import { BaseResponse } from "./response";
-import { Wrapper } from "./types";
-import { SessionContainerInterface } from "../recipe/session/types";
+import type { Framework } from "./types";
+import type { SessionContainerInterface, VerifySessionOptions } from "../recipe/session/types";
 export declare class ExpressRequest extends BaseRequest {
     private request;
     private parserChecked;
@@ -39,5 +39,10 @@ export declare class ExpressResponse extends BaseResponse {
 export interface SessionRequest extends Request {
     session?: SessionContainerInterface;
 }
-declare const ExpressWrapper: Wrapper;
+export declare const middleware: () => (req: Request, res: Response, next: NextFunction) => Promise<void>;
+export declare const errorHandler: () => (err: any, req: Request, res: Response, next: NextFunction) => Promise<void>;
+export declare const verifySession: (
+    options: VerifySessionOptions | undefined
+) => (req: SessionRequest, res: Response, next: NextFunction) => Promise<void>;
+declare const ExpressWrapper: Framework;
 export default ExpressWrapper;

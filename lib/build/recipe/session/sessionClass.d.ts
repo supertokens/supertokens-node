@@ -1,4 +1,4 @@
-import { BaseResponse } from "../../wrappers";
+import { BaseResponse } from "../../frameworks";
 import { SessionContainerInterface } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {

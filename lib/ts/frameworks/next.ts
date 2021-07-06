@@ -13,8 +13,7 @@
  * under the License.
  */
 
-import { MiddlewareContext } from "@loopback/rest";
-import { Request } from "express";
+// TODO: not finished
 import { HTTPMethod } from "../types";
 import { normaliseHttpMethod } from "../utils";
 import { BaseRequest } from "./request";
@@ -23,14 +22,15 @@ import {
     getHeaderValueFromIncomingMessage,
     assertThatBodyParserHasBeenUsedForExpressLikeRequest,
 } from "./utils";
+import { NextApiRequest } from "next";
 
-export class LoopbackRequest extends BaseRequest {
-    private request: Request;
+export class NextRequest extends BaseRequest {
+    private request: NextApiRequest;
     private parserChecked: boolean;
 
-    constructor(ctx: MiddlewareContext) {
+    constructor(request: NextApiRequest) {
         super();
-        this.request = ctx.request;
+        this.request = request;
         this.parserChecked = false;
     }
 
@@ -58,7 +58,7 @@ export class LoopbackRequest extends BaseRequest {
     };
 
     getMethod = (): HTTPMethod => {
-        return normaliseHttpMethod(this.request.method);
+        return normaliseHttpMethod(this.request.method as string);
     };
 
     getCookieValue = (key: string): string | undefined => {
@@ -70,6 +70,6 @@ export class LoopbackRequest extends BaseRequest {
     };
 
     getOriginalURL = (): string => {
-        return this.request.originalUrl;
+        return this.request.url as string;
     };
 }

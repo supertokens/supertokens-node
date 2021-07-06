@@ -27,7 +27,7 @@ import authorisationUrlAPI from "./api/authorisationUrl";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

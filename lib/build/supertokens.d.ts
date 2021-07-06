@@ -1,11 +1,11 @@
 import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./wrappers";
-import { TypeWrapper } from "./wrappers/types";
+import { BaseRequest, BaseResponse } from "./frameworks";
+import { TypeFramework } from "./frameworks/types";
 export default class SuperTokens {
     private static instance;
-    wrapper: TypeWrapper;
+    framework: TypeFramework;
     appInfo: NormalisedAppinfo;
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
@@ -36,4 +36,6 @@ export default class SuperTokens {
         }[];
         nextPaginationToken?: string | undefined;
     }>;
+    middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
+    errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => void;
 }

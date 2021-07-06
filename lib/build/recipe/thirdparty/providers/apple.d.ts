@@ -1,5 +1,5 @@
 import { TypeProvider } from "../types";
-import { BaseRequest } from "../../../wrappers";
+import { BaseRequest } from "../../../frameworks";
 declare type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
     clientSecret: {

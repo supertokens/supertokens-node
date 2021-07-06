@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { BaseResponse } from "../../wrappers";
+import { BaseResponse } from "../../frameworks";
 import * as SessionFunctions from "./sessionFunctions";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";

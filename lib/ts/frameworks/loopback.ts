@@ -13,28 +13,37 @@
  * under the License.
  */
 
-import { Context } from "koa";
+// TODO: not finished
+import { MiddlewareContext } from "@loopback/rest";
+import { Request } from "express";
 import { HTTPMethod } from "../types";
 import { normaliseHttpMethod } from "../utils";
 import { BaseRequest } from "./request";
-import { getHeaderValueFromIncomingMessage } from "./utils";
-import { json } from "co-body";
+import {
+    getCookieValueFromIncomingMessage,
+    getHeaderValueFromIncomingMessage,
+    assertThatBodyParserHasBeenUsedForExpressLikeRequest,
+} from "./utils";
 
-export class KoaRequest extends BaseRequest {
-    private ctx: Context;
-    private parsedJSONBody: Object | undefined;
+export class LoopbackRequest extends BaseRequest {
+    private request: Request;
+    private parserChecked: boolean;
 
-    constructor(ctx: Context) {
+    constructor(ctx: MiddlewareContext) {
         super();
-        this.ctx = ctx;
-        this.parsedJSONBody = undefined;
+        this.request = ctx.request;
+        this.parserChecked = false;
     }
 
     getKeyValueFromQuery = async (key: string): Promise<string | undefined> => {
-        if (this.ctx.query === undefined) {
+        if (!this.parserChecked) {
+            await assertThatBodyParserHasBeenUsedForExpressLikeRequest(this.getMethod(), this.request);
+            this.parserChecked = true;
+        }
+        if (this.request.query === undefined) {
             return undefined;
         }
-        let value = this.ctx.request.query[key];
+        let value = this.request.query[key];
         if (value === undefined || typeof value !== "string") {
             return undefined;
         }
@@ -42,29 +51,26 @@ export class KoaRequest extends BaseRequest {
     };
 
     getJSONBody = async (): Promise<any> => {
-        if (this.parsedJSONBody === undefined) {
-            this.parsedJSONBody = await parseJSONBodyFromRequest(this.ctx);
+        if (!this.parserChecked) {
+            await assertThatBodyParserHasBeenUsedForExpressLikeRequest(this.getMethod(), this.request);
+            this.parserChecked = true;
         }
-        return this.parsedJSONBody === undefined ? {} : this.parsedJSONBody;
+        return this.request.body;
     };
 
     getMethod = (): HTTPMethod => {
-        return normaliseHttpMethod(this.ctx.request.method);
+        return normaliseHttpMethod(this.request.method);
     };
 
     getCookieValue = (key: string): string | undefined => {
-        return this.ctx.cookies.get(key);
+        return getCookieValueFromIncomingMessage(this.request, key);
     };
 
     getHeaderValue = (key: string): string | undefined => {
-        return getHeaderValueFromIncomingMessage(this.ctx.req, key);
+        return getHeaderValueFromIncomingMessage(this.request, key);
     };
 
     getOriginalURL = (): string => {
-        return this.ctx.originalUrl;
+        return this.request.originalUrl;
     };
-}
-
-async function parseJSONBodyFromRequest(ctx: Context) {
-    return await json(ctx);
 }

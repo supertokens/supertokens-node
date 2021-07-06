@@ -46,6 +46,7 @@
         "@types/co-body": "^5.1.0",
         "@types/cookie": "0.3.3",
         "@types/express": "4.16.1",
+        "@types/hapi__hapi": "20.0.8",
         "@types/jsonwebtoken": "8.5.0",
         "@types/koa": "^2.13.3",
         "@types/koa-bodyparser": "^4.3.0",

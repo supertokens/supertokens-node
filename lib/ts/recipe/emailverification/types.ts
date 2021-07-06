@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 
 export type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;

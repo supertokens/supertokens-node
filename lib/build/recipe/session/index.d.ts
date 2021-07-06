@@ -1,4 +1,4 @@
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,

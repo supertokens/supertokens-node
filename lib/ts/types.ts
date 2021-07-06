@@ -16,7 +16,7 @@
 import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { TypeWrapper, SchemaWrapper } from "./wrappers/types";
+import { TypeFramework, SchemaFramework } from "./frameworks/types";
 
 export type AppInfo = {
     appName: string;
@@ -41,7 +41,7 @@ export type TypeInput = {
         connectionURI: string;
         apiKey?: string;
     };
-    wrapper?: TypeWrapper;
+    framework?: TypeFramework;
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
@@ -59,7 +59,7 @@ const TypeBoolean = {
 export const InputSchema = {
     type: "object",
     properties: {
-        wrapper: SchemaWrapper,
+        framework: SchemaFramework,
         supertokens: {
             type: "object",
             properties: {

@@ -1,7 +1,7 @@
 import { VerifySessionOptions, RecipeInterface } from "../";
 import * as faunadb from "faunadb";
 import { Session as FaunaDBSessionContainer } from "./types";
-import { BaseRequest, BaseResponse } from "../../../wrappers";
+import { BaseRequest, BaseResponse } from "../../../frameworks";
 export default class RecipeImplementation implements RecipeInterface {
     config: {
         accessFaunadbTokenFromFrontend: boolean;

@@ -4,7 +4,7 @@ import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from ".
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import EmailVerificationRecipe from "../emailverification/recipe";
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;

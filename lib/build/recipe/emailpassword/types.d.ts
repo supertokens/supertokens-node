@@ -3,7 +3,7 @@ import {
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 export declare type TypeInputSetJwtPayloadForSession = (
     user: User,
     formFields: TypeFormField[],

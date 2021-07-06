@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -14,14 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-var request_1 = require("./request");
-exports.BaseRequest = request_1.BaseRequest;
-var response_1 = require("./response");
-exports.BaseResponse = response_1.BaseResponse;
-const express_1 = require("./express");
-const fastify_1 = require("./fastify");
-exports.default = {
-    express: express_1.default,
-    fastify: fastify_1.default,
+export { BaseRequest } from "./request";
+export { BaseResponse } from "./response";
+import express from "./express";
+import fastify from "./fastify";
+import hapi from "./hapi";
+
+export default {
+    express,
+    fastify,
+    hapi,
 };
-//# sourceMappingURL=index.js.map

@@ -74,7 +74,7 @@ export async function getInfoFromAccessToken(
     }
 }
 
-export function sanitizeStringInput(field: any): string | undefined {
+function sanitizeStringInput(field: any): string | undefined {
     if (field === "") {
         return "";
     }

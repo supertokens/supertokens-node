@@ -1,9 +1,10 @@
-import type { FastifyRequest as OriginalFastifyRequest, FastifyReply } from "fastify";
-import { HTTPMethod } from "../types";
+/// <reference types="node" />
+import type { FastifyInstance, FastifyRequest as OriginalFastifyRequest, FastifyReply } from "fastify";
+import type { HTTPMethod } from "../types";
 import { BaseRequest } from "./request";
 import { BaseResponse } from "./response";
-import { Wrapper } from "./types";
-import { SessionContainerInterface } from "../recipe/session/types";
+import type { Framework } from "./types";
+import type { SessionContainerInterface, VerifySessionOptions } from "../recipe/session/types";
 export declare class FastifyRequest extends BaseRequest {
     private request;
     constructor(request: OriginalFastifyRequest);
@@ -38,8 +39,37 @@ export declare class FastifyResponse extends BaseResponse {
      */
     sendJSONResponse: (content: any) => void;
 }
+declare function plugin(fastify: FastifyInstance, _: any, done: Function): void;
 export interface SessionRequest extends OriginalFastifyRequest {
     session?: SessionContainerInterface;
 }
-declare const FastifyWrapper: Wrapper;
+export declare const middleware: () => typeof plugin;
+export declare const errorHandler: () => (
+    err: any,
+    req: OriginalFastifyRequest<
+        import("fastify/types/route").RouteGenericInterface,
+        import("http").Server,
+        import("http").IncomingMessage
+    >,
+    res: FastifyReply<
+        import("http").Server,
+        import("http").IncomingMessage,
+        import("http").ServerResponse,
+        import("fastify/types/route").RouteGenericInterface,
+        unknown
+    >
+) => Promise<void>;
+export declare const verifySession: (
+    options: VerifySessionOptions | undefined
+) => (
+    req: SessionRequest,
+    res: FastifyReply<
+        import("http").Server,
+        import("http").IncomingMessage,
+        import("http").ServerResponse,
+        import("fastify/types/route").RouteGenericInterface,
+        unknown
+    >
+) => Promise<void>;
+declare const FastifyWrapper: Framework;
 export default FastifyWrapper;

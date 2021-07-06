@@ -1,7 +1,26 @@
 import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
-import { BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
+export declare function sendTryRefreshTokenResponse(
+    recipeInstance: SessionRecipe,
+    _: string,
+    __: BaseRequest,
+    response: BaseResponse
+): Promise<void>;
+export declare function sendUnauthorisedResponse(
+    recipeInstance: SessionRecipe,
+    _: string,
+    __: BaseRequest,
+    response: BaseResponse
+): Promise<void>;
+export declare function sendTokenTheftDetectedResponse(
+    recipeInstance: SessionRecipe,
+    sessionHandle: string,
+    _: string,
+    __: BaseRequest,
+    response: BaseResponse
+): Promise<void>;
 export declare function normaliseSessionScopeOrThrowError(sessionScope: string): string;
 export declare function getTopLevelDomainForSameSiteResolution(url: string): string;
 export declare function validateAndNormaliseUserInput(

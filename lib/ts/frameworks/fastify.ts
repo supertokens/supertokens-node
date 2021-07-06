@@ -14,8 +14,8 @@
  */
 
 import type { FastifyInstance, FastifyRequest as OriginalFastifyRequest, FastifyReply } from "fastify";
-import { HTTPMethod } from "../types";
-import { normaliseHttpMethod, sendNon200Response } from "../utils";
+import type { HTTPMethod } from "../types";
+import { normaliseHttpMethod } from "../utils";
 import { BaseRequest } from "./request";
 import { BaseResponse } from "./response";
 import {
@@ -24,14 +24,10 @@ import {
     getCookieValueFromHeaders,
     getCookieValueToSetInHeader,
 } from "./utils";
-import { Wrapper } from "./types";
-import NormalisedURLPath from "../normalisedURLPath";
-import RecipeModule from "../recipeModule";
-import { HEADER_RID } from "../constants";
-import STError from "../error";
+import type { Framework } from "./types";
 import SuperTokens from "../supertokens";
 import Session from "../recipe/session/recipe";
-import { SessionContainerInterface } from "../recipe/session/types";
+import type { SessionContainerInterface, VerifySessionOptions } from "../recipe/session/types";
 import { COOKIE_HEADER } from "./constants";
 
 export class FastifyRequest extends BaseRequest {
@@ -145,49 +141,7 @@ function plugin(fastify: FastifyInstance, _: any, done: Function) {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
         let response = new FastifyResponse(reply);
-        let path = supertokens.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
-        let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
-
-        // if the prefix of the URL doesn't match the base path, we skip
-        if (!path.startsWith(supertokens.appInfo.apiBasePath)) {
-            return;
-        }
-
-        let requestRID = request.getHeaderValue(HEADER_RID);
-        if (requestRID !== undefined) {
-            let matchedRecipe: RecipeModule | undefined = undefined;
-
-            // we loop through all recipe modules to find the one with the matching rId
-            for (let i = 0; i < supertokens.recipeModules.length; i++) {
-                if (supertokens.recipeModules[i].getRecipeId() === requestRID) {
-                    matchedRecipe = supertokens.recipeModules[i];
-                    break;
-                }
-            }
-
-            if (matchedRecipe === undefined) {
-                // we could not find one, so we skip
-                return;
-            }
-
-            let id = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method);
-            if (id === undefined) {
-                // the matched recipe doesn't handle this path and http method
-                return;
-            }
-
-            // give task to the matched recipe
-            await supertokens.handleAPI(matchedRecipe, id, request, response, path, method);
-        } else {
-            // we loop through all recipe modules to find the one with the matching path and method
-            for (let i = 0; i < supertokens.recipeModules.length; i++) {
-                let id = supertokens.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
-                if (id !== undefined) {
-                    await supertokens.handleAPI(supertokens.recipeModules[i], id, request, response, path, method);
-                    break;
-                }
-            }
-        }
+        await supertokens.middleware(request, response);
     });
     done();
 }
@@ -197,52 +151,34 @@ export interface SessionRequest extends OriginalFastifyRequest {
     session?: SessionContainerInterface;
 }
 
-const FastifyWrapper: Wrapper = {
-    middleware: () => {
-        return plugin;
-    },
-    errorHandler: () => {
-        return async (err: any, req: OriginalFastifyRequest, res: FastifyReply) => {
-            let supertokens = SuperTokens.getInstanceOrThrowError();
-            let request = new FastifyRequest(req);
-            let response = new FastifyResponse(res);
-            if (STError.isErrorFromSuperTokens(err)) {
-                if (err.type === STError.BAD_INPUT_ERROR) {
-                    return sendNon200Response(response, err.message, 400);
-                }
+export const middleware = () => {
+    return plugin;
+};
+export const errorHandler = () => {
+    return async (err: any, req: OriginalFastifyRequest, res: FastifyReply) => {
+        let supertokens = SuperTokens.getInstanceOrThrowError();
+        let request = new FastifyRequest(req);
+        let response = new FastifyResponse(res);
+        supertokens.errorHandler(err, request, response);
+    };
+};
+export const verifySession = (options: VerifySessionOptions | undefined) => {
+    return async (req: SessionRequest, res: FastifyReply) => {
+        let sessionRecipe = Session.getInstanceOrThrowError();
+        let request = new FastifyRequest(req);
+        let response = new FastifyResponse(res);
+        req.session = await sessionRecipe.verifySession(options, request, response);
+    };
+};
 
-                // we loop through all the recipes and pass the error to the one that matches the rId
-                for (let i = 0; i < supertokens.recipeModules.length; i++) {
-                    if (supertokens.recipeModules[i].isErrorFromThisRecipe(err)) {
-                        supertokens.recipeModules[i].handleError(err, request, response);
-                    }
-                }
-            }
-        };
-    },
-    verifySession: (options) => {
-        return async (req: SessionRequest, res: FastifyReply) => {
-            let sessionRecipe = Session.getInstanceOrThrowError();
-            let request = new FastifyRequest(req);
-            let response = new FastifyResponse(res);
-            let session = await sessionRecipe.apiImpl.verifySession({
-                verifySessionOptions: options,
-                options: {
-                    config: sessionRecipe.config,
-                    req: request,
-                    res: response,
-                    recipeId: sessionRecipe.getRecipeId(),
-                    isInServerlessEnv: sessionRecipe.isInServerlessEnv,
-                    recipeImplementation: sessionRecipe.recipeInterfaceImpl,
-                },
-            });
-            req.session = session;
-        };
-    },
+const FastifyWrapper: Framework = {
+    middleware,
+    errorHandler,
+    verifySession,
     wrapRequest: (unwrapped) => {
         return new FastifyRequest(unwrapped);
     },
-    wrapReresponse: (unwrapped) => {
+    wrapResponse: (unwrapped) => {
         return new FastifyResponse(unwrapped);
     },
 };

@@ -27,6 +27,8 @@ export default class SuperTokensWrapper {
         }[];
         nextPaginationToken?: string;
     }>;
+    static middleware: () => any;
+    static errorHandler: () => any;
 }
 export declare let init: typeof SuperTokens.init;
 export declare let middleware: () => any;
@@ -36,7 +38,3 @@ export declare let getUserCount: typeof SuperTokensWrapper.getUserCount;
 export declare let getUsersOldestFirst: typeof SuperTokensWrapper.getUsersOldestFirst;
 export declare let getUsersNewestFirst: typeof SuperTokensWrapper.getUsersNewestFirst;
 export declare let Error: typeof SuperTokensError;
-export declare let Wrappers: {
-    express: import("./wrappers/types").Wrapper;
-    fastify: import("./wrappers/types").Wrapper;
-};

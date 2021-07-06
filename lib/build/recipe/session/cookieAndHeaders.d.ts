@@ -1,4 +1,4 @@
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 import { TypeNormalisedInput } from "./types";
 /**
  * @description clears all the auth cookies from the response

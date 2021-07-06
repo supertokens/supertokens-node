@@ -1,4 +1,4 @@
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 export declare type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
     getEmailVerificationURL?: (user: User) => Promise<string>;

@@ -3,7 +3,7 @@ import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from ".
 import EmailVerificationRecipe from "../emailverification/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 import STError from "./error";
 import { TypeInput, TypeNormalisedInput, User, RecipeInterface, APIInterface } from "./types";
 import STErrorEmailPassword from "../emailpassword/error";

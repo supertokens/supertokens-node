@@ -1,4 +1,4 @@
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 import NormalisedURLPath from "../../normalisedURLPath";
 export declare type HandshakeInfo = {
     jwtSigningPublicKey: string;
@@ -129,17 +129,17 @@ export interface VerifySessionOptions {
 }
 export interface RecipeInterface {
     createNewSession(input: {
-        res: BaseResponse;
+        res: any;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
     }): Promise<SessionContainerInterface>;
     getSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
+        req: any;
+        res: any;
         options?: VerifySessionOptions;
     }): Promise<SessionContainerInterface | undefined>;
-    refreshSession(input: { req: BaseRequest; res: BaseResponse }): Promise<SessionContainerInterface>;
+    refreshSession(input: { req: any; res: any }): Promise<SessionContainerInterface>;
     revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
     getAllSessionHandlesForUser(input: { userId: string }): Promise<string[]>;
     revokeSession(input: { sessionHandle: string }): Promise<boolean>;

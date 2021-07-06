@@ -1,6 +1,6 @@
 import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
 import * as express from "express";
-import { BaseResponse } from "./wrappers";
+import { BaseResponse } from "./frameworks";
 export declare function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined;
 export declare function maxVersion(version1: string, version2: string): string;
 export declare function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo;

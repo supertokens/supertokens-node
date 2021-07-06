@@ -10,7 +10,6 @@ import {
     setFrontTokenInHeaders,
     getRidFromHeader,
 } from "./cookieAndHeaders";
-import { BaseRequest, BaseResponse } from "../../wrappers";
 import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
@@ -21,7 +20,7 @@ import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./constants";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import SuperTokens from "../../supertokens";
-import Wrappers from "../../wrappers";
+import frameworks from "../../frameworks";
 
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
@@ -46,13 +45,13 @@ export default class RecipeImplementation implements RecipeInterface {
         jwtPayload = {},
         sessionData = {},
     }: {
-        res: BaseResponse;
+        res: any;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
     }): Promise<Session> => {
         if (!res.wrapperUsed) {
-            res = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapReresponse(res);
+            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
         }
         let response = await SessionFunctions.createNewSession(this, userId, jwtPayload, sessionData);
         attachCreateOrRefreshSessionResponseToExpressRes(this.config, res, response);
@@ -71,15 +70,15 @@ export default class RecipeImplementation implements RecipeInterface {
         res,
         options,
     }: {
-        req: BaseRequest;
-        res: BaseResponse;
+        req: any;
+        res: any;
         options?: VerifySessionOptions;
     }): Promise<Session | undefined> => {
         if (!res.wrapperUsed) {
-            res = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapReresponse(res);
+            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
         }
         if (!req.wrapperUsed) {
-            req = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapRequest(req);
+            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
         }
         let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
 
@@ -147,12 +146,12 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    refreshSession = async ({ req, res }: { req: BaseRequest; res: BaseResponse }): Promise<Session> => {
+    refreshSession = async ({ req, res }: { req: any; res: any }): Promise<Session> => {
         if (!res.wrapperUsed) {
-            res = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapReresponse(res);
+            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
         }
         if (!req.wrapperUsed) {
-            req = Wrappers[SuperTokens.getInstanceOrThrowError().wrapper].wrapRequest(req);
+            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
         }
         let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
         if (inputIdRefreshToken === undefined) {

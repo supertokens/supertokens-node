@@ -1,0 +1,51 @@
+import type { Request, ResponseToolkit, ResponseObject } from "@hapi/hapi";
+import type { HTTPMethod } from "../types";
+import { BaseRequest } from "./request";
+import { BaseResponse } from "./response";
+import type { Framework } from "./types";
+import type { SessionContainerInterface } from "../recipe/session/types";
+export declare class HapiRequest extends BaseRequest {
+    private request;
+    constructor(request: Request);
+    getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
+    getJSONBody: () => Promise<any>;
+    getMethod: () => HTTPMethod;
+    getCookieValue: (key: string) => string | undefined;
+    getHeaderValue: (key: string) => string | undefined;
+    getOriginalURL: () => string;
+}
+interface ExtendedResponseToolkit extends ResponseToolkit {
+    lazyHeaderBindings: (key: string, value: string, allowDuplicateKey: boolean) => void;
+}
+export declare class HapiResponse extends BaseResponse {
+    private response;
+    private statusCode;
+    private content;
+    responseSet: boolean;
+    constructor(response: ExtendedResponseToolkit);
+    setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
+    setCookie: (
+        key: string,
+        value: string,
+        domain: string | undefined,
+        secure: boolean,
+        httpOnly: boolean,
+        expires: number,
+        path: string,
+        sameSite: "strict" | "lax" | "none"
+    ) => void;
+    /**
+     * @param {number} statusCode
+     */
+    setStatusCode: (statusCode: number) => void;
+    /**
+     * @param {any} content
+     */
+    sendJSONResponse: (content: any) => void;
+    sendResponse: () => ResponseObject;
+}
+export interface SessionRequest extends Request {
+    session?: SessionContainerInterface;
+}
+declare const HapiWrapper: Framework;
+export default HapiWrapper;

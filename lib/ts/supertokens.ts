@@ -20,19 +20,22 @@ import {
     validateTheStructureOfUserInput,
     removeServerlessCache,
     maxVersion,
+    normaliseHttpMethod,
+    sendNon200Response,
 } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./wrappers";
-import { TypeWrapper } from "./wrappers/types";
+import { BaseRequest, BaseResponse } from "./frameworks";
+import { TypeFramework } from "./frameworks/types";
+import STError from "./error";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
 
-    wrapper: TypeWrapper;
+    framework: TypeFramework;
 
     appInfo: NormalisedAppinfo;
 
@@ -43,7 +46,7 @@ export default class SuperTokens {
     constructor(config: TypeInput) {
         validateTheStructureOfUserInput(config, InputSchema, "init function");
 
-        this.wrapper = config.wrapper !== undefined ? config.wrapper : "express";
+        this.framework = config.framework !== undefined ? config.framework : "express";
         this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
 
         Querier.init(
@@ -209,5 +212,80 @@ export default class SuperTokens {
             users: response.users,
             nextPaginationToken: response.nextPaginationToken,
         };
+    };
+
+    middleware = async (request: BaseRequest, response: BaseResponse): Promise<boolean> => {
+        let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
+        let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
+
+        // if the prefix of the URL doesn't match the base path, we skip
+        if (!path.startsWith(this.appInfo.apiBasePath)) {
+            return false;
+        }
+
+        let requestRID = request.getHeaderValue(HEADER_RID);
+        if (requestRID !== undefined) {
+            let matchedRecipe: RecipeModule | undefined = undefined;
+
+            // we loop through all recipe modules to find the one with the matching rId
+            for (let i = 0; i < this.recipeModules.length; i++) {
+                if (this.recipeModules[i].getRecipeId() === requestRID) {
+                    matchedRecipe = this.recipeModules[i];
+                    break;
+                }
+            }
+
+            if (matchedRecipe === undefined) {
+                // we could not find one, so we skip
+                return false;
+            }
+
+            let id = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method);
+            if (id === undefined) {
+                // the matched recipe doesn't handle this path and http method
+                return false;
+            }
+
+            // give task to the matched recipe
+            let requestHandled = await matchedRecipe.handleAPIRequest(id, request, response, path, method);
+            if (!requestHandled) {
+                return false;
+            }
+            return true;
+        } else {
+            // we loop through all recipe modules to find the one with the matching path and method
+            for (let i = 0; i < this.recipeModules.length; i++) {
+                let id = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
+                if (id !== undefined) {
+                    let requestHandled = await this.recipeModules[i].handleAPIRequest(
+                        id,
+                        request,
+                        response,
+                        path,
+                        method
+                    );
+                    if (!requestHandled) {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
+    errorHandler = (err: any, request: BaseRequest, response: BaseResponse) => {
+        if (STError.isErrorFromSuperTokens(err)) {
+            if (err.type === STError.BAD_INPUT_ERROR) {
+                return sendNon200Response(response, err.message, 400);
+            }
+
+            for (let i = 0; i < this.recipeModules.length; i++) {
+                if (this.recipeModules[i].isErrorFromThisRecipe(err)) {
+                    this.recipeModules[i].handleError(err, request, response);
+                }
+            }
+        }
+        throw err;
     };
 }

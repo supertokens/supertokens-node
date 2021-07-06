@@ -29,18 +29,43 @@ import {
 } from "./cookieAndHeaders";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
-import {
-    sendTryRefreshTokenResponse,
-    sendTokenTheftDetectedResponse,
-    sendUnauthorisedResponse,
-} from "./api/middleware";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
+import { sendNon200Response } from "../../utils";
+
+export async function sendTryRefreshTokenResponse(
+    recipeInstance: SessionRecipe,
+    _: string,
+    __: BaseRequest,
+    response: BaseResponse
+) {
+    sendNon200Response(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
+}
+
+export async function sendUnauthorisedResponse(
+    recipeInstance: SessionRecipe,
+    _: string,
+    __: BaseRequest,
+    response: BaseResponse
+) {
+    sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
+}
+
+export async function sendTokenTheftDetectedResponse(
+    recipeInstance: SessionRecipe,
+    sessionHandle: string,
+    _: string,
+    __: BaseRequest,
+    response: BaseResponse
+) {
+    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle });
+    sendNon200Response(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
+}
 
 export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
     function helper(sessionScope: string): string {

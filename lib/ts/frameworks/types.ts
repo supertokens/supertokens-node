@@ -12,16 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export type TypeWrapper = "express";
+export type TypeFramework = "express" | "fastify" | "hapi";
 import { VerifySessionOptions } from "../recipe/session";
 import { BaseRequest, BaseResponse } from ".";
 
-export let SchemaWrapper = {
+export let SchemaFramework = {
     type: "string",
-    enum: ["express"],
+    enum: ["express", "fastify", "hapi"],
 };
 
-export interface Wrapper {
+export interface Framework {
     middleware: () => any;
 
     errorHandler: () => any;
@@ -30,5 +30,5 @@ export interface Wrapper {
 
     wrapRequest: (unwrapped: any) => BaseRequest;
 
-    wrapReresponse: (unwrapped: any) => BaseResponse;
+    wrapResponse: (unwrapped: any) => BaseResponse;
 }

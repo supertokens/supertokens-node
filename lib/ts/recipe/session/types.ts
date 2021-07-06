@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { BaseRequest, BaseResponse } from "../../wrappers";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 import NormalisedURLPath from "../../normalisedURLPath";
 
 export type HandshakeInfo = {
@@ -145,19 +145,19 @@ export interface VerifySessionOptions {
 
 export interface RecipeInterface {
     createNewSession(input: {
-        res: BaseResponse;
+        res: any;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
     }): Promise<SessionContainerInterface>;
 
     getSession(input: {
-        req: BaseRequest;
-        res: BaseResponse;
+        req: any;
+        res: any;
         options?: VerifySessionOptions;
     }): Promise<SessionContainerInterface | undefined>;
 
-    refreshSession(input: { req: BaseRequest; res: BaseResponse }): Promise<SessionContainerInterface>;
+    refreshSession(input: { req: any; res: any }): Promise<SessionContainerInterface>;
 
     revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
 
