@@ -13,17 +13,23 @@
  * under the License.
  */
 
-// TODO: not finished
-import { MiddlewareContext } from "@loopback/rest";
-import { Request } from "express";
+import type { MiddlewareContext, Request, Response, Middleware } from "@loopback/rest";
+import type { Next, InterceptorOrKey, InvocationContext } from "@loopback/core";
+import { SessionContainerInterface, VerifySessionOptions } from "../recipe/session/types";
 import { HTTPMethod } from "../types";
 import { normaliseHttpMethod } from "../utils";
 import { BaseRequest } from "./request";
+import { BaseResponse } from "./response";
 import {
     getCookieValueFromIncomingMessage,
     getHeaderValueFromIncomingMessage,
     assertThatBodyParserHasBeenUsedForExpressLikeRequest,
+    setHeaderForExpressLikeResponse,
+    setCookieForServerResponse,
 } from "./utils";
+import SuperTokens from "../supertokens";
+import Session from "../recipe/session/recipe";
+import type { Framework } from "./types";
 
 export class LoopbackRequest extends BaseRequest {
     private request: Request;
@@ -74,3 +80,100 @@ export class LoopbackRequest extends BaseRequest {
         return this.request.originalUrl;
     };
 }
+
+export class LoopbackResponse extends BaseResponse {
+    response: Response;
+    private statusCode: number;
+
+    constructor(ctx: MiddlewareContext) {
+        super();
+        this.response = ctx.response;
+        this.statusCode = 200;
+    }
+
+    setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
+        setHeaderForExpressLikeResponse(this.response, key, value, allowDuplicateKey);
+    };
+
+    setCookie = (
+        key: string,
+        value: string,
+        domain: string | undefined,
+        secure: boolean,
+        httpOnly: boolean,
+        expires: number,
+        path: string,
+        sameSite: "strict" | "lax" | "none"
+    ) => {
+        setCookieForServerResponse(this.response, key, value, domain, secure, httpOnly, expires, path, sameSite);
+    };
+
+    setStatusCode = (statusCode: number) => {
+        this.statusCode = statusCode;
+    };
+    sendJSONResponse = (content: any) => {
+        if (!this.response.writableEnded) {
+            this.response.status(this.statusCode).json(content);
+        }
+    };
+}
+
+export interface SessionRequest extends Request {
+    session?: SessionContainerInterface;
+}
+
+export const middleware: () => Middleware = () => {
+    return async (ctx: MiddlewareContext, next: Next) => {
+        let supertokens = SuperTokens.getInstanceOrThrowError();
+        let request = new LoopbackRequest(ctx);
+        let response = new LoopbackResponse(ctx);
+        try {
+            let result = await supertokens.middleware(request, response);
+            if (!result) {
+                return await next();
+            }
+            return;
+        } catch (err) {
+            return supertokens.errorHandler(err, request, response);
+        }
+    };
+};
+export const errorHandler = () => {};
+export const verifySession = (options: VerifySessionOptions | undefined): InterceptorOrKey => {
+    return async (ctx: InvocationContext, next: Next) => {
+        let sessionRecipe = Session.getInstanceOrThrowError();
+        let middlewareCtx = await ctx.get<MiddlewareContext>("middleware.http.context");
+        let request = new LoopbackRequest(middlewareCtx);
+        let response = new LoopbackResponse(middlewareCtx);
+        (middlewareCtx.request as SessionRequest).session = await sessionRecipe.verifySession(
+            options,
+            request,
+            response
+        );
+        return await next();
+    };
+};
+
+const LoopbackWrapper: Framework = {
+    middleware,
+    errorHandler,
+    verifySession,
+    wrapRequest: (unwrapped) => {
+        if (unwrapped.request === undefined) {
+            unwrapped = {
+                request: unwrapped,
+            };
+        }
+        return new LoopbackRequest(unwrapped);
+    },
+    wrapResponse: (unwrapped) => {
+        if (unwrapped.response === undefined) {
+            unwrapped = {
+                response: unwrapped,
+            };
+        }
+        return new LoopbackResponse(unwrapped);
+    },
+};
+
+export default LoopbackWrapper;
