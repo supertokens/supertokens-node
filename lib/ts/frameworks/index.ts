@@ -17,9 +17,11 @@ export { BaseResponse } from "./response";
 import express from "./express";
 import fastify from "./fastify";
 import hapi from "./hapi";
+import loopback from "./loopback";
 
 export default {
     express,
     fastify,
     hapi,
+    loopback,
 };

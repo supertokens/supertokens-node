@@ -14,12 +14,17 @@
  */
 
 // TODO: not finished
-import { Context } from "koa";
-import { HTTPMethod } from "../types";
+import type { Context, Next } from "koa";
+import type { HTTPMethod } from "../types";
 import { normaliseHttpMethod } from "../utils";
 import { BaseRequest } from "./request";
+import { BaseResponse } from "./response";
 import { getHeaderValueFromIncomingMessage } from "./utils";
 import { json } from "co-body";
+import { SessionContainerInterface, VerifySessionOptions } from "../recipe/session/types";
+import SuperTokens from "../supertokens";
+import Session from "../recipe/session/recipe";
+import { Framework } from "./types";
 
 export class KoaRequest extends BaseRequest {
     private ctx: Context;
@@ -69,3 +74,105 @@ export class KoaRequest extends BaseRequest {
 async function parseJSONBodyFromRequest(ctx: Context) {
     return await json(ctx);
 }
+
+export class KoaResponse extends BaseResponse {
+    private ctx: Context;
+
+    constructor(ctx: Context) {
+        super();
+        this.ctx = ctx;
+    }
+
+    setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
+        try {
+            let existingHeaders = this.ctx.response.headers;
+            let existingValue = existingHeaders[key.toLowerCase()];
+
+            if (existingValue === undefined) {
+                this.ctx.set(key, value);
+            } else if (allowDuplicateKey) {
+                this.ctx.set(key, existingValue + ", " + value);
+            } else {
+                // we overwrite the current one with the new one
+                this.ctx.set(key, value);
+            }
+        } catch (err) {
+            throw new Error("Error while setting header with key: " + key + " and value: " + value);
+        }
+    };
+
+    setCookie = (
+        key: string,
+        value: string,
+        domain: string | undefined,
+        secure: boolean,
+        httpOnly: boolean,
+        expires: number,
+        path: string,
+        sameSite: "strict" | "lax" | "none"
+    ) => {
+        this.ctx.cookies.set(key, value, {
+            secure,
+            sameSite,
+            httpOnly,
+            expires: new Date(expires),
+            domain,
+            path,
+        });
+    };
+
+    /**
+     * @param {number} statusCode
+     */
+    setStatusCode = (statusCode: number) => {
+        this.ctx.status = statusCode;
+    };
+
+    sendJSONResponse = (content: any) => {
+        this.ctx.body = content;
+    };
+}
+
+export interface SessionRequest extends Context {
+    session?: SessionContainerInterface;
+}
+
+export const middleware = () => {
+    return async (ctx: Context, next: Next) => {
+        let supertokens = SuperTokens.getInstanceOrThrowError();
+        let request = new KoaRequest(ctx);
+        let response = new KoaResponse(ctx);
+        try {
+            let result = await supertokens.middleware(request, response);
+            if (!result) {
+                await next();
+            }
+        } catch (err) {
+            return supertokens.errorHandler(err, request, response);
+        }
+    };
+};
+export const errorHandler = () => {};
+export const verifySession = (options: VerifySessionOptions | undefined) => {
+    return async (ctx: Context, next: Next) => {
+        let sessionRecipe = Session.getInstanceOrThrowError();
+        let request = new KoaRequest(ctx);
+        let response = new KoaResponse(ctx);
+        ctx.session = await sessionRecipe.verifySession(options, request, response);
+        await next();
+    };
+};
+
+const KoaWrapper: Framework = {
+    middleware,
+    errorHandler,
+    verifySession,
+    wrapRequest: (unwrapped) => {
+        return new KoaRequest(unwrapped);
+    },
+    wrapResponse: (unwrapped) => {
+        return new KoaResponse(unwrapped);
+    },
+};
+
+export default KoaWrapper;

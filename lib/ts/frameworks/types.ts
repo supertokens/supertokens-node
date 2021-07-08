@@ -18,7 +18,7 @@ import { BaseRequest, BaseResponse } from ".";
 
 export let SchemaFramework = {
     type: "string",
-    enum: ["express", "fastify", "hapi"],
+    enum: ["express", "fastify", "hapi", "loopback"],
 };
 
 export interface Framework {
