@@ -108,7 +108,7 @@ export default class APIImplementation implements APIInterface {
             status: "OK",
             createdNewUser: response.createdNewUser,
             user: response.user,
-            authCodeResponse: accessTokenAPIResponse,
+            authCodeResponse: accessTokenAPIResponse.data,
         };
     };
 }
