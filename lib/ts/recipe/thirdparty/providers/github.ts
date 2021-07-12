@@ -15,14 +15,14 @@
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
 import { validateTheStructureOfUserInput } from "../../../utils";
-import { Request } from "express";
+import { BaseRequest } from "../../../frameworks";
 
 type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
     clientSecret: string;
     scope?: string[];
     authorisationRedirect?: {
-        params?: { [key: string]: string | ((request: Request) => string) };
+        params?: { [key: string]: string | ((request: BaseRequest) => Promise<string>) };
     };
 };
 

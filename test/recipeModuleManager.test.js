@@ -210,11 +210,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(res.text);
+                        resolve(res.body);
                     }
                 })
         );
-        assert(r1 === "success TestRecipe /");
+        assert(r1.message === "success TestRecipe /");
 
         r1 = await new Promise((resolve) =>
             request(app)
@@ -225,11 +225,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(res.text);
+                        resolve(res.body);
                     }
                 })
         );
-        assert(r1 === "success TestRecipe /");
+        assert(r1.message === "success TestRecipe /");
 
         r1 = await new Promise((resolve) =>
             request(app)
@@ -294,11 +294,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                         if (err) {
                             resolve(undefined);
                         } else {
-                            resolve(res.text);
+                            resolve(res.body);
                         }
                     })
             );
-            assert(r1 === "success TestRecipe /");
+            assert(r1.message === "success TestRecipe /");
 
             r1 = await new Promise((resolve) =>
                 request(app)
@@ -309,11 +309,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                         if (err) {
                             resolve(undefined);
                         } else {
-                            resolve(res.text);
+                            resolve(res.body);
                         }
                     })
             );
-            assert(r1 === "success TestRecipe /");
+            assert(r1.message === "success TestRecipe /");
 
             r1 = await new Promise((resolve) =>
                 request(app)
@@ -380,7 +380,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     }
                 })
         );
-        assert(r1.text === "success TestRecipe /hello" || r1.text === "success TestRecipe1 /hello");
+        assert(r1.body.message === "success TestRecipe /hello" || r1.body.message === "success TestRecipe1 /hello");
 
         r1 = await new Promise((resolve) =>
             request(app)
@@ -395,7 +395,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     }
                 })
         );
-        assert(r1.text === "success TestRecipe1 /hello");
+        assert(r1.body.message === "success TestRecipe1 /hello");
 
         r1 = await new Promise((resolve) =>
             request(app)
@@ -410,7 +410,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     }
                 })
         );
-        assert(r1.text === "success TestRecipe /hello");
+        assert(r1.body.message === "success TestRecipe /hello");
     });
 
     // Test various inputs to errorHandler (if it accepts or not)
@@ -493,9 +493,9 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         app.use(ST.errorHandler());
         app.use((err, req, res, next) => {
             if (err.message === "error thrown in api") {
-                res.status(200).send(JSON.stringify({ message: "success" }));
+                res.status(200).json({ message: "success" });
             } else {
-                res.status(200).send(JSON.stringify({ message: "failure" }));
+                res.status(200).json({ message: "failure" });
             }
         });
 
@@ -507,11 +507,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(res.text);
+                        resolve(res.body);
                     }
                 })
         );
-        assert(r1 === "error from TestRecipe /error ");
+        assert(r1.message === "error from TestRecipe /error ");
 
         r1 = await new Promise((resolve) =>
             request(app)
@@ -521,11 +521,11 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(res.text);
+                        resolve(res.body);
                     }
                 })
         );
-        assert(JSON.parse(r1).message === "success");
+        assert(r1.message === "success");
     });
 
     // Disable a default route, and then implement your own API and check that that gets called
@@ -706,11 +706,13 @@ class TestRecipe extends RecipeModule {
 
     async handleAPIRequest(id, req, res, next) {
         if (id === "/") {
-            res.status(200).send("success TestRecipe /");
-            return;
+            res.setStatusCode(200);
+            res.sendJSONResponse({ message: "success TestRecipe /" });
+            return true;
         } else if (id === "/hello") {
-            res.status(200).send("success TestRecipe /hello");
-            return;
+            res.setStatusCode(200);
+            res.sendJSONResponse({ message: "success TestRecipe /hello" });
+            return true;
         } else if (id === "/error") {
             throw new TestRecipeError({
                 message: "error from TestRecipe /error ",
@@ -736,11 +738,14 @@ class TestRecipe extends RecipeModule {
         }
     }
 
-    handleError(err, request, response, next) {
+    handleError(err, request, response) {
         if (err.type === "ERROR_FROM_TEST_RECIPE") {
-            response.status(200).send(err.message);
+            response.setStatusCode(200);
+            response.sendJSONResponse({ message: err.message });
         } else if (err.type === "ERROR_FROM_TEST_RECIPE_ERROR_HANDLER") {
             throw new Error("error from inside recipe error handler");
+        } else {
+            throw err;
         }
     }
 
@@ -815,16 +820,19 @@ class TestRecipe1 extends RecipeModule {
         ];
     }
 
-    async handleAPIRequest(id, req, res, next) {
+    async handleAPIRequest(id, req, res) {
         if (id === "/") {
-            res.status(200).send("success TestRecipe1 /");
-            return;
+            res.setStatusCode(200);
+            res.sendJSONResponse({ message: "success TestRecipe1 /" });
+            return true;
         } else if (id === "/hello") {
-            res.status(200).send("success TestRecipe1 /hello");
-            return;
+            res.setStatusCode(200);
+            res.sendJSONResponse({ message: "success TestRecipe1 /hello" });
+            return true;
         } else if (id === "/hello1") {
-            res.status(200).send("success TestRecipe1 /hello1");
-            return;
+            res.setStatusCode(200);
+            res.sendJSONResponse({ message: "success TestRecipe1 /hello1" });
+            return true;
         } else if (id === "/error") {
             throw new TestRecipe1Error({
                 message: "error from TestRecipe1 /error ",
@@ -832,14 +840,18 @@ class TestRecipe1 extends RecipeModule {
                 type: "ERROR_FROM_TEST_RECIPE1",
             });
         } else if (id === "/default-route-disabled") {
-            res.status(200).send("default route used");
-            return;
+            res.status(200);
+            res.sendJSONResponse({ message: "default route used" });
+            return true;
         }
     }
 
-    handleError(err, request, response, next) {
+    handleError(err, request, response) {
         if (err.type === "ERROR_FROM_TEST_RECIPE1") {
-            response.status(200).send(err.message);
+            response.setStatusCode(200);
+            res.sendJSONResponse({ message: err.message });
+        } else {
+            throw err;
         }
     }
 

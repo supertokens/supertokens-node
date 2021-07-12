@@ -16,14 +16,15 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 
-export default async function signOutAPI(apiImplementation: APIInterface, options: APIOptions) {
+export default async function signOutAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
 
     if (apiImplementation.signOutPOST === undefined) {
-        return options.next();
+        return false;
     }
 
     let result = await apiImplementation.signOutPOST({ options });
 
-    return send200Response(options.res, result);
+    send200Response(options.res, result);
+    return true;
 }

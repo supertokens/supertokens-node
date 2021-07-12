@@ -17,12 +17,12 @@ import STError from "../error";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 
-export default async function signInUpAPI(apiImplementation: APIInterface, options: APIOptions) {
+export default async function signInUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.signInUpPOST === undefined) {
-        return options.next();
+        return false;
     }
 
-    let bodyParams = options.req.body;
+    let bodyParams = await options.req.getJSONBody();
     let thirdPartyId = bodyParams.thirdPartyId;
     let code = bodyParams.code;
     let redirectURI = bodyParams.redirectURI;
@@ -62,7 +62,7 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
     let result = await apiImplementation.signInUpPOST({ provider, code, redirectURI, options });
 
     if (result.status === "OK") {
-        return send200Response(options.res, {
+        send200Response(options.res, {
             status: result.status,
             user: result.user,
             createdNewUser: result.createdNewUser,
@@ -77,4 +77,5 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
             error: result.error,
         });
     }
+    return true;
 }

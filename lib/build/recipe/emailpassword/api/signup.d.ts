@@ -1,2 +1,2 @@
 import { APIInterface, APIOptions } from "../";
-export default function signUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<void>;
+export default function signUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean>;

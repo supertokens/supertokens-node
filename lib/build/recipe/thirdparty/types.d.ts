@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from "express";
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 export declare type UserInfo = {
     id: string;
     email?: {
@@ -21,7 +21,7 @@ export declare type TypeProviderGetResponse = {
     authorisationRedirect: {
         url: string;
         params: {
-            [key: string]: string | ((request: Request) => string);
+            [key: string]: string | ((request: BaseRequest) => string);
         };
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
@@ -205,9 +205,8 @@ export declare type APIOptions = {
     recipeId: string;
     isInServerlessEnv: boolean;
     providers: TypeProvider[];
-    req: Request;
-    res: Response;
-    next: NextFunction;
+    req: BaseRequest;
+    res: BaseResponse;
 };
 export interface APIInterface {
     authorisationUrlGET:

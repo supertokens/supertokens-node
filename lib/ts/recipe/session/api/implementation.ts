@@ -1,7 +1,8 @@
-import { APIInterface, APIOptions, VerifySessionOptions, SessionRequest } from "../";
+import { APIInterface, APIOptions, VerifySessionOptions } from "../";
 import STError from "../error";
 import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
+import { SessionContainerInterface } from "../types";
 
 export default class APIImplementation implements APIInterface {
     refreshPOST = async ({ options }: { options: APIOptions }): Promise<void> => {
@@ -14,34 +15,27 @@ export default class APIImplementation implements APIInterface {
     }: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
-    }): Promise<void> => {
-        try {
-            let method = normaliseHttpMethod(options.req.method);
-            if (method === "options" || method === "trace") {
-                return options.next();
-            }
+    }): Promise<SessionContainerInterface | undefined> => {
+        let method = normaliseHttpMethod(options.req.getMethod());
+        if (method === "options" || method === "trace") {
+            return undefined;
+        }
 
-            let incomingPath = new NormalisedURLPath(
-                options.req.originalUrl === undefined ? options.req.url : options.req.originalUrl
-            );
+        let incomingPath = new NormalisedURLPath(options.req.getOriginalURL());
 
-            let refreshTokenPath = options.config.refreshTokenPath;
+        let refreshTokenPath = options.config.refreshTokenPath;
 
-            if (incomingPath.equals(refreshTokenPath) && method === "post") {
-                (options.req as SessionRequest).session = await options.recipeImplementation.refreshSession({
-                    req: options.req,
-                    res: options.res,
-                });
-            } else {
-                (options.req as SessionRequest).session = await options.recipeImplementation.getSession({
-                    req: options.req,
-                    res: options.res,
-                    options: verifySessionOptions,
-                });
-            }
-            return options.next();
-        } catch (err) {
-            options.next(err);
+        if (incomingPath.equals(refreshTokenPath) && method === "post") {
+            return await options.recipeImplementation.refreshSession({
+                req: options.req,
+                res: options.res,
+            });
+        } else {
+            return await options.recipeImplementation.getSession({
+                req: options.req,
+                res: options.res,
+                options: verifySessionOptions,
+            });
         }
     };
 

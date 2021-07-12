@@ -12,9 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { Request, Response, NextFunction } from "express";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 import NormalisedURLPath from "../../normalisedURLPath";
-import * as express from "express";
 
 export type HandshakeInfo = {
     jwtSigningPublicKey: string;
@@ -121,16 +120,16 @@ export type TypeNormalisedInput = {
     };
 };
 
-export interface SessionRequest extends Request {
+export interface SessionRequest extends BaseRequest {
     session?: SessionContainerInterface;
 }
 
 export interface ErrorHandlerMiddleware {
-    (message: string, request: Request, response: Response, next: NextFunction): void;
+    (message: string, request: BaseRequest, response: BaseResponse): void;
 }
 
 export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction): void;
+    (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): void;
 }
 
 export interface NormalisedErrorHandlers {
@@ -146,19 +145,19 @@ export interface VerifySessionOptions {
 
 export interface RecipeInterface {
     createNewSession(input: {
-        res: express.Response;
+        res: any;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
     }): Promise<SessionContainerInterface>;
 
     getSession(input: {
-        req: express.Request;
-        res: express.Response;
+        req: any;
+        res: any;
         options?: VerifySessionOptions;
     }): Promise<SessionContainerInterface | undefined>;
 
-    refreshSession(input: { req: express.Request; res: express.Response }): Promise<SessionContainerInterface>;
+    refreshSession(input: { req: any; res: any }): Promise<SessionContainerInterface>;
 
     revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
 
@@ -204,9 +203,8 @@ export type APIOptions = {
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
-    req: Request;
-    res: Response;
-    next: NextFunction;
+    req: BaseRequest;
+    res: BaseResponse;
 };
 
 export interface APIInterface {
@@ -223,5 +221,5 @@ export interface APIInterface {
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
-    }): Promise<void>;
+    }): Promise<SessionContainerInterface | undefined>;
 }

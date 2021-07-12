@@ -18,7 +18,7 @@ import {
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
-import { Request, Response, NextFunction } from "express";
+import { BaseRequest, BaseResponse } from "../../frameworks";
 
 const TypeString = {
     type: "string",
@@ -257,9 +257,8 @@ export type APIOptions = {
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
-    req: Request;
-    res: Response;
-    next: NextFunction;
+    req: BaseRequest;
+    res: BaseResponse;
 };
 
 export interface APIInterface {

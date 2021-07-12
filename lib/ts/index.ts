@@ -15,25 +15,13 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import * as express from "express";
+import express from "./frameworks/express";
 
 // For Express
 export default class SuperTokensWrapper {
     static init = SuperTokens.init;
 
     static Error = SuperTokensError;
-
-    static middleware() {
-        // See https://github.com/supertokens/supertokens-node/issues/122
-        return (req: express.Request, res: express.Response, next: express.NextFunction) =>
-            SuperTokens.getInstanceOrThrowError().middleware()(req, res, next);
-    }
-
-    static errorHandler() {
-        // See https://github.com/supertokens/supertokens-node/issues/122
-        return (err: any, req: express.Request, res: express.Response, next: express.NextFunction) =>
-            SuperTokens.getInstanceOrThrowError().errorHandler()(err, req, res, next);
-    }
 
     static getAllCORSHeaders() {
         return SuperTokens.getInstanceOrThrowError().getAllCORSHeaders();
@@ -70,6 +58,10 @@ export default class SuperTokensWrapper {
             ...input,
         });
     }
+
+    static middleware = express.middleware;
+
+    static errorHandler = express.errorHandler;
 }
 
 export let init = SuperTokensWrapper.init;

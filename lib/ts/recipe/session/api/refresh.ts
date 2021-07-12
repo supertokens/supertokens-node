@@ -16,11 +16,12 @@
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 
-export default async function handleRefreshAPI(apiImplementation: APIInterface, options: APIOptions) {
+export default async function handleRefreshAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.refreshPOST === undefined) {
-        return options.next();
+        return false;
     }
 
     await apiImplementation.refreshPOST({ options });
     send200Response(options.res, {});
+    return true;
 }
