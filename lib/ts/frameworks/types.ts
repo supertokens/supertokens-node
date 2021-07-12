@@ -12,13 +12,13 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export type TypeFramework = "express" | "fastify" | "hapi";
+export type TypeFramework = "express" | "fastify" | "hapi" | "loopback" | "koa" | "awsLambda";
 import { VerifySessionOptions } from "../recipe/session";
 import { BaseRequest, BaseResponse } from ".";
 
 export let SchemaFramework = {
     type: "string",
-    enum: ["express", "fastify", "hapi", "loopback"],
+    enum: ["express", "fastify", "hapi", "loopback", "koa", "awsLambda"],
 };
 
 export interface Framework {

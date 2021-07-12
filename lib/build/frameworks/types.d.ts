@@ -1,4 +1,4 @@
-export declare type TypeFramework = "express" | "fastify" | "hapi";
+export declare type TypeFramework = "express" | "fastify" | "hapi" | "loopback" | "koa" | "awsLambda";
 import { VerifySessionOptions } from "../recipe/session";
 import { BaseRequest, BaseResponse } from ".";
 export declare let SchemaFramework: {

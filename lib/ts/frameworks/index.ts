@@ -18,10 +18,14 @@ import express from "./express";
 import fastify from "./fastify";
 import hapi from "./hapi";
 import loopback from "./loopback";
+import koa from "./koa";
+import awsLambda from "./awsLambda";
 
 export default {
     express,
     fastify,
     hapi,
     loopback,
+    koa,
+    awsLambda,
 };

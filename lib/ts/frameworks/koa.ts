@@ -13,7 +13,6 @@
  * under the License.
  */
 
-// TODO: not finished
 import type { Context, Next } from "koa";
 import type { HTTPMethod } from "../types";
 import { normaliseHttpMethod } from "../utils";

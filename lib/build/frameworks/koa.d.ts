@@ -38,7 +38,7 @@ export declare class KoaResponse extends BaseResponse {
 export interface SessionRequest extends Context {
     session?: SessionContainerInterface;
 }
-export declare const middleware: () => (ctx: Context, next: Next) => Promise<any>;
+export declare const middleware: () => (ctx: Context, next: Next) => Promise<void>;
 export declare const errorHandler: () => void;
 export declare const verifySession: (
     options: VerifySessionOptions | undefined
