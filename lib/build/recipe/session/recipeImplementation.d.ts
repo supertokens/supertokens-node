@@ -28,6 +28,7 @@ export default class RecipeImplementation implements RecipeInterface {
         res: express.Response;
         options?: VerifySessionOptions | undefined;
     }) => Promise<Session | undefined>;
+    getSessionDetails: ({ sessionHandle }: { sessionHandle: string }) => Promise<any>;
     refreshSession: ({ req, res }: { req: express.Request; res: express.Response }) => Promise<Session>;
     revokeAllSessionsForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;

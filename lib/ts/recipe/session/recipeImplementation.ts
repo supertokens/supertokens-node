@@ -136,6 +136,10 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
+    getSessionDetails = async ({ sessionHandle }: { sessionHandle: string }): Promise<any> => {
+        return SessionFunctions.getSessionDetails(this, sessionHandle);
+    };
+
     refreshSession = async ({ req, res }: { req: express.Request; res: express.Response }): Promise<Session> => {
         let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
         if (inputIdRefreshToken === undefined) {

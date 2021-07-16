@@ -97,6 +97,10 @@ export default class RecipeImplementation implements RecipeInterface {
         return getModifiedSession(originalSession);
     };
 
+    getSessionDetails = ({ sessionHandle }: { sessionHandle: string }): Promise<any> => {
+        return this.originalImplementation.getSessionDetails({ sessionHandle });
+    };
+
     refreshSession = async ({
         req,
         res,

@@ -140,6 +140,12 @@ export interface RecipeInterface {
         res: express.Response;
         options?: VerifySessionOptions;
     }): Promise<SessionContainerInterface | undefined>;
+    /**
+     * Used to retrieve all session information for a given session handle. Can be used in place of:
+     * - getSessionData
+     * - getJWTPayload
+     */
+    getSessionDetails(input: { sessionHandle: string }): Promise<any>;
     refreshSession(input: { req: express.Request; res: express.Response }): Promise<SessionContainerInterface>;
     revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
     getAllSessionHandlesForUser(input: { userId: string }): Promise<string[]>;

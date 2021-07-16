@@ -45,6 +45,10 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession({ req, res, options });
     }
 
+    static getSessionDetails(sessionHandle: string) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionDetails({ sessionHandle });
+    }
+
     static refreshSession(req: express.Request, res: express.Response) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res });
     }
@@ -98,6 +102,8 @@ export let init = SessionWrapper.init;
 export let createNewSession = SessionWrapper.createNewSession;
 
 export let getSession = SessionWrapper.getSession;
+
+export let getSessionDetails = SessionWrapper.getSessionDetails;
 
 export let refreshSession = SessionWrapper.refreshSession;
 

@@ -237,6 +237,28 @@ export async function getSession(
 }
 
 /**
+ * @description Retrieves session information from storage for a given session handle
+ * @returns session data stored in the database, including userData and JWT payload
+ */
+export async function getSessionDetails(
+    recipeImplementation: RecipeImplementation,
+    sessionHandle: string
+): Promise<any> {
+    let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session"), {
+        sessionHandle,
+    });
+
+    if (response.status === "OK") {
+        return response;
+    } else {
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
+    }
+}
+
+/**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
  */
