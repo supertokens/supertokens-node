@@ -1,4 +1,4 @@
-import { CreateOrRefreshAPIResponse } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 /**
  * @description call this to "login" a user.
@@ -37,7 +37,7 @@ export declare function getSession(
 export declare function getSessionInformation(
     recipeImplementation: RecipeImplementation,
     sessionHandle: string
-): Promise<any>;
+): Promise<SessionInformation>;
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
  * @sideEffects calls onTokenTheftDetection if token theft is detected.

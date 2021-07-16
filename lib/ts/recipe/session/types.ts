@@ -163,7 +163,7 @@ export interface RecipeInterface {
      * - getSessionData
      * - getJWTPayload
      */
-    getSessionInformation(input: { sessionHandle: string }): Promise<any>;
+    getSessionInformation(input: { sessionHandle: string }): Promise<SessionInformation>;
 
     refreshSession(input: { req: express.Request; res: express.Response }): Promise<SessionContainerInterface>;
 
@@ -234,3 +234,12 @@ export interface APIInterface {
         options: APIOptions;
     }): Promise<void>;
 }
+
+export type SessionInformation = {
+    sessionHandle: string;
+    userId: string;
+    userDataInDatabase: Object;
+    expiry: number;
+    userDataInJWT: Object;
+    timeCreated: number;
+};

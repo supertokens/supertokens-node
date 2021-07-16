@@ -20,6 +20,7 @@ import {
     VerifySessionOptions,
     RecipeInterface,
     SessionContainerInterface as SessionContainer,
+    SessionInformation,
     SessionRequest,
     APIInterface,
     APIOptions,
@@ -127,4 +128,12 @@ export let verifySession = SessionWrapper.verifySession;
 
 export let Error = SessionWrapper.Error;
 
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, APIInterface, APIOptions };
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    SessionRequest,
+    APIInterface,
+    APIOptions,
+    SessionInformation,
+};

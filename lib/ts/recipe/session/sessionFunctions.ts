@@ -16,7 +16,7 @@ import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
 import { getPayloadWithoutVerifiying } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { CreateOrRefreshAPIResponse } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
 
@@ -243,7 +243,7 @@ export async function getSession(
 export async function getSessionInformation(
     recipeImplementation: RecipeImplementation,
     sessionHandle: string
-): Promise<any> {
+): Promise<SessionInformation> {
     let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session"), {
         sessionHandle,
     });
