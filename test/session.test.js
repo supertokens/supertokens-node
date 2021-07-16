@@ -1507,4 +1507,98 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             assert(verifyState === undefined);
         }
     });
+
+    it("test that custom user id is returned correctly", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "customuserid", {}, null);
+
+        let res2 = await SessionFunctions.getSessionDetails(s, res.session.handle);
+
+        assert.strictEqual(res2.userId, "customuserid");
+    });
+
+    it("test that get session by session handle payload is correct", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "", {}, null);
+        let res2 = await SessionFunctions.getSessionDetails(s, res.session.handle);
+
+        assert(typeof res2.status === "string");
+        assert(res2.status === "OK");
+        assert(typeof res2.userId === "string");
+        assert(typeof res2.userDataInDatabase === "object");
+        assert(typeof res2.expiry === "number");
+        assert(typeof res2.userDataInJWT === "object");
+        assert(typeof res2.timeCreated === "number");
+    });
+
+    it("test that revoked session throws error when calling get session by session handle", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "someid", {}, null);
+
+        let response = await SessionFunctions.revokeAllSessionsForUser(s, "someid");
+        assert(response.length === 1);
+
+        try {
+            await SessionFunctions.getSessionDetails(s, res.session.handle);
+            assert(false);
+        } catch (e) {
+            if (e.type !== Session.Error.UNAUTHORISED) {
+                throw e;
+            }
+        }
+    });
 });
