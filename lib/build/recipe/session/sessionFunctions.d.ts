@@ -34,7 +34,7 @@ export declare function getSession(
  * @description Retrieves session information from storage for a given session handle
  * @returns session data stored in the database, including userData and JWT payload
  */
-export declare function getSessionDetails(
+export declare function getSessionInformation(
     recipeImplementation: RecipeImplementation,
     sessionHandle: string
 ): Promise<any>;
@@ -80,7 +80,7 @@ export declare function revokeMultipleSessions(
     sessionHandles: string[]
 ): Promise<string[]>;
 /**
- * @deprecated use getSessionDetails() instead
+ * @deprecated use getSessionInformation() instead
  * @description: this function reads from the database every time. It provides no locking mechanism in case other processes are updating session data for this session as well, so please take of that by yourself.
  * @returns session data as provided by the user earlier
  */
@@ -94,7 +94,7 @@ export declare function updateSessionData(
     newSessionData: any
 ): Promise<void>;
 /**
- * @deprecated use getSessionDetails() instead
+ * @deprecated use getSessionInformation() instead
  * @returns jwt payload as provided by the user earlier
  */
 export declare function getJWTPayload(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any>;

@@ -240,7 +240,7 @@ export async function getSession(
  * @description Retrieves session information from storage for a given session handle
  * @returns session data stored in the database, including userData and JWT payload
  */
-export async function getSessionDetails(
+export async function getSessionInformation(
     recipeImplementation: RecipeImplementation,
     sessionHandle: string
 ): Promise<any> {
@@ -372,7 +372,7 @@ export async function revokeMultipleSessions(
 }
 
 /**
- * @deprecated use getSessionDetails() instead
+ * @deprecated use getSessionInformation() instead
  * @description: this function reads from the database every time. It provides no locking mechanism in case other processes are updating session data for this session as well, so please take of that by yourself.
  * @returns session data as provided by the user earlier
  */
@@ -412,7 +412,7 @@ export async function updateSessionData(
 }
 
 /**
- * @deprecated use getSessionDetails() instead
+ * @deprecated use getSessionInformation() instead
  * @returns jwt payload as provided by the user earlier
  */
 export async function getJWTPayload(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any> {
