@@ -722,6 +722,49 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         }
     });
 
+    it("test manipulating session data with new get session function", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "", {}, {});
+        await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value" });
+
+        let res2 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepEqual(res2.userDataInDatabase, { key: "value" });
+
+        //changing the value of session data with the same key
+        await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value 2" });
+
+        let res3 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepEqual(res3.userDataInDatabase, { key: "value 2" });
+
+        //passing invalid session handle when updating session data
+        try {
+            await SessionFunctions.updateSessionData(s, "random", { key2: "value2" });
+            assert(false);
+        } catch (error) {
+            if (error.type !== Session.Error.UNAUTHORISED) {
+                throw error;
+            }
+        }
+    });
+
     it("test null and undefined values passed for session data", async function () {
         await startST();
         SuperTokens.init({
@@ -768,6 +811,52 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert.deepStrictEqual(res6, {});
     });
 
+    it("test null and undefined values passed for session data with new get session method", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "", {}, null);
+
+        let res2 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepStrictEqual(res2.userDataInDatabase, {});
+
+        await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value" });
+
+        let res3 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepStrictEqual(res3.userDataInDatabase, { key: "value" });
+
+        await SessionFunctions.updateSessionData(s, res.session.handle, undefined);
+
+        let res4 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepStrictEqual(res4.userDataInDatabase, {});
+
+        await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value 2" });
+
+        let res5 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepStrictEqual(res5.userDataInDatabase, { key: "value 2" });
+
+        await SessionFunctions.updateSessionData(s, res.session.handle, null);
+
+        let res6 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepStrictEqual(res6.userDataInDatabase, {});
+    });
+
     //check manipulating jwt payload
     it("test manipulating jwt payload", async function () {
         await startST();
@@ -801,6 +890,50 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let res3 = await SessionFunctions.getJWTPayload(s, res.session.handle);
         assert.deepEqual(res3, { key: "value 2" });
+
+        //passing invalid session handle when updating jwt payload
+        try {
+            await SessionFunctions.updateJWTPayload(s, "random", { key2: "value2" });
+            throw new Error();
+        } catch (error) {
+            if (error.type !== Session.Error.UNAUTHORISED) {
+                throw error;
+            }
+        }
+    });
+
+    it("test manipulating jwt payload with new get session method", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding jwt payload
+        let res = await SessionFunctions.createNewSession(s, "", {}, {});
+
+        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value" });
+
+        let res2 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepEqual(res2.userDataInJWT, { key: "value" });
+
+        //changing the value of jwt payload with the same key
+        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value 2" });
+
+        let res3 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepEqual(res3.userDataInJWT, { key: "value 2" });
 
         //passing invalid session handle when updating jwt payload
         try {
@@ -857,6 +990,52 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         let res6 = await SessionFunctions.getJWTPayload(s, res.session.handle);
         assert.deepStrictEqual(res6, {});
+    });
+
+    it("test null and undefined values passed for jwt payload with new get session method", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding jwt payload
+        let res = await SessionFunctions.createNewSession(s, "", null, {});
+
+        let res2 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepStrictEqual(res2.userDataInJWT, {});
+
+        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value" });
+
+        let res3 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepStrictEqual(res3.userDataInJWT, { key: "value" });
+
+        await SessionFunctions.updateJWTPayload(s, res.session.handle);
+
+        let res4 = await SessionFunctions.getSessionInformation(s, res.session.handle, undefined);
+        assert.deepStrictEqual(res4.userDataInJWT, {});
+
+        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value 2" });
+
+        let res5 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepStrictEqual(res5.userDataInJWT, { key: "value 2" });
+
+        await SessionFunctions.updateJWTPayload(s, res.session.handle, null);
+
+        let res6 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+        assert.deepStrictEqual(res6.userDataInJWT, {});
     });
 
     //if anti-csrf is disabled from ST core, check that not having that in input to verify session is fine**
@@ -1326,6 +1505,100 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 1500
             );
             assert(verifyState === undefined);
+        }
+    });
+
+    it("test that custom user id is returned correctly", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "customuserid", {}, null);
+
+        let res2 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+
+        assert.strictEqual(res2.userId, "customuserid");
+    });
+
+    it("test that get session by session handle payload is correct", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "", {}, null);
+        let res2 = await SessionFunctions.getSessionInformation(s, res.session.handle);
+
+        assert(typeof res2.status === "string");
+        assert(res2.status === "OK");
+        assert(typeof res2.userId === "string");
+        assert(typeof res2.userDataInDatabase === "object");
+        assert(typeof res2.expiry === "number");
+        assert(typeof res2.userDataInJWT === "object");
+        assert(typeof res2.timeCreated === "number");
+    });
+
+    it("test that revoked session throws error when calling get session by session handle", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        //adding session data
+        let res = await SessionFunctions.createNewSession(s, "someid", {}, null);
+
+        let response = await SessionFunctions.revokeAllSessionsForUser(s, "someid");
+        assert(response.length === 1);
+
+        try {
+            await SessionFunctions.getSessionInformation(s, res.session.handle);
+            assert(false);
+        } catch (e) {
+            if (e.type !== Session.Error.UNAUTHORISED) {
+                throw e;
+            }
         }
     });
 });

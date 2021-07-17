@@ -4,6 +4,7 @@ import {
     VerifySessionOptions,
     RecipeInterface,
     SessionContainerInterface as SessionContainer,
+    SessionInformation,
     SessionRequest,
     APIInterface,
     APIOptions,
@@ -23,6 +24,7 @@ export default class SessionWrapper {
         res: express.Response,
         options?: VerifySessionOptions
     ): Promise<SessionContainer | undefined>;
+    static getSessionInformation(sessionHandle: string): Promise<SessionInformation>;
     static refreshSession(req: express.Request, res: express.Response): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string): Promise<string[]>;
@@ -39,6 +41,7 @@ export default class SessionWrapper {
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
 export declare let getSession: typeof SessionWrapper.getSession;
+export declare let getSessionInformation: typeof SessionWrapper.getSessionInformation;
 export declare let refreshSession: typeof SessionWrapper.refreshSession;
 export declare let revokeAllSessionsForUser: typeof SessionWrapper.revokeAllSessionsForUser;
 export declare let getAllSessionHandlesForUser: typeof SessionWrapper.getAllSessionHandlesForUser;
@@ -52,4 +55,12 @@ export declare let verifySession: (
     options?: VerifySessionOptions | undefined
 ) => (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
 export declare let Error: typeof SuperTokensError;
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, APIInterface, APIOptions };
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    SessionRequest,
+    APIInterface,
+    APIOptions,
+    SessionInformation,
+};

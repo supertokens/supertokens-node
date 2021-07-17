@@ -20,6 +20,7 @@ import {
     VerifySessionOptions,
     RecipeInterface,
     SessionContainerInterface as SessionContainer,
+    SessionInformation,
     SessionRequest,
     APIInterface,
     APIOptions,
@@ -43,6 +44,10 @@ export default class SessionWrapper {
 
     static getSession(req: express.Request, res: express.Response, options?: VerifySessionOptions) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession({ req, res, options });
+    }
+
+    static getSessionInformation(sessionHandle: string) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({ sessionHandle });
     }
 
     static refreshSession(req: express.Request, res: express.Response) {
@@ -99,6 +104,8 @@ export let createNewSession = SessionWrapper.createNewSession;
 
 export let getSession = SessionWrapper.getSession;
 
+export let getSessionInformation = SessionWrapper.getSessionInformation;
+
 export let refreshSession = SessionWrapper.refreshSession;
 
 export let revokeAllSessionsForUser = SessionWrapper.revokeAllSessionsForUser;
@@ -121,4 +128,12 @@ export let verifySession = SessionWrapper.verifySession;
 
 export let Error = SessionWrapper.Error;
 
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, APIInterface, APIOptions };
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    SessionRequest,
+    APIInterface,
+    APIOptions,
+    SessionInformation,
+};
