@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `EmailPassword.getUserCount()`, `EmailPassword.getUsersNewestFirst()`, `EmailPassword.getUsersOldestFirst`
     -   `ThirdPartyEmailPassword.getUserCount()`, `ThirdPartyEmailPassword.getUsersNewestFirst()`, `ThirdPartyEmailPassword.getUsersOldestFirst`
 
+## [6.0.3] - 2021-07-08
+
+## Fixes
+
+-   signInUpPOST default implementation will return accessToken api response data instead of axios response
+
 ## [6.0.2] - 2021-06-28
 
 ## Fixes
