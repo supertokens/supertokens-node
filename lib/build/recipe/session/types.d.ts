@@ -196,8 +196,8 @@ export interface APIInterface {
 export declare type SessionInformation = {
     sessionHandle: string;
     userId: string;
-    userDataInDatabase: Object;
+    userDataInDatabase: any;
     expiry: number;
-    userDataInJWT: Object;
+    userDataInJWT: any;
     timeCreated: number;
 };

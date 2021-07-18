@@ -238,8 +238,8 @@ export interface APIInterface {
 export type SessionInformation = {
     sessionHandle: string;
     userId: string;
-    userDataInDatabase: Object;
+    userDataInDatabase: any;
     expiry: number;
-    userDataInJWT: Object;
+    userDataInJWT: any;
     timeCreated: number;
 };
