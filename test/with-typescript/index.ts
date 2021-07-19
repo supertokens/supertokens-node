@@ -232,6 +232,9 @@ ThirdPartyEmailPassword.init({
             return {
                 ...oI,
                 signInUpPOST: async (input) => {
+                    if (input.type === "emailpassword") {
+                        let email = input.formFields.filter((i) => i.id === "email")[0];
+                    }
                     let response = await oI.signInUpPOST(input);
                     if (response.status === "OK") {
                         let { id, email } = response.user;
@@ -253,7 +256,6 @@ ThirdPartyEmailPassword.init({
                         } else {
                             // TODO: post sign in logic
                         }
-
                         return response;
                     }
                 },

@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "ES2016",
+        "strictNullChecks": true,
+        "declaration": true,
+        "module": "commonJS",
+        "moduleResolution": "Node",
+        "sourceMap": true,
+        "skipLibCheck": true,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": true,
+        "lib": ["ES2017"],
+        "noEmit": true
+    },
+    "include": ["./**/*"],
+    "exclude": ["build"],
+    "compileOnSave": true
+}
