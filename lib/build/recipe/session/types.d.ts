@@ -169,6 +169,8 @@ export interface SessionContainerInterface {
     getHandle(): string;
     getAccessToken(): string;
     updateJWTPayload(newJWTPayload: any): Promise<void>;
+    getTimeCreated(): Promise<number>;
+    getExpiry(): Promise<number>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
