@@ -32,7 +32,7 @@ let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
-const { removeServerlessCache } = require("../lib/build/utils");
+const { removeServerlessCache, maxVersion } = require("../lib/build/utils");
 
 /* TODO:
 - the opposite of the above (check that if signing key changes, things are still fine) condition
@@ -740,6 +740,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let apiVersion = await q.getAPIVersion();
+
+        // Only run test for >= 2.8
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(s, "", {}, {});
@@ -828,6 +836,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 }),
             ],
         });
+
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let apiVersion = await q.getAPIVersion();
+
+        // Only run test for >= 2.8
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
@@ -920,6 +936,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let apiVersion = await q.getAPIVersion();
+
+        // Only run test for >= 2.8
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
         let res = await SessionFunctions.createNewSession(s, "", {}, {});
@@ -1009,6 +1033,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 }),
             ],
         });
+
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let apiVersion = await q.getAPIVersion();
+
+        // Only run test for >= 2.8
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding jwt payload
@@ -1526,6 +1558,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let apiVersion = await q.getAPIVersion();
+
+        // Only run test for >= 2.8
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
         let res = await SessionFunctions.createNewSession(s, "customuserid", {}, null);
@@ -1552,6 +1592,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 }),
             ],
         });
+
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let apiVersion = await q.getAPIVersion();
+
+        // Only run test for >= 2.8
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
@@ -1584,6 +1632,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
                 }),
             ],
         });
+
+        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let apiVersion = await q.getAPIVersion();
+
+        // Only run test for >= 2.8
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
 
         let s = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl;
         //adding session data
