@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { BaseRequest, BaseResponse } from "../../frameworks";
+import { BaseRequest, BaseResponse } from "../../framework";
 import { TypeNormalisedInput } from "./types";
 
 const accessTokenCookieKey = "sAccessToken";

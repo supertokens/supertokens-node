@@ -15,7 +15,7 @@
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
 import { validateTheStructureOfUserInput } from "../../../utils";
-import { BaseRequest } from "../../../frameworks";
+import { BaseRequest } from "../../../framework";
 
 type TypeThirdPartyProviderGoogleConfig = {
     clientId: string;

@@ -1,7 +1,7 @@
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./frameworks";
+import { BaseRequest, BaseResponse } from "./framework";
 export default abstract class RecipeModule {
     private recipeId;
     private appInfo;

@@ -35,7 +35,7 @@ import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
 import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
-import { BaseRequest, BaseResponse } from "../../frameworks";
+import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200Response } from "../../utils";
 
 export async function sendTryRefreshTokenResponse(

@@ -20,7 +20,7 @@ import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./constants";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import SuperTokens from "../../supertokens";
-import frameworks from "../../frameworks";
+import frameworks from "../../framework";
 
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;

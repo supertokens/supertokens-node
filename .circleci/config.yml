@@ -8,7 +8,11 @@ jobs:
         steps:
             - checkout
             - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            - run: npm publish
+            - run:
+                  name: Publish
+                  command: |
+                      cd .circleci
+                      ./publish.sh
             - slack/status
     test:
         docker:

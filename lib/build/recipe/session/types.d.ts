@@ -1,4 +1,4 @@
-import { BaseRequest, BaseResponse } from "../../frameworks";
+import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 export declare type HandshakeInfo = {
     jwtSigningPublicKey: string;

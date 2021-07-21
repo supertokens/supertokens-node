@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../frameworks";
+import { BaseRequest, BaseResponse } from "../../framework";
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,
@@ -24,7 +24,7 @@ import {
     APIOptions,
 } from "./types";
 import Recipe from "./recipe";
-import frameworks from "../../frameworks";
+import framework from "./framework";
 
 // For Express
 export default class SessionWrapper {
@@ -109,7 +109,10 @@ export let getJWTPayload = SessionWrapper.getJWTPayload;
 
 export let updateJWTPayload = SessionWrapper.updateJWTPayload;
 
-export let verifySession = frameworks.express.verifySession;
+/**
+ * @deprecated
+ */
+export let verifySession = framework.express.verifySession;
 
 export let Error = SessionWrapper.Error;
 

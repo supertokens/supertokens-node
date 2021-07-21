@@ -1,8 +1,8 @@
 import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./frameworks";
-import { TypeFramework } from "./frameworks/types";
+import { BaseRequest, BaseResponse } from "./framework";
+import { TypeFramework } from "./framework/types";
 export default class SuperTokens {
     private static instance;
     framework: TypeFramework;

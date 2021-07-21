@@ -16,7 +16,7 @@
 import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { TypeFramework, SchemaFramework } from "./frameworks/types";
+import { TypeFramework, SchemaFramework } from "./framework/types";
 
 export type AppInfo = {
     appName: string;

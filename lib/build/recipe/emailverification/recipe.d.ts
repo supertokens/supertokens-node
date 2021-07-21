@@ -3,7 +3,7 @@ import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, User } f
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { BaseRequest, BaseResponse } from "../../frameworks";
+import { BaseRequest, BaseResponse } from "../../framework";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;

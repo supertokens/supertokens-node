@@ -1,5 +1,5 @@
 import { TypeProvider } from "../types";
-import { BaseRequest } from "../../../frameworks";
+import { BaseRequest } from "../../../framework";
 declare type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
     clientSecret: string;

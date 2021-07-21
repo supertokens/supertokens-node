@@ -41,6 +41,8 @@
         "psl": "1.8.0"
     },
     "devDependencies": {
+        "@hapi/hapi": "^20.1.5",
+        "@koa/router": "^10.0.0",
         "@loopback/core": "2.16.1",
         "@loopback/rest": "9.3.0",
         "@types/aws-lambda": "8.10.77",
@@ -53,11 +55,13 @@
         "@types/koa-bodyparser": "^4.3.0",
         "@types/psl": "1.1.0",
         "@types/validator": "10.11.0",
+        "aws-sdk-mock": "^5.2.1",
         "cookie-parser": "^1.4.5",
         "express": "4.17.1",
         "fastify": "3.18.1",
         "faunadb": "^3.0.1",
         "koa": "^2.13.1",
+        "lambda-tester": "^4.0.1",
         "mocha": "6.1.4",
         "next": "11.0.0",
         "nock": "11.7.0",

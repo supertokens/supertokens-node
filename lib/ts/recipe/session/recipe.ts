@@ -26,7 +26,7 @@ import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } f
 import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
-import { BaseRequest, BaseResponse } from "../../frameworks";
+import { BaseRequest, BaseResponse } from "../../framework";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {

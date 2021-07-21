@@ -28,8 +28,8 @@ import RecipeModule from "./recipeModule";
 import { HEADER_RID, HEADER_FDI } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { BaseRequest, BaseResponse } from "./frameworks";
-import { TypeFramework } from "./frameworks/types";
+import { BaseRequest, BaseResponse } from "./framework";
+import { TypeFramework } from "./framework/types";
 import STError from "./error";
 
 export default class SuperTokens {
@@ -282,7 +282,7 @@ export default class SuperTokens {
 
             for (let i = 0; i < this.recipeModules.length; i++) {
                 if (this.recipeModules[i].isErrorFromThisRecipe(err)) {
-                    this.recipeModules[i].handleError(err, request, response);
+                    return this.recipeModules[i].handleError(err, request, response);
                 }
             }
         }

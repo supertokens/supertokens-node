@@ -1,7 +1,7 @@
 import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
-import { BaseRequest, BaseResponse } from "../../frameworks";
+import { BaseRequest, BaseResponse } from "../../framework";
 export declare function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
     _: string,

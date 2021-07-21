@@ -3,7 +3,7 @@ import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, VerifySe
 import STError from "./error";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { BaseRequest, BaseResponse } from "../../frameworks";
+import { BaseRequest, BaseResponse } from "../../framework";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;

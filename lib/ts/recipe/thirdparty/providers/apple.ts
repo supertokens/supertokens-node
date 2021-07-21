@@ -16,7 +16,7 @@ import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { validateTheStructureOfUserInput } from "../../../utils";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
-import { BaseRequest } from "../../../frameworks";
+import { BaseRequest } from "../../../framework";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;

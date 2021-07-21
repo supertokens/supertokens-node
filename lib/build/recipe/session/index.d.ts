@@ -1,4 +1,4 @@
-import { BaseRequest, BaseResponse } from "../../frameworks";
+import { BaseRequest, BaseResponse } from "../../framework";
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,
@@ -45,6 +45,9 @@ export declare let getSessionData: typeof SessionWrapper.getSessionData;
 export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
 export declare let getJWTPayload: typeof SessionWrapper.getJWTPayload;
 export declare let updateJWTPayload: typeof SessionWrapper.updateJWTPayload;
-export declare let verifySession: (options?: VerifySessionOptions | undefined) => any;
+/**
+ * @deprecated
+ */
+export declare let verifySession: typeof import("./framework/express").verifySession;
 export declare let Error: typeof SuperTokensError;
 export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, APIInterface, APIOptions };

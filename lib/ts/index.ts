@@ -15,7 +15,7 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import express from "./frameworks/express";
+import express from "./framework/express";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -59,15 +59,27 @@ export default class SuperTokensWrapper {
         });
     }
 
+    /**
+     * @deprecated
+     */
     static middleware = express.middleware;
 
+    /**
+     * @deprecated
+     */
     static errorHandler = express.errorHandler;
 }
 
 export let init = SuperTokensWrapper.init;
 
+/**
+ * @deprecated
+ */
 export let middleware = SuperTokensWrapper.middleware;
 
+/**
+ * @deprecated
+ */
 export let errorHandler = SuperTokensWrapper.errorHandler;
 
 export let getAllCORSHeaders = SuperTokensWrapper.getAllCORSHeaders;
