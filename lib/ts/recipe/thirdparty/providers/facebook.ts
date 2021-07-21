@@ -68,8 +68,11 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
         let authorisationRedirectURL = "https://www.facebook.com/v9.0/dialog/oauth";
         let scopes = ["email"];
         if (config.scope !== undefined) {
-            scopes.push(...config.scope);
+            scopes = config.scope;
             scopes = Array.from(new Set(scopes));
+        }
+        if (!scopes.includes("email")) {
+            throw Error("Scope email is required. Please add it to the scope array");
         }
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
