@@ -58,7 +58,7 @@ export declare type TypeInput = {
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        apis?: (originalImplementation: OriginalAPIInterface) => APIInterface;
     };
 };
 export declare const InputSchema: {
@@ -107,7 +107,7 @@ export declare type TypeNormalisedInput = {
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        apis: (originalImplementation: OriginalAPIInterface) => APIInterface;
     };
 };
 export interface SessionRequest extends Request {
@@ -171,8 +171,20 @@ export declare type APIOptions = {
     res: Response;
     next: NextFunction;
 };
+export interface OriginalAPIInterface {
+    refreshPOST: (input: { options: APIOptions }) => Promise<void>;
+    signOutPOST: (input: {
+        options: APIOptions;
+    }) => Promise<{
+        status: "OK";
+    }>;
+    verifySession(input: {
+        verifySessionOptions: VerifySessionOptions | undefined;
+        options: APIOptions;
+    }): Promise<void>;
+}
 export interface APIInterface {
-    refreshPOST: undefined | ((input: { options: APIOptions }) => Promise<void>);
+    refreshPOST: (input: { options: APIOptions }) => Promise<void>;
     signOutPOST:
         | undefined
         | ((input: {
