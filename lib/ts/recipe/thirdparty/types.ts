@@ -17,6 +17,7 @@ import { Request, Response, NextFunction } from "express";
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,
+    OriginalAPIInterface as EmailVerificationOriginalAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 
@@ -131,10 +132,10 @@ export type TypeInput = {
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        apis?: (originalImplementation: OriginalAPIInterface) => APIInterface;
         emailVerificationFeature?: {
             functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            apis?: (originalImplementation: EmailVerificationOriginalAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -157,10 +158,10 @@ export type TypeNormalisedInput = {
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        apis: (originalImplementation: OriginalAPIInterface) => APIInterface;
         emailVerificationFeature?: {
             functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            apis?: (originalImplementation: EmailVerificationOriginalAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -223,6 +224,35 @@ export type APIOptions = {
     res: Response;
     next: NextFunction;
 };
+
+export interface OriginalAPIInterface {
+    authorisationUrlGET: (input: {
+        provider: TypeProvider;
+        options: APIOptions;
+    }) => Promise<{
+        status: "OK";
+        url: string;
+    }>;
+
+    signInUpPOST: (input: {
+        provider: TypeProvider;
+        code: string;
+        redirectURI: string;
+        options: APIOptions;
+    }) => Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+              authCodeResponse: any;
+          }
+        | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
+}
 
 export interface APIInterface {
     authorisationUrlGET:

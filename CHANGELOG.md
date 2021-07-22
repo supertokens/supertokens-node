@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `EmailPassword.getUserCount()`, `EmailPassword.getUsersNewestFirst()`, `EmailPassword.getUsersOldestFirst`
     -   `ThirdPartyEmailPassword.getUserCount()`, `ThirdPartyEmailPassword.getUsersNewestFirst()`, `ThirdPartyEmailPassword.getUsersOldestFirst`
 
+## Fixes
+
+-   Fixes typescript issue while overriding api functions. (Related to https://github.com/supertokens/supertokens-node/issues/143)
+
 ## [6.0.3] - 2021-07-08
 
 ## Fixes

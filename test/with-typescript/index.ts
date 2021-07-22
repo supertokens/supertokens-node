@@ -1,12 +1,9 @@
-import express from "express";
+import * as express from "express";
 import Supertokens from "../..";
-import Session, { RecipeInterface, VerifySessionOptions, SessionContainer, SessionRequest } from "../../recipe/session";
-import EmailPassword, { RecipeInterface as EPRecipeInterface } from "../../recipe/emailpassword";
+import Session, { RecipeInterface, SessionRequest } from "../../recipe/session";
+import EmailPassword from "../../recipe/emailpassword";
 import NextJS from "../../nextjs";
-import {
-    RecipeImplementation as FaunaDBImplementation,
-    SessionContainer as FaunaDBSessionContainer,
-} from "../../recipe/session/faunadb";
+import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 
@@ -75,7 +72,7 @@ app.use(
 
         // nextJS types
         let session2 = await NextJS.superTokensNextWrapper(
-            async (next) => {
+            async (_: express.NextFunction) => {
                 return await Session.getSession(req, res);
             },
             req,
@@ -86,7 +83,7 @@ app.use(
         }
 
         await NextJS.superTokensNextWrapper(
-            async (next) => {
+            async (next: express.NextFunction) => {
                 await Supertokens.middleware()(req, res, next);
             },
             req,
@@ -146,8 +143,6 @@ Supertokens.init({
                     return {
                         ...originalImplementation,
                         createNewSession: async (input) => {
-                            let userId = input.userId;
-
                             input.jwtPayload = {
                                 ...input.jwtPayload,
                                 someKey: "someValue",
@@ -174,6 +169,10 @@ Supertokens.init({
                             // then the sign in should be handled by you.
                             if ((await supertokensImpl.getUserByEmail({ email: input.email })) === undefined) {
                                 // TODO: sign in from your db
+                                // example return value if credentials don't match
+                                return {
+                                    status: "WRONG_CREDENTIALS_ERROR",
+                                };
                             } else {
                                 return supertokensImpl.signIn(input);
                             }
@@ -210,7 +209,7 @@ Supertokens.init({
                 apis: (oI) => {
                     return {
                         ...oI,
-                        emailExistsGET: async (input) => {
+                        emailExistsGET: async (_) => {
                             return {
                                 status: "OK",
                                 exists: true,
@@ -256,8 +255,8 @@ ThirdPartyEmailPassword.init({
                         } else {
                             // TODO: post sign in logic
                         }
-                        return response;
                     }
+                    return response;
                 },
             };
         },

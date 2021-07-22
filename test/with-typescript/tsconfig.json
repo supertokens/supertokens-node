@@ -7,7 +7,6 @@
         "moduleResolution": "Node",
         "sourceMap": true,
         "skipLibCheck": true,
-        "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true,
         "lib": ["ES2017"],
         "noEmit": true

@@ -1,6 +1,7 @@
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,
+    OriginalAPIInterface as EmailVerificationOriginalAPIInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { Request, Response, NextFunction } from "express";
@@ -46,10 +47,10 @@ export declare type TypeNormalisedInput = {
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        apis: (originalImplementation: OriginalAPIInterface) => APIInterface;
         emailVerificationFeature?: {
             functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            apis?: (originalImplementation: EmailVerificationOriginalAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -114,10 +115,10 @@ export declare type TypeInput = {
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        apis?: (originalImplementation: OriginalAPIInterface) => APIInterface;
         emailVerificationFeature?: {
             functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            apis?: (originalImplementation: EmailVerificationOriginalAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -269,6 +270,64 @@ export declare type APIOptions = {
     res: Response;
     next: NextFunction;
 };
+export interface OriginalAPIInterface {
+    emailExistsGET: (input: {
+        email: string;
+        options: APIOptions;
+    }) => Promise<{
+        status: "OK";
+        exists: boolean;
+    }>;
+    generatePasswordResetTokenPOST: (input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: APIOptions;
+    }) => Promise<{
+        status: "OK";
+    }>;
+    passwordResetPOST: (input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        token: string;
+        options: APIOptions;
+    }) => Promise<{
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
+    signInPOST: (input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: APIOptions;
+    }) => Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
+    signUpPOST: (input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: APIOptions;
+    }) => Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+}
 export interface APIInterface {
     emailExistsGET:
         | undefined

@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
     slack: circleci/slack@3.4.2
+    jq: circleci/jq@2.2.0
 jobs:
     publish:
         docker:
@@ -8,7 +9,11 @@ jobs:
         steps:
             - checkout
             - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
-            - run: npm publish
+            - run:
+                  name: Publish
+                  command: |
+                      cd .circleci
+                      ./publish.sh
             - slack/status
     test:
         docker:
