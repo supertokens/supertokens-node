@@ -19,9 +19,6 @@ import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { SessionContainerInterface } from "./types";
 import RecipeImplementation from "./recipeImplementation";
-import { Querier } from "../../querier";
-import SuperTokens from "../../supertokens";
-import { maxVersion } from "../../utils";
 
 export default class Session implements SessionContainerInterface {
     private sessionHandle: string;
@@ -55,17 +52,7 @@ export default class Session implements SessionContainerInterface {
 
     getSessionData = async (): Promise<any> => {
         try {
-            let querier = Querier.getNewInstanceOrThrowError(SuperTokens.getInstanceOrThrowError().isInServerlessEnv);
-            let apiVersion = await querier.getAPIVersion();
-
-            // Call older function for < 2.8
-            if (maxVersion(apiVersion, "2.7") === "2.7") {
-                return await SessionFunctions.getSessionData(this.recipeImplementation, this.sessionHandle);
-            } else {
-                return await (
-                    await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle)
-                ).userDataInDatabase;
-            }
+            return await SessionFunctions.getSessionData(this.recipeImplementation, this.sessionHandle);
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
                 clearSessionFromCookie(this.recipeImplementation.config, this.res);
@@ -137,13 +124,6 @@ export default class Session implements SessionContainerInterface {
 
     getTimeCreated = async (): Promise<number> => {
         try {
-            let querier = Querier.getNewInstanceOrThrowError(SuperTokens.getInstanceOrThrowError().isInServerlessEnv);
-            let apiVersion = await querier.getAPIVersion();
-
-            if (maxVersion(apiVersion, "2.7") === "2.7") {
-                throw new Error("Please use core version >= 3.5 to call this function.");
-            }
-
             return (await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle))
                 .timeCreated;
         } catch (err) {
@@ -156,13 +136,6 @@ export default class Session implements SessionContainerInterface {
 
     getExpiry = async (): Promise<number> => {
         try {
-            let querier = Querier.getNewInstanceOrThrowError(SuperTokens.getInstanceOrThrowError().isInServerlessEnv);
-            let apiVersion = await querier.getAPIVersion();
-
-            if (maxVersion(apiVersion, "2.7") === "2.7") {
-                throw new Error("Please use core version >= 3.5 to call this function.");
-            }
-
             return (await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle)).expiry;
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {

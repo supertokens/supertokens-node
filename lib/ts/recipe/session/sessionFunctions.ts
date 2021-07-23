@@ -19,6 +19,9 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
+import { maxVersion } from "../../utils";
+import { Querier } from "../../querier";
+import SuperTokens from "../../supertokens";
 
 /**
  * @description call this to "login" a user.
@@ -244,6 +247,13 @@ export async function getSessionInformation(
     recipeImplementation: RecipeImplementation,
     sessionHandle: string
 ): Promise<SessionInformation> {
+    let querier = Querier.getNewInstanceOrThrowError(SuperTokens.getInstanceOrThrowError().isInServerlessEnv);
+    let apiVersion = await querier.getAPIVersion();
+
+    if (maxVersion(apiVersion, "2.7") === "2.7") {
+        throw new Error("Please use core version >= 3.5 to call this function.");
+    }
+
     let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session"), {
         sessionHandle,
     });
@@ -381,7 +391,15 @@ export async function getSessionData(recipeImplementation: RecipeImplementation,
         sessionHandle,
     });
     if (response.status === "OK") {
-        return response.userDataInDatabase;
+        let querier = Querier.getNewInstanceOrThrowError(SuperTokens.getInstanceOrThrowError().isInServerlessEnv);
+        let apiVersion = await querier.getAPIVersion();
+
+        // Call new function for >= 2.8
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return response.userDataInDatabase;
+        } else {
+            return await (await getSessionInformation(recipeImplementation, sessionHandle)).userDataInDatabase;
+        }
     } else {
         throw new STError({
             message: response.message,
