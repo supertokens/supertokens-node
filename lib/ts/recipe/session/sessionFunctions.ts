@@ -20,8 +20,6 @@ import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
 import { maxVersion } from "../../utils";
-import { Querier } from "../../querier";
-import SuperTokens from "../../supertokens";
 
 /**
  * @description call this to "login" a user.
@@ -247,8 +245,7 @@ export async function getSessionInformation(
     recipeImplementation: RecipeImplementation,
     sessionHandle: string
 ): Promise<SessionInformation> {
-    let querier = Querier.getNewInstanceOrThrowError(SuperTokens.getInstanceOrThrowError().isInServerlessEnv);
-    let apiVersion = await querier.getAPIVersion();
+    let apiVersion = await recipeImplementation.querier.getAPIVersion();
 
     if (maxVersion(apiVersion, "2.7") === "2.7") {
         throw new Error("Please use core version >= 3.5 to call this function.");
@@ -387,19 +384,19 @@ export async function revokeMultipleSessions(
  * @returns session data as provided by the user earlier
  */
 export async function getSessionData(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any> {
+    let apiVersion = await recipeImplementation.querier.getAPIVersion();
+
+    // Call new method for >= 2.8
+    if (maxVersion(apiVersion, "2.7") !== "2.7") {
+        return (await getSessionInformation(recipeImplementation, sessionHandle)).userDataInDatabase;
+    }
+
     let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/data"), {
         sessionHandle,
     });
-    if (response.status === "OK") {
-        let querier = Querier.getNewInstanceOrThrowError(SuperTokens.getInstanceOrThrowError().isInServerlessEnv);
-        let apiVersion = await querier.getAPIVersion();
 
-        // Call new function for >= 2.8
-        if (maxVersion(apiVersion, "2.7") === "2.7") {
-            return response.userDataInDatabase;
-        } else {
-            return await (await getSessionInformation(recipeImplementation, sessionHandle)).userDataInDatabase;
-        }
+    if (response.status === "OK") {
+        return response.userDataInDatabase;
     } else {
         throw new STError({
             message: response.message,
