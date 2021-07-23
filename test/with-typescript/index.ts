@@ -231,6 +231,9 @@ ThirdPartyEmailPassword.init({
             return {
                 ...oI,
                 signInUpPOST: async (input) => {
+                    if (oI.signInUpPOST === undefined) {
+                        throw Error("original implementation of signInUpPOST API is undefined");
+                    }
                     if (input.type === "emailpassword") {
                         let email = input.formFields.filter((i) => i.id === "email")[0];
                     }

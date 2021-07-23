@@ -5,7 +5,7 @@ export declare type TypeInput = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: OriginalAPIInterface) => APIInterface;
+        apis?: (originalImplementation: APIInterface) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
@@ -14,7 +14,7 @@ export declare type TypeNormalisedInput = {
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: OriginalAPIInterface) => APIInterface;
+        apis: (originalImplementation: APIInterface) => APIInterface;
     };
 };
 export declare type User = {
@@ -56,31 +56,6 @@ export declare type APIOptions = {
     res: Response;
     next: NextFunction;
 };
-export interface OriginalAPIInterface {
-    verifyEmailPOST: (input: {
-        token: string;
-        options: APIOptions;
-    }) => Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-          }
-    >;
-    isEmailVerifiedGET: (input: {
-        options: APIOptions;
-    }) => Promise<{
-        status: "OK";
-        isVerified: boolean;
-    }>;
-    generateEmailVerifyTokenPOST: (input: {
-        options: APIOptions;
-    }) => Promise<{
-        status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
-    }>;
-}
 export interface APIInterface {
     verifyEmailPOST:
         | undefined

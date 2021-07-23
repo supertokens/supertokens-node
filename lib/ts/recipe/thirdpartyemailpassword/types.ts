@@ -17,7 +17,6 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,
-    OriginalAPIInterface as EmailVerificationOriginalAPIInterface,
 } from "../emailverification";
 import {
     NormalisedFormField,
@@ -157,10 +156,10 @@ export type TypeInput = {
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: OriginalAPIInterface) => APIInterface;
+        apis?: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
             functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationOriginalAPIInterface) => EmailVerificationAPIInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -186,10 +185,10 @@ export type TypeNormalisedInput = {
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: OriginalAPIInterface) => APIInterface;
+        apis: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
             functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationOriginalAPIInterface) => EmailVerificationAPIInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -309,47 +308,6 @@ export type SignInUpAPIOutput =
           status: "FIELD_ERROR";
           error: string;
       };
-
-export interface OriginalAPIInterface {
-    authorisationUrlGET: (input: {
-        provider: TypeProvider;
-        options: ThirdPartyAPIOptions;
-    }) => Promise<{
-        status: "OK";
-        url: string;
-    }>;
-
-    emailExistsGET: (input: {
-        email: string;
-        options: EmailPasswordAPIOptions;
-    }) => Promise<{
-        status: "OK";
-        exists: boolean;
-    }>;
-
-    generatePasswordResetTokenPOST: (input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        options: EmailPasswordAPIOptions;
-    }) => Promise<{
-        status: "OK";
-    }>;
-
-    passwordResetPOST: (input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        token: string;
-        options: EmailPasswordAPIOptions;
-    }) => Promise<{
-        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-    }>;
-
-    signInUpPOST: (input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>;
-}
 
 export interface APIInterface {
     authorisationUrlGET:
