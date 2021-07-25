@@ -140,13 +140,21 @@ export interface RecipeInterface {
         res: express.Response;
         options?: VerifySessionOptions;
     }): Promise<SessionContainerInterface | undefined>;
+    /**
+     * Used to retrieve all session information for a given session handle. Can be used in place of:
+     * - getSessionData
+     * - getJWTPayload
+     */
+    getSessionInformation(input: { sessionHandle: string }): Promise<SessionInformation>;
     refreshSession(input: { req: express.Request; res: express.Response }): Promise<SessionContainerInterface>;
     revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
     getAllSessionHandlesForUser(input: { userId: string }): Promise<string[]>;
     revokeSession(input: { sessionHandle: string }): Promise<boolean>;
     revokeMultipleSessions(input: { sessionHandles: string[] }): Promise<string[]>;
+    /** @deprecated Use getSessionInformation() instead **/
     getSessionData(input: { sessionHandle: string }): Promise<any>;
     updateSessionData(input: { sessionHandle: string; newSessionData: any }): Promise<void>;
+    /** @deprecated Use getSessionInformation() instead **/
     getJWTPayload(input: { sessionHandle: string }): Promise<any>;
     updateJWTPayload(input: { sessionHandle: string; newJWTPayload: any }): Promise<void>;
     getAccessTokenLifeTimeMS(): Promise<number>;
@@ -161,6 +169,8 @@ export interface SessionContainerInterface {
     getHandle(): string;
     getAccessToken(): string;
     updateJWTPayload(newJWTPayload: any): Promise<void>;
+    getTimeCreated(): Promise<number>;
+    getExpiry(): Promise<number>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -185,3 +195,11 @@ export interface APIInterface {
         options: APIOptions;
     }): Promise<void>;
 }
+export declare type SessionInformation = {
+    sessionHandle: string;
+    userId: string;
+    userDataInDatabase: any;
+    expiry: number;
+    userDataInJWT: any;
+    timeCreated: number;
+};

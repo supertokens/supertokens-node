@@ -1,4 +1,4 @@
-import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo } from "./types";
+import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo, SessionInformation } from "./types";
 import * as express from "express";
 import Session from "./sessionClass";
 import { Querier } from "../../querier";
@@ -28,6 +28,7 @@ export default class RecipeImplementation implements RecipeInterface {
         res: express.Response;
         options?: VerifySessionOptions | undefined;
     }) => Promise<Session | undefined>;
+    getSessionInformation: ({ sessionHandle }: { sessionHandle: string }) => Promise<SessionInformation>;
     refreshSession: ({ req, res }: { req: express.Request; res: express.Response }) => Promise<Session>;
     revokeAllSessionsForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;
