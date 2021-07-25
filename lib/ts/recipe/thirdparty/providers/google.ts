@@ -85,11 +85,6 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
             scopes = config.scope;
             scopes = Array.from(new Set(scopes));
         }
-        if (!scopes.includes("https://www.googleapis.com/auth/userinfo.email")) {
-            throw Error(
-                "Scope https://www.googleapis.com/auth/userinfo.email is required. Please add it to the scope array"
-            );
-        }
         let additionalParams =
             config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
                 ? {}

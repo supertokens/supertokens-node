@@ -71,9 +71,6 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
             scopes = config.scope;
             scopes = Array.from(new Set(scopes));
         }
-        if (!scopes.includes("email")) {
-            throw Error("Scope email is required. Please add it to the scope array");
-        }
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
             response_type: "code",

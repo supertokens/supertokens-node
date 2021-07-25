@@ -84,9 +84,6 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
             scopes = config.scope;
             scopes = Array.from(new Set(scopes));
         }
-        if (!scopes.includes("read:user") || !scopes.includes("user:email")) {
-            throw Error("Scope user:email and read:user are required. Please add them to the scope array");
-        }
         let additionalParams =
             config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
                 ? {}

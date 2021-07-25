@@ -137,9 +137,6 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             scopes = config.scope;
             scopes = Array.from(new Set(scopes));
         }
-        if (!scopes.includes("email")) {
-            throw Error("Scope email is required. Please add it to the scope array");
-        }
         let additionalParams =
             config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
                 ? {}
