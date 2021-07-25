@@ -1,4 +1,4 @@
-import type { MiddlewareContext, Request, Response, Middleware } from "@loopback/rest";
+import type { MiddlewareContext, Response, Middleware } from "@loopback/rest";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
@@ -33,7 +33,7 @@ export declare class LoopbackResponse extends BaseResponse {
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
 }
-export interface SessionRequest extends Request {
+export interface SessionContext extends MiddlewareContext {
     session?: SessionContainerInterface;
 }
 export interface LoopbackFramework extends Framework {

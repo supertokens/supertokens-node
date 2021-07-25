@@ -84,9 +84,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         };
 
         let revokeSession = async (awsEvent, _) => {
-            if (awsEvent.session !== undefined) {
-                await awsEvent.session.revokeSession();
-            }
+            await awsEvent.session.revokeSession();
             return {
                 body: JSON.stringify(""),
                 statusCode: 200,
@@ -265,9 +263,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         };
 
         let revokeSession = async (awsEvent, _) => {
-            if (awsEvent.session !== undefined) {
-                await awsEvent.session.revokeSession();
-            }
+            await awsEvent.session.revokeSession();
             return {
                 body: JSON.stringify(""),
                 statusCode: 200,

@@ -1,4 +1,3 @@
-import { BaseRequest, BaseResponse } from "../../framework";
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,
@@ -12,18 +11,9 @@ import Recipe from "./recipe";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static createNewSession(
-        res: BaseResponse,
-        userId: string,
-        jwtPayload?: any,
-        sessionData?: any
-    ): Promise<SessionContainer>;
-    static getSession(
-        req: BaseRequest,
-        res: BaseResponse,
-        options?: VerifySessionOptions
-    ): Promise<SessionContainer | undefined>;
-    static refreshSession(req: BaseRequest, res: BaseResponse): Promise<SessionContainer>;
+    static createNewSession(res: any, userId: string, jwtPayload?: any, sessionData?: any): Promise<SessionContainer>;
+    static getSession(req: any, res: any, options?: VerifySessionOptions): Promise<SessionContainer | undefined>;
+    static refreshSession(req: any, res: any): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string): Promise<string[]>;
     static revokeSession(sessionHandle: string): Promise<boolean>;

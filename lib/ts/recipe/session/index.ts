@@ -13,7 +13,6 @@
  * under the License.
  */
 
-import { BaseRequest, BaseResponse } from "../../framework";
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,
@@ -32,7 +31,7 @@ export default class SessionWrapper {
 
     static Error = SuperTokensError;
 
-    static createNewSession(res: BaseResponse, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
+    static createNewSession(res: any, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
@@ -41,11 +40,11 @@ export default class SessionWrapper {
         });
     }
 
-    static getSession(req: BaseRequest, res: BaseResponse, options?: VerifySessionOptions) {
+    static getSession(req: any, res: any, options?: VerifySessionOptions) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession({ req, res, options });
     }
 
-    static refreshSession(req: BaseRequest, res: BaseResponse) {
+    static refreshSession(req: any, res: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res });
     }
 

@@ -1,6 +1,6 @@
-import { VerifySessionOptions } from "..";
-import { SessionRequest } from "../../../framework/express/framework";
-import { NextFunction, Response } from "express";
+import type { VerifySessionOptions } from "..";
+import type { SessionRequest } from "../../../framework/express/framework";
+import type { NextFunction, Response } from "express";
 export declare function verifySession(
     options: VerifySessionOptions | undefined
 ): (req: SessionRequest, res: Response, next: NextFunction) => Promise<void>;

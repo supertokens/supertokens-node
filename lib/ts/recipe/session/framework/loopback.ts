@@ -16,19 +16,16 @@ import Session from "../recipe";
 import { VerifySessionOptions } from "..";
 import { InterceptorOrKey, InvocationContext, Next } from "@loopback/core";
 import { MiddlewareContext } from "@loopback/rest";
-import { LoopbackRequest, LoopbackResponse, SessionRequest } from "../../../framework/loopback/framework";
+import type { SessionContext as Context } from "../../../framework/loopback/framework";
+import { LoopbackRequest, LoopbackResponse } from "../../../framework/loopback/framework";
 
-export function verifySession(options: VerifySessionOptions | undefined): InterceptorOrKey {
+export function verifySession(options?: VerifySessionOptions): InterceptorOrKey {
     return async (ctx: InvocationContext, next: Next) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let middlewareCtx = await ctx.get<MiddlewareContext>("middleware.http.context");
         let request = new LoopbackRequest(middlewareCtx);
         let response = new LoopbackResponse(middlewareCtx);
-        (middlewareCtx.request as SessionRequest).session = await sessionRecipe.verifySession(
-            options,
-            request,
-            response
-        );
+        (middlewareCtx as Context).session = await sessionRecipe.verifySession(options, request, response);
         return await next();
     };
 }

@@ -117,7 +117,7 @@ export class LoopbackResponse extends BaseResponse {
     };
 }
 
-export interface SessionRequest extends Request {
+export interface SessionContext extends MiddlewareContext {
     session?: SessionContainerInterface;
 }
 
@@ -142,19 +142,9 @@ export const middleware: Middleware = async (ctx: MiddlewareContext, next: Next)
 export const LoopbackWrapper: LoopbackFramework = {
     middleware,
     wrapRequest: (unwrapped) => {
-        if (unwrapped.request === undefined) {
-            unwrapped = {
-                request: unwrapped,
-            };
-        }
         return new LoopbackRequest(unwrapped);
     },
     wrapResponse: (unwrapped) => {
-        if (unwrapped.response === undefined) {
-            unwrapped = {
-                response: unwrapped,
-            };
-        }
         return new LoopbackResponse(unwrapped);
     },
 };

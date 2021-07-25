@@ -1,0 +1,210 @@
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+const {
+    printPath,
+    setupST,
+    startST,
+    createServerlessCacheForTesting,
+    killAllST,
+    cleanST,
+    extractInfoFromResponse,
+} = require("../utils");
+let assert = require("assert");
+let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
+let SuperTokens = require("../..");
+let { middleware } = require("../../framework/awsLambda");
+let Session = require("../../recipe/session");
+let { verifySession } = require("../../recipe/session/framework/awsLambda");
+const { removeServerlessCache } = require("../../lib/build/utils");
+const request = require("supertest");
+const axios = require("axios").default;
+
+describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`, function () {
+    beforeEach(async function () {
+        await killAllST();
+        await setupST();
+        await createServerlessCacheForTesting();
+        await removeServerlessCache();
+        ProcessState.getInstance().reset();
+        this.app = require("./loopback-server/index.js");
+    });
+
+    afterEach(async function () {
+        if (this.app !== undefined) {
+            await this.app.stop();
+        }
+    });
+
+    after(async function () {
+        await killAllST();
+        await cleanST();
+    });
+
+    //check basic usage of session
+    it("test basic usage of sessions", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "loopback",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        await this.app.start();
+
+        let result = await axios({
+            url: "/create",
+            baseURL: "http://localhost:9876",
+            method: "post",
+        });
+        let res = extractInfoFromResponse(result);
+
+        assert(res.accessToken !== undefined);
+        assert(res.antiCsrf !== undefined);
+        assert(res.idRefreshTokenFromCookie !== undefined);
+        assert(res.idRefreshTokenFromHeader !== undefined);
+        assert(res.refreshToken !== undefined);
+
+        try {
+            await axios({
+                url: "/session/verify",
+                baseURL: "http://localhost:9876",
+                method: "post",
+            });
+        } catch (err) {
+            if (err !== undefined && err.response !== undefined) {
+                assert.strictEqual(err.response.status, 401);
+                assert.deepStrictEqual(err.response.data, { message: "unauthorised" });
+            } else {
+                throw err;
+            }
+        }
+
+        try {
+            await axios({
+                url: "/session/verify",
+                baseURL: "http://localhost:9876",
+                method: "post",
+                headers: {
+                    Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                },
+            });
+        } catch (err) {
+            if (err !== undefined && err.response !== undefined) {
+                assert.strictEqual(err.response.status, 401);
+                assert.deepStrictEqual(err.response.data, { message: "try refresh token" });
+            } else {
+                throw err;
+            }
+        }
+
+        result = await axios({
+            url: "/session/verify",
+            baseURL: "http://localhost:9876",
+            method: "post",
+            headers: {
+                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                "anti-csrf": res.antiCsrf,
+            },
+        });
+        assert.deepStrictEqual(result.data, { user: "userId" });
+
+        result = await axios({
+            url: "/session/verify/optionalCSRF",
+            baseURL: "http://localhost:9876",
+            method: "post",
+            headers: {
+                Cookie: `sAccessToken=${res.accessToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+            },
+        });
+        assert.deepStrictEqual(result.data, { user: "userId" });
+
+        try {
+            await axios({
+                url: "/auth/session/refresh",
+                baseURL: "http://localhost:9876",
+                method: "post",
+            });
+        } catch (err) {
+            if (err !== undefined && err.response !== undefined) {
+                assert.strictEqual(err.response.status, 401);
+                assert.deepStrictEqual(err.response.data, { message: "unauthorised" });
+            } else {
+                throw err;
+            }
+        }
+
+        result = await axios({
+            url: "/auth/session/refresh",
+            baseURL: "http://localhost:9876",
+            method: "post",
+            headers: {
+                Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                "anti-csrf": res.antiCsrf,
+            },
+        });
+
+        let res2 = extractInfoFromResponse(result);
+
+        assert(res2.accessToken !== undefined);
+        assert(res2.antiCsrf !== undefined);
+        assert(res2.idRefreshTokenFromCookie !== undefined);
+        assert(res2.idRefreshTokenFromHeader !== undefined);
+        assert(res2.refreshToken !== undefined);
+
+        result = await axios({
+            url: "/session/verify",
+            baseURL: "http://localhost:9876",
+            method: "post",
+            headers: {
+                Cookie: `sAccessToken=${res2.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                "anti-csrf": res2.antiCsrf,
+            },
+        });
+        assert.deepStrictEqual(result.data, { user: "userId" });
+
+        let res3 = extractInfoFromResponse(result);
+        assert(res3.accessToken !== undefined);
+
+        result = await axios({
+            url: "/session/revoke",
+            baseURL: "http://localhost:9876",
+            method: "post",
+            headers: {
+                Cookie: `sAccessToken=${res3.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                "anti-csrf": res2.antiCsrf,
+            },
+        });
+
+        let sessionRevokedResponseExtracted = extractInfoFromResponse(result);
+        assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.accessToken === "");
+        assert(sessionRevokedResponseExtracted.refreshToken === "");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
+    });
+});

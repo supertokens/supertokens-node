@@ -13,9 +13,10 @@
  * under the License.
  */
 import Session from "../recipe";
-import { VerifySessionOptions } from "..";
-import { ExpressRequest, ExpressResponse, SessionRequest } from "../../../framework/express/framework";
-import { NextFunction, Response } from "express";
+import type { VerifySessionOptions } from "..";
+import type { SessionRequest } from "../../../framework/express/framework";
+import { ExpressRequest, ExpressResponse } from "../../../framework/express/framework";
+import type { NextFunction, Response } from "express";
 
 export function verifySession(options: VerifySessionOptions | undefined) {
     return async (req: SessionRequest, res: Response, next: NextFunction) => {
