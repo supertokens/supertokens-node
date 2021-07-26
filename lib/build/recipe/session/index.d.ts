@@ -3,6 +3,7 @@ import {
     VerifySessionOptions,
     RecipeInterface,
     SessionContainerInterface as SessionContainer,
+    SessionInformation,
     SessionRequest,
     APIInterface,
     APIOptions,
@@ -13,6 +14,7 @@ export default class SessionWrapper {
     static Error: typeof SuperTokensError;
     static createNewSession(res: any, userId: string, jwtPayload?: any, sessionData?: any): Promise<SessionContainer>;
     static getSession(req: any, res: any, options?: VerifySessionOptions): Promise<SessionContainer | undefined>;
+    static getSessionInformation(sessionHandle: string): Promise<SessionInformation>;
     static refreshSession(req: any, res: any): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string): Promise<string[]>;
@@ -26,6 +28,7 @@ export default class SessionWrapper {
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
 export declare let getSession: typeof SessionWrapper.getSession;
+export declare let getSessionInformation: typeof SessionWrapper.getSessionInformation;
 export declare let refreshSession: typeof SessionWrapper.refreshSession;
 export declare let revokeAllSessionsForUser: typeof SessionWrapper.revokeAllSessionsForUser;
 export declare let getAllSessionHandlesForUser: typeof SessionWrapper.getAllSessionHandlesForUser;
@@ -40,4 +43,12 @@ export declare let updateJWTPayload: typeof SessionWrapper.updateJWTPayload;
  */
 export declare let verifySession: typeof import("./framework/express").verifySession;
 export declare let Error: typeof SuperTokensError;
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, SessionRequest, APIInterface, APIOptions };
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    SessionRequest,
+    APIInterface,
+    APIOptions,
+    SessionInformation,
+};

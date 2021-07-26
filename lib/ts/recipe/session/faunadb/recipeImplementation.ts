@@ -1,9 +1,10 @@
 import { VerifySessionOptions, RecipeInterface } from "../";
-import { SessionContainer } from "../";
+import type { SessionContainer } from "../";
 import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
-import { Session as FaunaDBSessionContainer } from "./types";
-import { BaseRequest, BaseResponse } from "../../../framework";
+import type { Session as FaunaDBSessionContainer } from "./types";
+import type { BaseRequest, BaseResponse } from "../../../framework";
+import type { SessionInformation } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {
@@ -95,6 +96,10 @@ export default class RecipeImplementation implements RecipeInterface {
             return undefined;
         }
         return getModifiedSession(originalSession);
+    };
+
+    getSessionInformation = ({ sessionHandle }: { sessionHandle: string }): Promise<SessionInformation> => {
+        return this.originalImplementation.getSessionInformation({ sessionHandle });
     };
 
     refreshSession = async ({

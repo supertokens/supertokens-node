@@ -1,4 +1,4 @@
-import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo } from "./types";
+import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo, SessionInformation } from "./types";
 import Session from "./sessionClass";
 import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
@@ -27,6 +27,7 @@ export default class RecipeImplementation implements RecipeInterface {
         res: any;
         options?: VerifySessionOptions | undefined;
     }) => Promise<Session | undefined>;
+    getSessionInformation: ({ sessionHandle }: { sessionHandle: string }) => Promise<SessionInformation>;
     refreshSession: ({ req, res }: { req: any; res: any }) => Promise<Session>;
     revokeAllSessionsForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;

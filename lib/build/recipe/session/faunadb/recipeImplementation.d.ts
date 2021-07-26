@@ -1,7 +1,8 @@
 import { VerifySessionOptions, RecipeInterface } from "../";
 import * as faunadb from "faunadb";
-import { Session as FaunaDBSessionContainer } from "./types";
-import { BaseRequest, BaseResponse } from "../../../framework";
+import type { Session as FaunaDBSessionContainer } from "./types";
+import type { BaseRequest, BaseResponse } from "../../../framework";
+import type { SessionInformation } from "../types";
 export default class RecipeImplementation implements RecipeInterface {
     config: {
         accessFaunadbTokenFromFrontend: boolean;
@@ -39,6 +40,7 @@ export default class RecipeImplementation implements RecipeInterface {
         res: BaseResponse;
         options?: VerifySessionOptions | undefined;
     }) => Promise<FaunaDBSessionContainer | undefined>;
+    getSessionInformation: ({ sessionHandle }: { sessionHandle: string }) => Promise<SessionInformation>;
     refreshSession: ({ req, res }: { req: BaseRequest; res: BaseResponse }) => Promise<FaunaDBSessionContainer>;
     revokeAllSessionsForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;

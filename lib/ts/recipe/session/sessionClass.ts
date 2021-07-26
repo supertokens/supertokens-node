@@ -121,4 +121,27 @@ export default class Session implements SessionContainerInterface {
             );
         }
     };
+
+    getTimeCreated = async (): Promise<number> => {
+        try {
+            return (await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle))
+                .timeCreated;
+        } catch (err) {
+            if (err.type === STError.UNAUTHORISED) {
+                clearSessionFromCookie(this.recipeImplementation.config, this.res);
+            }
+            throw err;
+        }
+    };
+
+    getExpiry = async (): Promise<number> => {
+        try {
+            return (await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle)).expiry;
+        } catch (err) {
+            if (err.type === STError.UNAUTHORISED) {
+                clearSessionFromCookie(this.recipeImplementation.config, this.res);
+            }
+            throw err;
+        }
+    };
 }

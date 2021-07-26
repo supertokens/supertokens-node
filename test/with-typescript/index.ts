@@ -280,3 +280,43 @@ async function f() {
         paginationToken: "",
     });
 }
+
+EmailPassword.init({
+    override: {
+        apis: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                signInPOST: async (input) => {
+                    let formFields = input.formFields;
+                    let options = input.options;
+                    let email = formFields.filter((f) => f.id === "email")[0].value;
+                    let password = formFields.filter((f) => f.id === "password")[0].value;
+
+                    let response = await options.recipeImplementation.signIn({ email, password });
+                    if (response.status === "WRONG_CREDENTIALS_ERROR") {
+                        return response;
+                    }
+                    let user = response.user;
+
+                    let origin = options.req.headers["origin"];
+
+                    let isAllowed = false; // TODO: check if this user is allowed to sign in via their origin..
+
+                    if (isAllowed) {
+                        // import Session from "supertokens-node/recipe/session"
+                        await Session.createNewSession(options.res, user.id);
+                        return {
+                            status: "OK",
+                            user,
+                        };
+                    } else {
+                        // on the frontend, this will display incorrect email / password combination
+                        return {
+                            status: "WRONG_CREDENTIALS_ERROR",
+                        };
+                    }
+                },
+            };
+        },
+    },
+});
