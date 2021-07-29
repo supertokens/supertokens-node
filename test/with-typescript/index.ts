@@ -1,4 +1,4 @@
-import express from "express";
+import * as express from "express";
 import Supertokens from "../..";
 import Session, { RecipeInterface, VerifySessionOptions, SessionContainer, SessionRequest } from "../../recipe/session";
 import EmailPassword, { RecipeInterface as EPRecipeInterface } from "../../recipe/emailpassword";
@@ -146,8 +146,6 @@ Supertokens.init({
                     return {
                         ...originalImplementation,
                         createNewSession: async (input) => {
-                            let userId = input.userId;
-
                             input.jwtPayload = {
                                 ...input.jwtPayload,
                                 someKey: "someValue",
@@ -174,6 +172,10 @@ Supertokens.init({
                             // then the sign in should be handled by you.
                             if ((await supertokensImpl.getUserByEmail({ email: input.email })) === undefined) {
                                 // TODO: sign in from your db
+                                // example return value if credentials don't match
+                                return {
+                                    status: "WRONG_CREDENTIALS_ERROR",
+                                };
                             } else {
                                 return supertokensImpl.signIn(input);
                             }
@@ -210,7 +212,7 @@ Supertokens.init({
                 apis: (oI) => {
                     return {
                         ...oI,
-                        emailExistsGET: async (input) => {
+                        emailExistsGET: async (_) => {
                             return {
                                 status: "OK",
                                 exists: true,
@@ -232,6 +234,12 @@ ThirdPartyEmailPassword.init({
             return {
                 ...oI,
                 signInUpPOST: async (input) => {
+                    if (oI.signInUpPOST === undefined) {
+                        throw Error("original implementation of signInUpPOST API is undefined");
+                    }
+                    if (input.type === "emailpassword") {
+                        let email = input.formFields.filter((i) => i.id === "email")[0];
+                    }
                     let response = await oI.signInUpPOST(input);
                     if (response.status === "OK") {
                         let { id, email } = response.user;
@@ -253,9 +261,8 @@ ThirdPartyEmailPassword.init({
                         } else {
                             // TODO: post sign in logic
                         }
-
-                        return response;
                     }
+                    return response;
                 },
             };
         },
