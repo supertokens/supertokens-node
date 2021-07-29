@@ -6,6 +6,5 @@ export * from "../../../lib/build/recipe/session/faunadb";
  * - user add "esModuleInterop": true in their tsconfig.json file
  * - we do the following change:
  */
-
 import * as _default from "../../../lib/build/recipe/session/faunadb";
 export default _default;

@@ -7,5 +7,5 @@ export * from "../lib/build/nextjs";
  * - we do the following change:
  */
 
-import * as _default from "../../lib/build/nextjs";
+import * as _default from "../lib/build/nextjs";
 export default _default;
