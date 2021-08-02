@@ -6,17 +6,29 @@ export declare function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput;
+/**
+ * @deprecated Please do not override this function
+ *   */
 export declare function createNewPaginationToken(userId: string, timeJoined: number): string;
+/**
+ * @deprecated Please do not override this function
+ *   */
 export declare function combinePaginationTokens(
     thirdPartyPaginationToken: string | null,
     emailPasswordPaginationToken: string | null
 ): string;
+/**
+ * @deprecated
+ *   */
 export declare function extractPaginationTokens(
     nextPaginationToken: string
 ): {
     thirdPartyPaginationToken: string | undefined;
     emailPasswordPaginationToken: string | undefined;
 };
+/**
+ * @deprecated Please do not override this function
+ *   */
 export declare function combinePaginationResults(
     thirdPartyResult: {
         users: User[];

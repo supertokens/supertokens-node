@@ -11,6 +11,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   https://github.com/supertokens/supertokens-node/issues/156
 
+## [6.1.0] - 2021-06-24
+
+## Changes
+
+-   To how pagination and use count is done: https://github.com/supertokens/supertokens-core/issues/259
+-   Deprecates (instead, use `supertokens.getUserCount`, `supertokens.getUsersNewestFirst` or `supertokens.getUsersOldestFirst`):
+    -   `ThirdParty.getUserCount()`, `ThirdParty.getUsersNewestFirst()`, `ThirdParty.getUsersOldestFirst`
+    -   `EmailPassword.getUserCount()`, `EmailPassword.getUsersNewestFirst()`, `EmailPassword.getUsersOldestFirst`
+    -   `ThirdPartyEmailPassword.getUserCount()`, `ThirdPartyEmailPassword.getUsersNewestFirst()`, `ThirdPartyEmailPassword.getUsersOldestFirst`
+-   Deprecates (instead use `Session.getSessionInformation()`)
+    -   `Session.getSessionData()`, `Session.getJWTPayload()`
+
 ## [6.0.4] - 2021-07-29
 
 ## Fixes

@@ -181,6 +181,9 @@ export declare type TypeNormalisedInput = {
 export interface RecipeInterface {
     getUserById(input: { userId: string }): Promise<User | undefined>;
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersOldestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -188,6 +191,9 @@ export interface RecipeInterface {
         users: User[];
         nextPaginationToken?: string;
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersNewestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -195,6 +201,9 @@ export interface RecipeInterface {
         users: User[];
         nextPaginationToken?: string;
     }>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserCount(): Promise<number>;
     signInUp(input: {
         thirdPartyId: string;

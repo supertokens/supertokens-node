@@ -198,6 +198,9 @@ export interface RecipeInterface {
 
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersOldestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -206,6 +209,9 @@ export interface RecipeInterface {
         nextPaginationToken?: string;
     }>;
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUsersNewestFirst(input: {
         limit?: number;
         nextPaginationToken?: string;
@@ -214,6 +220,9 @@ export interface RecipeInterface {
         nextPaginationToken?: string;
     }>;
 
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserCount(): Promise<number>;
 
     signInUp(input: {

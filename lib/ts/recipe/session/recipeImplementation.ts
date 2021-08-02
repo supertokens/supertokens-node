@@ -1,4 +1,4 @@
-import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo } from "./types";
+import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo, SessionInformation } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
     attachAccessTokenToCookie,
@@ -148,6 +148,10 @@ export default class RecipeImplementation implements RecipeInterface {
             }
             throw err;
         }
+    };
+
+    getSessionInformation = async ({ sessionHandle }: { sessionHandle: string }): Promise<SessionInformation> => {
+        return SessionFunctions.getSessionInformation(this, sessionHandle);
     };
 
     refreshSession = async ({ req, res }: { req: express.Request; res: express.Response }): Promise<Session> => {
