@@ -31,6 +31,8 @@ let Session = require("../recipe/session");
 let { Querier } = require("../lib/build/querier");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 const { removeServerlessCache } = require("../lib/build/utils");
+const { verifySession } = require("../recipe/session");
+const { errorHandler } = require("../lib/build");
 
 describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
     beforeEach(async function () {
@@ -2661,5 +2663,163 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             let sessionRevokedResponseExtracted = extractInfoFromResponse(res2);
             assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
         }
+    });
+
+    // check session verify for with session optional and no rid pass
+    it("check session verify for with session optional and no rid pass", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "id1", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post(
+            "/session/verify",
+            verifySession({
+                sessionRequired: false,
+                antiCsrfCheck: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ success: true, session: req.session !== undefined });
+            }
+        );
+
+        app.get(
+            "/session/verify",
+            verifySession({
+                sessionRequired: false,
+                antiCsrfCheck: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ success: true, session: req.session !== undefined });
+            }
+        );
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.body.success, true);
+        assert.strictEqual(response.body.session, true);
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("rid", "session")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.body.message, "try refresh token");
+        assert.strictEqual(response.status, 401);
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.body.success, true);
+        assert.strictEqual(response.body.session, false);
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .get("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.body.success, true);
+        assert.strictEqual(response.body.session, true);
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .get("/session/verify")
+                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("rid", "session")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.body.message, "try refresh token");
+        assert.strictEqual(response.status, 401);
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .get("/session/verify")
+                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.body.message, "try refresh token");
+        assert.strictEqual(response.status, 401);
     });
 });
