@@ -94,13 +94,14 @@ export default class RecipeImplementation implements RecipeInterface {
             /**
              * Based on issue: #156 (spertokens-node)
              * we throw TRY_REFRESH_TOKEN only if
-             * options.sessionRequired === true || frontendHasInterceptor,
+             * options.sessionRequired === true || (frontendHasInterceptor or request method is get),
              * else we should return undefined
              */
             if (
                 options === undefined ||
                 (options !== undefined && options.sessionRequired === true) ||
-                frontendHasInterceptor(req)
+                frontendHasInterceptor(req) ||
+                normaliseHttpMethod(req.method) === "get"
             ) {
                 throw new STError({
                     message: "Access token has expired. Please call the refresh API",

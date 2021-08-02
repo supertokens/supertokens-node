@@ -2702,6 +2702,17 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             }
         );
 
+        app.get(
+            "/session/verify",
+            verifySession({
+                sessionRequired: false,
+                antiCsrfCheck: false,
+            }),
+            async (req, res) => {
+                res.status(200).json({ success: true, session: req.session !== undefined });
+            }
+        );
+
         app.use(errorHandler());
 
         let res = extractInfoFromResponse(
@@ -2764,5 +2775,51 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         assert.strictEqual(response.body.success, true);
         assert.strictEqual(response.body.session, false);
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .get("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.body.success, true);
+        assert.strictEqual(response.body.session, true);
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .get("/session/verify")
+                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("rid", "session")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.body.message, "try refresh token");
+        assert.strictEqual(response.status, 401);
+
+        response = await new Promise((resolve) =>
+            request(app)
+                .get("/session/verify")
+                .set("Cookie", ["sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.body.message, "try refresh token");
+        assert.strictEqual(response.status, 401);
     });
 });
