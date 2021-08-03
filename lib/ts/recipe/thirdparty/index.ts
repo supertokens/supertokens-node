@@ -43,6 +43,10 @@ export default class Wrapper {
         throw new global.Error(result.error);
     }
 
+    static getUsersByEmail(email: string): Promise<User[]> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email });
+    }
+
     static getUserById(userId: string): Promise<User | undefined> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
@@ -129,6 +133,8 @@ export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
 export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
+
+export let getUsersByEmail = Wrapper.getUsersByEmail;
 
 /**
  * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5

@@ -8,6 +8,10 @@ export default class RecipeImplementation implements RecipeInterface {
         this.recipeImplementation = recipeImplementation;
     }
 
+    getUsersByEmail(input: { email: string }): Promise<User[]> {
+        return this.recipeImplementation.getThirdPartyUsersByEmail(input);
+    }
+
     getUserByThirdPartyInfo = async (input: {
         thirdPartyId: string;
         thirdPartyUserId: string;

@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal, User as ThirdPartyUser } from "../thirdparty/types";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
@@ -195,6 +195,8 @@ export type TypeNormalisedInput = {
 
 export interface RecipeInterface {
     getUserById(input: { userId: string }): Promise<User | undefined>;
+
+    getThirdPartyUsersByEmail(input: { email: string }): Promise<ThirdPartyUser[]>;
 
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
 

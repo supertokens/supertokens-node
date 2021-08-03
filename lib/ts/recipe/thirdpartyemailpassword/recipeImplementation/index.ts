@@ -1,6 +1,7 @@
 import { RecipeInterface, User } from "../types";
 import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
 
+import { User as ThirdPartyUser } from "../../thirdparty/types";
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
 import { extractPaginationTokens, combinePaginationResults } from "../utils";
 import { Querier } from "../../../querier";
@@ -14,6 +15,14 @@ export default class RecipeImplementation implements RecipeInterface {
         if (thirdPartyQuerier !== undefined) {
             this.thirdPartyImplementation = new ThirdPartyImplemenation(thirdPartyQuerier);
         }
+    }
+
+    getThirdPartyUsersByEmail(input: { email: string }): Promise<ThirdPartyUser[]> {
+        if (this.thirdPartyImplementation === undefined) {
+            throw new Error("No ThirdParty implementation configured.");
+        }
+
+        return this.thirdPartyImplementation.getUsersByEmail(input);
     }
 
     signUp = async (input: {

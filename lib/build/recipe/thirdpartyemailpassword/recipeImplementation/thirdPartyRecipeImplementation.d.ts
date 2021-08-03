@@ -3,6 +3,7 @@ import { RecipeInterface as ThirdPartyRecipeInterface } from "../types";
 export default class RecipeImplementation implements RecipeInterface {
     recipeImplementation: ThirdPartyRecipeInterface;
     constructor(recipeImplementation: ThirdPartyRecipeInterface);
+    getUsersByEmail(input: { email: string }): Promise<User[]>;
     getUserByThirdPartyInfo: (input: { thirdPartyId: string; thirdPartyUserId: string }) => Promise<User | undefined>;
     signInUp: (input: {
         thirdPartyId: string;

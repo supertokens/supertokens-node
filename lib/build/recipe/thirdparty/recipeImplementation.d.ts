@@ -3,6 +3,7 @@ import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
     constructor(querier: Querier);
+    getUsersByEmail: ({ email }: { email: string }) => Promise<User[]>;
     getUsers: (
         timeJoinedOrder: "ASC" | "DESC",
         limit?: number | undefined,

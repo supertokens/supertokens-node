@@ -155,6 +155,7 @@ export declare type TypeNormalisedInput = {
 };
 export interface RecipeInterface {
     getUserById(input: { userId: string }): Promise<User | undefined>;
+    getUsersByEmail(input: { email: string }): Promise<User[]>;
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
     /**
      * @deprecated Please do not override this function

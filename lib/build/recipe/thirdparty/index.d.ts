@@ -15,6 +15,7 @@ export default class Wrapper {
         createdNewUser: boolean;
         user: User;
     }>;
+    static getUsersByEmail(email: string): Promise<User[]>;
     static getUserById(userId: string): Promise<User | undefined>;
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
     /**
@@ -57,6 +58,7 @@ export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyIn
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
+export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
 /**
  * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
  *   */
