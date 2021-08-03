@@ -1,14 +1,11 @@
-import STError from "./error";
-import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
-import * as express from "express";
+import type { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
 import { SERVERLESS_CACHE_API_VERSION_FILE_PATH, HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import { readFile, writeFile, unlink } from "fs";
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
-import { BaseResponse } from "./framework";
+import type { BaseRequest, BaseResponse } from "./framework";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -75,23 +72,12 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
     };
 }
 
-export function getRIDFromRequest(req: express.Request): string | undefined {
-    return getHeader(req, HEADER_RID);
+export function getRIDFromRequest(req: BaseRequest): string | undefined {
+    return req.getHeaderValue(HEADER_RID);
 }
 
 export function normaliseHttpMethod(method: string): HTTPMethod {
     return method.toLowerCase() as HTTPMethod;
-}
-
-export function getHeader(req: express.Request, key: string): string | undefined {
-    let value = req.headers[key];
-    if (value === undefined) {
-        return undefined;
-    }
-    if (Array.isArray(value)) {
-        return value[0];
-    }
-    return value;
 }
 
 export function sendNon200Response(res: BaseResponse, message: string, statusCode: number) {
@@ -105,47 +91,6 @@ export function sendNon200Response(res: BaseResponse, message: string, statusCod
 export function send200Response(res: BaseResponse, responseJson: any) {
     res.setStatusCode(200);
     res.sendJSONResponse(responseJson);
-}
-
-export async function assertThatBodyParserHasBeenUsed(req: express.Request, res: express.Response) {
-    // according to https://github.com/supertokens/supertokens-node/issues/33
-    let method = normaliseHttpMethod(req.method);
-    if (method === "post" || method === "put") {
-        if (typeof req.body === "string") {
-            try {
-                req.body = JSON.parse(req.body);
-            } catch (err) {
-                if (req.body === "") {
-                    req.body = {};
-                } else {
-                    throw new STError({
-                        type: STError.BAD_INPUT_ERROR,
-                        message: "API input error: Please make sure to pass a valid JSON input in thr request body",
-                    });
-                }
-            }
-        } else if (req.body === undefined || Buffer.isBuffer(req.body)) {
-            let jsonParser = bodyParser.json();
-            let err = await new Promise((resolve) => jsonParser(req, res, resolve));
-            if (err !== undefined) {
-                throw new STError({
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "API input error: Please make sure to pass a valid JSON input in thr request body",
-                });
-            }
-        }
-    } else if (method === "delete" || method === "get") {
-        if (req.query === undefined) {
-            let parser = bodyParser.urlencoded({ extended: true });
-            let err = await new Promise((resolve) => parser(req, res, resolve));
-            if (err !== undefined) {
-                throw new STError({
-                    type: STError.BAD_INPUT_ERROR,
-                    message: "API input error: Please make sure to pass valid URL query params",
-                });
-            }
-        }
-    }
 }
 
 export function isAnIpAddress(ipaddress: string) {
@@ -220,4 +165,8 @@ export async function removeServerlessCache() {
     for (let i = 0; i < tempFilesPath.length; i++) {
         await removeFile(tempFilesPath[i]);
     }
+}
+
+export function frontendHasInterceptor(req: BaseRequest): boolean {
+    return getRIDFromRequest(req) !== undefined;
 }

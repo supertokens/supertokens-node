@@ -14,7 +14,7 @@
  */
 
 import { LoopbackWrapper } from "./framework";
-export default LoopbackWrapper;
+export type { SessionContext } from "./framework";
 
 export const middleware = LoopbackWrapper.middleware;
 export const wrapRequest = LoopbackWrapper.wrapRequest;

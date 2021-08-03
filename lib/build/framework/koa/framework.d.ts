@@ -35,7 +35,7 @@ export declare class KoaResponse extends BaseResponse {
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
 }
-export interface SessionRequest extends Context {
+export interface SessionContext extends Context {
     session?: SessionContainerInterface;
 }
 export declare const middleware: () => (ctx: Context, next: Next) => Promise<any>;

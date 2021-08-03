@@ -260,16 +260,16 @@ export class AWSResponse extends BaseResponse {
     };
 }
 
-export interface SessionRequestV2 extends SupertokensLambdaEventV2 {
+export interface SessionEventV2 extends SupertokensLambdaEventV2 {
     session?: SessionContainerInterface;
 }
 
-export interface SessionRequest extends SupertokensLambdaEvent {
+export interface SessionEvent extends SupertokensLambdaEvent {
     session?: SessionContainerInterface;
 }
 
 export const middleware = (handler?: Handler): Handler => {
-    return async (event: SessionRequest | SessionRequestV2, context: Context, callback: Callback) => {
+    return async (event: SessionEvent | SessionEventV2, context: Context, callback: Callback) => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new AWSRequest(event);
         let response = new AWSResponse(event);

@@ -14,7 +14,7 @@
  */
 
 import { AWSWrapper } from "./framework";
-export default AWSWrapper;
+export type { SessionEvent, SessionEventV2 } from "./framework";
 
 export const middleware = AWSWrapper.middleware;
 export const wrapRequest = AWSWrapper.wrapRequest;

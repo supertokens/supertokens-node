@@ -131,7 +131,7 @@ export class KoaResponse extends BaseResponse {
     };
 }
 
-export interface SessionRequest extends Context {
+export interface SessionContext extends Context {
     session?: SessionContainerInterface;
 }
 

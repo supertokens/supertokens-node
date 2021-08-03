@@ -25,7 +25,3 @@ export function verifySession(options: VerifySessionOptions | undefined) {
         return h.continue;
     };
 }
-
-export default {
-    verifySession,
-};

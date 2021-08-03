@@ -71,10 +71,10 @@ export declare class AWSResponse extends BaseResponse {
         response: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2
     ) => APIGatewayProxyResult | APIGatewayProxyStructuredResultV2;
 }
-export interface SessionRequestV2 extends SupertokensLambdaEventV2 {
+export interface SessionEventV2 extends SupertokensLambdaEventV2 {
     session?: SessionContainerInterface;
 }
-export interface SessionRequest extends SupertokensLambdaEvent {
+export interface SessionEvent extends SupertokensLambdaEvent {
     session?: SessionContainerInterface;
 }
 export declare const middleware: (handler?: Handler<any, any> | undefined) => Handler<any, any>;

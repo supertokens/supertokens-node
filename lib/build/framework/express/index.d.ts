@@ -1,6 +1,5 @@
 /// <reference types="express" />
-import { ExpressWrapper } from "./framework";
-export default ExpressWrapper;
+export type { SessionRequest } from "./framework";
 export declare const middleware: () => (
     req: import("express").Request,
     res: import("express").Response,

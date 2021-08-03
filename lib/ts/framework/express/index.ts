@@ -14,7 +14,7 @@
  */
 
 import { ExpressWrapper } from "./framework";
-export default ExpressWrapper;
+export type { SessionRequest } from "./framework";
 
 export const middleware = ExpressWrapper.middleware;
 export const errorHandler = ExpressWrapper.errorHandler;

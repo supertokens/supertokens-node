@@ -14,7 +14,7 @@
  */
 
 import { HapiWrapper } from "./framework";
-export default HapiWrapper;
+export type { SessionRequest } from "./framework";
 
 export const plugin = HapiWrapper.plugin;
 export const wrapRequest = HapiWrapper.wrapRequest;

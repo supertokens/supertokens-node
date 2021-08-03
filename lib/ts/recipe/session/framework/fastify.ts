@@ -25,7 +25,3 @@ export function verifySession(options: VerifySessionOptions | undefined) {
         req.session = await sessionRecipe.verifySession(options, request, response);
     };
 }
-
-export default {
-    verifySession,
-};

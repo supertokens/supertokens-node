@@ -13,13 +13,14 @@
  * under the License.
  */
 import type { Handler, Context, Callback } from "aws-lambda";
-import { AWSRequest, AWSResponse, SessionRequest, SessionRequestV2 } from "../../../framework/awsLambda/framework";
+import { AWSRequest, AWSResponse } from "../../../framework/awsLambda/framework";
+import type { SessionEvent, SessionEventV2 } from "../../../framework/awsLambda/framework";
 import SuperTokens from "../../../supertokens";
 import Session from "../recipe";
 import { VerifySessionOptions } from "..";
 
 export function verifySession(handler: Handler, verifySessionOptions?: VerifySessionOptions): Handler {
-    return async (event: SessionRequest | SessionRequestV2, context: Context, callback: Callback) => {
+    return async (event: SessionEvent | SessionEventV2, context: Context, callback: Callback) => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new AWSRequest(event);
         let response = new AWSResponse(event);
@@ -37,7 +38,3 @@ export function verifySession(handler: Handler, verifySessionOptions?: VerifySes
         }
     };
 }
-
-export default {
-    verifySession,
-};

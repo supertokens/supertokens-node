@@ -14,7 +14,7 @@
  */
 
 import { FastifyWrapper } from "./framework";
-export default FastifyWrapper;
+export type { SessionRequest } from "./framework";
 
 export const plugin = FastifyWrapper.plugin;
 export const errorHandler = FastifyWrapper.errorHandler;

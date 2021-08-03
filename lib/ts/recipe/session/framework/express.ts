@@ -31,7 +31,3 @@ export function verifySession(options: VerifySessionOptions | undefined) {
         }
     };
 }
-
-export default {
-    verifySession,
-};

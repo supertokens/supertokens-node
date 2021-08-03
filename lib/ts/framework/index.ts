@@ -15,12 +15,12 @@
 export { BaseRequest } from "./request";
 export { BaseResponse } from "./response";
 
-import expressFramework from "./express";
-import fastifyFramework from "./fastify";
-import hapiFramework from "./hapi";
-import loopbackFramework from "./loopback";
-import koaFramework from "./koa";
-import awsLambdaFramework from "./awsLambda";
+import * as expressFramework from "./express";
+import * as fastifyFramework from "./fastify";
+import * as hapiFramework from "./hapi";
+import * as loopbackFramework from "./loopback";
+import * as koaFramework from "./koa";
+import * as awsLambdaFramework from "./awsLambda";
 
 export default {
     express: expressFramework,

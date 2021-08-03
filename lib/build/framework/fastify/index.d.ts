@@ -1,6 +1,5 @@
 /// <reference types="node" />
-import { FastifyWrapper } from "./framework";
-export default FastifyWrapper;
+export type { SessionRequest } from "./framework";
 export declare const plugin: import("fastify").FastifyPluginCallback<Record<never, never>, import("http").Server>;
 export declare const errorHandler: () => (
     err: any,

@@ -1,14 +1,11 @@
-import express from "express";
+import * as express from "express";
 import Supertokens from "../..";
 import Session, { RecipeInterface, SessionRequest } from "../../recipe/session";
 import EmailPassword from "../../recipe/emailpassword";
 import { verifySession } from "../../recipe/session/framework/express";
-import { middleware } from "../../framework/express";
+import { middleware, errorHandler } from "../../framework/express";
 import NextJS from "../../nextjs";
-import {
-    RecipeImplementation as FaunaDBImplementation,
-    SessionContainer as FaunaDBSessionContainer,
-} from "../../recipe/session/faunadb";
+import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 
@@ -39,6 +36,8 @@ Supertokens.init({
                                 revokeSession: session.revokeSession,
                                 updateJWTPayload: session.updateJWTPayload,
                                 updateSessionData: session.updateSessionData,
+                                getExpiry: session.getExpiry,
+                                getTimeCreated: session.getTimeCreated,
                             };
                         },
                         getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
@@ -52,6 +51,7 @@ Supertokens.init({
                         updateSessionData: originalImpl.updateSessionData,
                         getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
                         getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
+                        getSessionInformation: originalImpl.getSessionInformation,
                     };
                 },
             },
@@ -97,7 +97,7 @@ app.use(
     }
 );
 
-app.use(Supertokens.errorHandler());
+app.use(errorHandler());
 
 app.listen();
 
@@ -148,8 +148,6 @@ Supertokens.init({
                     return {
                         ...originalImplementation,
                         createNewSession: async (input) => {
-                            let userId = input.userId;
-
                             input.jwtPayload = {
                                 ...input.jwtPayload,
                                 someKey: "someValue",
@@ -176,6 +174,10 @@ Supertokens.init({
                             // then the sign in should be handled by you.
                             if ((await supertokensImpl.getUserByEmail({ email: input.email })) === undefined) {
                                 // TODO: sign in from your db
+                                // example return value if credentials don't match
+                                return {
+                                    status: "WRONG_CREDENTIALS_ERROR",
+                                };
                             } else {
                                 return supertokensImpl.signIn(input);
                             }
@@ -212,7 +214,7 @@ Supertokens.init({
                 apis: (oI) => {
                     return {
                         ...oI,
-                        emailExistsGET: async (input) => {
+                        emailExistsGET: async (_) => {
                             return {
                                 status: "OK",
                                 exists: true,
@@ -234,6 +236,12 @@ ThirdPartyEmailPassword.init({
             return {
                 ...oI,
                 signInUpPOST: async (input) => {
+                    if (oI.signInUpPOST === undefined) {
+                        throw Error("original implementation of signInUpPOST API is undefined");
+                    }
+                    if (input.type === "emailpassword") {
+                        let email = input.formFields.filter((i) => i.id === "email")[0];
+                    }
                     let response = await oI.signInUpPOST(input);
                     if (response.status === "OK") {
                         let { id, email } = response.user;
@@ -255,9 +263,8 @@ ThirdPartyEmailPassword.init({
                         } else {
                             // TODO: post sign in logic
                         }
-
-                        return response;
                     }
+                    return response;
                 },
             };
         },
@@ -298,7 +305,7 @@ EmailPassword.init({
                     }
                     let user = response.user;
 
-                    let origin = options.req.headers["origin"];
+                    let origin = options.req["origin"];
 
                     let isAllowed = false; // TODO: check if this user is allowed to sign in via their origin..
 

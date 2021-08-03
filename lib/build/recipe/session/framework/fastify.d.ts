@@ -14,7 +14,3 @@ export declare function verifySession(
         unknown
     >
 ) => Promise<void>;
-declare const _default: {
-    verifySession: typeof verifySession;
-};
-export default _default;

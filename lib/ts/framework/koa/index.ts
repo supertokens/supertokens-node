@@ -14,7 +14,7 @@
  */
 
 import { KoaWrapper } from "./framework";
-export default KoaWrapper;
+export type { SessionContext } from "./framework";
 
 export const middleware = KoaWrapper.middleware;
 export const wrapRequest = KoaWrapper.wrapRequest;

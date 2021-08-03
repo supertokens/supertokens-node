@@ -15,7 +15,7 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import express from "./framework/express";
+import { express } from "./framework";
 
 // For Express
 export default class SuperTokensWrapper {

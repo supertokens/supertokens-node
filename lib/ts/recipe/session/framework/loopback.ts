@@ -29,7 +29,3 @@ export function verifySession(options?: VerifySessionOptions): InterceptorOrKey 
         return await next();
     };
 }
-
-export default {
-    verifySession,
-};

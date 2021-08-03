@@ -19,12 +19,12 @@ import {
     RecipeInterface,
     SessionContainerInterface as SessionContainer,
     SessionInformation,
-    SessionRequest,
     APIInterface,
     APIOptions,
 } from "./types";
 import Recipe from "./recipe";
 import framework from "./framework";
+import type { SessionRequest } from "../../framework/express";
 
 // For Express
 export default class SessionWrapper {

@@ -4,11 +4,11 @@ import {
     RecipeInterface,
     SessionContainerInterface as SessionContainer,
     SessionInformation,
-    SessionRequest,
     APIInterface,
     APIOptions,
 } from "./types";
 import Recipe from "./recipe";
+import type { SessionRequest } from "../../framework/express";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
