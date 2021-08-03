@@ -15,6 +15,7 @@
 
 export abstract class BaseResponse {
     wrapperUsed: boolean;
+    original: any;
     constructor() {
         this.wrapperUsed = true;
     }

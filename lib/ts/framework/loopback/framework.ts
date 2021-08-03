@@ -36,6 +36,7 @@ export class LoopbackRequest extends BaseRequest {
 
     constructor(ctx: MiddlewareContext) {
         super();
+        this.original = ctx.request;
         this.request = ctx.request;
         this.parserChecked = false;
     }
@@ -86,6 +87,7 @@ export class LoopbackResponse extends BaseResponse {
 
     constructor(ctx: MiddlewareContext) {
         super();
+        this.original = ctx.response;
         this.response = ctx.response;
         this.statusCode = 200;
     }

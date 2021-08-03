@@ -17,6 +17,7 @@ import { HTTPMethod } from "../types";
 
 export abstract class BaseRequest {
     wrapperUsed: boolean;
+    original: any;
     constructor() {
         this.wrapperUsed = true;
     }

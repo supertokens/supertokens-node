@@ -35,6 +35,7 @@ export class ExpressRequest extends BaseRequest {
 
     constructor(request: Request) {
         super();
+        this.original = request;
         this.request = request;
         this.parserChecked = false;
     }
@@ -85,6 +86,7 @@ export class ExpressResponse extends BaseResponse {
 
     constructor(response: Response) {
         super();
+        this.original = response;
         this.response = response;
         this.statusCode = 200;
     }

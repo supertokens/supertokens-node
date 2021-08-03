@@ -1,5 +1,6 @@
 export declare abstract class BaseResponse {
     wrapperUsed: boolean;
+    original: any;
     constructor();
     abstract setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     abstract setCookie: (

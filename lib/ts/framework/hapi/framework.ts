@@ -29,6 +29,7 @@ export class HapiRequest extends BaseRequest {
 
     constructor(request: Request) {
         super();
+        this.original = request;
         this.request = request;
     }
 
@@ -76,6 +77,7 @@ export class HapiResponse extends BaseResponse {
 
     constructor(response: ExtendedResponseToolkit) {
         super();
+        this.original = response;
         this.response = response;
         this.statusCode = 200;
         this.content = null;

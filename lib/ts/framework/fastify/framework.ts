@@ -39,6 +39,7 @@ export class FastifyRequest extends BaseRequest {
 
     constructor(request: OriginalFastifyRequest) {
         super();
+        this.original = request;
         this.request = request;
     }
 
@@ -80,6 +81,7 @@ export class FastifyResponse extends BaseResponse {
 
     constructor(response: FastifyReply) {
         super();
+        this.original = response;
         this.response = response;
         this.statusCode = 200;
     }

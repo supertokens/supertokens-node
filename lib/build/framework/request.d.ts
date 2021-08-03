@@ -1,6 +1,7 @@
 import { HTTPMethod } from "../types";
 export declare abstract class BaseRequest {
     wrapperUsed: boolean;
+    original: any;
     constructor();
     abstract getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
     abstract getJSONBody: () => Promise<any>;

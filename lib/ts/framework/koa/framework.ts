@@ -30,6 +30,7 @@ export class KoaRequest extends BaseRequest {
 
     constructor(ctx: Context) {
         super();
+        this.original = ctx;
         this.ctx = ctx;
         this.parsedJSONBody = undefined;
     }
@@ -78,6 +79,7 @@ export class KoaResponse extends BaseResponse {
 
     constructor(ctx: Context) {
         super();
+        this.original = ctx;
         this.ctx = ctx;
     }
 

@@ -37,6 +37,7 @@ export class AWSRequest extends BaseRequest {
 
     constructor(event: APIGatewayProxyEventV2 | APIGatewayProxyEvent) {
         super();
+        this.original = event;
         this.event = event;
         this.parsedJSONBody = undefined;
     }
@@ -140,6 +141,7 @@ export class AWSResponse extends BaseResponse {
 
     constructor(event: SupertokensLambdaEvent | SupertokensLambdaEventV2) {
         super();
+        this.original = event;
         this.event = event;
         this.statusCode = 200;
         this.content = JSON.stringify({});
