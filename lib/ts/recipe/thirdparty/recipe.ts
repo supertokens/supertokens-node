@@ -15,19 +15,21 @@
 
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
 import STError from "./error";
 
-import { SIGN_IN_UP_API, AUTHORISATION_API } from "./constants";
+import { SIGN_IN_UP_API, AUTHORISATION_API, GET_USERS_BY_EMAIL_API } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import signInUpAPI from "./api/signinup";
 import authorisationUrlAPI from "./api/authorisationUrl";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
+import { getUsersByEmailAPI } from "./api/getUsersByEmailAPI";
+import { APIInterface } from "./apiInterface";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -112,6 +114,12 @@ export default class Recipe extends RecipeModule {
                 id: AUTHORISATION_API,
                 disabled: this.apiImpl.authorisationUrlGET === undefined,
             },
+            {
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(GET_USERS_BY_EMAIL_API),
+                id: GET_USERS_BY_EMAIL_API,
+                disabled: this.apiImpl.usersByEmailGET === undefined,
+            },
             ...this.emailVerificationRecipe.getAPIsHandled(),
         ];
     };
@@ -138,6 +146,8 @@ export default class Recipe extends RecipeModule {
             return await signInUpAPI(this.apiImpl, options);
         } else if (id === AUTHORISATION_API) {
             return await authorisationUrlAPI(this.apiImpl, options);
+        } else if (id === GET_USERS_BY_EMAIL_API) {
+            return getUsersByEmailAPI(this.apiImpl, options);
         } else {
             return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
         }

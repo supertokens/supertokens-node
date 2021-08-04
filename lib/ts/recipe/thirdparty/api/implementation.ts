@@ -111,4 +111,13 @@ export default class APIImplementation implements APIInterface {
             authCodeResponse: accessTokenAPIResponse.data,
         };
     };
+
+    usersByEmailGET = async ({ email, options }: { email: string; options: APIOptions }) => {
+        const users = await options.recipeImplementation.getUsersByEmail({ email });
+
+        return {
+            status: "OK" as "OK",
+            users,
+        };
+    };
 }

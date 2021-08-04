@@ -1,10 +1,11 @@
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User } from "./types";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import * as express from "express";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { APIInterface } from "./apiInterface";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;

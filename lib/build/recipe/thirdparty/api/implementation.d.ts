@@ -35,4 +35,14 @@ export default class APIImplementation implements APIInterface {
               error: string;
           }
     >;
+    usersByEmailGET: ({
+        email,
+        options,
+    }: {
+        email: string;
+        options: APIOptions;
+    }) => Promise<{
+        status: "OK";
+        users: User[];
+    }>;
 }

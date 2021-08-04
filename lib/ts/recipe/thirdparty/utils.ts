@@ -18,7 +18,7 @@ import { validateTheStructureOfUserInput } from "../../utils";
 import Recipe from "./recipe";
 import STError from "./error";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import { RecipeInterface, APIInterface } from "./types";
+import { RecipeInterface } from "./types";
 import {
     User,
     TypeInput,
@@ -29,6 +29,7 @@ import {
     TypeInputSessionFeature,
     TypeNormalisedInputSessionFeature,
 } from "./types";
+import { APIInterface } from "./apiInterface";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,

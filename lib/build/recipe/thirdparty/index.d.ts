@@ -1,6 +1,7 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
+import { RecipeInterface, User, APIOptions, TypeProvider } from "./types";
+import { APIInterface } from "./apiInterface";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;

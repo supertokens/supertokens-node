@@ -13,12 +13,13 @@
  * under the License.
  */
 
-import { Request, Response, NextFunction } from "express";
+import { NextFunction, Request, Response } from "express";
 import {
-    RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,
+    RecipeInterface as EmailVerificationRecipeInterface,
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
+import { APIInterface } from "./apiInterface";
 
 const TypeAny = {
     type: "any",
@@ -225,36 +226,3 @@ export type APIOptions = {
     res: Response;
     next: NextFunction;
 };
-
-export interface APIInterface {
-    authorisationUrlGET:
-        | undefined
-        | ((input: {
-              provider: TypeProvider;
-              options: APIOptions;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
-
-    signInUpPOST:
-        | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              options: APIOptions;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    createdNewUser: boolean;
-                    user: User;
-                    authCodeResponse: any;
-                }
-              | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
-          >);
-}
