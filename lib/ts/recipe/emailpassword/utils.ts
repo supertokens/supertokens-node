@@ -39,6 +39,7 @@ import {
 } from "./passwordResetFunctions";
 import { validateTheStructureOfUserInput } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
+import { isEmailValid } from "../../common/isEmailValid";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -320,11 +321,7 @@ export async function defaultEmailValidator(value: any) {
         return "Development bug: Please make sure the email field yields a string";
     }
 
-    if (
-        value.match(
-            /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        ) === null
-    ) {
+    if (!isEmailValid(value)) {
         return "Email is invalid";
     }
 

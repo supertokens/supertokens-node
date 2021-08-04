@@ -2,6 +2,7 @@ import { APIOptions } from "../types";
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface } from "../apiInterface";
+import { isEmailValid } from "../../../common/isEmailValid";
 
 export const getUsersByEmailAPI = async (api: APIInterface, options: APIOptions) => {
     if (api.usersByEmailGET === undefined) {
@@ -14,6 +15,13 @@ export const getUsersByEmailAPI = async (api: APIInterface, options: APIOptions)
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
             message: "Please provide a single GET param 'email'",
+        });
+    }
+
+    if (!isEmailValid(email)) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "'email' parameter is invalid.",
         });
     }
 
