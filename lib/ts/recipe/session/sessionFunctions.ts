@@ -256,6 +256,13 @@ export async function getSessionInformation(
     });
 
     if (response.status === "OK") {
+        // Change keys to make them more readable
+        response["sessionData"] = response.userDataInDatabase;
+        response["jwtPayload"] = response.userDataInJWT;
+
+        delete response.userDataInJWT;
+        delete response.userDataInJWT;
+
         return response;
     } else {
         throw new STError({
@@ -388,7 +395,7 @@ export async function getSessionData(recipeImplementation: RecipeImplementation,
 
     // Call new method for >= 2.8
     if (maxVersion(apiVersion, "2.7") !== "2.7") {
-        return (await getSessionInformation(recipeImplementation, sessionHandle)).userDataInDatabase;
+        return (await getSessionInformation(recipeImplementation, sessionHandle)).sessionData;
     }
 
     let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/data"), {

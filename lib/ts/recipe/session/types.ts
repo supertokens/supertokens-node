@@ -242,8 +242,8 @@ export interface APIInterface {
 export type SessionInformation = {
     sessionHandle: string;
     userId: string;
-    userDataInDatabase: any;
+    sessionData: any;
     expiry: number;
-    userDataInJWT: any;
+    jwtPayload: any;
     timeCreated: number;
 };
