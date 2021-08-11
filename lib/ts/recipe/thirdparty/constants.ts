@@ -16,5 +16,3 @@
 export const AUTHORISATION_API = "/authorisationurl";
 
 export const SIGN_IN_UP_API = "/signinup";
-
-export const GET_USERS_BY_EMAIL_API = "/users/by-email";

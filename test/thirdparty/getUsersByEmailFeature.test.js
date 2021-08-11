@@ -2,13 +2,38 @@ const { printPath, setupST, startST, killAllST, cleanST, createServerlessCacheFo
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
-const nock = require("nock");
-const express = require("express");
-const request = require("supertest");
+let ThirdPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
+const { signInUp } = require("../../lib/build/recipe/thirdparty");
+const { getUsersByEmail } = require("../../lib/build/recipe/thirdparty");
 const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe.only(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.test.js]")}`, function () {
+    const MockThirdPartyProvider = {
+        id: "mock",
+    };
+
+    const MockThirdPartyProvider2 = {
+        id: "mock2",
+    };
+
+    const testSTConfig = {
+        supertokens: {
+            connectionURI: "http://localhost:8080",
+        },
+        appInfo: {
+            apiDomain: "api.supertokens.io",
+            appName: "SuperTokens",
+            websiteDomain: "supertokens.io",
+        },
+        recipeList: [
+            ThirdPartyRecipe.init({
+                signInAndUpFeature: {
+                    providers: [MockThirdPartyProvider],
+                },
+            }),
+        ],
+    };
+
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -22,138 +47,44 @@ describe.only(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFea
         await cleanST();
     });
 
-    it("invalid email yields 400 Bad Request", async function () {
+    it("invalid email yields empty users array", async function () {
         await startST();
+        STExpress.init(testSTConfig);
 
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                ThirPartyRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [() => {}],
-                    },
-                }),
-            ],
-        });
+        // given there are no users
 
-        const app = express();
+        // when
+        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
 
-        app.use(STExpress.middleware());
-        app.use(STExpress.errorHandler());
-
-        const response = await new Promise((resolve) => {
-            request(app)
-                .get("/auth/users/by-email?email=invalid@email")
-                .end((err, res) => {
-                    if (err) {
-                        return resolve(undefined);
-                    }
-
-                    return resolve(res);
-                });
-        });
-
-        assert.notStrictEqual(response, undefined);
-        assert.strictEqual(response.status, 400);
+        // then
+        assert.strictEqual(thirdPartyUsers.length, 0);
     });
 
-    it("valid email yields a user", async function () {
+    it("valid email yields third party users", async function () {
         await startST();
-
-        const MockThirdPartyProvider = {
-            id: "mock",
-            get: async (recipe, authorisationCode) => {
-                return {
-                    accessTokenAPI: {
-                        url: "https://test.com/oauth/token",
-                    },
-                    authorisationRedirect: {
-                        url: "https://test.com/oauth/auth",
-                    },
-                    getProfileInfo: async (authCodeResponse) => {
-                        return {
-                            id: "mockUserId",
-                            email: {
-                                id: "john.doe@example.com",
-                                isVerified: true,
-                            },
-                        };
-                    },
-                };
-            },
-        };
-
         STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
+            ...testSTConfig,
             recipeList: [
-                ThirPartyRecipe.init({
+                ThirdPartyRecipe.init({
                     signInAndUpFeature: {
-                        providers: [MockThirdPartyProvider],
+                        providers: [MockThirdPartyProvider, MockThirdPartyProvider2],
                     },
                 }),
             ],
         });
 
-        const app = express();
+        await signInUp("mock", "thirdPartyJohnDoe", { id: "john.doe@example.com", isVerified: true });
+        await signInUp("mock2", "thirdPartyDaveDoe", { id: "john.doe@example.com", isVerified: false });
 
-        app.use(STExpress.middleware());
-        app.use(STExpress.errorHandler());
+        const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
 
-        nock("https://test.com").post("/oauth/token").reply(200, {});
+        assert.strictEqual(thirdPartyUsers.length, 2);
 
-        const signUpResponse = await new Promise((resolve) => {
-            request(app)
-                .post("/auth/signinup")
-                .send({
-                    thirdPartyId: "mock",
-                    code: "abcdefghj",
-                    redirectURI: "http://127.0.0.1/callback",
-                })
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                });
+        thirdPartyUsers.forEach((user) => {
+            assert.notStrictEqual(user.thirdParty.id, undefined);
+            assert.notStrictEqual(user.id, undefined);
+            assert.notStrictEqual(user.timeJoined, undefined);
+            assert.strictEqual(user.email, "john.doe@example.com");
         });
-
-        const { body: responseBody } = await new Promise((resolve) => {
-            request(app)
-                .get("/auth/users/by-email?email=john.doe@example.com")
-                .end((err, res) => {
-                    if (err) {
-                        return resolve(undefined);
-                    }
-
-                    resolve(res);
-                });
-        });
-
-        assert.strictEqual(responseBody.status, "OK");
-
-        const firstUser = responseBody.users[0];
-
-        assert.deepStrictEqual(firstUser.thirdParty, {
-            id: "mock",
-            userId: "mockUserId",
-        });
-        assert.deepStrictEqual(firstUser.email, "john.doe@example.com");
-        assert.notStrictEqual(firstUser.id, undefined);
-        assert.notStrictEqual(firstUser.timeJoined, undefined);
     });
 });

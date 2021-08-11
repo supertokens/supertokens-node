@@ -36,20 +36,7 @@ namespace AuthorisationUrl {
     };
 }
 
-namespace UsersByEmail {
-    export type Input = {
-        email: string;
-        options: APIOptions;
-    };
-
-    export type Response = {
-        status: "OK";
-        users: User[];
-    };
-}
-
 export interface APIInterface {
     authorisationUrlGET?: (input: AuthorisationUrl.Input) => Promise<AuthorisationUrl.Response>;
     signInUpPOST?: (input: SignInUp.Input) => Promise<SignInUp.Response>;
-    usersByEmailGET?: (input: UsersByEmail.Input) => Promise<UsersByEmail.Response>;
 }
