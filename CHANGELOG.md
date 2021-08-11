@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [7.0.0] - 2021-07-31
 
+## Changes
+
+-   Add recipe function to fetch third party users https://github.com/supertokens/supertokens-core/issues/277
+
 ## Fixes
 
 -   https://github.com/supertokens/supertokens-node/issues/156
