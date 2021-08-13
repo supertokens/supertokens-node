@@ -175,12 +175,12 @@ export interface RecipeInterface {
 
     revokeMultipleSessions(input: { sessionHandles: string[] }): Promise<string[]>;
 
-    /** @deprecated Use getSessionInformation() instead **/
+    /** @deprecated Use getSessionInformation instead **/
     getSessionData(input: { sessionHandle: string }): Promise<any>;
 
     updateSessionData(input: { sessionHandle: string; newSessionData: any }): Promise<void>;
 
-    /** @deprecated Use getSessionInformation() instead **/
+    /** @deprecated Use getSessionInformation instead **/
     getJWTPayload(input: { sessionHandle: string }): Promise<any>;
 
     updateJWTPayload(input: { sessionHandle: string; newJWTPayload: any }): Promise<void>;
