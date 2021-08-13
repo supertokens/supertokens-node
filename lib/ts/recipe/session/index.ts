@@ -70,7 +70,7 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({ sessionHandles });
     }
 
-    /** @deprecated Use getSessionInformation instead **/
+    /** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
     static getSessionData(sessionHandle: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionData({ sessionHandle });
     }
@@ -82,7 +82,7 @@ export default class SessionWrapper {
         });
     }
 
-    /** @deprecated Use getSessionInformation instead **/
+    /** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
     static getJWTPayload(sessionHandle: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWTPayload({ sessionHandle });
     }
@@ -118,12 +118,12 @@ export let revokeSession = SessionWrapper.revokeSession;
 
 export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
 
-/** @deprecated Use getSessionInformation instead **/
+/** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
 export let getSessionData = SessionWrapper.getSessionData;
 
 export let updateSessionData = SessionWrapper.updateSessionData;
 
-/** @deprecated Use getSessionInformation instead **/
+/** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
 export let getJWTPayload = SessionWrapper.getJWTPayload;
 
 export let updateJWTPayload = SessionWrapper.updateJWTPayload;
