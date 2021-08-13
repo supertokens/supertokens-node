@@ -88,6 +88,21 @@ export default class APIImplementation implements APIInterface {
             return response;
         }
 
+        // we set the email as verified if already verified by the OAuth provider.
+        // This block was added because of https://github.com/supertokens/supertokens-core/issues/295
+        if (emailInfo.isVerified) {
+            const tokenResponse = await options.emailVerificationRecipeImplementation.createEmailVerificationToken({
+                userId: response.user.id,
+                email: response.user.email,
+            });
+
+            if (tokenResponse.status === "OK") {
+                await options.emailVerificationRecipeImplementation.verifyEmailUsingToken({
+                    token: tokenResponse.token,
+                });
+            }
+        }
+
         let action: "signup" | "signin" = response.createdNewUser ? "signup" : "signin";
         let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(
             response.user,

@@ -155,6 +155,7 @@ export default class Recipe extends RecipeModule {
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
+            emailVerificationRecipeImplementation: this.emailVerificationRecipe.recipeInterfaceImpl,
             req,
             res,
         };
