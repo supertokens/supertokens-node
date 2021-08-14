@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   https://github.com/supertokens/supertokens-node/issues/156
 
+## Breaking change:
+
+-   Updated minimum Oauth scopes required for various thirdparty providers.
+-   For thirdparty providers, if the scope array is passed by the user, the default scopes will not be used.
+
 ## [6.1.0] - 2021-06-24
 
 ## Changes

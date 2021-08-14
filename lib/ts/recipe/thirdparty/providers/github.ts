@@ -79,9 +79,9 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
             accessTokenAPIParams.redirect_uri = redirectURI;
         }
         let authorisationRedirectURL = "https://github.com/login/oauth/authorize";
-        let scopes = ["user"];
+        let scopes = ["read:user", "user:email"];
         if (config.scope !== undefined) {
-            scopes.push(...config.scope);
+            scopes = config.scope;
             scopes = Array.from(new Set(scopes));
         }
         let additionalParams =

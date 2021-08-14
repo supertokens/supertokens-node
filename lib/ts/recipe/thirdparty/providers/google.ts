@@ -80,12 +80,9 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
             accessTokenAPIParams.redirect_uri = redirectURI;
         }
         let authorisationRedirectURL = "https://accounts.google.com/o/oauth2/v2/auth";
-        let scopes = [
-            "https://www.googleapis.com/auth/userinfo.profile",
-            "https://www.googleapis.com/auth/userinfo.email",
-        ];
+        let scopes = ["https://www.googleapis.com/auth/userinfo.email"];
         if (config.scope !== undefined) {
-            scopes.push(...config.scope);
+            scopes = config.scope;
             scopes = Array.from(new Set(scopes));
         }
         let additionalParams =
