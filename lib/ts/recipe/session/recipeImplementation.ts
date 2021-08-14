@@ -14,7 +14,7 @@ import * as express from "express";
 import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
-import { normaliseHttpMethod } from "../../utils";
+import { normaliseHttpMethod, frontendHasInterceptor } from "../../utils";
 import { Querier } from "../../querier";
 import { getDataFromFileForServerlessCache, storeIntoTempFolderForServerlessCache } from "../../utils";
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./constants";
@@ -91,10 +91,24 @@ export default class RecipeImplementation implements RecipeInterface {
         let accessToken = getAccessTokenFromCookie(req);
         if (accessToken === undefined) {
             // maybe the access token has expired.
-            throw new STError({
-                message: "Access token has expired. Please call the refresh API",
-                type: STError.TRY_REFRESH_TOKEN,
-            });
+            /**
+             * Based on issue: #156 (spertokens-node)
+             * we throw TRY_REFRESH_TOKEN only if
+             * options.sessionRequired === true || (frontendHasInterceptor or request method is get),
+             * else we should return undefined
+             */
+            if (
+                options === undefined ||
+                (options !== undefined && options.sessionRequired === true) ||
+                frontendHasInterceptor(req) ||
+                normaliseHttpMethod(req.method) === "get"
+            ) {
+                throw new STError({
+                    message: "Access token has expired. Please call the refresh API",
+                    type: STError.TRY_REFRESH_TOKEN,
+                });
+            }
+            return undefined;
         }
         try {
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);

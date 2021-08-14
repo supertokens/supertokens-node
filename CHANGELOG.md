@@ -5,7 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [7.0.0] - 2021-07-21
+## [7.0.0] - 2021-07-31
+
+## Fixes
+
+-   https://github.com/supertokens/supertokens-node/issues/156
 
 ## Breaking change:
 
@@ -23,6 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `ThirdPartyEmailPassword.getUserCount()`, `ThirdPartyEmailPassword.getUsersNewestFirst()`, `ThirdPartyEmailPassword.getUsersOldestFirst`
 -   Deprecates (instead use `Session.getSessionInformation()`)
     -   `Session.getSessionData()`, `Session.getJWTPayload()`
+-   Adds email verification function calls in thirdparty sign in up API as per https://github.com/supertokens/supertokens-core/issues/295
+-   Adds `emailVerificationRecipeImplementation` in all auth recipe `APIOptions` so that APIs can access the email verification implementation.
+
+## [6.0.4] - 2021-07-29
+
+## Fixes
+
+-   Fixes typescript issue with default imports. (Related to https://github.com/supertokens/supertokens-auth-react/issues/297)
 
 ## [6.0.3] - 2021-07-08
 

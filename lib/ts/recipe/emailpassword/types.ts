@@ -254,6 +254,7 @@ export interface RecipeInterface {
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
+    emailVerificationRecipeImplementation: EmailVerificationRecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;

@@ -1,5 +1,6 @@
 import { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
 import * as express from "express";
+import type { Request } from "express";
 export declare function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined;
 export declare function maxVersion(version1: string, version2: string): string;
 export declare function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedAppinfo;
@@ -14,3 +15,4 @@ export declare function validateTheStructureOfUserInput(config: any, inputSchema
 export declare function getDataFromFileForServerlessCache<T>(filePath: string): Promise<T | undefined>;
 export declare function storeIntoTempFolderForServerlessCache(filePath: string, data: any): Promise<void>;
 export declare function removeServerlessCache(): Promise<void>;
+export declare function frontendHasInterceptor(req: Request): boolean;

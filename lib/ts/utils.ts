@@ -8,6 +8,7 @@ import * as bodyParser from "body-parser";
 import { validate } from "jsonschema";
 import { readFile, writeFile, unlink } from "fs";
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
+import type { Request } from "express";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -224,4 +225,8 @@ export async function removeServerlessCache() {
     for (let i = 0; i < tempFilesPath.length; i++) {
         await removeFile(tempFilesPath[i]);
     }
+}
+
+export function frontendHasInterceptor(req: Request): boolean {
+    return getRIDFromRequest(req) !== undefined;
 }

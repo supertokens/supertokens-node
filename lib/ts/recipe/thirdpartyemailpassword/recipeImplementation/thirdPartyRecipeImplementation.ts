@@ -1,10 +1,10 @@
 import { RecipeInterface, User } from "../../thirdparty/types";
-import { RecipeInterface as ThirdPartyRecipeInterface } from "../types";
+import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
-    recipeImplementation: ThirdPartyRecipeInterface;
+    recipeImplementation: ThirdPartyEmailPasswordRecipeInterface;
 
-    constructor(recipeImplementation: ThirdPartyRecipeInterface) {
+    constructor(recipeImplementation: ThirdPartyEmailPasswordRecipeInterface) {
         this.recipeImplementation = recipeImplementation;
     }
 
