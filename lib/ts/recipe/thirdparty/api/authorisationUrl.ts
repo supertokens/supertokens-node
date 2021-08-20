@@ -25,7 +25,7 @@ export default async function authorisationUrlAPI(
         return false;
     }
 
-    let thirdPartyId = await options.req.getKeyValueFromQuery("thirdPartyId");
+    let thirdPartyId = options.req.getKeyValueFromQuery("thirdPartyId");
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError({

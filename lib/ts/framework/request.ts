@@ -21,7 +21,7 @@ export abstract class BaseRequest {
     constructor() {
         this.wrapperUsed = true;
     }
-    abstract getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
+    abstract getKeyValueFromQuery: (key: string) => string | undefined;
     abstract getJSONBody: () => Promise<any>;
     abstract getMethod: () => HTTPMethod;
     abstract getCookieValue: (key_: string) => string | undefined;

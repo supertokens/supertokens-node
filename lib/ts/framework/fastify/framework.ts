@@ -43,7 +43,7 @@ export class FastifyRequest extends BaseRequest {
         this.request = request;
     }
 
-    getKeyValueFromQuery = async (key: string): Promise<string | undefined> => {
+    getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {
             return undefined;
         }

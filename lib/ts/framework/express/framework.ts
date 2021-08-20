@@ -40,11 +40,7 @@ export class ExpressRequest extends BaseRequest {
         this.parserChecked = false;
     }
 
-    getKeyValueFromQuery = async (key: string): Promise<string | undefined> => {
-        if (!this.parserChecked) {
-            await assertThatBodyParserHasBeenUsedForExpressLikeRequest(this.getMethod(), this.request);
-            this.parserChecked = true;
-        }
+    getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {
             return undefined;
         }

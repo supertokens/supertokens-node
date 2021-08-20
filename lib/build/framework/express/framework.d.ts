@@ -8,7 +8,7 @@ export declare class ExpressRequest extends BaseRequest {
     private request;
     private parserChecked;
     constructor(request: Request);
-    getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
+    getKeyValueFromQuery: (key: string) => string | undefined;
     getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;

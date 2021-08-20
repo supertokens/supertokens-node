@@ -24,7 +24,7 @@ export default async function emailExists(apiImplementation: APIInterface, optio
         return false;
     }
 
-    let email = await options.req.getKeyValueFromQuery("email");
+    let email = options.req.getKeyValueFromQuery("email");
 
     if (email === undefined || typeof email !== "string") {
         throw new STError({

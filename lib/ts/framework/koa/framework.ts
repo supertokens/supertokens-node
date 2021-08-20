@@ -35,7 +35,7 @@ export class KoaRequest extends BaseRequest {
         this.parsedJSONBody = undefined;
     }
 
-    getKeyValueFromQuery = async (key: string): Promise<string | undefined> => {
+    getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.ctx.query === undefined) {
             return undefined;
         }

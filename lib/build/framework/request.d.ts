@@ -3,7 +3,7 @@ export declare abstract class BaseRequest {
     wrapperUsed: boolean;
     original: any;
     constructor();
-    abstract getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
+    abstract getKeyValueFromQuery: (key: string) => string | undefined;
     abstract getJSONBody: () => Promise<any>;
     abstract getMethod: () => HTTPMethod;
     abstract getCookieValue: (key_: string) => string | undefined;

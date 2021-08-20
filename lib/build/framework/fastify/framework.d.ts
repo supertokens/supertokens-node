@@ -8,7 +8,7 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 export declare class FastifyRequest extends BaseRequest {
     private request;
     constructor(request: OriginalFastifyRequest);
-    getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
+    getKeyValueFromQuery: (key: string) => string | undefined;
     getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;

@@ -8,7 +8,7 @@ export declare class LoopbackRequest extends BaseRequest {
     private request;
     private parserChecked;
     constructor(ctx: MiddlewareContext);
-    getKeyValueFromQuery: (key: string) => Promise<string | undefined>;
+    getKeyValueFromQuery: (key: string) => string | undefined;
     getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
     getCookieValue: (key: string) => string | undefined;

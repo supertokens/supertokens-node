@@ -42,7 +42,7 @@ export class AWSRequest extends BaseRequest {
         this.parsedJSONBody = undefined;
     }
 
-    getKeyValueFromQuery = async (key: string): Promise<string | undefined> => {
+    getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.event.queryStringParameters === undefined || this.event.queryStringParameters === null) {
             return undefined;
         }
