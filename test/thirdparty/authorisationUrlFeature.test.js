@@ -38,8 +38,8 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                         params: {
                             scope: "test",
                             client_id: "supertokens",
-                            dynamic: async function dynamicParam(request) {
-                                return await request.getKeyValueFromQuery("dynamic");
+                            dynamic: function dynamicParam(request) {
+                                return request.query.dynamic;
                             },
                         },
                     },

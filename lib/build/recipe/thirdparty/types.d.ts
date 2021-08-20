@@ -21,7 +21,7 @@ export declare type TypeProviderGetResponse = {
     authorisationRedirect: {
         url: string;
         params: {
-            [key: string]: string | ((request: BaseRequest) => string);
+            [key: string]: string | ((request: any) => string);
         };
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;

@@ -58,7 +58,6 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         await startST();
         SuperTokens.init({
             framework: "koa",
-            framework: "koa",
             supertokens: {
                 connectionURI: "http://localhost:8080",
             },

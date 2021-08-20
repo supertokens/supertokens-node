@@ -16,7 +16,6 @@ import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { validateTheStructureOfUserInput } from "../../../utils";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
-import { BaseRequest } from "../../../framework";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -27,7 +26,7 @@ type TypeThirdPartyProviderAppleConfig = {
     };
     scope?: string[];
     authorisationRedirect?: {
-        params?: { [key: string]: string | ((request: BaseRequest) => Promise<string>) };
+        params?: { [key: string]: string | ((request: any) => string) };
     };
 };
 

@@ -111,7 +111,7 @@ export default class RecipeImplementation implements RecipeInterface {
                 options === undefined ||
                 (options !== undefined && options.sessionRequired === true) ||
                 frontendHasInterceptor(req) ||
-                normaliseHttpMethod(req.method) === "get"
+                normaliseHttpMethod(req.getMethod()) === "get"
             ) {
                 throw new STError({
                     message: "Access token has expired. Please call the refresh API",

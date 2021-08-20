@@ -1,12 +1,11 @@
 import { TypeProvider } from "../types";
-import { BaseRequest } from "../../../framework";
 declare type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
     clientSecret: string;
     scope?: string[];
     authorisationRedirect?: {
         params?: {
-            [key: string]: string | ((request: BaseRequest) => Promise<string>);
+            [key: string]: string | ((request: any) => string);
         };
     };
 };

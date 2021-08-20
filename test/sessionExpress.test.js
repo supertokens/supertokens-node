@@ -31,8 +31,8 @@ let Session = require("../recipe/session");
 let { Querier } = require("../lib/build/querier");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 const { removeServerlessCache } = require("../lib/build/utils");
-const { verifySession } = require("../recipe/session");
-const { errorHandler } = require("../lib/build");
+const { verifySession } = require("../recipe/session/framework/express");
+const { errorHandler } = require("../framework/express");
 
 describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
     beforeEach(async function () {

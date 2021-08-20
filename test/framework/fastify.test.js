@@ -358,8 +358,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             ],
         });
 
-        this.server.setErrorHandler(FastifyFramework.errorHandler());
-
         this.server.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
             return res.send("").code(200);
@@ -484,8 +482,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             ],
         });
 
-        this.server.setErrorHandler(FastifyFramework.errorHandler());
-
         this.server.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
             return res.send("").code(200);
@@ -539,8 +535,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 }),
             ],
         });
-
-        this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
@@ -666,8 +660,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             ],
         });
 
-        this.server.setErrorHandler(FastifyFramework.errorHandler());
-
         this.server.post("/create", async (req, res) => {
             await Session.createNewSession(res, "id1", {}, {});
             return res.send("").code(200);
@@ -732,8 +724,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 }),
             ],
         });
-
-        this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         await this.server.register(FastifyFramework.plugin);
 
@@ -804,8 +794,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 }),
             ],
         });
-
-        this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
@@ -902,8 +890,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 }),
             ],
         });
-
-        this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
@@ -1042,8 +1028,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 }),
             ],
         });
-
-        this.server.setErrorHandler(FastifyFramework.errorHandler());
 
         this.server.post("/create", async (req, res) => {
             await Session.createNewSession(res, "user1", {}, {});

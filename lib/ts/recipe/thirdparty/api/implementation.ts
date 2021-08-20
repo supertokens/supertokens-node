@@ -22,7 +22,7 @@ export default class APIImplementation implements APIInterface {
         for (let i = 0; i < keys.length; i++) {
             let key = keys[i];
             let value = providerInfo.authorisationRedirect.params[key];
-            params[key] = typeof value === "function" ? await value(options.req) : value;
+            params[key] = typeof value === "function" ? await value(options.req.original) : value;
         }
 
         let paramsString = new URLSearchParams(params).toString();
