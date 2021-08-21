@@ -53,4 +53,6 @@ export default class Recipe extends RecipeModule {
     createEmailVerificationToken: (userId: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<User>;
     isEmailVerified: (userId: string) => Promise<boolean>;
+    revokeEmailVerificationTokens: (userId: string) => Promise<void>;
+    unverifyEmail: (userId: string) => Promise<void>;
 }
