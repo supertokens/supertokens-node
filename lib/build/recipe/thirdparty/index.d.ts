@@ -16,6 +16,7 @@ export default class Wrapper {
         user: User;
     }>;
     static getUserById(userId: string): Promise<User | undefined>;
+    static getUsersByEmail(email: string): Promise<User[]>;
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
     /**
      * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
@@ -53,6 +54,7 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let signInUp: typeof Wrapper.signInUp;
 export declare let getUserById: typeof Wrapper.getUserById;
+export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
 export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;

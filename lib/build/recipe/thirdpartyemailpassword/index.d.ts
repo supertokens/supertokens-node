@@ -57,6 +57,10 @@ export default class Wrapper {
           }
     >;
     static getUserById(userId: string): Promise<User | undefined>;
+    static getUsersByEmail(email: string): Promise<User[]>;
+    /**
+     * @deprecated Use supertokens.getUsersByEmail(...) function instead IF using core version >= 3.5
+     *   */
     static getUserByEmail(email: string): Promise<User | undefined>;
     static createResetPasswordToken(
         userId: string
@@ -114,7 +118,11 @@ export declare let signIn: typeof Wrapper.signIn;
 export declare let signInUp: typeof Wrapper.signInUp;
 export declare let getUserById: typeof Wrapper.getUserById;
 export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
+/**
+ * @deprecated Use supertokens.getUsersByEmail(...) function instead IF using core version >= 3.5
+ *   */
 export declare let getUserByEmail: typeof Wrapper.getUserByEmail;
+export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;

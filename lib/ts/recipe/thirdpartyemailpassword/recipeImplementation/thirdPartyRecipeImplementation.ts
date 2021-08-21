@@ -71,6 +71,15 @@ export default class RecipeImplementation implements RecipeInterface {
         };
     };
 
+    getUsersByEmail = async ({ email }: { email: string }): Promise<User[]> => {
+        let users = await this.recipeImplementation.getUsersByEmail({ email });
+
+        // we filter out all non thirdparty users.
+        return users.filter((u) => {
+            return u.thirdParty !== undefined;
+        }) as User[];
+    };
+
     /**
      * @deprecated
      *   */

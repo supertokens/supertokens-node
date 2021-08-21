@@ -49,8 +49,12 @@ export default class RecipeImplementation implements RecipeInterface {
           }
     >;
     getUserById: (input: { userId: string }) => Promise<User | undefined>;
+    getUsersByEmail: ({ email }: { email: string }) => Promise<User[]>;
     getUserByThirdPartyInfo: (input: { thirdPartyId: string; thirdPartyUserId: string }) => Promise<User | undefined>;
     getEmailForUserId: (input: { userId: string }) => Promise<string>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserByEmail: (input: { email: string }) => Promise<User | undefined>;
     createResetPasswordToken: (input: {
         userId: string;
@@ -80,6 +84,9 @@ export default class RecipeImplementation implements RecipeInterface {
         nextPaginationTokenString?: string | undefined;
     }) => Promise<{
         users: User[];
+        /**
+         * @deprecated Please do not override this function
+         *   */
         nextPaginationToken?: string | undefined;
     }>;
     /**
@@ -93,6 +100,9 @@ export default class RecipeImplementation implements RecipeInterface {
         nextPaginationTokenString?: string | undefined;
     }) => Promise<{
         users: User[];
+        /**
+         * @deprecated Please do not override this function
+         *   */
         nextPaginationToken?: string | undefined;
     }>;
     /**
