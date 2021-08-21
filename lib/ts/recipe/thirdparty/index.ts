@@ -47,6 +47,10 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
+    static getUsersByEmail(email: string): Promise<User[]> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email });
+    }
+
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
@@ -121,6 +125,8 @@ export let Error = Wrapper.Error;
 export let signInUp = Wrapper.signInUp;
 
 export let getUserById = Wrapper.getUserById;
+
+export let getUsersByEmail = Wrapper.getUsersByEmail;
 
 export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
 

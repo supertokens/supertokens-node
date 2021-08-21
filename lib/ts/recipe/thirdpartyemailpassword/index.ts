@@ -63,6 +63,13 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
+    static getUsersByEmail(email: string) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email });
+    }
+
+    /**
+     * @deprecated Use supertokens.getUsersByEmail(...) function instead IF using core version >= 3.5
+     *   */
     static getUserByEmail(email: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({ email });
     }
@@ -131,7 +138,12 @@ export let getUserById = Wrapper.getUserById;
 
 export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
 
+/**
+ * @deprecated Use supertokens.getUsersByEmail(...) function instead IF using core version >= 3.5
+ *   */
 export let getUserByEmail = Wrapper.getUserByEmail;
+
+export let getUsersByEmail = Wrapper.getUsersByEmail;
 
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 
