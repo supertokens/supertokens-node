@@ -80,6 +80,10 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
+    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string }): Promise<void> {
+        return Recipe.getInstanceOrThrowError().updateEmailOrPassword(input);
+    }
+
     static createEmailVerificationToken(userId: string): Promise<string> {
         return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
     }
@@ -129,5 +133,7 @@ export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
  * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
  *   */
 export let getUserCount = Wrapper.getUserCount;
+
+export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };

@@ -73,4 +73,12 @@ export default class RecipeImplementation implements RecipeInterface {
     getUserCount = async () => {
         throw new Error("Should never be called");
     };
+
+    updateEmailOrPassword = async (input: {
+        userId: string;
+        email?: string;
+        password?: string;
+    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID" | "EMAIL_ALREADY_EXISTS_ERROR" }> => {
+        return this.recipeImplementation.updateEmailOrPassword(input);
+    };
 }

@@ -259,6 +259,13 @@ export interface RecipeInterface {
      * @deprecated Please do not override this function
      *   */
     getUserCount(): Promise<number>;
+    updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+    }): Promise<{
+        status: "OK" | "UNKNOWN_USER_ID" | "EMAIL_ALREADY_EXISTS_ERROR";
+    }>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

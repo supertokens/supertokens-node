@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Adds `emailVerificationRecipeImplementation` in all auth recipe `APIOptions` so that APIs can access the email verification implementation.
 -   Add recipe function to fetch third party users https://github.com/supertokens/supertokens-core/issues/277
 -   Deprecates `getUserByEmail` in thirdpartyemailpassword and replaces it with `getUsersByEmail`.
+-   Adds `updateEmailOrPassword` recipe function to emailpassword and thirdpartyemailpassword recipes: https://github.com/supertokens/supertokens-core/issues/275
 
 ## [6.0.4] - 2021-07-29
 

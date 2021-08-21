@@ -95,4 +95,11 @@ export default class RecipeImplementation implements RecipeInterface {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
+    updateEmailOrPassword: (input: {
+        userId: string;
+        email?: string | undefined;
+        password?: string | undefined;
+    }) => Promise<{
+        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID";
+    }>;
 }

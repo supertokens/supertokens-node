@@ -266,4 +266,15 @@ export default class Recipe extends RecipeModule {
             throw Error("Invalid password reset token");
         }
     };
+
+    updateEmailOrPassword = async (input: { userId: string; email?: string; password?: string }) => {
+        let response = await this.recipeInterfaceImpl.updateEmailOrPassword(input);
+        if (response.status === "OK") {
+            return;
+        }
+        if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+            throw new Error("Update failed. Email already exists");
+        }
+        throw new Error("Unknown User ID provided");
+    };
 }
