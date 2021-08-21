@@ -38,8 +38,8 @@ export default class Wrapper {
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;
     static isEmailVerified(userId: string): Promise<boolean>;
-    static revokeEmailVerificationTokens(userId: string, email: string): Promise<void>;
-    static unverifyEmail(userId: string, email: string): Promise<void>;
+    static revokeEmailVerificationTokens(userId: string): Promise<void>;
+    static unverifyEmail(userId: string): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

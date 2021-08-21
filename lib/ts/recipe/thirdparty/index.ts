@@ -109,17 +109,12 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
     }
 
-    static async revokeEmailVerificationTokens(userId: string, email: string): Promise<void> {
-        await Recipe.getInstanceOrThrowError().emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens(
-            { userId, email }
-        );
+    static async revokeEmailVerificationTokens(userId: string): Promise<void> {
+        await Recipe.getInstanceOrThrowError().revokeEmailVerificationTokens(userId);
     }
 
-    static async unverifyEmail(userId: string, email: string): Promise<void> {
-        await Recipe.getInstanceOrThrowError().emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
-            userId,
-            email,
-        });
+    static async unverifyEmail(userId: string): Promise<void> {
+        await Recipe.getInstanceOrThrowError().unverifyEmail(userId);
     }
 
     static Google = thirdPartyProviders.Google;

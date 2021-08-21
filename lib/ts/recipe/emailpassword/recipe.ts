@@ -235,6 +235,20 @@ export default class Recipe extends RecipeModule {
         });
     };
 
+    revokeEmailVerificationTokens = async (userId: string): Promise<void> => {
+        await this.emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens({
+            userId,
+            email: await this.getEmailForUserId(userId),
+        });
+    };
+
+    unverifyEmail = async (userId: string): Promise<void> => {
+        await this.emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
+            userId,
+            email: await this.getEmailForUserId(userId),
+        });
+    };
+
     signUp = async (email: string, password: string) => {
         let response = await this.recipeInterfaceImpl.signUp({ email, password });
         if (response.status === "OK") {
