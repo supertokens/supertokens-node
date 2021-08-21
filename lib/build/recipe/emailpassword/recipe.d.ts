@@ -50,4 +50,9 @@ export default class Recipe extends RecipeModule {
     signIn: (email: string, password: string) => Promise<import("./types").User>;
     createResetPasswordToken: (userId: string) => Promise<string>;
     resetPasswordUsingToken: (token: string, newPassword: string) => Promise<void>;
+    updateEmailOrPassword: (input: {
+        userId: string;
+        email?: string | undefined;
+        password?: string | undefined;
+    }) => Promise<void>;
 }

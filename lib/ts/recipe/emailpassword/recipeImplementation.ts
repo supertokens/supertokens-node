@@ -149,4 +149,29 @@ export default class RecipeImplementation implements RecipeInterface {
             nextPaginationToken: response.nextPaginationToken,
         };
     };
+
+    updateEmailOrPassword = async (input: {
+        userId: string;
+        email?: string;
+        password?: string;
+    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID" | "EMAIL_ALREADY_EXISTS_ERROR" }> => {
+        let response = await this.querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
+            userId: input.userId,
+            email: input.email,
+            password: input.password,
+        });
+        if (response.status === "OK") {
+            return {
+                status: "OK",
+            };
+        } else if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+            return {
+                status: "EMAIL_ALREADY_EXISTS_ERROR",
+            };
+        } else {
+            return {
+                status: "UNKNOWN_USER_ID",
+            };
+        }
+    };
 }

@@ -84,9 +84,6 @@ export default class RecipeImplementation implements RecipeInterface {
         nextPaginationTokenString?: string | undefined;
     }) => Promise<{
         users: User[];
-        /**
-         * @deprecated Please do not override this function
-         *   */
         nextPaginationToken?: string | undefined;
     }>;
     /**
@@ -100,13 +97,17 @@ export default class RecipeImplementation implements RecipeInterface {
         nextPaginationTokenString?: string | undefined;
     }) => Promise<{
         users: User[];
-        /**
-         * @deprecated Please do not override this function
-         *   */
         nextPaginationToken?: string | undefined;
     }>;
     /**
      * @deprecated Please do not override this function
      *   */
     getUserCount: () => Promise<number>;
+    updateEmailOrPassword: (input: {
+        userId: string;
+        email?: string | undefined;
+        password?: string | undefined;
+    }) => Promise<{
+        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID";
+    }>;
 }

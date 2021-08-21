@@ -265,6 +265,12 @@ export interface RecipeInterface {
         token: string;
         newPassword: string;
     }): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }>;
+
+    updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID" | "EMAIL_ALREADY_EXISTS_ERROR" }>;
 }
 
 export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;

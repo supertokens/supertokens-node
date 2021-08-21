@@ -196,4 +196,12 @@ export default class RecipeImplementation implements RecipeInterface {
         let promise2 = this.thirdPartyImplementation !== undefined ? this.thirdPartyImplementation.getUserCount() : 0;
         return (await promise1) + (await promise2);
     };
+
+    updateEmailOrPassword = async (input: {
+        userId: string;
+        email?: string;
+        password?: string;
+    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID" | "EMAIL_ALREADY_EXISTS_ERROR" }> => {
+        return this.emailPasswordImplementation.updateEmailOrPassword(input);
+    };
 }
