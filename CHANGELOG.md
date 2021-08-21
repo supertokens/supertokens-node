@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Add recipe function to fetch third party users https://github.com/supertokens/supertokens-core/issues/277
 -   Deprecates `getUserByEmail` in thirdpartyemailpassword and replaces it with `getUsersByEmail`.
 -   Adds `updateEmailOrPassword` recipe function to emailpassword and thirdpartyemailpassword recipes: https://github.com/supertokens/supertokens-core/issues/275
+-   Adds emailverification recipe functions to all recipes: https://github.com/supertokens/supertokens-core/issues/270
 
 ## [6.0.4] - 2021-07-29
 

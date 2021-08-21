@@ -84,6 +84,9 @@ export default class RecipeImplementation implements RecipeInterface {
         nextPaginationTokenString?: string | undefined;
     }) => Promise<{
         users: User[];
+        /**
+         * @deprecated Please do not override this function
+         *   */
         nextPaginationToken?: string | undefined;
     }>;
     /**
@@ -97,6 +100,9 @@ export default class RecipeImplementation implements RecipeInterface {
         nextPaginationTokenString?: string | undefined;
     }) => Promise<{
         users: User[];
+        /**
+         * @deprecated Please do not override this function
+         *   */
         nextPaginationToken?: string | undefined;
     }>;
     /**

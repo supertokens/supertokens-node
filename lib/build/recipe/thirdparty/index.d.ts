@@ -45,6 +45,8 @@ export default class Wrapper {
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;
     static isEmailVerified(userId: string): Promise<boolean>;
+    static revokeEmailVerificationTokens(userId: string, email: string): Promise<void>;
+    static unverifyEmail(userId: string, email: string): Promise<void>;
     static Google: typeof import("./providers/google").default;
     static Github: typeof import("./providers/github").default;
     static Facebook: typeof import("./providers/facebook").default;
@@ -59,6 +61,8 @@ export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyIn
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
+export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
+export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
 /**
  * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
  *   */

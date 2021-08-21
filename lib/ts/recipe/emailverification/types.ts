@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from "express";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,6 +12,8 @@ import { Request, Response, NextFunction } from "express";
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+import { Request, Response, NextFunction } from "express";
 
 export type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
@@ -56,6 +57,10 @@ export interface RecipeInterface {
     }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>;
 
     isEmailVerified(input: { userId: string; email: string }): Promise<boolean>;
+
+    revokeEmailVerificationTokens(input: { userId: string; email: string }): Promise<{ status: "OK" }>;
+
+    unverifyEmail(input: { userId: string; email: string }): Promise<{ status: "OK" }>;
 }
 
 export type APIOptions = {

@@ -95,6 +95,19 @@ export default class Wrapper {
     static isEmailVerified(userId: string): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
     }
+
+    static async revokeEmailVerificationTokens(userId: string, email: string): Promise<void> {
+        await Recipe.getInstanceOrThrowError().emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens(
+            { userId, email }
+        );
+    }
+
+    static async unverifyEmail(userId: string, email: string): Promise<void> {
+        await Recipe.getInstanceOrThrowError().emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
+            userId,
+            email,
+        });
+    }
 }
 
 export let init = Wrapper.init;
@@ -118,6 +131,10 @@ export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
 export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
+
+export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens;
+
+export let unverifyEmail = Wrapper.unverifyEmail;
 
 /**
  * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5

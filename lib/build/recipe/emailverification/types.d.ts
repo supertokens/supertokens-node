@@ -46,6 +46,18 @@ export interface RecipeInterface {
           }
     >;
     isEmailVerified(input: { userId: string; email: string }): Promise<boolean>;
+    revokeEmailVerificationTokens(input: {
+        userId: string;
+        email: string;
+    }): Promise<{
+        status: "OK";
+    }>;
+    unverifyEmail(input: {
+        userId: string;
+        email: string;
+    }): Promise<{
+        status: "OK";
+    }>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

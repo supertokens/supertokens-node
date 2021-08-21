@@ -68,4 +68,20 @@ export default class RecipeImplementation implements RecipeInterface {
         });
         return response.isVerified;
     };
+
+    revokeEmailVerificationTokens = async (input: { userId: string; email: string }): Promise<{ status: "OK" }> => {
+        await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token/remove"), {
+            userId: input.userId,
+            email: input.email,
+        });
+        return { status: "OK" };
+    };
+
+    unverifyEmail = async (input: { userId: string; email: string }): Promise<{ status: "OK" }> => {
+        await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/remove"), {
+            userId: input.userId,
+            email: input.email,
+        });
+        return { status: "OK" };
+    };
 }

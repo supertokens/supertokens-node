@@ -33,6 +33,14 @@ export default class Wrapper {
     static async isEmailVerified(userId: string, email: string): Promise<boolean> {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified({ userId, email });
     }
+
+    static async revokeEmailVerificationTokens(userId: string, email: string): Promise<void> {
+        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeEmailVerificationTokens({ userId, email });
+    }
+
+    static async unverifyEmail(userId: string, email: string): Promise<void> {
+        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unverifyEmail({ userId, email });
+    }
 }
 
 export let init = Wrapper.init;
@@ -44,5 +52,9 @@ export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
 export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
+
+export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens;
+
+export let unverifyEmail = Wrapper.unverifyEmail;
 
 export type { RecipeInterface, APIOptions, APIInterface, User };
