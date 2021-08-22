@@ -79,12 +79,21 @@ module.exports.extractInfoFromResponse = function (res) {
     let idRefreshTokenHttpOnly = false;
     let refreshTokenHttpOnly = false;
     let frontToken = res.headers["front-token"];
-    let cookies = res.headers["set-cookie"];
+    let cookies = res.headers["set-cookie"] || res.headers["Set-Cookie"];
     cookies = cookies === undefined ? [] : cookies;
+    if (!Array.isArray(cookies)) {
+        cookies = [cookies];
+    }
     cookies.forEach((i) => {
         if (i.split(";")[0].split("=")[0] === "sAccessToken") {
-            accessToken = i.split(";")[0].split("=")[1];
+            /**
+             * if token is sAccessToken=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOiIyIn0=.eyJzZXNzaW9uSGFuZGxlIjoiMWI4NDBhOTAtMjVmYy00ZjQ4LWE2YWMtMDc0MDIzZjNjZjQwIiwidXNlcklkIjoiIiwicmVmcmVzaFRva2VuSGFzaDEiOiJjYWNhZDNlMGNhMDVkNzRlNWYzNTc4NmFlMGQ2MzJjNDhmMTg1YmZmNmUxNThjN2I2OThkZDYwMzA1NzAyYzI0IiwidXNlckRhdGEiOnt9LCJhbnRpQ3NyZlRva2VuIjoiYTA2MjRjYWItZmIwNy00NTFlLWJmOTYtNWQ3YzU2MjMwZTE4IiwiZXhwaXJ5VGltZSI6MTYyNjUxMjM3NDU4NiwidGltZUNyZWF0ZWQiOjE2MjY1MDg3NzQ1ODYsImxtcnQiOjE2MjY1MDg3NzQ1ODZ9.f1sCkjt0OduS6I6FBQDBLV5zhHXpCU2GXnbe+8OCU6HKG00TX5CM8AyFlOlqzSHABZ7jES/+5k0Ff/rdD34cczlNqICcC4a23AjJg2a097rFrh8/8V7J5fr4UrHLIM4ojZNFz1NyVyDK/ooE6I7soHshEtEVr2XsnJ4q3d+fYs2wwx97PIT82hfHqgbRAzvlv952GYt+OH4bWQE4vTzDqGN7N2OKpn9l2fiCB1Ytzr3ocHRqKuQ8f6xW1n575Q1sSs9F9TtD7lrKfFQH+//6lyKFe2Q1SDc7YU4pE5Cy9Kc/LiqiTU+gsGIJL5qtMzUTG4lX38ugF4QDyNjDBMqCKw==; Max-Age=3599; Expires=Sat, 17 Jul 2021 08:59:34 GMT; Secure; HttpOnly; SameSite=Lax; Path=/'
+             * i.split(";")[0].split("=")[1] will result in eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsInZlcnNpb24iOiIyIn0
+             */
+            accessToken = i.split(";")[0].split("=").slice(1).join("=");
             if (i.split(";")[2].includes("Expires=")) {
+                accessTokenExpiry = i.split(";")[2].split("=")[1];
+            } else if (i.split(";")[2].includes("expires=")) {
                 accessTokenExpiry = i.split(";")[2].split("=")[1];
             } else {
                 accessTokenExpiry = i.split(";")[3].split("=")[1];
@@ -94,19 +103,23 @@ module.exports.extractInfoFromResponse = function (res) {
             }
             accessTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
         } else if (i.split(";")[0].split("=")[0] === "sRefreshToken") {
-            refreshToken = i.split(";")[0].split("=")[1];
+            refreshToken = i.split(";")[0].split("=").slice(1).join("=");
             if (i.split(";")[2].includes("Expires=")) {
+                refreshTokenExpiry = i.split(";")[2].split("=")[1];
+            } else if (i.split(";")[2].includes("expires=")) {
                 refreshTokenExpiry = i.split(";")[2].split("=")[1];
             } else {
                 refreshTokenExpiry = i.split(";")[3].split("=")[1];
             }
             if (i.split(";")[1].includes("Domain=")) {
-                refreshTokenDomain = i.split(";")[1].split("=")[1];
+                refreshTokenDomain = i.split(";")[1].split("=").slice(1).join("=");
             }
             refreshTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
         } else {
             idRefreshTokenFromCookie = i.split(";")[0].split("=")[1];
             if (i.split(";")[2].includes("Expires=")) {
+                idRefreshTokenExpiry = i.split(";")[2].split("=")[1];
+            } else if (i.split(";")[2].includes("expires=")) {
                 idRefreshTokenExpiry = i.split(";")[2].split("=")[1];
             } else {
                 idRefreshTokenExpiry = i.split(";")[3].split("=")[1];
@@ -380,4 +393,32 @@ module.exports.createServerlessCacheForTesting = async function () {
             resolve();
         });
     });
+};
+
+module.exports.mockLambdaProxyEvent = function (path, httpMethod, headers, body, proxy) {
+    return {
+        path,
+        httpMethod,
+        headers,
+        body,
+        requestContext: {
+            path: `${proxy}${path}`,
+        },
+    };
+};
+
+module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, body, proxy, cookies) {
+    return {
+        version: "2.0",
+        httpMethod,
+        headers,
+        body,
+        cookies,
+        requestContext: {
+            http: {
+                path: `${proxy}${path}`,
+            },
+            stage: proxy.slice(1),
+        },
+    };
 };

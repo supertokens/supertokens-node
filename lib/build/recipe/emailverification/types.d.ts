@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { BaseRequest, BaseResponse } from "../../framework";
 export declare type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
     getEmailVerificationURL?: (user: User) => Promise<string>;
@@ -52,9 +52,8 @@ export declare type APIOptions = {
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
-    req: Request;
-    res: Response;
-    next: NextFunction;
+    req: BaseRequest;
+    res: BaseResponse;
 };
 export interface APIInterface {
     verifyEmailPOST:

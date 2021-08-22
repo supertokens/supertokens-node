@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [7.0.0] - 2021-07-31
 
+## Added
+
+-   Multiple framework support. Currently supporting express, koa, hapi, fastify, awsLambda and loopback
+-   BaseRequest and BaseResponse interface added which will be used inside recipe instead of previously used express.Request and express.Response
+-   `framework` config option. Default value is `express`.
+-   basic tests for all frameworks.
+
+## Changed
+
+-   Following functions are changed in default SuperTokens class (supertokens.ts):
+    -   middleware: instead of taking no option and returning an express middleware, it now takes 2 parameters: BaseRequest and BaseResponse and returns a boolean. If response was send by the middleware, it returns true, else false
+    -   handleAPI: no longer take `next` parameter. Also the request and response parameter will be of type BaseRequest and BaseResponse.
+    -   errorHandler: instead of taking no option and returning an express error middleware, it now takes 3 parameters: error object, BaseRequest and BaseResponse
+-   Cookie and Header handling will part be delegated to specific framework.
+-   Request and Response parameters passwed in functions `createNewSession`, `getSession` and `refreshSession` can by of any type and not `express.Request` and `express.Response`.
+-   middleware, errorHandler should be imported from specific framework (i.e. `import {middleware, errorHandler} from "supertokens-node/framework/express"`). Also, errorHandler may not be there for few frameworksas it may not be required.
+-   verifySession should be imported from specific framework, from session recipe (i.e. `import {verifySession} from "supertokens-node/recipe/session/framework/express"`).
+-   `handleAPIRequest` in recipe modules will no longer take `next` parameter. Also the request and response parameter will be of type BaseRequest and BaseResponse.
+-   `handleAPIRequest` in recipe modules will return boolean. If the response is sent from `handleAPIRequest`, the function will return true else it will return false.
+-   `handleError` in recipe modules will no longer take `next` parameter. Also the request and response parameter will be of type BaseRequest and BaseResponse. If error is not handled by the function, it will rethrow the error.
+-   All the API implementation functions should return a boolean. If response is sent, `true` will be returned else false.
+-   `verifySession` which was defined in `middleware.ts` file is now removed.
+
+## Deprecated
+
+-   middleware, errorHandler imported directly from supertokens-node (i.e. `import {middleware, errorHandler} from "supertokens-node"`)
+-   verifySession imported directly from session recipe (i.e. `import {verifySession} from "supertokens-node/recipe/session"`)
+
+## Breaking changes
+
+-   In `ThirdParty` recipe, for type `TypeProviderGetResponse`, the field `authorisationRedirect.params` will be of type `{ [key: string]: string | ((request: BaseRequest) => string) }`. Earlier, the request was of type express.Request.
+-   For all the recipes' `APIOptions`, their will be no `next` parameter. Also the request and response parameter will be of type BaseRequest and BaseResponse.
+
 ## Fixes
 
 -   https://github.com/supertokens/supertokens-node/issues/156

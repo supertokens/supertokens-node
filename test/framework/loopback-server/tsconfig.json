@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "skipLibCheck": true,
+        "strict": true,
+        // FIXME(bajtos) LB4 is not compatible with this setting yet
+        "strictPropertyInitialization": false,
+        "lib": ["es2020"],
+        "module": "commonjs",
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "target": "es2018",
+        "outDir": "."
+    },
+    "exclude": []
+}

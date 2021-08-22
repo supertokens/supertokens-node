@@ -16,7 +16,6 @@
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import * as express from "express";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -37,6 +36,7 @@ import EmailVerificationRecipe from "../emailverification/recipe";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
+import { BaseRequest, BaseResponse } from "../../framework";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -143,15 +143,13 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction,
+        req: BaseRequest,
+        res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod
-    ) => {
+    ): Promise<boolean> => {
         let options = {
             config: this.config,
-            next,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
@@ -170,16 +168,11 @@ export default class Recipe extends RecipeModule {
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this.apiImpl, options);
         } else {
-            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
+            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, path, method);
         }
     };
 
-    handleError = (
-        err: STError,
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction
-    ): void => {
+    handleError = (err: STError, request: BaseRequest, response: BaseResponse): void => {
         if (err.fromRecipe === Recipe.RECIPE_ID) {
             if (err.type === STError.FIELD_ERROR) {
                 return send200Response(response, {
@@ -187,10 +180,10 @@ export default class Recipe extends RecipeModule {
                     formFields: err.payload,
                 });
             } else {
-                return next(err);
+                throw err;
             }
         } else {
-            return this.emailVerificationRecipe.handleError(err, request, response, next);
+            return this.emailVerificationRecipe.handleError(err, request, response);
         }
     };
 

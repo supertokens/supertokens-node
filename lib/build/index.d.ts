@@ -1,16 +1,9 @@
+/// <reference types="express" />
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import * as express from "express";
 export default class SuperTokensWrapper {
     static init: typeof SuperTokens.init;
     static Error: typeof SuperTokensError;
-    static middleware(): (req: express.Request, res: express.Response, next: express.NextFunction) => Promise<void>;
-    static errorHandler(): (
-        err: any,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction
-    ) => Promise<void>;
     static getAllCORSHeaders(): string[];
     static getUserCount(includeRecipeIds?: string[]): Promise<number>;
     static getUsersOldestFirst(input?: {
@@ -35,10 +28,42 @@ export default class SuperTokensWrapper {
         }[];
         nextPaginationToken?: string;
     }>;
+    /**
+     * @deprecated
+     */
+    static middleware: () => (
+        req: import("express").Request,
+        res: import("express").Response,
+        next: import("express").NextFunction
+    ) => Promise<void>;
+    /**
+     * @deprecated
+     */
+    static errorHandler: () => (
+        err: any,
+        req: import("express").Request,
+        res: import("express").Response,
+        next: import("express").NextFunction
+    ) => Promise<void>;
 }
 export declare let init: typeof SuperTokens.init;
-export declare let middleware: typeof SuperTokensWrapper.middleware;
-export declare let errorHandler: typeof SuperTokensWrapper.errorHandler;
+/**
+ * @deprecated
+ */
+export declare let middleware: () => (
+    req: import("express").Request,
+    res: import("express").Response,
+    next: import("express").NextFunction
+) => Promise<void>;
+/**
+ * @deprecated
+ */
+export declare let errorHandler: () => (
+    err: any,
+    req: import("express").Request,
+    res: import("express").Response,
+    next: import("express").NextFunction
+) => Promise<void>;
 export declare let getAllCORSHeaders: typeof SuperTokensWrapper.getAllCORSHeaders;
 export declare let getUserCount: typeof SuperTokensWrapper.getUserCount;
 export declare let getUsersOldestFirst: typeof SuperTokensWrapper.getUsersOldestFirst;

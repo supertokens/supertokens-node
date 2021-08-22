@@ -1,12 +1,11 @@
 import * as express from "express";
 import Supertokens from "../..";
-import Session, { RecipeInterface, VerifySessionOptions, SessionContainer, SessionRequest } from "../../recipe/session";
-import EmailPassword, { RecipeInterface as EPRecipeInterface } from "../../recipe/emailpassword";
+import Session, { RecipeInterface, SessionRequest } from "../../recipe/session";
+import EmailPassword from "../../recipe/emailpassword";
+import { verifySession } from "../../recipe/session/framework/express";
+import { middleware, errorHandler } from "../../framework/express";
 import NextJS from "../../nextjs";
-import {
-    RecipeImplementation as FaunaDBImplementation,
-    SessionContainer as FaunaDBSessionContainer,
-} from "../../recipe/session/faunadb";
+import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 
@@ -63,10 +62,10 @@ Supertokens.init({
     ],
 });
 
-app.use(Supertokens.middleware());
+app.use(middleware());
 
 app.use(
-    Session.verifySession({
+    verifySession({
         antiCsrfCheck: true,
         sessionRequired: false,
     }),
@@ -90,7 +89,7 @@ app.use(
 
         await NextJS.superTokensNextWrapper(
             async (next) => {
-                await Supertokens.middleware()(req, res, next);
+                await middleware()(req, res, next);
             },
             req,
             res
@@ -98,7 +97,7 @@ app.use(
     }
 );
 
-app.use(Supertokens.errorHandler());
+app.use(errorHandler());
 
 app.listen();
 
@@ -306,7 +305,7 @@ EmailPassword.init({
                     }
                     let user = response.user;
 
-                    let origin = options.req.headers["origin"];
+                    let origin = options.req["origin"];
 
                     let isAllowed = false; // TODO: check if this user is allowed to sign in via their origin..
 

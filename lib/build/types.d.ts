@@ -1,6 +1,7 @@
 import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
+import { TypeFramework } from "./framework/types";
 export declare type AppInfo = {
     appName: string;
     websiteDomain: string;
@@ -22,6 +23,7 @@ export declare type TypeInput = {
         connectionURI: string;
         apiKey?: string;
     };
+    framework?: TypeFramework;
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
@@ -30,6 +32,10 @@ export declare type TypeInput = {
 export declare const InputSchema: {
     type: string;
     properties: {
+        framework: {
+            type: string;
+            enum: string[];
+        };
         supertokens: {
             type: string;
             properties: {

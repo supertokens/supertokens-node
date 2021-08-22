@@ -16,7 +16,6 @@ import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { validateTheStructureOfUserInput } from "../../../utils";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
-import { Request } from "express";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -27,7 +26,7 @@ type TypeThirdPartyProviderAppleConfig = {
     };
     scope?: string[];
     authorisationRedirect?: {
-        params?: { [key: string]: string | ((request: Request) => string) };
+        params?: { [key: string]: string | ((request: any) => string) };
     };
 };
 

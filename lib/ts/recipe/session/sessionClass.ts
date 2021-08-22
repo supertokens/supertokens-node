@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import * as express from "express";
+import { BaseResponse } from "../../framework";
 import * as SessionFunctions from "./sessionFunctions";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
@@ -24,7 +24,7 @@ export default class Session implements SessionContainerInterface {
     private sessionHandle: string;
     private userId: string;
     private userDataInJWT: any;
-    private res: express.Response;
+    private res: BaseResponse;
     private accessToken: string;
     private recipeImplementation: RecipeImplementation;
 
@@ -34,7 +34,7 @@ export default class Session implements SessionContainerInterface {
         sessionHandle: string,
         userId: string,
         userDataInJWT: any,
-        res: express.Response
+        res: BaseResponse
     ) {
         this.sessionHandle = sessionHandle;
         this.userId = userId;

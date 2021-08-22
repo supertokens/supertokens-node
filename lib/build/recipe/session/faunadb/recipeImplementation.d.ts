@@ -1,8 +1,8 @@
 import { VerifySessionOptions, RecipeInterface } from "../";
-import * as express from "express";
 import * as faunadb from "faunadb";
-import { Session as FaunaDBSessionContainer } from "./types";
-import { SessionInformation } from "../types";
+import type { Session as FaunaDBSessionContainer } from "./types";
+import type { BaseRequest, BaseResponse } from "../../../framework";
+import type { SessionInformation } from "../types";
 export default class RecipeImplementation implements RecipeInterface {
     config: {
         accessFaunadbTokenFromFrontend: boolean;
@@ -26,7 +26,7 @@ export default class RecipeImplementation implements RecipeInterface {
         jwtPayload,
         sessionData,
     }: {
-        res: express.Response;
+        res: BaseResponse;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
@@ -36,12 +36,12 @@ export default class RecipeImplementation implements RecipeInterface {
         res,
         options,
     }: {
-        req: express.Request;
-        res: express.Response;
+        req: BaseRequest;
+        res: BaseResponse;
         options?: VerifySessionOptions | undefined;
     }) => Promise<FaunaDBSessionContainer | undefined>;
     getSessionInformation: ({ sessionHandle }: { sessionHandle: string }) => Promise<SessionInformation>;
-    refreshSession: ({ req, res }: { req: express.Request; res: express.Response }) => Promise<FaunaDBSessionContainer>;
+    refreshSession: ({ req, res }: { req: BaseRequest; res: BaseResponse }) => Promise<FaunaDBSessionContainer>;
     revokeAllSessionsForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     revokeSession: ({ sessionHandle }: { sessionHandle: string }) => Promise<boolean>;

@@ -1,4 +1,3 @@
-import { Request, Response, NextFunction } from "express";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,6 +12,8 @@ import { Request, Response, NextFunction } from "express";
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+import { BaseRequest, BaseResponse } from "../../framework";
 
 export type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
@@ -63,9 +64,8 @@ export type APIOptions = {
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
-    req: Request;
-    res: Response;
-    next: NextFunction;
+    req: BaseRequest;
+    res: BaseResponse;
 };
 
 export interface APIInterface {

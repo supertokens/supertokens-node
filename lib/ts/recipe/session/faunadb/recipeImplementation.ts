@@ -1,10 +1,10 @@
 import { VerifySessionOptions, RecipeInterface } from "../";
-import * as express from "express";
-import { SessionContainer } from "../";
+import type { SessionContainer } from "../";
 import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
-import { Session as FaunaDBSessionContainer } from "./types";
-import { SessionInformation } from "../types";
+import type { Session as FaunaDBSessionContainer } from "./types";
+import type { BaseRequest, BaseResponse } from "../../../framework";
+import type { SessionInformation } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {
@@ -59,7 +59,7 @@ export default class RecipeImplementation implements RecipeInterface {
         jwtPayload = {},
         sessionData = {},
     }: {
-        res: express.Response;
+        res: BaseResponse;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
@@ -87,8 +87,8 @@ export default class RecipeImplementation implements RecipeInterface {
         res,
         options,
     }: {
-        req: express.Request;
-        res: express.Response;
+        req: BaseRequest;
+        res: BaseResponse;
         options?: VerifySessionOptions;
     }): Promise<FaunaDBSessionContainer | undefined> => {
         let originalSession = await this.originalImplementation.getSession({ req, res, options });
@@ -106,8 +106,8 @@ export default class RecipeImplementation implements RecipeInterface {
         req,
         res,
     }: {
-        req: express.Request;
-        res: express.Response;
+        req: BaseRequest;
+        res: BaseResponse;
     }): Promise<FaunaDBSessionContainer> => {
         let originalSession = await this.originalImplementation.refreshSession({ req, res });
         let session = getModifiedSession(originalSession);

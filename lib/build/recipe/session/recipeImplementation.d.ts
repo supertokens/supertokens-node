@@ -1,5 +1,4 @@
 import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo, SessionInformation } from "./types";
-import * as express from "express";
 import Session from "./sessionClass";
 import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
@@ -14,7 +13,7 @@ export default class RecipeImplementation implements RecipeInterface {
         jwtPayload,
         sessionData,
     }: {
-        res: express.Response;
+        res: any;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
@@ -24,12 +23,12 @@ export default class RecipeImplementation implements RecipeInterface {
         res,
         options,
     }: {
-        req: express.Request;
-        res: express.Response;
+        req: any;
+        res: any;
         options?: VerifySessionOptions | undefined;
     }) => Promise<Session | undefined>;
     getSessionInformation: ({ sessionHandle }: { sessionHandle: string }) => Promise<SessionInformation>;
-    refreshSession: ({ req, res }: { req: express.Request; res: express.Response }) => Promise<Session>;
+    refreshSession: ({ req, res }: { req: any; res: any }) => Promise<Session>;
     revokeAllSessionsForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     revokeSession: ({ sessionHandle }: { sessionHandle: string }) => Promise<boolean>;

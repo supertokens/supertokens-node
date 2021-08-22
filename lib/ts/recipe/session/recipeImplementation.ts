@@ -10,7 +10,6 @@ import {
     setFrontTokenInHeaders,
     getRidFromHeader,
 } from "./cookieAndHeaders";
-import * as express from "express";
 import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
@@ -20,6 +19,8 @@ import { getDataFromFileForServerlessCache, storeIntoTempFolderForServerlessCach
 import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./constants";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
+import SuperTokens from "../../supertokens";
+import frameworks from "../../framework";
 
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
@@ -44,11 +45,14 @@ export default class RecipeImplementation implements RecipeInterface {
         jwtPayload = {},
         sessionData = {},
     }: {
-        res: express.Response;
+        res: any;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
     }): Promise<Session> => {
+        if (!res.wrapperUsed) {
+            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
+        }
         let response = await SessionFunctions.createNewSession(this, userId, jwtPayload, sessionData);
         attachCreateOrRefreshSessionResponseToExpressRes(this.config, res, response);
         return new Session(
@@ -66,10 +70,16 @@ export default class RecipeImplementation implements RecipeInterface {
         res,
         options,
     }: {
-        req: express.Request;
-        res: express.Response;
+        req: any;
+        res: any;
         options?: VerifySessionOptions;
     }): Promise<Session | undefined> => {
+        if (!res.wrapperUsed) {
+            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
+        }
+        if (!req.wrapperUsed) {
+            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+        }
         let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
 
         let idRefreshToken = getIdRefreshTokenFromCookie(req);
@@ -101,7 +111,7 @@ export default class RecipeImplementation implements RecipeInterface {
                 options === undefined ||
                 (options !== undefined && options.sessionRequired === true) ||
                 frontendHasInterceptor(req) ||
-                normaliseHttpMethod(req.method) === "get"
+                normaliseHttpMethod(req.getMethod()) === "get"
             ) {
                 throw new STError({
                     message: "Access token has expired. Please call the refresh API",
@@ -114,7 +124,7 @@ export default class RecipeImplementation implements RecipeInterface {
             let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
 
             if (doAntiCsrfCheck === undefined) {
-                doAntiCsrfCheck = normaliseHttpMethod(req.method) !== "get";
+                doAntiCsrfCheck = normaliseHttpMethod(req.getMethod()) !== "get";
             }
 
             let response = await SessionFunctions.getSession(
@@ -154,7 +164,13 @@ export default class RecipeImplementation implements RecipeInterface {
         return SessionFunctions.getSessionInformation(this, sessionHandle);
     };
 
-    refreshSession = async ({ req, res }: { req: express.Request; res: express.Response }): Promise<Session> => {
+    refreshSession = async ({ req, res }: { req: any; res: any }): Promise<Session> => {
+        if (!res.wrapperUsed) {
+            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
+        }
+        if (!req.wrapperUsed) {
+            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+        }
         let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
         if (inputIdRefreshToken === undefined) {
             // we do not clear cookies here because of a

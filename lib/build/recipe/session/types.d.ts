@@ -1,6 +1,5 @@
-import { Request, Response, NextFunction } from "express";
+import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import * as express from "express";
 export declare type HandshakeInfo = {
     jwtSigningPublicKey: string;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
@@ -110,14 +109,14 @@ export declare type TypeNormalisedInput = {
         apis: (originalImplementation: APIInterface) => APIInterface;
     };
 };
-export interface SessionRequest extends Request {
+export interface SessionRequest extends BaseRequest {
     session?: SessionContainerInterface;
 }
 export interface ErrorHandlerMiddleware {
-    (message: string, request: Request, response: Response, next: NextFunction): void;
+    (message: string, request: BaseRequest, response: BaseResponse): void;
 }
 export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, request: Request, response: Response, next: NextFunction): void;
+    (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): void;
 }
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
@@ -130,23 +129,23 @@ export interface VerifySessionOptions {
 }
 export interface RecipeInterface {
     createNewSession(input: {
-        res: express.Response;
+        res: any;
         userId: string;
         jwtPayload?: any;
         sessionData?: any;
     }): Promise<SessionContainerInterface>;
     getSession(input: {
-        req: express.Request;
-        res: express.Response;
+        req: any;
+        res: any;
         options?: VerifySessionOptions;
     }): Promise<SessionContainerInterface | undefined>;
+    refreshSession(input: { req: any; res: any }): Promise<SessionContainerInterface>;
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionData
      * - getJWTPayload
      */
     getSessionInformation(input: { sessionHandle: string }): Promise<SessionInformation>;
-    refreshSession(input: { req: express.Request; res: express.Response }): Promise<SessionContainerInterface>;
     revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
     getAllSessionHandlesForUser(input: { userId: string }): Promise<string[]>;
     revokeSession(input: { sessionHandle: string }): Promise<boolean>;
@@ -177,9 +176,8 @@ export declare type APIOptions = {
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
-    req: Request;
-    res: Response;
-    next: NextFunction;
+    req: BaseRequest;
+    res: BaseResponse;
 };
 export interface APIInterface {
     refreshPOST: undefined | ((input: { options: APIOptions }) => Promise<void>);
@@ -193,7 +191,7 @@ export interface APIInterface {
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
-    }): Promise<void>;
+    }): Promise<SessionContainerInterface | undefined>;
 }
 export declare type SessionInformation = {
     sessionHandle: string;

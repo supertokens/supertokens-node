@@ -17,7 +17,7 @@ import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from ".
 import EmailVerificationRecipe from "../emailverification/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
-import * as express from "express";
+import { BaseRequest, BaseResponse } from "../../framework";
 import STError from "./error";
 import { TypeInput, TypeNormalisedInput, User, RecipeInterface, APIInterface } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -218,39 +218,37 @@ export default class Recipe extends RecipeModule {
 
     handleAPIRequest = async (
         id: string,
-        req: express.Request,
-        res: express.Response,
-        next: express.NextFunction,
+        req: BaseRequest,
+        res: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod
-    ) => {
+    ): Promise<boolean> => {
         if (this.emailPasswordRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined) {
-            return await this.emailPasswordRecipe.handleAPIRequest(id, req, res, next, path, method);
+            return await this.emailPasswordRecipe.handleAPIRequest(id, req, res, path, method);
         }
         if (
             this.thirdPartyRecipe !== undefined &&
             this.thirdPartyRecipe.returnAPIIdIfCanHandleRequest(path, method) !== undefined
         ) {
-            return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, next, path, method);
+            return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, path, method);
         }
-        return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, next, path, method);
+        return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, path, method);
     };
 
     handleError = (
         err: STErrorEmailPassword | STErrorThirdParty,
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction
+        request: BaseRequest,
+        response: BaseResponse
     ): void => {
         if (err.fromRecipe === Recipe.RECIPE_ID) {
-            next(err);
+            throw err;
         } else {
             if (this.emailPasswordRecipe.isErrorFromThisRecipe(err)) {
-                return this.emailPasswordRecipe.handleError(err, request, response, next);
+                return this.emailPasswordRecipe.handleError(err, request, response);
             } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
-                return this.thirdPartyRecipe.handleError(err, request, response, next);
+                return this.thirdPartyRecipe.handleError(err, request, response);
             }
-            return this.emailVerificationRecipe.handleError(err, request, response, next);
+            return this.emailVerificationRecipe.handleError(err, request, response);
         }
     };
 

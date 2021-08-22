@@ -1,7 +1,7 @@
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
-import * as express from "express";
 import NormalisedURLPath from "./normalisedURLPath";
+import { BaseRequest, BaseResponse } from "./framework";
 export default abstract class RecipeModule {
     private recipeId;
     private appInfo;
@@ -12,18 +12,12 @@ export default abstract class RecipeModule {
     abstract getAPIsHandled(): APIHandled[];
     abstract handleAPIRequest(
         id: string,
-        req: express.Request,
-        response: express.Response,
-        next: express.NextFunction,
+        req: BaseRequest,
+        response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod
-    ): Promise<void>;
-    abstract handleError(
-        error: STError,
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction
-    ): void;
+    ): Promise<boolean>;
+    abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): void;
     abstract getAllCORSHeaders(): string[];
     abstract isErrorFromThisRecipe(err: any): err is STError;
 }

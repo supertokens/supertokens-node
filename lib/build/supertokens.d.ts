@@ -1,9 +1,11 @@
 import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
 import RecipeModule from "./recipeModule";
-import * as express from "express";
 import NormalisedURLPath from "./normalisedURLPath";
+import { BaseRequest, BaseResponse } from "./framework";
+import { TypeFramework } from "./framework/types";
 export default class SuperTokens {
     private static instance;
+    framework: TypeFramework;
     appInfo: NormalisedAppinfo;
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
@@ -12,26 +14,14 @@ export default class SuperTokens {
     static init(config: TypeInput): void;
     static reset(): void;
     static getInstanceOrThrowError(): SuperTokens;
-    middleware: () => (
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction
-    ) => Promise<void>;
     handleAPI: (
         matchedRecipe: RecipeModule,
         id: string,
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction,
+        request: BaseRequest,
+        response: BaseResponse,
         path: NormalisedURLPath,
         method: HTTPMethod
-    ) => Promise<void>;
-    errorHandler: () => (
-        err: any,
-        request: express.Request,
-        response: express.Response,
-        next: express.NextFunction
-    ) => Promise<void>;
+    ) => Promise<boolean>;
     getAllCORSHeaders: () => string[];
     getUserCount: (includeRecipeIds?: string[] | undefined) => Promise<number>;
     getUsers: (input: {
@@ -46,4 +36,6 @@ export default class SuperTokens {
         }[];
         nextPaginationToken?: string | undefined;
     }>;
+    middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
+    errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => void;
 }
