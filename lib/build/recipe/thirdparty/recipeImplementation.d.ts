@@ -64,6 +64,7 @@ export default class RecipeImplementation implements RecipeInterface {
           }
     >;
     getUserById: ({ userId }: { userId: string }) => Promise<User | undefined>;
+    getUsersByEmail: ({ email }: { email: string }) => Promise<User[]>;
     getUserByThirdPartyInfo: ({
         thirdPartyId,
         thirdPartyUserId,

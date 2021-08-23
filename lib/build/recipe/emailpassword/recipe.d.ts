@@ -40,8 +40,15 @@ export default class Recipe extends RecipeModule {
     createEmailVerificationToken: (userId: string) => Promise<string>;
     verifyEmailUsingToken: (token: string) => Promise<import("./types").User>;
     isEmailVerified: (userId: string) => Promise<boolean>;
+    revokeEmailVerificationTokens: (userId: string) => Promise<void>;
+    unverifyEmail: (userId: string) => Promise<void>;
     signUp: (email: string, password: string) => Promise<import("./types").User>;
     signIn: (email: string, password: string) => Promise<import("./types").User>;
     createResetPasswordToken: (userId: string) => Promise<string>;
     resetPasswordUsingToken: (token: string, newPassword: string) => Promise<void>;
+    updateEmailOrPassword: (input: {
+        userId: string;
+        email?: string | undefined;
+        password?: string | undefined;
+    }) => Promise<void>;
 }

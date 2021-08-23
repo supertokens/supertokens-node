@@ -92,6 +92,14 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
+    getUsersByEmail = async ({ email }: { email: string }): Promise<User[]> => {
+        const { users } = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/users/by-email"), {
+            email,
+        });
+
+        return users;
+    };
+
     getUserByThirdPartyInfo = async ({
         thirdPartyId,
         thirdPartyUserId,

@@ -228,6 +228,20 @@ export default class Recipe extends RecipeModule {
         });
     };
 
+    revokeEmailVerificationTokens = async (userId: string): Promise<void> => {
+        await this.emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens({
+            userId,
+            email: await this.getEmailForUserId(userId),
+        });
+    };
+
+    unverifyEmail = async (userId: string): Promise<void> => {
+        await this.emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
+            userId,
+            email: await this.getEmailForUserId(userId),
+        });
+    };
+
     signUp = async (email: string, password: string) => {
         let response = await this.recipeInterfaceImpl.signUp({ email, password });
         if (response.status === "OK") {
@@ -258,5 +272,16 @@ export default class Recipe extends RecipeModule {
         if (response.status === "RESET_PASSWORD_INVALID_TOKEN_ERROR") {
             throw Error("Invalid password reset token");
         }
+    };
+
+    updateEmailOrPassword = async (input: { userId: string; email?: string; password?: string }) => {
+        let response = await this.recipeInterfaceImpl.updateEmailOrPassword(input);
+        if (response.status === "OK") {
+            return;
+        }
+        if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
+            throw new Error("Update failed. Email already exists");
+        }
+        throw new Error("Unknown User ID provided");
     };
 }

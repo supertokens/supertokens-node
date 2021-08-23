@@ -8,7 +8,7 @@
         "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit",
         "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit",
         "pretty": "npx pretty-quick .",
-        "build-pretty": "npm run build && npm run pretty",
+        "build-pretty": "npm run build && npm run pretty && npm run pretty",
         "pretty-check": "npx pretty-quick --check .",
         "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit"
     },

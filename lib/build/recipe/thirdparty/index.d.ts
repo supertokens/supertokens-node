@@ -16,6 +16,7 @@ export default class Wrapper {
         user: User;
     }>;
     static getUserById(userId: string): Promise<User | undefined>;
+    static getUsersByEmail(email: string): Promise<User[]>;
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
     /**
      * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
@@ -44,6 +45,8 @@ export default class Wrapper {
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;
     static isEmailVerified(userId: string): Promise<boolean>;
+    static revokeEmailVerificationTokens(userId: string): Promise<void>;
+    static unverifyEmail(userId: string): Promise<void>;
     static Google: typeof import("./providers/google").default;
     static Github: typeof import("./providers/github").default;
     static Facebook: typeof import("./providers/facebook").default;
@@ -53,10 +56,13 @@ export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
 export declare let signInUp: typeof Wrapper.signInUp;
 export declare let getUserById: typeof Wrapper.getUserById;
+export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
 export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
 export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
 export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
+export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
+export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
 /**
  * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
  *   */

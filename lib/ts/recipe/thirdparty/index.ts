@@ -47,6 +47,10 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
+    static getUsersByEmail(email: string): Promise<User[]> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email });
+    }
+
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
@@ -105,6 +109,14 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
     }
 
+    static async revokeEmailVerificationTokens(userId: string): Promise<void> {
+        await Recipe.getInstanceOrThrowError().revokeEmailVerificationTokens(userId);
+    }
+
+    static async unverifyEmail(userId: string): Promise<void> {
+        await Recipe.getInstanceOrThrowError().unverifyEmail(userId);
+    }
+
     static Google = thirdPartyProviders.Google;
 
     static Github = thirdPartyProviders.Github;
@@ -122,6 +134,8 @@ export let signInUp = Wrapper.signInUp;
 
 export let getUserById = Wrapper.getUserById;
 
+export let getUsersByEmail = Wrapper.getUsersByEmail;
+
 export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
 
 export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
@@ -129,6 +143,10 @@ export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
 export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
+
+export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens;
+
+export let unverifyEmail = Wrapper.unverifyEmail;
 
 /**
  * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5

@@ -1266,4 +1266,101 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert.strictEqual(user.id, userId);
         assert.strictEqual(user.email, "test@gmail.com");
     });
+
+    it("test the generate token api with valid input, and then remove token", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        let verifyToken = await EmailPassword.createEmailVerificationToken(userId);
+
+        await EmailPassword.revokeEmailVerificationTokens(userId);
+
+        try {
+            await EmailPassword.verifyEmailUsingToken(verifyToken);
+            throw new Error("should never come here");
+        } catch (err) {
+            assert(err.message === "Invalid token");
+        }
+    });
+
+    it("test the generate token api with valid input, verify and then unverify email", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        let verifyToken = await EmailPassword.createEmailVerificationToken(userId);
+
+        await EmailPassword.verifyEmailUsingToken(verifyToken);
+
+        assert(await EmailPassword.isEmailVerified(userId));
+
+        await EmailPassword.unverifyEmail(userId);
+
+        assert(!(await EmailPassword.isEmailVerified(userId)));
+    });
 });
