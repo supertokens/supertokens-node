@@ -46,7 +46,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         await cleanST();
     });
 
-    it("test getUsersOldestFirst", async function () {
+    it("test updateEmailPass", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -59,6 +59,11 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             },
             recipeList: [EmailPassword.init(), Session.init()],
         });
+
+        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
 
         const express = require("express");
         const app = express();

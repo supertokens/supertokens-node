@@ -4,7 +4,8 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const { signInUp, getUsersByEmail, signUp } = require("../../lib/build/recipe/thirdpartyemailpassword");
-const { removeServerlessCache } = require("../../lib/build/utils");
+const { removeServerlessCache, maxVersion } = require("../../lib/build/utils");
+let { Querier } = require("../../lib/build/querier");
 
 describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersByEmailFeature.test.js]")}`, function () {
     const MockThirdPartyProvider = {
@@ -50,6 +51,11 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
         await startST();
         STExpress.init(testSTConfig);
 
+        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
         // given there are no users
 
         // when
@@ -71,6 +77,11 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
                 }),
             ],
         });
+
+        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
 
         await signUp("john.doe@example.com", "somePass");
         await signInUp("mock", "thirdPartyJohnDoe", { id: "john.doe@example.com", isVerified: true });

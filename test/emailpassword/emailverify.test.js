@@ -1286,6 +1286,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
+        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
+
         const app = express();
 
         app.use(STExpress.middleware());
@@ -1329,6 +1334,11 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 }),
             ],
         });
+
+        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        if (maxVersion(apiVersion, "2.7") === "2.7") {
+            return;
+        }
 
         const app = express();
 
