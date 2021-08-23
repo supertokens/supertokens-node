@@ -102,7 +102,7 @@ export default class RecipeImplementation implements RecipeInterface {
 
     createResetPasswordToken = async (input: {
         userId: string;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
+    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> => {
         return this.emailPasswordImplementation.createResetPasswordToken(input);
     };
 
@@ -201,7 +201,7 @@ export default class RecipeImplementation implements RecipeInterface {
         userId: string;
         email?: string;
         password?: string;
-    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID" | "EMAIL_ALREADY_EXISTS_ERROR" }> => {
+    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> => {
         return this.emailPasswordImplementation.updateEmailOrPassword(input);
     };
 }

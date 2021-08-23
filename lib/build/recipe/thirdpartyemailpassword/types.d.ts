@@ -260,7 +260,7 @@ export interface RecipeInterface {
               token: string;
           }
         | {
-              status: "UNKNOWN_USER_ID";
+              status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
     resetPasswordUsingToken(input: {
@@ -274,7 +274,7 @@ export interface RecipeInterface {
         email?: string;
         password?: string;
     }): Promise<{
-        status: "OK" | "UNKNOWN_USER_ID" | "EMAIL_ALREADY_EXISTS_ERROR";
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
     }>;
 }
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;

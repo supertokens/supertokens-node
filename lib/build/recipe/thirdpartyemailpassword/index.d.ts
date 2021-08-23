@@ -70,7 +70,7 @@ export default class Wrapper {
               token: string;
           }
         | {
-              status: "UNKNOWN_USER_ID";
+              status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
     static resetPasswordUsingToken(
@@ -108,7 +108,7 @@ export default class Wrapper {
         email?: string;
         password?: string;
     }): Promise<{
-        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID";
+        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
     }>;
     static createEmailVerificationToken(userId: string): Promise<string>;
     static verifyEmailUsingToken(token: string): Promise<User>;

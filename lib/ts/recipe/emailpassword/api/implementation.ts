@@ -42,7 +42,7 @@ export default class APIImplementation implements APIInterface {
         }
 
         let response = await options.recipeImplementation.createResetPasswordToken({ userId: user.id });
-        if (response.status === "UNKNOWN_USER_ID") {
+        if (response.status === "UNKNOWN_USER_ID_ERROR") {
             return {
                 status: "OK",
             };

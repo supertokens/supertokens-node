@@ -78,7 +78,7 @@ export default class RecipeImplementation implements RecipeInterface {
         userId,
     }: {
         userId: string;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
+    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> => {
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
             userId,
         });
@@ -89,7 +89,7 @@ export default class RecipeImplementation implements RecipeInterface {
             };
         } else {
             return {
-                status: "UNKNOWN_USER_ID",
+                status: "UNKNOWN_USER_ID_ERROR",
             };
         }
     };
@@ -154,7 +154,7 @@ export default class RecipeImplementation implements RecipeInterface {
         userId: string;
         email?: string;
         password?: string;
-    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID" | "EMAIL_ALREADY_EXISTS_ERROR" }> => {
+    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> => {
         let response = await this.querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
             userId: input.userId,
             email: input.email,
@@ -170,7 +170,7 @@ export default class RecipeImplementation implements RecipeInterface {
             };
         } else {
             return {
-                status: "UNKNOWN_USER_ID",
+                status: "UNKNOWN_USER_ID_ERROR",
             };
         }
     };

@@ -64,7 +64,7 @@ export default class RecipeImplementation implements RecipeInterface {
               token: string;
           }
         | {
-              status: "UNKNOWN_USER_ID";
+              status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
     resetPasswordUsingToken: (input: {
@@ -84,9 +84,6 @@ export default class RecipeImplementation implements RecipeInterface {
         nextPaginationTokenString?: string | undefined;
     }) => Promise<{
         users: User[];
-        /**
-         * @deprecated Please do not override this function
-         *   */
         nextPaginationToken?: string | undefined;
     }>;
     /**
@@ -100,9 +97,6 @@ export default class RecipeImplementation implements RecipeInterface {
         nextPaginationTokenString?: string | undefined;
     }) => Promise<{
         users: User[];
-        /**
-         * @deprecated Please do not override this function
-         *   */
         nextPaginationToken?: string | undefined;
     }>;
     /**
@@ -114,6 +108,6 @@ export default class RecipeImplementation implements RecipeInterface {
         email?: string | undefined;
         password?: string | undefined;
     }) => Promise<{
-        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID";
+        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
     }>;
 }
