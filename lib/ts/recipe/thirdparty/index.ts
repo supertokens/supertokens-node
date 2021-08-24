@@ -97,11 +97,11 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
-    static createEmailVerificationToken(userId: string): Promise<string> {
+    static createEmailVerificationToken(userId: string) {
         return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
     }
 
-    static verifyEmailUsingToken(token: string): Promise<User> {
+    static verifyEmailUsingToken(token: string) {
         return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
     }
 

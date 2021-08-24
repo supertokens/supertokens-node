@@ -1,5 +1,5 @@
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, User } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -26,6 +26,4 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => void;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    createEmailVerificationToken: (userId: string, email: string) => Promise<string>;
-    verifyEmailUsingToken: (token: string) => Promise<User>;
 }

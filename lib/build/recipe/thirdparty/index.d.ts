@@ -42,8 +42,26 @@ export default class Wrapper {
      * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
      *   */
     static getUserCount(): Promise<number>;
-    static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<User>;
+    static createEmailVerificationToken(
+        userId: string
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
+    static verifyEmailUsingToken(
+        token: string
+    ): Promise<
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+        | User
+        | undefined
+    >;
     static isEmailVerified(userId: string): Promise<boolean>;
     static revokeEmailVerificationTokens(userId: string): Promise<void>;
     static unverifyEmail(userId: string): Promise<void>;

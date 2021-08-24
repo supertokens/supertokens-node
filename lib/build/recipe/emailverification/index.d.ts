@@ -4,8 +4,29 @@ import { RecipeInterface, APIOptions, APIInterface, User } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static createEmailVerificationToken(userId: string, email: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<User>;
+    static createEmailVerificationToken(
+        userId: string,
+        email: string
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
+    static verifyEmailUsingToken(
+        token: string
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+    >;
     static isEmailVerified(userId: string, email: string): Promise<boolean>;
     static revokeEmailVerificationTokens(userId: string, email: string): Promise<void>;
     static unverifyEmail(userId: string, email: string): Promise<void>;

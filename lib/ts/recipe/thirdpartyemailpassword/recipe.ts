@@ -19,7 +19,7 @@ import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
 import STError from "./error";
-import { TypeInput, TypeNormalisedInput, User, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import STErrorEmailPassword from "../emailpassword/error";
 import STErrorThirdParty from "../thirdparty/error";
@@ -283,17 +283,20 @@ export default class Recipe extends RecipeModule {
         return userInfo.email;
     };
 
-    createEmailVerificationToken = async (userId: string): Promise<string> => {
-        return this.emailVerificationRecipe.createEmailVerificationToken(userId, await this.getEmailForUserId(userId));
+    createEmailVerificationToken = async (userId: string) => {
+        return this.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken({
+            userId,
+            email: await this.getEmailForUserId(userId),
+        });
     };
 
-    verifyEmailUsingToken = async (token: string): Promise<User> => {
-        let user = await this.emailVerificationRecipe.verifyEmailUsingToken(token);
-        let userInThisRecipe = await this.recipeInterfaceImpl.getUserById({ userId: user.id });
-        if (userInThisRecipe === undefined) {
-            throw new Error("Unknown User ID provided");
+    verifyEmailUsingToken = async (token: string) => {
+        let response = await this.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken({ token });
+        if (response.status === "OK") {
+            let userInThisRecipe = await this.recipeInterfaceImpl.getUserById({ userId: response.user.id });
+            return userInThisRecipe;
         }
-        return userInThisRecipe;
+        return response;
     };
 
     isEmailVerified = async (userId: string) => {

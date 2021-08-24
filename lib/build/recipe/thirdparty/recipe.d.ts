@@ -1,6 +1,6 @@
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, APIInterface } from "./types";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -38,8 +38,26 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;
-    createEmailVerificationToken: (userId: string) => Promise<string>;
-    verifyEmailUsingToken: (token: string) => Promise<User>;
+    createEmailVerificationToken: (
+        userId: string
+    ) => Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
+    verifyEmailUsingToken: (
+        token: string
+    ) => Promise<
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+        | import("./types").User
+        | undefined
+    >;
     isEmailVerified: (userId: string) => Promise<boolean>;
     revokeEmailVerificationTokens: (userId: string) => Promise<void>;
     unverifyEmail: (userId: string) => Promise<void>;

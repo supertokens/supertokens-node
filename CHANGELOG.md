@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   For all the recipes' `APIOptions`, their will be no `next` parameter. Also the request and response parameter will be of type BaseRequest and BaseResponse.
 -   Updated minimum Oauth scopes required for various thirdparty providers.
 -   For thirdparty providers, if the scope array is passed by the user, the default scopes will not be used.
+-   Changes to emailpassword and thirdparty functions to not return errors implicitly.
 
 ### Fixes
 
