@@ -131,8 +131,16 @@ export default class Wrapper {
         | undefined
     >;
     static isEmailVerified(userId: string): Promise<boolean>;
-    static revokeEmailVerificationTokens(userId: string): Promise<void>;
-    static unverifyEmail(userId: string): Promise<void>;
+    static revokeEmailVerificationTokens(
+        userId: string
+    ): Promise<{
+        status: "OK";
+    }>;
+    static unverifyEmail(
+        userId: string
+    ): Promise<{
+        status: "OK";
+    }>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;

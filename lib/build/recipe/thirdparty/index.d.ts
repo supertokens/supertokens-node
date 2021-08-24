@@ -11,10 +11,17 @@ export default class Wrapper {
             id: string;
             isVerified: boolean;
         }
-    ): Promise<{
-        createdNewUser: boolean;
-        user: User;
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: User;
+          }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
     static getUserById(userId: string): Promise<User | undefined>;
     static getUsersByEmail(email: string): Promise<User[]>;
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
@@ -63,8 +70,19 @@ export default class Wrapper {
         | undefined
     >;
     static isEmailVerified(userId: string): Promise<boolean>;
-    static revokeEmailVerificationTokens(userId: string): Promise<void>;
-    static unverifyEmail(userId: string): Promise<void>;
+    static revokeEmailVerificationTokens(
+        userId: string
+    ): Promise<{
+        status: "OK";
+    }>;
+    static unverifyEmail(
+        userId: string
+    ): Promise<{
+        status: "OK";
+        /**
+         * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+         *   */
+    }>;
     static Google: typeof import("./providers/google").default;
     static Github: typeof import("./providers/github").default;
     static Facebook: typeof import("./providers/facebook").default;

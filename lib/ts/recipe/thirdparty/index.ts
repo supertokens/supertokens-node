@@ -31,27 +31,23 @@ export default class Wrapper {
             id: string;
             isVerified: boolean;
         }
-    ): Promise<{ createdNewUser: boolean; user: User }> {
-        let result = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
             thirdPartyId,
             thirdPartyUserId,
             email,
         });
-        if (result.status === "OK") {
-            return result;
-        }
-        throw new global.Error(result.error);
     }
 
-    static getUserById(userId: string): Promise<User | undefined> {
+    static getUserById(userId: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
-    static getUsersByEmail(email: string): Promise<User[]> {
+    static getUsersByEmail(email: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email });
     }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined> {
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
             thirdPartyUserId,
@@ -97,24 +93,48 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
-    static createEmailVerificationToken(userId: string) {
-        return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
+    static async createEmailVerificationToken(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
-    static verifyEmailUsingToken(token: string) {
-        return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
+    static async verifyEmailUsingToken(token: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        let response = await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken({
+            token,
+        });
+        if (response.status === "OK") {
+            let userInThisRecipe = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: response.user.id });
+            return userInThisRecipe;
+        }
+        return response;
     }
 
-    static isEmailVerified(userId: string): Promise<boolean> {
-        return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
+    static async isEmailVerified(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
-    static async revokeEmailVerificationTokens(userId: string): Promise<void> {
-        await Recipe.getInstanceOrThrowError().revokeEmailVerificationTokens(userId);
+    static async revokeEmailVerificationTokens(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
-    static async unverifyEmail(userId: string): Promise<void> {
-        await Recipe.getInstanceOrThrowError().unverifyEmail(userId);
+    static async unverifyEmail(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
     static Google = thirdPartyProviders.Google;
