@@ -38,11 +38,14 @@ export default class Wrapper {
     }
 
     static async revokeEmailVerificationTokens(userId: string, email: string) {
-        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeEmailVerificationTokens({ userId, email });
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeEmailVerificationTokens({
+            userId,
+            email,
+        });
     }
 
     static async unverifyEmail(userId: string, email: string) {
-        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unverifyEmail({ userId, email });
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unverifyEmail({ userId, email });
     }
 }
 

@@ -28,8 +28,18 @@ export default class Wrapper {
           }
     >;
     static isEmailVerified(userId: string, email: string): Promise<boolean>;
-    static revokeEmailVerificationTokens(userId: string, email: string): Promise<void>;
-    static unverifyEmail(userId: string, email: string): Promise<void>;
+    static revokeEmailVerificationTokens(
+        userId: string,
+        email: string
+    ): Promise<{
+        status: "OK";
+    }>;
+    static unverifyEmail(
+        userId: string,
+        email: string
+    ): Promise<{
+        status: "OK";
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
