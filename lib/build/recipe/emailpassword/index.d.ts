@@ -4,12 +4,49 @@ import { RecipeInterface, User, APIOptions, APIInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static signUp(email: string, password: string): Promise<User>;
-    static signIn(email: string, password: string): Promise<User>;
+    static signUp(
+        email: string,
+        password: string
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    static signIn(
+        email: string,
+        password: string
+    ): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
     static getUserById(userId: string): Promise<User | undefined>;
     static getUserByEmail(email: string): Promise<User | undefined>;
-    static createResetPasswordToken(userId: string): Promise<string>;
-    static resetPasswordUsingToken(token: string, newPassword: string): Promise<void>;
+    static createResetPasswordToken(
+        userId: string
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
+    static resetPasswordUsingToken(
+        token: string,
+        newPassword: string
+    ): Promise<{
+        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
     /**
      * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
      *   */
@@ -34,12 +71,44 @@ export default class Wrapper {
      * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
      *   */
     static getUserCount(): Promise<number>;
-    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string }): Promise<void>;
-    static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<User>;
+    static updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+    }): Promise<{
+        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
+    }>;
+    static createEmailVerificationToken(
+        userId: string
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
+    static verifyEmailUsingToken(
+        token: string
+    ): Promise<
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+        | User
+        | undefined
+    >;
     static isEmailVerified(userId: string): Promise<boolean>;
-    static revokeEmailVerificationTokens(userId: string): Promise<void>;
-    static unverifyEmail(userId: string): Promise<void>;
+    static revokeEmailVerificationTokens(
+        userId: string
+    ): Promise<{
+        status: "OK";
+    }>;
+    static unverifyEmail(
+        userId: string
+    ): Promise<{
+        status: "OK";
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

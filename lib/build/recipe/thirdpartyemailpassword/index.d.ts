@@ -110,11 +110,37 @@ export default class Wrapper {
     }): Promise<{
         status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
     }>;
-    static createEmailVerificationToken(userId: string): Promise<string>;
-    static verifyEmailUsingToken(token: string): Promise<User>;
+    static createEmailVerificationToken(
+        userId: string
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
+          }
+    >;
+    static verifyEmailUsingToken(
+        token: string
+    ): Promise<
+        | {
+              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+          }
+        | User
+        | undefined
+    >;
     static isEmailVerified(userId: string): Promise<boolean>;
-    static revokeEmailVerificationTokens(userId: string): Promise<void>;
-    static unverifyEmail(userId: string): Promise<void>;
+    static revokeEmailVerificationTokens(
+        userId: string
+    ): Promise<{
+        status: "OK";
+    }>;
+    static unverifyEmail(
+        userId: string
+    ): Promise<{
+        status: "OK";
+    }>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;

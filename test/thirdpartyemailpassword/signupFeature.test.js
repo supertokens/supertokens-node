@@ -279,10 +279,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response1.body.user.thirdParty.userId, "user");
         assert.strictEqual(response1.body.user.email, "email@test.com");
 
-        assert.strictEqual(
-            await ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError().isEmailVerified(response1.body.user.id),
-            true
-        );
+        assert.strictEqual(await ThirdPartyEmailPassword.isEmailVerified(response1.body.user.id), true);
     });
 
     it("test signUpAPI works when input is fine", async function () {

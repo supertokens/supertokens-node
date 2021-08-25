@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, User } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -133,21 +133,5 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
-    };
-
-    createEmailVerificationToken = async (userId: string, email: string): Promise<string> => {
-        let response = await this.recipeInterfaceImpl.createEmailVerificationToken({ userId, email });
-        if (response.status === "OK") {
-            return response.token;
-        }
-        throw new Error("Email already verified");
-    };
-
-    verifyEmailUsingToken = async (token: string): Promise<User> => {
-        let response = await this.recipeInterfaceImpl.verifyEmailUsingToken({ token });
-        if (response.status === "OK") {
-            return response.user;
-        }
-        throw new Error("Invalid token");
     };
 }

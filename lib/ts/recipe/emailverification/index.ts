@@ -22,24 +22,30 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static async createEmailVerificationToken(userId: string, email: string): Promise<string> {
-        return await Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId, email);
+    static async createEmailVerificationToken(userId: string, email: string) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken({
+            userId,
+            email,
+        });
     }
 
-    static async verifyEmailUsingToken(token: string): Promise<User> {
-        return await Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
+    static async verifyEmailUsingToken(token: string) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({ token });
     }
 
-    static async isEmailVerified(userId: string, email: string): Promise<boolean> {
+    static async isEmailVerified(userId: string, email: string) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified({ userId, email });
     }
 
-    static async revokeEmailVerificationTokens(userId: string, email: string): Promise<void> {
-        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeEmailVerificationTokens({ userId, email });
+    static async revokeEmailVerificationTokens(userId: string, email: string) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeEmailVerificationTokens({
+            userId,
+            email,
+        });
     }
 
-    static async unverifyEmail(userId: string, email: string): Promise<void> {
-        await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unverifyEmail({ userId, email });
+    static async unverifyEmail(userId: string, email: string) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unverifyEmail({ userId, email });
     }
 }
 

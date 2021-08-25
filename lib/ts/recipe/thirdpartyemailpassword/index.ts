@@ -107,24 +107,48 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword(input);
     }
 
-    static createEmailVerificationToken(userId: string) {
-        return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
+    static async createEmailVerificationToken(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
-    static verifyEmailUsingToken(token: string) {
-        return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
+    static async verifyEmailUsingToken(token: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        let response = await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken({
+            token,
+        });
+        if (response.status === "OK") {
+            let userInThisRecipe = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: response.user.id });
+            return userInThisRecipe;
+        }
+        return response;
     }
 
-    static isEmailVerified(userId: string) {
-        return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
+    static async isEmailVerified(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
-    static async revokeEmailVerificationTokens(userId: string): Promise<void> {
-        await Recipe.getInstanceOrThrowError().revokeEmailVerificationTokens(userId);
+    static async revokeEmailVerificationTokens(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
-    static async unverifyEmail(userId: string): Promise<void> {
-        await Recipe.getInstanceOrThrowError().unverifyEmail(userId);
+    static async unverifyEmail(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
     static Google = thirdPartyProviders.Google;

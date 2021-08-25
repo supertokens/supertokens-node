@@ -74,16 +74,16 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
 
-        let user = await signIn("test@gmail.com", "testPass123");
+        let res = await signIn("test@gmail.com", "testPass123");
 
         await updateEmailOrPassword({
-            userId: user.id,
+            userId: res.user.id,
             email: "test2@gmail.com",
             password: "testPass",
         });
 
-        let user2 = await signIn("test2@gmail.com", "testPass");
+        let res2 = await signIn("test2@gmail.com", "testPass");
 
-        assert(user2.id === user.id);
+        assert(res2.user.id === res2.user.id);
     });
 });

@@ -100,7 +100,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             access_type: "offline",
             include_granted_scopes: "true",
             response_type: "code",
-            scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+            scope: "https://www.googleapis.com/auth/userinfo.email",
         });
     });
 
@@ -144,7 +144,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             access_type: "offline",
             include_granted_scopes: "true",
             response_type: "code",
-            scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
+            scope: "https://www.googleapis.com/auth/userinfo.email",
             key1: "value1",
             key2: "value2",
         });
@@ -185,8 +185,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             access_type: "offline",
             include_granted_scopes: "true",
             response_type: "code",
-            scope:
-                "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email test-scope-1 test-scope-2",
+            scope: "test-scope-1 test-scope-2",
         });
     });
 
@@ -313,7 +312,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
             client_id: "test",
             response_type: "code",
-            scope: "email test-scope-1 test-scope-2",
+            scope: "test-scope-1 test-scope-2",
         });
     });
 
@@ -393,7 +392,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
         assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
             client_id: "test",
-            scope: "user",
+            scope: "read:user user:email",
         });
     });
 
@@ -437,7 +436,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         let providerInfoGetResult = await providerInfo.get();
         assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
             client_id: "test",
-            scope: "user",
+            scope: "read:user user:email",
             key1: "value1",
             key2: "value2",
         });
@@ -478,7 +477,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         let providerInfoGetResult = await providerInfo.get();
         assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
             client_id: "test",
-            scope: "user test-scope-1 test-scope-2",
+            scope: "test-scope-1 test-scope-2",
         });
     });
 
@@ -565,7 +564,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
 
         assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
             client_id: "test",
-            scope: "name email",
+            scope: "email",
             response_mode: "form_post",
             response_type: "code",
         });
@@ -615,7 +614,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         let providerInfoGetResult = await providerInfo.get();
         assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
             client_id: "test",
-            scope: "name email",
+            scope: "email",
             response_mode: "form_post",
             response_type: "code",
             key1: "value1",
@@ -698,7 +697,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         let providerInfoGetResult = await providerInfo.get();
         assert.deepStrictEqual(providerInfoGetResult.authorisationRedirect.params, {
             client_id: "test",
-            scope: "name email test-scope-1 test-scope-2",
+            scope: "test-scope-1 test-scope-2",
             response_mode: "form_post",
             response_type: "code",
         });

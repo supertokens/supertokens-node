@@ -146,7 +146,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let infoFromResponse = extractInfoFromResponse(response);
 
         let verifyToken = await EmailPassword.createEmailVerificationToken(userId);
-        await EmailPassword.verifyEmailUsingToken(verifyToken);
+        await EmailPassword.verifyEmailUsingToken(verifyToken.token);
 
         response = await emailVerifyTokenRequest(
             app,
@@ -1308,11 +1308,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         await EmailPassword.revokeEmailVerificationTokens(userId);
 
-        try {
-            await EmailPassword.verifyEmailUsingToken(verifyToken);
-            throw new Error("should never come here");
-        } catch (err) {
-            assert(err.message === "Invalid token");
+        {
+            let response = await EmailPassword.verifyEmailUsingToken(verifyToken.token);
+            assert(response.status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR");
         }
     });
 
@@ -1355,7 +1353,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         let verifyToken = await EmailPassword.createEmailVerificationToken(userId);
 
-        await EmailPassword.verifyEmailUsingToken(verifyToken);
+        await EmailPassword.verifyEmailUsingToken(verifyToken.token);
 
         assert(await EmailPassword.isEmailVerified(userId));
 

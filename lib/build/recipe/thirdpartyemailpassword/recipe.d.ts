@@ -5,7 +5,7 @@ import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
 import STError from "./error";
-import { TypeInput, TypeNormalisedInput, User, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import STErrorEmailPassword from "../emailpassword/error";
 import STErrorThirdParty from "../thirdparty/error";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -44,9 +44,4 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;
-    createEmailVerificationToken: (userId: string) => Promise<string>;
-    verifyEmailUsingToken: (token: string) => Promise<User>;
-    isEmailVerified: (userId: string) => Promise<boolean>;
-    revokeEmailVerificationTokens: (userId: string) => Promise<void>;
-    unverifyEmail: (userId: string) => Promise<void>;
 }
