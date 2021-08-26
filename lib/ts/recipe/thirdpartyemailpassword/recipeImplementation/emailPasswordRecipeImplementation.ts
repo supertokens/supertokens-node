@@ -45,7 +45,7 @@ export default class RecipeImplementation implements RecipeInterface {
         userId,
     }: {
         userId: string;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID" }> => {
+    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> => {
         return this.recipeImplementation.createResetPasswordToken({ userId });
     };
 
@@ -72,5 +72,13 @@ export default class RecipeImplementation implements RecipeInterface {
      *   */
     getUserCount = async () => {
         throw new Error("Should never be called");
+    };
+
+    updateEmailOrPassword = async (input: {
+        userId: string;
+        email?: string;
+        password?: string;
+    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> => {
+        return this.recipeImplementation.updateEmailOrPassword(input);
     };
 }

@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, User, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, APIInterface } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import STError from "./error";
@@ -169,25 +169,5 @@ export default class Recipe extends RecipeModule {
             throw Error("Unknown User ID provided");
         }
         return userInfo.email;
-    };
-
-    createEmailVerificationToken = async (userId: string): Promise<string> => {
-        return this.emailVerificationRecipe.createEmailVerificationToken(userId, await this.getEmailForUserId(userId));
-    };
-
-    verifyEmailUsingToken = async (token: string): Promise<User> => {
-        let user = await this.emailVerificationRecipe.verifyEmailUsingToken(token);
-        let userInThisRecipe = await this.recipeInterfaceImpl.getUserById({ userId: user.id });
-        if (userInThisRecipe === undefined) {
-            throw Error("Unknown User ID provided");
-        }
-        return userInThisRecipe;
-    };
-
-    isEmailVerified = async (userId: string) => {
-        return this.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
-            userId,
-            email: await this.getEmailForUserId(userId),
-        });
     };
 }

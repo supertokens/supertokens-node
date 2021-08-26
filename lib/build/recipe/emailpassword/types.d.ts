@@ -226,7 +226,7 @@ export interface RecipeInterface {
               token: string;
           }
         | {
-              status: "UNKNOWN_USER_ID";
+              status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
     resetPasswordUsingToken(input: {
@@ -259,6 +259,13 @@ export interface RecipeInterface {
      * @deprecated Please do not override this function
      *   */
     getUserCount(): Promise<number>;
+    updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+    }): Promise<{
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
+    }>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

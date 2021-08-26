@@ -20,10 +20,10 @@ export default class SessionWrapper {
     static getAllSessionHandlesForUser(userId: string): Promise<string[]>;
     static revokeSession(sessionHandle: string): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[]): Promise<string[]>;
-    /** @deprecated Use getSessionInformation instead **/
+    /** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
     static getSessionData(sessionHandle: string): Promise<any>;
     static updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
-    /** @deprecated Use getSessionInformation instead **/
+    /** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
     static getJWTPayload(sessionHandle: string): Promise<any>;
     static updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
 }
@@ -36,10 +36,10 @@ export declare let revokeAllSessionsForUser: typeof SessionWrapper.revokeAllSess
 export declare let getAllSessionHandlesForUser: typeof SessionWrapper.getAllSessionHandlesForUser;
 export declare let revokeSession: typeof SessionWrapper.revokeSession;
 export declare let revokeMultipleSessions: typeof SessionWrapper.revokeMultipleSessions;
-/** @deprecated Use getSessionInformation instead **/
+/** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
 export declare let getSessionData: typeof SessionWrapper.getSessionData;
 export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
-/** @deprecated Use getSessionInformation instead **/
+/** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
 export declare let getJWTPayload: typeof SessionWrapper.getJWTPayload;
 export declare let updateJWTPayload: typeof SessionWrapper.updateJWTPayload;
 /**

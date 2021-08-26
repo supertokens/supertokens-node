@@ -124,7 +124,7 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         let infoFromResponse = extractInfoFromResponse(response);
 
         let verifyToken = await ThirdPartyEmailPassword.createEmailVerificationToken(userId);
-        await ThirdPartyEmailPassword.verifyEmailUsingToken(verifyToken);
+        await ThirdPartyEmailPassword.verifyEmailUsingToken(verifyToken.token);
 
         response = await emailVerifyTokenRequest(
             app,

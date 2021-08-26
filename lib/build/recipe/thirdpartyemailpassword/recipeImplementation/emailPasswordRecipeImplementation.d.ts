@@ -45,7 +45,7 @@ export default class RecipeImplementation implements RecipeInterface {
               token: string;
           }
         | {
-              status: "UNKNOWN_USER_ID";
+              status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
     resetPasswordUsingToken: ({
@@ -75,4 +75,11 @@ export default class RecipeImplementation implements RecipeInterface {
      * @deprecated
      *   */
     getUserCount: () => Promise<never>;
+    updateEmailOrPassword: (input: {
+        userId: string;
+        email?: string | undefined;
+        password?: string | undefined;
+    }) => Promise<{
+        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
+    }>;
 }

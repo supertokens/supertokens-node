@@ -32,4 +32,16 @@ export default class RecipeImplementation implements RecipeInterface {
           }
     >;
     isEmailVerified: ({ userId, email }: { userId: string; email: string }) => Promise<boolean>;
+    revokeEmailVerificationTokens: (input: {
+        userId: string;
+        email: string;
+    }) => Promise<{
+        status: "OK";
+    }>;
+    unverifyEmail: (input: {
+        userId: string;
+        email: string;
+    }) => Promise<{
+        status: "OK";
+    }>;
 }

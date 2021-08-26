@@ -23,6 +23,7 @@ export default class RecipeImplementation implements RecipeInterface {
           }
     >;
     getUserById: (input: { userId: string }) => Promise<User | undefined>;
+    getUsersByEmail: ({ email }: { email: string }) => Promise<User[]>;
     /**
      * @deprecated
      *   */

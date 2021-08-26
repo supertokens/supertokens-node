@@ -63,6 +63,13 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
+    static getUsersByEmail(email: string) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email });
+    }
+
+    /**
+     * @deprecated Use supertokens.getUsersByEmail(...) function instead IF using core version >= 3.5
+     *   */
     static getUserByEmail(email: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({ email });
     }
@@ -96,16 +103,52 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
-    static createEmailVerificationToken(userId: string) {
-        return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
+    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword(input);
     }
 
-    static verifyEmailUsingToken(token: string) {
-        return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
+    static async createEmailVerificationToken(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
-    static isEmailVerified(userId: string) {
-        return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
+    static async verifyEmailUsingToken(token: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        let response = await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken({
+            token,
+        });
+        if (response.status === "OK") {
+            let userInThisRecipe = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: response.user.id });
+            return userInThisRecipe;
+        }
+        return response;
+    }
+
+    static async isEmailVerified(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
+    }
+
+    static async revokeEmailVerificationTokens(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
+    }
+
+    static async unverifyEmail(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
     static Google = thirdPartyProviders.Google;
@@ -131,7 +174,12 @@ export let getUserById = Wrapper.getUserById;
 
 export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
 
+/**
+ * @deprecated Use supertokens.getUsersByEmail(...) function instead IF using core version >= 3.5
+ *   */
 export let getUserByEmail = Wrapper.getUserByEmail;
+
+export let getUsersByEmail = Wrapper.getUsersByEmail;
 
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
 
@@ -142,6 +190,10 @@ export let createEmailVerificationToken = Wrapper.createEmailVerificationToken;
 export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
+
+export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens;
+
+export let unverifyEmail = Wrapper.unverifyEmail;
 
 /**
  * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
@@ -157,6 +209,8 @@ export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
  * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
  *   */
 export let getUserCount = Wrapper.getUserCount;
+
+export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
 export let Google = Wrapper.Google;
 

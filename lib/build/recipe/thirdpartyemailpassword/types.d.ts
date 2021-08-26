@@ -180,6 +180,7 @@ export declare type TypeNormalisedInput = {
 };
 export interface RecipeInterface {
     getUserById(input: { userId: string }): Promise<User | undefined>;
+    getUsersByEmail(input: { email: string }): Promise<User[]>;
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
     /**
      * @deprecated Please do not override this function
@@ -247,6 +248,9 @@ export interface RecipeInterface {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserByEmail(input: { email: string }): Promise<User | undefined>;
     createResetPasswordToken(input: {
         userId: string;
@@ -256,7 +260,7 @@ export interface RecipeInterface {
               token: string;
           }
         | {
-              status: "UNKNOWN_USER_ID";
+              status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
     resetPasswordUsingToken(input: {
@@ -264,6 +268,13 @@ export interface RecipeInterface {
         newPassword: string;
     }): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
+    updateEmailOrPassword(input: {
+        userId: string;
+        email?: string;
+        password?: string;
+    }): Promise<{
+        status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
     }>;
 }
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;

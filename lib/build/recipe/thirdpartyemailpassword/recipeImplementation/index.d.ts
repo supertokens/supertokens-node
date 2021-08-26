@@ -49,8 +49,12 @@ export default class RecipeImplementation implements RecipeInterface {
           }
     >;
     getUserById: (input: { userId: string }) => Promise<User | undefined>;
+    getUsersByEmail: ({ email }: { email: string }) => Promise<User[]>;
     getUserByThirdPartyInfo: (input: { thirdPartyId: string; thirdPartyUserId: string }) => Promise<User | undefined>;
     getEmailForUserId: (input: { userId: string }) => Promise<string>;
+    /**
+     * @deprecated Please do not override this function
+     *   */
     getUserByEmail: (input: { email: string }) => Promise<User | undefined>;
     createResetPasswordToken: (input: {
         userId: string;
@@ -60,7 +64,7 @@ export default class RecipeImplementation implements RecipeInterface {
               token: string;
           }
         | {
-              status: "UNKNOWN_USER_ID";
+              status: "UNKNOWN_USER_ID_ERROR";
           }
     >;
     resetPasswordUsingToken: (input: {
@@ -99,4 +103,11 @@ export default class RecipeImplementation implements RecipeInterface {
      * @deprecated Please do not override this function
      *   */
     getUserCount: () => Promise<number>;
+    updateEmailOrPassword: (input: {
+        userId: string;
+        email?: string | undefined;
+        password?: string | undefined;
+    }) => Promise<{
+        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
+    }>;
 }

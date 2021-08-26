@@ -259,10 +259,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(
-            await ThirdPartyRecipe.getInstanceOrThrowError().isEmailVerified(response1.body.user.id),
-            true
-        );
+        assert.strictEqual(await ThirdParty.isEmailVerified(response1.body.user.id), true);
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -375,10 +372,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(
-            await ThirdPartyRecipe.getInstanceOrThrowError().isEmailVerified(response1.body.user.id),
-            false
-        );
+        assert.strictEqual(await ThirdParty.isEmailVerified(response1.body.user.id), false);
     });
 
     it("test thirdparty provider doesn't exist", async function () {

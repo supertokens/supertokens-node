@@ -37,11 +37,4 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;
-    createEmailVerificationToken: (userId: string) => Promise<string>;
-    verifyEmailUsingToken: (token: string) => Promise<import("./types").User>;
-    isEmailVerified: (userId: string) => Promise<boolean>;
-    signUp: (email: string, password: string) => Promise<import("./types").User>;
-    signIn: (email: string, password: string) => Promise<import("./types").User>;
-    createResetPasswordToken: (userId: string) => Promise<string>;
-    resetPasswordUsingToken: (token: string, newPassword: string) => Promise<void>;
 }

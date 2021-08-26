@@ -23,28 +23,28 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signUp(email: string, password: string): Promise<User> {
-        return Recipe.getInstanceOrThrowError().signUp(email, password);
+    static signUp(email: string, password: string) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({ email, password });
     }
 
-    static signIn(email: string, password: string): Promise<User> {
-        return Recipe.getInstanceOrThrowError().signIn(email, password);
+    static signIn(email: string, password: string) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({ email, password });
     }
 
-    static getUserById(userId: string): Promise<User | undefined> {
+    static getUserById(userId: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
     }
 
-    static getUserByEmail(email: string): Promise<User | undefined> {
+    static getUserByEmail(email: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({ email });
     }
 
-    static createResetPasswordToken(userId: string): Promise<string> {
-        return Recipe.getInstanceOrThrowError().createResetPasswordToken(userId);
+    static createResetPasswordToken(userId: string) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId });
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string): Promise<void> {
-        return Recipe.getInstanceOrThrowError().resetPasswordUsingToken(token, newPassword);
+    static resetPasswordUsingToken(token: string, newPassword: string) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({ token, newPassword });
     }
 
     /**
@@ -80,16 +80,51 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
-    static createEmailVerificationToken(userId: string): Promise<string> {
-        return Recipe.getInstanceOrThrowError().createEmailVerificationToken(userId);
+    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword(input);
     }
 
-    static verifyEmailUsingToken(token: string): Promise<User> {
-        return Recipe.getInstanceOrThrowError().verifyEmailUsingToken(token);
+    static async createEmailVerificationToken(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 
-    static isEmailVerified(userId: string): Promise<boolean> {
-        return Recipe.getInstanceOrThrowError().isEmailVerified(userId);
+    static async verifyEmailUsingToken(token: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        let response = await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken({
+            token,
+        });
+        if (response.status === "OK") {
+            return await recipeInstance.recipeInterfaceImpl.getUserById({ userId: response.user.id });
+        }
+        return response;
+    }
+
+    static async isEmailVerified(userId: string): Promise<boolean> {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
+    }
+
+    static async revokeEmailVerificationTokens(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
+    }
+
+    static async unverifyEmail(userId: string) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
+            userId,
+            email: await recipeInstance.getEmailForUserId(userId),
+        });
     }
 }
 
@@ -115,6 +150,10 @@ export let verifyEmailUsingToken = Wrapper.verifyEmailUsingToken;
 
 export let isEmailVerified = Wrapper.isEmailVerified;
 
+export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens;
+
+export let unverifyEmail = Wrapper.unverifyEmail;
+
 /**
  * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
  *   */
@@ -129,5 +168,7 @@ export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
  * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
  *   */
 export let getUserCount = Wrapper.getUserCount;
+
+export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };

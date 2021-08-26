@@ -7,14 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [7.0.0] - 2021-07-31
 
-## Added
+### Added
 
 -   Multiple framework support. Currently supporting express, koa, hapi, fastify, awsLambda and loopback
 -   BaseRequest and BaseResponse interface added which will be used inside recipe instead of previously used express.Request and express.Response
 -   `framework` config option. Default value is `express`.
 -   basic tests for all frameworks.
 
-## Changed
+### Changed
 
 -   Following functions are changed in default SuperTokens class (supertokens.ts):
     -   middleware: instead of taking no option and returning an express middleware, it now takes 2 parameters: BaseRequest and BaseResponse and returns a boolean. If response was send by the middleware, it returns true, else false
@@ -29,29 +29,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `handleError` in recipe modules will no longer take `next` parameter. Also the request and response parameter will be of type BaseRequest and BaseResponse. If error is not handled by the function, it will rethrow the error.
 -   All the API implementation functions should return a boolean. If response is sent, `true` will be returned else false.
 -   `verifySession` which was defined in `middleware.ts` file is now removed.
+-   Changed `UNKNOWN_USER_ID` to `UNKNOWN_USER_ID_ERROR` to make it more consistent with other status types: https://github.com/supertokens/supertokens-node/issues/166
 
-## Deprecated
+### Deprecated
 
 -   middleware, errorHandler imported directly from supertokens-node (i.e. `import {middleware, errorHandler} from "supertokens-node"`)
 -   verifySession imported directly from session recipe (i.e. `import {verifySession} from "supertokens-node/recipe/session"`)
 
-## Breaking changes
+### Breaking changes
 
 -   In `ThirdParty` recipe, for type `TypeProviderGetResponse`, the field `authorisationRedirect.params` will be of type `{ [key: string]: string | ((request: BaseRequest) => string) }`. Earlier, the request was of type express.Request.
 -   For all the recipes' `APIOptions`, their will be no `next` parameter. Also the request and response parameter will be of type BaseRequest and BaseResponse.
+-   Updated minimum Oauth scopes required for various thirdparty providers.
+-   For thirdparty providers, if the scope array is passed by the user, the default scopes will not be used.
+-   Changes to emailpassword, emailverification, thirdpartyemailpassword and thirdparty functions to not return errors implicitly: https://github.com/supertokens/supertokens-node/issues/167
 
-## Fixes
+### Fixes
 
 -   https://github.com/supertokens/supertokens-node/issues/156
 
-## Breaking change:
-
--   Updated minimum Oauth scopes required for various thirdparty providers.
--   For thirdparty providers, if the scope array is passed by the user, the default scopes will not be used.
-
 ## [6.1.0] - 2021-06-24
 
-## Changes
+### Changes
 
 -   To how pagination and use count is done: https://github.com/supertokens/supertokens-core/issues/259
 -   Deprecates (instead, use `supertokens.getUserCount`, `supertokens.getUsersNewestFirst` or `supertokens.getUsersOldestFirst`):
@@ -62,28 +61,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `Session.getSessionData()`, `Session.getJWTPayload()`
 -   Adds email verification function calls in thirdparty sign in up API as per https://github.com/supertokens/supertokens-core/issues/295
 -   Adds `emailVerificationRecipeImplementation` in all auth recipe `APIOptions` so that APIs can access the email verification implementation.
+-   Add recipe function to fetch third party users https://github.com/supertokens/supertokens-core/issues/277
+-   Deprecates `getUserByEmail` in thirdpartyemailpassword and replaces it with `getUsersByEmail`.
+-   Adds `updateEmailOrPassword` recipe function to emailpassword and thirdpartyemailpassword recipes: https://github.com/supertokens/supertokens-core/issues/275
+-   Adds emailverification recipe functions to all recipes: https://github.com/supertokens/supertokens-core/issues/270
 
 ## [6.0.4] - 2021-07-29
 
-## Fixes
+### Fixes
 
 -   Fixes typescript issue with default imports. (Related to https://github.com/supertokens/supertokens-auth-react/issues/297)
 
 ## [6.0.3] - 2021-07-08
 
-## Fixes
+### Fixes
 
 -   signInUpPOST default implementation will return accessToken api response data instead of axios response
 
 ## [6.0.2] - 2021-06-28
 
-## Fixes
+### Fixes
 
 -   https://github.com/supertokens/supertokens-node/issues/141
 
 ## [6.0.1] - 2021-06-19
 
-## Fixes
+### Fixes
 
 -   https://github.com/supertokens/supertokens-node/issues/136
 
