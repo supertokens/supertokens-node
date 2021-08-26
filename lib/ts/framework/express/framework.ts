@@ -72,7 +72,7 @@ export class ExpressRequest extends BaseRequest {
     };
 
     getOriginalURL = (): string => {
-        return this.request.originalUrl;
+        return this.request.originalUrl || this.request.url;
     };
 }
 
