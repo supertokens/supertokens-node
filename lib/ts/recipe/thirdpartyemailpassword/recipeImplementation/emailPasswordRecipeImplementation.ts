@@ -38,7 +38,13 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     getUserByEmail = async ({ email }: { email: string }): Promise<User | undefined> => {
-        return this.recipeImplementation.getUserByEmail({ email });
+        let result = await this.recipeImplementation.getUsersByEmail({ email });
+        for (let i = 0; i < result.length; i++) {
+            if (result[i].thirdParty === undefined) {
+                return result[i];
+            }
+        }
+        return undefined;
     };
 
     createResetPasswordToken = async ({
