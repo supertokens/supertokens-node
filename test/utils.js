@@ -204,6 +204,13 @@ module.exports.killAllST = async function () {
     nock.cleanAll();
 };
 
+module.exports.killAllSTCoresOnly = async function () {
+    let pids = await getListOfPids();
+    for (let i = 0; i < pids.length; i++) {
+        await module.exports.stopST(pids[i]);
+    }
+};
+
 module.exports.startST = async function (host = "localhost", port = 8080) {
     return new Promise(async (resolve, reject) => {
         let installationPath = process.env.INSTALL_PATH;

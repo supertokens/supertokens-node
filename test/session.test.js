@@ -21,6 +21,7 @@ const {
     cleanST,
     extractInfoFromResponse,
     setKeyValueInConfig,
+    killAllSTCoresOnly,
 } = require("./utils");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
@@ -33,6 +34,7 @@ let Session = require("../recipe/session");
 let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 const { removeServerlessCache, maxVersion } = require("../lib/build/utils");
+const { fail } = require("assert");
 
 /* TODO:
 - the opposite of the above (check that if signing key changes, things are still fine) condition
@@ -1655,6 +1657,155 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             if (e.type !== Session.Error.UNAUTHORISED) {
                 throw e;
             }
+        }
+    });
+
+    it("test reducing access token signing key update interval time", async function () {
+        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.0041"); // 10 seconds
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        let session = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
+
+        {
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                session.accessToken.token,
+                session.antiCsrfToken,
+                true,
+                session.idRefreshToken.token
+            );
+
+            let verifyState3 = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1500
+            );
+            assert(verifyState3 === undefined);
+        }
+
+        // we kill the core
+        await killAllSTCoresOnly();
+        await setupST();
+
+        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.0011"); // update key to 4 seconds
+
+        // start server again
+        await startST();
+
+        await new Promise((r) => setTimeout(r, 5 * 1000)); // wait for 5 seconds
+
+        {
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                session.accessToken.token,
+                session.antiCsrfToken,
+                true,
+                session.idRefreshToken.token
+            );
+
+            let verifyState3 = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1500
+            );
+            assert(verifyState3 === undefined);
+        }
+
+        // now we create a new session that will use a new key and we will
+        // do it in a way that the jwtSigningKey info is not updated (as if another server has created this new session)
+        let originalHandShakeInfo = {
+            ...SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo,
+        };
+
+        let session2 = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
+
+        // we reset the handshake info to before the session creation so it's
+        // like the above session was created from another server.
+        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo = originalHandShakeInfo;
+
+        // now we will call getSession on session2 and see that the core is called
+        {
+            // jwt signing key has not expired, according to the SDK, so it should succeed
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                session2.accessToken.token,
+                session2.antiCsrfToken,
+                true,
+                session2.idRefreshToken.token
+            );
+
+            let verifyState3 = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1500
+            );
+            assert(verifyState3 !== undefined);
+        }
+
+        ProcessState.getInstance().reset();
+
+        // we will do the same thing, but this time core should not be called
+        {
+            // jwt signing key has not expired, according to the SDK, so it should succeed
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                session2.accessToken.token,
+                session2.antiCsrfToken,
+                true,
+                session2.idRefreshToken.token
+            );
+
+            let verifyState3 = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1500
+            );
+            assert(verifyState3 === undefined);
+        }
+
+        {
+            // now we will use the original session again and see that core is not called
+            try {
+                await SessionFunctions.getSession(
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    session.accessToken.token,
+                    session.antiCsrfToken,
+                    true,
+                    session.idRefreshToken.token
+                );
+                fail();
+            } catch (err) {
+                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
+                    throw err;
+                }
+            }
+
+            let verifyState3 = await ProcessState.getInstance().waitForEvent(
+                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+                1500
+            );
+            assert(verifyState3 === undefined);
         }
     });
 });
