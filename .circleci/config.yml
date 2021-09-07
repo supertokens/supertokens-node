@@ -5,7 +5,7 @@ orbs:
 jobs:
     publish:
         docker:
-            - image: circleci/node:8.10.0
+            - image: circleci/node:12
         steps:
             - checkout
             - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
