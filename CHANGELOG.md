@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Updated minimum Oauth scopes required for various thirdparty providers.
 -   For thirdparty providers, if the scope array is passed by the user, the default scopes will not be used.
 -   Changes to emailpassword, emailverification, thirdpartyemailpassword and thirdparty functions to not return errors implicitly: https://github.com/supertokens/supertokens-node/issues/167
+-   The req and res objects in the error handlers config for session recipe are not of type express anymore, but are of type BaseResponse and BaseRequest
 
 ### Fixes
 
