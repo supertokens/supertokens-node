@@ -4,6 +4,7 @@ import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
 import { extractPaginationTokens, combinePaginationResults } from "../utils";
 import { Querier } from "../../../querier";
+import { maxVersion } from "../../../utils";
 
 export default class RecipeImplementation implements RecipeInterface {
     emailPasswordImplementation: EmailPasswordImplemenation;
@@ -65,6 +66,10 @@ export default class RecipeImplementation implements RecipeInterface {
         let userFromEmailPass: User | undefined = await this.emailPasswordImplementation.getUserByEmail({ email });
 
         if (this.thirdPartyImplementation === undefined) {
+            return userFromEmailPass === undefined ? [] : [userFromEmailPass];
+        }
+        let thirdpartyQuerierAPIVersion = await this.thirdPartyImplementation.querier.getAPIVersion();
+        if (maxVersion(thirdpartyQuerierAPIVersion, "2.8") !== thirdpartyQuerierAPIVersion) {
             return userFromEmailPass === undefined ? [] : [userFromEmailPass];
         }
         let usersFromThirdParty: User[] = await this.thirdPartyImplementation.getUsersByEmail({ email });
