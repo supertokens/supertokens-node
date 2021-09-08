@@ -49,6 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   https://github.com/supertokens/supertokens-node/issues/156
 
+## [6.1.1] - 2021-09-08
+
+## Fixes
+
+-   updated function `getUserByEmail` in `recipe/thirdpartyemailpassword/recipeImplementation/emailPasswordRecipeImplementation.ts` to use `getUsersByEmail` instead of `getUserByEmail`
+
 ## [6.1.0] - 2021-06-24
 
 ### Changes
