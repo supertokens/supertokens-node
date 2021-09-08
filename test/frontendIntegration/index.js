@@ -46,7 +46,8 @@ function getConfig(enableAntiCsrf) {
             Session.init({
                 errorHandlers: {
                     onUnauthorised: (err, req, res) => {
-                        res.status(401).send();
+                        res.setStatusCode(401);
+                        res.sendJSONResponse({});
                     },
                 },
                 antiCsrf: enableAntiCsrf ? "VIA_TOKEN" : "NONE",
