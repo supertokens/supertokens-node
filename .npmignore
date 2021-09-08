@@ -14,3 +14,4 @@ frontendDriverInterfaceSupported.json
 coreDriverInterfaceSupported.json
 .github/
 .gitattributes
+examples/
