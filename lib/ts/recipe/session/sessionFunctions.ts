@@ -50,12 +50,14 @@ export async function createNewSession(
         requestBody
     );
     recipeImplementation.updateJwtSigningPublicKeyInfo(
+        response.jwtSigningPublicKeyList,
         response.jwtSigningPublicKey,
         response.jwtSigningPublicKeyExpiryTime
     );
     delete response.status;
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
+    delete response.jwtSigningPublicKeyList;
 
     return response;
 }
@@ -86,61 +88,64 @@ export async function getSession(
     /**
      * if jwtSigningPublicKeyExpiryTime is expired, we call core
      */
-    if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
-        try {
-            /**
-             * get access token info using existing signingKey
-             */
-            accessTokenInfo = await getInfoFromAccessToken(
-                accessToken,
-                handShakeInfo.jwtSigningPublicKey,
-                handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
-            );
-        } catch (err) {
-            /**
-             * if error type is not TRY_REFRESH_TOKEN, we return the
-             * error to the user
-             */
-            if (err.type !== STError.TRY_REFRESH_TOKEN) {
-                throw err;
-            }
-            /**
-             * if it comes here, it means token verification has failed.
-             * It may be due to:
-             *  - signing key was updated and this token was signed with new key
-             *  - access token is actually expired
-             *  - access token was signed with the older signing key
-             *
-             * if access token is actually expired, we don't need to call core and
-             * just return TRY_REFRESH_TOKEN to the client
-             *
-             * if access token creation time is after the signing key was last
-             * updated, we need to call core as there are chances that the token
-             * was signed with the updated signing key
-             *
-             * if access token creation time is before the signing key was last
-             * updated, we just return TRY_REFRESH_TOKEN to the client
-             */
-            let payload;
+    for (const key of handShakeInfo.jwtSigningPublicKeyList) {
+        if (key.expiryTime > Date.now()) {
             try {
-                payload = getPayloadWithoutVerifiying(accessToken);
-            } catch (_) {
-                throw err;
-            }
-            if (payload === undefined) {
-                throw err;
-            }
-            let expiryTime = sanitizeNumberInput(payload.expiryTime);
-            let timeCreated = sanitizeNumberInput(payload.timeCreated);
+                /**
+                 * get access token info using existing signingKey
+                 */
+                accessTokenInfo = await getInfoFromAccessToken(
+                    accessToken,
+                    key.publicKey,
+                    handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
+                );
+            } catch (err) {
+                /**
+                 * if error type is not TRY_REFRESH_TOKEN, we return the
+                 * error to the user
+                 */
+                if (err.type !== STError.TRY_REFRESH_TOKEN) {
+                    throw err;
+                }
+                /**
+                 * if it comes here, it means token verification has failed.
+                 * It may be due to:
+                 *  - signing key was updated and this token was signed with new key
+                 *  - access token is actually expired
+                 *  - access token was signed with the older signing key
+                 *
+                 * if access token is actually expired, we don't need to call core and
+                 * just return TRY_REFRESH_TOKEN to the client
+                 *
+                 * if access token creation time is after the signing key was last
+                 * updated, we need to call core as there are chances that the token
+                 * was signed with the updated signing key
+                 *
+                 * if access token creation time is before the signing key was last
+                 * updated, we just return TRY_REFRESH_TOKEN to the client
+                 */
+                let payload;
+                try {
+                    payload = getPayloadWithoutVerifiying(accessToken);
+                } catch (_) {
+                    throw err;
+                }
+                if (payload === undefined) {
+                    throw err;
+                }
+                let expiryTime = sanitizeNumberInput(payload.expiryTime);
+                let timeCreated = sanitizeNumberInput(payload.timeCreated);
 
-            if (expiryTime === undefined || expiryTime < Date.now()) {
-                throw err;
-            }
-            if (timeCreated === undefined || handShakeInfo.signingKeyLastUpdated > timeCreated) {
-                throw err;
+                if (expiryTime === undefined || expiryTime < Date.now()) {
+                    throw err;
+                }
+                if (timeCreated === undefined || handShakeInfo.signingKeyLastUpdated > timeCreated) {
+                    throw err;
+                }
             }
         }
     }
+
     /**
      * anti-csrf check if accesstokenInfo is not undefined,
      * which means token verification was successful
@@ -207,12 +212,14 @@ export async function getSession(
     );
     if (response.status === "OK") {
         recipeImplementation.updateJwtSigningPublicKeyInfo(
+            response.jwtSigningPublicKeyList,
             response.jwtSigningPublicKey,
             response.jwtSigningPublicKeyExpiryTime
         );
         delete response.status;
         delete response.jwtSigningPublicKey;
         delete response.jwtSigningPublicKeyExpiryTime;
+        delete response.jwtSigningPublicKeyList;
         return response;
     } else if (response.status === "UNAUTHORISED") {
         throw new STError({
@@ -220,9 +227,10 @@ export async function getSession(
             type: STError.UNAUTHORISED,
         });
     } else {
-        if (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined) {
-            // in CDI 2.7.1, the API returns the new keys
+        if (response.jwtSigningPublicKeyList !== undefined) {
+            // after CDI 2.7.1, the API returns the new keys
             recipeImplementation.updateJwtSigningPublicKeyInfo(
+                response.jwtSigningPublicKeyList,
                 response.jwtSigningPublicKey,
                 response.jwtSigningPublicKeyExpiryTime
             );

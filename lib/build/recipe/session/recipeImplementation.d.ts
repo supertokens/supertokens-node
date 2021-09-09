@@ -1,4 +1,11 @@
-import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo, SessionInformation } from "./types";
+import {
+    RecipeInterface,
+    VerifySessionOptions,
+    TypeNormalisedInput,
+    HandshakeInfo,
+    SessionInformation,
+    KeyInfo,
+} from "./types";
 import Session from "./sessionClass";
 import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
@@ -50,7 +57,7 @@ export default class RecipeImplementation implements RecipeInterface {
         newJWTPayload: any;
     }) => Promise<void>;
     getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
-    updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
+    updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
     getAccessTokenLifeTimeMS: () => Promise<number>;
     getRefreshTokenLifeTimeMS: () => Promise<number>;
 }

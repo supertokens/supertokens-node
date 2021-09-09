@@ -1,4 +1,11 @@
-import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo, SessionInformation } from "./types";
+import {
+    RecipeInterface,
+    VerifySessionOptions,
+    TypeNormalisedInput,
+    HandshakeInfo,
+    SessionInformation,
+    KeyInfo,
+} from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
     attachAccessTokenToCookie,
@@ -267,24 +274,23 @@ export default class RecipeImplementation implements RecipeInterface {
             }
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
-            let signingKeyLastUpdated = Date.now();
-            if (this.handshakeInfo !== undefined) {
-                if (
-                    response.jwtSigningPublicKeyExpiryTime === this.handshakeInfo.jwtSigningPublicKeyExpiryTime &&
-                    response.jwtSigningPublicKey === this.handshakeInfo.jwtSigningPublicKey
-                ) {
-                    signingKeyLastUpdated = this.handshakeInfo.signingKeyLastUpdated;
-                }
-            }
+
             this.handshakeInfo = {
-                signingKeyLastUpdated,
-                jwtSigningPublicKey: response.jwtSigningPublicKey,
+                signingKeyLastUpdated: this.handshakeInfo !== undefined ? this.handshakeInfo.signingKeyLastUpdated : 0,
+                jwtSigningPublicKeyList:
+                    this.handshakeInfo !== undefined ? this.handshakeInfo.jwtSigningPublicKeyList : [],
                 antiCsrf,
                 accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
-                jwtSigningPublicKeyExpiryTime: response.jwtSigningPublicKeyExpiryTime,
                 accessTokenValidity: response.accessTokenValidity,
                 refreshTokenValidity: response.refreshTokenValidity,
             };
+
+            this.updateJwtSigningPublicKeyInfo(
+                response.jwtSigningPublicKeyList,
+                response.jwtSigningPublicKey,
+                response.jwtSigningPublicKeyExpiryTime
+            );
+
             if (this.isInServerlessEnv) {
                 storeIntoTempFolderForServerlessCache(SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, this.handshakeInfo);
             }
@@ -292,16 +298,22 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.handshakeInfo;
     };
 
-    updateJwtSigningPublicKeyInfo = (newKey: string, newExpiry: number) => {
+    updateJwtSigningPublicKeyInfo = (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => {
+        if (keyList === undefined) {
+            keyList = [{ publicKey, expiryTime }];
+        }
+
         if (this.handshakeInfo !== undefined) {
-            if (
-                this.handshakeInfo.jwtSigningPublicKeyExpiryTime !== newExpiry ||
-                this.handshakeInfo.jwtSigningPublicKey !== newKey
-            ) {
+            const responsePublicKeys = new Set(keyList.map((keyInfo: KeyInfo) => keyInfo.publicKey));
+            const hasDiff =
+                keyList.length !== this.handshakeInfo.jwtSigningPublicKeyList.length ||
+                this.handshakeInfo.jwtSigningPublicKeyList.some(
+                    (keyInfo) => !responsePublicKeys.has(keyInfo.publicKey)
+                );
+            if (hasDiff) {
                 this.handshakeInfo.signingKeyLastUpdated = Date.now();
             }
-            this.handshakeInfo.jwtSigningPublicKey = newKey;
-            this.handshakeInfo.jwtSigningPublicKeyExpiryTime = newExpiry;
+            this.handshakeInfo.jwtSigningPublicKeyList = keyList;
         }
     };
 

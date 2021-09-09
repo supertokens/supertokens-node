@@ -1,10 +1,13 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
+export declare type KeyInfo = {
+    publicKey: string;
+    expiryTime: number;
+};
 export declare type HandshakeInfo = {
-    jwtSigningPublicKey: string;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     accessTokenBlacklistingEnabled: boolean;
-    jwtSigningPublicKeyExpiryTime: number;
+    jwtSigningPublicKeyList: KeyInfo[];
     accessTokenValidity: number;
     refreshTokenValidity: number;
     signingKeyLastUpdated: number;

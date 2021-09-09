@@ -15,11 +15,15 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 
+export type KeyInfo = {
+    publicKey: string;
+    expiryTime: number;
+};
+
 export type HandshakeInfo = {
-    jwtSigningPublicKey: string;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     accessTokenBlacklistingEnabled: boolean;
-    jwtSigningPublicKeyExpiryTime: number;
+    jwtSigningPublicKeyList: KeyInfo[];
     accessTokenValidity: number;
     refreshTokenValidity: number;
     signingKeyLastUpdated: number;
