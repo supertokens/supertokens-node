@@ -17,7 +17,7 @@ export default abstract class RecipeModule {
         path: NormalisedURLPath,
         method: HTTPMethod
     ): Promise<boolean>;
-    abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): void;
+    abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): Promise<void>;
     abstract getAllCORSHeaders(): string[];
     abstract isErrorFromThisRecipe(err: any): err is STError;
 }

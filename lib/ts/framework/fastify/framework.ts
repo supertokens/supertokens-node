@@ -167,7 +167,7 @@ export const errorHandler = () => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
         let response = new FastifyResponse(res);
-        supertokens.errorHandler(err, request, response);
+        await supertokens.errorHandler(err, request, response);
     };
 };
 

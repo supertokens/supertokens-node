@@ -33,7 +33,7 @@ export default class Recipe extends RecipeModule {
         path: NormalisedURLPath,
         method: HTTPMethod
     ) => Promise<boolean>;
-    handleError: (err: STError, request: BaseRequest, response: BaseResponse) => void;
+    handleError: (err: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;

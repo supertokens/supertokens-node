@@ -17,7 +17,7 @@ import { VerifySessionOptions } from "..";
 import { FastifyRequest, FastifyResponse, SessionRequest } from "../../../framework/fastify/framework";
 import { FastifyReply } from "fastify";
 
-export function verifySession(options: VerifySessionOptions | undefined) {
+export function verifySession(options?: VerifySessionOptions) {
     return async (req: SessionRequest, res: FastifyReply) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new FastifyRequest(req);

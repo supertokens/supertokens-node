@@ -274,7 +274,7 @@ export default class SuperTokens {
         }
     };
 
-    errorHandler = (err: any, request: BaseRequest, response: BaseResponse) => {
+    errorHandler = async (err: any, request: BaseRequest, response: BaseResponse) => {
         if (STError.isErrorFromSuperTokens(err)) {
             if (err.type === STError.BAD_INPUT_ERROR) {
                 return sendNon200Response(response, err.message, 400);
@@ -282,7 +282,7 @@ export default class SuperTokens {
 
             for (let i = 0; i < this.recipeModules.length; i++) {
                 if (this.recipeModules[i].isErrorFromThisRecipe(err)) {
-                    return this.recipeModules[i].handleError(err, request, response);
+                    return await this.recipeModules[i].handleError(err, request, response);
                 }
             }
         }

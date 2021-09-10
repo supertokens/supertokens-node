@@ -164,14 +164,19 @@ export function validateAndNormaliseUserInput(
             : config.antiCsrf;
 
     let errorHandlers: NormalisedErrorHandlers = {
-        onTokenTheftDetected: (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse) => {
-            return sendTokenTheftDetectedResponse(recipeInstance, sessionHandle, userId, request, response);
+        onTokenTheftDetected: async (
+            sessionHandle: string,
+            userId: string,
+            request: BaseRequest,
+            response: BaseResponse
+        ) => {
+            return await sendTokenTheftDetectedResponse(recipeInstance, sessionHandle, userId, request, response);
         },
-        onTryRefreshToken: (message: string, request: BaseRequest, response: BaseResponse) => {
-            return sendTryRefreshTokenResponse(recipeInstance, message, request, response);
+        onTryRefreshToken: async (message: string, request: BaseRequest, response: BaseResponse) => {
+            return await sendTryRefreshTokenResponse(recipeInstance, message, request, response);
         },
-        onUnauthorised: (message: string, request: BaseRequest, response: BaseResponse) => {
-            return sendUnauthorisedResponse(recipeInstance, message, request, response);
+        onUnauthorised: async (message: string, request: BaseRequest, response: BaseResponse) => {
+            return await sendUnauthorisedResponse(recipeInstance, message, request, response);
         },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {

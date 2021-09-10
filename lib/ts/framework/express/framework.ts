@@ -143,7 +143,7 @@ export const errorHandler = () => {
         let request = new ExpressRequest(req);
         let response = new ExpressResponse(res);
         try {
-            supertokens.errorHandler(err, request, response);
+            await supertokens.errorHandler(err, request, response);
         } catch (err) {
             return next(err);
         }

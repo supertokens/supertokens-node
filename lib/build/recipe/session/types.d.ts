@@ -113,10 +113,10 @@ export interface SessionRequest extends BaseRequest {
     session?: SessionContainerInterface;
 }
 export interface ErrorHandlerMiddleware {
-    (message: string, request: BaseRequest, response: BaseResponse): void;
+    (message: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): void;
+    (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
