@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [7.0.1] - 2021-09-10
 
+### Breaking Change
+
+-   Removed redwood support
+
 ### Fixes
 
 -   fixes issue #175 regarding making error handlers async, session error callabacks async and making VerifySessionOptions optional for verifySession middleware.
