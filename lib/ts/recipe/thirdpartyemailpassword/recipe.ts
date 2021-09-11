@@ -235,20 +235,20 @@ export default class Recipe extends RecipeModule {
         return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, path, method);
     };
 
-    handleError = (
+    handleError = async (
         err: STErrorEmailPassword | STErrorThirdParty,
         request: BaseRequest,
         response: BaseResponse
-    ): void => {
+    ): Promise<void> => {
         if (err.fromRecipe === Recipe.RECIPE_ID) {
             throw err;
         } else {
             if (this.emailPasswordRecipe.isErrorFromThisRecipe(err)) {
-                return this.emailPasswordRecipe.handleError(err, request, response);
+                return await this.emailPasswordRecipe.handleError(err, request, response);
             } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
-                return this.thirdPartyRecipe.handleError(err, request, response);
+                return await this.thirdPartyRecipe.handleError(err, request, response);
             }
-            return this.emailVerificationRecipe.handleError(err, request, response);
+            return await this.emailVerificationRecipe.handleError(err, request, response);
         }
     };
 

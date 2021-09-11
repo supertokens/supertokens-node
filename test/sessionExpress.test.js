@@ -33,6 +33,7 @@ const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath")
 const { removeServerlessCache } = require("../lib/build/utils");
 const { verifySession } = require("../recipe/session/framework/express");
 const { errorHandler } = require("../framework/express");
+const { default: next } = require("next");
 
 describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, function () {
     beforeEach(async function () {
@@ -2821,5 +2822,71 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         );
         assert.strictEqual(response.body.message, "try refresh token");
         assert.strictEqual(response.status, 401);
+    });
+
+    it("test session error handler overriding", async function () {
+        await startST();
+        let testpass = false;
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                    errorHandlers: {
+                        onUnauthorised: async (message, request, response) => {
+                            await new Promise((r) =>
+                                setTimeout(() => {
+                                    testpass = true;
+                                    r();
+                                }, 5000)
+                            );
+                            throw Error("onUnauthorised error caught");
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.post("/session/verify", async (req, res, next) => {
+            try {
+                await Session.getSession(req, res, true);
+                res.status(200).send("");
+            } catch (err) {
+                next(err);
+            }
+        });
+
+        app.use(errorHandler());
+
+        app.use((err, req, res, next) => {
+            if (err.message === "onUnauthorised error caught") {
+                res.status(403);
+                res.json({});
+            }
+        });
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .expect(403)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response.status, 403);
+        assert(testpass);
     });
 });

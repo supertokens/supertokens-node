@@ -3,7 +3,7 @@ import { VerifySessionOptions } from "..";
 import { SessionRequest } from "../../../framework/fastify/framework";
 import { FastifyReply } from "fastify";
 export declare function verifySession(
-    options: VerifySessionOptions | undefined
+    options?: VerifySessionOptions
 ): (
     req: SessionRequest,
     res: FastifyReply<

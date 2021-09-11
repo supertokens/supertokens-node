@@ -37,5 +37,5 @@ export default class SuperTokens {
         nextPaginationToken?: string | undefined;
     }>;
     middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
-    errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => void;
+    errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => Promise<void>;
 }

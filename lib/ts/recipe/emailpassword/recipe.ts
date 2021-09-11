@@ -172,7 +172,7 @@ export default class Recipe extends RecipeModule {
         }
     };
 
-    handleError = (err: STError, request: BaseRequest, response: BaseResponse): void => {
+    handleError = async (err: STError, request: BaseRequest, response: BaseResponse): Promise<void> => {
         if (err.fromRecipe === Recipe.RECIPE_ID) {
             if (err.type === STError.FIELD_ERROR) {
                 return send200Response(response, {
@@ -183,7 +183,7 @@ export default class Recipe extends RecipeModule {
                 throw err;
             }
         } else {
-            return this.emailVerificationRecipe.handleError(err, request, response);
+            return await this.emailVerificationRecipe.handleError(err, request, response);
         }
     };
 
