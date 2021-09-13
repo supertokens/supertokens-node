@@ -134,12 +134,8 @@ export async function getSession(
                     throw err;
                 }
                 let expiryTime = sanitizeNumberInput(payload.expiryTime);
-                let timeCreated = sanitizeNumberInput(payload.timeCreated);
 
                 if (expiryTime === undefined || expiryTime < Date.now()) {
-                    throw err;
-                }
-                if (timeCreated === undefined || handShakeInfo.signingKeyLastUpdated > timeCreated) {
                     throw err;
                 }
             }

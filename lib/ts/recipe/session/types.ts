@@ -26,7 +26,6 @@ export type HandshakeInfo = {
     jwtSigningPublicKeyList: KeyInfo[];
     accessTokenValidity: number;
     refreshTokenValidity: number;
-    signingKeyLastUpdated: number;
 };
 
 export type CreateOrRefreshAPIResponse = {

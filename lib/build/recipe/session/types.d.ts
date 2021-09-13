@@ -10,7 +10,6 @@ export declare type HandshakeInfo = {
     jwtSigningPublicKeyList: KeyInfo[];
     accessTokenValidity: number;
     refreshTokenValidity: number;
-    signingKeyLastUpdated: number;
 };
 export declare type CreateOrRefreshAPIResponse = {
     session: {

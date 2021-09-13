@@ -276,9 +276,7 @@ export default class RecipeImplementation implements RecipeInterface {
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
 
             this.handshakeInfo = {
-                signingKeyLastUpdated: this.handshakeInfo !== undefined ? this.handshakeInfo.signingKeyLastUpdated : 0,
-                jwtSigningPublicKeyList:
-                    this.handshakeInfo !== undefined ? this.handshakeInfo.jwtSigningPublicKeyList : [],
+                jwtSigningPublicKeyList: response.jwtSigningPublicKeyList,
                 antiCsrf,
                 accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
                 accessTokenValidity: response.accessTokenValidity,
@@ -304,15 +302,6 @@ export default class RecipeImplementation implements RecipeInterface {
         }
 
         if (this.handshakeInfo !== undefined) {
-            const responsePublicKeys = new Set(keyList.map((keyInfo: KeyInfo) => keyInfo.publicKey));
-            const hasDiff =
-                keyList.length !== this.handshakeInfo.jwtSigningPublicKeyList.length ||
-                this.handshakeInfo.jwtSigningPublicKeyList.some(
-                    (keyInfo) => !responsePublicKeys.has(keyInfo.publicKey)
-                );
-            if (hasDiff) {
-                this.handshakeInfo.signingKeyLastUpdated = Date.now();
-            }
             this.handshakeInfo.jwtSigningPublicKeyList = keyList;
         }
     };
