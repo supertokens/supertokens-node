@@ -18,7 +18,7 @@ import type { Next } from "koa";
 import { KoaRequest, KoaResponse } from "../../../framework/koa/framework";
 import type { SessionContext } from "../../../framework/koa/framework";
 
-export function verifySession(options: VerifySessionOptions | undefined) {
+export function verifySession(options?: VerifySessionOptions) {
     return async (ctx: SessionContext, next: Next) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new KoaRequest(ctx);

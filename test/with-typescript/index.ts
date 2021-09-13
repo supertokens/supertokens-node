@@ -97,6 +97,16 @@ app.use(
     }
 );
 
+app.use(verifySession(), async (req: SessionRequest, res) => {
+    let session = req.session;
+    if (session === undefined) {
+        throw Error("this error should not get thrown");
+    }
+    res.json({
+        userId: session.getUserId(),
+    });
+});
+
 app.use(errorHandler());
 
 app.listen();

@@ -18,7 +18,7 @@ import type { SessionRequest } from "../../../framework/express/framework";
 import { ExpressRequest, ExpressResponse } from "../../../framework/express/framework";
 import type { NextFunction, Response } from "express";
 
-export function verifySession(options: VerifySessionOptions | undefined) {
+export function verifySession(options?: VerifySessionOptions) {
     return async (req: SessionRequest, res: Response, next: NextFunction) => {
         try {
             let sessionRecipe = Session.getInstanceOrThrowError();

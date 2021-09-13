@@ -123,7 +123,7 @@ export default class Recipe extends RecipeModule {
         }
     };
 
-    handleError = (err: STError, _: BaseRequest, __: BaseResponse): void => {
+    handleError = async (err: STError, _: BaseRequest, __: BaseResponse): Promise<void> => {
         throw err;
     };
 

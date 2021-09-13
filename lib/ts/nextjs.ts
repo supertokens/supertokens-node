@@ -23,7 +23,7 @@ function next(
         if (middlewareError === undefined) {
             return resolve();
         }
-        errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
+        await errorHandler()(middlewareError, request, response, (errorHandlerError: any) => {
             if (errorHandlerError !== undefined) {
                 return reject(errorHandlerError);
             }
@@ -49,7 +49,7 @@ export default class NextJS {
                     return resolve(result);
                 }
             } catch (err) {
-                errorHandler()(err, request, response, (errorHandlerError: any) => {
+                await errorHandler()(err, request, response, (errorHandlerError: any) => {
                     if (errorHandlerError !== undefined) {
                         return reject(errorHandlerError);
                     }

@@ -286,7 +286,7 @@ export const middleware = (handler?: Handler): Handler => {
             }
             return response.sendResponse({});
         } catch (err) {
-            supertokens.errorHandler(err, request, response);
+            await supertokens.errorHandler(err, request, response);
             if (response.responseSet) {
                 return response.sendResponse({});
             }

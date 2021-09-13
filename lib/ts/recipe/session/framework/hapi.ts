@@ -16,7 +16,7 @@ import Session from "../recipe";
 import { VerifySessionOptions } from "..";
 import { ExtendedResponseToolkit, HapiRequest, HapiResponse, SessionRequest } from "../../../framework/hapi/framework";
 
-export function verifySession(options: VerifySessionOptions | undefined) {
+export function verifySession(options?: VerifySessionOptions) {
     return async (req: SessionRequest, h: ExtendedResponseToolkit) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new HapiRequest(req);
