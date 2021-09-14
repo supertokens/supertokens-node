@@ -3,6 +3,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;
+    createdAt: number;
 };
 export declare type HandshakeInfo = {
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";

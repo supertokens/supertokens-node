@@ -298,7 +298,8 @@ export default class RecipeImplementation implements RecipeInterface {
 
     updateJwtSigningPublicKeyInfo = (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => {
         if (keyList === undefined) {
-            keyList = [{ publicKey, expiryTime }];
+            // Setting createdAt to Date.now() emulates the old lastUpdatedAt logic
+            keyList = [{ publicKey, expiryTime, createdAt: Date.now() }];
         }
 
         if (this.handshakeInfo !== undefined) {

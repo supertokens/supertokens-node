@@ -105,29 +105,24 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         await new Promise((r) => setTimeout(r, 6000));
 
-        {
-            try {
-                await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                    response.accessToken.token,
-                    response.antiCsrfToken,
-                    true,
-                    response.idRefreshToken.token
-                );
-            } catch (err) {
-                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
-                    throw err;
-                }
-            }
+        await SessionFunctions.getSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            response.accessToken.token,
+            response.antiCsrfToken,
+            true,
+            response.idRefreshToken.token
+        );
 
-            let verifyState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
-                1500
-            );
-            assert(verifyState !== undefined);
-        }
+        // We do not call verify here, since signing key is still valid
+        const verifyState = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+            1500
+        );
+        assert(verifyState === undefined);
 
-        let response2 = await SessionFunctions.refreshSession(
+        ProcessState.getInstance().reset();
+
+        const response2 = await SessionFunctions.refreshSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             response.refreshToken.token,
             response.antiCsrfToken
@@ -141,13 +136,15 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             response2.idRefreshToken.token
         );
 
-        await ProcessState.getInstance().reset();
-
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
-        assert(verifyState === undefined);
+        // We call verify, since refresh does not refresh the signing key info
+        const verifyState2 = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+            1500
+        );
+        assert(verifyState2 !== undefined);
     });
 
-    it("check that if signing key changes, after new key is fetched - via one old token query, old tokens don't query the core", async function () {
+    it("check that if signing key changes, after new key is fetched - via token query, old tokens don't query the core", async function () {
         await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
@@ -166,14 +163,14 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
-        let response = await SessionFunctions.createNewSession(
+        const oldSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             "",
             {},
             {}
         );
 
-        let response2 = await SessionFunctions.createNewSession(
+        await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             "",
             {},
@@ -181,45 +178,47 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         );
 
         await new Promise((r) => setTimeout(r, 6000));
+        let originalHandShakeInfo = {
+            ...SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo,
+        };
+
+        const newSession = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
+
+        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo = originalHandShakeInfo;
 
         {
-            try {
-                await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                    response.accessToken.token,
-                    response.antiCsrfToken,
-                    true,
-                    response.idRefreshToken.token
-                );
-            } catch (err) {
-                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
-                    throw err;
-                }
-            }
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                newSession.accessToken.token,
+                newSession.antiCsrfToken,
+                true,
+                newSession.idRefreshToken.token
+            );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
                 1500
             );
+
+            // We call verify here, since this is a new session we can't verify locally
             assert(verifyState !== undefined);
         }
 
         await ProcessState.getInstance().reset();
 
         {
-            try {
-                await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                    response2.accessToken.token,
-                    response2.antiCsrfToken,
-                    true,
-                    response2.idRefreshToken.token
-                );
-            } catch (err) {
-                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
-                    throw err;
-                }
-            }
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                oldSession.accessToken.token,
+                oldSession.antiCsrfToken,
+                true,
+                oldSession.idRefreshToken.token
+            );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
@@ -283,19 +282,13 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await ProcessState.getInstance().reset();
 
         {
-            try {
-                await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                    response2.accessToken.token,
-                    response2.antiCsrfToken,
-                    true,
-                    response2.idRefreshToken.token
-                );
-            } catch (err) {
-                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
-                    throw err;
-                }
-            }
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                response2.accessToken.token,
+                response2.antiCsrfToken,
+                true,
+                response2.idRefreshToken.token
+            );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
@@ -367,19 +360,13 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await ProcessState.getInstance().reset();
 
         {
-            try {
-                await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                    response2.accessToken.token,
-                    response2.antiCsrfToken,
-                    true,
-                    response2.idRefreshToken.token
-                );
-            } catch (err) {
-                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
-                    throw err;
-                }
-            }
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                response2.accessToken.token,
+                response2.antiCsrfToken,
+                true,
+                response2.idRefreshToken.token
+            );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
@@ -435,12 +422,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await killAllSTCoresOnly();
         await setupST();
 
-        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.0011"); // update key to 4 seconds
-
         // start server again
         await startST();
-
-        await new Promise((r) => setTimeout(r, 5 * 1000)); // wait for 5 seconds
 
         {
             await SessionFunctions.getSession(

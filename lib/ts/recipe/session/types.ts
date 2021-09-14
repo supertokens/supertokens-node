@@ -18,6 +18,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 export type KeyInfo = {
     publicKey: string;
     expiryTime: number;
+    createdAt: number;
 };
 
 export type HandshakeInfo = {

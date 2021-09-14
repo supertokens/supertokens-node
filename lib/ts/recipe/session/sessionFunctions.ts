@@ -85,10 +85,11 @@ export async function getSession(
 }> {
     let handShakeInfo = await recipeImplementation.getHandshakeInfo();
     let accessTokenInfo;
-    /**
-     * if jwtSigningPublicKeyExpiryTime is expired, we call core
-     */
+
+    // If we have no key old enough to verify this access token we should reject it without calling the core
+    let foundOlderKey = false;
     for (const key of handShakeInfo.jwtSigningPublicKeyList) {
+        // If the key is already expired we shouldn't use it for verification
         if (key.expiryTime > Date.now()) {
             try {
                 /**
@@ -99,6 +100,7 @@ export async function getSession(
                     key.publicKey,
                     handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
                 );
+                foundOlderKey = true;
             } catch (err) {
                 /**
                  * if error type is not TRY_REFRESH_TOKEN, we return the
@@ -117,12 +119,12 @@ export async function getSession(
                  * if access token is actually expired, we don't need to call core and
                  * just return TRY_REFRESH_TOKEN to the client
                  *
-                 * if access token creation time is after the signing key was last
-                 * updated, we need to call core as there are chances that the token
+                 * if access token creation time is after this signing key was created
+                 * we need to call core as there are chances that the token
                  * was signed with the updated signing key
                  *
-                 * if access token creation time is before the signing key was last
-                 * updated, we just return TRY_REFRESH_TOKEN to the client
+                 * if access token creation time is before oldest signing key was created,
+                 * so if foundOlderKey is still false after the loop we just return TRY_REFRESH_TOKEN
                  */
                 let payload;
                 try {
@@ -133,13 +135,33 @@ export async function getSession(
                 if (payload === undefined) {
                     throw err;
                 }
-                let expiryTime = sanitizeNumberInput(payload.expiryTime);
+
+                const timeCreated = sanitizeNumberInput(payload.timeCreated);
+                const expiryTime = sanitizeNumberInput(payload.expiryTime);
 
                 if (expiryTime === undefined || expiryTime < Date.now()) {
                     throw err;
                 }
+
+                if (timeCreated === undefined) {
+                    throw err;
+                }
+
+                // This is kind of like the old signingKeyLastUpdated logic using the creation time
+                // of the oldest key instead of the last update time
+                if (timeCreated >= key.createdAt) {
+                    foundOlderKey = true;
+                    break;
+                }
             }
         }
+    }
+
+    if (accessTokenInfo === undefined && !foundOlderKey) {
+        throw new STError({
+            message: "Access token has expired. Please call the refresh API",
+            type: STError.TRY_REFRESH_TOKEN,
+        });
     }
 
     /**
