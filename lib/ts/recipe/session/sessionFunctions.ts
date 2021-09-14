@@ -245,7 +245,10 @@ export async function getSession(
             type: STError.UNAUTHORISED,
         });
     } else {
-        if (response.jwtSigningPublicKeyList !== undefined) {
+        if (
+            response.jwtSigningPublicKeyList !== undefined ||
+            (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined)
+        ) {
             // after CDI 2.7.1, the API returns the new keys
             recipeImplementation.updateJwtSigningPublicKeyInfo(
                 response.jwtSigningPublicKeyList,
