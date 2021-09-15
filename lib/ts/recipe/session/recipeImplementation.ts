@@ -296,6 +296,12 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.handshakeInfo;
     };
 
+    /**
+     * Update the cached list of signing keys
+     * @param keyList The list of signing keys on the response object. Before 2.9 always undefined, after it always contains at least 1 key
+     * @param publicKey The public key of the latest signing key
+     * @param expiryTime The expiry time of the latest signing key
+     */
     updateJwtSigningPublicKeyInfo = (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => {
         if (keyList === undefined) {
             // Setting createdAt to Date.now() emulates the old lastUpdatedAt logic
