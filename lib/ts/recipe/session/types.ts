@@ -21,13 +21,24 @@ export type KeyInfo = {
     createdAt: number;
 };
 
-export type HandshakeInfo = {
-    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+export type AntiCsrfType = "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+export type StoredHandshakeInfo = {
+    antiCsrf: AntiCsrfType;
     accessTokenBlacklistingEnabled: boolean;
-    jwtSigningPublicKeyList: KeyInfo[];
     accessTokenValidity: number;
     refreshTokenValidity: number;
-};
+} & (
+    | {
+          // Stored after 2.9
+          jwtSigningPublicKeyList: KeyInfo[];
+      }
+    | {
+          // Stored before 2.9
+          jwtSigningPublicKeyList: undefined;
+          jwtSigningPublicKey: string;
+          jwtSigningPublicKeyExpiryTime: number;
+      }
+);
 
 export type CreateOrRefreshAPIResponse = {
     session: {

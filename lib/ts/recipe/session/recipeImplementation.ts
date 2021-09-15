@@ -2,9 +2,10 @@ import {
     RecipeInterface,
     VerifySessionOptions,
     TypeNormalisedInput,
-    HandshakeInfo,
     SessionInformation,
     KeyInfo,
+    AntiCsrfType,
+    StoredHandshakeInfo,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -28,6 +29,24 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import SuperTokens from "../../supertokens";
 import frameworks from "../../framework";
+
+class HandshakeInfo {
+    constructor(
+        public antiCsrf: AntiCsrfType,
+        public accessTokenBlacklistingEnabled: boolean,
+        public accessTokenValidity: number,
+        public refreshTokenValidity: number,
+        private rawJwtSigningPublicKeyList: KeyInfo[]
+    ) {}
+
+    setJwtSigningPublicKeyList(updatedList: KeyInfo[]) {
+        this.rawJwtSigningPublicKeyList = updatedList;
+    }
+
+    getJwtSigningPublicKeyList() {
+        return this.rawJwtSigningPublicKeyList.filter((key) => key.expiryTime > Date.now());
+    }
+}
 
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
@@ -260,28 +279,37 @@ export default class RecipeImplementation implements RecipeInterface {
         if (this.handshakeInfo === undefined || forceRefetch) {
             let antiCsrf = this.config.antiCsrf;
             if (this.isInServerlessEnv && !forceRefetch) {
-                let handshakeInfo = await getDataFromFileForServerlessCache<HandshakeInfo>(
+                let storedHandshakeInfo = await getDataFromFileForServerlessCache<StoredHandshakeInfo>(
                     SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH
                 );
-                if (handshakeInfo !== undefined) {
-                    handshakeInfo = {
-                        ...handshakeInfo,
+                if (storedHandshakeInfo !== undefined) {
+                    this.handshakeInfo = new HandshakeInfo(
                         antiCsrf,
-                    };
-                    this.handshakeInfo = handshakeInfo;
+                        storedHandshakeInfo.accessTokenBlacklistingEnabled,
+                        storedHandshakeInfo.accessTokenValidity,
+                        storedHandshakeInfo.refreshTokenValidity,
+                        storedHandshakeInfo.jwtSigningPublicKeyList || []
+                    );
+                    if (!storedHandshakeInfo.jwtSigningPublicKeyList) {
+                        this.updateJwtSigningPublicKeyInfo(
+                            storedHandshakeInfo.jwtSigningPublicKeyList,
+                            storedHandshakeInfo.jwtSigningPublicKey,
+                            storedHandshakeInfo.jwtSigningPublicKeyExpiryTime
+                        );
+                    }
                     return this.handshakeInfo;
                 }
             }
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
 
-            this.handshakeInfo = {
-                jwtSigningPublicKeyList: response.jwtSigningPublicKeyList,
+            this.handshakeInfo = new HandshakeInfo(
                 antiCsrf,
-                accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
-                accessTokenValidity: response.accessTokenValidity,
-                refreshTokenValidity: response.refreshTokenValidity,
-            };
+                response.accessTokenBlacklistingEnabled,
+                response.accessTokenValidity,
+                response.refreshTokenValidity,
+                response.jwtSigningPublicKeyList
+            );
 
             this.updateJwtSigningPublicKeyInfo(
                 response.jwtSigningPublicKeyList,
@@ -290,7 +318,13 @@ export default class RecipeImplementation implements RecipeInterface {
             );
 
             if (this.isInServerlessEnv) {
-                storeIntoTempFolderForServerlessCache(SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, this.handshakeInfo);
+                storeIntoTempFolderForServerlessCache(SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, {
+                    antiCsrf: this.handshakeInfo.antiCsrf,
+                    accessTokenBlacklistingEnabled: this.handshakeInfo.accessTokenBlacklistingEnabled,
+                    accessTokenValidity: this.handshakeInfo.accessTokenValidity,
+                    refreshTokenValidity: this.handshakeInfo.refreshTokenValidity,
+                    jwtSigningPublicKeyList: this.handshakeInfo.getJwtSigningPublicKeyList(),
+                });
             }
         }
         return this.handshakeInfo;
@@ -309,7 +343,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
 
         if (this.handshakeInfo !== undefined) {
-            this.handshakeInfo.jwtSigningPublicKeyList = keyList;
+            this.handshakeInfo.setJwtSigningPublicKeyList(keyList);
         }
     };
 
