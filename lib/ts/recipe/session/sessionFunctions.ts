@@ -89,75 +89,72 @@ export async function getSession(
     // If we have no key old enough to verify this access token we should reject it without calling the core
     let foundOlderKey = false;
     for (const key of handShakeInfo.getJwtSigningPublicKeyList()) {
-        // If the key is already expired we shouldn't use it for verification
-        if (key.expiryTime > Date.now()) {
+        try {
+            /**
+             * get access token info using existing signingKey
+             */
+            accessTokenInfo = await getInfoFromAccessToken(
+                accessToken,
+                key.publicKey,
+                handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
+            );
+            foundOlderKey = true;
+        } catch (err) {
+            /**
+             * if error type is not TRY_REFRESH_TOKEN, we return the
+             * error to the user
+             */
+            if (err.type !== STError.TRY_REFRESH_TOKEN) {
+                throw err;
+            }
+            /**
+             * if it comes here, it means token verification has failed.
+             * It may be due to:
+             *  - signing key was updated and this token was signed with new key
+             *  - access token is actually expired
+             *  - access token was signed with the older signing key
+             *
+             * if access token is actually expired, we don't need to call core and
+             * just return TRY_REFRESH_TOKEN to the client
+             *
+             * if access token creation time is after this signing key was created
+             * we need to call core as there are chances that the token
+             * was signed with the updated signing key
+             *
+             * if access token creation time is before oldest signing key was created,
+             * so if foundOlderKey is still false after the loop we just return TRY_REFRESH_TOKEN
+             */
+            let payload;
             try {
-                /**
-                 * get access token info using existing signingKey
-                 */
-                accessTokenInfo = await getInfoFromAccessToken(
-                    accessToken,
-                    key.publicKey,
-                    handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
-                );
+                payload = getPayloadWithoutVerifiying(accessToken);
+            } catch (_) {
+                throw err;
+            }
+            if (payload === undefined) {
+                throw err;
+            }
+
+            const timeCreated = sanitizeNumberInput(payload.timeCreated);
+            const expiryTime = sanitizeNumberInput(payload.expiryTime);
+
+            if (expiryTime === undefined || expiryTime < Date.now()) {
+                throw err;
+            }
+
+            if (timeCreated === undefined) {
+                throw err;
+            }
+
+            // This is kind of like the old signingKeyLastUpdated logic using the creation time
+            // of the oldest key instead of the last update time
+            if (timeCreated >= key.createdAt) {
                 foundOlderKey = true;
-            } catch (err) {
-                /**
-                 * if error type is not TRY_REFRESH_TOKEN, we return the
-                 * error to the user
-                 */
-                if (err.type !== STError.TRY_REFRESH_TOKEN) {
-                    throw err;
-                }
-                /**
-                 * if it comes here, it means token verification has failed.
-                 * It may be due to:
-                 *  - signing key was updated and this token was signed with new key
-                 *  - access token is actually expired
-                 *  - access token was signed with the older signing key
-                 *
-                 * if access token is actually expired, we don't need to call core and
-                 * just return TRY_REFRESH_TOKEN to the client
-                 *
-                 * if access token creation time is after this signing key was created
-                 * we need to call core as there are chances that the token
-                 * was signed with the updated signing key
-                 *
-                 * if access token creation time is before oldest signing key was created,
-                 * so if foundOlderKey is still false after the loop we just return TRY_REFRESH_TOKEN
-                 */
-                let payload;
-                try {
-                    payload = getPayloadWithoutVerifiying(accessToken);
-                } catch (_) {
-                    throw err;
-                }
-                if (payload === undefined) {
-                    throw err;
-                }
-
-                const timeCreated = sanitizeNumberInput(payload.timeCreated);
-                const expiryTime = sanitizeNumberInput(payload.expiryTime);
-
-                if (expiryTime === undefined || expiryTime < Date.now()) {
-                    throw err;
-                }
-
-                if (timeCreated === undefined) {
-                    throw err;
-                }
-
-                // This is kind of like the old signingKeyLastUpdated logic using the creation time
-                // of the oldest key instead of the last update time
-                if (timeCreated >= key.createdAt) {
-                    foundOlderKey = true;
-                    break;
-                }
+                break;
             }
         }
     }
 
-    if (accessTokenInfo === undefined && !foundOlderKey) {
+    if (!foundOlderKey) {
         throw new STError({
             message: "Access token has expired. Please call the refresh API",
             type: STError.TRY_REFRESH_TOKEN,
