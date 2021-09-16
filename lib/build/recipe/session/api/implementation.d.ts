@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { APIInterface, APIOptions, VerifySessionOptions } from "../";
 import { SessionContainerInterface } from "../types";
 export default class APIImplementation implements APIInterface {

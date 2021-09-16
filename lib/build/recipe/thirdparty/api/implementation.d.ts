@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { APIInterface, APIOptions, User, TypeProvider } from "../";
 export default class APIImplementation implements APIInterface {
     authorisationUrlGET: ({

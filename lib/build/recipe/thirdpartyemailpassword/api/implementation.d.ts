@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { APIInterface, TypeProvider, SignInUpAPIInput, SignInUpAPIOutput } from "../";
 import EmailPasswordImplemenation from "../../emailpassword/api/implementation";
 import ThirdPartyImplemenation from "../../thirdparty/api/implementation";

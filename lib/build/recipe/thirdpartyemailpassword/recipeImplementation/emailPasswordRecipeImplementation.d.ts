@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { RecipeInterface, User } from "../../emailpassword/types";
 import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
 export default class RecipeImplementation implements RecipeInterface {

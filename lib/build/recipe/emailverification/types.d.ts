@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 export declare type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;

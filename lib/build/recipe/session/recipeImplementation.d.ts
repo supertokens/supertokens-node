@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo, SessionInformation } from "./types";
 import Session from "./sessionClass";
 import { Querier } from "../../querier";
