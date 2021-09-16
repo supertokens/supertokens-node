@@ -146,8 +146,9 @@ export async function getSession(
                 throw err;
             }
 
-            // This is kind of like the old signingKeyLastUpdated logic using the creation time
-            // of the oldest key instead of the last update time
+            // If we reached a key older than the token and failed to validate the token,
+            // that means it was signed by a key newer than the cached list.
+            // In this case we go to the server.
             if (timeCreated >= key.createdAt) {
                 foundASigningKeyThatIsOlderThanTheAccessToken = true;
                 break;
@@ -155,6 +156,9 @@ export async function getSession(
         }
     }
 
+    // If the token was created before the oldest key in the cache but hasn't expired, then a config value must've changed.
+    // E.g., the access_token_signing_key_update_interval was reduced, or access_token_signing_key_dynamic was turned on.
+    // Either way, the user needs to refresh the access token as validating by the server is likely to do nothing.
     if (!foundASigningKeyThatIsOlderThanTheAccessToken) {
         throw new STError({
             message: "Access token has expired. Please call the refresh API",
