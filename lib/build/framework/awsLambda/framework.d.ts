@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type {
     APIGatewayProxyEventV2,
     APIGatewayProxyEvent,

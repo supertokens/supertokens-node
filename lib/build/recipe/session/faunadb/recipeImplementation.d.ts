@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { VerifySessionOptions, RecipeInterface } from "../";
 import * as faunadb from "faunadb";
 import type { Session as FaunaDBSessionContainer } from "./types";
