@@ -12,15 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const {
-    printPath,
-    setupST,
-    startST,
-    createServerlessCacheForTesting,
-    killAllST,
-    cleanST,
-    extractInfoFromResponse,
-} = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
@@ -28,14 +20,11 @@ let HapiFramework = require("../../framework/hapi");
 const Hapi = require("@hapi/hapi");
 let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/hapi");
-const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
         this.server = Hapi.server({
             port: 3000,

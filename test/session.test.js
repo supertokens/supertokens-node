@@ -16,7 +16,6 @@ const {
     printPath,
     setupST,
     startST,
-    createServerlessCacheForTesting,
     killAllST,
     cleanST,
     extractInfoFromResponse,
@@ -33,7 +32,7 @@ let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
-const { removeServerlessCache, maxVersion } = require("../lib/build/utils");
+const { maxVersion } = require("../lib/build/utils");
 const { fail } = require("assert");
 
 /* TODO:
@@ -49,8 +48,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

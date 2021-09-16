@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Support for multiple access token signing keys: https://github.com/supertokens/supertokens-core/issues/305
 -   Supporting CDI 2.9
 
+### Removed
+
+-   Unnecessary serverless optimisation
+
 ## [7.0.1] - 2021-09-10
 
 ### Breaking Change

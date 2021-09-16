@@ -20,7 +20,6 @@ const {
     cleanST,
     setKeyValueInConfig,
     extractInfoFromResponse,
-    createServerlessCacheForTesting,
 } = require("./utils");
 let assert = require("assert");
 const express = require("express");
@@ -30,7 +29,6 @@ let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
-const { removeServerlessCache } = require("../lib/build/utils");
 
 /**
  * TODO: (Later) check that disabling default API actually disables it (for emailpassword)
@@ -40,8 +38,6 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

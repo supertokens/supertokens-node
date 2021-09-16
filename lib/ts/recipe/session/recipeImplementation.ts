@@ -5,7 +5,6 @@ import {
     SessionInformation,
     KeyInfo,
     AntiCsrfType,
-    StoredHandshakeInfo,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -23,8 +22,6 @@ import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod, frontendHasInterceptor } from "../../utils";
 import { Querier } from "../../querier";
-import { getDataFromFileForServerlessCache, storeIntoTempFolderForServerlessCache } from "../../utils";
-import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./constants";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import SuperTokens from "../../supertokens";
@@ -278,28 +275,6 @@ export default class RecipeImplementation implements RecipeInterface {
     getHandshakeInfo = async (forceRefetch = false): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined || forceRefetch) {
             let antiCsrf = this.config.antiCsrf;
-            if (this.isInServerlessEnv && !forceRefetch) {
-                let storedHandshakeInfo = await getDataFromFileForServerlessCache<StoredHandshakeInfo>(
-                    SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH
-                );
-                if (storedHandshakeInfo !== undefined) {
-                    this.handshakeInfo = new HandshakeInfo(
-                        antiCsrf,
-                        storedHandshakeInfo.accessTokenBlacklistingEnabled,
-                        storedHandshakeInfo.accessTokenValidity,
-                        storedHandshakeInfo.refreshTokenValidity,
-                        storedHandshakeInfo.jwtSigningPublicKeyList || []
-                    );
-                    if (!storedHandshakeInfo.jwtSigningPublicKeyList) {
-                        this.updateJwtSigningPublicKeyInfo(
-                            storedHandshakeInfo.jwtSigningPublicKeyList,
-                            storedHandshakeInfo.jwtSigningPublicKey,
-                            storedHandshakeInfo.jwtSigningPublicKeyExpiryTime
-                        );
-                    }
-                    return this.handshakeInfo;
-                }
-            }
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
 
@@ -316,16 +291,6 @@ export default class RecipeImplementation implements RecipeInterface {
                 response.jwtSigningPublicKey,
                 response.jwtSigningPublicKeyExpiryTime
             );
-
-            if (this.isInServerlessEnv) {
-                storeIntoTempFolderForServerlessCache(SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, {
-                    antiCsrf: this.handshakeInfo.antiCsrf,
-                    accessTokenBlacklistingEnabled: this.handshakeInfo.accessTokenBlacklistingEnabled,
-                    accessTokenValidity: this.handshakeInfo.accessTokenValidity,
-                    refreshTokenValidity: this.handshakeInfo.refreshTokenValidity,
-                    jwtSigningPublicKeyList: this.handshakeInfo.getJwtSigningPublicKeyList(),
-                });
-            }
         }
         return this.handshakeInfo;
     };

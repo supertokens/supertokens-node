@@ -12,15 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const {
-    printPath,
-    setupST,
-    startST,
-    createServerlessCacheForTesting,
-    killAllST,
-    cleanST,
-    extractInfoFromResponse,
-} = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
@@ -29,15 +21,12 @@ let Session = require("../../recipe/session");
 let Koa = require("koa");
 const Router = require("@koa/router");
 let { verifySession } = require("../../recipe/session/framework/koa");
-const { removeServerlessCache } = require("../../lib/build/utils");
 const request = require("supertest");
 
 describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
         this.server = undefined;
     });

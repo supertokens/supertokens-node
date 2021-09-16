@@ -9,12 +9,11 @@ export declare class Querier {
     private static hostsAliveForTesting;
     private __hosts;
     private rIdToCore;
-    private isInServerlessEnv;
     private constructor();
     getAPIVersion: () => Promise<string>;
     static reset(): void;
     getHostsAliveForTesting: () => Set<string>;
-    static getNewInstanceOrThrowError(isInServerlessEnv: boolean, rIdToCore?: string): Querier;
+    static getNewInstanceOrThrowError(rIdToCore?: string): Querier;
     static init(hosts?: NormalisedURLDomain[], apiKey?: string): void;
     sendPostRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
     sendDeleteRequest: (path: NormalisedURLPath, body: any) => Promise<any>;
