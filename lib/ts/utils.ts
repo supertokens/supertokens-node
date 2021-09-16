@@ -1,10 +1,8 @@
 import type { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
-import { SERVERLESS_CACHE_API_VERSION_FILE_PATH, HEADER_RID } from "./constants";
+import { HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { validate } from "jsonschema";
-import { readFile, writeFile, unlink } from "fs";
-import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./recipe/session/constants";
 import type { BaseRequest, BaseResponse } from "./framework";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
@@ -118,52 +116,6 @@ export function validateTheStructureOfUserInput(config: any, inputSchema: any, c
         }
         errorMessage = `Config schema error in ${configRoot}: ${errorMessage}`;
         throw new Error(errorMessage);
-    }
-}
-
-export async function getDataFromFileForServerlessCache<T>(filePath: string): Promise<T | undefined> {
-    try {
-        let dataFromFile = await new Promise<Buffer>((resolve, reject) => {
-            readFile(filePath, (err, data) => {
-                if (err !== undefined && err !== null) {
-                    reject(err);
-                }
-                resolve(data);
-            });
-        });
-        return JSON.parse(dataFromFile.toString());
-    } catch (err) {
-        return undefined;
-    }
-}
-
-export async function storeIntoTempFolderForServerlessCache(filePath: string, data: any) {
-    try {
-        await new Promise(async (resolve, _) => {
-            writeFile(filePath, JSON.stringify(data), (_) => {
-                resolve(undefined);
-            });
-        });
-    } catch (err) {}
-}
-
-async function removeFile(filePath: string) {
-    try {
-        await new Promise((resolve, reject) => {
-            unlink(filePath, (err) => {
-                if (err !== undefined && err !== null) {
-                    reject(err);
-                }
-                resolve(undefined);
-            });
-        });
-    } catch (err) {}
-}
-
-export async function removeServerlessCache() {
-    let tempFilesPath = [SERVERLESS_CACHE_API_VERSION_FILE_PATH, SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH];
-    for (let i = 0; i < tempFilesPath.length; i++) {
-        await removeFile(tempFilesPath[i]);
     }
 }
 

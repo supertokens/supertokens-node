@@ -15,8 +15,6 @@ import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod, frontendHasInterceptor } from "../../utils";
 import { Querier } from "../../querier";
-import { getDataFromFileForServerlessCache, storeIntoTempFolderForServerlessCache } from "../../utils";
-import { SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH } from "./constants";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import SuperTokens from "../../supertokens";
@@ -252,19 +250,6 @@ export default class RecipeImplementation implements RecipeInterface {
     getHandshakeInfo = async (forceRefetch = false): Promise<HandshakeInfo> => {
         if (this.handshakeInfo === undefined || forceRefetch) {
             let antiCsrf = this.config.antiCsrf;
-            if (this.isInServerlessEnv && !forceRefetch) {
-                let handshakeInfo = await getDataFromFileForServerlessCache<HandshakeInfo>(
-                    SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH
-                );
-                if (handshakeInfo !== undefined) {
-                    handshakeInfo = {
-                        ...handshakeInfo,
-                        antiCsrf,
-                    };
-                    this.handshakeInfo = handshakeInfo;
-                    return this.handshakeInfo;
-                }
-            }
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
             let signingKeyLastUpdated = Date.now();
@@ -285,9 +270,6 @@ export default class RecipeImplementation implements RecipeInterface {
                 accessTokenValidity: response.accessTokenValidity,
                 refreshTokenValidity: response.refreshTokenValidity,
             };
-            if (this.isInServerlessEnv) {
-                storeIntoTempFolderForServerlessCache(SERVERLESS_CACHE_HANDSHAKE_INFO_FILE_PATH, this.handshakeInfo);
-            }
         }
         return this.handshakeInfo;
     };

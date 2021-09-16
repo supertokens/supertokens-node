@@ -12,16 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const {
-    printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
-    createServerlessCacheForTesting,
-    signUPRequest,
-} = require("../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST, signUPRequest } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -31,14 +22,11 @@ let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const request = require("supertest");
 const express = require("express");
 let bodyParser = require("body-parser");
-const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

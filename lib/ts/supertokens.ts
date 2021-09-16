@@ -18,7 +18,6 @@ import axios from "axios";
 import {
     normaliseInputAppInfoOrThrowError,
     validateTheStructureOfUserInput,
-    removeServerlessCache,
     maxVersion,
     normaliseHttpMethod,
     sendNon200Response,
@@ -63,20 +62,6 @@ export default class SuperTokens {
 
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
-        if (!this.isInServerlessEnv) {
-            /**
-             * remove the files from the temp file-system.
-             * for users using this lib in a serverless execution environment,
-             * if the users updates/changes the core version they are using,
-             * handshake info and api version that are stored in the temp files
-             * might also be required to be updated. User can enforce this by stetting
-             * this boolean to false, which would remove the files from the temporary
-             * directory. The user can then again set it to true which would store the
-             * updated handshake info and apiversion in the temp files
-             */
-            removeServerlessCache();
-        }
-
         this.recipeModules = config.recipeList.map((func) => {
             return func(this.appInfo, this.isInServerlessEnv);
         });
@@ -98,7 +83,7 @@ export default class SuperTokens {
 
     sendTelemetry = async () => {
         try {
-            let querier = Querier.getNewInstanceOrThrowError(this.isInServerlessEnv, undefined);
+            let querier = Querier.getNewInstanceOrThrowError(undefined);
             let response = await querier.sendGetRequest(new NormalisedURLPath("/telemetry"), {});
             let telemetryId: string | undefined;
             if (response.exists) {
@@ -165,7 +150,7 @@ export default class SuperTokens {
     };
 
     getUserCount = async (includeRecipeIds?: string[]): Promise<number> => {
-        let querier = Querier.getNewInstanceOrThrowError(this.isInServerlessEnv, undefined);
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             throw new Error(
@@ -191,7 +176,7 @@ export default class SuperTokens {
         users: { recipeId: string; user: any }[];
         nextPaginationToken?: string;
     }> => {
-        let querier = Querier.getNewInstanceOrThrowError(this.isInServerlessEnv, undefined);
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await querier.getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             throw new Error(

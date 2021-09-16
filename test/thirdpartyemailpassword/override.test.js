@@ -12,17 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const {
-    printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
-    resetAll,
-    signUPRequest,
-    createServerlessCacheForTesting,
-} = require("../utils");
+const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
@@ -30,7 +20,6 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 const { Querier } = require("../../lib/build/querier");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
-const { removeServerlessCache } = require("../../lib/build/utils");
 const express = require("express");
 const request = require("supertest");
 
@@ -38,8 +27,6 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

@@ -14,16 +14,11 @@
  */
 import axios from "axios";
 
-import {
-    getDataFromFileForServerlessCache,
-    getLargestVersionFromIntersection,
-    storeIntoTempFolderForServerlessCache,
-} from "./utils";
+import { getLargestVersionFromIntersection } from "./utils";
 import { cdiSupported } from "./version";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { PROCESS_STATE, ProcessState } from "./processState";
-import { SERVERLESS_CACHE_API_VERSION_FILE_PATH } from "./constants";
 
 export class Querier {
     private static initCalled = false;
@@ -36,26 +31,17 @@ export class Querier {
 
     private __hosts: NormalisedURLDomain[] | undefined;
     private rIdToCore: string | undefined;
-    private isInServerlessEnv: boolean;
 
     // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
     // to support multiple rIds per API
-    private constructor(hosts: NormalisedURLDomain[] | undefined, isInServerlessEnv: boolean, rIdToCore?: string) {
+    private constructor(hosts: NormalisedURLDomain[] | undefined, rIdToCore?: string) {
         this.__hosts = hosts;
         this.rIdToCore = rIdToCore;
-        this.isInServerlessEnv = isInServerlessEnv;
     }
 
     getAPIVersion = async (): Promise<string> => {
         if (Querier.apiVersion !== undefined) {
             return Querier.apiVersion;
-        }
-        if (this.isInServerlessEnv) {
-            let apiVersion = await getDataFromFileForServerlessCache<string>(SERVERLESS_CACHE_API_VERSION_FILE_PATH);
-            if (apiVersion !== undefined) {
-                Querier.apiVersion = apiVersion;
-                return Querier.apiVersion;
-            }
         }
         ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_API_VERSION);
         let response = await this.sendRequestHelper(
@@ -82,9 +68,6 @@ export class Querier {
             );
         }
         Querier.apiVersion = supportedVersion;
-        if (this.isInServerlessEnv) {
-            storeIntoTempFolderForServerlessCache(SERVERLESS_CACHE_API_VERSION_FILE_PATH, supportedVersion);
-        }
         return Querier.apiVersion;
     };
 
@@ -102,11 +85,11 @@ export class Querier {
         return Querier.hostsAliveForTesting;
     };
 
-    static getNewInstanceOrThrowError(isInServerlessEnv: boolean, rIdToCore?: string): Querier {
+    static getNewInstanceOrThrowError(rIdToCore?: string): Querier {
         if (!Querier.initCalled) {
             throw Error("Please call the supertokens.init function before using SuperTokens");
         }
-        return new Querier(Querier.hosts, isInServerlessEnv, rIdToCore);
+        return new Querier(Querier.hosts, rIdToCore);
     }
 
     static init(hosts?: NormalisedURLDomain[], apiKey?: string) {
