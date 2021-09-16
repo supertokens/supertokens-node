@@ -12,22 +12,13 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const {
-    printPath,
-    setupST,
-    startST,
-    createServerlessCacheForTesting,
-    killAllST,
-    cleanST,
-    extractInfoFromResponse,
-} = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../..");
 let { middleware } = require("../../framework/awsLambda");
 let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
-const { removeServerlessCache } = require("../../lib/build/utils");
 const request = require("supertest");
 const axios = require("axios").default;
 
@@ -35,8 +26,6 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
         this.app = require("./loopback-server/index.js");
     });

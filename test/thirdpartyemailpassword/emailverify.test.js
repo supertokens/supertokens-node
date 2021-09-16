@@ -21,7 +21,6 @@ const {
     cleanST,
     signUPRequest,
     extractInfoFromResponse,
-    createServerlessCacheForTesting,
     emailVerifyTokenRequest,
 } = require("../utils");
 let STExpress = require("../..");
@@ -31,14 +30,11 @@ let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const express = require("express");
 const request = require("supertest");
-const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

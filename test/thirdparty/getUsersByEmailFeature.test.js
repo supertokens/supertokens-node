@@ -1,11 +1,11 @@
-const { printPath, setupST, startST, killAllST, cleanST, createServerlessCacheForTesting } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
 const { signInUp } = require("../../lib/build/recipe/thirdparty");
 const { getUsersByEmail } = require("../../lib/build/recipe/thirdparty");
-const { removeServerlessCache, maxVersion } = require("../../lib/build/utils");
+const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
 
 describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.test.js]")}`, function () {
@@ -38,8 +38,6 @@ describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

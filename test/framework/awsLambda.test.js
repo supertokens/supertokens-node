@@ -16,7 +16,6 @@ const {
     printPath,
     setupST,
     startST,
-    createServerlessCacheForTesting,
     killAllST,
     cleanST,
     extractInfoFromResponse,
@@ -29,14 +28,11 @@ let SuperTokens = require("../../");
 let { middleware } = require("../../framework/awsLambda");
 let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
-const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

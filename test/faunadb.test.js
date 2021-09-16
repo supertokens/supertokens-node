@@ -21,7 +21,6 @@ const {
     cleanST,
     extractInfoFromResponse,
     setKeyValueInConfig,
-    createServerlessCacheForTesting,
 } = require("./utils");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
@@ -34,14 +33,11 @@ let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let { maxVersion } = require("../lib/build/utils");
 let faunadb = require("faunadb");
 const q = faunadb.query;
-const { removeServerlessCache } = require("../lib/build/utils");
 
 describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

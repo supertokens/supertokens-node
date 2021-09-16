@@ -20,7 +20,6 @@ const {
     killAllST,
     cleanST,
     resetAll,
-    createServerlessCacheForTesting,
     extractInfoFromResponse,
 } = require("./utils");
 const request = require("supertest");
@@ -39,7 +38,6 @@ let ST = require("../");
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/recipe/session/utils");
-const { removeServerlessCache, storeIntoTempFolderForServerlessCache } = require("../lib/build/utils");
 
 /**
  * TODO: (Later) test config for faunadb session module
@@ -49,8 +47,6 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 
@@ -1287,124 +1283,6 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://localhost:3000"), "localhost");
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://test.com:3567"), "test.com");
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://test.com:3567"), "test.com");
-    });
-
-    it("testing no calls to the core are happening (on supertokens.init) if the cache files exist with proper values", async function () {
-        await startST();
-        {
-            let verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
-                2000
-            );
-            assert(verifyRequestHelperState === undefined);
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                isInServerlessEnv: true,
-                recipeList: [Session.init()],
-            });
-
-            verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
-                2000
-            );
-            assert(verifyRequestHelperState !== undefined);
-            resetAll();
-        }
-
-        ProcessState.getInstance().reset();
-
-        {
-            let verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
-                2000
-            );
-            assert(verifyRequestHelperState === undefined);
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                isInServerlessEnv: true,
-                recipeList: [Session.init()],
-            });
-
-            verifyRequestHelperState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER,
-                2000
-            );
-            assert(verifyRequestHelperState === undefined);
-            resetAll();
-        }
-    });
-
-    it("testing that the api version loaded and the handshake info loaded from the cache are correct", async function () {
-        await startST();
-        let handshakeInfo;
-        let apiVersion;
-        {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                isInServerlessEnv: true,
-                recipeList: [Session.init()],
-            });
-
-            handshakeInfo = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
-            assert.notStrictEqual(handshakeInfo, undefined);
-            apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
-            assert.notStrictEqual(apiVersion, undefined);
-            resetAll();
-        }
-        {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                isInServerlessEnv: true,
-                recipeList: [Session.init()],
-            });
-
-            let handshakeInfo2 = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
-            assert.notStrictEqual(handshakeInfo2, undefined);
-            let apiVersion2 = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
-            assert.notStrictEqual(apiVersion2, undefined);
-            assert.deepStrictEqual(handshakeInfo, handshakeInfo2);
-            assert.strictEqual(apiVersion, apiVersion2);
-            resetAll();
-        }
-    });
-
-    it("testing storeIntoTempFolderForServerlessCache doesn't throw error if the filePath doesn't exists", async function () {
-        try {
-            await storeIntoTempFolderForServerlessCache("/random/path/to/some/file", "data");
-            assert(true);
-        } catch (err) {
-            throw err;
-        }
     });
 
     it("apiGatewayPath test", async function () {

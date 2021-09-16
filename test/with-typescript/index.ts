@@ -60,6 +60,13 @@ Supertokens.init({
             override: {},
         }),
     ],
+    isInServerlessEnv: true,
+    framework: "express",
+    supertokens: {
+        connectionURI: "",
+        apiKey: "",
+    },
+    telemetry: true,
 });
 
 app.use(middleware());

@@ -21,7 +21,6 @@ const {
     signUPRequest,
     extractInfoFromResponse,
     setKeyValueInConfig,
-    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
@@ -31,7 +30,6 @@ let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
 let Session = require("../../recipe/session");
-const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature.test.js]")}`, function () {
     before(function () {
@@ -61,8 +59,6 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

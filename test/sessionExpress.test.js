@@ -16,7 +16,6 @@ const {
     printPath,
     setupST,
     startST,
-    createServerlessCacheForTesting,
     killAllST,
     cleanST,
     extractInfoFromResponse,
@@ -30,7 +29,6 @@ let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let { Querier } = require("../lib/build/querier");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
-const { removeServerlessCache } = require("../lib/build/utils");
 const { verifySession } = require("../recipe/session/framework/express");
 const { errorHandler } = require("../framework/express");
 const { default: next } = require("next");
@@ -39,8 +37,6 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

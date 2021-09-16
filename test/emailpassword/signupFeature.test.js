@@ -22,7 +22,6 @@ const {
     resetAll,
     signUPRequest,
     extractInfoFromResponse,
-    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
@@ -39,14 +38,11 @@ let utils = require("../../lib/build/recipe/emailpassword/utils");
 const express = require("express");
 const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
-const { removeServerlessCache } = require("../../lib/build/utils");
 
 describe(`signupFeature: ${printPath("[test/emailpassword/signupFeature.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 

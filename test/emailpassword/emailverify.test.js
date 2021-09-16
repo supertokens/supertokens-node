@@ -25,7 +25,6 @@ const {
     extractInfoFromResponse,
     setKeyValueInConfig,
     emailVerifyTokenRequest,
-    createServerlessCacheForTesting,
 } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
@@ -36,7 +35,6 @@ let { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
 const express = require("express");
 const request = require("supertest");
-const { removeServerlessCache } = require("../../lib/build/utils");
 
 /**
  * TODO: (later) in emailVerificationFunctions.ts:
@@ -48,8 +46,6 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
     beforeEach(async function () {
         await killAllST();
         await setupST();
-        await createServerlessCacheForTesting();
-        await removeServerlessCache();
         ProcessState.getInstance().reset();
     });
 
