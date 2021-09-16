@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixes
 
 -   fixes issue #180 where user was required to have all frameworks as depedencies or else use `compilerOptions.skipLibCheck` in their tsconfig.json
+-   `verifySession` middleware ts issue fix for Hapi framework
 
 ## [7.0.1] - 2021-09-10
 
