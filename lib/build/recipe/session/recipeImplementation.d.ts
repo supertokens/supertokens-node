@@ -23,6 +23,7 @@ declare class HandshakeInfo {
     );
     setJwtSigningPublicKeyList(updatedList: KeyInfo[]): void;
     getJwtSigningPublicKeyList(): KeyInfo[];
+    clone(): HandshakeInfo;
 }
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;

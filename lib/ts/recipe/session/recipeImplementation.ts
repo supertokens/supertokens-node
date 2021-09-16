@@ -43,6 +43,16 @@ class HandshakeInfo {
     getJwtSigningPublicKeyList() {
         return this.rawJwtSigningPublicKeyList.filter((key) => key.expiryTime > Date.now());
     }
+
+    clone() {
+        return new HandshakeInfo(
+            this.antiCsrf,
+            this.accessTokenBlacklistingEnabled,
+            this.accessTokenValidity,
+            this.refreshTokenValidity,
+            this.rawJwtSigningPublicKeyList
+        );
+    }
 }
 
 export default class RecipeImplementation implements RecipeInterface {

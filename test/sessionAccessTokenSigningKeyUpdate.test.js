@@ -175,9 +175,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         );
 
         await new Promise((r) => setTimeout(r, 6000));
-        let originalHandShakeInfo = {
-            ...SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo,
-        };
+        let originalHandShakeInfo = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo.clone();
 
         const newSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
@@ -323,9 +321,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         await new Promise((r) => setTimeout(r, 6000));
 
-        let originalHandShakeInfo = {
-            ...SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo,
-        };
+        let originalHandShakeInfo = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo.clone();
 
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
@@ -440,9 +436,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         // now we create a new session that will use a new key and we will
         // do it in a way that the jwtSigningKey info is not updated (as if another server has created this new session)
-        let originalHandShakeInfo = {
-            ...SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo,
-        };
+        let originalHandShakeInfo = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo.clone();
 
         let session2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,

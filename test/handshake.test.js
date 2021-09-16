@@ -101,8 +101,8 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
             recipeList: [Session.init()],
         });
         let info = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
-        assert(info.jwtSigningPublicKeyList instanceof Array);
-        assert.equal(info.jwtSigningPublicKeyList.length, 1);
+        assert(info.getJwtSigningPublicKeyList() instanceof Array);
+        assert.equal(info.getJwtSigningPublicKeyList().length, 1);
         assert.strictEqual(info.antiCsrf, "NONE");
         assert.equal(info.accessTokenBlacklistingEnabled, false);
         assert.equal(info.accessTokenValidity, 3600 * 1000);
@@ -110,13 +110,13 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
         SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJwtSigningPublicKeyInfo(
             undefined,
             "hello",
-            100
+            Date.now() + 1000
         );
         let info2 = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
-        assert.equal(info2.jwtSigningPublicKeyList.length, 1);
-        assert.deepEqual(info2.jwtSigningPublicKeyList[0].publicKey, "hello");
-        assert.deepEqual(info2.jwtSigningPublicKeyList[0].expiryTime, 100);
-        assert(info2.jwtSigningPublicKeyList[0].createdAt > Date.now() - 100);
+        assert.equal(info2.getJwtSigningPublicKeyList().length, 1);
+        assert.equal(info2.getJwtSigningPublicKeyList()[0].publicKey, "hello");
+        assert(info2.getJwtSigningPublicKeyList()[0].expiryTime <= Date.now() + 1000);
+        assert(info2.getJwtSigningPublicKeyList()[0].createdAt >= Date.now() - 1000);
     });
 
     it("successful handshake and update JWT with keyList", async function () {
@@ -133,18 +133,19 @@ describe(`Handshake: ${printPath("[test/handshake.test.js]")}`, function () {
             recipeList: [Session.init()],
         });
         let info = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
-        assert(info.jwtSigningPublicKeyList instanceof Array);
-        assert.equal(info.jwtSigningPublicKeyList.length, 1);
+        assert(info.getJwtSigningPublicKeyList() instanceof Array);
+        assert.equal(info.getJwtSigningPublicKeyList().length, 1);
         assert.strictEqual(info.antiCsrf, "NONE");
         assert.equal(info.accessTokenBlacklistingEnabled, false);
         assert.equal(info.accessTokenValidity, 3600 * 1000);
         assert.equal(info.refreshTokenValidity, 144000 * 60 * 1000);
+        const expiryTime = Date.now() + 1000;
         SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJwtSigningPublicKeyInfo(
-            [{ publicKey: "hello2", expiryTime: 100 }],
+            [{ publicKey: "hello2", expiryTime }],
             "hello2",
-            100
+            expiryTime
         );
         let info2 = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo();
-        assert.deepEqual(info2.jwtSigningPublicKeyList, [{ publicKey: "hello2", expiryTime: 100 }]);
+        assert.deepEqual(info2.getJwtSigningPublicKeyList(), [{ publicKey: "hello2", expiryTime }]);
     });
 });
