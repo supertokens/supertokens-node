@@ -87,7 +87,7 @@ export async function getSession(
     let accessTokenInfo;
 
     // If we have no key old enough to verify this access token we should reject it without calling the core
-    let foundOlderKey = false;
+    let foundASigningKeyThatIsOlderThanTheAccessToken = false;
     for (const key of handShakeInfo.getJwtSigningPublicKeyList()) {
         try {
             /**
@@ -98,7 +98,7 @@ export async function getSession(
                 key.publicKey,
                 handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
             );
-            foundOlderKey = true;
+            foundASigningKeyThatIsOlderThanTheAccessToken = true;
         } catch (err) {
             /**
              * if error type is not TRY_REFRESH_TOKEN, we return the
@@ -122,7 +122,8 @@ export async function getSession(
              * was signed with the updated signing key
              *
              * if access token creation time is before oldest signing key was created,
-             * so if foundOlderKey is still false after the loop we just return TRY_REFRESH_TOKEN
+             * so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
+             * the loop we just return TRY_REFRESH_TOKEN
              */
             let payload;
             try {
@@ -148,13 +149,13 @@ export async function getSession(
             // This is kind of like the old signingKeyLastUpdated logic using the creation time
             // of the oldest key instead of the last update time
             if (timeCreated >= key.createdAt) {
-                foundOlderKey = true;
+                foundASigningKeyThatIsOlderThanTheAccessToken = true;
                 break;
             }
         }
     }
 
-    if (!foundOlderKey) {
+    if (!foundASigningKeyThatIsOlderThanTheAccessToken) {
         throw new STError({
             message: "Access token has expired. Please call the refresh API",
             type: STError.TRY_REFRESH_TOKEN,
