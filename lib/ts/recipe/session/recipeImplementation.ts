@@ -283,7 +283,11 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     getHandshakeInfo = async (forceRefetch = false): Promise<HandshakeInfo> => {
-        if (this.handshakeInfo === undefined || forceRefetch) {
+        if (
+            this.handshakeInfo === undefined ||
+            this.handshakeInfo.getJwtSigningPublicKeyList().length === 0 ||
+            forceRefetch
+        ) {
             let antiCsrf = this.config.antiCsrf;
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
