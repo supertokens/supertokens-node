@@ -14,7 +14,7 @@
  */
 
 import Recipe from "./recipe";
-import { APIInterface, RecipeInterface, APIOptions } from "./types";
+import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -35,4 +35,4 @@ export let init = Wrapper.init;
 export let createJWT = Wrapper.createJWT;
 export let getJWKS = Wrapper.getJWKS;
 
-export type { APIInterface, APIOptions, RecipeInterface };
+export type { APIInterface, APIOptions, RecipeInterface, JsonWebKey };

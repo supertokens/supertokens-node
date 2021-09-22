@@ -1,12 +1,4 @@
 import { BaseRequest, BaseResponse } from "../../framework";
-export declare type CreateJWTResponse =
-    | {
-          status: "OK";
-          jwt: string;
-      }
-    | {
-          status: "UNSUPPORTED_ALGORITHM_ERROR";
-      };
 export declare type JsonWebKey = {
     kty: string;
     kid: string;
@@ -38,7 +30,18 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export interface RecipeInterface {
-    createJWT(input: { payload: any; validity?: number }): Promise<CreateJWTResponse>;
+    createJWT(input: {
+        payload: any;
+        validity?: number;
+    }): Promise<
+        | {
+              status: "OK";
+              jwt: string;
+          }
+        | {
+              status: "UNSUPPORTED_ALGORITHM_ERROR";
+          }
+    >;
     getJWKS(): Promise<{
         keys: JsonWebKey[];
     }>;

@@ -1,13 +1,24 @@
 import Recipe from "./recipe";
-import { APIInterface, RecipeInterface, APIOptions } from "./types";
+import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
-    static createJWT(payload: any, validity?: number): Promise<import("./types").CreateJWTResponse>;
+    static createJWT(
+        payload: any,
+        validity?: number
+    ): Promise<
+        | {
+              status: "OK";
+              jwt: string;
+          }
+        | {
+              status: "UNSUPPORTED_ALGORITHM_ERROR";
+          }
+    >;
     static getJWKS(): Promise<{
-        keys: import("./types").JsonWebKey[];
+        keys: JsonWebKey[];
     }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createJWT: typeof Wrapper.createJWT;
 export declare let getJWKS: typeof Wrapper.getJWKS;
-export type { APIInterface, APIOptions, RecipeInterface };
+export type { APIInterface, APIOptions, RecipeInterface, JsonWebKey };

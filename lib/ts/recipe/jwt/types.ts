@@ -15,15 +15,6 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 
-export type CreateJWTResponse =
-    | {
-          status: "OK";
-          jwt: string;
-      }
-    | {
-          status: "UNSUPPORTED_ALGORITHM_ERROR";
-      };
-
 export type JsonWebKey = {
     kty: string;
     kid: string;
@@ -59,7 +50,18 @@ export type APIOptions = {
 };
 
 export interface RecipeInterface {
-    createJWT(input: { payload: any; validity?: number }): Promise<CreateJWTResponse>;
+    createJWT(input: {
+        payload: any;
+        validity?: number;
+    }): Promise<
+        | {
+              status: "OK";
+              jwt: string;
+          }
+        | {
+              status: "UNSUPPORTED_ALGORITHM_ERROR";
+          }
+    >;
 
     getJWKS(): Promise<{
         keys: JsonWebKey[];
