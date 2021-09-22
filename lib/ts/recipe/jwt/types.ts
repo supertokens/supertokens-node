@@ -25,7 +25,7 @@ export type JsonWebKey = {
 };
 
 export type TypeInput = {
-    jwtValiditySeconds: number;
+    jwtValiditySeconds?: number;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis?: (originalImplementation: APIInterface) => APIInterface;
@@ -33,7 +33,7 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    jwtValidity: number;
+    jwtValiditySeconds?: number;
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis: (originalImplementation: APIInterface) => APIInterface;

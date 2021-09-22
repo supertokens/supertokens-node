@@ -45,7 +45,8 @@ export default class RecipeImplementation implements RecipeInterface {
           }
     > => {
         if (validity === undefined) {
-            validity = this.config.jwtValidity;
+            // If the user does not provide a validity to this function and the config validity is also undefined, use 100 years (in seconds)
+            validity = this.config.jwtValiditySeconds === undefined ? 3153600000 : this.config.jwtValiditySeconds;
         }
 
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {

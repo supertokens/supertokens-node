@@ -8,14 +8,14 @@ export declare type JsonWebKey = {
     use: string;
 };
 export declare type TypeInput = {
-    jwtValiditySeconds: number;
+    jwtValiditySeconds?: number;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis?: (originalImplementation: APIInterface) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
-    jwtValidity: number;
+    jwtValiditySeconds?: number;
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis: (originalImplementation: APIInterface) => APIInterface;
