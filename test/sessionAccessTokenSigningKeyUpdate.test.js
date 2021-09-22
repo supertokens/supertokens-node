@@ -77,6 +77,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
+
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             "",
@@ -102,15 +105,27 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         await new Promise((r) => setTimeout(r, 6000));
 
-        await SessionFunctions.getSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-            response.accessToken.token,
-            response.antiCsrfToken,
-            true,
-            response.idRefreshToken.token
-        );
+        try {
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                response.accessToken.token,
+                response.antiCsrfToken,
+                true,
+                response.idRefreshToken.token
+            );
+            // Old core versions should throw here because the signing key was updated
+            if (!coreSupportsMultipleSignigKeys) {
+                fail();
+            }
+        } catch (err) {
+            if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
+                throw err;
+            } else if (coreSupportsMultipleSignigKeys) {
+                // Cores supporting multiple signig shouldn't throw since the signing key is still valid
+                fail();
+            }
+        }
 
-        // We do not call verify here, since signing key is still valid
         const verifyState = await ProcessState.getInstance().waitForEvent(
             PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
             1500
@@ -160,6 +175,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
+
         const oldSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             "",
@@ -200,20 +218,37 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 1500
             );
 
-            // We call verify here, since this is a new session we can't verify locally
-            assert(verifyState !== undefined);
+            if (!coreSupportsMultipleSignigKeys) {
+                assert(verifyState === undefined);
+            } else {
+                // We call verify here, since this is a new session we can't verify locally
+                assert(verifyState !== undefined);
+            }
         }
 
         await ProcessState.getInstance().reset();
 
         {
-            await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                oldSession.accessToken.token,
-                oldSession.antiCsrfToken,
-                true,
-                oldSession.idRefreshToken.token
-            );
+            try {
+                await SessionFunctions.getSession(
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    oldSession.accessToken.token,
+                    oldSession.antiCsrfToken,
+                    true,
+                    oldSession.idRefreshToken.token
+                );
+                // Old core versions should throw here because the signing key was updated
+                if (!coreSupportsMultipleSignigKeys) {
+                    fail();
+                }
+            } catch (err) {
+                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
+                    throw err;
+                } else if (coreSupportsMultipleSignigKeys) {
+                    // Cores supporting multiple signig shouldn't throw since the signing key is still valid
+                    fail();
+                }
+            }
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
@@ -241,6 +276,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 }),
             ],
         });
+
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
@@ -277,13 +315,26 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await ProcessState.getInstance().reset();
 
         {
-            await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                response2.accessToken.token,
-                response2.antiCsrfToken,
-                true,
-                response2.idRefreshToken.token
-            );
+            try {
+                await SessionFunctions.getSession(
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    response2.accessToken.token,
+                    response2.antiCsrfToken,
+                    true,
+                    response2.idRefreshToken.token
+                );
+                // Old core versions should throw here because the signing key was updated
+                if (!coreSupportsMultipleSignigKeys) {
+                    fail();
+                }
+            } catch (err) {
+                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
+                    throw err;
+                } else if (coreSupportsMultipleSignigKeys) {
+                    // Cores supporting multiple signig shouldn't throw since the signing key is still valid
+                    fail();
+                }
+            }
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
@@ -311,6 +362,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 }),
             ],
         });
+
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
@@ -347,19 +401,37 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
                 1500
             );
-            assert(verifyState !== undefined);
+            if (!coreSupportsMultipleSignigKeys) {
+                assert(verifyState === undefined);
+            } else {
+                assert(verifyState !== undefined);
+            }
         }
 
         await ProcessState.getInstance().reset();
 
         {
-            await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                response2.accessToken.token,
-                response2.antiCsrfToken,
-                true,
-                response2.idRefreshToken.token
-            );
+            try {
+                await SessionFunctions.getSession(
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    response2.accessToken.token,
+                    response2.antiCsrfToken,
+                    true,
+                    response2.idRefreshToken.token
+                );
+
+                // Old core versions should throw here because the signing key was updated
+                if (!coreSupportsMultipleSignigKeys) {
+                    fail();
+                }
+            } catch (err) {
+                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
+                    throw err;
+                } else if (coreSupportsMultipleSignigKeys) {
+                    // Cores supporting multiple signig shouldn't throw since the signing key is still valid
+                    fail();
+                }
+            }
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
