@@ -33,7 +33,7 @@
     },
     "homepage": "https://github.com/supertokens/supertokens-node#readme",
     "dependencies": {
-        "axios": "0.21.1",
+        "axios": "0.21.2",
         "body-parser": "1.19.0",
         "co-body": "^6.1.0",
         "cookie": "0.4.0",
