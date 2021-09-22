@@ -15,15 +15,18 @@
 
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Querier } from "../../querier";
+import { NormalisedAppinfo } from "../../types";
 import { CreateJWTResponse, JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";
 
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
     config: TypeNormalisedInput;
+    appInfo: NormalisedAppinfo;
 
-    constructor(querier: Querier, config: TypeNormalisedInput) {
+    constructor(querier: Querier, config: TypeNormalisedInput, appInfo: NormalisedAppinfo) {
         this.querier = querier;
         this.config = config;
+        this.appInfo = appInfo;
     }
 
     createJWT = async ({ payload, validity }: { payload: any; validity?: number }): Promise<CreateJWTResponse> => {
@@ -35,7 +38,7 @@ export default class RecipeImplementation implements RecipeInterface {
             payload,
             validity,
             algorithm: "RS256",
-            jwksDomain: "", // TODO NEMI: get api domain and send here
+            jwksDomain: this.appInfo.apiDomain.getAsStringDangerous(),
         });
 
         if (response.status === "OK") {
