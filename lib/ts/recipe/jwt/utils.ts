@@ -22,7 +22,7 @@ export function validateAndNormaliseUserInput(
     __: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    let jwtValidity = config.jwtValidity;
+    let jwtValidity = config.jwtValiditySeconds;
 
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,

@@ -8,7 +8,7 @@ export declare type JsonWebKey = {
     use: string;
 };
 export declare type TypeInput = {
-    jwtValidity: number;
+    jwtValiditySeconds: number;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis?: (originalImplementation: APIInterface) => APIInterface;
@@ -43,6 +43,7 @@ export interface RecipeInterface {
           }
     >;
     getJWKS(): Promise<{
+        status: "OK";
         keys: JsonWebKey[];
     }>;
 }
@@ -52,6 +53,7 @@ export interface APIInterface {
         | ((input: {
               options: APIOptions;
           }) => Promise<{
+              status: "OK";
               keys: JsonWebKey[];
           }>);
 }

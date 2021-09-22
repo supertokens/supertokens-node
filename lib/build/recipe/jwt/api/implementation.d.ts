@@ -5,6 +5,7 @@ export default class APIImplementation implements APIInterface {
     }: {
         options: APIOptions;
     }) => Promise<{
+        status: "OK";
         keys: JsonWebKey[];
     }>;
 }

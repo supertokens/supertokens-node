@@ -33,7 +33,7 @@ export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
 
     config: TypeNormalisedInput;
-    recipeInterface: RecipeInterface;
+    recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
 
@@ -41,7 +41,7 @@ export default class Recipe extends RecipeModule {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
-        this.recipeInterface = this.config.override.functions(
+        this.recipeInterfaceImpl = this.config.override.functions(
             new RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, appInfo)
         );
         this.apiImpl = this.config.override.apis(new APIImplementation());
@@ -98,7 +98,7 @@ export default class Recipe extends RecipeModule {
             config: this.config,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
-            recipeImplementation: this.recipeInterface,
+            recipeImplementation: this.recipeInterfaceImpl,
             req,
             res,
         };

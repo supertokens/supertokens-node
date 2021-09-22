@@ -67,7 +67,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     };
 
-    getJWKS = async (): Promise<{ keys: JsonWebKey[] }> => {
+    getJWKS = async (): Promise<{ status: "OK"; keys: JsonWebKey[] }> => {
         return await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/jwks"), {});
     };
 }

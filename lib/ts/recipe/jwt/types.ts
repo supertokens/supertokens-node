@@ -25,7 +25,7 @@ export type JsonWebKey = {
 };
 
 export type TypeInput = {
-    jwtValidity: number;
+    jwtValiditySeconds: number;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis?: (originalImplementation: APIInterface) => APIInterface;
@@ -64,10 +64,11 @@ export interface RecipeInterface {
     >;
 
     getJWKS(): Promise<{
+        status: "OK";
         keys: JsonWebKey[];
     }>;
 }
 
 export interface APIInterface {
-    getJWKSGET: undefined | ((input: { options: APIOptions }) => Promise<{ keys: JsonWebKey[] }>);
+    getJWKSGET: undefined | ((input: { options: APIOptions }) => Promise<{ status: "OK"; keys: JsonWebKey[] }>);
 }

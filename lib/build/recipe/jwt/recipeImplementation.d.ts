@@ -22,6 +22,7 @@ export default class RecipeImplementation implements RecipeInterface {
           }
     >;
     getJWKS: () => Promise<{
+        status: "OK";
         keys: JsonWebKey[];
     }>;
 }

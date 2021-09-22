@@ -22,6 +22,6 @@ export default async function getJWKS(apiImplementation: APIInterface, options: 
     }
 
     let result = await apiImplementation.getJWKSGET({ options });
-    send200Response(options.res, result);
+    send200Response(options.res, { keys: result.keys });
     return true;
 }

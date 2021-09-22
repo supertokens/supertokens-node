@@ -20,14 +20,14 @@ export default class Wrapper {
     static init = Recipe.init;
 
     static async createJWT(payload: any, validity?: number) {
-        return await Recipe.getInstanceOrThrowError().recipeInterface.createJWT({
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createJWT({
             payload,
             validity,
         });
     }
 
     static async getJWKS() {
-        return await Recipe.getInstanceOrThrowError().recipeInterface.getJWKS();
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWKS();
     }
 }
 
