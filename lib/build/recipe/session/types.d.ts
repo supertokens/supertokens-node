@@ -1,15 +1,27 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-export declare type HandshakeInfo = {
-    jwtSigningPublicKey: string;
-    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+export declare type KeyInfo = {
+    publicKey: string;
+    expiryTime: number;
+    createdAt: number;
+};
+export declare type AntiCsrfType = "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+export declare type StoredHandshakeInfo = {
+    antiCsrf: AntiCsrfType;
     accessTokenBlacklistingEnabled: boolean;
-    jwtSigningPublicKeyExpiryTime: number;
     accessTokenValidity: number;
     refreshTokenValidity: number;
-    signingKeyLastUpdated: number;
-};
+} & (
+    | {
+          jwtSigningPublicKeyList: KeyInfo[];
+      }
+    | {
+          jwtSigningPublicKeyList: undefined;
+          jwtSigningPublicKey: string;
+          jwtSigningPublicKeyExpiryTime: number;
+      }
+);
 export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;

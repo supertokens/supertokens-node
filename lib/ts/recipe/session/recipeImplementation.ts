@@ -1,4 +1,11 @@
-import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo, SessionInformation } from "./types";
+import {
+    RecipeInterface,
+    VerifySessionOptions,
+    TypeNormalisedInput,
+    SessionInformation,
+    KeyInfo,
+    AntiCsrfType,
+} from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
     attachAccessTokenToCookie,
@@ -19,6 +26,34 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import SuperTokens from "../../supertokens";
 import frameworks from "../../framework";
+
+class HandshakeInfo {
+    constructor(
+        public antiCsrf: AntiCsrfType,
+        public accessTokenBlacklistingEnabled: boolean,
+        public accessTokenValidity: number,
+        public refreshTokenValidity: number,
+        private rawJwtSigningPublicKeyList: KeyInfo[]
+    ) {}
+
+    setJwtSigningPublicKeyList(updatedList: KeyInfo[]) {
+        this.rawJwtSigningPublicKeyList = updatedList;
+    }
+
+    getJwtSigningPublicKeyList() {
+        return this.rawJwtSigningPublicKeyList.filter((key) => key.expiryTime > Date.now());
+    }
+
+    clone() {
+        return new HandshakeInfo(
+            this.antiCsrf,
+            this.accessTokenBlacklistingEnabled,
+            this.accessTokenValidity,
+            this.refreshTokenValidity,
+            this.rawJwtSigningPublicKeyList
+        );
+    }
+}
 
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
@@ -248,42 +283,46 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     getHandshakeInfo = async (forceRefetch = false): Promise<HandshakeInfo> => {
-        if (this.handshakeInfo === undefined || forceRefetch) {
+        if (
+            this.handshakeInfo === undefined ||
+            this.handshakeInfo.getJwtSigningPublicKeyList().length === 0 ||
+            forceRefetch
+        ) {
             let antiCsrf = this.config.antiCsrf;
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
             let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
-            let signingKeyLastUpdated = Date.now();
-            if (this.handshakeInfo !== undefined) {
-                if (
-                    response.jwtSigningPublicKeyExpiryTime === this.handshakeInfo.jwtSigningPublicKeyExpiryTime &&
-                    response.jwtSigningPublicKey === this.handshakeInfo.jwtSigningPublicKey
-                ) {
-                    signingKeyLastUpdated = this.handshakeInfo.signingKeyLastUpdated;
-                }
-            }
-            this.handshakeInfo = {
-                signingKeyLastUpdated,
-                jwtSigningPublicKey: response.jwtSigningPublicKey,
+
+            this.handshakeInfo = new HandshakeInfo(
                 antiCsrf,
-                accessTokenBlacklistingEnabled: response.accessTokenBlacklistingEnabled,
-                jwtSigningPublicKeyExpiryTime: response.jwtSigningPublicKeyExpiryTime,
-                accessTokenValidity: response.accessTokenValidity,
-                refreshTokenValidity: response.refreshTokenValidity,
-            };
+                response.accessTokenBlacklistingEnabled,
+                response.accessTokenValidity,
+                response.refreshTokenValidity,
+                response.jwtSigningPublicKeyList
+            );
+
+            this.updateJwtSigningPublicKeyInfo(
+                response.jwtSigningPublicKeyList,
+                response.jwtSigningPublicKey,
+                response.jwtSigningPublicKeyExpiryTime
+            );
         }
         return this.handshakeInfo;
     };
 
-    updateJwtSigningPublicKeyInfo = (newKey: string, newExpiry: number) => {
+    /**
+     * Update the cached list of signing keys
+     * @param keyList The list of signing keys on the response object. Before 2.9 always undefined, after it always contains at least 1 key
+     * @param publicKey The public key of the latest signing key
+     * @param expiryTime The expiry time of the latest signing key
+     */
+    updateJwtSigningPublicKeyInfo = (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => {
+        if (keyList === undefined) {
+            // Setting createdAt to Date.now() emulates the old lastUpdatedAt logic
+            keyList = [{ publicKey, expiryTime, createdAt: Date.now() }];
+        }
+
         if (this.handshakeInfo !== undefined) {
-            if (
-                this.handshakeInfo.jwtSigningPublicKeyExpiryTime !== newExpiry ||
-                this.handshakeInfo.jwtSigningPublicKey !== newKey
-            ) {
-                this.handshakeInfo.signingKeyLastUpdated = Date.now();
-            }
-            this.handshakeInfo.jwtSigningPublicKey = newKey;
-            this.handshakeInfo.jwtSigningPublicKeyExpiryTime = newExpiry;
+            this.handshakeInfo.setJwtSigningPublicKeyList(keyList);
         }
     };
 

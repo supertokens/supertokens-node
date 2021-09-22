@@ -15,15 +15,30 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 
-export type HandshakeInfo = {
-    jwtSigningPublicKey: string;
-    antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+export type KeyInfo = {
+    publicKey: string;
+    expiryTime: number;
+    createdAt: number;
+};
+
+export type AntiCsrfType = "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+export type StoredHandshakeInfo = {
+    antiCsrf: AntiCsrfType;
     accessTokenBlacklistingEnabled: boolean;
-    jwtSigningPublicKeyExpiryTime: number;
     accessTokenValidity: number;
     refreshTokenValidity: number;
-    signingKeyLastUpdated: number;
-};
+} & (
+    | {
+          // Stored after 2.9
+          jwtSigningPublicKeyList: KeyInfo[];
+      }
+    | {
+          // Stored before 2.9
+          jwtSigningPublicKeyList: undefined;
+          jwtSigningPublicKey: string;
+          jwtSigningPublicKeyExpiryTime: number;
+      }
+);
 
 export type CreateOrRefreshAPIResponse = {
     session: {
