@@ -15,3 +15,4 @@ coreDriverInterfaceSupported.json
 .github/
 .gitattributes
 examples/
+add-ts-no-check.js

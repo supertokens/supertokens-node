@@ -14,13 +14,14 @@
  */
 import Session from "../recipe";
 import { VerifySessionOptions } from "..";
+import { ResponseToolkit } from "@hapi/hapi";
 import { ExtendedResponseToolkit, HapiRequest, HapiResponse, SessionRequest } from "../../../framework/hapi/framework";
 
 export function verifySession(options?: VerifySessionOptions) {
-    return async (req: SessionRequest, h: ExtendedResponseToolkit) => {
+    return async (req: SessionRequest, h: ResponseToolkit) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new HapiRequest(req);
-        let response = new HapiResponse(h);
+        let response = new HapiResponse(h as ExtendedResponseToolkit);
         req.session = await sessionRecipe.verifySession(options, request, response);
         return h.continue;
     };

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import type { MiddlewareContext, Response, Middleware } from "@loopback/rest";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import { HTTPMethod } from "../../types";

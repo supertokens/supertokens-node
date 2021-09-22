@@ -1,3 +1,4 @@
+// @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import EmailVerificationRecipe from "../emailverification/recipe";
