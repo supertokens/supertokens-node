@@ -110,7 +110,10 @@ export class Querier {
             "POST",
             async (url: string) => {
                 let apiVersion = await this.getAPIVersion();
-                let headers: any = { "cdi-version": apiVersion };
+                let headers: any = {
+                    "cdi-version": apiVersion,
+                    "content-type": "application/json; charset=utf-8",
+                };
                 if (Querier.apiKey !== undefined) {
                     headers = {
                         ...headers,
@@ -146,6 +149,7 @@ export class Querier {
                     headers = {
                         ...headers,
                         "api-key": Querier.apiKey,
+                        "content-type": "application/json; charset=utf-8",
                     };
                 }
                 if (path.isARecipePath() && this.rIdToCore !== undefined) {
@@ -206,6 +210,7 @@ export class Querier {
                     headers = {
                         ...headers,
                         "api-key": Querier.apiKey,
+                        "content-type": "application/json; charset=utf-8",
                     };
                 }
                 if (path.isARecipePath() && this.rIdToCore !== undefined) {
