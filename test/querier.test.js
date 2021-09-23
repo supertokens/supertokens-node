@@ -92,7 +92,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
 
-        let querier = Querier.getNewInstanceOrThrowError(false, SessionRecipe.getInstanceOrThrowError().getRecipeId());
+        let querier = Querier.getNewInstanceOrThrowError(SessionRecipe.getInstanceOrThrowError().getRecipeId());
 
         nock("http://localhost:8080", {
             allowUnmocked: true,
