@@ -77,7 +77,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
-        const currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
         const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         let response = await SessionFunctions.createNewSession(
@@ -175,7 +175,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
-        const currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
         const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         const oldSession = await SessionFunctions.createNewSession(
@@ -277,7 +277,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
-        const currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
         const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         let response2 = await SessionFunctions.createNewSession(
@@ -363,7 +363,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
-        const currCDIVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
         const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         let response2 = await SessionFunctions.createNewSession(
@@ -604,7 +604,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8 since the fix for this test is in core with CDI >= 2.8

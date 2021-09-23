@@ -1282,7 +1282,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             return;
         }
@@ -1329,7 +1329,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
             ],
         });
 
-        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             return;
         }

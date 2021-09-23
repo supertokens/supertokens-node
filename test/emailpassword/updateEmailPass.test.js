@@ -48,7 +48,7 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
             recipeList: [EmailPassword.init(), Session.init()],
         });
 
-        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             return;
         }

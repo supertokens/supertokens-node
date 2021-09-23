@@ -437,7 +437,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         try {
-            await Querier.getNewInstanceOrThrowError(false, undefined).getAPIVersion();
+            await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
             throw new Error("should not have come here");
         } catch (err) {
             if (
@@ -739,7 +739,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8
@@ -836,7 +836,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8
@@ -935,7 +935,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8
@@ -1033,7 +1033,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8
@@ -1229,7 +1229,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8
@@ -1264,7 +1264,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8
@@ -1304,7 +1304,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             ],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8

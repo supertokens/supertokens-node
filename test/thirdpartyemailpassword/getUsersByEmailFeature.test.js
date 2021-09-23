@@ -49,7 +49,7 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
         await startST();
         STExpress.init(testSTConfig);
 
-        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             return;
         }
@@ -76,7 +76,7 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
             ],
         });
 
-        let apiVersion = await Querier.getNewInstanceOrThrowError(false).getAPIVersion();
+        let apiVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
         if (maxVersion(apiVersion, "2.7") === "2.7") {
             return;
         }
