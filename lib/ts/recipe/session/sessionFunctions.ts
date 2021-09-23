@@ -50,12 +50,14 @@ export async function createNewSession(
         requestBody
     );
     recipeImplementation.updateJwtSigningPublicKeyInfo(
+        response.jwtSigningPublicKeyList,
         response.jwtSigningPublicKey,
         response.jwtSigningPublicKeyExpiryTime
     );
     delete response.status;
     delete response.jwtSigningPublicKey;
     delete response.jwtSigningPublicKeyExpiryTime;
+    delete response.jwtSigningPublicKeyList;
 
     return response;
 }
@@ -83,19 +85,20 @@ export async function getSession(
 }> {
     let handShakeInfo = await recipeImplementation.getHandshakeInfo();
     let accessTokenInfo;
-    /**
-     * if jwtSigningPublicKeyExpiryTime is expired, we call core
-     */
-    if (handShakeInfo.jwtSigningPublicKeyExpiryTime > Date.now()) {
+
+    // If we have no key old enough to verify this access token we should reject it without calling the core
+    let foundASigningKeyThatIsOlderThanTheAccessToken = false;
+    for (const key of handShakeInfo.getJwtSigningPublicKeyList()) {
         try {
             /**
              * get access token info using existing signingKey
              */
             accessTokenInfo = await getInfoFromAccessToken(
                 accessToken,
-                handShakeInfo.jwtSigningPublicKey,
+                key.publicKey,
                 handShakeInfo.antiCsrf === "VIA_TOKEN" && doAntiCsrfCheck
             );
+            foundASigningKeyThatIsOlderThanTheAccessToken = true;
         } catch (err) {
             /**
              * if error type is not TRY_REFRESH_TOKEN, we return the
@@ -114,12 +117,13 @@ export async function getSession(
              * if access token is actually expired, we don't need to call core and
              * just return TRY_REFRESH_TOKEN to the client
              *
-             * if access token creation time is after the signing key was last
-             * updated, we need to call core as there are chances that the token
+             * if access token creation time is after this signing key was created
+             * we need to call core as there are chances that the token
              * was signed with the updated signing key
              *
-             * if access token creation time is before the signing key was last
-             * updated, we just return TRY_REFRESH_TOKEN to the client
+             * if access token creation time is before oldest signing key was created,
+             * so if foundASigningKeyThatIsOlderThanTheAccessToken is still false after
+             * the loop we just return TRY_REFRESH_TOKEN
              */
             let payload;
             try {
@@ -130,17 +134,38 @@ export async function getSession(
             if (payload === undefined) {
                 throw err;
             }
-            let expiryTime = sanitizeNumberInput(payload.expiryTime);
-            let timeCreated = sanitizeNumberInput(payload.timeCreated);
+
+            const timeCreated = sanitizeNumberInput(payload.timeCreated);
+            const expiryTime = sanitizeNumberInput(payload.expiryTime);
 
             if (expiryTime === undefined || expiryTime < Date.now()) {
                 throw err;
             }
-            if (timeCreated === undefined || handShakeInfo.signingKeyLastUpdated > timeCreated) {
+
+            if (timeCreated === undefined) {
                 throw err;
+            }
+
+            // If we reached a key older than the token and failed to validate the token,
+            // that means it was signed by a key newer than the cached list.
+            // In this case we go to the server.
+            if (timeCreated >= key.createdAt) {
+                foundASigningKeyThatIsOlderThanTheAccessToken = true;
+                break;
             }
         }
     }
+
+    // If the token was created before the oldest key in the cache but hasn't expired, then a config value must've changed.
+    // E.g., the access_token_signing_key_update_interval was reduced, or access_token_signing_key_dynamic was turned on.
+    // Either way, the user needs to refresh the access token as validating by the server is likely to do nothing.
+    if (!foundASigningKeyThatIsOlderThanTheAccessToken) {
+        throw new STError({
+            message: "Access token has expired. Please call the refresh API",
+            type: STError.TRY_REFRESH_TOKEN,
+        });
+    }
+
     /**
      * anti-csrf check if accesstokenInfo is not undefined,
      * which means token verification was successful
@@ -207,12 +232,14 @@ export async function getSession(
     );
     if (response.status === "OK") {
         recipeImplementation.updateJwtSigningPublicKeyInfo(
+            response.jwtSigningPublicKeyList,
             response.jwtSigningPublicKey,
             response.jwtSigningPublicKeyExpiryTime
         );
         delete response.status;
         delete response.jwtSigningPublicKey;
         delete response.jwtSigningPublicKeyExpiryTime;
+        delete response.jwtSigningPublicKeyList;
         return response;
     } else if (response.status === "UNAUTHORISED") {
         throw new STError({
@@ -220,9 +247,13 @@ export async function getSession(
             type: STError.UNAUTHORISED,
         });
     } else {
-        if (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined) {
-            // in CDI 2.7.1, the API returns the new keys
+        if (
+            response.jwtSigningPublicKeyList !== undefined ||
+            (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined)
+        ) {
+            // after CDI 2.7.1, the API returns the new keys
             recipeImplementation.updateJwtSigningPublicKeyInfo(
+                response.jwtSigningPublicKeyList,
                 response.jwtSigningPublicKey,
                 response.jwtSigningPublicKeyExpiryTime
             );

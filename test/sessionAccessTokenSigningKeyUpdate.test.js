@@ -77,6 +77,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
+
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             "",
@@ -102,29 +105,36 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         await new Promise((r) => setTimeout(r, 6000));
 
-        {
-            try {
-                await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                    response.accessToken.token,
-                    response.antiCsrfToken,
-                    true,
-                    response.idRefreshToken.token
-                );
-            } catch (err) {
-                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
-                    throw err;
-                }
-            }
-
-            let verifyState = await ProcessState.getInstance().waitForEvent(
-                PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
-                1500
+        try {
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                response.accessToken.token,
+                response.antiCsrfToken,
+                true,
+                response.idRefreshToken.token
             );
-            assert(verifyState !== undefined);
+            // Old core versions should throw here because the signing key was updated
+            if (!coreSupportsMultipleSignigKeys) {
+                fail();
+            }
+        } catch (err) {
+            if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
+                throw err;
+            } else if (coreSupportsMultipleSignigKeys) {
+                // Cores supporting multiple signig shouldn't throw since the signing key is still valid
+                fail();
+            }
         }
 
-        let response2 = await SessionFunctions.refreshSession(
+        const verifyState = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+            1500
+        );
+        assert(verifyState === undefined);
+
+        ProcessState.getInstance().reset();
+
+        const response2 = await SessionFunctions.refreshSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             response.refreshToken.token,
             response.antiCsrfToken
@@ -138,13 +148,15 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             response2.idRefreshToken.token
         );
 
-        await ProcessState.getInstance().reset();
-
-        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
-        assert(verifyState === undefined);
+        // We call verify, since refresh does not refresh the signing key info
+        const verifyState2 = await ProcessState.getInstance().waitForEvent(
+            PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
+            1500
+        );
+        assert(verifyState2 !== undefined);
     });
 
-    it("check that if signing key changes, after new key is fetched - via one old token query, old tokens don't query the core", async function () {
+    it("check that if signing key changes, after new key is fetched - via token query, old tokens don't query the core", async function () {
         await setKeyValueInConfig("access_token_signing_key_update_interval", "0.001"); // 5 seconds is the update interval
         await startST();
         SuperTokens.init({
@@ -163,14 +175,17 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
-        let response = await SessionFunctions.createNewSession(
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
+
+        const oldSession = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             "",
             {},
             {}
         );
 
-        let response2 = await SessionFunctions.createNewSession(
+        await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             "",
             {},
@@ -178,27 +193,37 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         );
 
         await new Promise((r) => setTimeout(r, 6000));
+        let originalHandShakeInfo = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo.clone();
+
+        const newSession = await SessionFunctions.createNewSession(
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            "",
+            {},
+            {}
+        );
+
+        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo = originalHandShakeInfo;
 
         {
-            try {
-                await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                    response.accessToken.token,
-                    response.antiCsrfToken,
-                    true,
-                    response.idRefreshToken.token
-                );
-            } catch (err) {
-                if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
-                    throw err;
-                }
-            }
+            await SessionFunctions.getSession(
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                newSession.accessToken.token,
+                newSession.antiCsrfToken,
+                true,
+                newSession.idRefreshToken.token
+            );
 
             let verifyState = await ProcessState.getInstance().waitForEvent(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
                 1500
             );
-            assert(verifyState !== undefined);
+
+            if (!coreSupportsMultipleSignigKeys) {
+                assert(verifyState === undefined);
+            } else {
+                // We call verify here, since this is a new session we can't verify locally
+                assert(verifyState !== undefined);
+            }
         }
 
         await ProcessState.getInstance().reset();
@@ -207,14 +232,21 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             try {
                 await SessionFunctions.getSession(
                     SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
-                    response2.accessToken.token,
-                    response2.antiCsrfToken,
+                    oldSession.accessToken.token,
+                    oldSession.antiCsrfToken,
                     true,
-                    response2.idRefreshToken.token
+                    oldSession.idRefreshToken.token
                 );
+                // Old core versions should throw here because the signing key was updated
+                if (!coreSupportsMultipleSignigKeys) {
+                    fail();
+                }
             } catch (err) {
                 if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
                     throw err;
+                } else if (coreSupportsMultipleSignigKeys) {
+                    // Cores supporting multiple signig shouldn't throw since the signing key is still valid
+                    fail();
                 }
             }
 
@@ -245,6 +277,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
+
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             "",
@@ -288,9 +323,16 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     true,
                     response2.idRefreshToken.token
                 );
+                // Old core versions should throw here because the signing key was updated
+                if (!coreSupportsMultipleSignigKeys) {
+                    fail();
+                }
             } catch (err) {
                 if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
                     throw err;
+                } else if (coreSupportsMultipleSignigKeys) {
+                    // Cores supporting multiple signig shouldn't throw since the signing key is still valid
+                    fail();
                 }
             }
 
@@ -321,6 +363,9 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
+        const currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
+
         let response2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
             "",
@@ -330,9 +375,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         await new Promise((r) => setTimeout(r, 6000));
 
-        let originalHandShakeInfo = {
-            ...SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo,
-        };
+        let originalHandShakeInfo = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo.clone();
 
         let response = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
@@ -358,7 +401,11 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                 PROCESS_STATE.CALLING_SERVICE_IN_VERIFY,
                 1500
             );
-            assert(verifyState !== undefined);
+            if (!coreSupportsMultipleSignigKeys) {
+                assert(verifyState === undefined);
+            } else {
+                assert(verifyState !== undefined);
+            }
         }
 
         await ProcessState.getInstance().reset();
@@ -372,9 +419,17 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
                     true,
                     response2.idRefreshToken.token
                 );
+
+                // Old core versions should throw here because the signing key was updated
+                if (!coreSupportsMultipleSignigKeys) {
+                    fail();
+                }
             } catch (err) {
                 if (err.type !== Session.Error.TRY_REFRESH_TOKEN) {
                     throw err;
+                } else if (coreSupportsMultipleSignigKeys) {
+                    // Cores supporting multiple signig shouldn't throw since the signing key is still valid
+                    fail();
                 }
             }
 
@@ -432,12 +487,8 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await killAllSTCoresOnly();
         await setupST();
 
-        await setKeyValueInConfig("access_token_signing_key_update_interval", "0.0011"); // update key to 4 seconds
-
         // start server again
         await startST();
-
-        await new Promise((r) => setTimeout(r, 5 * 1000)); // wait for 5 seconds
 
         {
             await SessionFunctions.getSession(
@@ -457,9 +508,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         // now we create a new session that will use a new key and we will
         // do it in a way that the jwtSigningKey info is not updated (as if another server has created this new session)
-        let originalHandShakeInfo = {
-            ...SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo,
-        };
+        let originalHandShakeInfo = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo.clone();
 
         let session2 = await SessionFunctions.createNewSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
@@ -555,7 +604,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             ],
         });
 
-        let q = Querier.getNewInstanceOrThrowError(false, undefined);
+        let q = Querier.getNewInstanceOrThrowError(undefined);
         let apiVersion = await q.getAPIVersion();
 
         // Only run test for >= 2.8 since the fix for this test is in core with CDI >= 2.8

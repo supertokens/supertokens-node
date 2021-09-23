@@ -92,7 +92,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         await startST();
 
         try {
-            await Querier.getNewInstanceOrThrowError(false);
+            await Querier.getNewInstanceOrThrowError(undefined);
             assert(false);
         } catch (err) {
             if (err.message !== "Please call the supertokens.init function before using SuperTokens") {
@@ -116,7 +116,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             ],
         });
 
-        await Querier.getNewInstanceOrThrowError(false);
+        await Querier.getNewInstanceOrThrowError(undefined);
     });
 
     // Check that modules have been inited when we call supertokens.init

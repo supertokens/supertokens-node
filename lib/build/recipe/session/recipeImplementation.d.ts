@@ -1,6 +1,31 @@
-import { RecipeInterface, VerifySessionOptions, TypeNormalisedInput, HandshakeInfo, SessionInformation } from "./types";
+// @ts-nocheck
+import {
+    RecipeInterface,
+    VerifySessionOptions,
+    TypeNormalisedInput,
+    SessionInformation,
+    KeyInfo,
+    AntiCsrfType,
+} from "./types";
 import Session from "./sessionClass";
 import { Querier } from "../../querier";
+declare class HandshakeInfo {
+    antiCsrf: AntiCsrfType;
+    accessTokenBlacklistingEnabled: boolean;
+    accessTokenValidity: number;
+    refreshTokenValidity: number;
+    private rawJwtSigningPublicKeyList;
+    constructor(
+        antiCsrf: AntiCsrfType,
+        accessTokenBlacklistingEnabled: boolean,
+        accessTokenValidity: number,
+        refreshTokenValidity: number,
+        rawJwtSigningPublicKeyList: KeyInfo[]
+    );
+    setJwtSigningPublicKeyList(updatedList: KeyInfo[]): void;
+    getJwtSigningPublicKeyList(): KeyInfo[];
+    clone(): HandshakeInfo;
+}
 export default class RecipeImplementation implements RecipeInterface {
     querier: Querier;
     config: TypeNormalisedInput;
@@ -50,7 +75,14 @@ export default class RecipeImplementation implements RecipeInterface {
         newJWTPayload: any;
     }) => Promise<void>;
     getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
-    updateJwtSigningPublicKeyInfo: (newKey: string, newExpiry: number) => void;
+    /**
+     * Update the cached list of signing keys
+     * @param keyList The list of signing keys on the response object. Before 2.9 always undefined, after it always contains at least 1 key
+     * @param publicKey The public key of the latest signing key
+     * @param expiryTime The expiry time of the latest signing key
+     */
+    updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
     getAccessTokenLifeTimeMS: () => Promise<number>;
     getRefreshTokenLifeTimeMS: () => Promise<number>;
 }
+export {};

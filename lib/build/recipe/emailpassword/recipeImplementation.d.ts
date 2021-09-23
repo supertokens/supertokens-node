@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { RecipeInterface, User } from "./types";
 import { Querier } from "../../querier";
 export default class RecipeImplementation implements RecipeInterface {
