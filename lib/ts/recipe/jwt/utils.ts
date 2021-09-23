@@ -20,16 +20,18 @@ import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from ".
 export function validateAndNormaliseUserInput(
     _: Recipe,
     __: NormalisedAppinfo,
-    config: TypeInput
+    config?: TypeInput
 ): TypeNormalisedInput {
+    // let providedOverrides = config === undefined ? {} : config.override;
+
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config.override,
+        ...config?.override,
     };
 
     return {
-        jwtValiditySeconds: config.jwtValiditySeconds,
+        jwtValiditySeconds: config?.jwtValiditySeconds,
         override,
     };
 }

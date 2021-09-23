@@ -4,5 +4,5 @@ import { TypeInput, TypeNormalisedInput } from "./types";
 export declare function validateAndNormaliseUserInput(
     _: Recipe,
     __: NormalisedAppinfo,
-    config: TypeInput
+    config?: TypeInput
 ): TypeNormalisedInput;

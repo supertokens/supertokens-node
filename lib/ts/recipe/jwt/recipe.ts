@@ -37,7 +37,7 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;

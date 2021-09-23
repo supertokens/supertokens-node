@@ -11,7 +11,7 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput);
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): Recipe;
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;

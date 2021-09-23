@@ -21,6 +21,7 @@ let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let ThirPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
 let ThirdPartyEmailPasswordRecipe = require("../lib/build/recipe/thirdpartyemailpassword/recipe").default;
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 
 module.exports.printPath = function (path) {
@@ -192,6 +193,7 @@ module.exports.resetAll = function () {
     ThirdPartyEmailPasswordRecipe.reset();
     EmailPasswordRecipe.reset();
     ThirPartyRecipe.reset();
+    JWTRecipe.reset();
     ProcessState.getInstance().reset();
 };
 
