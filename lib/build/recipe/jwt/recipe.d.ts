@@ -13,7 +13,7 @@ export default class Recipe extends RecipeModule {
     isInServerlessEnv: boolean;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): Recipe;
-    static init(config: TypeInput): RecipeListFunction;
+    static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled(): APIHandled[];
     handleAPIRequest: (

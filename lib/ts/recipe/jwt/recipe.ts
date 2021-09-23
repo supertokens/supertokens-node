@@ -56,7 +56,7 @@ export default class Recipe extends RecipeModule {
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
 
-    static init(config: TypeInput): RecipeListFunction {
+    static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
