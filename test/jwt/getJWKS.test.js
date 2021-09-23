@@ -2,19 +2,8 @@ let assert = require("assert");
 const express = require("express");
 const request = require("supertest");
 
-const {
-    printPath,
-    setupST,
-    startST,
-    stopST,
-    killAllST,
-    cleanST,
-    resetAll,
-    signUPRequest,
-    extractInfoFromResponse,
-} = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
-let Session = require("../../recipe/session");
 let { ProcessState } = require("../../lib/build/processState");
 let JWTRecipe = require("../../lib/build/recipe/jwt");
 

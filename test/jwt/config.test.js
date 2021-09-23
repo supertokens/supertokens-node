@@ -1,6 +1,6 @@
 let assert = require("assert");
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 const JWTRecipe = require("../../lib/build/recipe/jwt/recipe").default;
