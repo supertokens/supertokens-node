@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [7.1.0] - 2021-09-16
 
+### Added
+
+-   JWT recipe to create signed JWT tokens
+-   New API to fetch keys used for JWT verification using JWKS
+
 ### Removed
 
 -   Unnecessary serverless optimisation
