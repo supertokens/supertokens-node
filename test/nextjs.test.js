@@ -413,8 +413,6 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             await killAllST();
             await setupST();
             await startST();
-            await createServerlessCacheForTesting();
-            await removeServerlessCache();
             ProcessState.getInstance().reset();
             SuperTokens.init({
                 supertokens: {
