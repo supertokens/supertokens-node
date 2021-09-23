@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
 import { JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";
