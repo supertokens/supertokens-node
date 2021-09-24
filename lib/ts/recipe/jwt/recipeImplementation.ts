@@ -31,10 +31,10 @@ export default class RecipeImplementation implements RecipeInterface {
 
     createJWT = async ({
         payload,
-        validity,
+        validitySeconds,
     }: {
         payload: any;
-        validity?: number;
+        validitySeconds?: number;
     }): Promise<
         | {
               status: "OK";
@@ -44,14 +44,14 @@ export default class RecipeImplementation implements RecipeInterface {
               status: "UNSUPPORTED_ALGORITHM_ERROR";
           }
     > => {
-        if (validity === undefined) {
+        if (validitySeconds === undefined) {
             // If the user does not provide a validity to this function and the config validity is also undefined, use 100 years (in seconds)
-            validity = this.config.jwtValiditySeconds;
+            validitySeconds = this.config.jwtValiditySeconds;
         }
 
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {
             payload,
-            validity,
+            validity: validitySeconds,
             algorithm: "RS256",
             jwksDomain: this.appInfo.apiDomain.getAsStringDangerous(),
         });

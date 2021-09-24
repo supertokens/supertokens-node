@@ -19,10 +19,10 @@ import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async createJWT(payload: any, validity?: number) {
+    static async createJWT(payload: any, validitySeconds?: number) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createJWT({
             payload,
-            validity,
+            validitySeconds,
         });
     }
 

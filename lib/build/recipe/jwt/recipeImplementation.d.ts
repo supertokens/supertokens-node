@@ -9,10 +9,10 @@ export default class RecipeImplementation implements RecipeInterface {
     constructor(querier: Querier, config: TypeNormalisedInput, appInfo: NormalisedAppinfo);
     createJWT: ({
         payload,
-        validity,
+        validitySeconds,
     }: {
         payload: any;
-        validity?: number | undefined;
+        validitySeconds?: number | undefined;
     }) => Promise<
         | {
               status: "OK";

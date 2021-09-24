@@ -33,7 +33,7 @@ export declare type APIOptions = {
 export interface RecipeInterface {
     createJWT(input: {
         payload: any;
-        validity?: number;
+        validitySeconds?: number;
     }): Promise<
         | {
               status: "OK";

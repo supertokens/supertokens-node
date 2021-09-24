@@ -5,7 +5,7 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static createJWT(
         payload: any,
-        validity?: number
+        validitySeconds?: number
     ): Promise<
         | {
               status: "OK";
