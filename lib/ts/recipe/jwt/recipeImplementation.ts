@@ -33,7 +33,7 @@ export default class RecipeImplementation implements RecipeInterface {
         payload,
         validitySeconds,
     }: {
-        payload: any;
+        payload?: any;
         validitySeconds?: number;
     }): Promise<
         | {
@@ -50,7 +50,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }
 
         let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {
-            payload,
+            payload: payload ?? {},
             validity: validitySeconds,
             algorithm: "RS256",
             jwksDomain: this.appInfo.apiDomain.getAsStringDangerous(),

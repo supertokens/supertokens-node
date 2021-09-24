@@ -11,7 +11,7 @@ export default class RecipeImplementation implements RecipeInterface {
         payload,
         validitySeconds,
     }: {
-        payload: any;
+        payload?: any;
         validitySeconds?: number | undefined;
     }) => Promise<
         | {
