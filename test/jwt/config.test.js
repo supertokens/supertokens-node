@@ -32,7 +32,7 @@ describe(`configTest: ${printPath("[test/jwt/config.test.js]")}`, function () {
         });
 
         let jwtRecipe = await JWTRecipe.getInstanceOrThrowError();
-        assert(jwtRecipe.config.jwtValiditySeconds === undefined);
+        assert(jwtRecipe.config.jwtValiditySeconds === 3153600000);
     });
 
     it("Test that the config sets values correctly for JWT recipe when jwt validity is set", async function () {

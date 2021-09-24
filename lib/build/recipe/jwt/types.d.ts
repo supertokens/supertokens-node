@@ -16,7 +16,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    jwtValiditySeconds?: number;
+    jwtValiditySeconds: number;
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis: (originalImplementation: APIInterface) => APIInterface;
