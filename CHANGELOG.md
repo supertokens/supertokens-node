@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [7.2.0]
+
+### Added
+
+-   JWT recipe to create signed JWT tokens
+-   New API to fetch keys used for JWT verification using JWKS
+
 ## [7.1.0]
 
 ### Added
@@ -12,11 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Support for multiple access token signing keys: https://github.com/supertokens/supertokens-core/issues/305
 -   Supporting CDI 2.9
 -   Header `"content-type": "application/json; charset=utf-8"` when querying the core
-
-### Added
-
--   JWT recipe to create signed JWT tokens
--   New API to fetch keys used for JWT verification using JWKS
 
 ### Removed
 
