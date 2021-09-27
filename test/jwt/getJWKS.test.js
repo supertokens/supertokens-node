@@ -6,6 +6,8 @@ const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
 let { ProcessState } = require("../../lib/build/processState");
 let JWTRecipe = require("../../lib/build/recipe/jwt");
+let { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
 
 describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
     beforeEach(async function () {
@@ -44,6 +46,13 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
             ],
         });
 
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
         const app = express();
 
         app.use(STExpress.middleware());
@@ -78,6 +87,13 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
             },
             recipeList: [JWTRecipe.init({})],
         });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
 
         const app = express();
 

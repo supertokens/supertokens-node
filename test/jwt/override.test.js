@@ -6,6 +6,8 @@ const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 let STExpress = require("../../");
 let { ProcessState } = require("../../lib/build/processState");
 let JWTRecipe = require("../../lib/build/recipe/jwt");
+let { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
 
 describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function () {
     beforeEach(async function () {
@@ -64,6 +66,13 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
                 }),
             ],
         });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
 
         let app = express();
 
@@ -142,6 +151,13 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
                 }),
             ],
         });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
 
         let app = express();
 
