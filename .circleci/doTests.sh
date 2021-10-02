@@ -111,14 +111,27 @@ while [ $i -lt $frontendDriverLength ]; do
     nodeTag=dev-v$version
 
     someFrontendTestsRan=true
-    ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
-    if [[ $? -ne 0 ]]
-    then
-        echo "test failed... exiting!"
-        exit 1
-    fi
+    tries=1
+    while [ $tries -le 3 ]
+    do
+        tries=$(( $tries + 1 ))
+        ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
+        if [[ $? -ne 0 ]]
+        then
+            if [[ $tries -le 3 ]]
+            then
+                rm -rf ../../supertokens-root
+                echo "failed test.. retrying!"
+            else
+                echo "test failed... exiting!"
+                exit 1
+            fi
+        else
+            rm -rf ../../supertokens-root
+            break
+        fi
+    done
 
-    rm -rf ../../supertokens-root
 
     frontendAuthReactVersionXY=`curl -s -X GET \
     "https://api.supertokens.io/0/frontend-driver-interface/dependency/frontend/latest?password=$SUPERTOKENS_API_KEY&frontendName=auth-react&mode=DEV&version=$frontendDriverVersion" \
@@ -145,14 +158,26 @@ while [ $i -lt $frontendDriverLength ]; do
         # we skip this since the tests for auth-react here are not reliable due to race conditions...
         continue
     else
-        ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
-        if [[ $? -ne 0 ]]
-        then
-            echo "test failed... exiting!"
-            exit 1
-        fi
-
-        rm -rf ../../supertokens-root
+        tries=1
+        while [ $tries -le 3 ]
+        do
+            tries=$(( $tries + 1 ))
+            ./setupAndTestWithAuthReact.sh $coreFree $frontendAuthReactTag $nodeTag
+            if [[ $? -ne 0 ]]
+            then
+                if [[ $tries -le 3 ]]
+                then
+                    rm -rf ../../supertokens-root
+                    echo "failed test.. retrying!"
+                else
+                    echo "test failed... exiting!"
+                    exit 1
+                fi
+            else
+                rm -rf ../../supertokens-root
+                break
+            fi
+        done
     fi
 
 done
