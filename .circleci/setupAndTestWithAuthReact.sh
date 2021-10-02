@@ -58,6 +58,8 @@ SKIP_OAUTH=true npm run test
 if [[ $? -ne 0 ]]
 then
     echo "test failed... exiting!"
+    rm -rf ./test/server/node_modules/supertokens-node
+    git checkout HEAD -- ./test/server/package.json
     exit 1
 fi
 rm -rf ./test/server/node_modules/supertokens-node
