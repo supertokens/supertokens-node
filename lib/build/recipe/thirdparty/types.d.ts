@@ -26,6 +26,7 @@ export declare type TypeProviderGetResponse = {
         };
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
+    getClientId: () => string;
 };
 export declare type TypeProvider = {
     id: string;

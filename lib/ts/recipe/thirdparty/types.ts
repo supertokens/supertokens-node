@@ -36,6 +36,7 @@ export type TypeProviderGetResponse = {
         params: { [key: string]: string | ((request: any) => string) };
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
+    getClientId: () => string;
 };
 
 export type TypeProvider = {

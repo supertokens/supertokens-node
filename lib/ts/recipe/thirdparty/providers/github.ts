@@ -146,6 +146,9 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
                 params: authorizationRedirectParams,
             },
             getProfileInfo,
+            getClientId: () => {
+                return config.clientId;
+            },
         };
     }
 

@@ -7,3 +7,4 @@ export declare function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput;
+export declare function isUsingOAuthDevelopmentKeys(client_id: string): boolean;

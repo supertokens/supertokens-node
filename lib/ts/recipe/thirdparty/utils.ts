@@ -29,6 +29,7 @@ import {
     TypeInputSessionFeature,
     TypeNormalisedInputSessionFeature,
 } from "./types";
+import { DEV_OAUTH_CLIENT_IDS } from "./constants";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -143,4 +144,8 @@ function validateAndNormaliseEmailVerificationConfig(
                       return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                   },
     };
+}
+
+export function isUsingOAuthDevelopmentKeys(client_id: string): boolean {
+    return DEV_OAUTH_CLIENT_IDS.includes(client_id);
 }

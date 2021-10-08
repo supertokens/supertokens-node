@@ -16,3 +16,13 @@
 export const AUTHORISATION_API = "/authorisationurl";
 
 export const SIGN_IN_UP_API = "/signinup";
+
+// If Third Party login is used with one of the following development keys, then the dev authorization url and the redirect url will be used
+export const DEV_OAUTH_CLIENT_IDS = [
+    "585279403523-7mubfl1r7i0fbvj9l0sahbh2g35o1i0s.apps.googleusercontent.com",
+    "41ee9a6ccad6d6f47303",
+    "553394762651618",
+];
+
+export const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";
+export const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
