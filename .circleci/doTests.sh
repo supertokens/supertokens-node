@@ -121,6 +121,7 @@ while [ $i -lt $frontendDriverLength ]; do
             if [[ $tries -le 3 ]]
             then
                 rm -rf ../../supertokens-root
+                rm -rf ../../supertokens-website
                 echo "failed test.. retrying!"
             else
                 echo "test failed... exiting!"
@@ -128,6 +129,7 @@ while [ $i -lt $frontendDriverLength ]; do
             fi
         else
             rm -rf ../../supertokens-root
+            rm -rf ../../supertokens-website
             break
         fi
     done
@@ -168,6 +170,7 @@ while [ $i -lt $frontendDriverLength ]; do
                 if [[ $tries -le 3 ]]
                 then
                     rm -rf ../../supertokens-root
+                    rm -rf ../../supertokens-auth-react
                     echo "failed test.. retrying!"
                 else
                     echo "test failed... exiting!"
@@ -175,6 +178,7 @@ while [ $i -lt $frontendDriverLength ]; do
                 fi
             else
                 rm -rf ../../supertokens-root
+                rm -rf ../../supertokens-auth-react
                 break
             fi
         done
