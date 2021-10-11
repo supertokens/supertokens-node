@@ -18,6 +18,7 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
 let ThirParty = require("../../lib/build/recipe/thirdparty");
+let { DEV_OAUTH_CLIENT_IDS } = require("../../lib/build/recipe/thirdparty/constants");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
@@ -74,6 +75,63 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    it("test that using development OAuth keys will use the development authorisation url", async function () {
+        await startST();
+
+        // testing with the google OAuth development key
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+                ThirPartyRecipe.init({
+                    signInAndUpFeature: {
+                        providers: [
+                            ThirParty.Google({
+                                clientId: DEV_OAUTH_CLIENT_IDS[0],
+                                clientSecret: "test-secret",
+                            }),
+                        ],
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(STExpress.middleware());
+
+        app.use(STExpress.errorHandler());
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/authorisationurl?thirdPartyId=google")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert.notStrictEqual(response1, undefined);
+        assert.strictEqual(response1.body.status, "OK");
+
+        let url = new URL(response1.body.url);
+        assert.strictEqual(url.origin, "https://supertokens.io");
+
+        assert.strictEqual(url.pathname, "/dev/oauth/redirect-to-provider");
     });
 
     it("test minimum config for thirdparty module", async function () {
