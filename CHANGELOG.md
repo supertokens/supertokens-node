@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
--   Adds OAuth development keys for Google, Github and Facebook for faster recipe implementation.
+-   Adds OAuth development keys for Google and Github for faster recipe implementation.
 
 ## [7.2.1] - 2021-10-02
 
