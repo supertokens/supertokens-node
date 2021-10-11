@@ -41,6 +41,9 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
                             },
                         };
                     },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
                 };
             },
         };

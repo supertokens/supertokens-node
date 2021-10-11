@@ -45,6 +45,9 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
                             },
                         };
                     },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
                 };
             },
         };

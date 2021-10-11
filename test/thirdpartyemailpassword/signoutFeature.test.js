@@ -52,6 +52,9 @@ describe(`signoutTest: ${printPath("[test/thirdpartyemailpassword/signoutFeature
                             },
                         };
                     },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
                 };
             },
         };

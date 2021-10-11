@@ -143,6 +143,9 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
                 params: authorizationRedirectParams,
             },
             getProfileInfo,
+            getClientId: () => {
+                return config.clientId;
+            },
         };
     }
 

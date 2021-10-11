@@ -118,6 +118,9 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
                 params: authorizationRedirectParams,
             },
             getProfileInfo,
+            getClientId: () => {
+                return config.clientId;
+            },
         };
     }
 

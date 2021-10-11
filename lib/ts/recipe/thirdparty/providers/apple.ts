@@ -182,6 +182,9 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
                 params: authorizationRedirectParams,
             },
             getProfileInfo,
+            getClientId: () => {
+                return config.clientId;
+            },
         };
     }
 

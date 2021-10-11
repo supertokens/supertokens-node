@@ -3,6 +3,8 @@ import Session from "../../session";
 import { URLSearchParams } from "url";
 import * as axios from "axios";
 import * as qs from "querystring";
+import { isUsingOAuthDevelopmentKeys } from "../utils";
+import { DEV_OAUTH_AUTHORIZATION_URL, DEV_OAUTH_REDIRECT_URL } from "../constants";
 
 export default class APIImplementation implements APIInterface {
     authorisationUrlGET = async ({
@@ -25,9 +27,17 @@ export default class APIImplementation implements APIInterface {
             params[key] = typeof value === "function" ? await value(options.req.original) : value;
         }
 
+        if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+            params["actual_redirect_uri"] = providerInfo.authorisationRedirect.url;
+        }
+
         let paramsString = new URLSearchParams(params).toString();
 
         let url = `${providerInfo.authorisationRedirect.url}?${paramsString}`;
+
+        if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+            url = `${DEV_OAUTH_AUTHORIZATION_URL}?${paramsString}`;
+        }
 
         return {
             status: "OK",
@@ -60,6 +70,13 @@ export default class APIImplementation implements APIInterface {
     > => {
         let userInfo;
         let accessTokenAPIResponse: any;
+        {
+            let providerInfo = await provider.get(undefined, undefined);
+            if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+                redirectURI = DEV_OAUTH_REDIRECT_URL;
+            }
+        }
+
         let providerInfo = await provider.get(redirectURI, code);
         accessTokenAPIResponse = await axios.default({
             method: "post",
