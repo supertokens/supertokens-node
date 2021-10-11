@@ -41,6 +41,9 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
                             },
                         };
                     },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
                 };
             },
         };

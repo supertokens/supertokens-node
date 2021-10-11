@@ -45,6 +45,9 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                             },
                         };
                     },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
                 };
             },
         };

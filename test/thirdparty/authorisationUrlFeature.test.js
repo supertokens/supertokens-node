@@ -51,6 +51,9 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                             },
                         };
                     },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
                 };
             },
         };

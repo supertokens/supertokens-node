@@ -44,6 +44,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                             },
                         };
                     },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
                 };
             },
         };
@@ -68,6 +71,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                             id: "user",
                         };
                     },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
                 };
             },
         };
@@ -83,6 +89,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                     },
                     getProfileInfo: async (authCodeResponse) => {
                         throw new Error("error from getProfileInfo");
+                    },
+                    getClientId: () => {
+                        return "supertokens";
                     },
                 };
             },
@@ -105,6 +114,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                                 isVerified: false,
                             },
                         };
+                    },
+                    getClientId: () => {
+                        return "supertokens";
                     },
                 };
             },

@@ -47,6 +47,9 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
                             },
                         };
                     },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
                 };
             },
         };
@@ -55,6 +58,9 @@ describe(`authorisationTest: ${printPath("[test/thirdpartyemailpassword/authoris
             id: "custom",
             get: async (recipe, authCode) => {
                 throw new Error("error from get function");
+            },
+            getClientId: () => {
+                return "supertokens";
             },
         };
     });
