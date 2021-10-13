@@ -46,7 +46,7 @@ export declare class HapiResponse extends BaseResponse {
     sendResponse: (overwriteHeaders?: boolean) => ResponseObject;
 }
 export interface SupertokensPluginOptions {
-    routeOptions: RouteOptions;
+    routeOptions?: RouteOptions;
 }
 export interface SessionRequest extends Request {
     session?: SessionContainerInterface;

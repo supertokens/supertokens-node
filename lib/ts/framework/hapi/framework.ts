@@ -141,13 +141,18 @@ export class HapiResponse extends BaseResponse {
 }
 
 export interface SupertokensPluginOptions {
-    routeOptions: RouteOptions;
+    routeOptions?: RouteOptions;
 }
 
 const plugin: Plugin<SupertokensPluginOptions> = {
     name: "supertokens-hapi-middleware",
     version: "1.0.0",
-    register: async function (server, options) {
+    register: async function (
+        server,
+        options = {
+            routeOptions: {},
+        }
+    ) {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         server.ext("onPreHandler", async (req, h) => {
             let request = new HapiRequest(req);
@@ -215,7 +220,7 @@ const plugin: Plugin<SupertokensPluginOptions> = {
                     supportedRoutes.push({
                         path,
                         method: api.method,
-                        options: options.routeOptions,
+                        options: options.routeOptions || {},
                         handler: (_, h) => {
                             return h.continue;
                         },
