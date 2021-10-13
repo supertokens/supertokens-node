@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import type { Request, ResponseToolkit, Plugin, ResponseObject, ServerRoute } from "@hapi/hapi";
+import type { Request, ResponseToolkit, Plugin, ResponseObject, ServerRoute, RouteOptions } from "@hapi/hapi";
 import type { Boom } from "@hapi/boom";
 import type { HTTPMethod } from "../../types";
 import { normaliseHttpMethod } from "../../utils";
@@ -140,10 +140,14 @@ export class HapiResponse extends BaseResponse {
     };
 }
 
-const plugin: Plugin<{}> = {
+export interface SupertokensPluginOptions {
+    routeOptions: RouteOptions;
+}
+
+const plugin: Plugin<SupertokensPluginOptions> = {
     name: "supertokens-hapi-middleware",
     version: "1.0.0",
-    register: async function (server, _) {
+    register: async function (server, options) {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         server.ext("onPreHandler", async (req, h) => {
             let request = new HapiRequest(req);
@@ -211,6 +215,7 @@ const plugin: Plugin<{}> = {
                     supportedRoutes.push({
                         path,
                         method: api.method,
+                        options: options.routeOptions,
                         handler: (_, h) => {
                             return h.continue;
                         },
@@ -227,7 +232,7 @@ export interface SessionRequest extends Request {
 }
 
 export interface HapiFramework extends Framework {
-    plugin: Plugin<{}>;
+    plugin: Plugin<SupertokensPluginOptions>;
 }
 
 export const HapiWrapper: HapiFramework = {

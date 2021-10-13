@@ -1,5 +1,5 @@
 // @ts-nocheck
-import type { Request, ResponseToolkit, Plugin, ResponseObject } from "@hapi/hapi";
+import type { Request, ResponseToolkit, Plugin, ResponseObject, RouteOptions } from "@hapi/hapi";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
@@ -45,10 +45,13 @@ export declare class HapiResponse extends BaseResponse {
     sendJSONResponse: (content: any) => void;
     sendResponse: (overwriteHeaders?: boolean) => ResponseObject;
 }
+export interface SupertokensPluginOptions {
+    routeOptions: RouteOptions;
+}
 export interface SessionRequest extends Request {
     session?: SessionContainerInterface;
 }
 export interface HapiFramework extends Framework {
-    plugin: Plugin<{}>;
+    plugin: Plugin<SupertokensPluginOptions>;
 }
 export declare const HapiWrapper: HapiFramework;
