@@ -1,10 +1,10 @@
 {
     "name": "supertokens-node",
-    "version": "7.3.0",
+    "version": "7.4.0",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
-        "test": "TEST_MODE=testing npx mocha --timeout 500000",
+        "test": "INSTALL_PATH=../supertokens-root TEST_MODE=testing npx mocha --timeout 500000",
         "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit",
         "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit && cd ../.. && npm run post-build",
         "pretty": "npx pretty-quick .",
