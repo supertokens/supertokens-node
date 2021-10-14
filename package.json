@@ -12,7 +12,7 @@
         "build-pretty": "npm run build && npm run pretty && npm run pretty",
         "pretty-check": "npx pretty-quick --check .",
         "set-up-hooks": "cp hooks/pre-commit.sh .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit",
-        "build-docs": "rm -rf ./docs && npx typedoc --out ./docs --tsconfig ./lib/tsconfig.json ./lib/ts/index.ts ./lib/ts/framework/**/index.ts ./lib/ts/recipe/**/index.ts"
+        "build-docs": "rm -rf ./docs && npx typedoc --out ./docs --tsconfig ./lib/tsconfig.json ./lib/ts/index.ts ./lib/ts/**/index.ts ./lib/ts/**/*/index.ts"
     },
     "keywords": [
         "auth",
