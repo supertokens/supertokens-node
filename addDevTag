@@ -97,6 +97,7 @@ fi
 if [ $# -eq 0 ]
 then
     npm run build-pretty
+    npm run build-docs
     git add --all
     git commit --allow-empty -m"adding dev-v$version tag to this commit to ensure building"
     git push

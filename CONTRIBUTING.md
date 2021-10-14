@@ -85,5 +85,5 @@ Additional resources you might find useful:
 This will generate the API docs in a folder called `docs`
 
 ```
-npx typedoc --out docs --tsconfig ./lib/tsconfig.json ./lib/ts/**/index.ts
+npm run build-docs
 ```
