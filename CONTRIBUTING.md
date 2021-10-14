@@ -79,3 +79,11 @@ Additional resources you might find useful:
 ## Implementing APIInterfaces
 
 -   Make sure the implementation of that interface takes types imports from the `index.ts` file of that recipe. This is so that if a user wants to copy / paste that code into their project, they can do so via the normal import statement.
+
+## Generating docs
+
+This will generate the API docs in a folder called `docs`
+
+```
+npx typedoc --out docs --tsconfig ./lib/tsconfig.json ./lib/ts/**/index.ts
+```

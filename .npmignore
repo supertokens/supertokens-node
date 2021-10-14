@@ -16,3 +16,5 @@ coreDriverInterfaceSupported.json
 .gitattributes
 examples/
 add-ts-no-check.js
+docs/
+.prettierignore
