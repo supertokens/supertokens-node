@@ -32,9 +32,6 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         steps:
-            - add_ssh_keys:
-                  fingerprints:
-                      - "35:1e:5e:0a:95:ec:f3:3e:79:7b:b4:39:ac:00:5f:b2"
             - checkout
             - run: cd ../ && git clone git@github.com:supertokens/supertokens-backend-website.git
             - run: (cd .circleci && ./updateDocsInWebsite.sh)

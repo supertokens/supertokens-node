@@ -23,4 +23,6 @@ cp -r ../docs/* ../../supertokens-backend-website/app/docs/sdk/docs/nodejs/
 cp -r ../docs/* ../../supertokens-backend-website/app/docs/sdk/docs/nodejs/${versionFolder}
 
 # push to git
-(cd ../../supertokens-backend-website && git add --all && git commit -m"updates nodejs docs" && git pull && git push)
+git config --global user.email "$EMAIL"
+git config --global user.name "$NAME"
+(cd ../../supertokens-backend-website && git add --all && git commit -m"updates nodejs docs" && git pull && git push && ./releaseDev.sh)
