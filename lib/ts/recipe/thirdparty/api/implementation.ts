@@ -27,7 +27,14 @@ export default class APIImplementation implements APIInterface {
 
         if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
             params["actual_redirect_uri"] = providerInfo.authorisationRedirect.url;
-            params["client_id"] = getClientIdFromDevelopmentKey(providerInfo.getClientId());
+
+            if (providerInfo.getClientId().startsWith(DEV_KEY_IDENTIFIER)) {
+                Object.keys(params).forEach((key) => {
+                    if (params[key] === providerInfo.getClientId()) {
+                        params[key] = getClientIdFromDevelopmentKey(providerInfo.getClientId());
+                    }
+                });
+            }
         }
 
         let paramsString = new URLSearchParams(params).toString();
@@ -78,9 +85,14 @@ export default class APIImplementation implements APIInterface {
 
         let providerInfo = await provider.get(redirectURI, code);
 
-        if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
-            providerInfo.accessTokenAPI.params["client_id"] = getClientIdFromDevelopmentKey(providerInfo.getClientId());
+        if (providerInfo.getClientId().startsWith(DEV_KEY_IDENTIFIER)) {
+            Object.keys(providerInfo.accessTokenAPI.params).forEach((key) => {
+                if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId()) {
+                    providerInfo.accessTokenAPI.params[key] = getClientIdFromDevelopmentKey(providerInfo.getClientId());
+                }
+            });
         }
+
         accessTokenAPIResponse = await axios.default({
             method: "post",
             url: providerInfo.accessTokenAPI.url,
@@ -150,10 +162,16 @@ export default class APIImplementation implements APIInterface {
 
 const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";
 const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
+
+// If Third Party login is used with one of the following development keys, then the dev authorization url and the redirect url will be used.
+const DEV_OAUTH_CLIENT_IDS = [
+    "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com", // google
+    "467101b197249757c71f", // github
+];
 const DEV_KEY_IDENTIFIER = "4398792-";
 
 function isUsingOAuthDevelopmentKeys(client_id: string): boolean {
-    return client_id.startsWith(DEV_KEY_IDENTIFIER);
+    return client_id.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(client_id);
 }
 
 function getClientIdFromDevelopmentKey(client_id: string): string {
