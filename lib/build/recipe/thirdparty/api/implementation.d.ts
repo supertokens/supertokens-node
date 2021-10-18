@@ -37,4 +37,3 @@ export default class APIImplementation implements APIInterface {
           }
     >;
 }
-export declare function isUsingOAuthDevelopmentKeys(client_id: string): boolean;

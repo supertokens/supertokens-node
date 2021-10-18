@@ -27,6 +27,7 @@ export default class APIImplementation implements APIInterface {
 
         if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
             params["actual_redirect_uri"] = providerInfo.authorisationRedirect.url;
+            params["client_id"] = getClientIdFromDevelopmentKey(providerInfo.getClientId());
         }
 
         let paramsString = new URLSearchParams(params).toString();
@@ -76,6 +77,10 @@ export default class APIImplementation implements APIInterface {
         }
 
         let providerInfo = await provider.get(redirectURI, code);
+
+        if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+            providerInfo.accessTokenAPI.params["client_id"] = getClientIdFromDevelopmentKey(providerInfo.getClientId());
+        }
         accessTokenAPIResponse = await axios.default({
             method: "post",
             url: providerInfo.accessTokenAPI.url,
@@ -147,6 +152,10 @@ const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-t
 const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
 const DEV_KEY_IDENTIFIER = "4398792-";
 
-export function isUsingOAuthDevelopmentKeys(client_id: string): boolean {
+function isUsingOAuthDevelopmentKeys(client_id: string): boolean {
     return client_id.startsWith(DEV_KEY_IDENTIFIER);
+}
+
+function getClientIdFromDevelopmentKey(client_id: string): string {
+    return client_id.split(DEV_KEY_IDENTIFIER)[1];
 }
