@@ -25,23 +25,21 @@ export default class APIImplementation implements APIInterface {
             params[key] = typeof value === "function" ? await value(options.req.original) : value;
         }
 
-        if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+        if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
             params["actual_redirect_uri"] = providerInfo.authorisationRedirect.url;
 
-            if (providerInfo.getClientId().startsWith(DEV_KEY_IDENTIFIER)) {
-                Object.keys(params).forEach((key) => {
-                    if (params[key] === providerInfo.getClientId()) {
-                        params[key] = getClientIdFromDevelopmentKey(providerInfo.getClientId());
-                    }
-                });
-            }
+            Object.keys(params).forEach((key) => {
+                if (params[key] === providerInfo.getClientId()) {
+                    params[key] = getActualClientIdFromDevelopmentClientId(providerInfo.getClientId());
+                }
+            });
         }
 
         let paramsString = new URLSearchParams(params).toString();
 
         let url = `${providerInfo.authorisationRedirect.url}?${paramsString}`;
 
-        if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+        if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
             url = `${DEV_OAUTH_AUTHORIZATION_URL}?${paramsString}`;
         }
 
@@ -78,17 +76,19 @@ export default class APIImplementation implements APIInterface {
         let accessTokenAPIResponse: any;
         {
             let providerInfo = await provider.get(undefined, undefined);
-            if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+            if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
                 redirectURI = DEV_OAUTH_REDIRECT_URL;
             }
         }
 
         let providerInfo = await provider.get(redirectURI, code);
 
-        if (providerInfo.getClientId().startsWith(DEV_KEY_IDENTIFIER)) {
+        if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
             Object.keys(providerInfo.accessTokenAPI.params).forEach((key) => {
                 if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId()) {
-                    providerInfo.accessTokenAPI.params[key] = getClientIdFromDevelopmentKey(providerInfo.getClientId());
+                    providerInfo.accessTokenAPI.params[key] = getActualClientIdFromDevelopmentClientId(
+                        providerInfo.getClientId()
+                    );
                 }
             });
         }
@@ -170,10 +170,13 @@ const DEV_OAUTH_CLIENT_IDS = [
 ];
 const DEV_KEY_IDENTIFIER = "4398792-";
 
-function isUsingOAuthDevelopmentKeys(client_id: string): boolean {
+function isUsingDevelopmentClientId(client_id: string): boolean {
     return client_id.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(client_id);
 }
 
-function getClientIdFromDevelopmentKey(client_id: string): string {
-    return client_id.split(DEV_KEY_IDENTIFIER)[1];
+function getActualClientIdFromDevelopmentClientId(client_id: string): string {
+    if (client_id.startsWith(DEV_KEY_IDENTIFIER)) {
+        return client_id.split(DEV_KEY_IDENTIFIER)[1];
+    }
+    return client_id;
 }
