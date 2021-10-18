@@ -122,6 +122,11 @@ export function getTopLevelDomainForSameSiteResolution(url: string): string {
     return parsedURL.domain;
 }
 
+export function getURLProtocol(url: string): string {
+    let urlObj = new URL(url);
+    return urlObj.protocol;
+}
+
 export function validateAndNormaliseUserInput(
     recipeInstance: SessionRecipe,
     appInfo: NormalisedAppinfo,
@@ -136,7 +141,11 @@ export function validateAndNormaliseUserInput(
     let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(appInfo.apiDomain.getAsStringDangerous());
     let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(appInfo.websiteDomain.getAsStringDangerous());
 
-    let cookieSameSite: "strict" | "lax" | "none" = topLevelAPIDomain !== topLevelWebsiteDomain ? "none" : "lax";
+    let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
+    let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
+
+    let cookieSameSite: "strict" | "lax" | "none" =
+        topLevelAPIDomain !== topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain ? "none" : "lax";
     cookieSameSite =
         config === undefined || config.cookieSameSite === undefined
             ? cookieSameSite
