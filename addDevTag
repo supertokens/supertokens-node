@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # check if we need to merge master into this branch------------
-if [[ $(git log master ^HEAD) ]]; then
+if [[ $(git log origin/master ^HEAD) ]]; then
     echo "You need to merge master into this branch. Exiting"
     exit 1
 fi
