@@ -798,7 +798,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     connectionURI: "http://localhost:8080",
                 },
                 appInfo: {
-                    apiDomain: "http://api.supertokens.io",
+                    apiDomain: "https://api.supertokens.io",
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                     apiBasePath: "test/",
@@ -809,7 +809,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
             assert(SessionRecipe.getInstanceOrThrowError().config.antiCsrf === "NONE");
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "lax");
-            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === false);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure === true);
             resetAll();
         }
 
