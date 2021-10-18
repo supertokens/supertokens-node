@@ -3,8 +3,6 @@ import Session from "../../session";
 import { URLSearchParams } from "url";
 import * as axios from "axios";
 import * as qs from "querystring";
-import { isUsingOAuthDevelopmentKeys } from "../utils";
-import { DEV_OAUTH_AUTHORIZATION_URL, DEV_OAUTH_REDIRECT_URL } from "../constants";
 
 export default class APIImplementation implements APIInterface {
     authorisationUrlGET = async ({
@@ -143,4 +141,12 @@ export default class APIImplementation implements APIInterface {
             authCodeResponse: accessTokenAPIResponse.data,
         };
     };
+}
+
+const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";
+const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
+const DEV_KEY_IDENTIFIER = "4398792-";
+
+export function isUsingOAuthDevelopmentKeys(client_id: string): boolean {
+    return client_id.startsWith(DEV_KEY_IDENTIFIER);
 }
