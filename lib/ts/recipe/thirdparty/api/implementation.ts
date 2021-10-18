@@ -3,8 +3,6 @@ import Session from "../../session";
 import { URLSearchParams } from "url";
 import * as axios from "axios";
 import * as qs from "querystring";
-import { isUsingOAuthDevelopmentKeys } from "../utils";
-import { DEV_OAUTH_AUTHORIZATION_URL, DEV_OAUTH_REDIRECT_URL } from "../constants";
 
 export default class APIImplementation implements APIInterface {
     authorisationUrlGET = async ({
@@ -27,15 +25,21 @@ export default class APIImplementation implements APIInterface {
             params[key] = typeof value === "function" ? await value(options.req.original) : value;
         }
 
-        if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+        if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
             params["actual_redirect_uri"] = providerInfo.authorisationRedirect.url;
+
+            Object.keys(params).forEach((key) => {
+                if (params[key] === providerInfo.getClientId()) {
+                    params[key] = getActualClientIdFromDevelopmentClientId(providerInfo.getClientId());
+                }
+            });
         }
 
         let paramsString = new URLSearchParams(params).toString();
 
         let url = `${providerInfo.authorisationRedirect.url}?${paramsString}`;
 
-        if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+        if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
             url = `${DEV_OAUTH_AUTHORIZATION_URL}?${paramsString}`;
         }
 
@@ -72,12 +76,23 @@ export default class APIImplementation implements APIInterface {
         let accessTokenAPIResponse: any;
         {
             let providerInfo = await provider.get(undefined, undefined);
-            if (isUsingOAuthDevelopmentKeys(providerInfo.getClientId())) {
+            if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
                 redirectURI = DEV_OAUTH_REDIRECT_URL;
             }
         }
 
         let providerInfo = await provider.get(redirectURI, code);
+
+        if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
+            Object.keys(providerInfo.accessTokenAPI.params).forEach((key) => {
+                if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId()) {
+                    providerInfo.accessTokenAPI.params[key] = getActualClientIdFromDevelopmentClientId(
+                        providerInfo.getClientId()
+                    );
+                }
+            });
+        }
+
         accessTokenAPIResponse = await axios.default({
             method: "post",
             url: providerInfo.accessTokenAPI.url,
@@ -143,4 +158,25 @@ export default class APIImplementation implements APIInterface {
             authCodeResponse: accessTokenAPIResponse.data,
         };
     };
+}
+
+const DEV_OAUTH_AUTHORIZATION_URL = "https://supertokens.io/dev/oauth/redirect-to-provider";
+const DEV_OAUTH_REDIRECT_URL = "https://supertokens.io/dev/oauth/redirect-to-app";
+
+// If Third Party login is used with one of the following development keys, then the dev authorization url and the redirect url will be used.
+const DEV_OAUTH_CLIENT_IDS = [
+    "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com", // google
+    "467101b197249757c71f", // github
+];
+const DEV_KEY_IDENTIFIER = "4398792-";
+
+function isUsingDevelopmentClientId(client_id: string): boolean {
+    return client_id.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(client_id);
+}
+
+function getActualClientIdFromDevelopmentClientId(client_id: string): string {
+    if (client_id.startsWith(DEV_KEY_IDENTIFIER)) {
+        return client_id.split(DEV_KEY_IDENTIFIER)[1];
+    }
+    return client_id;
 }
