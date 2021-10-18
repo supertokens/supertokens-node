@@ -18,7 +18,6 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
 let ThirParty = require("../../lib/build/recipe/thirdparty");
-let { DEV_OAUTH_CLIENT_IDS } = require("../../lib/build/recipe/thirdparty/constants");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
@@ -98,7 +97,7 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
                     signInAndUpFeature: {
                         providers: [
                             ThirParty.Google({
-                                clientId: DEV_OAUTH_CLIENT_IDS[0],
+                                clientId: "4398792-test-id",
                                 clientSecret: "test-secret",
                             }),
                         ],
