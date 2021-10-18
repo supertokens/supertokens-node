@@ -1068,6 +1068,25 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             }
             resetAll();
         }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "https://localhost",
+                    appName: "Supertokens",
+                    websiteDomain: "http://localhost:3000",
+                },
+                recipeList: [Session.init()],
+            });
+
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure);
+            assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
+
+            resetAll();
+        }
     });
 
     it("test config schema", async function () {
