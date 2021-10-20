@@ -80,7 +80,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: undefined,
+                                thirdPartySignInUpPOST: undefined,
                             };
                         },
                     },
@@ -136,7 +136,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: undefined,
+                                emailPasswordSignInPOST: undefined,
                             };
                         },
                     },
@@ -204,11 +204,11 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: async (input) => {
-                                    let response = await oI.signInUpPOST(input);
+                                thirdPartySignInUpPOST: async (input) => {
+                                    let response = await oI.thirdPartySignInUpPOST(input);
                                     if (response.status === "OK") {
                                         process.env.userId = response.user.id;
-                                        process.env.loginType = input.type;
+                                        process.env.loginType = "thirdparty";
                                     }
                                     return response;
                                 },

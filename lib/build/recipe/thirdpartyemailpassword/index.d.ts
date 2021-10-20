@@ -15,6 +15,9 @@ export default class Wrapper {
         }
     ): Promise<
         | {
+              /**
+               * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
+               *   */
               status: "OK";
               createdNewUser: boolean;
               user: User;
