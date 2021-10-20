@@ -252,36 +252,23 @@ ThirdPartyEmailPassword.init({
         apis: (oI) => {
             return {
                 ...oI,
-                signInUpPOST: async (input) => {
-                    if (oI.signInUpPOST === undefined) {
-                        throw Error("original implementation of signInUpPOST API is undefined");
+                thirdPartySignInUpPOST: async (input) => {
+                    if (oI.thirdPartySignInUpPOST === undefined) {
+                        throw Error("original implementation of thirdPartySignInUpPOST API is undefined");
                     }
-                    if (input.type === "emailpassword") {
-                        let email = input.formFields.filter((i) => i.id === "email")[0];
+                    return oI.thirdPartySignInUpPOST(input);
+                },
+                emailPasswordSignInPOST: async (input) => {
+                    if (oI.emailPasswordSignInPOST === undefined) {
+                        throw Error("original implementation of emailPasswordSignInPOST API is undefined");
                     }
-                    let response = await oI.signInUpPOST(input);
-                    if (response.status === "OK") {
-                        let { id, email } = response.user;
-
-                        let newUser = response.createdNewUser;
-                        // newUser is a boolean value, if true, then the user has signed up, else they have signed in.
-
-                        if (response.type === "thirdparty") {
-                            // this is the response from the OAuth 2 provider that contains their tokens or user info.
-                            let thirdPartyAuthCodeResponse = response.authCodeResponse;
-                        }
-                        if (input.type === "emailpassword") {
-                            // these are the input form fields values that the user used while signing up / in
-                            let formFields = input.formFields;
-                        }
-
-                        if (newUser) {
-                            // TODO: post sign up logic
-                        } else {
-                            // TODO: post sign in logic
-                        }
+                    return oI.emailPasswordSignInPOST(input);
+                },
+                emailPasswordSignUpPOST: async (input) => {
+                    if (oI.emailPasswordSignUpPOST === undefined) {
+                        throw Error("original implementation of emailPasswordSignUpPOST API is undefined");
                     }
-                    return response;
+                    return oI.emailPasswordSignUpPOST(input);
                 },
             };
         },

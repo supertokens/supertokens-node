@@ -16,15 +16,7 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import * as thirdPartyProviders from "../thirdparty/providers";
-import {
-    RecipeInterface,
-    User,
-    APIInterface,
-    EmailPasswordAPIOptions,
-    ThirdPartyAPIOptions,
-    SignInUpAPIInput,
-    SignInUpAPIOutput,
-} from "./types";
+import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 
 // For Express
@@ -220,13 +212,4 @@ export let Facebook = Wrapper.Facebook;
 
 export let Apple = Wrapper.Apple;
 
-export type {
-    RecipeInterface,
-    TypeProvider,
-    User,
-    APIInterface,
-    EmailPasswordAPIOptions,
-    ThirdPartyAPIOptions,
-    SignInUpAPIInput,
-    SignInUpAPIOutput,
-};
+export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };

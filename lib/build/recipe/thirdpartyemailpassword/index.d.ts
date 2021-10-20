@@ -1,15 +1,7 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import {
-    RecipeInterface,
-    User,
-    APIInterface,
-    EmailPasswordAPIOptions,
-    ThirdPartyAPIOptions,
-    SignInUpAPIInput,
-    SignInUpAPIOutput,
-} from "./types";
+import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
@@ -183,13 +175,4 @@ export declare let Google: typeof import("../thirdparty/providers/google").defau
 export declare let Github: typeof import("../thirdparty/providers/github").default;
 export declare let Facebook: typeof import("../thirdparty/providers/facebook").default;
 export declare let Apple: typeof import("../thirdparty/providers/apple").default;
-export type {
-    RecipeInterface,
-    TypeProvider,
-    User,
-    APIInterface,
-    EmailPasswordAPIOptions,
-    ThirdPartyAPIOptions,
-    SignInUpAPIInput,
-    SignInUpAPIOutput,
-};
+export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
