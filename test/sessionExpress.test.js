@@ -1303,10 +1303,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await Session.createNewSession(res, "user1", {}, {});
             res.status(200).send("");
         });
-        app.post("/updateJWTPayload", async (req, res) => {
+        app.post("/updateAccessTokenPayload", async (req, res) => {
             let session = await Session.getSession(req, res, true);
             let accessTokenBefore = session.accessToken;
-            await session.updateJWTPayload({ key: "value" });
+            await session.updateAccessTokenPayload({ key: "value" });
             let accessTokenAfter = session.accessToken;
             let statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
             res.status(statusCode).send("");
@@ -1315,21 +1315,21 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             await Session.refreshSession(req, res);
             res.status(200).send("");
         });
-        app.post("/getJWTPayload", async (req, res) => {
+        app.post("/getAccessTokenPayload", async (req, res) => {
             let session = await Session.getSession(req, res, true);
-            let jwtPayload = session.getJWTPayload();
+            let jwtPayload = session.getAccessTokenPayload();
             res.status(200).json(jwtPayload);
         });
 
-        app.post("/updateJWTPayload2", async (req, res) => {
+        app.post("/updateAccessTokenPayload2", async (req, res) => {
             let session = await Session.getSession(req, res, true);
-            await session.updateJWTPayload(null);
+            await session.updateAccessTokenPayload(null);
             res.status(200).send("");
         });
 
-        app.post("/updateJWTPayloadInvalidSessionHandle", async (req, res) => {
+        app.post("/updateAccessTokenPayloadInvalidSessionHandle", async (req, res) => {
             try {
-                await Session.updateJWTPayload("InvalidHandle", { key: "value3" });
+                await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" });
             } catch (err) {
                 res.status(200).json({
                     success: err.type === Session.Error.UNAUTHORISED,
@@ -1357,11 +1357,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(frontendInfo.uid === "user1");
         assert.deepEqual(frontendInfo.up, {});
 
-        //call the updateJWTPayload api to add jwt payload
+        //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/updateJWTPayload")
+                    .post("/updateAccessTokenPayload")
                     .set("Cookie", [
                         "sAccessToken=" +
                             response.accessToken +
@@ -1384,10 +1384,10 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(frontendInfo.uid === "user1");
         assert.deepEqual(frontendInfo.up, { key: "value" });
 
-        //call the getJWTPayload api to get jwt payload
+        //call the getAccessTokenPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
             request(app)
-                .post("/getJWTPayload")
+                .post("/getAccessTokenPayload")
                 .set("Cookie", [
                     "sAccessToken=" +
                         updatedResponse.accessToken +
@@ -1438,7 +1438,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let updatedResponse2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(app)
-                    .post("/updateJWTPayload2")
+                    .post("/updateAccessTokenPayload2")
                     .set("Cookie", [
                         "sAccessToken=" +
                             response2.accessToken +
@@ -1464,7 +1464,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
             request(app)
-                .post("/getJWTPayload")
+                .post("/getAccessTokenPayload")
                 .set("Cookie", [
                     "sAccessToken=" +
                         updatedResponse2.accessToken +
@@ -1487,7 +1487,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await new Promise((resolve) =>
             request(app)
-                .post("/updateJWTPayloadInvalidSessionHandle")
+                .post("/updateAccessTokenPayloadInvalidSessionHandle")
                 .set("Cookie", [
                     "sAccessToken=" +
                         updatedResponse2.accessToken +

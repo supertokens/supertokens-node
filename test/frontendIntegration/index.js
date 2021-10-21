@@ -23,6 +23,8 @@ let cors = require("cors");
 let noOfTimesRefreshCalledDuringTest = 0;
 let noOfTimesGetSessionCalledDuringTest = 0;
 let noOfTimesRefreshAttemptedDuringTest = 0;
+let { verifySession } = require("../../recipe/session/framework/express");
+let { middleware, errorHandler } = require("../../framework/express");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
@@ -78,7 +80,7 @@ app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
 
-app.use(SuperTokens.middleware());
+app.use(middleware());
 
 app.post("/setAntiCsrf", async (req, res) => {
     let enableAntiCsrf = req.body.enableAntiCsrf === undefined ? true : req.body.enableAntiCsrf;
@@ -117,7 +119,7 @@ app.post("/multipleInterceptors", async (req, res) => {
 
 app.get(
     "/",
-    (req, res, next) => Session.verifySession()(req, res, next),
+    (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
         noOfTimesGetSessionCalledDuringTest += 1;
         res.send(req.session.getUserId());
@@ -126,7 +128,7 @@ app.get(
 
 app.get(
     "/check-rid",
-    (req, res, next) => Session.verifySession()(req, res, next),
+    (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
         let response = req.headers["rid"];
         res.send(response === undefined ? "fail" : "success");
@@ -135,18 +137,18 @@ app.get(
 
 app.get(
     "/update-jwt",
-    (req, res, next) => Session.verifySession()(req, res, next),
+    (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
-        res.json(req.session.getJWTPayload());
+        res.json(req.session.getAccessTokenPayload());
     }
 );
 
 app.post(
     "/update-jwt",
-    (req, res, next) => Session.verifySession()(req, res, next),
+    (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
-        await req.session.updateJWTPayload(req.body);
-        res.json(req.session.getJWTPayload());
+        await req.session.updateAccessTokenPayload(req.body);
+        res.json(req.session.getAccessTokenPayload());
     }
 );
 
@@ -160,7 +162,7 @@ app.use("/testing", async (req, res) => {
 
 app.post(
     "/logout",
-    (req, res, next) => Session.verifySession()(req, res, next),
+    (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
         await req.session.revokeSession();
         res.send("success");
@@ -169,7 +171,7 @@ app.post(
 
 app.post(
     "/revokeAll",
-    (req, res, next) => Session.verifySession()(req, res, next),
+    (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
         let userId = req.session.getUserId();
         await SuperTokens.revokeAllSessionsForUser(userId);
@@ -179,7 +181,7 @@ app.post(
 
 app.post("/auth/session/refresh", async (req, res, next) => {
     noOfTimesRefreshAttemptedDuringTest += 1;
-    Session.verifySession()(req, res, (err) => {
+    verifySession()(req, res, (err) => {
         if (err) {
             next(err);
         } else {
@@ -237,7 +239,7 @@ app.use("*", async (req, res, next) => {
     res.status(404).send();
 });
 
-app.use(SuperTokens.errorHandler());
+app.use(errorHandler());
 
 app.use(async (err, req, res, next) => {
     res.send(500).send(err);

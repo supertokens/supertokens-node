@@ -896,20 +896,20 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //adding jwt payload
         let res = await SessionFunctions.createNewSession(s, "", {}, {});
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value" });
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, { key: "value" });
 
-        let res2 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        let res2 = await SessionFunctions.getAccessTokenPayload(s, res.session.handle);
         assert.deepEqual(res2, { key: "value" });
 
         //changing the value of jwt payload with the same key
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, { key: "value 2" });
 
-        let res3 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        let res3 = await SessionFunctions.getAccessTokenPayload(s, res.session.handle);
         assert.deepEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating jwt payload
         try {
-            await SessionFunctions.updateJWTPayload(s, "random", { key2: "value2" });
+            await SessionFunctions.updateAccessTokenPayload(s, "random", { key2: "value2" });
             throw new Error();
         } catch (error) {
             if (error.type !== Session.Error.UNAUTHORISED) {
@@ -948,20 +948,20 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //adding jwt payload
         let res = await SessionFunctions.createNewSession(s, "", {}, {});
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value" });
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, { key: "value" });
 
         let res2 = await SessionFunctions.getSessionInformation(s, res.session.handle);
         assert.deepEqual(res2.jwtPayload, { key: "value" });
 
         //changing the value of jwt payload with the same key
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, { key: "value 2" });
 
         let res3 = await SessionFunctions.getSessionInformation(s, res.session.handle);
         assert.deepEqual(res3.jwtPayload, { key: "value 2" });
 
         //passing invalid session handle when updating jwt payload
         try {
-            await SessionFunctions.updateJWTPayload(s, "random", { key2: "value2" });
+            await SessionFunctions.updateAccessTokenPayload(s, "random", { key2: "value2" });
             throw new Error();
         } catch (error) {
             if (error.type !== Session.Error.UNAUTHORISED) {
@@ -992,27 +992,27 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //adding jwt payload
         let res = await SessionFunctions.createNewSession(s, "", null, {});
 
-        let res2 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        let res2 = await SessionFunctions.getAccessTokenPayload(s, res.session.handle);
         assert.deepStrictEqual(res2, {});
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value" });
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, { key: "value" });
 
-        let res3 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        let res3 = await SessionFunctions.getAccessTokenPayload(s, res.session.handle);
         assert.deepStrictEqual(res3, { key: "value" });
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle);
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle);
 
-        let res4 = await SessionFunctions.getJWTPayload(s, res.session.handle, undefined);
+        let res4 = await SessionFunctions.getAccessTokenPayload(s, res.session.handle, undefined);
         assert.deepStrictEqual(res4, {});
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, { key: "value 2" });
 
-        let res5 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        let res5 = await SessionFunctions.getAccessTokenPayload(s, res.session.handle);
         assert.deepStrictEqual(res5, { key: "value 2" });
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, null);
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, null);
 
-        let res6 = await SessionFunctions.getJWTPayload(s, res.session.handle);
+        let res6 = await SessionFunctions.getAccessTokenPayload(s, res.session.handle);
         assert.deepStrictEqual(res6, {});
     });
 
@@ -1049,22 +1049,22 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res2 = await SessionFunctions.getSessionInformation(s, res.session.handle);
         assert.deepStrictEqual(res2.jwtPayload, {});
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value" });
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, { key: "value" });
 
         let res3 = await SessionFunctions.getSessionInformation(s, res.session.handle);
         assert.deepStrictEqual(res3.jwtPayload, { key: "value" });
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle);
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle);
 
         let res4 = await SessionFunctions.getSessionInformation(s, res.session.handle, undefined);
         assert.deepStrictEqual(res4.jwtPayload, {});
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, { key: "value 2" });
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, { key: "value 2" });
 
         let res5 = await SessionFunctions.getSessionInformation(s, res.session.handle);
         assert.deepStrictEqual(res5.jwtPayload, { key: "value 2" });
 
-        await SessionFunctions.updateJWTPayload(s, res.session.handle, null);
+        await SessionFunctions.updateAccessTokenPayload(s, res.session.handle, null);
 
         let res6 = await SessionFunctions.getSessionInformation(s, res.session.handle);
         assert.deepStrictEqual(res6.jwtPayload, {});

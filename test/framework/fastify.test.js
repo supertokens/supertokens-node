@@ -1024,13 +1024,13 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         this.server.post(
-            "/updateJWTPayload",
+            "/updateAccessTokenPayload",
             {
                 preHandler: verifySession(),
             },
             async (req, res) => {
                 let accessTokenBefore = req.session.accessToken;
-                await req.session.updateJWTPayload({ key: "value" });
+                await req.session.updateAccessTokenPayload({ key: "value" });
                 let accessTokenAfter = req.session.accessToken;
                 let statusCode =
                     accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
@@ -1039,28 +1039,28 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         );
 
         this.server.post(
-            "/getJWTPayload",
+            "/getAccessTokenPayload",
             {
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                let jwtPayload = await req.session.getJWTPayload();
+                let jwtPayload = await req.session.getAccessTokenPayload();
                 return res.send(jwtPayload).code(200);
             }
         );
 
         this.server.post(
-            "/updateJWTPayload2",
+            "/updateAccessTokenPayload2",
             {
                 preHandler: verifySession(),
             },
             async (req, res) => {
-                await req.session.updateJWTPayload(null);
+                await req.session.updateAccessTokenPayload(null);
                 return res.send("").code(200);
             }
         );
 
-        this.server.post("/updateJWTPayloadInvalidSessionHandle", async (req, res) => {
+        this.server.post("/updateAccessTokenPayloadInvalidSessionHandle", async (req, res) => {
             try {
                 await Session.updateSessionData("InvalidHandle", { key: "value3" });
                 return res.send({ success: false }).code(200);
@@ -1087,11 +1087,11 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.deepStrictEqual(frontendInfo.up, {});
 
-        //call the updateJWTPayload api to add jwt payload
+        //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
             await this.server.inject({
                 method: "post",
-                url: "/updateJWTPayload",
+                url: "/updateAccessTokenPayload",
                 headers: {
                     Cookie: `sAccessToken=${response.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
                     "anti-csrf": response.antiCsrf,
@@ -1103,10 +1103,10 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert(frontendInfo.uid === "user1");
         assert.deepStrictEqual(frontendInfo.up, { key: "value" });
 
-        //call the getJWTPayload api to get jwt payload
+        //call the getAccessTokenPayload api to get jwt payload
         let response2 = await this.server.inject({
             method: "post",
-            url: "/getJWTPayload",
+            url: "/getAccessTokenPayload",
             headers: {
                 Cookie: `sAccessToken=${updatedResponse.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
                 "anti-csrf": response.antiCsrf,
@@ -1135,7 +1135,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         let updatedResponse2 = extractInfoFromResponse(
             await this.server.inject({
                 method: "post",
-                url: "/updateJWTPayload2",
+                url: "/updateAccessTokenPayload2",
                 headers: {
                     Cookie: `sAccessToken=${response2.accessToken}; sIdRefreshToken=${response2.idRefreshTokenFromCookie}`,
                     "anti-csrf": response2.antiCsrf,
@@ -1150,7 +1150,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         //retrieve the changed jwt payload
         let response3 = await this.server.inject({
             method: "post",
-            url: "/getJWTPayload",
+            url: "/getAccessTokenPayload",
             headers: {
                 Cookie: `sAccessToken=${updatedResponse2.accessToken}; sIdRefreshToken=${response2.idRefreshTokenFromCookie}`,
                 "anti-csrf": response2.antiCsrf,
@@ -1162,7 +1162,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await this.server.inject({
             method: "post",
-            url: "/updateJWTPayloadInvalidSessionHandle",
+            url: "/updateAccessTokenPayloadInvalidSessionHandle",
             headers: {
                 Cookie: `sAccessToken=${updatedResponse2.accessToken}; sIdRefreshToken=${response2.idRefreshTokenFromCookie}`,
                 "anti-csrf": response2.antiCsrf,

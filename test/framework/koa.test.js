@@ -1365,30 +1365,30 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
             await Session.createNewSession(ctx, "user1", {}, {});
             ctx.body = "";
         });
-        router.post("/updateJWTPayload", async (ctx, _) => {
+        router.post("/updateAccessTokenPayload", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
             let accessTokenBefore = session.accessToken;
-            await session.updateJWTPayload({ key: "value" });
+            await session.updateAccessTokenPayload({ key: "value" });
             let accessTokenAfter = session.accessToken;
             let statusCode = accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
             ctx.status = statusCode;
             ctx.body = "";
         });
-        router.post("/getJWTPayload", async (ctx, _) => {
+        router.post("/getAccessTokenPayload", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            let jwtPayload = session.getJWTPayload();
+            let jwtPayload = session.getAccessTokenPayload();
             ctx.body = jwtPayload;
         });
 
-        router.post("/updateJWTPayload2", async (ctx, _) => {
+        router.post("/updateAccessTokenPayload2", async (ctx, _) => {
             let session = await Session.getSession(ctx, ctx, true);
-            await session.updateJWTPayload(null);
+            await session.updateAccessTokenPayload(null);
             ctx.body = "";
         });
 
-        router.post("/updateJWTPayloadInvalidSessionHandle", async (ctx, _) => {
+        router.post("/updateAccessTokenPayloadInvalidSessionHandle", async (ctx, _) => {
             try {
-                await Session.updateJWTPayload("InvalidHandle", { key: "value3" });
+                await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" });
             } catch (err) {
                 ctx.body = {
                     success: err.type === Session.Error.UNAUTHORISED,
@@ -1419,11 +1419,11 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(frontendInfo.uid === "user1");
         assert.deepStrictEqual(frontendInfo.up, {});
 
-        //call the updateJWTPayload api to add jwt payload
+        //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(this.server)
-                    .post("/updateJWTPayload")
+                    .post("/updateAccessTokenPayload")
                     .set("Cookie", [
                         "sAccessToken=" +
                             response.accessToken +
@@ -1446,10 +1446,10 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         assert(frontendInfo.uid === "user1");
         assert.deepStrictEqual(frontendInfo.up, { key: "value" });
 
-        //call the getJWTPayload api to get jwt payload
+        //call the getAccessTokenPayload api to get jwt payload
         let response2 = await new Promise((resolve) =>
             request(this.server)
-                .post("/getJWTPayload")
+                .post("/getAccessTokenPayload")
                 .set("Cookie", [
                     "sAccessToken=" +
                         updatedResponse.accessToken +
@@ -1500,7 +1500,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         let updatedResponse2 = extractInfoFromResponse(
             await new Promise((resolve) =>
                 request(this.server)
-                    .post("/updateJWTPayload2")
+                    .post("/updateAccessTokenPayload2")
                     .set("Cookie", [
                         "sAccessToken=" +
                             response2.accessToken +
@@ -1526,7 +1526,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         //retrieve the changed jwt payload
         response2 = await new Promise((resolve) =>
             request(this.server)
-                .post("/getJWTPayload")
+                .post("/getAccessTokenPayload")
                 .set("Cookie", [
                     "sAccessToken=" +
                         updatedResponse2.accessToken +
@@ -1549,7 +1549,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await new Promise((resolve) =>
             request(this.server)
-                .post("/updateJWTPayloadInvalidSessionHandle")
+                .post("/updateAccessTokenPayloadInvalidSessionHandle")
                 .set("Cookie", [
                     "sAccessToken=" +
                         updatedResponse2.accessToken +

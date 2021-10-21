@@ -88,7 +88,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         });
 
         app.post("/session/verify", verifySession(), async (req, res) => {
-            let jwtPayload = req.session.getJWTPayload();
+            let jwtPayload = req.session.getAccessTokenPayload();
             let token = await req.session.getFaunadbToken();
             if (token === undefined) {
                 res.status(200).send("fail");
@@ -291,7 +291,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         });
 
         app.post("/session/verify", verifySession(), async (req, res) => {
-            let jwtPayload = req.session.getJWTPayload();
+            let jwtPayload = req.session.getAccessTokenPayload();
             let token = await req.session.getFaunadbToken();
             if (token === undefined) {
                 res.status(200).send("fail");
