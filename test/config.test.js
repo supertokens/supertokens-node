@@ -1305,7 +1305,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://test.com:3567"), "test.com");
     });
 
-    it.only("apiGatewayPath test", async function () {
+    it("apiGatewayPath test", async function () {
         await startST();
         {
             STExpress.init({

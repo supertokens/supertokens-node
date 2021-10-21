@@ -55,27 +55,6 @@ export type User = {
     };
 };
 
-export type TypeInputSetJwtPayloadForSession = (
-    user: User,
-    thirdPartyAuthCodeResponse: any,
-    action: "signin" | "signup"
-) => Promise<{ [key: string]: any } | undefined>;
-
-export type TypeInputSetSessionDataForSession = (
-    user: User,
-    thirdPartyAuthCodeResponse: any,
-    action: "signin" | "signup"
-) => Promise<{ [key: string]: any } | undefined>;
-
-const InputSessionFeatureSchema = {
-    type: "object",
-    properties: {
-        setJwtPayload: TypeAny,
-        setSessionData: TypeAny,
-    },
-    additionalProperties: false,
-};
-
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
@@ -125,7 +104,6 @@ export type TypeInput = {
 export const InputSchema = {
     type: "object",
     properties: {
-        sessionFeature: InputSessionFeatureSchema,
         signInAndUpFeature: InputSignInAndUpSchema,
         emailVerificationFeature: InputEmailVerificationFeatureSchema,
         override: TypeAny,

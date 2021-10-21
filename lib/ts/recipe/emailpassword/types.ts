@@ -32,27 +32,6 @@ const TypeAny = {
     type: "any",
 };
 
-export type TypeInputSetJwtPayloadForSession = (
-    user: User,
-    formFields: TypeFormField[],
-    action: "signin" | "signup"
-) => Promise<{ [key: string]: any } | undefined>;
-
-export type TypeInputSetSessionDataForSession = (
-    user: User,
-    formFields: TypeFormField[],
-    action: "signin" | "signup"
-) => Promise<{ [key: string]: any } | undefined>;
-
-const InputSessionFeatureSchema = {
-    type: "object",
-    properties: {
-        setJwtPayload: TypeAny,
-        setSessionData: TypeAny,
-    },
-    additionalProperties: false,
-};
-
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -172,7 +151,6 @@ export type TypeInput = {
 export const InputSchema = {
     type: "object",
     properties: {
-        sessionFeature: InputSessionFeatureSchema,
         signUpFeature: InputSignUpSchema,
         resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
         emailVerificationFeature: InputEmailVerificationFeatureSchema,

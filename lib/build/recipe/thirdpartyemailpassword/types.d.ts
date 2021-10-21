@@ -25,10 +25,6 @@ export declare type TypeContextEmailPasswordSignUp = {
     loginType: "emailpassword";
     formFields: TypeFormField[];
 };
-export declare type TypeContextEmailPasswordSessionDataAndJWT = {
-    loginType: "emailpassword";
-    formFields: TypeFormField[];
-};
 export declare type TypeContextEmailPasswordSignIn = {
     loginType: "emailpassword";
 };
@@ -36,26 +32,6 @@ export declare type TypeContextThirdParty = {
     loginType: "thirdparty";
     thirdPartyAuthCodeResponse: any;
 };
-export declare type TypeInputSetJwtPayloadForSession = (
-    user: User,
-    context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
-    action: "signin" | "signup"
-) => Promise<
-    | {
-          [key: string]: any;
-      }
-    | undefined
->;
-export declare type TypeInputSetSessionDataForSession = (
-    user: User,
-    context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
-    action: "signin" | "signup"
-) => Promise<
-    | {
-          [key: string]: any;
-      }
-    | undefined
->;
 export declare type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
 };
@@ -81,18 +57,6 @@ export declare type TypeInput = {
     };
 };
 export declare const InputSchema: {
-    sessionFeature: {
-        type: string;
-        properties: {
-            setJwtPayload: {
-                type: string;
-            };
-            setSessionData: {
-                type: string;
-            };
-        };
-        additionalProperties: boolean;
-    };
     signUpFeature: {
         type: string;
         properties: {

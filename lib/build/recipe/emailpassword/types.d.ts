@@ -5,26 +5,6 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
-export declare type TypeInputSetJwtPayloadForSession = (
-    user: User,
-    formFields: TypeFormField[],
-    action: "signin" | "signup"
-) => Promise<
-    | {
-          [key: string]: any;
-      }
-    | undefined
->;
-export declare type TypeInputSetSessionDataForSession = (
-    user: User,
-    formFields: TypeFormField[],
-    action: "signin" | "signup"
-) => Promise<
-    | {
-          [key: string]: any;
-      }
-    | undefined
->;
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -109,18 +89,6 @@ export declare type TypeInput = {
 export declare const InputSchema: {
     type: string;
     properties: {
-        sessionFeature: {
-            type: string;
-            properties: {
-                setJwtPayload: {
-                    type: string;
-                };
-                setSessionData: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
         signUpFeature: {
             type: string;
             properties: {

@@ -30,7 +30,6 @@ let Session = require("../recipe/session");
 let { Querier } = require("../lib/build/querier");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 const { verifySession } = require("../recipe/session/framework/express");
-const { errorHandler } = require("../framework/express");
 const { default: next } = require("next");
 let { middleware, errorHandler } = require("../framework/express");
 

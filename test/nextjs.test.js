@@ -23,6 +23,7 @@ const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
 const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
 const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
+let { verifySession } = require("../recipe/session/framework/express");
 
 describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
     describe("with superTokensNextWrapper", function () {
@@ -155,7 +156,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
                 await superTokensNextWrapper(
                     (next) => {
-                        return Session.verifySession()(getUserRequestWithSession, getUserResponseWithSession, next);
+                        return verifySession()(getUserRequestWithSession, getUserResponseWithSession, next);
                     },
                     getUserRequestWithSession,
                     getUserResponseWithSession
@@ -180,11 +181,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
                 superTokensNextWrapper(
                     (next) => {
-                        return Session.verifySession()(
-                            getUserRequestWithoutSession,
-                            getUserResponseWithoutSession,
-                            next
-                        );
+                        return verifySession()(getUserRequestWithoutSession, getUserResponseWithoutSession, next);
                     },
                     getUserRequestWithoutSession,
                     getUserResponseWithoutSession
@@ -348,7 +345,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
             superTokensNextWrapper(
                 async (next) => {
-                    return await Session.verifySession()(request, response, next);
+                    return await verifySession()(request, response, next);
                 },
                 request,
                 response
@@ -376,7 +373,7 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
 
             superTokensNextWrapper(
                 async (next) => {
-                    return await Session.verifySession()(request, response, next);
+                    return await verifySession()(request, response, next);
                 },
                 request,
                 response

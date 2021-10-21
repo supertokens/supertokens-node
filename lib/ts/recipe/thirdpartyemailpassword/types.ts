@@ -54,11 +54,6 @@ export type TypeContextEmailPasswordSignUp = {
     formFields: TypeFormField[];
 };
 
-export type TypeContextEmailPasswordSessionDataAndJWT = {
-    loginType: "emailpassword";
-    formFields: TypeFormField[];
-};
-
 export type TypeContextEmailPasswordSignIn = {
     loginType: "emailpassword";
 };
@@ -66,27 +61,6 @@ export type TypeContextEmailPasswordSignIn = {
 export type TypeContextThirdParty = {
     loginType: "thirdparty";
     thirdPartyAuthCodeResponse: any;
-};
-
-export type TypeInputSetJwtPayloadForSession = (
-    user: User,
-    context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
-    action: "signin" | "signup"
-) => Promise<{ [key: string]: any } | undefined>;
-
-export type TypeInputSetSessionDataForSession = (
-    user: User,
-    context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
-    action: "signin" | "signup"
-) => Promise<{ [key: string]: any } | undefined>;
-
-const InputSessionFeatureSchema = {
-    type: "object",
-    properties: {
-        setJwtPayload: TypeAny,
-        setSessionData: TypeAny,
-    },
-    additionalProperties: false,
 };
 
 export type TypeInputSignUp = {
@@ -151,7 +125,6 @@ const InputProvidersSchema = {
 };
 
 export const InputSchema = {
-    sessionFeature: InputSessionFeatureSchema,
     signUpFeature: InputSignUpSchema,
     providers: InputProvidersSchema,
     resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,

@@ -41,26 +41,6 @@ export declare type User = {
         userId: string;
     };
 };
-export declare type TypeInputSetJwtPayloadForSession = (
-    user: User,
-    thirdPartyAuthCodeResponse: any,
-    action: "signin" | "signup"
-) => Promise<
-    | {
-          [key: string]: any;
-      }
-    | undefined
->;
-export declare type TypeInputSetSessionDataForSession = (
-    user: User,
-    thirdPartyAuthCodeResponse: any,
-    action: "signin" | "signup"
-) => Promise<
-    | {
-          [key: string]: any;
-      }
-    | undefined
->;
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
@@ -86,18 +66,6 @@ export declare type TypeInput = {
 export declare const InputSchema: {
     type: string;
     properties: {
-        sessionFeature: {
-            type: string;
-            properties: {
-                setJwtPayload: {
-                    type: string;
-                };
-                setSessionData: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
         signInAndUpFeature: {
             type: string;
             properties: {

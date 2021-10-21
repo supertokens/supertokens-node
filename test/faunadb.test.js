@@ -33,6 +33,7 @@ let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let { maxVersion } = require("../lib/build/utils");
 let faunadb = require("faunadb");
 let { middleware, errorHandler } = require("../framework/express");
+let { verifySession } = require("../recipe/session/framework/express");
 const q = faunadb.query;
 
 describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
@@ -86,7 +87,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             let jwtPayload = req.session.getJWTPayload();
             let token = await req.session.getFaunadbToken();
             if (token === undefined) {
@@ -289,7 +290,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             let jwtPayload = req.session.getJWTPayload();
             let token = await req.session.getFaunadbToken();
             if (token === undefined) {
@@ -420,7 +421,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             let sessionData = await req.session.getSessionData();
             let token = await req.session.getFaunadbToken();
             if (token === undefined) {
@@ -633,7 +634,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             res.status(200).send("");
         });
 
@@ -896,11 +897,11 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             res.status(200).send("");
         });
 
-        app.post("/session/revoke", Session.verifySession(), async (req, res) => {
+        app.post("/session/revoke", verifySession(), async (req, res) => {
             let session = req.session;
             await session.revokeSession();
             res.status(200).send("");
