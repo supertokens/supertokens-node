@@ -152,7 +152,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: undefined,
+                                thirdPartySignInUpPOST: undefined,
                             };
                         },
                     },
@@ -209,7 +209,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: undefined,
+                                emailPasswordSignUpPOST: undefined,
                             };
                         },
                     },
@@ -341,11 +341,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: async (input) => {
-                                    let response = await oI.signInUpPOST(input);
+                                thirdPartySignInUpPOST: async (input) => {
+                                    let response = await oI.thirdPartySignInUpPOST(input);
                                     if (response.status === "OK") {
                                         process.env.userId = response.user.id;
-                                        process.env.loginType = input.type;
+                                        process.env.loginType = "thirdparty";
                                     }
                                     return response;
                                 },
@@ -409,11 +409,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: async (input) => {
-                                    let response = await oI.signInUpPOST(input);
+                                emailPasswordSignUpPOST: async (input) => {
+                                    let response = await oI.emailPasswordSignUpPOST(input);
                                     if (response.status === "OK") {
                                         process.env.userId = response.user.id;
-                                        process.env.loginType = input.type;
+                                        process.env.loginType = "emailpassword";
                                     }
                                     return response;
                                 },

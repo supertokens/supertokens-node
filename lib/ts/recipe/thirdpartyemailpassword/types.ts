@@ -276,50 +276,6 @@ export interface RecipeInterface {
 export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 
 export type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
-
-export type SignInUpAPIInput =
-    | {
-          type: "emailpassword";
-          isSignIn: boolean;
-          formFields: {
-              id: string;
-              value: string;
-          }[];
-          options: EmailPasswordAPIOptions;
-      }
-    | {
-          type: "thirdparty";
-          provider: TypeProvider;
-          code: string;
-          redirectURI: string;
-          options: ThirdPartyAPIOptions;
-      };
-
-export type SignInUpAPIOutput =
-    | {
-          type: "emailpassword";
-          status: "OK";
-          user: User;
-          createdNewUser: boolean;
-      }
-    | {
-          type: "emailpassword";
-          status: "WRONG_CREDENTIALS_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-      }
-    | {
-          type: "thirdparty";
-          status: "OK";
-          createdNewUser: boolean;
-          user: User;
-          authCodeResponse: any;
-      }
-    | { type: "thirdparty"; status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
-    | {
-          type: "thirdparty";
-          status: "FIELD_ERROR";
-          error: string;
-      };
-
 export interface APIInterface {
     authorisationUrlGET:
         | undefined
@@ -366,5 +322,62 @@ export interface APIInterface {
               status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }>);
 
-    signInUpPOST: undefined | ((input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>);
+    thirdPartySignInUpPOST:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              options: ThirdPartyAPIOptions;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    createdNewUser: boolean;
+                    user: User;
+                    authCodeResponse: any;
+                }
+              | {
+                    status: "FIELD_ERROR";
+                    error: string;
+                }
+              | {
+                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+                }
+          >);
+
+    emailPasswordSignInPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: EmailPasswordAPIOptions;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | {
+                    status: "WRONG_CREDENTIALS_ERROR";
+                }
+          >);
+
+    emailPasswordSignUpPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: EmailPasswordAPIOptions;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+          >);
 }
