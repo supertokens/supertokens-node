@@ -702,13 +702,13 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let res = await SessionFunctions.createNewSession(s, "", {}, {});
         await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value" });
 
-        let res2 = await SessionFunctions.getSessionData(s, res.session.handle);
+        let res2 = (await SessionFunctions.getSessionInformation(s, res.session.handle)).sessionData;
         assert.deepEqual(res2, { key: "value" });
 
         //changing the value of session data with the same key
         await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value 2" });
 
-        let res3 = await SessionFunctions.getSessionData(s, res.session.handle);
+        let res3 = (await SessionFunctions.getSessionInformation(s, res.session.handle)).sessionData;
         assert.deepEqual(res3, { key: "value 2" });
 
         //passing invalid session handle when updating session data
@@ -795,27 +795,27 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         //adding session data
         let res = await SessionFunctions.createNewSession(s, "", {}, null);
 
-        let res2 = await SessionFunctions.getSessionData(s, res.session.handle);
+        let res2 = (await SessionFunctions.getSessionInformation(s, res.session.handle)).sessionData;
         assert.deepStrictEqual(res2, {});
 
         await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value" });
 
-        let res3 = await SessionFunctions.getSessionData(s, res.session.handle);
+        let res3 = (await SessionFunctions.getSessionInformation(s, res.session.handle)).sessionData;
         assert.deepStrictEqual(res3, { key: "value" });
 
         await SessionFunctions.updateSessionData(s, res.session.handle, undefined);
 
-        let res4 = await SessionFunctions.getSessionData(s, res.session.handle);
+        let res4 = (await SessionFunctions.getSessionInformation(s, res.session.handle)).sessionData;
         assert.deepStrictEqual(res4, {});
 
         await SessionFunctions.updateSessionData(s, res.session.handle, { key: "value 2" });
 
-        let res5 = await SessionFunctions.getSessionData(s, res.session.handle);
+        let res5 = (await SessionFunctions.getSessionInformation(s, res.session.handle)).sessionData;
         assert.deepStrictEqual(res5, { key: "value 2" });
 
         await SessionFunctions.updateSessionData(s, res.session.handle, null);
 
-        let res6 = await SessionFunctions.getSessionData(s, res.session.handle);
+        let res6 = (await SessionFunctions.getSessionInformation(s, res.session.handle)).sessionData;
         assert.deepStrictEqual(res6, {});
     });
 

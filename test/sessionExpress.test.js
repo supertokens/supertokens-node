@@ -318,7 +318,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             res.status(200).send("");
         });
 
@@ -661,11 +661,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             res.status(200).send("");
         });
 
-        app.post("/session/revoke", Session.verifySession(), async (req, res) => {
+        app.post("/session/revoke", verifySession(), async (req, res) => {
             let session = req.session;
             await session.revokeSession();
             res.status(200).send("");
@@ -1778,11 +1778,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
         });
-        app.post("/session/verifyAntiCsrfFalse", Session.verifySession({ antiCsrfCheck: false }), async (req, res) => {
+        app.post("/session/verifyAntiCsrfFalse", verifySession({ antiCsrfCheck: false }), async (req, res) => {
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
         });
@@ -1973,11 +1973,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
         });
-        app.post("/session/verifyAntiCsrfFalse", Session.verifySession(false), async (req, res) => {
+        app.post("/session/verifyAntiCsrfFalse", verifySession(false), async (req, res) => {
             let sessionResponse = req.session;
             res.status(200).json({ userId: sessionResponse.userId });
         });
@@ -2110,11 +2110,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             res.status(200).send("");
         });
 
-        app.post("/session/revoke", Session.verifySession(), async (req, res) => {
+        app.post("/session/revoke", verifySession(), async (req, res) => {
             let session = req.session;
             await session.revokeSession();
             res.status(200).send("");
@@ -2305,7 +2305,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             res.status(200).send("");
         });
 
@@ -2478,7 +2478,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
 
-        app.post("/session/verify", Session.verifySession(), async (req, res) => {
+        app.post("/session/verify", verifySession(), async (req, res) => {
             res.status(200).send("");
         });
 
