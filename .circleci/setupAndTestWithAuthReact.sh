@@ -59,7 +59,10 @@ npm i -d
 node . &
 pid=$!
 cd ../../../supertokens-auth-react/
-SKIP_OAUTH=true npm run test
+
+# This says non-node, but what it actually means is that we will
+# be using the sever on this repo instead of the one in auth-react repo
+SKIP_OAUTH=true npm run test-with-non-node
 if [[ $? -ne 0 ]]
 then
     echo "test failed... exiting!"

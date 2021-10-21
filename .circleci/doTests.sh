@@ -56,7 +56,7 @@ while [ $i -lt $coreDriverLength ]; do
     coreFree=$(echo $coreFree | jq .core | tr -d '"')
 
     someTestsRan=true
-    # ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
+    ./setupAndTestWithFreeCore.sh $coreFree $coreDriverVersion
     if [[ $? -ne 0 ]]
     then
         echo "test failed... exiting!"
@@ -133,7 +133,7 @@ while [ $i -lt $frontendDriverLength ]; do
     while [ $tries -le 3 ]
     do
         tries=$(( $tries + 1 ))
-        # ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
+        ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
         if [[ $? -ne 0 ]]
         then
             if [[ $tries -le 3 ]]
@@ -174,8 +174,10 @@ while [ $i -lt $frontendDriverLength ]; do
     frontendAuthReactTag=$(echo $frontendAuthReactInfo | jq .tag | tr -d '"')
     frontendAuthReactVersion=$(echo $frontendAuthReactInfo | jq .version | tr -d '"')
 
-    if [[ $frontendDriverVersion == '1.3' ]]; then
+    if [[ $frontendDriverVersion == '1.3' || $frontendDriverVersion == '1.8' ]]; then
         # we skip this since the tests for auth-react here are not reliable due to race conditions...
+        
+        # we skip 1.8 since the SDK with just 1.8 doesn't have the right scripts
         continue
     else
         tries=1
