@@ -119,13 +119,7 @@ export default class APIImplementation implements APIInterface {
         }
         let user = response.user;
 
-        let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signin");
-        let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signin");
-
-        let jwtPayload: { [key: string]: any } | undefined = await jwtPayloadPromise;
-        let sessionData: { [key: string]: any } | undefined = await sessionDataPromise;
-
-        await Session.createNewSession(options.res, user.id, jwtPayload, sessionData);
+        await Session.createNewSession(options.res, user.id, {}, {});
         return {
             status: "OK",
             user,
@@ -159,13 +153,7 @@ export default class APIImplementation implements APIInterface {
         }
         let user = response.user;
 
-        let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(user, formFields, "signup");
-        let sessionDataPromise = options.config.sessionFeature.setSessionData(user, formFields, "signup");
-
-        let jwtPayload: { [key: string]: any } | undefined = await jwtPayloadPromise;
-        let sessionData: { [key: string]: any } | undefined = await sessionDataPromise;
-
-        await Session.createNewSession(options.res, user.id, jwtPayload, sessionData);
+        await Session.createNewSession(options.res, user.id, {}, {});
         return {
             status: "OK",
             user,

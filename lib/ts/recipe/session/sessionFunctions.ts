@@ -417,33 +417,6 @@ export async function revokeMultipleSessions(
 }
 
 /**
- * @deprecated use getSessionInformation() instead
- * @description: this function reads from the database every time. It provides no locking mechanism in case other processes are updating session data for this session as well, so please take of that by yourself.
- * @returns session data as provided by the user earlier
- */
-export async function getSessionData(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any> {
-    let apiVersion = await recipeImplementation.querier.getAPIVersion();
-
-    // Call new method for >= 2.8
-    if (maxVersion(apiVersion, "2.7") !== "2.7") {
-        return (await getSessionInformation(recipeImplementation, sessionHandle)).sessionData;
-    }
-
-    let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/data"), {
-        sessionHandle,
-    });
-
-    if (response.status === "OK") {
-        return response.userDataInDatabase;
-    } else {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
-    }
-}
-
-/**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
 export async function updateSessionData(

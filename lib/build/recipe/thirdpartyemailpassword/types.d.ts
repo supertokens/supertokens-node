@@ -56,20 +56,6 @@ export declare type TypeInputSetSessionDataForSession = (
       }
     | undefined
 >;
-export declare type TypeInputSessionFeature = {
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setJwtPayload?: TypeInputSetJwtPayloadForSession;
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setSessionData?: TypeInputSetSessionDataForSession;
-};
-export declare type TypeNormalisedInputSessionFeature = {
-    setJwtPayload: TypeInputSetJwtPayloadForSession;
-    setSessionData: TypeInputSetSessionDataForSession;
-};
 export declare type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
 };
@@ -81,7 +67,6 @@ export declare type TypeInputEmailVerificationFeature = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
 };
 export declare type TypeInput = {
-    sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
@@ -165,7 +150,6 @@ export declare const InputSchema: {
     };
 };
 export declare type TypeNormalisedInput = {
-    sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
     providers: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
@@ -183,30 +167,6 @@ export interface RecipeInterface {
     getUserById(input: { userId: string }): Promise<User | undefined>;
     getUsersByEmail(input: { email: string }): Promise<User[]>;
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersOldestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersNewestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserCount(): Promise<number>;
     signInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
@@ -249,10 +209,6 @@ export interface RecipeInterface {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserByEmail(input: { email: string }): Promise<User | undefined>;
     createResetPasswordToken(input: {
         userId: string;
     }): Promise<

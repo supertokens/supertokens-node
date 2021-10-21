@@ -44,18 +44,6 @@ export type TypeInputSetSessionDataForSession = (
     action: "signin" | "signup"
 ) => Promise<{ [key: string]: any } | undefined>;
 
-export type TypeInputSessionFeature = {
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setJwtPayload?: TypeInputSetJwtPayloadForSession;
-
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setSessionData?: TypeInputSetSessionDataForSession;
-};
-
 const InputSessionFeatureSchema = {
     type: "object",
     properties: {
@@ -65,13 +53,7 @@ const InputSessionFeatureSchema = {
     additionalProperties: false,
 };
 
-export type TypeNormalisedInputSessionFeature = {
-    setJwtPayload: TypeInputSetJwtPayloadForSession;
-    setSessionData: TypeInputSetSessionDataForSession;
-};
-
 export type TypeNormalisedInput = {
-    sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -174,7 +156,6 @@ export type User = {
 };
 
 export type TypeInput = {
-    sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
@@ -223,33 +204,6 @@ export interface RecipeInterface {
         token: string;
         newPassword: string;
     }): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }>;
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersOldestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersNewestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserCount(): Promise<number>;
 
     updateEmailOrPassword(input: {
         userId: string;

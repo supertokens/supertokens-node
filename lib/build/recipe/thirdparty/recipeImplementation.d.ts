@@ -12,36 +12,6 @@ export default class RecipeImplementation implements RecipeInterface {
         users: User[];
         nextPaginationToken?: string | undefined;
     }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersOldestFirst: ({
-        limit,
-        nextPaginationToken,
-    }: {
-        limit?: number | undefined;
-        nextPaginationToken?: string | undefined;
-    }) => Promise<{
-        users: User[];
-        nextPaginationToken?: string | undefined;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersNewestFirst: ({
-        limit,
-        nextPaginationToken,
-    }: {
-        limit?: number | undefined;
-        nextPaginationToken?: string | undefined;
-    }) => Promise<{
-        users: User[];
-        nextPaginationToken?: string | undefined;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserCount: () => Promise<number>;
     signInUp: ({
         thirdPartyId,
         thirdPartyUserId,

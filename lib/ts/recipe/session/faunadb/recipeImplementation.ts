@@ -148,16 +148,8 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.originalImplementation.revokeMultipleSessions({ sessionHandles });
     };
 
-    getSessionData = ({ sessionHandle }: { sessionHandle: string }): Promise<any> => {
-        return this.originalImplementation.getSessionData({ sessionHandle });
-    };
-
     updateSessionData = ({ sessionHandle, newSessionData }: { sessionHandle: string; newSessionData: any }) => {
         return this.originalImplementation.updateSessionData({ sessionHandle, newSessionData });
-    };
-
-    getJWTPayload = (input: { sessionHandle: string }): Promise<any> => {
-        return this.originalImplementation.getJWTPayload(input);
     };
 
     updateJWTPayload = (input: { sessionHandle: string; newJWTPayload: any }) => {

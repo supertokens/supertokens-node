@@ -58,7 +58,6 @@ export default class RecipeImplementation implements RecipeInterface {
     getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     revokeSession: ({ sessionHandle }: { sessionHandle: string }) => Promise<boolean>;
     revokeMultipleSessions: ({ sessionHandles }: { sessionHandles: string[] }) => Promise<string[]>;
-    getSessionData: ({ sessionHandle }: { sessionHandle: string }) => Promise<any>;
     updateSessionData: ({
         sessionHandle,
         newSessionData,
@@ -66,7 +65,6 @@ export default class RecipeImplementation implements RecipeInterface {
         sessionHandle: string;
         newSessionData: any;
     }) => Promise<void>;
-    getJWTPayload: ({ sessionHandle }: { sessionHandle: string }) => Promise<any>;
     updateJWTPayload: ({
         sessionHandle,
         newJWTPayload,

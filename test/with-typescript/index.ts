@@ -41,8 +41,6 @@ Supertokens.init({
                             };
                         },
                         getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
-                        getJWTPayload: originalImpl.getJWTPayload,
-                        getSessionData: originalImpl.getSessionData,
                         refreshSession: originalImpl.refreshSession,
                         revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
                         revokeMultipleSessions: originalImpl.revokeMultipleSessions,
@@ -220,11 +218,6 @@ Supertokens.init({
                             } else {
                                 return superTokensUser;
                             }
-                        },
-                        getUserCount: async () => {
-                            let supertokensCount = await supertokensImpl.getUserCount();
-                            let yourUsersCount = 0; // TODO: fetch the count from your db
-                            return yourUsersCount + supertokensCount;
                         },
                     };
                 },

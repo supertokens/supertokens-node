@@ -109,28 +109,6 @@ export default class RecipeImplementation implements RecipeInterface {
         return response;
     };
 
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersOldestFirst = async ({ limit, nextPaginationToken }: { limit?: number; nextPaginationToken?: string }) => {
-        return this.getUsers("ASC", limit, nextPaginationToken);
-    };
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersNewestFirst = async ({ limit, nextPaginationToken }: { limit?: number; nextPaginationToken?: string }) => {
-        return this.getUsers("DESC", limit, nextPaginationToken);
-    };
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserCount = async (): Promise<number> => {
-        let response = await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/users/count"), {});
-        return Number(response.count);
-    };
-
     getUsers = async (
         timeJoinedOrder: "ASC" | "DESC",
         limit?: number,

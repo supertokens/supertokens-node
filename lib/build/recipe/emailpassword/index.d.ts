@@ -48,30 +48,6 @@ export default class Wrapper {
     ): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
-    /**
-     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
-     *   */
-    static getUsersOldestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
-        users: User[];
-        nextPaginationToken?: string | undefined;
-    }>;
-    /**
-     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
-     *   */
-    static getUsersNewestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
-        users: User[];
-        nextPaginationToken?: string | undefined;
-    }>;
-    /**
-     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
-     *   */
-    static getUserCount(): Promise<number>;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
@@ -124,17 +100,5 @@ export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
 export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
 export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
-/**
- * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
- *   */
-export declare let getUsersOldestFirst: typeof Wrapper.getUsersOldestFirst;
-/**
- * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
- *   */
-export declare let getUsersNewestFirst: typeof Wrapper.getUsersNewestFirst;
-/**
- * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
- *   */
-export declare let getUserCount: typeof Wrapper.getUserCount;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
 export type { RecipeInterface, User, APIOptions, APIInterface };

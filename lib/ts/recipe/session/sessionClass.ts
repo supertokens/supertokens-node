@@ -52,7 +52,8 @@ export default class Session implements SessionContainerInterface {
 
     getSessionData = async (): Promise<any> => {
         try {
-            return await SessionFunctions.getSessionData(this.recipeImplementation, this.sessionHandle);
+            return (await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle))
+                .sessionData;
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
                 clearSessionFromCookie(this.recipeImplementation.config, this.res);

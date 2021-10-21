@@ -94,28 +94,6 @@ export default class Recipe extends RecipeModule {
                                   return getEmailPasswordIterfaceImpl(this.apiImpl);
                               },
                           },
-                          sessionFeature: {
-                              setJwtPayload: async (user, formfields, action) => {
-                                  return this.config.sessionFeature.setJwtPayload(
-                                      user,
-                                      {
-                                          loginType: "emailpassword",
-                                          formFields: formfields,
-                                      },
-                                      action
-                                  );
-                              },
-                              setSessionData: async (user, formfields, action) => {
-                                  return this.config.sessionFeature.setSessionData(
-                                      user,
-                                      {
-                                          loginType: "emailpassword",
-                                          formFields: formfields,
-                                      },
-                                      action
-                                  );
-                              },
-                          },
                           signUpFeature: {
                               formFields: this.config.signUpFeature.formFields,
                           },
@@ -139,28 +117,6 @@ export default class Recipe extends RecipeModule {
                                   },
                                   apis: (_) => {
                                       return getThirdPartyIterfaceImpl(this.apiImpl);
-                                  },
-                              },
-                              sessionFeature: {
-                                  setJwtPayload: async (user, thirdPartyAuthCodeResponse, action) => {
-                                      return this.config.sessionFeature.setJwtPayload(
-                                          user,
-                                          {
-                                              loginType: "thirdparty",
-                                              thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
-                                          },
-                                          action
-                                      );
-                                  },
-                                  setSessionData: async (user, thirdPartyAuthCodeResponse, action) => {
-                                      return this.config.sessionFeature.setSessionData(
-                                          user,
-                                          {
-                                              loginType: "thirdparty",
-                                              thirdPartyAuthCodeResponse: thirdPartyAuthCodeResponse,
-                                          },
-                                          action
-                                      );
                                   },
                               },
                               signInAndUpFeature: {

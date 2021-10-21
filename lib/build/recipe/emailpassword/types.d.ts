@@ -25,22 +25,7 @@ export declare type TypeInputSetSessionDataForSession = (
       }
     | undefined
 >;
-export declare type TypeInputSessionFeature = {
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setJwtPayload?: TypeInputSetJwtPayloadForSession;
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setSessionData?: TypeInputSetSessionDataForSession;
-};
-export declare type TypeNormalisedInputSessionFeature = {
-    setJwtPayload: TypeInputSetJwtPayloadForSession;
-    setSessionData: TypeInputSetSessionDataForSession;
-};
 export declare type TypeNormalisedInput = {
-    sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
@@ -109,7 +94,6 @@ export declare type User = {
     timeJoined: number;
 };
 export declare type TypeInput = {
-    sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
@@ -236,30 +220,6 @@ export interface RecipeInterface {
     }): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersOldestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersNewestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserCount(): Promise<number>;
     updateEmailOrPassword(input: {
         userId: string;
         email?: string;

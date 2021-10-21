@@ -59,40 +59,12 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email });
     }
 
-    /**
-     * @deprecated Use supertokens.getUsersByEmail(...) function instead IF using core version >= 3.5
-     *   */
-    static getUserByEmail(email: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail({ email });
-    }
-
     static createResetPasswordToken(userId: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId });
     }
 
     static resetPasswordUsingToken(token: string, newPassword: string) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({ token, newPassword });
-    }
-
-    /**
-     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
-     *   */
-    static getUsersOldestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst({ limit, nextPaginationToken });
-    }
-
-    /**
-     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
-     *   */
-    static getUsersNewestFirst(limit?: number, nextPaginationToken?: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst({ limit, nextPaginationToken });
-    }
-
-    /**
-     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
-     *   */
-    static getUserCount() {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
     }
 
     static updateEmailOrPassword(input: { userId: string; email?: string; password?: string }) {
@@ -166,11 +138,6 @@ export let getUserById = Wrapper.getUserById;
 
 export let getUserByThirdPartyInfo = Wrapper.getUserByThirdPartyInfo;
 
-/**
- * @deprecated Use supertokens.getUsersByEmail(...) function instead IF using core version >= 3.5
- *   */
-export let getUserByEmail = Wrapper.getUserByEmail;
-
 export let getUsersByEmail = Wrapper.getUsersByEmail;
 
 export let createResetPasswordToken = Wrapper.createResetPasswordToken;
@@ -186,21 +153,6 @@ export let isEmailVerified = Wrapper.isEmailVerified;
 export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens;
 
 export let unverifyEmail = Wrapper.unverifyEmail;
-
-/**
- * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
- *   */
-export let getUsersOldestFirst = Wrapper.getUsersOldestFirst;
-
-/**
- * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
- *   */
-export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
-
-/**
- * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
- *   */
-export let getUserCount = Wrapper.getUserCount;
 
 export let updateEmailOrPassword = Wrapper.updateEmailOrPassword;
 

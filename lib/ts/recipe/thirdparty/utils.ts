@@ -20,14 +20,11 @@ import STError from "./error";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import { RecipeInterface, APIInterface } from "./types";
 import {
-    User,
     TypeInput,
     InputSchema,
     TypeNormalisedInput,
     TypeInputSignInAndUp,
     TypeNormalisedInputSignInAndUp,
-    TypeInputSessionFeature,
-    TypeNormalisedInputSessionFeature,
 } from "./types";
 
 export function validateAndNormaliseUserInput(
@@ -36,12 +33,6 @@ export function validateAndNormaliseUserInput(
     config: TypeInput
 ): TypeNormalisedInput {
     validateTheStructureOfUserInput(config, InputSchema, "thirdparty recipe");
-
-    let sessionFeature = validateAndNormaliseSessionFeatureConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.sessionFeature
-    );
 
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
@@ -54,39 +45,9 @@ export function validateAndNormaliseUserInput(
     };
 
     return {
-        sessionFeature,
         emailVerificationFeature,
         signInAndUpFeature,
         override,
-    };
-}
-
-async function defaultSetSessionDataForSession(_: User, __: any, ___: "signin" | "signup") {
-    return {};
-}
-
-async function defaultSetJwtPayloadForSession(_: User, __: any, ___: "signin" | "signup") {
-    return {};
-}
-
-function validateAndNormaliseSessionFeatureConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSessionFeature
-): TypeNormalisedInputSessionFeature {
-    let setJwtPayload =
-        config === undefined || config.setJwtPayload === undefined
-            ? defaultSetJwtPayloadForSession
-            : config.setJwtPayload;
-
-    let setSessionData =
-        config === undefined || config.setSessionData === undefined
-            ? defaultSetSessionDataForSession
-            : config.setSessionData;
-
-    return {
-        setJwtPayload,
-        setSessionData,
     };
 }
 
