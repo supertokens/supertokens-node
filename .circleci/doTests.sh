@@ -133,7 +133,7 @@ while [ $i -lt $frontendDriverLength ]; do
     while [ $tries -le 3 ]
     do
         tries=$(( $tries + 1 ))
-        ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
+        # ./setupAndTestWithFrontend.sh $coreFree $frontendTag $nodeTag
         if [[ $? -ne 0 ]]
         then
             if [[ $tries -le 3 ]]
