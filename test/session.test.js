@@ -34,6 +34,7 @@ let SessionFunctions = require("../lib/build/recipe/session/sessionFunctions");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 const { maxVersion } = require("../lib/build/utils");
 const { fail } = require("assert");
+let { middleware, errorHandler } = require("../framework/express");
 
 /* TODO:
 - the opposite of the above (check that if signing key changes, things are still fine) condition
@@ -77,14 +78,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res = await new Promise((resolve) =>
             request(app)
@@ -136,14 +137,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         const app = express();
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -212,14 +213,14 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         const app = express();
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});
             res.status(200).send("");
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         await new Promise((resolve) =>
             request(app)
@@ -270,7 +271,7 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
 
         const app = express();
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "", {}, {});

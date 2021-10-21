@@ -19,6 +19,7 @@ let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function () {
     before(function () {
@@ -84,9 +85,9 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         const express = require("express");
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         await signInUPCustomRequest(app, "test@gmail.com", "testPass0");
         await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
@@ -155,9 +156,9 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         const express = require("express");
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         await signInUPCustomRequest(app, "test@gmail.com", "testPass0");
         await signInUPCustomRequest(app, "test1@gmail.com", "testPass1");
@@ -229,9 +230,9 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
         const express = require("express");
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         await signInUPCustomRequest(app, "test@gmail.com", "testPass0");
         userCount = await getUserCount();

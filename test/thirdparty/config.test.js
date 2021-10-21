@@ -18,6 +18,7 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirPartyRecipe = require("../../lib/build/recipe/thirdparty/recipe").default;
 let ThirParty = require("../../lib/build/recipe/thirdparty");
+let { middleware, errorHandler } = require("../../framework/express");
 
 /**
  * TODO

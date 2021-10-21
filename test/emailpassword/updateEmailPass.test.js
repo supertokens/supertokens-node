@@ -21,6 +21,7 @@ let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
 let { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.test.js]")}`, function () {
     beforeEach(async function () {
@@ -56,9 +57,9 @@ describe(`updateEmailPassTest: ${printPath("[test/emailpassword/updateEmailPass.
         const express = require("express");
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
 

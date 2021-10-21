@@ -32,6 +32,7 @@ let { Querier } = require("../lib/build/querier");
 let { ProcessState, PROCESS_STATE } = require("../lib/build/processState");
 let { maxVersion } = require("../lib/build/utils");
 let faunadb = require("faunadb");
+let { middleware, errorHandler } = require("../framework/express");
 const q = faunadb.query;
 
 describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
@@ -78,7 +79,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         });
 
         const app = express();
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "277082848991642117", {}, {});
@@ -204,7 +205,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             ],
         });
         const app = express();
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "277082848991642117", {}, {});
@@ -281,7 +282,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         });
 
         const app = express();
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "277082848991642117", {}, {});
@@ -412,7 +413,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
         });
 
         const app = express();
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "277082848991642117", {}, {});
@@ -625,7 +626,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             ],
         });
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "277082848991642117", {}, {});
@@ -636,7 +637,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             res.status(200).send("");
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -888,7 +889,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             ],
         });
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "277082848991642117", {}, {});
@@ -905,7 +906,7 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
             res.status(200).send("");
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res = extractInfoFromResponse(
             await new Promise((resolve) =>

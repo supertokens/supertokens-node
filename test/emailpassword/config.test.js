@@ -25,6 +25,7 @@ const { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
 let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe").default;
 let utils = require("../../lib/build/recipe/emailpassword/utils");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`configTest: ${printPath("[test/emailpassword/config.test.js]")}`, function () {
     beforeEach(async function () {

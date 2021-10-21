@@ -38,6 +38,7 @@ let ST = require("../");
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/recipe/session/utils");
+let { middleware, errorHandler } = require("../framework/express");
 
 /**
  * TODO: (Later) test config for faunadb session module
@@ -1304,7 +1305,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://test.com:3567"), "test.com");
     });
 
-    it("apiGatewayPath test", async function () {
+    it.only("apiGatewayPath test", async function () {
         await startST();
         {
             STExpress.init({
@@ -1326,7 +1327,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
             const app = express();
 
-            app.use(ST.middleware());
+            app.use(middleware());
 
             app.post("/create", async (req, res) => {
                 await Session.createNewSession(res, "", {}, {});
@@ -1393,7 +1394,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
             const app = express();
 
-            app.use(ST.middleware());
+            app.use(middleware());
 
             app.post("/create", async (req, res) => {
                 await Session.createNewSession(res, "", {}, {});
@@ -1460,7 +1461,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
             const app = express();
 
-            app.use(ST.middleware());
+            app.use(middleware());
 
             app.post("/create", async (req, res) => {
                 await Session.createNewSession(res, "", {}, {});

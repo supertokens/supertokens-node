@@ -29,6 +29,7 @@ let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
+let { middleware, errorHandler } = require("../framework/express");
 
 /**
  * TODO: (Later) check that disabling default API actually disables it (for emailpassword)
@@ -75,8 +76,8 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
-        app.use(SuperTokens.errorHandler());
+        app.use(middleware());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -160,7 +161,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -456,7 +457,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "testing-userId", {}, {});
@@ -496,7 +497,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -841,7 +842,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1147,7 +1148,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "testing-userId", {}, {});
@@ -1187,7 +1188,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1499,7 +1500,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "testing-userId", {}, {});
@@ -1525,7 +1526,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1638,7 +1639,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "testing-userId", {}, {});
@@ -1664,7 +1665,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1858,7 +1859,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.get(
             "/custom/user/handle",
@@ -1870,7 +1871,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             }
         );
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let r1 = await new Promise((resolve) =>
             request(app)

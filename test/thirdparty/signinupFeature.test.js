@@ -22,6 +22,7 @@ let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
 let Session = require("../../recipe/session");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")}`, function () {
     before(function () {
@@ -168,9 +169,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -216,9 +217,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -329,9 +330,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -399,9 +400,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response1 = await new Promise((resolve) =>
             request(app)
@@ -449,9 +450,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.use((err, request, response, next) => {
             response.status(500).send({
@@ -502,9 +503,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -551,9 +552,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.use((err, request, response, next) => {
             response.status(500).send({
@@ -606,9 +607,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response1 = await new Promise((resolve) =>
             request(app)
@@ -779,9 +780,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -838,9 +839,9 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
