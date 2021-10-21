@@ -13,7 +13,12 @@ import type { SessionRequest } from "../../framework/express";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static createNewSession(res: any, userId: string, jwtPayload?: any, sessionData?: any): Promise<SessionContainer>;
+    static createNewSession(
+        res: any,
+        userId: string,
+        accessTokenPayload?: any,
+        sessionData?: any
+    ): Promise<SessionContainer>;
     static getSession(req: any, res: any, options?: VerifySessionOptions): Promise<SessionContainer | undefined>;
     static getSessionInformation(sessionHandle: string): Promise<SessionInformation>;
     static refreshSession(req: any, res: any): Promise<SessionContainer>;
@@ -22,7 +27,7 @@ export default class SessionWrapper {
     static revokeSession(sessionHandle: string): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[]): Promise<string[]>;
     static updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
-    static updateJWTPayload(sessionHandle: string, newJWTPayload: any): Promise<void>;
+    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
@@ -34,7 +39,7 @@ export declare let getAllSessionHandlesForUser: typeof SessionWrapper.getAllSess
 export declare let revokeSession: typeof SessionWrapper.revokeSession;
 export declare let revokeMultipleSessions: typeof SessionWrapper.revokeMultipleSessions;
 export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
-export declare let updateJWTPayload: typeof SessionWrapper.updateJWTPayload;
+export declare let updateAccessTokenPayload: typeof SessionWrapper.updateAccessTokenPayload;
 export declare let Error: typeof SuperTokensError;
 export type {
     VerifySessionOptions,

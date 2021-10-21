@@ -24,12 +24,12 @@ export default class RecipeImplementation implements RecipeInterface {
     createNewSession: ({
         res,
         userId,
-        jwtPayload,
+        accessTokenPayload,
         sessionData,
     }: {
         res: BaseResponse;
         userId: string;
-        jwtPayload?: any;
+        accessTokenPayload?: any;
         sessionData?: any;
     }) => Promise<FaunaDBSessionContainer>;
     getSession: ({
@@ -54,7 +54,7 @@ export default class RecipeImplementation implements RecipeInterface {
         sessionHandle: string;
         newSessionData: any;
     }) => Promise<void>;
-    updateJWTPayload: (input: { sessionHandle: string; newJWTPayload: any }) => Promise<void>;
+    updateAccessTokenPayload: (input: { sessionHandle: string; newAccessTokenPayload: any }) => Promise<void>;
     getAccessTokenLifeTimeMS: () => Promise<number>;
     getRefreshTokenLifeTimeMS: () => Promise<number>;
 }
