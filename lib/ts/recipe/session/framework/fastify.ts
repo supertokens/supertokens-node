@@ -16,12 +16,19 @@ import Session from "../recipe";
 import { VerifySessionOptions } from "..";
 import { FastifyRequest, FastifyResponse, SessionRequest } from "../../../framework/fastify/framework";
 import { FastifyReply } from "fastify";
+import SuperTokens from "../../../supertokens";
 
 export function verifySession(options?: VerifySessionOptions) {
     return async (req: SessionRequest, res: FastifyReply) => {
         let sessionRecipe = Session.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
         let response = new FastifyResponse(res);
-        req.session = await sessionRecipe.verifySession(options, request, response);
+        try {
+            req.session = await sessionRecipe.verifySession(options, request, response);
+        } catch (err) {
+            const supertokens = SuperTokens.getInstanceOrThrowError();
+            await supertokens.errorHandler(err, request, response);
+            throw err;
+        }
     };
 }
