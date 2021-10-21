@@ -31,11 +31,11 @@ export default class SessionWrapper {
 
     static Error = SuperTokensError;
 
-    static createNewSession(res: any, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
+    static createNewSession(res: any, userId: string, accessTokenPayload: any = {}, sessionData: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
-            jwtPayload,
+            accessTokenPayload,
             sessionData,
         });
     }
@@ -75,8 +75,11 @@ export default class SessionWrapper {
         });
     }
 
-    static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJWTPayload({ sessionHandle, newJWTPayload });
+    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateAccessTokenPayload({
+            sessionHandle,
+            newAccessTokenPayload,
+        });
     }
 }
 
@@ -100,7 +103,7 @@ export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
 
 export let updateSessionData = SessionWrapper.updateSessionData;
 
-export let updateJWTPayload = SessionWrapper.updateJWTPayload;
+export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
 
 export let Error = SessionWrapper.Error;
 

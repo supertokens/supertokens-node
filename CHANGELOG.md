@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Removes `signInUpPost` from thirdpartyemailpassword API interface and replaces it with three APIs: `emailPasswordSignInPOST`, `emailPasswordSignUpPOST` and `thirdPartySignInUpPOST`: https://github.com/supertokens/supertokens-node/issues/192
 -   Removes all deprecated functions
+-   Renames all "JWT" related functions in session recipe to use "AccessToken" instead
 -   Removes support for CDI 2.7 (which used some of the new deprecated APIs in the core)
 
 ## [7.3.1] - 2021-10-18

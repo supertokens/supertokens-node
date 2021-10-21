@@ -30,11 +30,11 @@ Supertokens.init({
                             return {
                                 getAccessToken: session.getAccessToken,
                                 getHandle: session.getHandle,
-                                getJWTPayload: session.getJWTPayload,
+                                getAccessTokenPayload: session.getAccessTokenPayload,
                                 getSessionData: session.getSessionData,
                                 getUserId: session.getUserId,
                                 revokeSession: session.revokeSession,
-                                updateJWTPayload: session.updateJWTPayload,
+                                updateAccessTokenPayload: session.updateAccessTokenPayload,
                                 updateSessionData: session.updateSessionData,
                                 getExpiry: session.getExpiry,
                                 getTimeCreated: session.getTimeCreated,
@@ -45,7 +45,7 @@ Supertokens.init({
                         revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
                         revokeMultipleSessions: originalImpl.revokeMultipleSessions,
                         revokeSession: originalImpl.revokeSession,
-                        updateJWTPayload: originalImpl.updateJWTPayload,
+                        updateAccessTokenPayload: originalImpl.updateAccessTokenPayload,
                         updateSessionData: originalImpl.updateSessionData,
                         getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
                         getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
@@ -163,8 +163,8 @@ Supertokens.init({
                     return {
                         ...originalImplementation,
                         createNewSession: async (input) => {
-                            input.jwtPayload = {
-                                ...input.jwtPayload,
+                            input.accessTokenPayload = {
+                                ...input.accessTokenPayload,
                                 someKey: "someValue",
                             };
 

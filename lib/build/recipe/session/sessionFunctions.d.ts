@@ -7,7 +7,7 @@ import RecipeImplementation from "./recipeImplementation";
 export declare function createNewSession(
     recipeImplementation: RecipeImplementation,
     userId: string,
-    jwtPayload?: any,
+    accessTokenPayload?: any,
     sessionData?: any
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
@@ -33,7 +33,7 @@ export declare function getSession(
 }>;
 /**
  * @description Retrieves session information from storage for a given session handle
- * @returns session data stored in the database, including userData and JWT payload
+ * @returns session data stored in the database, including userData and access token payload
  */
 export declare function getSessionInformation(
     recipeImplementation: RecipeImplementation,
@@ -90,11 +90,14 @@ export declare function updateSessionData(
 ): Promise<void>;
 /**
  * @deprecated use getSessionInformation() instead
- * @returns jwt payload as provided by the user earlier
+ * @returns access token payload as provided by the user earlier
  */
-export declare function getJWTPayload(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any>;
-export declare function updateJWTPayload(
+export declare function getAccessTokenPayload(
+    recipeImplementation: RecipeImplementation,
+    sessionHandle: string
+): Promise<any>;
+export declare function updateAccessTokenPayload(
     recipeImplementation: RecipeImplementation,
     sessionHandle: string,
-    newJWTPayload: any
+    newAccessTokenPayload: any
 ): Promise<void>;
