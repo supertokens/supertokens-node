@@ -54,13 +54,20 @@ cd ./test/server/
 npm i -d
 npm i git+https://github.com:supertokens/supertokens-node.git#$3
 cd ../../
+cd ../project/test/auth-react-server
+npm i -d
+node . &
+pid=$!
+cd ../../../supertokens-auth-react/
 SKIP_OAUTH=true npm run test
 if [[ $? -ne 0 ]]
 then
     echo "test failed... exiting!"
     rm -rf ./test/server/node_modules/supertokens-node
     git checkout HEAD -- ./test/server/package.json
+    kill -9 $pid
     exit 1
 fi
 rm -rf ./test/server/node_modules/supertokens-node
 git checkout HEAD -- ./test/server/package.json
+kill -9 $pid
