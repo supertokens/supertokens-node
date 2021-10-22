@@ -29,6 +29,7 @@ let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
 let Session = require("../../recipe/session");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`, function () {
     before(function () {
@@ -95,9 +96,9 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -186,9 +187,9 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -229,9 +230,9 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -278,9 +279,9 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 

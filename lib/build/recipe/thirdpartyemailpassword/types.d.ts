@@ -25,50 +25,12 @@ export declare type TypeContextEmailPasswordSignUp = {
     loginType: "emailpassword";
     formFields: TypeFormField[];
 };
-export declare type TypeContextEmailPasswordSessionDataAndJWT = {
-    loginType: "emailpassword";
-    formFields: TypeFormField[];
-};
 export declare type TypeContextEmailPasswordSignIn = {
     loginType: "emailpassword";
 };
 export declare type TypeContextThirdParty = {
     loginType: "thirdparty";
     thirdPartyAuthCodeResponse: any;
-};
-export declare type TypeInputSetJwtPayloadForSession = (
-    user: User,
-    context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
-    action: "signin" | "signup"
-) => Promise<
-    | {
-          [key: string]: any;
-      }
-    | undefined
->;
-export declare type TypeInputSetSessionDataForSession = (
-    user: User,
-    context: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
-    action: "signin" | "signup"
-) => Promise<
-    | {
-          [key: string]: any;
-      }
-    | undefined
->;
-export declare type TypeInputSessionFeature = {
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setJwtPayload?: TypeInputSetJwtPayloadForSession;
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setSessionData?: TypeInputSetSessionDataForSession;
-};
-export declare type TypeNormalisedInputSessionFeature = {
-    setJwtPayload: TypeInputSetJwtPayloadForSession;
-    setSessionData: TypeInputSetSessionDataForSession;
 };
 export declare type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
@@ -81,7 +43,6 @@ export declare type TypeInputEmailVerificationFeature = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
 };
 export declare type TypeInput = {
-    sessionFeature?: TypeInputSessionFeature;
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
@@ -96,18 +57,6 @@ export declare type TypeInput = {
     };
 };
 export declare const InputSchema: {
-    sessionFeature: {
-        type: string;
-        properties: {
-            setJwtPayload: {
-                type: string;
-            };
-            setSessionData: {
-                type: string;
-            };
-        };
-        additionalProperties: boolean;
-    };
     signUpFeature: {
         type: string;
         properties: {
@@ -165,7 +114,6 @@ export declare const InputSchema: {
     };
 };
 export declare type TypeNormalisedInput = {
-    sessionFeature: TypeNormalisedInputSessionFeature;
     signUpFeature: TypeNormalisedInputSignUp;
     providers: TypeProvider[];
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
@@ -183,30 +131,6 @@ export interface RecipeInterface {
     getUserById(input: { userId: string }): Promise<User | undefined>;
     getUsersByEmail(input: { email: string }): Promise<User[]>;
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersOldestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersNewestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserCount(): Promise<number>;
     signInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
@@ -249,10 +173,6 @@ export interface RecipeInterface {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserByEmail(input: { email: string }): Promise<User | undefined>;
     createResetPasswordToken(input: {
         userId: string;
     }): Promise<
@@ -280,50 +200,6 @@ export interface RecipeInterface {
 }
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
-export declare type SignInUpAPIInput =
-    | {
-          type: "emailpassword";
-          isSignIn: boolean;
-          formFields: {
-              id: string;
-              value: string;
-          }[];
-          options: EmailPasswordAPIOptions;
-      }
-    | {
-          type: "thirdparty";
-          provider: TypeProvider;
-          code: string;
-          redirectURI: string;
-          options: ThirdPartyAPIOptions;
-      };
-export declare type SignInUpAPIOutput =
-    | {
-          type: "emailpassword";
-          status: "OK";
-          user: User;
-          createdNewUser: boolean;
-      }
-    | {
-          type: "emailpassword";
-          status: "WRONG_CREDENTIALS_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
-      }
-    | {
-          type: "thirdparty";
-          status: "OK";
-          createdNewUser: boolean;
-          user: User;
-          authCodeResponse: any;
-      }
-    | {
-          type: "thirdparty";
-          status: "NO_EMAIL_GIVEN_BY_PROVIDER";
-      }
-    | {
-          type: "thirdparty";
-          status: "FIELD_ERROR";
-          error: string;
-      };
 export interface APIInterface {
     authorisationUrlGET:
         | undefined
@@ -366,5 +242,60 @@ export interface APIInterface {
           }) => Promise<{
               status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }>);
-    signInUpPOST: undefined | ((input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>);
+    thirdPartySignInUpPOST:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              options: ThirdPartyAPIOptions;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    createdNewUser: boolean;
+                    user: User;
+                    authCodeResponse: any;
+                }
+              | {
+                    status: "FIELD_ERROR";
+                    error: string;
+                }
+              | {
+                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+                }
+          >);
+    emailPasswordSignInPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: EmailPasswordAPIOptions;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | {
+                    status: "WRONG_CREDENTIALS_ERROR";
+                }
+          >);
+    emailPasswordSignUpPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: EmailPasswordAPIOptions;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                }
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+          >);
 }

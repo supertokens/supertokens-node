@@ -7,6 +7,7 @@ const { signInUp } = require("../../lib/build/recipe/thirdparty");
 const { getUsersByEmail } = require("../../lib/build/recipe/thirdparty");
 const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.test.js]")}`, function () {
     const MockThirdPartyProvider = {

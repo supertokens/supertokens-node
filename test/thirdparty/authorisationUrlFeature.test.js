@@ -22,6 +22,7 @@ let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
 let Session = require("../../recipe/session");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.test.js]")}`, function () {
     before(function () {
@@ -108,9 +109,9 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response1 = await new Promise((resolve) =>
             request(app)
@@ -158,9 +159,9 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response1 = await new Promise((resolve) =>
             request(app)
@@ -206,9 +207,9 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.use((err, request, response, next) => {
             response.status(500).send({
@@ -255,9 +256,9 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response1 = await new Promise((resolve) =>
             request(app)
@@ -300,9 +301,9 @@ describe(`authorisationTest: ${printPath("[test/thirdparty/authorisationFeature.
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response1 = await new Promise((resolve) =>
             request(app)

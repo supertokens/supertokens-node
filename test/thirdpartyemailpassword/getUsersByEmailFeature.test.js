@@ -6,6 +6,7 @@ let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const { signInUp, getUsersByEmail, signUp } = require("../../lib/build/recipe/thirdpartyemailpassword");
 const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersByEmailFeature.test.js]")}`, function () {
     const MockThirdPartyProvider = {

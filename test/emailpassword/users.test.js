@@ -13,7 +13,7 @@
  * under the License.
  */
 const { printPath, setupST, startST, stopST, killAllST, cleanST, signUPRequest } = require("../utils");
-const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/recipe/emailpassword");
+const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let STExpress = require("../../");
@@ -21,6 +21,7 @@ let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
 let { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, function () {
     beforeEach(async function () {
@@ -51,9 +52,9 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         const express = require("express");
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
         await signUPRequest(app, "test1@gmail.com", "testPass123");
@@ -65,22 +66,22 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         assert.strictEqual(users.users.length, 5);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
-        users = await getUsersOldestFirst(1);
+        users = await getUsersOldestFirst({ limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].email, "test@gmail.com");
+        assert.strictEqual(users.users[0].user.email, "test@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersOldestFirst(1, users.nextPaginationToken);
+        users = await getUsersOldestFirst({ limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].email, "test1@gmail.com");
+        assert.strictEqual(users.users[0].user.email, "test1@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersOldestFirst(5, users.nextPaginationToken);
+        users = await getUsersOldestFirst({ limit: 5, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 3);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
         try {
-            await getUsersOldestFirst(10, "invalid-pagination-token");
+            await getUsersOldestFirst({ limit: 10, paginationToken: "invalid-pagination-token" });
             assert(false);
         } catch (err) {
             if (!err.message.includes("invalid pagination token")) {
@@ -89,10 +90,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         }
 
         try {
-            await getUsersOldestFirst(-1);
+            await getUsersOldestFirst({ limit: -1 });
             assert(false);
         } catch (err) {
-            if (!err.message.includes("limit must a positive integer with max value 1000")) {
+            if (!err.message.includes("limit must a positive integer with min value 1")) {
                 throw err;
             }
         }
@@ -115,9 +116,9 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         const express = require("express");
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
         await signUPRequest(app, "test1@gmail.com", "testPass123");
@@ -129,22 +130,22 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         assert.strictEqual(users.users.length, 5);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
-        users = await getUsersNewestFirst(1);
+        users = await getUsersNewestFirst({ limit: 1 });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].email, "test4@gmail.com");
+        assert.strictEqual(users.users[0].user.email, "test4@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersNewestFirst(1, users.nextPaginationToken);
+        users = await getUsersNewestFirst({ limit: 1, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 1);
-        assert.strictEqual(users.users[0].email, "test3@gmail.com");
+        assert.strictEqual(users.users[0].user.email, "test3@gmail.com");
         assert.strictEqual(typeof users.nextPaginationToken, "string");
 
-        users = await getUsersNewestFirst(5, users.nextPaginationToken);
+        users = await getUsersNewestFirst({ limit: 5, paginationToken: users.nextPaginationToken });
         assert.strictEqual(users.users.length, 3);
         assert.strictEqual(users.nextPaginationToken, undefined);
 
         try {
-            await getUsersOldestFirst(10, "invalid-pagination-token");
+            await getUsersOldestFirst({ limit: 10, paginationToken: "invalid-pagination-token" });
             assert(false);
         } catch (err) {
             if (!err.message.includes("invalid pagination token")) {
@@ -153,10 +154,10 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         }
 
         try {
-            await getUsersOldestFirst(-1);
+            await getUsersOldestFirst({ limit: -1 });
             assert(false);
         } catch (err) {
-            if (!err.message.includes("limit must a positive integer with max value 1000")) {
+            if (!err.message.includes("limit must a positive integer with min value 1")) {
                 throw err;
             }
         }
@@ -182,9 +183,9 @@ describe(`usersTest: ${printPath("[test/emailpassword/users.test.js]")}`, functi
         const express = require("express");
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         await signUPRequest(app, "test@gmail.com", "testPass123");
         userCount = await getUserCount();

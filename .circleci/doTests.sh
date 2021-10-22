@@ -108,7 +108,25 @@ while [ $i -lt $frontendDriverLength ]; do
     frontendTag=$(echo $frontendInfo | jq .tag | tr -d '"')
     frontendVersion=$(echo $frontendInfo | jq .version | tr -d '"')
 
-    nodeTag=dev-v$version
+    nodeVersionXY=`curl -s -X GET \
+    "https://api.supertokens.io/0/frontend-driver-interface/dependency/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$frontendDriverVersion&driverName=node" \
+    -H 'api-version: 0'`
+    if [[ `echo $nodeVersionXY | jq .driver` == "null" ]]
+    then
+        echo "fetching latest X.Y version for driver given frontend-driver-interface X.Y version: $frontendDriverVersion gave response: $nodeVersionXY. Please make sure all relevant drivers have been pushed."
+        exit 1
+    fi
+    nodeVersionXY=$(echo $nodeVersionXY | jq .driver | tr -d '"')
+
+    nodeInfo=`curl -s -X GET \
+    "https://api.supertokens.io/0/driver/latest?password=$SUPERTOKENS_API_KEY&mode=DEV&version=$nodeVersionXY&name=node" \
+    -H 'api-version: 0'`
+    if [[ `echo $nodeInfo | jq .tag` == "null" ]]
+    then
+        echo "fetching latest X.Y.Z version for driver, X.Y version: $nodeVersionXY gave response: $nodeInfo"
+        exit 1
+    fi
+    nodeTag=$(echo $nodeInfo | jq .tag | tr -d '"')
 
     someFrontendTestsRan=true
     tries=1
@@ -156,8 +174,10 @@ while [ $i -lt $frontendDriverLength ]; do
     frontendAuthReactTag=$(echo $frontendAuthReactInfo | jq .tag | tr -d '"')
     frontendAuthReactVersion=$(echo $frontendAuthReactInfo | jq .version | tr -d '"')
 
-    if [[ $frontendDriverVersion == '1.3' ]]; then
+    if [[ $frontendDriverVersion == '1.3' || $frontendDriverVersion == '1.8' ]]; then
         # we skip this since the tests for auth-react here are not reliable due to race conditions...
+        
+        # we skip 1.8 since the SDK with just 1.8 doesn't have the right scripts
         continue
     else
         tries=1

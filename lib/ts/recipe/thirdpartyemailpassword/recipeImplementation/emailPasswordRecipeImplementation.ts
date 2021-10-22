@@ -59,27 +59,6 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.recipeImplementation.resetPasswordUsingToken({ token, newPassword });
     };
 
-    /**
-     * @deprecated
-     *   */
-    getUsersOldestFirst = async (_: { limit?: number; nextPaginationToken?: string }) => {
-        throw new Error("Should never be called");
-    };
-
-    /**
-     * @deprecated
-     *   */
-    getUsersNewestFirst = async (_: { limit?: number; nextPaginationToken?: string }) => {
-        throw new Error("Should never be called");
-    };
-
-    /**
-     * @deprecated
-     *   */
-    getUserCount = async () => {
-        throw new Error("Should never be called");
-    };
-
     updateEmailOrPassword = async (input: {
         userId: string;
         email?: string;

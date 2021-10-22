@@ -24,6 +24,7 @@ const request = require("supertest");
 let Session = require("../../recipe/session");
 let { Querier } = require("../../lib/build/querier");
 let { maxVersion } = require("../../lib/build/utils");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.test.js]")}`, function () {
     before(function () {
@@ -152,7 +153,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: undefined,
+                                thirdPartySignInUpPOST: undefined,
                             };
                         },
                     },
@@ -168,9 +169,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -209,7 +210,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: undefined,
+                                emailPasswordSignUpPOST: undefined,
                             };
                         },
                     },
@@ -220,9 +221,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(response.status === 404);
@@ -251,9 +252,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").times(1).reply(200, {});
 
@@ -300,9 +301,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -341,11 +342,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: async (input) => {
-                                    let response = await oI.signInUpPOST(input);
+                                thirdPartySignInUpPOST: async (input) => {
+                                    let response = await oI.thirdPartySignInUpPOST(input);
                                     if (response.status === "OK") {
                                         process.env.userId = response.user.id;
-                                        process.env.loginType = input.type;
+                                        process.env.loginType = "thirdparty";
                                     }
                                     return response;
                                 },
@@ -358,9 +359,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").times(1).reply(200, {});
 
@@ -409,11 +410,11 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: async (input) => {
-                                    let response = await oI.signInUpPOST(input);
+                                emailPasswordSignUpPOST: async (input) => {
+                                    let response = await oI.emailPasswordSignUpPOST(input);
                                     if (response.status === "OK") {
                                         process.env.userId = response.user.id;
-                                        process.env.loginType = input.type;
+                                        process.env.loginType = "emailpassword";
                                     }
                                     return response;
                                 },
@@ -427,9 +428,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -459,9 +460,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -503,9 +504,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.use((err, request, response, next) => {
             response.status(500).send({
@@ -555,9 +556,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -602,9 +603,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.use((err, request, response, next) => {
             response.status(500).send({
@@ -660,9 +661,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -717,9 +718,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -772,9 +773,9 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         assert((await STExpress.getUserCount()) === 0);
 

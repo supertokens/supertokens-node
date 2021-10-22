@@ -8,6 +8,7 @@ let { ProcessState } = require("../../lib/build/processState");
 let JWTRecipe = require("../../lib/build/recipe/jwt");
 let { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
     beforeEach(async function () {
@@ -55,9 +56,9 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) => {
             request(app)
@@ -97,9 +98,9 @@ describe(`getJWKS: ${printPath("[test/jwt/getJWKS.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) => {
             request(app)

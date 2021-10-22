@@ -35,6 +35,7 @@ let { Querier } = require("../../lib/build/querier");
 let EmailPassword = require("../../recipe/emailpassword");
 const express = require("express");
 const request = require("supertest");
+let { middleware, errorHandler } = require("../../framework/express");
 
 /**
  * TODO: (later) in emailVerificationFunctions.ts:
@@ -85,9 +86,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -130,9 +131,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -179,9 +180,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -224,9 +225,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -316,9 +317,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -386,9 +387,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -451,9 +452,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         response = await new Promise((resolve) =>
             request(app)
@@ -498,9 +499,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         response = await new Promise((resolve) =>
             request(app)
@@ -570,9 +571,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -648,9 +649,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -734,9 +735,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -787,9 +788,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -939,9 +940,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(response.body.status === "OK");
@@ -1027,9 +1028,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(response.body.status === "OK");
@@ -1117,9 +1118,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.use((err, req, res, next) => {
             res.json({
@@ -1213,9 +1214,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.use((err, req, res, next) => {
             res.json({
@@ -1289,9 +1290,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -1336,9 +1337,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");

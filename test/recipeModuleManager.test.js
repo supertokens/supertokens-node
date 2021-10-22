@@ -26,6 +26,7 @@ let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").de
 const express = require("express");
 const assert = require("assert");
 const request = require("supertest");
+let { middleware, errorHandler } = require("../framework/express");
 
 /**
  *
@@ -185,7 +186,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
         });
         const app = express();
 
-        app.use(ST.middleware());
+        app.use(middleware());
 
         app.post("/auth/user-api", async (req, res) => {
             res.status(200).json({ message: "success" });
@@ -267,13 +268,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 recipeList: [TestRecipe.init()],
             });
             const app = express();
-            app.use(ST.middleware());
+            app.use(middleware());
 
             app.post("/user-api", async (req, res) => {
                 res.status(200).json({ message: "success" });
             });
 
-            app.use(ST.errorHandler());
+            app.use(errorHandler());
 
             let r1 = await new Promise((resolve) =>
                 request(app)
@@ -355,7 +356,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         const app = express();
 
-        app.use(ST.middleware());
+        app.use(middleware());
 
         let r1 = await new Promise((resolve) =>
             request(app)
@@ -420,8 +421,8 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         const app = express();
 
-        app.use(ST.middleware());
-        app.use(ST.errorHandler());
+        app.use(middleware());
+        app.use(errorHandler());
         app.use((err, request, response, next) => {
             if (err.message == "General error from TestRecipe") {
                 response.status(200).send("General error handled in user error handler");
@@ -478,8 +479,8 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         const app = express();
 
-        app.use(ST.middleware());
-        app.use(ST.errorHandler());
+        app.use(middleware());
+        app.use(errorHandler());
         app.use((err, req, res, next) => {
             if (err.message === "error thrown in api") {
                 res.status(200).json({ message: "success" });
@@ -536,13 +537,13 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         const app = express();
 
-        app.use(ST.middleware());
+        app.use(middleware());
 
         app.post("/auth/default-route-disabled", async (req, res) => {
             res.status(200).json({ message: "user defined api" });
         });
 
-        app.use(ST.errorHandler());
+        app.use(errorHandler());
 
         let r1 = await new Promise((resolve) =>
             request(app)
@@ -577,8 +578,8 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
 
         const app = express();
 
-        app.use(ST.middleware());
-        app.use(ST.errorHandler());
+        app.use(middleware());
+        app.use(errorHandler());
         app.use((err, request, response, next) => {
             if (err.message === "error from inside recipe error handler") {
                 response.status(200).send("user error handler");

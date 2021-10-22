@@ -27,6 +27,7 @@ let EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword/recipe")
 let utils = require("../../lib/build/recipe/emailpassword/utils");
 const express = require("express");
 const request = require("supertest");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, function () {
     beforeEach(async function () {
@@ -87,9 +88,9 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
@@ -203,9 +204,9 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
@@ -331,9 +332,9 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res, next) => {
             try {
@@ -451,9 +452,9 @@ describe(`overrideTest: ${printPath("[test/emailpassword/override.test.js]")}`, 
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;

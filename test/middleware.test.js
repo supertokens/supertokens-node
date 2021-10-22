@@ -29,7 +29,8 @@ let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
-let EmailPassword = require("../lib/build/recipe/emailpassword/recipe").default;
+let { middleware, errorHandler } = require("../framework/express");
+let { verifySession } = require("../recipe/session/framework/express");
 
 /**
  * TODO: (Later) check that disabling default API actually disables it (for emailpassword)
@@ -76,8 +77,8 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
-        app.use(SuperTokens.errorHandler());
+        app.use(middleware());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -124,17 +125,17 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: true });
         });
 
-        app.get("/user/id", Session.verifySession(), async (req, res) => {
+        app.get("/user/id", verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
+        app.get("/user/handleV0", verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
         app.get(
             "/user/handleV1",
-            Session.verifySession({
+            verifySession({
                 antiCsrfCheck: true,
             }),
             async (req, res) => {
@@ -144,7 +145,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         app.get(
             "/user/handleOptional",
-            Session.verifySession({
+            verifySession({
                 sessionRequired: false,
             }),
             async (req, res) => {
@@ -152,16 +153,16 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             }
         );
 
-        app.post("/auth/session/refresh", Session.verifySession(), async (req, res, next) => {
+        app.post("/auth/session/refresh", verifySession(), async (req, res, next) => {
             res.status(200).json({ message: true });
         });
 
-        app.post("/logout", Session.verifySession(), async (req, res) => {
+        app.post("/logout", verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -457,24 +458,24 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
-        app.get("/user/id", Session.verifySession(), async (req, res) => {
+        app.get("/user/id", verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
+        app.get("/user/handleV0", verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
         app.get(
             "/user/handleV1",
-            Session.verifySession({
+            verifySession({
                 antiCsrfCheck: true,
             }),
             async (req, res) => {
@@ -484,7 +485,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         app.get(
             "/user/handleOptional",
-            Session.verifySession({
+            verifySession({
                 sessionRequired: false,
             }),
             async (req, res) => {
@@ -492,12 +493,12 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             }
         );
 
-        app.post("/logout", Session.verifySession(), async (req, res) => {
+        app.post("/logout", verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -805,17 +806,17 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             res.status(200).json({ message: true });
         });
 
-        app.get("/custom/user/id", Session.verifySession(), async (req, res) => {
+        app.get("/custom/user/id", verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
+        app.get("/custom/user/handleV0", verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
         app.get(
             "/custom/user/handleV1",
-            Session.verifySession({
+            verifySession({
                 antiCsrfCheck: true,
             }),
             async (req, res) => {
@@ -825,7 +826,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         app.get(
             "/custom/user/handleOptional",
-            Session.verifySession({
+            verifySession({
                 sessionRequired: false,
             }),
             async (req, res) => {
@@ -833,16 +834,16 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             }
         );
 
-        app.post("/custom/session/refresh", Session.verifySession(), async (req, res, next) => {
+        app.post("/custom/session/refresh", verifySession(), async (req, res, next) => {
             res.status(200).json({ message: true });
         });
 
-        app.post("/custom/logout", Session.verifySession(), async (req, res) => {
+        app.post("/custom/logout", verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1148,24 +1149,24 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
-        app.get("/custom/user/id", Session.verifySession(), async (req, res) => {
+        app.get("/custom/user/id", verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
-        app.get("/custom/user/handleV0", Session.verifySession({ antiCsrfCheck: true }), async (req, res) => {
+        app.get("/custom/user/handleV0", verifySession({ antiCsrfCheck: true }), async (req, res) => {
             res.status(200).json({ message: req.session.getHandle() });
         });
 
         app.get(
             "/custom/user/handleV1",
-            Session.verifySession({
+            verifySession({
                 antiCsrfCheck: true,
             }),
             async (req, res) => {
@@ -1175,7 +1176,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         app.get(
             "/custom/user/handleOptional",
-            Session.verifySession({
+            verifySession({
                 sessionRequired: false,
             }),
             async (req, res) => {
@@ -1183,12 +1184,12 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             }
         );
 
-        app.post("/custom/logout", Session.verifySession(), async (req, res) => {
+        app.post("/custom/logout", verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1500,20 +1501,20 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
-        app.get("/custom/user/id", Session.verifySession(), async (req, res) => {
+        app.get("/custom/user/id", verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
         app.get(
             "/custom/user/handle",
-            Session.verifySession({
+            verifySession({
                 sessionRequired: false,
             }),
             async (req, res) => {
@@ -1521,12 +1522,12 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             }
         );
 
-        app.post("/custom/logout", Session.verifySession(), async (req, res) => {
+        app.post("/custom/logout", verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1639,20 +1640,20 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.post("/create", async (req, res) => {
             await Session.createNewSession(res, "testing-userId", {}, {});
             res.status(200).json({ message: true });
         });
 
-        app.get("/custom/user/id", Session.verifySession(), async (req, res) => {
+        app.get("/custom/user/id", verifySession(), async (req, res) => {
             res.status(200).json({ message: req.session.getUserId() });
         });
 
         app.get(
             "/custom/user/handle",
-            Session.verifySession({
+            verifySession({
                 sessionRequired: false,
             }),
             async (req, res) => {
@@ -1660,12 +1661,12 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             }
         );
 
-        app.post("/custom/logout", Session.verifySession(), async (req, res) => {
+        app.post("/custom/logout", verifySession(), async (req, res) => {
             await req.session.revokeSession();
             res.status(200).json({ message: true });
         });
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let res1 = extractInfoFromResponse(
             await new Promise((resolve) =>
@@ -1859,11 +1860,11 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
 
         const app = express();
 
-        app.use(SuperTokens.middleware());
+        app.use(middleware());
 
         app.get(
             "/custom/user/handle",
-            Session.verifySession({
+            verifySession({
                 sessionRequired: false,
             }),
             async (req, res) => {
@@ -1871,7 +1872,7 @@ describe(`middleware: ${printPath("[test/middleware.test.js]")}`, function () {
             }
         );
 
-        app.use(SuperTokens.errorHandler());
+        app.use(errorHandler());
 
         let r1 = await new Promise((resolve) =>
             request(app)

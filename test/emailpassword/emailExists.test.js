@@ -28,6 +28,7 @@ let utils = require("../../lib/build/recipe/emailpassword/utils");
 const request = require("supertest");
 const express = require("express");
 let bodyParser = require("body-parser");
+let { middleware, errorHandler } = require("../../framework/express");
 
 /*
 TODO:
@@ -83,9 +84,9 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -122,9 +123,9 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
         assert(signUpResponse.status === 200);
@@ -168,9 +169,9 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -210,9 +211,9 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
         assert(signUpResponse.status === 200);
@@ -256,9 +257,9 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
         assert(signUpResponse.status === 200);
@@ -302,9 +303,9 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -339,9 +340,9 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
         assert(signUpResponse.status === 200);
@@ -385,9 +386,9 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(bodyParser.json());
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
         assert(signUpResponse.status === 200);
@@ -431,12 +432,12 @@ describe(`emailExists: ${printPath("[test/emailpassword/emailExists.test.js]")}`
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
         app.use(bodyParser.urlencoded({ extended: true }));
         app.use(bodyParser.json());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
         assert(signUpResponse.status === 200);

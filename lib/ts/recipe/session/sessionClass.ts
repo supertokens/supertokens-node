@@ -23,7 +23,7 @@ import RecipeImplementation from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {
     private sessionHandle: string;
     private userId: string;
-    private userDataInJWT: any;
+    private userDataInAccessToken: any;
     private res: BaseResponse;
     private accessToken: string;
     private recipeImplementation: RecipeImplementation;
@@ -33,12 +33,12 @@ export default class Session implements SessionContainerInterface {
         accessToken: string,
         sessionHandle: string,
         userId: string,
-        userDataInJWT: any,
+        userDataInAccessToken: any,
         res: BaseResponse
     ) {
         this.sessionHandle = sessionHandle;
         this.userId = userId;
-        this.userDataInJWT = userDataInJWT;
+        this.userDataInAccessToken = userDataInAccessToken;
         this.res = res;
         this.accessToken = accessToken;
         this.recipeImplementation = recipeImplementation;
@@ -52,7 +52,8 @@ export default class Session implements SessionContainerInterface {
 
     getSessionData = async (): Promise<any> => {
         try {
-            return await SessionFunctions.getSessionData(this.recipeImplementation, this.sessionHandle);
+            return (await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle))
+                .sessionData;
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
                 clearSessionFromCookie(this.recipeImplementation.config, this.res);
@@ -76,8 +77,8 @@ export default class Session implements SessionContainerInterface {
         return this.userId;
     };
 
-    getJWTPayload = () => {
-        return this.userDataInJWT;
+    getAccessTokenPayload = () => {
+        return this.userDataInAccessToken;
     };
 
     getHandle = () => {
@@ -88,23 +89,24 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     };
 
-    updateJWTPayload = async (newJWTPayload: any) => {
-        newJWTPayload = newJWTPayload === null || newJWTPayload === undefined ? {} : newJWTPayload;
+    updateAccessTokenPayload = async (newAccessTokenPayload: any) => {
+        newAccessTokenPayload =
+            newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
         let response = await this.recipeImplementation.querier.sendPostRequest(
             new NormalisedURLPath("/recipe/session/regenerate"),
             {
                 accessToken: this.accessToken,
-                userDataInJWT: newJWTPayload,
+                userDataInJWT: newAccessTokenPayload,
             }
         );
         if (response.status === "UNAUTHORISED") {
             clearSessionFromCookie(this.recipeImplementation.config, this.res);
             throw new STError({
-                message: "Session has probably been revoked while updating JWT payload",
+                message: "Session has probably been revoked while updating access token payload",
                 type: STError.UNAUTHORISED,
             });
         }
-        this.userDataInJWT = response.session.userDataInJWT;
+        this.userDataInAccessToken = response.session.userDataInJWT;
         if (response.accessToken !== undefined) {
             this.accessToken = response.accessToken.token;
             setFrontTokenInHeaders(

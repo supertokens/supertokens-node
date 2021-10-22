@@ -23,6 +23,7 @@ const express = require("express");
 const request = require("supertest");
 let nock = require("nock");
 const { response } = require("express");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeature.test.js]")}`, function () {
     before(function () {
@@ -80,7 +81,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: undefined,
+                                thirdPartySignInUpPOST: undefined,
                             };
                         },
                     },
@@ -96,9 +97,9 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -136,7 +137,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: undefined,
+                                emailPasswordSignInPOST: undefined,
                             };
                         },
                     },
@@ -146,9 +147,9 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -204,11 +205,11 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: async (input) => {
-                                    let response = await oI.signInUpPOST(input);
+                                thirdPartySignInUpPOST: async (input) => {
+                                    let response = await oI.thirdPartySignInUpPOST(input);
                                     if (response.status === "OK") {
                                         process.env.userId = response.user.id;
-                                        process.env.loginType = input.type;
+                                        process.env.loginType = "thirdparty";
                                     }
                                     return response;
                                 },
@@ -221,9 +222,9 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
 
@@ -264,9 +265,9 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -322,9 +323,9 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -393,9 +394,9 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "testrandom@gmail.com", "validpass123");
 

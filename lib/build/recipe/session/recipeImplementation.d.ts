@@ -35,12 +35,12 @@ export default class RecipeImplementation implements RecipeInterface {
     createNewSession: ({
         res,
         userId,
-        jwtPayload,
+        accessTokenPayload,
         sessionData,
     }: {
         res: any;
         userId: string;
-        jwtPayload?: any;
+        accessTokenPayload?: any;
         sessionData?: any;
     }) => Promise<Session>;
     getSession: ({
@@ -58,7 +58,6 @@ export default class RecipeImplementation implements RecipeInterface {
     getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;
     revokeSession: ({ sessionHandle }: { sessionHandle: string }) => Promise<boolean>;
     revokeMultipleSessions: ({ sessionHandles }: { sessionHandles: string[] }) => Promise<string[]>;
-    getSessionData: ({ sessionHandle }: { sessionHandle: string }) => Promise<any>;
     updateSessionData: ({
         sessionHandle,
         newSessionData,
@@ -66,13 +65,12 @@ export default class RecipeImplementation implements RecipeInterface {
         sessionHandle: string;
         newSessionData: any;
     }) => Promise<void>;
-    getJWTPayload: ({ sessionHandle }: { sessionHandle: string }) => Promise<any>;
-    updateJWTPayload: ({
+    updateAccessTokenPayload: ({
         sessionHandle,
-        newJWTPayload,
+        newAccessTokenPayload,
     }: {
         sessionHandle: string;
-        newJWTPayload: any;
+        newAccessTokenPayload: any;
     }) => Promise<void>;
     getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
     /**

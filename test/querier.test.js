@@ -234,7 +234,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         });
 
         try {
-            await Session.getSessionData("");
+            await Session.getSessionInformation("");
             assert(false);
         } catch (err) {
             assert(
@@ -259,7 +259,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
                         functions: (oI) => {
                             return {
                                 ...oI,
-                                getSessionData: async (input) => {
+                                getSessionInformation: async (input) => {
                                     return input.sessionHandle;
                                 },
                             };
@@ -269,6 +269,6 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             ],
         });
 
-        assert((await Session.getSessionData("someHandle")) === "someHandle");
+        assert((await Session.getSessionInformation("someHandle")) === "someHandle");
     });
 });
