@@ -408,8 +408,8 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert.strictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
     });
 
-    // - check for token theft detection without error handler
-    it("token theft detection with auto refresh middleware without error handler", async function () {
+    // - check if session verify middleware responds with a nice error even without the global error handler
+    it("test session verify middleware without error handler added", async function () {
         await startST();
         SuperTokens.init({
             framework: "fastify",
