@@ -327,6 +327,128 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         assert.strictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
     });
 
+    // - check for token theft detection without error handler
+    it("token theft detection with auto refresh middleware without error handler", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "fastify",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        this.server.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            return res.send("").code(200);
+        });
+
+        this.server.post("/session/verify", async (req, res) => {
+            await Session.getSession(req, res, true);
+            return res.send("").code(200);
+        });
+
+        await this.server.register(FastifyFramework.plugin);
+
+        let res = extractInfoFromResponse(
+            await this.server.inject({
+                method: "post",
+                url: "/create",
+            })
+        );
+
+        let res2 = extractInfoFromResponse(
+            await this.server.inject({
+                method: "post",
+                url: "/auth/session/refresh",
+                headers: {
+                    Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                    "anti-csrf": res.antiCsrf,
+                },
+            })
+        );
+
+        await this.server.inject({
+            method: "post",
+            url: "/session/verify",
+            headers: {
+                Cookie: `sAccessToken=${res2.accessToken}; sIdRefreshToken=${res2.idRefreshTokenFromCookie}`,
+                "anti-csrf": res2.antiCsrf,
+            },
+        });
+
+        let res3 = await this.server.inject({
+            method: "post",
+            url: "/auth/session/refresh",
+            headers: {
+                Cookie: `sRefreshToken=${res.refreshToken}; sIdRefreshToken=${res.idRefreshTokenFromCookie}`,
+                "anti-csrf": res.antiCsrf,
+            },
+        });
+        assert(res3.statusCode === 401);
+        assert.deepStrictEqual(res3.json(), { message: "token theft detected" });
+
+        let cookies = extractInfoFromResponse(res3);
+        assert.strictEqual(cookies.antiCsrf, undefined);
+        assert.strictEqual(cookies.accessToken, "");
+        assert.strictEqual(cookies.refreshToken, "");
+        assert.strictEqual(cookies.idRefreshTokenFromHeader, "remove");
+        assert.strictEqual(cookies.idRefreshTokenFromCookie, "");
+        assert.strictEqual(cookies.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(cookies.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(cookies.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+    });
+
+    // - check if session verify middleware responds with a nice error even without the global error handler
+    it("test session verify middleware without error handler added", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "fastify",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        this.server.post(
+            "/session/verify",
+            {
+                preHandler: verifySession(),
+            },
+            async (req, res) => {
+                return res.send("").code(200);
+            }
+        );
+
+        await this.server.register(FastifyFramework.plugin);
+
+        let res = await this.server.inject({
+            method: "post",
+            url: "/session/verify",
+        });
+
+        assert.strictEqual(res.statusCode, 401);
+        assert.deepStrictEqual(res.json(), { message: "unauthorised" });
+    });
+
     // check basic usage of session
     it("test basic usage of sessions", async function () {
         await startST();

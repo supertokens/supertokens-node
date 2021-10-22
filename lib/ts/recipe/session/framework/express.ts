@@ -17,17 +17,23 @@ import type { VerifySessionOptions } from "..";
 import type { SessionRequest } from "../../../framework/express/framework";
 import { ExpressRequest, ExpressResponse } from "../../../framework/express/framework";
 import type { NextFunction, Response } from "express";
+import SuperTokens from "../../../supertokens";
 
 export function verifySession(options?: VerifySessionOptions) {
     return async (req: SessionRequest, res: Response, next: NextFunction) => {
+        const request = new ExpressRequest(req);
+        const response = new ExpressResponse(res);
         try {
-            let sessionRecipe = Session.getInstanceOrThrowError();
-            let request = new ExpressRequest(req);
-            let response = new ExpressResponse(res);
+            const sessionRecipe = Session.getInstanceOrThrowError();
             req.session = await sessionRecipe.verifySession(options, request, response);
             next();
         } catch (err) {
-            next(err);
+            try {
+                const supertokens = SuperTokens.getInstanceOrThrowError();
+                await supertokens.errorHandler(err, request, response);
+            } catch {
+                next(err);
+            }
         }
     };
 }

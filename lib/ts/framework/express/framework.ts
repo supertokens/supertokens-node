@@ -124,16 +124,25 @@ export interface SessionRequest extends Request {
 
 export const middleware = () => {
     return async (req: Request, res: Response, next: NextFunction) => {
+        let supertokens;
+        const request = new ExpressRequest(req);
+        const response = new ExpressResponse(res);
         try {
-            let supertokens = SuperTokens.getInstanceOrThrowError();
-            let request = new ExpressRequest(req);
-            let response = new ExpressResponse(res);
-            let result = await supertokens.middleware(request, response);
+            supertokens = SuperTokens.getInstanceOrThrowError();
+            const result = await supertokens.middleware(request, response);
             if (!result) {
                 return next();
             }
         } catch (err) {
-            next(err);
+            if (supertokens) {
+                try {
+                    await supertokens.errorHandler(err, request, response);
+                } catch {
+                    next(err);
+                }
+            } else {
+                next(err);
+            }
         }
     };
 };

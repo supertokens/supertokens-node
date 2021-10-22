@@ -147,7 +147,11 @@ function plugin(fastify: FastifyInstance, _: any, done: Function) {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new FastifyRequest(req);
         let response = new FastifyResponse(reply);
-        await supertokens.middleware(request, response);
+        try {
+            await supertokens.middleware(request, response);
+        } catch (err) {
+            await supertokens.errorHandler(err, request, response);
+        }
     });
     done();
 }
