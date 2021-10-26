@@ -35,23 +35,24 @@ async function checkConnectionToCore(
             };
         }
     } catch (err) {
+        let status = "NOT OK";
         if ((err as Error).message.includes("Invalid API key")) {
             if (apiKey === undefined) {
                 return {
-                    status: "NOT OK",
+                    status,
                     message:
                         "The configured SuperTokens core requires an API key. Please make sure that you have set it in your backend init function call. If using our managed service, you can find your API key on the dashboard at supertokens.io",
                 };
             }
 
             return {
-                status: "NOT OK",
+                status,
                 message:
                     "It seems like your API key is incorrect. Please double check that you have provided the right key.",
             };
         }
         return {
-            status: "NOT OK",
+            status,
             message: (err as Error).message,
         };
     }
