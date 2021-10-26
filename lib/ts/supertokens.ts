@@ -30,6 +30,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
 import STError from "./error";
+import Dev from "./recipe/dev/index";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -61,6 +62,15 @@ export default class SuperTokens {
         }
 
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
+        // add the dev recipe
+        // get the social providers client id's if they exist.
+        config.recipeList.push(
+            Dev.init({
+                apiKey: config.supertokens?.apiKey,
+                hosts: config.supertokens?.connectionURI,
+                providersClientIds: ["test"],
+            })
+        );
 
         this.recipeModules = config.recipeList.map((func) => {
             return func(this.appInfo, this.isInServerlessEnv);
