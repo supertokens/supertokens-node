@@ -5,11 +5,13 @@ import STError from "./error";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
+import JWTRecipe from "../jwt/recipe";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
+    jwtRecipe: JWTRecipe;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
@@ -21,8 +23,8 @@ export default class SessionRecipe extends RecipeModule {
         id: string,
         req: BaseRequest,
         res: BaseResponse,
-        __: NormalisedURLPath,
-        ___: HTTPMethod
+        path: NormalisedURLPath,
+        method: HTTPMethod
     ) => Promise<boolean>;
     handleError: (err: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];

@@ -24,9 +24,11 @@ import { REFRESH_API_PATH, SIGNOUT_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } from "./cookieAndHeaders";
 import RecipeImplementation from "./recipeImplementation";
+import RecipeImplementationWithJWT from "./with-jwt";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
 import { BaseRequest, BaseResponse } from "../../framework";
+import JWTRecipe from "../jwt/recipe";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -36,6 +38,7 @@ export default class SessionRecipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
+    jwtRecipe: JWTRecipe;
 
     apiImpl: APIInterface;
 
@@ -45,9 +48,26 @@ export default class SessionRecipe extends RecipeModule {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
-        this.recipeInterfaceImpl = this.config.override.functions(
-            new RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, isInServerlessEnv)
-        );
+
+        this.jwtRecipe = new JWTRecipe(recipeId, appInfo, isInServerlessEnv, {
+            override: {
+                ...this.config.override.jwtFeature,
+            },
+        });
+        if (this.config.enableJWTFeature === true) {
+            let defaultRecipeImplementation = new RecipeImplementation(
+                Querier.getNewInstanceOrThrowError(recipeId),
+                this.config,
+                isInServerlessEnv
+            );
+            this.recipeInterfaceImpl = this.config.override.functions(
+                new RecipeImplementationWithJWT(defaultRecipeImplementation, this.jwtRecipe.recipeInterfaceImpl)
+            );
+        } else {
+            this.recipeInterfaceImpl = this.config.override.functions(
+                new RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, isInServerlessEnv)
+            );
+        }
         this.apiImpl = this.config.override.apis(new APIImplementation());
     }
 
@@ -92,6 +112,7 @@ export default class SessionRecipe extends RecipeModule {
                 id: SIGNOUT_API_PATH,
                 disabled: this.apiImpl.signOutPOST === undefined,
             },
+            ...this.jwtRecipe.getAPIsHandled(),
         ];
     };
 
@@ -99,21 +120,24 @@ export default class SessionRecipe extends RecipeModule {
         id: string,
         req: BaseRequest,
         res: BaseResponse,
-        __: NormalisedURLPath,
-        ___: HTTPMethod
+        path: NormalisedURLPath,
+        method: HTTPMethod
     ): Promise<boolean> => {
         let options = {
             config: this.config,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
+            jwtRecipeImplementation: this.jwtRecipe.recipeInterfaceImpl,
             req,
             res,
         };
         if (id === REFRESH_API_PATH) {
             return await handleRefreshAPI(this.apiImpl, options);
-        } else {
+        } else if (id === SIGNOUT_API_PATH) {
             return await signOutAPI(this.apiImpl, options);
+        } else {
+            return await this.jwtRecipe.handleAPIRequest(id, req, res, path, method);
         }
     };
 
@@ -134,16 +158,19 @@ export default class SessionRecipe extends RecipeModule {
                 throw err;
             }
         } else {
-            throw err;
+            return await this.jwtRecipe.handleError(err, request, response);
         }
     };
 
     getAllCORSHeaders = (): string[] => {
-        return getCORSAllowedHeadersFromCookiesAndHeaders();
+        return [...getCORSAllowedHeadersFromCookiesAndHeaders(), ...this.jwtRecipe.getAllCORSHeaders()];
     };
 
     isErrorFromThisRecipe = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === SessionRecipe.RECIPE_ID;
+        return (
+            STError.isErrorFromSuperTokens(err) &&
+            (err.fromRecipe === SessionRecipe.RECIPE_ID || this.jwtRecipe.isErrorFromThisRecipe(err))
+        );
     };
 
     verifySession = async (options: VerifySessionOptions | undefined, request: BaseRequest, response: BaseResponse) => {
@@ -156,6 +183,7 @@ export default class SessionRecipe extends RecipeModule {
                 recipeId: this.getRecipeId(),
                 isInServerlessEnv: this.isInServerlessEnv,
                 recipeImplementation: this.recipeInterfaceImpl,
+                jwtRecipeImplementation: this.jwtRecipe.recipeInterfaceImpl,
             },
         });
     };

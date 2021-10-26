@@ -208,6 +208,9 @@ export function validateAndNormaliseUserInput(
         );
     }
 
+    let enableJWTFeature =
+        config === undefined || config.enableJWTFeature === undefined ? false : config.enableJWTFeature === true;
+
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -223,6 +226,7 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
+        enableJWTFeature,
     };
 }
 

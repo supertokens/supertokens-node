@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;
@@ -68,9 +69,14 @@ export declare type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    enableJWTFeature?: boolean;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis?: (originalImplementation: APIInterface) => APIInterface;
+        jwtFeature?: {
+            functions?: (originalImplementation: JWTRecipeInterface) => JWTRecipeInterface;
+            apis?: (originalImplementation: JWTAPIInterface) => JWTAPIInterface;
+        };
     };
 };
 export declare const InputSchema: {
@@ -117,9 +123,14 @@ export declare type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    enableJWTFeature: boolean;
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis: (originalImplementation: APIInterface) => APIInterface;
+        jwtFeature?: {
+            functions?: (originalImplementation: JWTRecipeInterface) => JWTRecipeInterface;
+            apis?: (originalImplementation: JWTAPIInterface) => JWTAPIInterface;
+        };
     };
 };
 export interface SessionRequest extends BaseRequest {
@@ -182,6 +193,7 @@ export interface SessionContainerInterface {
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
+    jwtRecipeImplementation: JWTRecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;

@@ -14,6 +14,7 @@
  */
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 
 export type KeyInfo = {
     publicKey: string;
@@ -101,9 +102,14 @@ export type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    enableJWTFeature?: boolean;
     override?: {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis?: (originalImplementation: APIInterface) => APIInterface;
+        jwtFeature?: {
+            functions?: (originalImplementation: JWTRecipeInterface) => JWTRecipeInterface;
+            apis?: (originalImplementation: JWTAPIInterface) => JWTAPIInterface;
+        };
     };
 };
 
@@ -129,9 +135,14 @@ export type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    enableJWTFeature: boolean;
     override: {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis: (originalImplementation: APIInterface) => APIInterface;
+        jwtFeature?: {
+            functions?: (originalImplementation: JWTRecipeInterface) => JWTRecipeInterface;
+            apis?: (originalImplementation: JWTAPIInterface) => JWTAPIInterface;
+        };
     };
 };
 
@@ -221,6 +232,7 @@ export interface SessionContainerInterface {
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
+    jwtRecipeImplementation: JWTRecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
