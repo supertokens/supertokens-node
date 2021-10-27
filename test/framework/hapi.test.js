@@ -1161,11 +1161,11 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         });
 
         this.server.route({
-            path: "/updateJWTPayload",
+            path: "/updateAccessTokenPayload",
             method: "post",
             handler: async (req, res) => {
                 let accessTokenBefore = req.session.accessToken;
-                await req.session.updateJWTPayload({ key: "value" });
+                await req.session.updateAccessTokenPayload({ key: "value" });
                 let accessTokenAfter = req.session.accessToken;
                 let statusCode =
                     accessTokenBefore !== accessTokenAfter && typeof accessTokenAfter === "string" ? 200 : 500;
@@ -1177,10 +1177,10 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         });
 
         this.server.route({
-            path: "/getJWTPayload",
+            path: "/getAccessTokenPayload",
             method: "post",
             handler: async (req, res) => {
-                let jwtPayload = await req.session.getJWTPayload();
+                let jwtPayload = await req.session.getAccessTokenPayload();
                 return res.response(jwtPayload).code(200);
             },
             options: {
@@ -1189,10 +1189,10 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         });
 
         this.server.route({
-            path: "/updateJWTPayload2",
+            path: "/updateAccessTokenPayload2",
             method: "post",
             handler: async (req, res) => {
-                await req.session.updateJWTPayload(null);
+                await req.session.updateAccessTokenPayload(null);
                 return res.response("").code(200);
             },
             options: {
@@ -1207,7 +1207,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         });
 
         this.server.route({
-            path: "/updateJWTPayloadInvalidSessionHandle",
+            path: "/updateAccessTokenPayloadInvalidSessionHandle",
             method: "post",
             handler: async (req, res) => {
                 try {
@@ -1239,11 +1239,11 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         assert(frontendInfo.uid === "user1");
         assert.deepStrictEqual(frontendInfo.up, {});
 
-        //call the updateJWTPayload api to add jwt payload
+        //call the updateAccessTokenPayload api to add jwt payload
         let updatedResponse = extractInfoFromResponse(
             await this.server.inject({
                 method: "post",
-                url: "/updateJWTPayload",
+                url: "/updateAccessTokenPayload",
                 headers: {
                     Cookie: `sAccessToken=${response.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
                     "anti-csrf": response.antiCsrf,
@@ -1255,10 +1255,10 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         assert(frontendInfo.uid === "user1");
         assert.deepStrictEqual(frontendInfo.up, { key: "value" });
 
-        //call the getJWTPayload api to get jwt payload
+        //call the getAccessTokenPayload api to get jwt payload
         let response2 = await this.server.inject({
             method: "post",
-            url: "/getJWTPayload",
+            url: "/getAccessTokenPayload",
             headers: {
                 Cookie: `sAccessToken=${updatedResponse.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
                 "anti-csrf": response.antiCsrf,
@@ -1287,7 +1287,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         let updatedResponse2 = extractInfoFromResponse(
             await this.server.inject({
                 method: "post",
-                url: "/updateJWTPayload2",
+                url: "/updateAccessTokenPayload2",
                 headers: {
                     Cookie: `sAccessToken=${response2.accessToken}; sIdRefreshToken=${response2.idRefreshTokenFromCookie}`,
                     "anti-csrf": response2.antiCsrf,
@@ -1302,7 +1302,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         //retrieve the changed jwt payload
         let response3 = await this.server.inject({
             method: "post",
-            url: "/getJWTPayload",
+            url: "/getAccessTokenPayload",
             headers: {
                 Cookie: `sAccessToken=${updatedResponse2.accessToken}; sIdRefreshToken=${response2.idRefreshTokenFromCookie}`,
                 "anti-csrf": response2.antiCsrf,
@@ -1314,7 +1314,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
         //invalid session handle when updating the jwt payload
         let invalidSessionResponse = await this.server.inject({
             method: "post",
-            url: "/updateJWTPayloadInvalidSessionHandle",
+            url: "/updateAccessTokenPayloadInvalidSessionHandle",
             headers: {
                 Cookie: `sAccessToken=${updatedResponse2.accessToken}; sIdRefreshToken=${response2.idRefreshTokenFromCookie}`,
                 "anti-csrf": response2.antiCsrf,

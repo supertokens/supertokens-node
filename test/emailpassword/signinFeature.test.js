@@ -39,6 +39,7 @@ let utils = require("../../lib/build/recipe/emailpassword/utils");
 const express = require("express");
 const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]")}`, function () {
     beforeEach(async function () {
@@ -82,9 +83,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -139,9 +140,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -196,9 +197,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -251,9 +252,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -312,9 +313,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -356,9 +357,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -398,9 +399,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -448,9 +449,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -543,9 +544,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "testrandom@gmail.com", "validpass123");
 
@@ -622,9 +623,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "valid");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -683,9 +684,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -737,9 +738,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -792,9 +793,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -841,9 +842,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -892,9 +893,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -956,9 +957,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -997,9 +998,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(signUpResponse.text).status === "OK");
@@ -1047,9 +1048,9 @@ describe(`signinFeature: ${printPath("[test/emailpassword/signinFeature.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)

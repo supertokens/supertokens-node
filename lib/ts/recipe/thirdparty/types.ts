@@ -55,44 +55,6 @@ export type User = {
     };
 };
 
-export type TypeInputSetJwtPayloadForSession = (
-    user: User,
-    thirdPartyAuthCodeResponse: any,
-    action: "signin" | "signup"
-) => Promise<{ [key: string]: any } | undefined>;
-
-export type TypeInputSetSessionDataForSession = (
-    user: User,
-    thirdPartyAuthCodeResponse: any,
-    action: "signin" | "signup"
-) => Promise<{ [key: string]: any } | undefined>;
-
-export type TypeInputSessionFeature = {
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setJwtPayload?: TypeInputSetJwtPayloadForSession;
-
-    /**
-     * @deprecated Use override functions instead for >= v6.0
-     *   */
-    setSessionData?: TypeInputSetSessionDataForSession;
-};
-
-const InputSessionFeatureSchema = {
-    type: "object",
-    properties: {
-        setJwtPayload: TypeAny,
-        setSessionData: TypeAny,
-    },
-    additionalProperties: false,
-};
-
-export type TypeNormalisedInputSessionFeature = {
-    setJwtPayload: TypeInputSetJwtPayloadForSession;
-    setSessionData: TypeInputSetSessionDataForSession;
-};
-
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
@@ -127,7 +89,6 @@ export type TypeNormalisedInputSignInAndUp = {
 };
 
 export type TypeInput = {
-    sessionFeature?: TypeInputSessionFeature;
     signInAndUpFeature: TypeInputSignInAndUp;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -143,7 +104,6 @@ export type TypeInput = {
 export const InputSchema = {
     type: "object",
     properties: {
-        sessionFeature: InputSessionFeatureSchema,
         signInAndUpFeature: InputSignInAndUpSchema,
         emailVerificationFeature: InputEmailVerificationFeatureSchema,
         override: TypeAny,
@@ -153,7 +113,6 @@ export const InputSchema = {
 };
 
 export type TypeNormalisedInput = {
-    sessionFeature: TypeNormalisedInputSessionFeature;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -172,33 +131,6 @@ export interface RecipeInterface {
     getUsersByEmail(input: { email: string }): Promise<User[]>;
 
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersOldestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersNewestFirst(input: {
-        limit?: number;
-        nextPaginationToken?: string;
-    }): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserCount(): Promise<number>;
 
     signInUp(input: {
         thirdPartyId: string;

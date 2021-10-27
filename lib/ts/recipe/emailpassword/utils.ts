@@ -17,7 +17,6 @@ import Recipe from "./recipe";
 import {
     TypeInput,
     TypeNormalisedInput,
-    User,
     TypeInputSignUp,
     TypeNormalisedInputSignUp,
     TypeNormalisedInputSignIn,
@@ -25,9 +24,6 @@ import {
     TypeNormalisedInputResetPasswordUsingTokenFeature,
     NormalisedFormField,
     InputSchema,
-    TypeInputSessionFeature,
-    TypeNormalisedInputSessionFeature,
-    TypeFormField,
     TypeInputFormField,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
@@ -46,12 +42,6 @@ export function validateAndNormaliseUserInput(
     config?: TypeInput
 ): TypeNormalisedInput {
     validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe");
-
-    let sessionFeature = validateAndNormaliseSessionFeatureConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.sessionFeature
-    );
 
     let signUpFeature = validateAndNormaliseSignupConfig(
         recipeInstance,
@@ -77,41 +67,11 @@ export function validateAndNormaliseUserInput(
     };
 
     return {
-        sessionFeature,
         signUpFeature,
         signInFeature,
         resetPasswordUsingTokenFeature,
         emailVerificationFeature,
         override,
-    };
-}
-
-async function defaultSetSessionDataForSession(_: User, __: TypeFormField[], ___: "signin" | "signup") {
-    return {};
-}
-
-async function defaultSetJwtPayloadForSession(_: User, __: TypeFormField[], ___: "signin" | "signup") {
-    return {};
-}
-
-function validateAndNormaliseSessionFeatureConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSessionFeature
-): TypeNormalisedInputSessionFeature {
-    let setJwtPayload =
-        config === undefined || config.setJwtPayload === undefined
-            ? defaultSetJwtPayloadForSession
-            : config.setJwtPayload;
-
-    let setSessionData =
-        config === undefined || config.setSessionData === undefined
-            ? defaultSetSessionDataForSession
-            : config.setSessionData;
-
-    return {
-        setJwtPayload,
-        setSessionData,
     };
 }
 

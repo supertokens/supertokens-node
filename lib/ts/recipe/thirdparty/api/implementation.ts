@@ -135,22 +135,7 @@ export default class APIImplementation implements APIInterface {
             }
         }
 
-        let action: "signup" | "signin" = response.createdNewUser ? "signup" : "signin";
-        let jwtPayloadPromise = options.config.sessionFeature.setJwtPayload(
-            response.user,
-            accessTokenAPIResponse.data,
-            action
-        );
-        let sessionDataPromise = options.config.sessionFeature.setSessionData(
-            response.user,
-            accessTokenAPIResponse.data,
-            action
-        );
-
-        let jwtPayload: { [key: string]: any } | undefined = await jwtPayloadPromise;
-        let sessionData: { [key: string]: any } | undefined = await sessionDataPromise;
-
-        await Session.createNewSession(options.res, response.user.id, jwtPayload, sessionData);
+        await Session.createNewSession(options.res, response.user.id, {}, {});
         return {
             status: "OK",
             createdNewUser: response.createdNewUser,

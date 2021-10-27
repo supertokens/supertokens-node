@@ -16,6 +16,7 @@
 let { defaultPasswordValidator, defaultEmailValidator } = require("../../lib/build/recipe/emailpassword/utils");
 let assert = require("assert");
 const { printPath } = require("../utils");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`formFieldValidator: ${printPath("[test/emailpassword/formFieldValidator.test.js]")}`, function () {
     it("checking email validator", async function () {

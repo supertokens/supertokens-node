@@ -23,7 +23,6 @@ import {
     APIOptions,
 } from "./types";
 import Recipe from "./recipe";
-import framework from "./framework";
 import type { SessionRequest } from "../../framework/express";
 
 // For Express
@@ -32,11 +31,11 @@ export default class SessionWrapper {
 
     static Error = SuperTokensError;
 
-    static createNewSession(res: any, userId: string, jwtPayload: any = {}, sessionData: any = {}) {
+    static createNewSession(res: any, userId: string, accessTokenPayload: any = {}, sessionData: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
-            jwtPayload,
+            accessTokenPayload,
             sessionData,
         });
     }
@@ -69,11 +68,6 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({ sessionHandles });
     }
 
-    /** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
-    static getSessionData(sessionHandle: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionData({ sessionHandle });
-    }
-
     static updateSessionData(sessionHandle: string, newSessionData: any) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData({
             sessionHandle,
@@ -81,13 +75,11 @@ export default class SessionWrapper {
         });
     }
 
-    /** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
-    static getJWTPayload(sessionHandle: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWTPayload({ sessionHandle });
-    }
-
-    static updateJWTPayload(sessionHandle: string, newJWTPayload: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateJWTPayload({ sessionHandle, newJWTPayload });
+    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateAccessTokenPayload({
+            sessionHandle,
+            newAccessTokenPayload,
+        });
     }
 }
 
@@ -109,20 +101,9 @@ export let revokeSession = SessionWrapper.revokeSession;
 
 export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
 
-/** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
-export let getSessionData = SessionWrapper.getSessionData;
-
 export let updateSessionData = SessionWrapper.updateSessionData;
 
-/** @deprecated Use getSessionInformation instead IF using core version >= 3.5 **/
-export let getJWTPayload = SessionWrapper.getJWTPayload;
-
-export let updateJWTPayload = SessionWrapper.updateJWTPayload;
-
-/**
- * @deprecated
- */
-export let verifySession = framework.express.verifySession;
+export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
 
 export let Error = SessionWrapper.Error;
 

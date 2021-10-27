@@ -5,7 +5,7 @@ import RecipeImplementation from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {
     private sessionHandle;
     private userId;
-    private userDataInJWT;
+    private userDataInAccessToken;
     private res;
     private accessToken;
     private recipeImplementation;
@@ -14,17 +14,17 @@ export default class Session implements SessionContainerInterface {
         accessToken: string,
         sessionHandle: string,
         userId: string,
-        userDataInJWT: any,
+        userDataInAccessToken: any,
         res: BaseResponse
     );
     revokeSession: () => Promise<void>;
     getSessionData: () => Promise<any>;
     updateSessionData: (newSessionData: any) => Promise<void>;
     getUserId: () => string;
-    getJWTPayload: () => any;
+    getAccessTokenPayload: () => any;
     getHandle: () => string;
     getAccessToken: () => string;
-    updateJWTPayload: (newJWTPayload: any) => Promise<void>;
+    updateAccessTokenPayload: (newAccessTokenPayload: any) => Promise<void>;
     getTimeCreated: () => Promise<number>;
     getExpiry: () => Promise<number>;
 }

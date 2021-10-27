@@ -2,7 +2,6 @@ import { RecipeInterface, User } from "../types";
 import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
 
 import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
-import { extractPaginationTokens, combinePaginationResults } from "../utils";
 import { Querier } from "../../../querier";
 import { maxVersion } from "../../../utils";
 
@@ -90,13 +89,6 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.thirdPartyImplementation.getUserByThirdPartyInfo(input);
     };
 
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserByEmail = async (input: { email: string }): Promise<User | undefined> => {
-        return this.emailPasswordImplementation.getUserByEmail(input);
-    };
-
     createResetPasswordToken = async (input: {
         userId: string;
     }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> => {
@@ -105,93 +97,6 @@ export default class RecipeImplementation implements RecipeInterface {
 
     resetPasswordUsingToken = async (input: { token: string; newPassword: string }) => {
         return this.emailPasswordImplementation.resetPasswordUsingToken(input);
-    };
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersOldestFirst = async ({
-        limit,
-        nextPaginationTokenString,
-    }: {
-        limit?: number;
-        nextPaginationTokenString?: string;
-    }) => {
-        limit = limit === undefined ? 100 : limit;
-        let nextPaginationTokens: {
-            thirdPartyPaginationToken: string | undefined;
-            emailPasswordPaginationToken: string | undefined;
-        } = {
-            thirdPartyPaginationToken: undefined,
-            emailPasswordPaginationToken: undefined,
-        };
-        if (nextPaginationTokenString !== undefined) {
-            nextPaginationTokens = extractPaginationTokens(nextPaginationTokenString);
-        }
-        let emailPasswordResultPromise = this.emailPasswordImplementation.getUsersOldestFirst({
-            limit,
-            nextPaginationToken: nextPaginationTokens.emailPasswordPaginationToken,
-        });
-        let thirdPartyResultPromise =
-            this.thirdPartyImplementation === undefined
-                ? {
-                      users: [],
-                  }
-                : this.thirdPartyImplementation.getUsersOldestFirst({
-                      limit,
-                      nextPaginationToken: nextPaginationTokens.thirdPartyPaginationToken,
-                  });
-        let emailPasswordResult = await emailPasswordResultPromise;
-        let thirdPartyResult = await thirdPartyResultPromise;
-        return combinePaginationResults(thirdPartyResult, emailPasswordResult, limit, true);
-    };
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersNewestFirst = async ({
-        limit,
-        nextPaginationTokenString,
-    }: {
-        limit?: number;
-        nextPaginationTokenString?: string;
-    }) => {
-        limit = limit === undefined ? 100 : limit;
-        let nextPaginationTokens: {
-            thirdPartyPaginationToken: string | undefined;
-            emailPasswordPaginationToken: string | undefined;
-        } = {
-            thirdPartyPaginationToken: undefined,
-            emailPasswordPaginationToken: undefined,
-        };
-        if (nextPaginationTokenString !== undefined) {
-            nextPaginationTokens = extractPaginationTokens(nextPaginationTokenString);
-        }
-        let emailPasswordResultPromise = this.emailPasswordImplementation.getUsersNewestFirst({
-            limit,
-            nextPaginationToken: nextPaginationTokens.emailPasswordPaginationToken,
-        });
-        let thirdPartyResultPromise =
-            this.thirdPartyImplementation === undefined
-                ? {
-                      users: [],
-                  }
-                : this.thirdPartyImplementation.getUsersNewestFirst({
-                      limit,
-                      nextPaginationToken: nextPaginationTokens.thirdPartyPaginationToken,
-                  });
-        let emailPasswordResult = await emailPasswordResultPromise;
-        let thirdPartyResult = await thirdPartyResultPromise;
-        return combinePaginationResults(thirdPartyResult, emailPasswordResult, limit, false);
-    };
-
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserCount = async () => {
-        let promise1 = this.emailPasswordImplementation.getUserCount();
-        let promise2 = this.thirdPartyImplementation !== undefined ? this.thirdPartyImplementation.getUserCount() : 0;
-        return (await promise1) + (await promise2);
     };
 
     updateEmailOrPassword = async (input: {

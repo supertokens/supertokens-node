@@ -54,45 +54,6 @@ export default class Wrapper {
         });
     }
 
-    /**
-     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
-     *   */
-    static getUsersOldestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersOldestFirst({
-            limit,
-            nextPaginationToken,
-        });
-    }
-
-    /**
-     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
-     *   */
-    static getUsersNewestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersNewestFirst({
-            limit,
-            nextPaginationToken,
-        });
-    }
-
-    /**
-     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
-     *   */
-    static getUserCount(): Promise<number> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserCount();
-    }
-
     static async createEmailVerificationToken(userId: string) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken({
@@ -167,21 +128,6 @@ export let isEmailVerified = Wrapper.isEmailVerified;
 export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens;
 
 export let unverifyEmail = Wrapper.unverifyEmail;
-
-/**
- * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
- *   */
-export let getUsersOldestFirst = Wrapper.getUsersOldestFirst;
-
-/**
- * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
- *   */
-export let getUsersNewestFirst = Wrapper.getUsersNewestFirst;
-
-/**
- * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
- *   */
-export let getUserCount = Wrapper.getUserCount;
 
 export let Google = Wrapper.Google;
 

@@ -8,6 +8,7 @@ let { ProcessState } = require("../../lib/build/processState");
 let JWTRecipe = require("../../lib/build/recipe/jwt");
 let { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function () {
     beforeEach(async function () {
@@ -76,9 +77,9 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
         app.use(express.json());
 
         app.post("/jwtcreate", async (req, res) => {
@@ -161,9 +162,9 @@ describe(`overrideTest: ${printPath("[test/jwt/override.test.js]")}`, function (
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let getJWKSResponse = await new Promise((resolve) => {
             request(app)

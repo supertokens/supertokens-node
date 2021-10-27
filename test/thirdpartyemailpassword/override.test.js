@@ -22,6 +22,7 @@ const { Querier } = require("../../lib/build/querier");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const express = require("express");
 const request = require("supertest");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test.js]")}`, function () {
     beforeEach(async function () {
@@ -82,9 +83,9 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
@@ -171,12 +172,21 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: async (input) => {
-                                    let response = await oI.signInUpPOST(input);
+                                emailPasswordSignInPOST: async (input) => {
+                                    let response = await oI.emailPasswordSignInPOST(input);
                                     if (response.status === "OK") {
                                         user = response.user;
-                                        newUser = response.createdNewUser;
-                                        type = response.type;
+                                        newUser = false;
+                                        type = "emailpassword";
+                                    }
+                                    return response;
+                                },
+                                emailPasswordSignUpPOST: async (input) => {
+                                    let response = await oI.emailPasswordSignUpPOST(input);
+                                    if (response.status === "OK") {
+                                        user = response.user;
+                                        newUser = true;
+                                        type = "emailpassword";
                                     }
                                     return response;
                                 },
@@ -195,9 +205,9 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
@@ -327,9 +337,9 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res, next) => {
             try {
@@ -419,11 +429,25 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                signInUpPOST: async (input) => {
-                                    let response = await oI.signInUpPOST(input);
+                                emailPasswordSignInPOST: async (input) => {
+                                    let response = await oI.emailPasswordSignInPOST(input);
                                     user = response.user;
-                                    newUser = response.createdNewUser;
-                                    type = response.type;
+                                    newUser = false;
+                                    type = "emailpassword";
+                                    if (newUser) {
+                                        throw {
+                                            error: "signup error",
+                                        };
+                                    }
+                                    throw {
+                                        error: "signin error",
+                                    };
+                                },
+                                emailPasswordSignUpPOST: async (input) => {
+                                    let response = await oI.emailPasswordSignUpPOST(input);
+                                    user = response.user;
+                                    newUser = true;
+                                    type = "emailpassword";
                                     if (newUser) {
                                         throw {
                                             error: "signup error",
@@ -450,9 +474,9 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;

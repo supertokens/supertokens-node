@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { APIInterface, TypeProvider, SignInUpAPIInput, SignInUpAPIOutput } from "../";
+import { APIInterface, TypeProvider } from "../";
 import EmailPasswordImplemenation from "../../emailpassword/api/implementation";
 import ThirdPartyImplemenation from "../../thirdparty/api/implementation";
 export default class APIImplementation implements APIInterface {
@@ -32,7 +32,6 @@ export default class APIImplementation implements APIInterface {
     }) => Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
-    signInUpPOST: (input: SignInUpAPIInput) => Promise<SignInUpAPIOutput>;
     authorisationUrlGET: (input: {
         provider: TypeProvider;
         options: import("../../thirdparty").APIOptions;
@@ -40,4 +39,54 @@ export default class APIImplementation implements APIInterface {
         status: "OK";
         url: string;
     }>;
+    emailPasswordSignInPOST: (input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: import("../../emailpassword").APIOptions;
+    }) => Promise<
+        | {
+              status: "OK";
+              user: import("../../emailpassword").User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
+    emailPasswordSignUpPOST: (input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: import("../../emailpassword").APIOptions;
+    }) => Promise<
+        | {
+              status: "OK";
+              user: import("../../emailpassword").User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
+    thirdPartySignInUpPOST: (input: {
+        provider: TypeProvider;
+        code: string;
+        redirectURI: string;
+        options: import("../../thirdparty").APIOptions;
+    }) => Promise<
+        | {
+              status: "OK";
+              createdNewUser: boolean;
+              user: import("../../thirdparty").User;
+              authCodeResponse: any;
+          }
+        | {
+              status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+          }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
 }

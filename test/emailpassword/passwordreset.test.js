@@ -29,6 +29,7 @@ let generatePasswordResetToken = require("../../lib/build/recipe/emailpassword/a
 let passwordReset = require("../../lib/build/recipe/emailpassword/api/passwordReset").default;
 const express = require("express");
 const request = require("supertest");
+let { middleware, errorHandler } = require("../../framework/express");
 
 /**
  * TODO: (later) in passwordResetFunctions.ts:
@@ -76,9 +77,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -136,9 +137,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -191,9 +192,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -259,9 +260,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -301,9 +302,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
         });
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -356,9 +357,9 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");

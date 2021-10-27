@@ -52,10 +52,6 @@ export default class RecipeImplementation implements RecipeInterface {
     getUserById: (input: { userId: string }) => Promise<User | undefined>;
     getUsersByEmail: ({ email }: { email: string }) => Promise<User[]>;
     getUserByThirdPartyInfo: (input: { thirdPartyId: string; thirdPartyUserId: string }) => Promise<User | undefined>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserByEmail: (input: { email: string }) => Promise<User | undefined>;
     createResetPasswordToken: (input: {
         userId: string;
     }) => Promise<
@@ -73,36 +69,6 @@ export default class RecipeImplementation implements RecipeInterface {
     }) => Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersOldestFirst: ({
-        limit,
-        nextPaginationTokenString,
-    }: {
-        limit?: number | undefined;
-        nextPaginationTokenString?: string | undefined;
-    }) => Promise<{
-        users: User[];
-        nextPaginationToken?: string | undefined;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUsersNewestFirst: ({
-        limit,
-        nextPaginationTokenString,
-    }: {
-        limit?: number | undefined;
-        nextPaginationTokenString?: string | undefined;
-    }) => Promise<{
-        users: User[];
-        nextPaginationToken?: string | undefined;
-    }>;
-    /**
-     * @deprecated Please do not override this function
-     *   */
-    getUserCount: () => Promise<number>;
     updateEmailOrPassword: (input: {
         userId: string;
         email?: string | undefined;

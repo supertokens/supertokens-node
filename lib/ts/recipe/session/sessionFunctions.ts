@@ -27,10 +27,10 @@ import { maxVersion } from "../../utils";
 export async function createNewSession(
     recipeImplementation: RecipeImplementation,
     userId: string,
-    jwtPayload: any = {},
+    accessTokenPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
-    jwtPayload = jwtPayload === null || jwtPayload === undefined ? {} : jwtPayload;
+    accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
     let requestBody: {
         userId: string;
@@ -39,7 +39,7 @@ export async function createNewSession(
         enableAntiCsrf?: boolean;
     } = {
         userId,
-        userDataInJWT: jwtPayload,
+        userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionData,
     };
 
@@ -270,7 +270,7 @@ export async function getSession(
 
 /**
  * @description Retrieves session information from storage for a given session handle
- * @returns session data stored in the database, including userData and JWT payload
+ * @returns session data stored in the database, including userData and access token payload
  */
 export async function getSessionInformation(
     recipeImplementation: RecipeImplementation,
@@ -417,33 +417,6 @@ export async function revokeMultipleSessions(
 }
 
 /**
- * @deprecated use getSessionInformation() instead
- * @description: this function reads from the database every time. It provides no locking mechanism in case other processes are updating session data for this session as well, so please take of that by yourself.
- * @returns session data as provided by the user earlier
- */
-export async function getSessionData(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any> {
-    let apiVersion = await recipeImplementation.querier.getAPIVersion();
-
-    // Call new method for >= 2.8
-    if (maxVersion(apiVersion, "2.7") !== "2.7") {
-        return (await getSessionInformation(recipeImplementation, sessionHandle)).sessionData;
-    }
-
-    let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/data"), {
-        sessionHandle,
-    });
-
-    if (response.status === "OK") {
-        return response.userDataInDatabase;
-    } else {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
-    }
-}
-
-/**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
 export async function updateSessionData(
@@ -466,9 +439,12 @@ export async function updateSessionData(
 
 /**
  * @deprecated use getSessionInformation() instead
- * @returns jwt payload as provided by the user earlier
+ * @returns access token payload as provided by the user earlier
  */
-export async function getJWTPayload(recipeImplementation: RecipeImplementation, sessionHandle: string): Promise<any> {
+export async function getAccessTokenPayload(
+    recipeImplementation: RecipeImplementation,
+    sessionHandle: string
+): Promise<any> {
     let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/data"), {
         sessionHandle,
     });
@@ -482,15 +458,16 @@ export async function getJWTPayload(recipeImplementation: RecipeImplementation, 
     }
 }
 
-export async function updateJWTPayload(
+export async function updateAccessTokenPayload(
     recipeImplementation: RecipeImplementation,
     sessionHandle: string,
-    newJWTPayload: any
+    newAccessTokenPayload: any
 ) {
-    newJWTPayload = newJWTPayload === null || newJWTPayload === undefined ? {} : newJWTPayload;
+    newAccessTokenPayload =
+        newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
     let response = await recipeImplementation.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
         sessionHandle,
-        userDataInJWT: newJWTPayload,
+        userDataInJWT: newAccessTokenPayload,
     });
     if (response.status === "UNAUTHORISED") {
         throw new STError({

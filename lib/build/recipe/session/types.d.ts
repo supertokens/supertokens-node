@@ -144,7 +144,7 @@ export interface RecipeInterface {
     createNewSession(input: {
         res: any;
         userId: string;
-        jwtPayload?: any;
+        accessTokenPayload?: any;
         sessionData?: any;
     }): Promise<SessionContainerInterface>;
     getSession(input: {
@@ -156,19 +156,15 @@ export interface RecipeInterface {
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionData
-     * - getJWTPayload
+     * - getAccessTokenPayload
      */
     getSessionInformation(input: { sessionHandle: string }): Promise<SessionInformation>;
     revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
     getAllSessionHandlesForUser(input: { userId: string }): Promise<string[]>;
     revokeSession(input: { sessionHandle: string }): Promise<boolean>;
     revokeMultipleSessions(input: { sessionHandles: string[] }): Promise<string[]>;
-    /** @deprecated Use getSessionInformation instead **/
-    getSessionData(input: { sessionHandle: string }): Promise<any>;
     updateSessionData(input: { sessionHandle: string; newSessionData: any }): Promise<void>;
-    /** @deprecated Use getSessionInformation instead **/
-    getJWTPayload(input: { sessionHandle: string }): Promise<any>;
-    updateJWTPayload(input: { sessionHandle: string; newJWTPayload: any }): Promise<void>;
+    updateAccessTokenPayload(input: { sessionHandle: string; newAccessTokenPayload: any }): Promise<void>;
     getAccessTokenLifeTimeMS(): Promise<number>;
     getRefreshTokenLifeTimeMS(): Promise<number>;
 }
@@ -177,10 +173,10 @@ export interface SessionContainerInterface {
     getSessionData(): Promise<any>;
     updateSessionData(newSessionData: any): Promise<any>;
     getUserId(): string;
-    getJWTPayload(): any;
+    getAccessTokenPayload(): any;
     getHandle(): string;
     getAccessToken(): string;
-    updateJWTPayload(newJWTPayload: any): Promise<void>;
+    updateAccessTokenPayload(newAccessTokenPayload: any): Promise<void>;
     getTimeCreated(): Promise<number>;
     getExpiry(): Promise<number>;
 }
@@ -211,6 +207,6 @@ export declare type SessionInformation = {
     userId: string;
     sessionData: any;
     expiry: number;
-    jwtPayload: any;
+    accessTokenPayload: any;
     timeCreated: number;
 };

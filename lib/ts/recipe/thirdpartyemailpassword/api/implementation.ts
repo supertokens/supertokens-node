@@ -1,11 +1,4 @@
-import {
-    APIInterface,
-    EmailPasswordAPIOptions,
-    ThirdPartyAPIOptions,
-    TypeProvider,
-    SignInUpAPIInput,
-    SignInUpAPIOutput,
-} from "../";
+import { APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions, TypeProvider } from "../";
 import EmailPasswordImplemenation from "../../emailpassword/api/implementation";
 import ThirdPartyImplemenation from "../../thirdparty/api/implementation";
 
@@ -53,46 +46,6 @@ export default class APIImplementation implements APIInterface {
         return this.emailPasswordImplementation.passwordResetPOST(input);
     };
 
-    signInUpPOST = async (input: SignInUpAPIInput): Promise<SignInUpAPIOutput> => {
-        if (input.type === "emailpassword") {
-            if (input.isSignIn) {
-                let response = await this.emailPasswordImplementation.signInPOST(input);
-                if (response.status === "OK") {
-                    return {
-                        ...response,
-                        createdNewUser: false,
-                        type: "emailpassword",
-                    };
-                } else {
-                    return {
-                        ...response,
-                        type: "emailpassword",
-                    };
-                }
-            } else {
-                let response = await this.emailPasswordImplementation.signUpPOST(input);
-                if (response.status === "OK") {
-                    return {
-                        ...response,
-                        createdNewUser: true,
-                        type: "emailpassword",
-                    };
-                } else {
-                    return {
-                        ...response,
-                        type: "emailpassword",
-                    };
-                }
-            }
-        } else {
-            let response = await this.thirdPartyImplementation.signInUpPOST(input);
-            return {
-                ...response,
-                type: "thirdparty",
-            };
-        }
-    };
-
     authorisationUrlGET = async (input: {
         provider: TypeProvider;
         options: ThirdPartyAPIOptions;
@@ -101,5 +54,34 @@ export default class APIImplementation implements APIInterface {
         url: string;
     }> => {
         return this.thirdPartyImplementation.authorisationUrlGET(input);
+    };
+
+    emailPasswordSignInPOST = async (input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: EmailPasswordAPIOptions;
+    }) => {
+        return this.emailPasswordImplementation.signInPOST(input);
+    };
+
+    emailPasswordSignUpPOST = async (input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: EmailPasswordAPIOptions;
+    }) => {
+        return this.emailPasswordImplementation.signUpPOST(input);
+    };
+
+    thirdPartySignInUpPOST = async (input: {
+        provider: TypeProvider;
+        code: string;
+        redirectURI: string;
+        options: ThirdPartyAPIOptions;
+    }) => {
+        return this.thirdPartyImplementation.signInUpPOST(input);
     };
 }

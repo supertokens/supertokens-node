@@ -45,7 +45,7 @@ export default class NextJS {
                     callbackCalled = true;
                     next(request, response, resolve, reject)(err);
                 });
-                if (!callbackCalled) {
+                if (!callbackCalled && !response.finished && !response.headersSent) {
                     return resolve(result);
                 }
             } catch (err) {

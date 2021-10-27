@@ -30,6 +30,7 @@ let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const express = require("express");
 const request = require("supertest");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.test.js]")}`, function () {
     beforeEach(async function () {
@@ -64,9 +65,9 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -108,9 +109,9 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -156,9 +157,9 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -209,9 +210,9 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -260,9 +261,9 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         response = await new Promise((resolve) =>
             request(app)

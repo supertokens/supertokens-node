@@ -23,6 +23,7 @@ let ThirdParty = require("../../recipe/thirdparty");
 const express = require("express");
 const request = require("supertest");
 let nock = require("nock");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, function () {
     before(function () {
@@ -106,9 +107,9 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
 
@@ -225,9 +226,9 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res) => {
             let userId = req.query.userId;
@@ -332,9 +333,9 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         app.get("/user", async (req, res, next) => {
             try {
@@ -458,9 +459,9 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
 
         let app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         nock("https://test.com").post("/oauth/token").times(2).reply(200, {});
 

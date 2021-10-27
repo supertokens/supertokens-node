@@ -40,6 +40,7 @@ let utils = require("../../lib/build/recipe/emailpassword/utils");
 const express = require("express");
 const request = require("supertest");
 const { default: NormalisedURLPath } = require("../../lib/build/normalisedURLPath");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.js]")}`, function () {
     beforeEach(async function () {
@@ -76,9 +77,9 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");
@@ -148,9 +149,9 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -185,9 +186,9 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -231,9 +232,9 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await signUPRequest(app, "random@gmail.com", "validpass123");
         assert(JSON.parse(response.text).status === "OK");

@@ -26,30 +26,6 @@ export default class Wrapper {
     static getUserById(userId: string): Promise<User | undefined>;
     static getUsersByEmail(email: string): Promise<User[]>;
     static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
-    /**
-     * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
-     *   */
-    static getUsersOldestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    /**
-     * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
-     *   */
-    static getUsersNewestFirst(
-        limit?: number,
-        nextPaginationToken?: string
-    ): Promise<{
-        users: User[];
-        nextPaginationToken?: string;
-    }>;
-    /**
-     * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
-     *   */
-    static getUserCount(): Promise<number>;
     static createEmailVerificationToken(
         userId: string
     ): Promise<
@@ -80,9 +56,6 @@ export default class Wrapper {
         userId: string
     ): Promise<{
         status: "OK";
-        /**
-         * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
-         *   */
     }>;
     static Google: typeof import("./providers/google").default;
     static Github: typeof import("./providers/github").default;
@@ -100,18 +73,6 @@ export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
 export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
 export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
 export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
-/**
- * @deprecated Use supertokens.getUsersOldestFirst(...) function instead IF using core version >= 3.5
- *   */
-export declare let getUsersOldestFirst: typeof Wrapper.getUsersOldestFirst;
-/**
- * @deprecated Use supertokens.getUsersNewestFirst(...) function instead IF using core version >= 3.5
- *   */
-export declare let getUsersNewestFirst: typeof Wrapper.getUsersNewestFirst;
-/**
- * @deprecated Use supertokens.getUserCount(...) function instead IF using core version >= 3.5
- *   */
-export declare let getUserCount: typeof Wrapper.getUserCount;
 export declare let Google: typeof import("./providers/google").default;
 export declare let Github: typeof import("./providers/github").default;
 export declare let Facebook: typeof import("./providers/facebook").default;

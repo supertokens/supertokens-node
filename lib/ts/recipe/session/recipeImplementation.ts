@@ -75,18 +75,18 @@ export default class RecipeImplementation implements RecipeInterface {
     createNewSession = async ({
         res,
         userId,
-        jwtPayload = {},
+        accessTokenPayload = {},
         sessionData = {},
     }: {
         res: any;
         userId: string;
-        jwtPayload?: any;
+        accessTokenPayload?: any;
         sessionData?: any;
     }): Promise<Session> => {
         if (!res.wrapperUsed) {
             res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
         }
-        let response = await SessionFunctions.createNewSession(this, userId, jwtPayload, sessionData);
+        let response = await SessionFunctions.createNewSession(this, userId, accessTokenPayload, sessionData);
         attachCreateOrRefreshSessionResponseToExpressRes(this.config, res, response);
         return new Session(
             this,
@@ -266,20 +266,18 @@ export default class RecipeImplementation implements RecipeInterface {
         return SessionFunctions.revokeMultipleSessions(this, sessionHandles);
     };
 
-    getSessionData = ({ sessionHandle }: { sessionHandle: string }): Promise<any> => {
-        return SessionFunctions.getSessionData(this, sessionHandle);
-    };
-
     updateSessionData = ({ sessionHandle, newSessionData }: { sessionHandle: string; newSessionData: any }) => {
         return SessionFunctions.updateSessionData(this, sessionHandle, newSessionData);
     };
 
-    getJWTPayload = ({ sessionHandle }: { sessionHandle: string }): Promise<any> => {
-        return SessionFunctions.getJWTPayload(this, sessionHandle);
-    };
-
-    updateJWTPayload = ({ sessionHandle, newJWTPayload }: { sessionHandle: string; newJWTPayload: any }) => {
-        return SessionFunctions.updateJWTPayload(this, sessionHandle, newJWTPayload);
+    updateAccessTokenPayload = ({
+        sessionHandle,
+        newAccessTokenPayload,
+    }: {
+        sessionHandle: string;
+        newAccessTokenPayload: any;
+    }) => {
+        return SessionFunctions.updateAccessTokenPayload(this, sessionHandle, newAccessTokenPayload);
     };
 
     getHandshakeInfo = async (forceRefetch = false): Promise<HandshakeInfo> => {

@@ -22,6 +22,7 @@ let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 const request = require("supertest");
 const express = require("express");
 let bodyParser = require("body-parser");
+let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.test.js]")}`, function () {
     beforeEach(async function () {
@@ -64,9 +65,9 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -103,9 +104,9 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let signUpResponse = await signUPRequest(app, "random@gmail.com", "validPass123");
         assert(signUpResponse.status === 200);
@@ -149,9 +150,9 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -191,9 +192,9 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
 
         const app = express();
 
-        app.use(STExpress.middleware());
+        app.use(middleware());
 
-        app.use(STExpress.errorHandler());
+        app.use(errorHandler());
 
         let response = await new Promise((resolve) =>
             request(app)

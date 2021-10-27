@@ -16,18 +16,7 @@
 import { NormalisedAppinfo } from "../../types";
 import { validateTheStructureOfUserInput } from "../../utils";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import {
-    User,
-    TypeInput,
-    InputSchema,
-    TypeNormalisedInput,
-    TypeInputSignUp,
-    TypeNormalisedInputSignUp,
-    TypeContextThirdParty,
-    TypeNormalisedInputSessionFeature,
-    TypeInputSessionFeature,
-    TypeContextEmailPasswordSessionDataAndJWT,
-} from "./types";
+import { TypeInput, InputSchema, TypeNormalisedInput, TypeInputSignUp, TypeNormalisedInputSignUp } from "./types";
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
@@ -39,12 +28,6 @@ export function validateAndNormaliseUserInput(
     config?: TypeInput
 ): TypeNormalisedInput {
     validateTheStructureOfUserInput(config, InputSchema, "thirdpartyemailpassword recipe");
-
-    let sessionFeature = validateAndNormaliseSessionFeatureConfig(
-        recipeInstance,
-        appInfo,
-        config === undefined ? undefined : config.sessionFeature
-    );
 
     let signUpFeature = validateAndNormaliseSignUpConfig(
         recipeInstance,
@@ -66,28 +49,11 @@ export function validateAndNormaliseUserInput(
 
     return {
         override,
-        sessionFeature,
         signUpFeature,
         providers,
         resetPasswordUsingTokenFeature,
         emailVerificationFeature,
     };
-}
-
-async function defaultSetSessionDataForSession(
-    _: User,
-    __: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
-    ___: "signin" | "signup"
-) {
-    return {};
-}
-
-async function defaultSetJwtPayloadForSession(
-    _: User,
-    __: TypeContextEmailPasswordSessionDataAndJWT | TypeContextThirdParty,
-    ___: "signin" | "signup"
-) {
-    return {};
 }
 
 function validateAndNormaliseSignUpConfig(
@@ -101,27 +67,6 @@ function validateAndNormaliseSignUpConfig(
 
     return {
         formFields,
-    };
-}
-
-function validateAndNormaliseSessionFeatureConfig(
-    _: Recipe,
-    __: NormalisedAppinfo,
-    config?: TypeInputSessionFeature
-): TypeNormalisedInputSessionFeature {
-    let setJwtPayload =
-        config === undefined || config.setJwtPayload === undefined
-            ? defaultSetJwtPayloadForSession
-            : config.setJwtPayload;
-
-    let setSessionData =
-        config === undefined || config.setSessionData === undefined
-            ? defaultSetSessionDataForSession
-            : config.setSessionData;
-
-    return {
-        setJwtPayload,
-        setSessionData,
     };
 }
 
@@ -159,113 +104,5 @@ function validateAndNormaliseEmailVerificationConfig(
                       }
                       return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
                   },
-    };
-}
-
-/**
- * @deprecated Please do not override this function
- *   */
-export function createNewPaginationToken(userId: string, timeJoined: number): string {
-    return Buffer.from(`${userId};${timeJoined}`).toString("base64");
-}
-
-/**
- * @deprecated Please do not override this function
- *   */
-export function combinePaginationTokens(
-    thirdPartyPaginationToken: string | null,
-    emailPasswordPaginationToken: string | null
-): string {
-    return Buffer.from(`${thirdPartyPaginationToken};${emailPasswordPaginationToken}`).toString("base64");
-}
-
-/**
- * @deprecated
- *   */
-export function extractPaginationTokens(
-    nextPaginationToken: string
-): {
-    thirdPartyPaginationToken: string | undefined;
-    emailPasswordPaginationToken: string | undefined;
-} {
-    let extractedTokens = Buffer.from(nextPaginationToken, "base64").toString().split(";");
-    if (extractedTokens.length !== 2) {
-        throw new Error("Pagination token is invalid");
-    }
-    return {
-        thirdPartyPaginationToken: extractedTokens[0] === "null" ? undefined : extractedTokens[0],
-        emailPasswordPaginationToken: extractedTokens[1] === "null" ? undefined : extractedTokens[1],
-    };
-}
-
-/**
- * @deprecated Please do not override this function
- *   */
-export function combinePaginationResults(
-    thirdPartyResult: {
-        users: User[];
-        nextPaginationToken?: string;
-    },
-    emailPasswordResult: {
-        users: User[];
-        nextPaginationToken?: string;
-    },
-    limit: number,
-    oldestFirst: boolean
-): {
-    users: User[];
-    nextPaginationToken?: string;
-} {
-    let maxLoop = Math.min(limit, thirdPartyResult.users.length + emailPasswordResult.users.length);
-    let thirdPartyResultLoopIndex = 0;
-    let emailPasswordResultLoopIndex = 0;
-    let users: User[] = [];
-    for (let i = 0; i < maxLoop; i++) {
-        if (
-            thirdPartyResultLoopIndex !== thirdPartyResult.users.length && // there are still users available in the thirdPartyResult
-            (emailPasswordResultLoopIndex === emailPasswordResult.users.length || // no more users left in emailPasswordResult array to match against
-                (oldestFirst &&
-                    thirdPartyResult.users[thirdPartyResultLoopIndex].timeJoined <
-                        emailPasswordResult.users[emailPasswordResultLoopIndex].timeJoined) ||
-                (!oldestFirst &&
-                    thirdPartyResult.users[thirdPartyResultLoopIndex].timeJoined >
-                        emailPasswordResult.users[emailPasswordResultLoopIndex].timeJoined))
-        ) {
-            users.push(thirdPartyResult.users[thirdPartyResultLoopIndex]);
-            thirdPartyResultLoopIndex++;
-        } else {
-            users.push(emailPasswordResult.users[emailPasswordResultLoopIndex]);
-            emailPasswordResultLoopIndex++;
-        }
-    }
-    let thirdPartyPaginationToken: string | null = null;
-    let emailPasswordPaginationToken: string | null = null;
-
-    // all users of thirdPartyResult are in the resulting users array. thus use the pagination token sent by the core (if any)
-    if (thirdPartyResultLoopIndex === thirdPartyResult.users.length) {
-        thirdPartyPaginationToken =
-            thirdPartyResult.nextPaginationToken === undefined ? null : thirdPartyResult.nextPaginationToken;
-    } else {
-        thirdPartyPaginationToken = createNewPaginationToken(
-            thirdPartyResult.users[thirdPartyResultLoopIndex].id,
-            thirdPartyResult.users[thirdPartyResultLoopIndex].timeJoined
-        );
-    }
-
-    // all users of emailPasswordResult are in the resulting users array. thus use the pagination token sent by the core (if any)
-    if (emailPasswordResultLoopIndex === emailPasswordResult.users.length) {
-        emailPasswordPaginationToken =
-            emailPasswordResult.nextPaginationToken === undefined ? null : emailPasswordResult.nextPaginationToken;
-    } else {
-        emailPasswordPaginationToken = createNewPaginationToken(
-            emailPasswordResult.users[emailPasswordResultLoopIndex].id,
-            emailPasswordResult.users[emailPasswordResultLoopIndex].timeJoined
-        );
-    }
-
-    let nextPaginationToken = combinePaginationTokens(thirdPartyPaginationToken, emailPasswordPaginationToken);
-    return {
-        users,
-        nextPaginationToken,
     };
 }
