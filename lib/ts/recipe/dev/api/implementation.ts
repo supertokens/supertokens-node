@@ -30,7 +30,7 @@ async function checkConnectionToCore(
                 let usingDevCoreMessage =
                     "You are currently using try.supertokens.io for your core. This is for demo purposes only, so please replace this with the address of your managed core instance (sign up on supertokens.io), or the address of your self host a core instance.";
                 let message = usingDevelopmentKeysMessage
-                    ? usingDevCoreMessage + "\r\n " + usingDevelopmentKeysMessage
+                    ? usingDevCoreMessage + "  " + usingDevelopmentKeysMessage
                     : usingDevCoreMessage;
                 return {
                     status: "OK",
