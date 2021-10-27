@@ -6,7 +6,7 @@ export default class RecipeImplementation implements RecipeInterface {
     originalImplementation: RecipeInterface;
     jwtRecipeImplementation: JWTRecipeInterface;
     constructor(originalImplementation: RecipeInterface, jwtRecipeImplementation: JWTRecipeInterface);
-    createNewSession: ({
+    createNewSession({
         res,
         userId,
         accessTokenPayload,
@@ -16,8 +16,8 @@ export default class RecipeImplementation implements RecipeInterface {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
-    }) => Promise<SessionContainerInterface>;
-    getSession: ({
+    }): Promise<SessionContainerInterface>;
+    getSession({
         req,
         res,
         options,
@@ -25,27 +25,21 @@ export default class RecipeImplementation implements RecipeInterface {
         req: any;
         res: any;
         options?: VerifySessionOptions | undefined;
-    }) => Promise<SessionContainerInterface | undefined>;
-    refreshSession: ({ req, res }: { req: any; res: any }) => Promise<SessionContainerInterface>;
-    getSessionInformation: ({ sessionHandle }: { sessionHandle: string }) => Promise<SessionInformation>;
-    revokeAllSessionsForUser: ({ userId }: { userId: string }) => Promise<string[]>;
-    getAllSessionHandlesForUser: ({ userId }: { userId: string }) => Promise<string[]>;
-    revokeSession: ({ sessionHandle }: { sessionHandle: string }) => Promise<boolean>;
-    revokeMultipleSessions: ({ sessionHandles }: { sessionHandles: string[] }) => Promise<string[]>;
-    updateSessionData: ({
-        sessionHandle,
-        newSessionData,
-    }: {
-        sessionHandle: string;
-        newSessionData: any;
-    }) => Promise<void>;
-    updateAccessTokenPayload: ({
+    }): Promise<SessionContainerInterface | undefined>;
+    refreshSession({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface>;
+    getSessionInformation({ sessionHandle }: { sessionHandle: string }): Promise<SessionInformation>;
+    revokeAllSessionsForUser({ userId }: { userId: string }): Promise<string[]>;
+    getAllSessionHandlesForUser({ userId }: { userId: string }): Promise<string[]>;
+    revokeSession({ sessionHandle }: { sessionHandle: string }): Promise<boolean>;
+    revokeMultipleSessions({ sessionHandles }: { sessionHandles: string[] }): Promise<string[]>;
+    updateSessionData({ sessionHandle, newSessionData }: { sessionHandle: string; newSessionData: any }): Promise<void>;
+    updateAccessTokenPayload({
         sessionHandle,
         newAccessTokenPayload,
     }: {
         sessionHandle: string;
         newAccessTokenPayload: any;
-    }) => Promise<void>;
-    getAccessTokenLifeTimeMS: () => Promise<number>;
-    getRefreshTokenLifeTimeMS: () => Promise<number>;
+    }): Promise<void>;
+    getAccessTokenLifeTimeMS(): Promise<number>;
+    getRefreshTokenLifeTimeMS(): Promise<number>;
 }

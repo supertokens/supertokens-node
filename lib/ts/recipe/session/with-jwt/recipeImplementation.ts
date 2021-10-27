@@ -27,7 +27,7 @@ export default class RecipeImplementation implements RecipeInterface {
         this.jwtRecipeImplementation = jwtRecipeImplementation;
     }
 
-    createNewSession = async ({
+    async createNewSession({
         res,
         userId,
         accessTokenPayload,
@@ -37,7 +37,7 @@ export default class RecipeImplementation implements RecipeInterface {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
-    }): Promise<SessionContainerInterface> => {
+    }): Promise<SessionContainerInterface> {
         let accessTokenValidityInSeconds = (await this.getAccessTokenLifeTimeMS()) / 1000;
         let jwtResponse = await this.jwtRecipeImplementation.createJWT({
             payload: accessTokenPayload,
@@ -60,9 +60,9 @@ export default class RecipeImplementation implements RecipeInterface {
             accessTokenPayload,
             sessionData,
         });
-    };
+    }
 
-    getSession = async ({
+    async getSession({
         req,
         res,
         options,
@@ -70,11 +70,11 @@ export default class RecipeImplementation implements RecipeInterface {
         req: any;
         res: any;
         options?: VerifySessionOptions | undefined;
-    }): Promise<SessionContainerInterface | undefined> => {
+    }): Promise<SessionContainerInterface | undefined> {
         return await this.originalImplementation.getSession({ req, res, options });
-    };
+    }
 
-    refreshSession = async ({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> => {
+    async refreshSession({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> {
         let accessTokenValidityInSeconds = (await this.getAccessTokenLifeTimeMS()) / 1000;
 
         // Refresh session first because this will create a new access token
@@ -101,45 +101,45 @@ export default class RecipeImplementation implements RecipeInterface {
 
         await newSession.updateAccessTokenPayload(accessTokenPayload);
         return newSession;
-    };
+    }
 
-    getSessionInformation = async ({ sessionHandle }: { sessionHandle: string }): Promise<SessionInformation> => {
+    async getSessionInformation({ sessionHandle }: { sessionHandle: string }): Promise<SessionInformation> {
         return await this.originalImplementation.getSessionInformation({ sessionHandle });
-    };
+    }
 
-    revokeAllSessionsForUser = async ({ userId }: { userId: string }): Promise<string[]> => {
+    async revokeAllSessionsForUser({ userId }: { userId: string }): Promise<string[]> {
         return await this.originalImplementation.revokeAllSessionsForUser({ userId });
-    };
+    }
 
-    getAllSessionHandlesForUser = async ({ userId }: { userId: string }): Promise<string[]> => {
+    async getAllSessionHandlesForUser({ userId }: { userId: string }): Promise<string[]> {
         return await this.originalImplementation.getAllSessionHandlesForUser({ userId });
-    };
+    }
 
-    revokeSession = async ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> => {
+    async revokeSession({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {
         return await this.originalImplementation.revokeSession({ sessionHandle });
-    };
+    }
 
-    revokeMultipleSessions = async ({ sessionHandles }: { sessionHandles: string[] }): Promise<string[]> => {
+    async revokeMultipleSessions({ sessionHandles }: { sessionHandles: string[] }): Promise<string[]> {
         return await this.originalImplementation.revokeMultipleSessions({ sessionHandles });
-    };
+    }
 
-    updateSessionData = async ({
+    async updateSessionData({
         sessionHandle,
         newSessionData,
     }: {
         sessionHandle: string;
         newSessionData: any;
-    }): Promise<void> => {
+    }): Promise<void> {
         return await this.originalImplementation.updateSessionData({ sessionHandle, newSessionData });
-    };
+    }
 
-    updateAccessTokenPayload = async ({
+    async updateAccessTokenPayload({
         sessionHandle,
         newAccessTokenPayload,
     }: {
         sessionHandle: string;
         newAccessTokenPayload: any;
-    }): Promise<void> => {
+    }): Promise<void> {
         // Remove the JWT from the new access token payload
         delete newAccessTokenPayload.jwt;
 
@@ -164,13 +164,13 @@ export default class RecipeImplementation implements RecipeInterface {
         };
 
         return await this.originalImplementation.updateAccessTokenPayload({ sessionHandle, newAccessTokenPayload });
-    };
+    }
 
-    getAccessTokenLifeTimeMS = async (): Promise<number> => {
+    async getAccessTokenLifeTimeMS(): Promise<number> {
         return await this.originalImplementation.getAccessTokenLifeTimeMS();
-    };
+    }
 
-    getRefreshTokenLifeTimeMS = async (): Promise<number> => {
+    async getRefreshTokenLifeTimeMS(): Promise<number> {
         return await this.originalImplementation.getRefreshTokenLifeTimeMS();
-    };
+    }
 }
