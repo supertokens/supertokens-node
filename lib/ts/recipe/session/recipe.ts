@@ -61,7 +61,7 @@ export default class SessionRecipe extends RecipeModule {
                 isInServerlessEnv
             );
             this.recipeInterfaceImpl = this.config.override.functions(
-                new RecipeImplementationWithJWT(defaultRecipeImplementation, this.jwtRecipe.recipeInterfaceImpl)
+                RecipeImplementationWithJWT(defaultRecipeImplementation, this.jwtRecipe.recipeInterfaceImpl)
             );
         } else {
             this.recipeInterfaceImpl = this.config.override.functions(
