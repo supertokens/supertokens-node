@@ -1,16 +1,16 @@
 // @ts-nocheck
 import { BaseResponse } from "../../framework";
 import { SessionContainerInterface } from "./types";
-import RecipeImplementation from "./recipeImplementation";
+import { Helpers } from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {
     private sessionHandle;
     private userId;
     private userDataInAccessToken;
     private res;
     private accessToken;
-    private recipeImplementation;
+    private helpers;
     constructor(
-        recipeImplementation: RecipeImplementation,
+        helpers: Helpers,
         accessToken: string,
         sessionHandle: string,
         userId: string,

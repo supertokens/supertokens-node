@@ -1,69 +1,65 @@
 import { RecipeInterface, User } from "../../emailpassword/types";
 import { RecipeInterface as ThirdPartyEmailPasswordRecipeInterface } from "../types";
 
-export default class RecipeImplementation implements RecipeInterface {
-    recipeImplementation: ThirdPartyEmailPasswordRecipeInterface;
+export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPasswordRecipeInterface): RecipeInterface {
+    return {
+        signUp: async function ({
+            email,
+            password,
+        }: {
+            email: string;
+            password: string;
+        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            return await recipeInterface.signUp({ email, password });
+        },
 
-    constructor(recipeImplementation: ThirdPartyEmailPasswordRecipeInterface) {
-        this.recipeImplementation = recipeImplementation;
-    }
+        signIn: async function ({
+            email,
+            password,
+        }: {
+            email: string;
+            password: string;
+        }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+            return recipeInterface.signIn({ email, password });
+        },
 
-    signUp = async ({
-        email,
-        password,
-    }: {
-        email: string;
-        password: string;
-    }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> => {
-        return await this.recipeImplementation.signUp({ email, password });
-    };
-
-    signIn = async ({
-        email,
-        password,
-    }: {
-        email: string;
-        password: string;
-    }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> => {
-        return this.recipeImplementation.signIn({ email, password });
-    };
-
-    getUserById = async ({ userId }: { userId: string }): Promise<User | undefined> => {
-        let user = await this.recipeImplementation.getUserById({ userId });
-        if (user === undefined || user.thirdParty !== undefined) {
-            // either user is undefined or it's a thirdparty user.
-            return undefined;
-        }
-        return user;
-    };
-
-    getUserByEmail = async ({ email }: { email: string }): Promise<User | undefined> => {
-        let result = await this.recipeImplementation.getUsersByEmail({ email });
-        for (let i = 0; i < result.length; i++) {
-            if (result[i].thirdParty === undefined) {
-                return result[i];
+        getUserById: async function ({ userId }: { userId: string }): Promise<User | undefined> {
+            let user = await recipeInterface.getUserById({ userId });
+            if (user === undefined || user.thirdParty !== undefined) {
+                // either user is undefined or it's a thirdparty user.
+                return undefined;
             }
-        }
-        return undefined;
-    };
+            return user;
+        },
 
-    createResetPasswordToken = async ({
-        userId,
-    }: {
-        userId: string;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> => {
-        return this.recipeImplementation.createResetPasswordToken({ userId });
-    };
+        getUserByEmail: async function ({ email }: { email: string }): Promise<User | undefined> {
+            let result = await recipeInterface.getUsersByEmail({ email });
+            for (let i = 0; i < result.length; i++) {
+                if (result[i].thirdParty === undefined) {
+                    return result[i];
+                }
+            }
+            return undefined;
+        },
 
-    resetPasswordUsingToken = async ({ token, newPassword }: { token: string; newPassword: string }) => {
-        return this.recipeImplementation.resetPasswordUsingToken({ token, newPassword });
-    };
+        createResetPasswordToken: async function ({
+            userId,
+        }: {
+            userId: string;
+        }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+            return recipeInterface.createResetPasswordToken({ userId });
+        },
 
-    updateEmailOrPassword = async (input: {
-        userId: string;
-        email?: string;
-        password?: string;
-    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> => {
-        return this.recipeImplementation.updateEmailOrPassword(input);
+        resetPasswordUsingToken: async function ({ token, newPassword }: { token: string; newPassword: string }) {
+            return recipeInterface.resetPasswordUsingToken({ token, newPassword });
+        },
+
+        updateEmailOrPassword: async function (input: {
+            userId: string;
+            email?: string;
+            password?: string;
+        }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            return recipeInterface.updateEmailOrPassword(input);
+        },
     };
 }

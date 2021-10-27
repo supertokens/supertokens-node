@@ -63,13 +63,13 @@ export default class Recipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         this.recipeInterfaceImpl = this.config.override.functions(
-            new RecipeImplementation(
+            RecipeImplementation(
                 Querier.getNewInstanceOrThrowError(EmailPasswordRecipe.RECIPE_ID),
                 Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID)
             )
         );
 
-        this.apiImpl = this.config.override.apis(new APIImplementation());
+        this.apiImpl = this.config.override.apis(APIImplementation());
 
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined
@@ -88,7 +88,7 @@ export default class Recipe extends RecipeModule {
                       {
                           override: {
                               functions: (_) => {
-                                  return new EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
+                                  return EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
                               },
                               apis: (_) => {
                                   return getEmailPasswordIterfaceImpl(this.apiImpl);
@@ -113,7 +113,7 @@ export default class Recipe extends RecipeModule {
                           {
                               override: {
                                   functions: (_) => {
-                                      return new ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
+                                      return ThirdPartyRecipeImplementation(this.recipeInterfaceImpl);
                                   },
                                   apis: (_) => {
                                       return getThirdPartyIterfaceImpl(this.apiImpl);

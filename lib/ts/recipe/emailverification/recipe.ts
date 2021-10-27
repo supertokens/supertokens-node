@@ -44,9 +44,9 @@ export default class Recipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
         this.recipeInterfaceImpl = this.config.override.functions(
-            new RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId))
+            RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId))
         );
-        this.apiImpl = this.config.override.apis(new APIImplementation());
+        this.apiImpl = this.config.override.apis(APIImplementation());
     }
 
     static getInstanceOrThrowError(): Recipe {

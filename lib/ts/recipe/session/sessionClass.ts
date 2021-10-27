@@ -18,7 +18,7 @@ import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeade
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { SessionContainerInterface } from "./types";
-import RecipeImplementation from "./recipeImplementation";
+import { Helpers } from "./recipeImplementation";
 
 export default class Session implements SessionContainerInterface {
     private sessionHandle: string;
@@ -26,10 +26,10 @@ export default class Session implements SessionContainerInterface {
     private userDataInAccessToken: any;
     private res: BaseResponse;
     private accessToken: string;
-    private recipeImplementation: RecipeImplementation;
+    private helpers: Helpers;
 
     constructor(
-        recipeImplementation: RecipeImplementation,
+        helpers: Helpers,
         accessToken: string,
         sessionHandle: string,
         userId: string,
@@ -41,22 +41,21 @@ export default class Session implements SessionContainerInterface {
         this.userDataInAccessToken = userDataInAccessToken;
         this.res = res;
         this.accessToken = accessToken;
-        this.recipeImplementation = recipeImplementation;
+        this.helpers = helpers;
     }
 
     revokeSession = async () => {
-        if (await SessionFunctions.revokeSession(this.recipeImplementation, this.sessionHandle)) {
-            clearSessionFromCookie(this.recipeImplementation.config, this.res);
+        if (await SessionFunctions.revokeSession(this.helpers, this.sessionHandle)) {
+            clearSessionFromCookie(this.helpers.config, this.res);
         }
     };
 
     getSessionData = async (): Promise<any> => {
         try {
-            return (await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle))
-                .sessionData;
+            return (await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle)).sessionData;
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.recipeImplementation.config, this.res);
+                clearSessionFromCookie(this.helpers.config, this.res);
             }
             throw err;
         }
@@ -64,10 +63,10 @@ export default class Session implements SessionContainerInterface {
 
     updateSessionData = async (newSessionData: any) => {
         try {
-            await SessionFunctions.updateSessionData(this.recipeImplementation, this.sessionHandle, newSessionData);
+            await SessionFunctions.updateSessionData(this.helpers, this.sessionHandle, newSessionData);
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.recipeImplementation.config, this.res);
+                clearSessionFromCookie(this.helpers.config, this.res);
             }
             throw err;
         }
@@ -92,15 +91,12 @@ export default class Session implements SessionContainerInterface {
     updateAccessTokenPayload = async (newAccessTokenPayload: any) => {
         newAccessTokenPayload =
             newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
-        let response = await this.recipeImplementation.querier.sendPostRequest(
-            new NormalisedURLPath("/recipe/session/regenerate"),
-            {
-                accessToken: this.accessToken,
-                userDataInJWT: newAccessTokenPayload,
-            }
-        );
+        let response = await this.helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
+            accessToken: this.accessToken,
+            userDataInJWT: newAccessTokenPayload,
+        });
         if (response.status === "UNAUTHORISED") {
-            clearSessionFromCookie(this.recipeImplementation.config, this.res);
+            clearSessionFromCookie(this.helpers.config, this.res);
             throw new STError({
                 message: "Session has probably been revoked while updating access token payload",
                 type: STError.UNAUTHORISED,
@@ -116,7 +112,7 @@ export default class Session implements SessionContainerInterface {
                 response.session.userDataInJWT
             );
             attachAccessTokenToCookie(
-                this.recipeImplementation.config,
+                this.helpers.config,
                 this.res,
                 response.accessToken.token,
                 response.accessToken.expiry
@@ -126,11 +122,10 @@ export default class Session implements SessionContainerInterface {
 
     getTimeCreated = async (): Promise<number> => {
         try {
-            return (await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle))
-                .timeCreated;
+            return (await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle)).timeCreated;
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.recipeImplementation.config, this.res);
+                clearSessionFromCookie(this.helpers.config, this.res);
             }
             throw err;
         }
@@ -138,10 +133,10 @@ export default class Session implements SessionContainerInterface {
 
     getExpiry = async (): Promise<number> => {
         try {
-            return (await SessionFunctions.getSessionInformation(this.recipeImplementation, this.sessionHandle)).expiry;
+            return (await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle)).expiry;
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.recipeImplementation.config, this.res);
+                clearSessionFromCookie(this.helpers.config, this.res);
             }
             throw err;
         }
