@@ -54,7 +54,7 @@ export default class RecipeImplementation implements RecipeInterface {
             jwt: jwtResponse.jwt,
         };
 
-        return await this.originalImplementation.createNewSession({
+        return await this.originalImplementation.createNewSession.bind(this)({
             res,
             userId,
             accessTokenPayload,
@@ -71,14 +71,14 @@ export default class RecipeImplementation implements RecipeInterface {
         res: any;
         options?: VerifySessionOptions | undefined;
     }): Promise<SessionContainerInterface | undefined> {
-        return await this.originalImplementation.getSession({ req, res, options });
+        return await this.originalImplementation.getSession.bind(this)({ req, res, options });
     };
 
     refreshSession = async function ({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> {
         let accessTokenValidityInSeconds = (await this.getAccessTokenLifeTimeMS()) / 1000;
 
         // Refresh session first because this will create a new access token
-        let newSession = await this.originalImplementation.refreshSession({ req, res });
+        let newSession = await this.originalImplementation.refreshSession.bind(this)({ req, res });
         let accessTokenPayload = newSession.getAccessTokenPayload();
 
         // Remove the old jwt
@@ -104,23 +104,23 @@ export default class RecipeImplementation implements RecipeInterface {
     };
 
     getSessionInformation = async function ({ sessionHandle }: { sessionHandle: string }): Promise<SessionInformation> {
-        return await this.originalImplementation.getSessionInformation({ sessionHandle });
+        return await this.originalImplementation.getSessionInformation.bind(this)({ sessionHandle });
     };
 
     revokeAllSessionsForUser = async function ({ userId }: { userId: string }): Promise<string[]> {
-        return await this.originalImplementation.revokeAllSessionsForUser({ userId });
+        return await this.originalImplementation.revokeAllSessionsForUser.bind(this)({ userId });
     };
 
     getAllSessionHandlesForUser = async function ({ userId }: { userId: string }): Promise<string[]> {
-        return await this.originalImplementation.getAllSessionHandlesForUser({ userId });
+        return await this.originalImplementation.getAllSessionHandlesForUser.bind(this)({ userId });
     };
 
     revokeSession = async function ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> {
-        return await this.originalImplementation.revokeSession({ sessionHandle });
+        return await this.originalImplementation.revokeSession.bind(this)({ sessionHandle });
     };
 
     revokeMultipleSessions = async function ({ sessionHandles }: { sessionHandles: string[] }): Promise<string[]> {
-        return await this.originalImplementation.revokeMultipleSessions({ sessionHandles });
+        return await this.originalImplementation.revokeMultipleSessions.bind(this)({ sessionHandles });
     };
 
     updateSessionData = async function ({
@@ -130,7 +130,7 @@ export default class RecipeImplementation implements RecipeInterface {
         sessionHandle: string;
         newSessionData: any;
     }): Promise<void> {
-        return await this.originalImplementation.updateSessionData({ sessionHandle, newSessionData });
+        return await this.originalImplementation.updateSessionData.bind(this)({ sessionHandle, newSessionData });
     };
 
     updateAccessTokenPayload = async function ({
@@ -163,14 +163,17 @@ export default class RecipeImplementation implements RecipeInterface {
             jwt: newJWTResponse.jwt,
         };
 
-        return await this.originalImplementation.updateAccessTokenPayload({ sessionHandle, newAccessTokenPayload });
+        return await this.originalImplementation.updateAccessTokenPayload.bind(this)({
+            sessionHandle,
+            newAccessTokenPayload,
+        });
     };
 
     getAccessTokenLifeTimeMS = async function (): Promise<number> {
-        return await this.originalImplementation.getAccessTokenLifeTimeMS();
+        return await this.originalImplementation.getAccessTokenLifeTimeMS.bind(this)();
     };
 
     getRefreshTokenLifeTimeMS = async function (): Promise<number> {
-        return await this.originalImplementation.getRefreshTokenLifeTimeMS();
+        return await this.originalImplementation.getRefreshTokenLifeTimeMS.bind(this)();
     };
 }
