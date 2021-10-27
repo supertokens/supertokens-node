@@ -109,6 +109,9 @@ export declare const InputSchema: {
         antiCsrf: {
             type: string;
         };
+        enableJWTFeature: {
+            type: string;
+        };
         override: {
             type: string;
         };

@@ -1289,6 +1289,54 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.equal(SessionRecipe.getInstanceOrThrowError().config.sessionExpiredStatusCode, 401);
     });
 
+    it("Test that the jwt feature is disabled by default", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWTFeature, false);
+    });
+
+    it("Test that the jwt feature is disabled when explicitly set to false", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ enableJWTFeature: false })],
+        });
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWTFeature, false);
+    });
+
+    it("Test that the jwt feature is enabled when explicitly set to true", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ enableJWTFeature: true })],
+        });
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWTFeature, true);
+    });
+
     it("testing getTopLevelDomainForSameSiteResolution function", async function () {
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("http://a.b.test.com"), "test.com");
         assert.strictEqual(getTopLevelDomainForSameSiteResolution("https://a.b.test.com"), "test.com");

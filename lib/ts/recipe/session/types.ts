@@ -122,6 +122,7 @@ export const InputSchema = {
         cookieDomain: TypeString,
         errorHandlers: InputSchemaErrorHandlers,
         antiCsrf: TypeString,
+        enableJWTFeature: TypeBoolean,
         override: TypeAny,
     },
     additionalProperties: false,
