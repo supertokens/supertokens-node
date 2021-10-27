@@ -23,7 +23,6 @@ import {
     APIOptions,
 } from "./types";
 import Recipe from "./recipe";
-import type { SessionRequest } from "../../framework/express";
 
 // For Express
 export default class SessionWrapper {
@@ -107,12 +106,4 @@ export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
 
 export let Error = SessionWrapper.Error;
 
-export type {
-    VerifySessionOptions,
-    RecipeInterface,
-    SessionContainer,
-    SessionRequest,
-    APIInterface,
-    APIOptions,
-    SessionInformation,
-};
+export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation };
