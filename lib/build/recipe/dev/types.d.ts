@@ -21,15 +21,10 @@ export declare const InputSchema: {
     properties: {};
     additionalProperties: boolean;
 };
-export declare type TypeNormalisedInput = {
-    hosts?: string | undefined;
-    apiKey?: string;
-    recipeModules: ThirdPartyRecipeModule[];
-};
 export interface RecipeInterface {}
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
-    config: TypeNormalisedInput;
+    config: TypeInput;
     recipeId: string;
     isInServerlessEnv: boolean;
     req: BaseRequest;
@@ -40,5 +35,5 @@ export declare type HealthCheckResponse = {
     message?: string;
 };
 export interface APIInterface {
-    healthCheckGET: (input: TypeNormalisedInput) => Promise<HealthCheckResponse>;
+    healthCheckGET: (input: TypeInput) => Promise<HealthCheckResponse>;
 }

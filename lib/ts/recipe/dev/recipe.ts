@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, RecipeInterface, APIInterface } from "./types";
 import STError from "./error";
 
 import { STATUS } from "./constants";
@@ -25,13 +25,12 @@ import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
 import healthCheckAPI from "./api/healthCheck";
-import { validateAndNormaliseUserInput } from "./utils";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "dev";
 
-    config: TypeNormalisedInput;
+    config: TypeInput;
 
     recipeInterfaceImpl: RecipeInterface;
 
@@ -41,7 +40,7 @@ export default class Recipe extends RecipeModule {
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
         super(recipeId, appInfo);
-        this.config = validateAndNormaliseUserInput(this, config);
+        this.config = config;
         this.isInServerlessEnv = isInServerlessEnv;
 
         this.recipeInterfaceImpl = new RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId));

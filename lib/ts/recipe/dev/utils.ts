@@ -13,18 +13,9 @@
  * under the License.
  */
 
-import { ThirdPartyRecipeModule, TypeInput } from "./types";
-import Recipe from "./recipe";
-import { TypeNormalisedInput } from "./types";
-import { DEV_KEY_IDENTIFIER } from "../thirdparty/api/implementation";
+import { ThirdPartyRecipeModule } from "./types";
 
-export function validateAndNormaliseUserInput(_: Recipe, config: TypeInput): TypeNormalisedInput {
-    return {
-        apiKey: config.apiKey,
-        hosts: config.hosts,
-        recipeModules: config.recipeModules,
-    };
-}
+import { DEV_KEY_IDENTIFIER } from "../thirdparty/api/implementation";
 
 export async function isUsingDevelopmentClientId(recipeModules: ThirdPartyRecipeModule[]): Promise<boolean> {
     let isUsingDevelopmentClientId = false;

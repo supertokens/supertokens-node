@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { APIInterface } from "../";
-import { HealthCheckResponse, TypeNormalisedInput } from "../types";
+import { HealthCheckResponse, TypeInput } from "../types";
 export default class APIImplementation implements APIInterface {
-    healthCheckGET: (input: TypeNormalisedInput) => Promise<HealthCheckResponse>;
+    healthCheckGET: (input: TypeInput) => Promise<HealthCheckResponse>;
 }

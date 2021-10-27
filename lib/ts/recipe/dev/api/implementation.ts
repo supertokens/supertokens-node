@@ -1,11 +1,11 @@
 import { APIInterface } from "../";
-import { HealthCheckResponse, ThirdPartyRecipeModule, TypeNormalisedInput } from "../types";
+import { HealthCheckResponse, ThirdPartyRecipeModule, TypeInput } from "../types";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { isUsingDevelopmentClientId } from "../utils";
 
 export default class APIImplementation implements APIInterface {
-    healthCheckGET = async (input: TypeNormalisedInput): Promise<HealthCheckResponse> => {
+    healthCheckGET = async (input: TypeInput): Promise<HealthCheckResponse> => {
         let querier = await Querier.getNewInstanceOrThrowError("Dev");
         let coreResponse = await checkConnectionToCore(querier, input.hosts, input.apiKey, input.recipeModules);
         return coreResponse;
@@ -26,7 +26,7 @@ async function checkConnectionToCore(
                 ? "You are currently using development OAuth keys. Please replace them with your own OAuth keys for production use"
                 : undefined;
 
-            if (connectionURI?.includes("try.supertokens.io")) {
+            if (connectionURI?.includes("https://try.supertokens.io")) {
                 let usingDevCoreMessage =
                     "You are currently using try.supertokens.io for your core. This is for demo purposes only, so please replace this with the address of your managed core instance (sign up on supertokens.io), or the address of your self host a core instance.";
                 let message = usingDevelopmentKeysMessage
@@ -49,7 +49,7 @@ async function checkConnectionToCore(
                 return {
                     status,
                     message:
-                        "The configured SuperTokens core requires an API key. Please make sure that you have set it in your backend init function call. If using our managed service, you can find your API key on the dashboard at supertokens.io",
+                        "The configured SuperTokens core requires an API key. Please make sure that you have set it in your backend init function call. If you are using our managed service, you can find your API key on the dashboard at supertokens.io",
                 };
             }
 
