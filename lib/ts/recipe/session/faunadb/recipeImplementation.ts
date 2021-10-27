@@ -43,7 +43,7 @@ export default class RecipeImplementation implements RecipeInterface {
             return FAUNADB_TOKEN_TIME_LAG_MILLI;
         }
 
-        let accessTokenLifetime = await this.originalImplementation.getAccessTokenLifeTimeMS();
+        let accessTokenLifetime = await this.originalImplementation.getAccessTokenLifeTimeMS.bind(this)();
         let faunaResponse: any = await this.config.faunaDBClient.query(
             this.q.Create(this.q.Tokens(), {
                 instance: this.q.Ref(this.q.Collection(this.config.userCollectionName), userId),
@@ -53,17 +53,20 @@ export default class RecipeImplementation implements RecipeInterface {
         return faunaResponse.secret;
     };
 
-    createNewSession = async ({
-        res,
-        userId,
-        accessTokenPayload = {},
-        sessionData = {},
-    }: {
-        res: BaseResponse;
-        userId: string;
-        accessTokenPayload?: any;
-        sessionData?: any;
-    }): Promise<FaunaDBSessionContainer> => {
+    createNewSession = async function (
+        this: RecipeImplementation,
+        {
+            res,
+            userId,
+            accessTokenPayload = {},
+            sessionData = {},
+        }: {
+            res: BaseResponse;
+            userId: string;
+            accessTokenPayload?: any;
+            sessionData?: any;
+        }
+    ): Promise<FaunaDBSessionContainer> {
         let fdat = await this.getFDAT(userId);
         if (this.config.accessFaunadbTokenFromFrontend) {
             accessTokenPayload = {
@@ -78,38 +81,52 @@ export default class RecipeImplementation implements RecipeInterface {
         }
 
         return getModifiedSession(
-            await this.originalImplementation.createNewSession({ res, userId, accessTokenPayload, sessionData })
+            await this.originalImplementation.createNewSession.bind(this)({
+                res,
+                userId,
+                accessTokenPayload,
+                sessionData,
+            })
         );
     };
 
-    getSession = async ({
-        req,
-        res,
-        options,
-    }: {
-        req: BaseRequest;
-        res: BaseResponse;
-        options?: VerifySessionOptions;
-    }): Promise<FaunaDBSessionContainer | undefined> => {
-        let originalSession = await this.originalImplementation.getSession({ req, res, options });
+    getSession = async function (
+        this: RecipeImplementation,
+        {
+            req,
+            res,
+            options,
+        }: {
+            req: BaseRequest;
+            res: BaseResponse;
+            options?: VerifySessionOptions;
+        }
+    ): Promise<FaunaDBSessionContainer | undefined> {
+        let originalSession = await this.originalImplementation.getSession.bind(this)({ req, res, options });
         if (originalSession === undefined) {
             return undefined;
         }
         return getModifiedSession(originalSession);
     };
 
-    getSessionInformation = ({ sessionHandle }: { sessionHandle: string }): Promise<SessionInformation> => {
-        return this.originalImplementation.getSessionInformation({ sessionHandle });
+    getSessionInformation = function (
+        this: RecipeImplementation,
+        { sessionHandle }: { sessionHandle: string }
+    ): Promise<SessionInformation> {
+        return this.originalImplementation.getSessionInformation.bind(this)({ sessionHandle });
     };
 
-    refreshSession = async ({
-        req,
-        res,
-    }: {
-        req: BaseRequest;
-        res: BaseResponse;
-    }): Promise<FaunaDBSessionContainer> => {
-        let originalSession = await this.originalImplementation.refreshSession({ req, res });
+    refreshSession = async function (
+        this: RecipeImplementation,
+        {
+            req,
+            res,
+        }: {
+            req: BaseRequest;
+            res: BaseResponse;
+        }
+    ): Promise<FaunaDBSessionContainer> {
+        let originalSession = await this.originalImplementation.refreshSession.bind(this)({ req, res });
         let session = getModifiedSession(originalSession);
         let fdat = await this.getFDAT(session.getUserId());
 
@@ -132,36 +149,48 @@ export default class RecipeImplementation implements RecipeInterface {
         return session;
     };
 
-    revokeAllSessionsForUser = ({ userId }: { userId: string }) => {
-        return this.originalImplementation.revokeAllSessionsForUser({ userId });
+    revokeAllSessionsForUser = function (this: RecipeImplementation, { userId }: { userId: string }) {
+        return this.originalImplementation.revokeAllSessionsForUser.bind(this)({ userId });
     };
 
-    getAllSessionHandlesForUser = ({ userId }: { userId: string }): Promise<string[]> => {
-        return this.originalImplementation.getAllSessionHandlesForUser({ userId });
+    getAllSessionHandlesForUser = function (
+        this: RecipeImplementation,
+        { userId }: { userId: string }
+    ): Promise<string[]> {
+        return this.originalImplementation.getAllSessionHandlesForUser.bind(this)({ userId });
     };
 
-    revokeSession = ({ sessionHandle }: { sessionHandle: string }): Promise<boolean> => {
-        return this.originalImplementation.revokeSession({ sessionHandle });
+    revokeSession = function (
+        this: RecipeImplementation,
+        { sessionHandle }: { sessionHandle: string }
+    ): Promise<boolean> {
+        return this.originalImplementation.revokeSession.bind(this)({ sessionHandle });
     };
 
-    revokeMultipleSessions = ({ sessionHandles }: { sessionHandles: string[] }) => {
-        return this.originalImplementation.revokeMultipleSessions({ sessionHandles });
+    revokeMultipleSessions = function (this: RecipeImplementation, { sessionHandles }: { sessionHandles: string[] }) {
+        return this.originalImplementation.revokeMultipleSessions.bind(this)({ sessionHandles });
     };
 
-    updateSessionData = ({ sessionHandle, newSessionData }: { sessionHandle: string; newSessionData: any }) => {
-        return this.originalImplementation.updateSessionData({ sessionHandle, newSessionData });
+    updateSessionData = function (
+        this: RecipeImplementation,
+        { sessionHandle, newSessionData }: { sessionHandle: string; newSessionData: any }
+    ) {
+        return this.originalImplementation.updateSessionData.bind(this)({ sessionHandle, newSessionData });
     };
 
-    updateAccessTokenPayload = (input: { sessionHandle: string; newAccessTokenPayload: any }) => {
-        return this.originalImplementation.updateAccessTokenPayload(input);
+    updateAccessTokenPayload = function (
+        this: RecipeImplementation,
+        input: { sessionHandle: string; newAccessTokenPayload: any }
+    ) {
+        return this.originalImplementation.updateAccessTokenPayload.bind(this)(input);
     };
 
-    getAccessTokenLifeTimeMS = async (): Promise<number> => {
-        return this.originalImplementation.getAccessTokenLifeTimeMS();
+    getAccessTokenLifeTimeMS = async function (this: RecipeImplementation): Promise<number> {
+        return this.originalImplementation.getAccessTokenLifeTimeMS.bind(this)();
     };
 
-    getRefreshTokenLifeTimeMS = async (): Promise<number> => {
-        return this.originalImplementation.getRefreshTokenLifeTimeMS();
+    getRefreshTokenLifeTimeMS = async function (this: RecipeImplementation): Promise<number> {
+        return this.originalImplementation.getRefreshTokenLifeTimeMS.bind(this)();
     };
 }
 
