@@ -9,7 +9,6 @@ import {
     APIOptions,
 } from "./types";
 import Recipe from "./recipe";
-import type { SessionRequest } from "../../framework/express";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -41,12 +40,4 @@ export declare let revokeMultipleSessions: typeof SessionWrapper.revokeMultipleS
 export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
 export declare let updateAccessTokenPayload: typeof SessionWrapper.updateAccessTokenPayload;
 export declare let Error: typeof SuperTokensError;
-export type {
-    VerifySessionOptions,
-    RecipeInterface,
-    SessionContainer,
-    SessionRequest,
-    APIInterface,
-    APIOptions,
-    SessionInformation,
-};
+export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation };
