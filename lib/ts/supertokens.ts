@@ -68,7 +68,6 @@ export default class SuperTokens {
             Dev.init({
                 apiKey: config.supertokens?.apiKey,
                 hosts: config.supertokens?.connectionURI,
-                providersClientIds: ["test"],
             })
         );
 

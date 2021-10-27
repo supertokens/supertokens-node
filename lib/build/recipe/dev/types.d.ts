@@ -10,7 +10,6 @@ export declare type UserInfo = {
 export declare type TypeInput = {
     hosts: string | undefined;
     apiKey?: string;
-    providersClientIds: string[];
 };
 export declare const InputSchema: {
     type: string;
@@ -20,7 +19,6 @@ export declare const InputSchema: {
 export declare type TypeNormalisedInput = {
     hosts?: string | undefined;
     apiKey?: string;
-    providersClientIds: string[];
 };
 export interface RecipeInterface {}
 export declare type APIOptions = {

@@ -20,7 +20,6 @@ import { TypeNormalisedInput } from "./types";
 export function validateAndNormaliseUserInput(_: Recipe, config: TypeInput): TypeNormalisedInput {
     return {
         apiKey: config.apiKey,
-        providersClientIds: ["string"],
         hosts: config.hosts,
     };
 }

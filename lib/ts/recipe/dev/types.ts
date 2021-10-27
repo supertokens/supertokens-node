@@ -20,7 +20,6 @@ export type UserInfo = { id: string; email?: { id: string; isVerified: boolean }
 export type TypeInput = {
     hosts: string | undefined;
     apiKey?: string;
-    providersClientIds: string[];
 };
 
 export const InputSchema = {
@@ -32,7 +31,6 @@ export const InputSchema = {
 export type TypeNormalisedInput = {
     hosts?: string | undefined;
     apiKey?: string;
-    providersClientIds: string[];
 };
 
 export interface RecipeInterface {}

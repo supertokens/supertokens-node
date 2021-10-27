@@ -5,11 +5,8 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 
 export default class APIImplementation implements APIInterface {
     healthCheckGET = async (input: TypeNormalisedInput): Promise<HealthCheckResponse> => {
-        let connectionURI = input.hosts;
-        let apiKey = input.apiKey;
-
         let querier = await Querier.getNewInstanceOrThrowError("Dev");
-        let coreResponse = await checkConnectionToCore(querier, connectionURI, apiKey);
+        let coreResponse = await checkConnectionToCore(querier, input.hosts, input.apiKey);
         return coreResponse;
     };
 }
