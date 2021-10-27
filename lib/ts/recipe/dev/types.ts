@@ -14,12 +14,17 @@
  */
 
 import { BaseRequest, BaseResponse } from "../../framework";
+import RecipeModule from "../../recipeModule";
 
 export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
 
+export interface ThirdPartyRecipeModule extends RecipeModule {
+    getClientIds?: () => Promise<string[]>;
+}
 export type TypeInput = {
     hosts: string | undefined;
     apiKey?: string;
+    recipeModules: ThirdPartyRecipeModule[];
 };
 
 export const InputSchema = {
@@ -31,6 +36,7 @@ export const InputSchema = {
 export type TypeNormalisedInput = {
     hosts?: string | undefined;
     apiKey?: string;
+    recipeModules: ThirdPartyRecipeModule[];
 };
 
 export interface RecipeInterface {}

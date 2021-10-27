@@ -282,4 +282,12 @@ export default class Recipe extends RecipeModule {
         }
         return userInfo.email;
     };
+
+    getClientIds = async (): Promise<string[]> => {
+        let clientIds: string[] = [];
+        if (this.thirdPartyRecipe?.getClientIds) {
+            clientIds = await this.thirdPartyRecipe.getClientIds();
+        }
+        return clientIds;
+    };
 }

@@ -64,16 +64,24 @@ export default class SuperTokens {
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
         // add the dev recipe
         // get the social providers client id's if they exist.
-        config.recipeList.push(
-            Dev.init({
-                apiKey: config.supertokens?.apiKey,
-                hosts: config.supertokens?.connectionURI,
-            })
-        );
+        // config.recipeList.push(
+        //     Dev.init({
+        //         apiKey: config.supertokens?.apiKey,
+        //         hosts: config.supertokens?.connectionURI,
+        //     })
+        // );
 
         this.recipeModules = config.recipeList.map((func) => {
             return func(this.appInfo, this.isInServerlessEnv);
         });
+
+        let devFunc = Dev.init({
+            apiKey: config.supertokens?.apiKey,
+            hosts: config.supertokens?.connectionURI,
+            recipeModules: this.recipeModules,
+        });
+
+        this.recipeModules.push(devFunc(this.appInfo, this.isInServerlessEnv));
 
         let telemetry = config.telemetry === undefined ? process.env.TEST_MODE !== "testing" : config.telemetry;
 

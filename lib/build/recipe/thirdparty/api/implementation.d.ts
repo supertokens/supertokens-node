@@ -37,3 +37,4 @@ export default class APIImplementation implements APIInterface {
           }
     >;
 }
+export declare const DEV_KEY_IDENTIFIER = "4398792-";

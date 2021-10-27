@@ -13,13 +13,33 @@
  * under the License.
  */
 
-import { TypeInput } from "./types";
+import { ThirdPartyRecipeModule, TypeInput } from "./types";
 import Recipe from "./recipe";
 import { TypeNormalisedInput } from "./types";
+import { DEV_KEY_IDENTIFIER } from "../thirdparty/api/implementation";
 
 export function validateAndNormaliseUserInput(_: Recipe, config: TypeInput): TypeNormalisedInput {
     return {
         apiKey: config.apiKey,
         hosts: config.hosts,
+        recipeModules: config.recipeModules,
     };
+}
+
+export async function isUsingDevelopmentClientId(recipeModules: ThirdPartyRecipeModule[]): Promise<boolean> {
+    let isUsingDevelopmentClientId = false;
+
+    for await (const recipeModule of recipeModules) {
+        if (recipeModule.getRecipeId() === "thirdparty" || recipeModule.getRecipeId() === "thirdpartyemailpassword") {
+            if (recipeModule.getClientIds) {
+                let clientIds = await recipeModule.getClientIds();
+                clientIds.forEach((clientId) => {
+                    if (clientId.startsWith(DEV_KEY_IDENTIFIER)) {
+                        isUsingDevelopmentClientId = true;
+                    }
+                });
+            }
+        }
+    }
+    return isUsingDevelopmentClientId;
 }

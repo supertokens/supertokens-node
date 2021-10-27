@@ -1,12 +1,13 @@
 import { APIInterface } from "../";
-import { HealthCheckResponse, TypeNormalisedInput } from "../types";
+import { HealthCheckResponse, ThirdPartyRecipeModule, TypeNormalisedInput } from "../types";
 import { Querier } from "../../../querier";
 import NormalisedURLPath from "../../../normalisedURLPath";
+import { isUsingDevelopmentClientId } from "../utils";
 
 export default class APIImplementation implements APIInterface {
     healthCheckGET = async (input: TypeNormalisedInput): Promise<HealthCheckResponse> => {
         let querier = await Querier.getNewInstanceOrThrowError("Dev");
-        let coreResponse = await checkConnectionToCore(querier, input.hosts, input.apiKey);
+        let coreResponse = await checkConnectionToCore(querier, input.hosts, input.apiKey, input.recipeModules);
         return coreResponse;
     };
 }
@@ -14,21 +15,31 @@ export default class APIImplementation implements APIInterface {
 async function checkConnectionToCore(
     querier: Querier,
     connectionURI: string | undefined,
-    apiKey: string | undefined
+    apiKey: string | undefined,
+    recipeModules: ThirdPartyRecipeModule[]
 ): Promise<{ status: string; message?: any }> {
     try {
         let response = await querier.sendGetRequest(new NormalisedURLPath("/hello"), undefined);
 
         if (String(response).startsWith("Hello")) {
+            let usingDevelopmentKeysMessage = (await isUsingDevelopmentClientId(recipeModules))
+                ? "You are currently using development OAuth keys. Please replace them with your own OAuth keys for production use"
+                : undefined;
+
             if (connectionURI?.includes("try.supertokens.io")) {
+                let usingDevCoreMessage =
+                    "You are currently using try.supertokens.io for your core. This is for demo purposes only, so please replace this with the address of your managed core instance (sign up on supertokens.io), or the address of your self host a core instance.";
+                let message = usingDevelopmentKeysMessage
+                    ? usingDevCoreMessage + "\r\n " + usingDevelopmentKeysMessage
+                    : usingDevCoreMessage;
                 return {
                     status: "OK",
-                    message:
-                        "You are currently using try.supertokens.io for your core. This is for demo purposes only, so please replace this with the address of your managed core instance (sign up on supertokens.io), or the address of your self host a core instance.",
+                    message,
                 };
             }
             return {
                 status: "OK",
+                message: usingDevelopmentKeysMessage,
             };
         }
     } catch (err) {

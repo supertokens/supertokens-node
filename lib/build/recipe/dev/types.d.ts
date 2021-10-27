@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
+import RecipeModule from "../../recipeModule";
 export declare type UserInfo = {
     id: string;
     email?: {
@@ -7,9 +8,13 @@ export declare type UserInfo = {
         isVerified: boolean;
     };
 };
+export interface ThirdPartyRecipeModule extends RecipeModule {
+    getClientIds?: () => Promise<string[]>;
+}
 export declare type TypeInput = {
     hosts: string | undefined;
     apiKey?: string;
+    recipeModules: ThirdPartyRecipeModule[];
 };
 export declare const InputSchema: {
     type: string;
@@ -19,6 +24,7 @@ export declare const InputSchema: {
 export declare type TypeNormalisedInput = {
     hosts?: string | undefined;
     apiKey?: string;
+    recipeModules: ThirdPartyRecipeModule[];
 };
 export interface RecipeInterface {}
 export declare type APIOptions = {

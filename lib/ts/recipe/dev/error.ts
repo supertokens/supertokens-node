@@ -15,7 +15,7 @@
 
 import STError from "../../error";
 
-export default class ThirdPartyError extends STError {
+export default class DevError extends STError {
     constructor(options: { type: "BAD_INPUT_ERROR"; message: string }) {
         super({
             ...options,
