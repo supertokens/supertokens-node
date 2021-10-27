@@ -106,7 +106,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         config,
     };
 
-    return {
+    let obj = {
         createNewSession: async function ({
             res,
             userId,
@@ -334,4 +334,16 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return (await getHandshakeInfo()).refreshTokenValidity;
         },
     };
+
+    if (process.env.TEST_MODE === "testing") {
+        // testing mode, we add some of the help functions to the obj
+        (obj as any).getHandshakeInfo = getHandshakeInfo;
+        (obj as any).updateJwtSigningPublicKeyInfo = updateJwtSigningPublicKeyInfo;
+        (obj as any).helpers = helpers;
+        (obj as any).setHandshakeInfo = function (info: any) {
+            handshakeInfo = info;
+        };
+    }
+
+    return obj;
 }
