@@ -16,12 +16,12 @@ import { RecipeInterface } from "../";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 import { SessionContainerInterface } from "../types";
 
-const EXPIRY_OFFSET_SECONDS = 30;
-
-export default (
+export default function (
     originalImplementation: RecipeInterface,
     jwtRecipeImplementation: JWTRecipeInterface
-): RecipeInterface => {
+): RecipeInterface {
+    const EXPIRY_OFFSET_SECONDS = 30;
+
     return {
         ...originalImplementation,
         createNewSession: async function ({
@@ -119,4 +119,4 @@ export default (
             return await originalImplementation.updateAccessTokenPayload({ sessionHandle, newAccessTokenPayload });
         },
     };
-};
+}

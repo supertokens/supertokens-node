@@ -1,8 +1,7 @@
 // @ts-nocheck
 import { RecipeInterface } from "../";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
-declare const _default: (
+export default function (
     originalImplementation: RecipeInterface,
     jwtRecipeImplementation: JWTRecipeInterface
-) => RecipeInterface;
-export default _default;
+): RecipeInterface;
