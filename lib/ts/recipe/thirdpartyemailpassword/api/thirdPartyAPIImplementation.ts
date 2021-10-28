@@ -4,7 +4,7 @@ import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswordAPIInterface): APIInterface {
     const signInUpPOSTFromThirdPartyEmailPassword = apiImplmentation.thirdPartySignInUpPOST?.bind(apiImplmentation);
     return {
-        authorisationUrlGET: apiImplmentation.authorisationUrlGET,
+        authorisationUrlGET: apiImplmentation.authorisationUrlGET?.bind(apiImplmentation),
         signInUpPOST:
             signInUpPOSTFromThirdPartyEmailPassword === undefined
                 ? undefined
