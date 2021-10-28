@@ -92,7 +92,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
         };
-        if (id == "/status") {
+        if (id == STATUS) {
             return await healthCheckAPI(this.apiImpl, options);
         } else {
             return false;

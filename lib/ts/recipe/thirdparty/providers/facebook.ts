@@ -14,7 +14,7 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
-import { validateTheStructureOfUserInput } from "../../../utils";
+import { validateTheStructureOfUserInput, clientIdsForDevRecipe } from "../../../utils";
 
 type TypeThirdPartyProviderFacebookConfig = {
     clientId: string;
@@ -48,6 +48,9 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
         InputSchemaTypeThirdPartyProviderFacebookConfig,
         "thirdparty recipe, provider facebook"
     );
+
+    clientIdsForDevRecipe.push(config.clientId);
+
     const id = "facebook";
 
     async function get(

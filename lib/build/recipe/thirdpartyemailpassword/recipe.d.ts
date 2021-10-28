@@ -42,12 +42,11 @@ export default class Recipe extends RecipeModule {
         method: HTTPMethod
     ) => Promise<boolean>;
     handleError: (
-        err: STErrorThirdParty | STErrorEmailPassword,
+        err: STErrorEmailPassword | STErrorThirdParty,
         request: BaseRequest,
         response: BaseResponse
     ) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string) => Promise<string>;
-    getClientIds: () => Promise<string[]>;
 }

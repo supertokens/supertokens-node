@@ -13,24 +13,20 @@
  * under the License.
  */
 
-import { ThirdPartyRecipeModule } from "./types";
+import { clientIdsForDevRecipe } from "../../utils";
 
-import { DEV_KEY_IDENTIFIER } from "../thirdparty/api/implementation";
+// If Third Party login is used with one of the following development keys, then the dev authorization url and the redirect url will be used.
+const DEV_OAUTH_CLIENT_IDS = [
+    "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com", // google
+    "467101b197249757c71f", // github
+];
+const DEV_KEY_IDENTIFIER = "4398792-";
 
-export async function isUsingDevelopmentClientId(recipeModules: ThirdPartyRecipeModule[]): Promise<boolean> {
-    let isUsingDevelopmentClientId = false;
-
-    for await (const recipeModule of recipeModules) {
-        if (recipeModule.getRecipeId() === "thirdparty" || recipeModule.getRecipeId() === "thirdpartyemailpassword") {
-            if (recipeModule.getClientIds) {
-                let clientIds = await recipeModule.getClientIds();
-                clientIds.forEach((clientId) => {
-                    if (clientId.startsWith(DEV_KEY_IDENTIFIER)) {
-                        isUsingDevelopmentClientId = true;
-                    }
-                });
-            }
+export async function isUsingDevelopmentClientId(): Promise<boolean> {
+    for await (const clientId of clientIdsForDevRecipe) {
+        if (clientId.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(clientId)) {
+            return true;
         }
     }
-    return isUsingDevelopmentClientId;
+    return false;
 }

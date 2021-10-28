@@ -14,26 +14,18 @@
  */
 
 import { BaseRequest, BaseResponse } from "../../framework";
-import RecipeModule from "../../recipeModule";
 
-export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
-
-export interface ThirdPartyRecipeModule extends RecipeModule {
-    getClientIds?: () => Promise<string[]>;
-}
 export type TypeInput = {
-    hosts: string | undefined;
+    connectionURL: string | undefined;
     apiKey?: string;
-    recipeModules: ThirdPartyRecipeModule[];
 };
 
-export const InputSchema = {
-    type: "object",
-    properties: {},
-    additionalProperties: false,
-};
-
-export interface RecipeInterface {}
+export interface RecipeInterface {
+    checkConnectionToCore: (
+        apiKey: string | undefined,
+        connectionURI: string | undefined
+    ) => Promise<{ status: "OK" | "NOT_OK"; message?: string }>;
+}
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -49,5 +41,19 @@ export type HealthCheckResponse = {
     message?: string;
 };
 export interface APIInterface {
-    healthCheckGET: (input: TypeInput) => Promise<HealthCheckResponse>;
+    healthCheckGET:
+        | undefined
+        | ((input: {
+              options: APIOptions;
+              apiImplementation: APIInterface;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    message?: string;
+                }
+              | {
+                    status: "NOT_OK";
+                    message?: string;
+                }
+          >);
 }

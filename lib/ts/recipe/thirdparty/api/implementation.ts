@@ -153,7 +153,7 @@ const DEV_OAUTH_CLIENT_IDS = [
     "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com", // google
     "467101b197249757c71f", // github
 ];
-export const DEV_KEY_IDENTIFIER = "4398792-";
+const DEV_KEY_IDENTIFIER = "4398792-";
 
 function isUsingDevelopmentClientId(client_id: string): boolean {
     return client_id.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(client_id);

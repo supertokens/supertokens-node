@@ -170,13 +170,4 @@ export default class Recipe extends RecipeModule {
         }
         return userInfo.email;
     };
-
-    getClientIds = async (): Promise<string[]> => {
-        let clientIds: string[] = [];
-        this.providers.forEach(async (provider) => {
-            let providerInfo = await provider.get(undefined, undefined);
-            clientIds.push(providerInfo.getClientId());
-        });
-        return clientIds;
-    };
 }

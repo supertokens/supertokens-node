@@ -122,3 +122,5 @@ export function validateTheStructureOfUserInput(config: any, inputSchema: any, c
 export function frontendHasInterceptor(req: BaseRequest): boolean {
     return getRIDFromRequest(req) !== undefined;
 }
+
+export let clientIdsForDevRecipe: string[] = [];

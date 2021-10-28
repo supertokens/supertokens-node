@@ -16,7 +16,11 @@ import { APIInterface, APIOptions } from "../";
 import { send200Response, sendNon200Response } from "../../../utils";
 
 export default async function healthCheckAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    let response = await apiImplementation.healthCheckGET(options.config);
+    if (apiImplementation.healthCheckGET === undefined) {
+        return false;
+    }
+
+    let response = await apiImplementation.healthCheckGET({ apiImplementation, options });
     if (response.status === "OK") {
         send200Response(options.res, response);
     } else {

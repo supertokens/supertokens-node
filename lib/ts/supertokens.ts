@@ -30,7 +30,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
 import STError from "./error";
-import Dev from "./recipe/dev/index";
+import Dev from "./recipe/dev";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -69,8 +69,7 @@ export default class SuperTokens {
 
         let devRecipe = Dev.init({
             apiKey: config.supertokens?.apiKey,
-            hosts: config.supertokens?.connectionURI,
-            recipeModules: this.recipeModules,
+            connectionURL: config.supertokens?.connectionURI,
         });
 
         this.recipeModules.push(devRecipe(this.appInfo, this.isInServerlessEnv));
