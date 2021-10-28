@@ -100,11 +100,11 @@ export function setIdRefreshTokenInHeaderAndCookie(
     setCookie(config, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
 }
 
-export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpiry: number, jwtPayload: any) {
+export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpiry: number, accessTokenPayload: any) {
     let tokenInfo = {
         uid: userId,
         ate: atExpiry,
-        up: jwtPayload,
+        up: accessTokenPayload,
     };
     res.setHeader(frontTokenHeaderKey, Buffer.from(JSON.stringify(tokenInfo)).toString("base64"), false);
     res.setHeader("Access-Control-Expose-Headers", frontTokenHeaderKey, true);

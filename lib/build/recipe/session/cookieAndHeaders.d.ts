@@ -39,7 +39,7 @@ export declare function setFrontTokenInHeaders(
     res: BaseResponse,
     userId: string,
     atExpiry: number,
-    jwtPayload: any
+    accessTokenPayload: any
 ): void;
 export declare function getCORSAllowedHeaders(): string[];
 /**

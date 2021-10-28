@@ -280,7 +280,7 @@ export async function getSessionInformation(helpers: Helpers, sessionHandle: str
     if (response.status === "OK") {
         // Change keys to make them more readable
         response["sessionData"] = response.userDataInDatabase;
-        response["jwtPayload"] = response.userDataInJWT;
+        response["accessTokenPayload"] = response.userDataInJWT;
 
         delete response.userDataInJWT;
         delete response.userDataInJWT;
