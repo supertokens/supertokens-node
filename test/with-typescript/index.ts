@@ -1,9 +1,9 @@
 import * as express from "express";
 import Supertokens from "../..";
-import Session, { RecipeInterface, SessionRequest } from "../../recipe/session";
+import Session, { RecipeInterface } from "../../recipe/session";
 import EmailPassword from "../../recipe/emailpassword";
 import { verifySession } from "../../recipe/session/framework/express";
-import { middleware, errorHandler } from "../../framework/express";
+import { middleware, errorHandler, SessionRequest } from "../../framework/express";
 import NextJS from "../../nextjs";
 import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");

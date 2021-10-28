@@ -55,20 +55,19 @@ export default class SessionRecipe extends RecipeModule {
             },
         });
         if (this.config.enableJWTFeature === true) {
-            let defaultRecipeImplementation = new RecipeImplementation(
+            let defaultRecipeImplementation = RecipeImplementation(
                 Querier.getNewInstanceOrThrowError(recipeId),
-                this.config,
-                isInServerlessEnv
+                this.config
             );
             this.recipeInterfaceImpl = this.config.override.functions(
                 RecipeImplementationWithJWT(defaultRecipeImplementation, this.jwtRecipe.recipeInterfaceImpl)
             );
         } else {
             this.recipeInterfaceImpl = this.config.override.functions(
-                new RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, isInServerlessEnv)
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
             );
         }
-        this.apiImpl = this.config.override.apis(new APIImplementation());
+        this.apiImpl = this.config.override.apis(APIImplementation());
     }
 
     static getInstanceOrThrowError(): SessionRecipe {

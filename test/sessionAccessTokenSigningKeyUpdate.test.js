@@ -81,7 +81,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         let response = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
@@ -89,7 +89,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         {
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 response.accessToken.token,
                 response.antiCsrfToken,
                 true,
@@ -107,7 +107,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         try {
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 response.accessToken.token,
                 response.antiCsrfToken,
                 true,
@@ -135,13 +135,13 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         ProcessState.getInstance().reset();
 
         const response2 = await SessionFunctions.refreshSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
             response.antiCsrfToken
         );
 
         await SessionFunctions.getSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response2.accessToken.token,
             response2.antiCsrfToken,
             true,
@@ -179,34 +179,36 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         const oldSession = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
         );
 
         await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
         );
 
         await new Promise((r) => setTimeout(r, 6000));
-        let originalHandShakeInfo = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo.clone();
+        let originalHandShakeInfo = (
+            await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo()
+        ).clone();
 
         const newSession = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
         );
 
-        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo = originalHandShakeInfo;
+        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.setHandshakeInfo(originalHandShakeInfo);
 
         {
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 newSession.accessToken.token,
                 newSession.antiCsrfToken,
                 true,
@@ -231,7 +233,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             try {
                 await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                     oldSession.accessToken.token,
                     oldSession.antiCsrfToken,
                     true,
@@ -281,7 +283,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         let response2 = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
@@ -290,7 +292,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         await new Promise((r) => setTimeout(r, 6000));
 
         let response = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
@@ -298,7 +300,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         {
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 response.accessToken.token,
                 response.antiCsrfToken,
                 true,
@@ -317,7 +319,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             try {
                 await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                     response2.accessToken.token,
                     response2.antiCsrfToken,
                     true,
@@ -367,7 +369,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const coreSupportsMultipleSignigKeys = maxVersion(currCDIVersion, "2.8") !== "2.8";
 
         let response2 = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
@@ -375,10 +377,12 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         await new Promise((r) => setTimeout(r, 6000));
 
-        let originalHandShakeInfo = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo.clone();
+        let originalHandShakeInfo = (
+            await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo()
+        ).clone();
 
         let response = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
@@ -386,11 +390,11 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         // we reset the handshake info to before the session creation so it's
         // like the above session was created from another server.
-        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo = originalHandShakeInfo;
+        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.setHandshakeInfo(originalHandShakeInfo);
 
         {
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 response.accessToken.token,
                 response.antiCsrfToken,
                 true,
@@ -413,7 +417,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             try {
                 await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                     response2.accessToken.token,
                     response2.antiCsrfToken,
                     true,
@@ -461,7 +465,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         });
 
         let session = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
@@ -469,7 +473,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         {
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 session.accessToken.token,
                 session.antiCsrfToken,
                 true,
@@ -492,7 +496,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         {
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 session.accessToken.token,
                 session.antiCsrfToken,
                 true,
@@ -508,10 +512,12 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         // now we create a new session that will use a new key and we will
         // do it in a way that the jwtSigningKey info is not updated (as if another server has created this new session)
-        let originalHandShakeInfo = SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo.clone();
+        let originalHandShakeInfo = (
+            await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getHandshakeInfo()
+        ).clone();
 
         let session2 = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
@@ -519,13 +525,13 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         // we reset the handshake info to before the session creation so it's
         // like the above session was created from another server.
-        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.handshakeInfo = originalHandShakeInfo;
+        SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.setHandshakeInfo(originalHandShakeInfo);
 
         // now we will call getSession on session2 and see that the core is called
         {
             // jwt signing key has not expired, according to the SDK, so it should succeed
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 session2.accessToken.token,
                 session2.antiCsrfToken,
                 true,
@@ -545,7 +551,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         {
             // jwt signing key has not expired, according to the SDK, so it should succeed
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 session2.accessToken.token,
                 session2.antiCsrfToken,
                 true,
@@ -563,7 +569,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
             // now we will use the original session again and see that core is not called
             try {
                 await SessionFunctions.getSession(
-                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                    SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                     session.accessToken.token,
                     session.antiCsrfToken,
                     true,
@@ -613,7 +619,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         }
 
         let session = await SessionFunctions.createNewSession(
-            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+            SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             "",
             {},
             {}
@@ -621,7 +627,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         {
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 session.accessToken.token,
                 session.antiCsrfToken,
                 true,
@@ -641,7 +647,7 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
 
         {
             await SessionFunctions.getSession(
-                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl,
+                SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 session.accessToken.token,
                 session.antiCsrfToken,
                 true,

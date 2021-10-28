@@ -15,8 +15,14 @@
 
 import { APIInterface, APIOptions, JsonWebKey } from "../types";
 
-export default class APIImplementation implements APIInterface {
-    getJWKSGET = async ({ options }: { options: APIOptions }): Promise<{ status: "OK"; keys: JsonWebKey[] }> => {
-        return await options.recipeImplementation.getJWKS();
+export default function getAPIImplementation(): APIInterface {
+    return {
+        getJWKSGET: async function ({
+            options,
+        }: {
+            options: APIOptions;
+        }): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
+            return await options.recipeImplementation.getJWKS();
+        },
     };
 }

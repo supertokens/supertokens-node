@@ -18,57 +18,53 @@ import { Querier } from "../../querier";
 import { NormalisedAppinfo } from "../../types";
 import { JsonWebKey, RecipeInterface, TypeNormalisedInput } from "./types";
 
-export default class RecipeImplementation implements RecipeInterface {
-    querier: Querier;
-    config: TypeNormalisedInput;
-    appInfo: NormalisedAppinfo;
+export default function getRecipeInterface(
+    querier: Querier,
+    config: TypeNormalisedInput,
+    appInfo: NormalisedAppinfo
+): RecipeInterface {
+    return {
+        createJWT: async function ({
+            payload,
+            validitySeconds,
+        }: {
+            payload?: any;
+            validitySeconds?: number;
+        }): Promise<
+            | {
+                  status: "OK";
+                  jwt: string;
+              }
+            | {
+                  status: "UNSUPPORTED_ALGORITHM_ERROR";
+              }
+        > {
+            if (validitySeconds === undefined) {
+                // If the user does not provide a validity to this function and the config validity is also undefined, use 100 years (in seconds)
+                validitySeconds = config.jwtValiditySeconds;
+            }
 
-    constructor(querier: Querier, config: TypeNormalisedInput, appInfo: NormalisedAppinfo) {
-        this.querier = querier;
-        this.config = config;
-        this.appInfo = appInfo;
-    }
+            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {
+                payload: payload ?? {},
+                validity: validitySeconds,
+                algorithm: "RS256",
+                jwksDomain: appInfo.apiDomain.getAsStringDangerous(),
+            });
 
-    createJWT = async ({
-        payload,
-        validitySeconds,
-    }: {
-        payload?: any;
-        validitySeconds?: number;
-    }): Promise<
-        | {
-              status: "OK";
-              jwt: string;
-          }
-        | {
-              status: "UNSUPPORTED_ALGORITHM_ERROR";
-          }
-    > => {
-        if (validitySeconds === undefined) {
-            // If the user does not provide a validity to this function and the config validity is also undefined, use 100 years (in seconds)
-            validitySeconds = this.config.jwtValiditySeconds;
-        }
+            if (response.status === "OK") {
+                return {
+                    status: "OK",
+                    jwt: response.jwt,
+                };
+            } else {
+                return {
+                    status: "UNSUPPORTED_ALGORITHM_ERROR",
+                };
+            }
+        },
 
-        let response = await this.querier.sendPostRequest(new NormalisedURLPath("/recipe/jwt"), {
-            payload: payload ?? {},
-            validity: validitySeconds,
-            algorithm: "RS256",
-            jwksDomain: this.appInfo.apiDomain.getAsStringDangerous(),
-        });
-
-        if (response.status === "OK") {
-            return {
-                status: "OK",
-                jwt: response.jwt,
-            };
-        } else {
-            return {
-                status: "UNSUPPORTED_ALGORITHM_ERROR",
-            };
-        }
-    };
-
-    getJWKS = async (): Promise<{ status: "OK"; keys: JsonWebKey[] }> => {
-        return await this.querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/jwks"), {});
+        getJWKS: async function (this: RecipeInterface): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
+            return await querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/jwks"), {});
+        },
     };
 }
