@@ -1,19 +1,21 @@
 import { APIInterface } from "../";
 import EmailPasswordAPIImplementation from "../../emailpassword/api/implementation";
 import ThirdPartyAPIImplementation from "../../thirdparty/api/implementation";
+import DerivedEP from "./emailPasswordAPIImplementation";
+import DerivedTP from "./thirdPartyAPIImplementation";
 
 export default function getAPIImplementation(): APIInterface {
     let emailPasswordImplementation = EmailPasswordAPIImplementation();
     let thirdPartyImplementation = ThirdPartyAPIImplementation();
     return {
-        emailExistsGET: emailPasswordImplementation.emailExistsGET?.bind(emailPasswordImplementation),
-        authorisationUrlGET: thirdPartyImplementation.authorisationUrlGET?.bind(thirdPartyImplementation),
-        emailPasswordSignInPOST: emailPasswordImplementation.signInPOST?.bind(emailPasswordImplementation),
-        emailPasswordSignUpPOST: emailPasswordImplementation.signUpPOST?.bind(emailPasswordImplementation),
+        emailExistsGET: emailPasswordImplementation.emailExistsGET?.bind(DerivedEP(this)),
+        authorisationUrlGET: thirdPartyImplementation.authorisationUrlGET?.bind(DerivedTP(this)),
+        emailPasswordSignInPOST: emailPasswordImplementation.signInPOST?.bind(DerivedEP(this)),
+        emailPasswordSignUpPOST: emailPasswordImplementation.signUpPOST?.bind(DerivedEP(this)),
         generatePasswordResetTokenPOST: emailPasswordImplementation.generatePasswordResetTokenPOST?.bind(
-            emailPasswordImplementation
+            DerivedEP(this)
         ),
-        passwordResetPOST: emailPasswordImplementation.passwordResetPOST?.bind(emailPasswordImplementation),
-        thirdPartySignInUpPOST: thirdPartyImplementation.signInUpPOST?.bind(thirdPartyImplementation),
+        passwordResetPOST: emailPasswordImplementation.passwordResetPOST?.bind(DerivedEP(this)),
+        thirdPartySignInUpPOST: thirdPartyImplementation.signInUpPOST?.bind(DerivedTP(this)),
     };
 }
