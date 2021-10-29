@@ -36,10 +36,6 @@ export type APIOptions = {
     res: BaseResponse;
 };
 
-export type HealthCheckResponse = {
-    status: string;
-    message?: string;
-};
 export interface APIInterface {
     healthCheckGET:
         | undefined
