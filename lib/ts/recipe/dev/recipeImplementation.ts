@@ -25,7 +25,7 @@ export default class RecipeImplementation implements RecipeInterface {
                     if (await isUsingDevelopmentClientId()) {
                         return {
                             status: "OK",
-                            message: USING_DEV_CORE + "\n" + USING_DEV_OAUTH_KEY,
+                            message: "1. " + USING_DEV_CORE + "  2. " + USING_DEV_OAUTH_KEY,
                         };
                     }
                     return {
