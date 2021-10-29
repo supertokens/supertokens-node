@@ -21,10 +21,6 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-export declare type HealthCheckResponse = {
-    status: string;
-    message?: string;
-};
 export interface APIInterface {
     healthCheckGET:
         | undefined
