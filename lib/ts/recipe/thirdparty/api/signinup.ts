@@ -35,7 +35,14 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    if (typeof code !== "string" && authCodeResponse === undefined) {
+    if (typeof code !== "string") {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please make sure that the code in the request body is a string",
+        });
+    }
+
+    if (code === "" && authCodeResponse === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
             message: "Please provide one of code or authCodeResponse in the request body",
