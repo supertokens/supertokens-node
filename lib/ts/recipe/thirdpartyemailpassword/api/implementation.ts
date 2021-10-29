@@ -6,12 +6,14 @@ export default function getAPIImplementation(): APIInterface {
     let emailPasswordImplementation = EmailPasswordAPIImplementation();
     let thirdPartyImplementation = ThirdPartyAPIImplementation();
     return {
-        emailExistsGET: emailPasswordImplementation.emailExistsGET,
-        authorisationUrlGET: thirdPartyImplementation.authorisationUrlGET,
-        emailPasswordSignInPOST: emailPasswordImplementation.signInPOST,
-        emailPasswordSignUpPOST: emailPasswordImplementation.signUpPOST,
-        generatePasswordResetTokenPOST: emailPasswordImplementation.generatePasswordResetTokenPOST,
-        passwordResetPOST: emailPasswordImplementation.passwordResetPOST,
-        thirdPartySignInUpPOST: thirdPartyImplementation.signInUpPOST,
+        emailExistsGET: emailPasswordImplementation.emailExistsGET?.bind(emailPasswordImplementation),
+        authorisationUrlGET: thirdPartyImplementation.authorisationUrlGET?.bind(thirdPartyImplementation),
+        emailPasswordSignInPOST: emailPasswordImplementation.signInPOST?.bind(emailPasswordImplementation),
+        emailPasswordSignUpPOST: emailPasswordImplementation.signUpPOST?.bind(emailPasswordImplementation),
+        generatePasswordResetTokenPOST: emailPasswordImplementation.generatePasswordResetTokenPOST?.bind(
+            emailPasswordImplementation
+        ),
+        passwordResetPOST: emailPasswordImplementation.passwordResetPOST?.bind(emailPasswordImplementation),
+        thirdPartySignInUpPOST: thirdPartyImplementation.signInUpPOST?.bind(thirdPartyImplementation),
     };
 }

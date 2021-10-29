@@ -24,8 +24,9 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
 
     let bodyParams = await options.req.getJSONBody();
     let thirdPartyId = bodyParams.thirdPartyId;
-    let code = bodyParams.code;
+    let code = bodyParams.code === undefined ? "" : bodyParams.code;
     let redirectURI = bodyParams.redirectURI;
+    let authCodeResponse = bodyParams.authCodeResponse;
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError({
@@ -34,10 +35,17 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    if (code === undefined || typeof code !== "string") {
+    if (typeof code !== "string" && authCodeResponse === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
-            message: "Please provide the code in request body",
+            message: "Please provide one of code or authCodeResponse in the request body",
+        });
+    }
+
+    if (authCodeResponse !== undefined && authCodeResponse.access_token === undefined) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide the access_token inside the authCodeResponse request param",
         });
     }
 
@@ -59,7 +67,7 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    let result = await apiImplementation.signInUpPOST({ provider, code, redirectURI, options });
+    let result = await apiImplementation.signInUpPOST({ provider, code, redirectURI, options, authCodeResponse });
 
     if (result.status === "OK") {
         send200Response(options.res, {
