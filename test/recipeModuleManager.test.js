@@ -625,6 +625,42 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             headers.includes("test-recipe-1") && headers.includes("test-recipe-2") && headers.includes("test-recipe-3")
         );
     });
+
+    it("override bind tests", async function () {
+        // see https://github.com/supertokens/supertokens-node/issues/199
+        m = 0;
+        let oI = {
+            someFunc: function () {
+                this.someOtherFunc();
+            },
+            someOtherFunc: function () {
+                m = 1;
+            },
+        };
+        let a = {
+            ...oI,
+            someFunc: function () {
+                oI.someFunc.bind(this)();
+            },
+            someOtherFunc: function () {
+                this.m = 2;
+            },
+        };
+
+        let b = {
+            ...a,
+            someFunc: function () {
+                a.someFunc.bind(this)();
+            },
+            someOtherFunc: function () {
+                this.m = 4;
+            },
+        };
+
+        b.someFunc();
+
+        assert(b.m === 4);
+    });
 });
 
 class TestRecipe extends RecipeModule {

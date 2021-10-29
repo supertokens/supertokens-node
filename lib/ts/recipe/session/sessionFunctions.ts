@@ -18,14 +18,14 @@ import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
-import RecipeImplementation from "./recipeImplementation";
+import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
 
 /**
  * @description call this to "login" a user.
  */
 export async function createNewSession(
-    recipeImplementation: RecipeImplementation,
+    helpers: Helpers,
     userId: string,
     accessTokenPayload: any = {},
     sessionData: any = {}
@@ -43,13 +43,10 @@ export async function createNewSession(
         userDataInDatabase: sessionData,
     };
 
-    let handShakeInfo = await recipeImplementation.getHandshakeInfo();
+    let handShakeInfo = await helpers.getHandshakeInfo();
     requestBody.enableAntiCsrf = handShakeInfo.antiCsrf === "VIA_TOKEN";
-    let response = await recipeImplementation.querier.sendPostRequest(
-        new NormalisedURLPath("/recipe/session"),
-        requestBody
-    );
-    recipeImplementation.updateJwtSigningPublicKeyInfo(
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
+    helpers.updateJwtSigningPublicKeyInfo(
         response.jwtSigningPublicKeyList,
         response.jwtSigningPublicKey,
         response.jwtSigningPublicKeyExpiryTime
@@ -66,7 +63,7 @@ export async function createNewSession(
  * @description authenticates a session. To be used in APIs that require authentication
  */
 export async function getSession(
-    recipeImplementation: RecipeImplementation,
+    helpers: Helpers,
     accessToken: string,
     antiCsrfToken: string | undefined,
     doAntiCsrfCheck: boolean,
@@ -83,7 +80,7 @@ export async function getSession(
         createdTime: number;
     };
 }> {
-    let handShakeInfo = await recipeImplementation.getHandshakeInfo();
+    let handShakeInfo = await helpers.getHandshakeInfo();
     let accessTokenInfo;
 
     // If we have no key old enough to verify this access token we should reject it without calling the core
@@ -226,12 +223,9 @@ export async function getSession(
         enableAntiCsrf: handShakeInfo.antiCsrf === "VIA_TOKEN",
     };
 
-    let response = await recipeImplementation.querier.sendPostRequest(
-        new NormalisedURLPath("/recipe/session/verify"),
-        requestBody
-    );
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/verify"), requestBody);
     if (response.status === "OK") {
-        recipeImplementation.updateJwtSigningPublicKeyInfo(
+        helpers.updateJwtSigningPublicKeyInfo(
             response.jwtSigningPublicKeyList,
             response.jwtSigningPublicKey,
             response.jwtSigningPublicKeyExpiryTime
@@ -252,14 +246,14 @@ export async function getSession(
             (response.jwtSigningPublicKey !== undefined && response.jwtSigningPublicKeyExpiryTime !== undefined)
         ) {
             // after CDI 2.7.1, the API returns the new keys
-            recipeImplementation.updateJwtSigningPublicKeyInfo(
+            helpers.updateJwtSigningPublicKeyInfo(
                 response.jwtSigningPublicKeyList,
                 response.jwtSigningPublicKey,
                 response.jwtSigningPublicKeyExpiryTime
             );
         } else {
             // we force update the signing keys...
-            await recipeImplementation.getHandshakeInfo(true);
+            await helpers.getHandshakeInfo(true);
         }
         throw new STError({
             message: response.message,
@@ -272,24 +266,21 @@ export async function getSession(
  * @description Retrieves session information from storage for a given session handle
  * @returns session data stored in the database, including userData and access token payload
  */
-export async function getSessionInformation(
-    recipeImplementation: RecipeImplementation,
-    sessionHandle: string
-): Promise<SessionInformation> {
-    let apiVersion = await recipeImplementation.querier.getAPIVersion();
+export async function getSessionInformation(helpers: Helpers, sessionHandle: string): Promise<SessionInformation> {
+    let apiVersion = await helpers.querier.getAPIVersion();
 
     if (maxVersion(apiVersion, "2.7") === "2.7") {
         throw new Error("Please use core version >= 3.5 to call this function.");
     }
 
-    let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session"), {
+    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/session"), {
         sessionHandle,
     });
 
     if (response.status === "OK") {
         // Change keys to make them more readable
         response["sessionData"] = response.userDataInDatabase;
-        response["jwtPayload"] = response.userDataInJWT;
+        response["accessTokenPayload"] = response.userDataInJWT;
 
         delete response.userDataInJWT;
         delete response.userDataInJWT;
@@ -308,12 +299,12 @@ export async function getSessionInformation(
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
  */
 export async function refreshSession(
-    recipeImplementation: RecipeImplementation,
+    helpers: Helpers,
     refreshToken: string,
     antiCsrfToken: string | undefined,
     containsCustomHeader: boolean
 ): Promise<CreateOrRefreshAPIResponse> {
-    let handShakeInfo = await recipeImplementation.getHandshakeInfo();
+    let handShakeInfo = await helpers.getHandshakeInfo();
 
     let requestBody: {
         refreshToken: string;
@@ -337,10 +328,7 @@ export async function refreshSession(
         }
     }
 
-    let response = await recipeImplementation.querier.sendPostRequest(
-        new NormalisedURLPath("/recipe/session/refresh"),
-        requestBody
-    );
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/refresh"), requestBody);
     if (response.status === "OK") {
         delete response.status;
         return response;
@@ -365,11 +353,8 @@ export async function refreshSession(
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
  */
-export async function revokeAllSessionsForUser(
-    recipeImplementation: RecipeImplementation,
-    userId: string
-): Promise<string[]> {
-    let response = await recipeImplementation.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+export async function revokeAllSessionsForUser(helpers: Helpers, userId: string): Promise<string[]> {
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
         userId,
     });
     return response.sessionHandlesRevoked;
@@ -378,11 +363,8 @@ export async function revokeAllSessionsForUser(
 /**
  * @description gets all session handles for current user. Please do not call this unless this user is authenticated.
  */
-export async function getAllSessionHandlesForUser(
-    recipeImplementation: RecipeImplementation,
-    userId: string
-): Promise<string[]> {
-    let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/user"), {
+export async function getAllSessionHandlesForUser(helpers: Helpers, userId: string): Promise<string[]> {
+    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/session/user"), {
         userId,
     });
     return response.sessionHandles;
@@ -392,11 +374,8 @@ export async function getAllSessionHandlesForUser(
  * @description call to destroy one session
  * @returns true if session was deleted from db. Else false in case there was nothing to delete
  */
-export async function revokeSession(
-    recipeImplementation: RecipeImplementation,
-    sessionHandle: string
-): Promise<boolean> {
-    let response = await recipeImplementation.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+export async function revokeSession(helpers: Helpers, sessionHandle: string): Promise<boolean> {
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
         sessionHandles: [sessionHandle],
     });
     return response.sessionHandlesRevoked.length === 1;
@@ -406,11 +385,8 @@ export async function revokeSession(
  * @description call to destroy multiple sessions
  * @returns list of sessions revoked
  */
-export async function revokeMultipleSessions(
-    recipeImplementation: RecipeImplementation,
-    sessionHandles: string[]
-): Promise<string[]> {
-    let response = await recipeImplementation.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
+export async function revokeMultipleSessions(helpers: Helpers, sessionHandles: string[]): Promise<string[]> {
+    let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/remove"), {
         sessionHandles,
     });
     return response.sessionHandlesRevoked;
@@ -419,13 +395,9 @@ export async function revokeMultipleSessions(
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
-export async function updateSessionData(
-    recipeImplementation: RecipeImplementation,
-    sessionHandle: string,
-    newSessionData: any
-) {
+export async function updateSessionData(helpers: Helpers, sessionHandle: string, newSessionData: any) {
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
-    let response = await recipeImplementation.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/data"), {
+    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/data"), {
         sessionHandle,
         userDataInDatabase: newSessionData,
     });
@@ -441,11 +413,8 @@ export async function updateSessionData(
  * @deprecated use getSessionInformation() instead
  * @returns access token payload as provided by the user earlier
  */
-export async function getAccessTokenPayload(
-    recipeImplementation: RecipeImplementation,
-    sessionHandle: string
-): Promise<any> {
-    let response = await recipeImplementation.querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+export async function getAccessTokenPayload(helpers: Helpers, sessionHandle: string): Promise<any> {
+    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/data"), {
         sessionHandle,
     });
     if (response.status === "OK") {
@@ -458,14 +427,10 @@ export async function getAccessTokenPayload(
     }
 }
 
-export async function updateAccessTokenPayload(
-    recipeImplementation: RecipeImplementation,
-    sessionHandle: string,
-    newAccessTokenPayload: any
-) {
+export async function updateAccessTokenPayload(helpers: Helpers, sessionHandle: string, newAccessTokenPayload: any) {
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
-    let response = await recipeImplementation.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
+    let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
         sessionHandle,
         userDataInJWT: newAccessTokenPayload,
     });

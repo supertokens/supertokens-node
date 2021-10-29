@@ -71,9 +71,9 @@ export default class Recipe extends RecipeModule {
                       ...this.config.emailVerificationFeature,
                   });
         this.recipeInterfaceImpl = this.config.override.functions(
-            new RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId))
+            RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId))
         );
-        this.apiImpl = this.config.override.apis(new APIImplementation());
+        this.apiImpl = this.config.override.apis(APIImplementation());
     }
 
     static getInstanceOrThrowError(): Recipe {

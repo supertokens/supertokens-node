@@ -8,7 +8,7 @@
         "moduleResolution": "Node",
         "noImplicitAny": true,
         "sourceMap": false,
-        "noImplicitThis": true,
+        "noImplicitThis": false,
         "skipLibCheck": true,
         "strict": true,
         "noUnusedLocals": true,
