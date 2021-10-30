@@ -53,11 +53,13 @@ export default function getAPIInterface(): APIInterface {
             provider,
             code,
             redirectURI,
+            authCodeResponse,
             options,
         }: {
             provider: TypeProvider;
             code: string;
             redirectURI: string;
+            authCodeResponse?: any;
             options: APIOptions;
         }): Promise<
             | {
@@ -74,6 +76,7 @@ export default function getAPIInterface(): APIInterface {
         > {
             let userInfo;
             let accessTokenAPIResponse: any;
+
             {
                 let providerInfo = await provider.get(undefined, undefined);
                 if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
@@ -83,25 +86,32 @@ export default function getAPIInterface(): APIInterface {
 
             let providerInfo = await provider.get(redirectURI, code);
 
-            if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
-                Object.keys(providerInfo.accessTokenAPI.params).forEach((key) => {
-                    if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId()) {
-                        providerInfo.accessTokenAPI.params[key] = getActualClientIdFromDevelopmentClientId(
-                            providerInfo.getClientId()
-                        );
-                    }
+            if (authCodeResponse !== undefined) {
+                accessTokenAPIResponse = {
+                    data: authCodeResponse,
+                };
+            } else {
+                // we should use code to get the authCodeResponse body
+                if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
+                    Object.keys(providerInfo.accessTokenAPI.params).forEach((key) => {
+                        if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId()) {
+                            providerInfo.accessTokenAPI.params[key] = getActualClientIdFromDevelopmentClientId(
+                                providerInfo.getClientId()
+                            );
+                        }
+                    });
+                }
+                accessTokenAPIResponse = await axios.default({
+                    method: "post",
+                    url: providerInfo.accessTokenAPI.url,
+                    data: qs.stringify(providerInfo.accessTokenAPI.params),
+                    headers: {
+                        "content-type": "application/x-www-form-urlencoded",
+                        accept: "application/json", // few providers like github don't send back json response by default
+                    },
                 });
             }
 
-            accessTokenAPIResponse = await axios.default({
-                method: "post",
-                url: providerInfo.accessTokenAPI.url,
-                data: qs.stringify(providerInfo.accessTokenAPI.params),
-                headers: {
-                    "content-type": "application/x-www-form-urlencoded",
-                    accept: "application/json", // few providers like github don't send back json response by default
-                },
-            });
             userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data);
 
             let emailInfo = userInfo.email;

@@ -643,7 +643,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 oI.someFunc.bind(this)();
             },
             someOtherFunc: function () {
-                this.m = 2;
+                m = 2;
             },
         };
 
@@ -653,13 +653,76 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 a.someFunc.bind(this)();
             },
             someOtherFunc: function () {
-                this.m = 4;
+                m = 4;
             },
         };
 
         b.someFunc();
 
-        assert(b.m === 4);
+        assert(m === 4);
+    });
+
+    it("override 2 for super recipe bind tests", async function () {
+        // see https://github.com/supertokens/supertokens-node/issues/199 (issue 2 tests)
+        let m = 0;
+        let ep = {
+            signIn: function () {
+                this.getUserByEmail();
+            },
+            getUserByEmail: function () {
+                m = 1;
+            },
+        };
+
+        let tpep = {
+            signIn: function () {
+                ep.signIn.bind(derivedEp(this))();
+            },
+            getUsersByEmail: function () {
+                ep.getUserByEmail.bind(derivedEp(this))();
+            },
+        };
+
+        let derivedEp = (tpep) => {
+            // cannot be overrided, but can be called on it's own
+            return {
+                signIn: function () {
+                    tpep.signIn();
+                },
+                getUserByEmail: function () {
+                    tpep.getUsersByEmail();
+                },
+            };
+        };
+
+        {
+            // user override
+            let override = {
+                ...tpep,
+                signIn: function () {
+                    tpep.signIn.bind(this)();
+                },
+                getUsersByEmail: function () {
+                    m = 5;
+                    tpep.getUsersByEmail();
+                    if (m === 1) {
+                        m = 2;
+                    }
+                },
+            };
+
+            override.signIn();
+
+            assert(m === 2);
+
+            m = 1;
+
+            let derivedEpInstance = derivedEp(override); // created after user has created their override
+
+            derivedEpInstance.getUserByEmail();
+
+            assert(m === 2);
+        }
     });
 });
 

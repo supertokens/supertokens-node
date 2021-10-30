@@ -250,6 +250,7 @@ export interface APIInterface {
               provider: TypeProvider;
               code: string;
               redirectURI: string;
+              authCodeResponse?: any;
               options: ThirdPartyAPIOptions;
           }) => Promise<
               | {
