@@ -699,8 +699,15 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
             // user override
             let override = {
                 ...tpep,
+                signIn: function () {
+                    tpep.signIn.bind(this)();
+                },
                 getUsersByEmail: function () {
-                    m = 2;
+                    m = 5;
+                    tpep.getUsersByEmail();
+                    if (m === 1) {
+                        m = 2;
+                    }
                 },
             };
 
