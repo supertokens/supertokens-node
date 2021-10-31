@@ -704,7 +704,7 @@ describe(`recipeModuleManagerTest: ${printPath("[test/recipeModuleManager.test.j
                 },
                 getUsersByEmail: function () {
                     m = 5;
-                    tpep.getUsersByEmail();
+                    tpep.getUsersByEmail.bind(this)();
                     if (m === 1) {
                         m = 2;
                     }
