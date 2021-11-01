@@ -16,6 +16,7 @@ import { TypeProvider, TypeProviderGetResponse } from "../types";
 import { validateTheStructureOfUserInput } from "../../../utils";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
+import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -87,7 +88,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
                 iat: Math.floor(Date.now() / 1000),
                 exp: Math.floor(Date.now() / 1000) + 86400 * 180, // 6 months
                 aud: "https://appleid.apple.com",
-                sub: clientId,
+                sub: getActualClientIdFromDevelopmentClientId(clientId),
             },
             privateKey.replace(/\\n/g, "\n"),
             { algorithm: "ES256", keyid: keyId }
@@ -131,7 +132,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             accessTokenAPIParams.redirect_uri = redirectURI;
         }
         let authorisationRedirectURL = "https://appleid.apple.com/auth/authorize";
-        let scopes = ["email"];
+        let scopes: string[] = [];
         if (config.scope !== undefined) {
             scopes = config.scope;
             scopes = Array.from(new Set(scopes));
@@ -142,7 +143,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
                 : config.authorisationRedirect.params;
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
-            response_mode: "form_post",
+            response_mode: "query",
             response_type: "code",
             client_id: config.clientId,
             ...additionalParams,
