@@ -153,6 +153,23 @@ export default function getAPIInterface(): APIInterface {
                 authCodeResponse: accessTokenAPIResponse.data,
             };
         },
+
+        appleRedirectHandlerPOST: async function ({
+            code,
+            state,
+            options,
+        }): Promise<{ status: "OK"; redirectTo: string }> {
+            return {
+                status: "OK",
+                redirectTo:
+                    options.appInfo.websiteDomain.getAsStringDangerous() +
+                    options.appInfo.websiteBasePath.getAsStringDangerous() +
+                    "/callback/apple?state=" +
+                    state +
+                    "&code=" +
+                    code,
+            };
+        },
     };
 }
 

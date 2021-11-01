@@ -299,4 +299,14 @@ export interface APIInterface {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
           >);
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: {
+              code: string;
+              state: string;
+              options: ThirdPartyAPIOptions;
+          }) => Promise<{
+              status: "OK";
+              redirectTo: string;
+          }>);
 }

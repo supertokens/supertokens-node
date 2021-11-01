@@ -19,6 +19,7 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
+import { NormalisedAppinfo } from "../../types";
 
 const TypeAny = {
     type: "any",
@@ -157,6 +158,7 @@ export type APIOptions = {
     providers: TypeProvider[];
     req: BaseRequest;
     res: BaseResponse;
+    appInfo: NormalisedAppinfo;
 };
 
 export interface APIInterface {
@@ -191,4 +193,12 @@ export interface APIInterface {
                     error: string;
                 }
           >);
+
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: {
+              code: string;
+              state: string;
+              options: APIOptions;
+          }) => Promise<{ status: "OK"; redirectTo: string }>);
 }

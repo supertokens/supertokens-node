@@ -9,6 +9,7 @@ export declare class LoopbackRequest extends BaseRequest {
     private request;
     private parserChecked;
     constructor(ctx: MiddlewareContext);
+    getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
     getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
@@ -20,6 +21,7 @@ export declare class LoopbackResponse extends BaseResponse {
     response: Response;
     private statusCode;
     constructor(ctx: MiddlewareContext);
+    redirect: (_: number, __: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

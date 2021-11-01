@@ -5,6 +5,7 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
+import { NormalisedAppinfo } from "../../types";
 export declare type UserInfo = {
     id: string;
     email?: {
@@ -139,6 +140,7 @@ export declare type APIOptions = {
     providers: TypeProvider[];
     req: BaseRequest;
     res: BaseResponse;
+    appInfo: NormalisedAppinfo;
 };
 export interface APIInterface {
     authorisationUrlGET:
@@ -173,4 +175,14 @@ export interface APIInterface {
                     error: string;
                 }
           >);
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: {
+              code: string;
+              state: string;
+              options: APIOptions;
+          }) => Promise<{
+              status: "OK";
+              redirectTo: string;
+          }>);
 }

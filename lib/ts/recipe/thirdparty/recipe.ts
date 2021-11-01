@@ -20,7 +20,7 @@ import { validateAndNormaliseUserInput } from "./utils";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import STError from "./error";
 
-import { SIGN_IN_UP_API, AUTHORISATION_API } from "./constants";
+import { SIGN_IN_UP_API, AUTHORISATION_API, APPLE_REDIRECT_HANDLER } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import signInUpAPI from "./api/signinup";
 import authorisationUrlAPI from "./api/authorisationUrl";
@@ -28,6 +28,7 @@ import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
+import appleRedirectHandler from "./api/appleRedirect";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -112,6 +113,12 @@ export default class Recipe extends RecipeModule {
                 id: AUTHORISATION_API,
                 disabled: this.apiImpl.authorisationUrlGET === undefined,
             },
+            {
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(APPLE_REDIRECT_HANDLER),
+                id: APPLE_REDIRECT_HANDLER,
+                disabled: this.apiImpl.appleRedirectHandlerPOST === undefined,
+            },
             ...this.emailVerificationRecipe.getAPIsHandled(),
         ];
     };
@@ -132,11 +139,14 @@ export default class Recipe extends RecipeModule {
             providers: this.providers,
             req,
             res,
+            appInfo: this.getAppInfo(),
         };
         if (id === SIGN_IN_UP_API) {
             return await signInUpAPI(this.apiImpl, options);
         } else if (id === AUTHORISATION_API) {
             return await authorisationUrlAPI(this.apiImpl, options);
+        } else if (id === APPLE_REDIRECT_HANDLER) {
+            return await appleRedirectHandler(this.apiImpl, options);
         } else {
             return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, path, method);
         }

@@ -8,6 +8,7 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 export declare class HapiRequest extends BaseRequest {
     private request;
     constructor(request: Request);
+    getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
     getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
@@ -24,6 +25,7 @@ export declare class HapiResponse extends BaseResponse {
     private content;
     responseSet: boolean;
     constructor(response: ExtendedResponseToolkit);
+    redirect: (_: number, __: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

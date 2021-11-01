@@ -132,7 +132,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             accessTokenAPIParams.redirect_uri = redirectURI;
         }
         let authorisationRedirectURL = "https://appleid.apple.com/auth/authorize";
-        let scopes: string[] = [];
+        let scopes: string[] = ["email"];
         if (config.scope !== undefined) {
             scopes = config.scope;
             scopes = Array.from(new Set(scopes));
@@ -143,7 +143,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
                 : config.authorisationRedirect.params;
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
-            response_mode: "query",
+            response_mode: "form_post",
             response_type: "code",
             client_id: config.clientId,
             ...additionalParams,

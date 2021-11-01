@@ -40,6 +40,11 @@ export class ExpressRequest extends BaseRequest {
         this.parserChecked = false;
     }
 
+    getFormData = async (): Promise<any> => {
+        // TODO:
+        return undefined;
+    };
+
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {
             return undefined;
@@ -86,6 +91,10 @@ export class ExpressResponse extends BaseResponse {
         this.response = response;
         this.statusCode = 200;
     }
+
+    redirect = (_: number, __: string) => {
+        // TODO:
+    };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         setHeaderForExpressLikeResponse(this.response, key, value, allowDuplicateKey);
