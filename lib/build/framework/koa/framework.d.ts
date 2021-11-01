@@ -20,7 +20,7 @@ export declare class KoaRequest extends BaseRequest {
 export declare class KoaResponse extends BaseResponse {
     private ctx;
     constructor(ctx: Context);
-    redirect: (_: number, __: string) => void;
+    sendHTMLResponse: (_: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

@@ -89,7 +89,7 @@ export class HapiResponse extends BaseResponse {
         this.responseSet = false;
     }
 
-    redirect = (_: number, __: string) => {
+    sendHTMLResponse = (_: string) => {
         // TODO:
     };
 

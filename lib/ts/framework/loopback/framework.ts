@@ -93,7 +93,7 @@ export class LoopbackResponse extends BaseResponse {
         this.statusCode = 200;
     }
 
-    redirect = (_: number, __: string) => {
+    sendHTMLResponse = (_: string) => {
         // TODO:
     };
 

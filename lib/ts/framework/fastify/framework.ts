@@ -91,10 +91,9 @@ export class FastifyResponse extends BaseResponse {
         this.statusCode = 200;
     }
 
-    redirect = (_: number, __: string) => {
+    sendHTMLResponse = (_: string) => {
         // TODO:
     };
-
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         try {
             let existingHeaders = this.response.getHeaders();

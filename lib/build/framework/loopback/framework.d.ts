@@ -21,7 +21,7 @@ export declare class LoopbackResponse extends BaseResponse {
     response: Response;
     private statusCode;
     constructor(ctx: MiddlewareContext);
-    redirect: (_: number, __: string) => void;
+    sendHTMLResponse: (_: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

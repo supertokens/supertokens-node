@@ -29,13 +29,11 @@ export default async function appleRedirectHandler(
     let code = body.code;
 
     // this will redirect the user...
-    let response = await apiImplementation.appleRedirectHandlerPOST({
+    await apiImplementation.appleRedirectHandlerPOST({
         code,
         state,
         options,
     });
-
-    options.res.redirect(307, response.redirectTo);
 
     return true;
 }

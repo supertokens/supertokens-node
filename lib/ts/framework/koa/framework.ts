@@ -88,7 +88,7 @@ export class KoaResponse extends BaseResponse {
         this.ctx = ctx;
     }
 
-    redirect = (_: number, __: string) => {
+    sendHTMLResponse = (_: string) => {
         // TODO:
     };
 

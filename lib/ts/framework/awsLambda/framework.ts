@@ -159,7 +159,7 @@ export class AWSResponse extends BaseResponse {
         };
     }
 
-    redirect = (_: number, __: string) => {
+    sendHTMLResponse = (_: string) => {
         // TODO:
     };
 

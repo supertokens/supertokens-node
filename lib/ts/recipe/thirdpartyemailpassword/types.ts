@@ -306,9 +306,5 @@ export interface APIInterface {
 
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: {
-              code: string;
-              state: string;
-              options: ThirdPartyAPIOptions;
-          }) => Promise<{ status: "OK"; redirectTo: string }>);
+        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions }) => Promise<void>);
 }

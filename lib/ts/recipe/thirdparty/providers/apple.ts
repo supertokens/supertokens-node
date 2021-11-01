@@ -17,6 +17,8 @@ import { validateTheStructureOfUserInput } from "../../../utils";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
 import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
+// import SuperTokens from "../../../supertokens";
+// import { APPLE_REDIRECT_HANDLER } from "../constants";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -141,11 +143,13 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
                 ? {}
                 : config.authorisationRedirect.params;
+
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
             response_mode: "form_post",
             response_type: "code",
             client_id: config.clientId,
+            redirect_uri: getRedirectURI(),
             ...additionalParams,
         };
 
@@ -173,6 +177,12 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
                 },
             };
         }
+        function getRedirectURI() {
+            // TODO: remove this hard coded and also consider if these are dev keys or not.
+            return "https://b59b-2405-201-a-a1aa-d93f-a2e1-9d88-1178.ngrok.io/auth/callback/apple";
+            // let supertokens = SuperTokens.getInstanceOrThrowError();
+            // return supertokens.appInfo.apiDomain.getAsStringDangerous() + APPLE_REDIRECT_HANDLER;
+        }
         return {
             accessTokenAPI: {
                 url: accessTokenAPIURL,
@@ -186,6 +196,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             getClientId: () => {
                 return config.clientId;
             },
+            getRedirectURI,
         };
     }
 

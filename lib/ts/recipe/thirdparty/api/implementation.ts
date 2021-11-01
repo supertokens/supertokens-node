@@ -81,6 +81,8 @@ export default function getAPIInterface(): APIInterface {
                 let providerInfo = await provider.get(undefined, undefined);
                 if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
                     redirectURI = DEV_OAUTH_REDIRECT_URL;
+                } else if (providerInfo.getRedirectURI !== undefined) {
+                    redirectURI = providerInfo.getRedirectURI();
                 }
             }
 
@@ -154,21 +156,17 @@ export default function getAPIInterface(): APIInterface {
             };
         },
 
-        appleRedirectHandlerPOST: async function ({
-            code,
-            state,
-            options,
-        }): Promise<{ status: "OK"; redirectTo: string }> {
-            return {
-                status: "OK",
-                redirectTo:
-                    options.appInfo.websiteDomain.getAsStringDangerous() +
-                    options.appInfo.websiteBasePath.getAsStringDangerous() +
-                    "/callback/apple?state=" +
-                    state +
-                    "&code=" +
-                    code,
-            };
+        appleRedirectHandlerPOST: async function ({ code, state, options }): Promise<void> {
+            const redirectURL =
+                options.appInfo.websiteDomain.getAsStringDangerous() +
+                options.appInfo.websiteBasePath.getAsStringDangerous() +
+                "/callback/apple?state=" +
+                state +
+                "&code=" +
+                code;
+            options.res.sendHTMLResponse(
+                `<html><head><script>window.location.replace("${redirectURL}");</script></head></html>`
+            );
         },
     };
 }

@@ -21,7 +21,7 @@ export declare class FastifyResponse extends BaseResponse {
     private response;
     private statusCode;
     constructor(response: FastifyReply);
-    redirect: (_: number, __: string) => void;
+    sendHTMLResponse: (_: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

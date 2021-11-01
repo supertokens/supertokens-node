@@ -28,6 +28,7 @@ export declare type TypeProviderGetResponse = {
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
     getClientId: () => string;
+    getRedirectURI?: () => string;
 };
 export declare type TypeProvider = {
     id: string;
@@ -177,12 +178,5 @@ export interface APIInterface {
           >);
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: {
-              code: string;
-              state: string;
-              options: APIOptions;
-          }) => Promise<{
-              status: "OK";
-              redirectTo: string;
-          }>);
+        | ((input: { code: string; state: string; options: APIOptions }) => Promise<void>);
 }

@@ -24,6 +24,7 @@ import {
     getCookieValueFromIncomingMessage,
     getHeaderValueFromIncomingMessage,
     assertThatBodyParserHasBeenUsedForExpressLikeRequest,
+    assertForDataBodyParserHasBeenUsedForExpressLikeRequest,
 } from "../utils";
 import type { Framework } from "../types";
 import SuperTokens from "../../supertokens";
@@ -32,17 +33,22 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 export class ExpressRequest extends BaseRequest {
     private request: Request;
     private parserChecked: boolean;
+    private formDataParserChecked: boolean;
 
     constructor(request: Request) {
         super();
         this.original = request;
         this.request = request;
         this.parserChecked = false;
+        this.formDataParserChecked = false;
     }
 
     getFormData = async (): Promise<any> => {
-        // TODO:
-        return undefined;
+        if (!this.formDataParserChecked) {
+            await assertForDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
+            this.formDataParserChecked = true;
+        }
+        return this.request.body;
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
@@ -92,8 +98,11 @@ export class ExpressResponse extends BaseResponse {
         this.statusCode = 200;
     }
 
-    redirect = (_: number, __: string) => {
-        // TODO:
+    sendHTMLResponse = (html: string) => {
+        if (!this.response.writableEnded) {
+            this.response.set("Content-Type", "text/html");
+            this.response.status(this.statusCode).send(Buffer.from(html));
+        }
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
