@@ -1,12 +1,16 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "../../override";
 export declare type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
@@ -14,15 +18,18 @@ export declare type TypeNormalisedInput = {
     getEmailVerificationURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type User = {
     id: string;
     email: string;
 };
-export interface RecipeInterface {
+export declare type RecipeInterface = {
     createEmailVerificationToken(input: {
         userId: string;
         email: string;
@@ -59,7 +66,7 @@ export interface RecipeInterface {
     }): Promise<{
         status: "OK";
     }>;
-}
+};
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
     config: TypeNormalisedInput;
@@ -68,7 +75,7 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-export interface APIInterface {
+export declare type APIInterface = {
     verifyEmailPOST:
         | undefined
         | ((input: {
@@ -98,4 +105,4 @@ export interface APIInterface {
           }) => Promise<{
               status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
           }>);
-}
+};

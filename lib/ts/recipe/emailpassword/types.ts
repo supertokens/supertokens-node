@@ -39,18 +39,20 @@ export type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions:
-            | ((originalImplementation: RecipeInterface) => RecipeInterface)
-            | ((
-                  originalImplementation: RecipeInterface,
-                  builder: OverrideableBuilder<RecipeInterface>
-              ) => RecipeInterface);
-        apis:
-            | ((originalImplementation: APIInterface) => APIInterface)
-            | ((originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface);
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -147,11 +149,20 @@ export type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };

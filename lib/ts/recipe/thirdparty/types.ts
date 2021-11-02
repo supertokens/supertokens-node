@@ -19,6 +19,7 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "../../override";
 
 const TypeAny = {
     type: "any",
@@ -95,8 +96,14 @@ export type TypeInput = {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis?: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -119,8 +126,14 @@ export type TypeNormalisedInput = {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };

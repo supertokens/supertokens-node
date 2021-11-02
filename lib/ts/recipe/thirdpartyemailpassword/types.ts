@@ -26,6 +26,7 @@ import {
     InputResetPasswordUsingTokenFeatureSchema,
     APIOptions as EmailPasswordAPIOptionsOriginal,
 } from "../emailpassword/types";
+import OverrideableBuilder from "../../override";
 
 const TypeString = {
     type: "string",
@@ -114,8 +115,14 @@ export type TypeInput = {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis?: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -141,8 +148,14 @@ export type TypeNormalisedInput = {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };

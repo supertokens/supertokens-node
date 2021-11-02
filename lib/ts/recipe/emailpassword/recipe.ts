@@ -73,11 +73,11 @@ export default class Recipe extends RecipeModule {
                   });
         {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
-            this.recipeInterfaceImpl = builder.addLayer(this.config.override.functions).build();
+            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
         {
             let builder = new OverrideableBuilder(APIImplementation());
-            this.apiImpl = builder.addLayer(this.config.override.apis).build();
+            this.apiImpl = builder.override(this.config.override.apis).build();
         }
     }
 

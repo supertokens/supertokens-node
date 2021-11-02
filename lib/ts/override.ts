@@ -32,11 +32,7 @@ export default class OverrideableBuilder<T extends Record<string, undefined | ((
         this.proxies = [];
     }
 
-    addLayer(
-        overrideFunc:
-            | ((originalImplementation: T) => T)
-            | ((originalImplementation: T, builder: OverrideableBuilder<T>) => T)
-    ): OverrideableBuilder<T> {
+    override(overrideFunc: (originalImplementation: T, builder?: OverrideableBuilder<T>) => T): OverrideableBuilder<T> {
         const proxy = getProxyObject(this.layers[0]) as T;
         const layer = overrideFunc(proxy, this);
         for (const key of Object.keys(this.layers[0]) as (keyof T)[]) {

@@ -5,6 +5,7 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "../../override";
 export declare type UserInfo = {
     id: string;
     email?: {
@@ -58,8 +59,14 @@ export declare type TypeInput = {
         functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis?: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -102,8 +109,14 @@ export declare type TypeNormalisedInput = {
         functions: (originalImplementation: RecipeInterface) => RecipeInterface;
         apis: (originalImplementation: APIInterface) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
