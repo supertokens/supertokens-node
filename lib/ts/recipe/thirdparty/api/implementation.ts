@@ -25,8 +25,14 @@ export default function getAPIInterface(): APIInterface {
                 let value = providerInfo.authorisationRedirect.params[key];
                 params[key] = typeof value === "function" ? await value(options.req.original) : value;
             }
-            if (providerInfo.getRedirectURI !== undefined) {
+            if (providerInfo.getRedirectURI !== undefined && !isUsingDevelopmentClientId(providerInfo.getClientId())) {
                 // the backend wants to set the redirectURI - so we set that here.
+
+                // we add the not development keys because the oauth provider will
+                // redirect to supertokens.io's URL which will redirect the app
+                // to the the user's website, which will handle the callback as usual.
+                // If we add this, then instead, the supertokens' site will redirect
+                // the user to this API layer, which is not needed.
                 params["redirect_uri"] = providerInfo.getRedirectURI();
             }
 
