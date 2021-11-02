@@ -19,6 +19,7 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "../../override";
 
 const TypeString = {
     type: "string",
@@ -38,8 +39,15 @@ export type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions:
+            | ((originalImplementation: RecipeInterface) => RecipeInterface)
+            | ((
+                  originalImplementation: RecipeInterface,
+                  builder: OverrideableBuilder<RecipeInterface>
+              ) => RecipeInterface);
+        apis:
+            | ((originalImplementation: APIInterface) => APIInterface)
+            | ((originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface);
         emailVerificationFeature?: {
             functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
             apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
@@ -159,7 +167,7 @@ export const InputSchema = {
     additionalProperties: false,
 };
 
-export interface RecipeInterface {
+export type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
@@ -188,7 +196,7 @@ export interface RecipeInterface {
         email?: string;
         password?: string;
     }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }>;
-}
+};
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -200,7 +208,7 @@ export type APIOptions = {
     res: BaseResponse;
 };
 
-export interface APIInterface {
+export type APIInterface = {
     emailExistsGET:
         | undefined
         | ((input: {
@@ -271,4 +279,4 @@ export interface APIInterface {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
           >);
-}
+};
