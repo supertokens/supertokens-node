@@ -13,7 +13,7 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import { validateTheStructureOfUserInput, clientIdsForDevRecipe } from "../../../utils";
+import { validateTheStructureOfUserInput, thirdPartyProvidersClientIds } from "../../../utils";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
 
@@ -79,7 +79,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         "thirdparty recipe, provider apple"
     );
 
-    clientIdsForDevRecipe.push(config.clientId);
+    thirdPartyProvidersClientIds.push(config.clientId);
 
     const id = "apple";
 

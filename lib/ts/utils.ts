@@ -123,4 +123,5 @@ export function frontendHasInterceptor(req: BaseRequest): boolean {
     return getRIDFromRequest(req) !== undefined;
 }
 
-export let clientIdsForDevRecipe: string[] = [];
+// If a thirdparty provider is being used, the client id is stored in the following array and is checked by the Dev recipe to see if development OAuth credentials are being used.
+export let thirdPartyProvidersClientIds: string[] = [];

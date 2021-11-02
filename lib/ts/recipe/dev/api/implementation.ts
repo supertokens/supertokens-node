@@ -1,15 +1,17 @@
 import { APIInterface, APIOptions } from "../";
-export default class APIImplementation implements APIInterface {
-    healthCheckGET = async ({
-        options,
-    }: {
-        options: APIOptions;
-        apiImplementation: APIInterface;
-    }): Promise<{ status: "OK" | "NOT_OK"; message?: string }> => {
-        let response = await options.recipeImplementation.checkConnectionToCore(
-            options.config.apiKey,
-            options.config.connectionURL
-        );
-        return response;
+
+export default function getAPIImplementation(): APIInterface {
+    return {
+        healthCheckGET: async ({
+            options,
+        }: {
+            options: APIOptions;
+        }): Promise<{ status: "OK" | "NOT_OK"; message?: string }> => {
+            let response = await options.recipeImplementation.checkConnectionToCoreAndDevOAuthKeys(
+                options.config.apiKey,
+                options.config.connectionURI
+            );
+            return response;
+        },
     };
 }

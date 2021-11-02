@@ -1,16 +1,16 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 export declare type TypeInput = {
-    connectionURL: string | undefined;
+    connectionURI: string | undefined;
     apiKey?: string;
 };
 export interface RecipeInterface {
-    checkConnectionToCore: (
+    checkConnectionToCoreAndDevOAuthKeys: (
         apiKey: string | undefined,
         connectionURI: string | undefined
     ) => Promise<{
         status: "OK" | "NOT_OK";
-        message?: string;
+        message: string;
     }>;
 }
 export declare type APIOptions = {
@@ -26,15 +26,8 @@ export interface APIInterface {
         | undefined
         | ((input: {
               options: APIOptions;
-              apiImplementation: APIInterface;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    message?: string;
-                }
-              | {
-                    status: "NOT_OK";
-                    message?: string;
-                }
-          >);
+          }) => Promise<{
+              status: "OK" | "NOT_OK";
+              message?: string;
+          }>);
 }

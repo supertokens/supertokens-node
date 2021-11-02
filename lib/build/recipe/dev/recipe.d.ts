@@ -14,7 +14,6 @@ export default class Recipe extends RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput);
     static init(config: TypeInput): RecipeListFunction;
     static getInstanceOrThrowError(): Recipe;
-    static reset(): void;
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (id: string, req: BaseRequest, res: BaseResponse) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;

@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { clientIdsForDevRecipe } from "../../utils";
+import { thirdPartyProvidersClientIds } from "../../utils";
 
 // If Third Party login is used with one of the following development keys, then the dev authorization url and the redirect url will be used.
 const DEV_OAUTH_CLIENT_IDS = [
@@ -23,7 +23,7 @@ const DEV_OAUTH_CLIENT_IDS = [
 const DEV_KEY_IDENTIFIER = "4398792-";
 
 export async function isUsingDevelopmentClientId(): Promise<boolean> {
-    for await (const clientId of clientIdsForDevRecipe) {
+    for await (const clientId of thirdPartyProvidersClientIds) {
         if (clientId.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(clientId)) {
             return true;
         }

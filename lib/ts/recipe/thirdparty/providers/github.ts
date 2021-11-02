@@ -14,7 +14,7 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
-import { validateTheStructureOfUserInput, clientIdsForDevRecipe } from "../../../utils";
+import { validateTheStructureOfUserInput, thirdPartyProvidersClientIds } from "../../../utils";
 
 type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
@@ -61,7 +61,7 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
         "thirdparty recipe, provider github"
     );
 
-    clientIdsForDevRecipe.push(config.clientId);
+    thirdPartyProvidersClientIds.push(config.clientId);
 
     const id = "github";
 

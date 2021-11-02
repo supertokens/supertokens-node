@@ -17,7 +17,6 @@ import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
 import { TypeInput, RecipeInterface, APIInterface } from "./types";
 import STError from "./error";
-
 import { STATUS } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import RecipeImplementation from "./recipeImplementation";
@@ -43,8 +42,8 @@ export default class Recipe extends RecipeModule {
         this.config = config;
         this.isInServerlessEnv = isInServerlessEnv;
 
-        this.recipeInterfaceImpl = new RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId));
-        this.apiImpl = new APIImplementation();
+        this.recipeInterfaceImpl = RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId));
+        this.apiImpl = APIImplementation();
     }
 
     static init(config: TypeInput): RecipeListFunction {
@@ -63,13 +62,6 @@ export default class Recipe extends RecipeModule {
             return Recipe.instance;
         }
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
-    }
-
-    static reset() {
-        if (process.env.TEST_MODE !== "testing") {
-            throw new Error("calling testing function in non testing env");
-        }
-        Recipe.instance = undefined;
     }
 
     getAPIsHandled = (): APIHandled[] => {

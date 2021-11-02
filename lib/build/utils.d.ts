@@ -11,4 +11,4 @@ export declare function send200Response(res: BaseResponse, responseJson: any): v
 export declare function isAnIpAddress(ipaddress: string): boolean;
 export declare function validateTheStructureOfUserInput(config: any, inputSchema: any, configRoot: string): void;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;
-export declare let clientIdsForDevRecipe: string[];
+export declare let thirdPartyProvidersClientIds: string[];

@@ -20,7 +20,7 @@ export default async function healthCheckAPI(apiImplementation: APIInterface, op
         return false;
     }
 
-    let response = await apiImplementation.healthCheckGET({ apiImplementation, options });
+    let response = await apiImplementation.healthCheckGET({ options });
     if (response.status === "OK") {
         send200Response(options.res, response);
     } else {

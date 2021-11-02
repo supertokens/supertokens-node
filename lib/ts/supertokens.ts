@@ -69,7 +69,7 @@ export default class SuperTokens {
 
         let devRecipe = Dev.init({
             apiKey: config.supertokens?.apiKey,
-            connectionURL: config.supertokens?.connectionURI,
+            connectionURI: config.supertokens?.connectionURI,
         });
 
         this.recipeModules.push(devRecipe(this.appInfo, this.isInServerlessEnv));

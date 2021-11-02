@@ -14,7 +14,7 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
-import { validateTheStructureOfUserInput, clientIdsForDevRecipe } from "../../../utils";
+import { validateTheStructureOfUserInput, thirdPartyProvidersClientIds } from "../../../utils";
 
 type TypeThirdPartyProviderGoogleConfig = {
     clientId: string;
@@ -62,7 +62,7 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
     );
     const id = "google";
 
-    clientIdsForDevRecipe.push(config.clientId);
+    thirdPartyProvidersClientIds.push(config.clientId);
 
     async function get(
         redirectURI: string | undefined,
