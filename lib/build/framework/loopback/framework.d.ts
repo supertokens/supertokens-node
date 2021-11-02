@@ -8,6 +8,7 @@ import type { Framework } from "../types";
 export declare class LoopbackRequest extends BaseRequest {
     private request;
     private parserChecked;
+    private formDataParserChecked;
     constructor(ctx: MiddlewareContext);
     getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
@@ -21,7 +22,7 @@ export declare class LoopbackResponse extends BaseResponse {
     response: Response;
     private statusCode;
     constructor(ctx: MiddlewareContext);
-    sendHTMLResponse: (_: string) => void;
+    sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,
