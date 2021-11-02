@@ -27,6 +27,7 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
     let code = bodyParams.code === undefined ? "" : bodyParams.code;
     let redirectURI = bodyParams.redirectURI;
     let authCodeResponse = bodyParams.authCodeResponse;
+    let clientId = bodyParams.clientId;
 
     if (thirdPartyId === undefined || typeof thirdPartyId !== "string") {
         throw new STError({
@@ -74,7 +75,14 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    let result = await apiImplementation.signInUpPOST({ provider, code, redirectURI, options, authCodeResponse });
+    let result = await apiImplementation.signInUpPOST({
+        provider,
+        code,
+        clientId,
+        redirectURI,
+        options,
+        authCodeResponse,
+    });
 
     if (result.status === "OK") {
         send200Response(options.res, {

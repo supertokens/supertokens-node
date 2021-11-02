@@ -180,6 +180,7 @@ export interface APIInterface {
               code: string;
               redirectURI: string;
               authCodeResponse?: any;
+              clientId?: string;
               options: APIOptions;
           }) => Promise<
               | {
