@@ -113,17 +113,18 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
 
     async function get(
         redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined
+        authCodeFromRequest: string | undefined,
+        clientId?: string
     ): Promise<TypeProviderGetResponse> {
         let accessTokenAPIURL = "https://appleid.apple.com/auth/token";
         let clientSecret = getClientSecret(
-            config.clientId,
+            clientId || config.clientId,
             config.clientSecret.keyId,
             config.clientSecret.teamId,
             config.clientSecret.privateKey
         );
         let accessTokenAPIParams: { [key: string]: string } = {
-            client_id: config.clientId,
+            client_id: clientId || config.clientId,
             client_secret: clientSecret,
             grant_type: "authorization_code",
         };
@@ -148,7 +149,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             scope: scopes.join(" "),
             response_mode: "form_post",
             response_type: "code",
-            client_id: config.clientId,
+            client_id: clientId || config.clientId,
             ...additionalParams,
         };
 
@@ -191,7 +192,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             },
             getProfileInfo,
             getClientId: () => {
-                return config.clientId;
+                return clientId || config.clientId;
             },
             getRedirectURI,
         };

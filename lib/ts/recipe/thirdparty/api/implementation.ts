@@ -100,7 +100,7 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let providerInfo = await provider.get(redirectURI, code);
+            let providerInfo = await provider.get(redirectURI, code, clientId);
 
             if (authCodeResponse !== undefined) {
                 accessTokenAPIResponse = {
@@ -116,11 +116,6 @@ export default function getAPIInterface(): APIInterface {
                             );
                         }
                     });
-                }
-
-                // if the frontend has passed a client_id, we use that instead of the one in the backend. This is useful for cases like sign in with apple, where a different client_id is needed for iOS vs other platforms.
-                if (clientId !== undefined && providerInfo.accessTokenAPI.params["client_id"] !== undefined) {
-                    providerInfo.accessTokenAPI.params["client_id"] = clientId;
                 }
 
                 accessTokenAPIResponse = await axios.default({
