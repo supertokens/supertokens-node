@@ -42,8 +42,7 @@ export default class OverrideableBuilder<T extends Record<string, undefined | ((
         for (const key of Object.keys(this.layers[0]) as (keyof T)[]) {
             if (layer[key] === proxy[key] || key === "_call") {
                 delete layer[key];
-            }
-            if (layer[key] === undefined) {
+            } else if (layer[key] === undefined) {
                 layer[key] = null as any;
             }
         }
