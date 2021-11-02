@@ -25,6 +25,10 @@ export default function getAPIInterface(): APIInterface {
                 let value = providerInfo.authorisationRedirect.params[key];
                 params[key] = typeof value === "function" ? await value(options.req.original) : value;
             }
+            if (providerInfo.getRedirectURI !== undefined) {
+                // the backend wants to set the redirectURI - so we set that here.
+                params["redirect_uri"] = providerInfo.getRedirectURI();
+            }
 
             if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
                 params["actual_redirect_uri"] = providerInfo.authorisationRedirect.url;
@@ -82,6 +86,8 @@ export default function getAPIInterface(): APIInterface {
                 if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
                     redirectURI = DEV_OAUTH_REDIRECT_URL;
                 } else if (providerInfo.getRedirectURI !== undefined) {
+                    // we overwrite the redirectURI provided by the frontend
+                    // since the backend wants to take charge of setting this.
                     redirectURI = providerInfo.getRedirectURI();
                 }
             }
