@@ -70,10 +70,7 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         if (clientId === undefined) {
             throw new STError({
                 type: STError.BAD_INPUT_ERROR,
-                message:
-                    "The third party provider " +
-                    thirdPartyId +
-                    ` seems to be missing from the backend configs. If it is configured, and you have multiple of them from the same provider, please mark one of them as the primary one by giving it a "primary: true" flag.`,
+                message: "The third party provider " + thirdPartyId + ` seems to be missing from the backend configs.`,
             });
         } else {
             throw new STError({
