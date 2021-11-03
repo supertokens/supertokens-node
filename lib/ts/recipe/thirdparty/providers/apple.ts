@@ -13,7 +13,6 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import { validateTheStructureOfUserInput } from "../../../utils";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
 import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
@@ -31,57 +30,11 @@ type TypeThirdPartyProviderAppleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-};
-
-const InputSchemaTypeThirdPartyProviderAppleConfig = {
-    type: "object",
-    properties: {
-        clientId: {
-            type: "string",
-        },
-        clientSecret: {
-            type: "object",
-            properties: {
-                keyId: {
-                    type: "string",
-                },
-                privateKey: {
-                    type: "string",
-                },
-                teamId: {
-                    type: "string",
-                },
-            },
-            required: ["keyId", "privateKey", "teamId"],
-            additionalProperties: false,
-        },
-        scope: {
-            type: "array",
-            items: {
-                type: "string",
-            },
-        },
-        authorisationRedirect: {
-            type: "object",
-            properties: {
-                params: {
-                    type: "any",
-                },
-            },
-            additionalProperties: false,
-        },
-    },
-    required: ["clientId", "clientSecret"],
-    additionalProperties: false,
+    id?: string;
 };
 
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider {
-    validateTheStructureOfUserInput(
-        config,
-        InputSchemaTypeThirdPartyProviderAppleConfig,
-        "thirdparty recipe, provider apple"
-    );
-    const id = "apple";
+    const id = config.id === undefined ? "apple" : config.id;
 
     function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): string {
         return jwtSign(

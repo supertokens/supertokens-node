@@ -14,7 +14,6 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
-import { validateTheStructureOfUserInput } from "../../../utils";
 
 type TypeThirdPartyProviderGoogleConfig = {
     clientId: string;
@@ -23,44 +22,11 @@ type TypeThirdPartyProviderGoogleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-};
-
-const InputSchemaTypeThirdPartyProviderGoogleConfig = {
-    type: "object",
-    properties: {
-        clientId: {
-            type: "string",
-        },
-        clientSecret: {
-            type: "string",
-        },
-        scope: {
-            type: "array",
-            items: {
-                type: "string",
-            },
-        },
-        authorisationRedirect: {
-            type: "object",
-            properties: {
-                params: {
-                    type: "any",
-                },
-            },
-            additionalProperties: false,
-        },
-    },
-    required: ["clientId", "clientSecret"],
-    additionalProperties: false,
+    id?: string;
 };
 
 export default function Google(config: TypeThirdPartyProviderGoogleConfig): TypeProvider {
-    validateTheStructureOfUserInput(
-        config,
-        InputSchemaTypeThirdPartyProviderGoogleConfig,
-        "thirdparty recipe, provider google"
-    );
-    const id = "google";
+    const id = config.id === undefined ? "google" : config.id;
 
     async function get(
         redirectURI: string | undefined,

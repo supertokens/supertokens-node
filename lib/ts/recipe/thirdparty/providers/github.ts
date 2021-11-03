@@ -14,7 +14,6 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
-import { validateTheStructureOfUserInput } from "../../../utils";
 
 type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
@@ -23,44 +22,11 @@ type TypeThirdPartyProviderGithubConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-};
-
-const InputSchemaTypeThirdPartyProviderGithubConfig = {
-    type: "object",
-    properties: {
-        clientId: {
-            type: "string",
-        },
-        clientSecret: {
-            type: "string",
-        },
-        scope: {
-            type: "array",
-            items: {
-                type: "string",
-            },
-        },
-        authorisationRedirect: {
-            type: "object",
-            properties: {
-                params: {
-                    type: "any",
-                },
-            },
-            additionalProperties: false,
-        },
-    },
-    required: ["clientId", "clientSecret"],
-    additionalProperties: false,
+    id?: string;
 };
 
 export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider {
-    validateTheStructureOfUserInput(
-        config,
-        InputSchemaTypeThirdPartyProviderGithubConfig,
-        "thirdparty recipe, provider github"
-    );
-    const id = "github";
+    const id = config.id === undefined ? "github" : config.id;
 
     async function get(
         redirectURI: string | undefined,
