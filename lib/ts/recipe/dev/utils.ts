@@ -22,9 +22,12 @@ const DEV_OAUTH_CLIENT_IDS = [
 ];
 const DEV_KEY_IDENTIFIER = "4398792-";
 
-export async function isUsingDevelopmentClientId(): Promise<boolean> {
-    for await (const clientId of thirdPartyProvidersClientIds) {
-        if (clientId.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(clientId)) {
+export function isUsingDevelopmentClientId(): boolean {
+    for (let i = 0; i < thirdPartyProvidersClientIds.length; i++) {
+        if (
+            thirdPartyProvidersClientIds[i].startsWith(DEV_KEY_IDENTIFIER) ||
+            DEV_OAUTH_CLIENT_IDS.includes(thirdPartyProvidersClientIds[i])
+        ) {
             return true;
         }
     }

@@ -25,7 +25,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
                 if (String(response).startsWith("Hello")) {
                     if (connectionURI?.includes("https://try.supertokens.io")) {
-                        if (await isUsingDevelopmentClientId()) {
+                        if (isUsingDevelopmentClientId()) {
                             return {
                                 status: "OK",
                                 message: "1. " + USING_DEV_CORE + "  2. " + USING_DEV_OAUTH_KEY,

@@ -1,2 +1,2 @@
 // @ts-nocheck
-export declare function isUsingDevelopmentClientId(): Promise<boolean>;
+export declare function isUsingDevelopmentClientId(): boolean;
