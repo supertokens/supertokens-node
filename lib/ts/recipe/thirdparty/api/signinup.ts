@@ -64,7 +64,16 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    let provider = options.providers.find((p) => p.id === thirdPartyId);
+    let provider = options.providers.find(async (p) => {
+        if (p.id !== thirdPartyId) {
+            return false;
+        }
+        if (clientId === undefined) {
+            return true;
+        }
+        let pInfo = await p.get(undefined, undefined);
+        return pInfo.getClientId() === clientId;
+    });
     if (provider === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,

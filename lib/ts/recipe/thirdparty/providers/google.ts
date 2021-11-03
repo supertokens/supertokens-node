@@ -22,11 +22,10 @@ type TypeThirdPartyProviderGoogleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-    id?: string;
 };
 
 export default function Google(config: TypeThirdPartyProviderGoogleConfig): TypeProvider {
-    const id = config.id === undefined ? "google" : config.id;
+    const id = "google";
 
     async function get(
         redirectURI: string | undefined,

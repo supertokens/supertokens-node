@@ -34,7 +34,12 @@ export default async function authorisationUrlAPI(
         });
     }
 
-    let provider = options.providers.find((p) => p.id === thirdPartyId);
+    let provider = options.providers.find((p) => {
+        if (p.id !== thirdPartyId) {
+            return false;
+        }
+        return true;
+    });
     if (provider === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,

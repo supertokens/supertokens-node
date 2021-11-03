@@ -30,11 +30,10 @@ type TypeThirdPartyProviderAppleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-    id?: string;
 };
 
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider {
-    const id = config.id === undefined ? "apple" : config.id;
+    const id = "apple";
 
     function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): string {
         return jwtSign(
@@ -66,18 +65,17 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
 
     async function get(
         redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined,
-        clientId?: string
+        authCodeFromRequest: string | undefined
     ): Promise<TypeProviderGetResponse> {
         let accessTokenAPIURL = "https://appleid.apple.com/auth/token";
         let clientSecret = getClientSecret(
-            clientId || config.clientId,
+            config.clientId,
             config.clientSecret.keyId,
             config.clientSecret.teamId,
             config.clientSecret.privateKey
         );
         let accessTokenAPIParams: { [key: string]: string } = {
-            client_id: clientId || config.clientId,
+            client_id: config.clientId,
             client_secret: clientSecret,
             grant_type: "authorization_code",
         };
@@ -102,7 +100,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             scope: scopes.join(" "),
             response_mode: "form_post",
             response_type: "code",
-            client_id: clientId || config.clientId,
+            client_id: config.clientId,
             ...additionalParams,
         };
 
@@ -145,7 +143,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             },
             getProfileInfo,
             getClientId: () => {
-                return clientId || config.clientId;
+                return config.clientId;
             },
             getRedirectURI,
         };

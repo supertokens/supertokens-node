@@ -64,7 +64,6 @@ export default function getAPIInterface(): APIInterface {
             code,
             redirectURI,
             authCodeResponse,
-            clientId,
             options,
         }: {
             provider: TypeProvider;
@@ -100,7 +99,7 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let providerInfo = await provider.get(redirectURI, code, clientId);
+            let providerInfo = await provider.get(redirectURI, code);
 
             if (authCodeResponse !== undefined) {
                 accessTokenAPIResponse = {

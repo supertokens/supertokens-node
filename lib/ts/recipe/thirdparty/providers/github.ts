@@ -22,11 +22,10 @@ type TypeThirdPartyProviderGithubConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-    id?: string;
 };
 
 export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider {
-    const id = config.id === undefined ? "github" : config.id;
+    const id = "github";
 
     async function get(
         redirectURI: string | undefined,
