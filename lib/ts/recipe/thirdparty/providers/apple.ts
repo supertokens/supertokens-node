@@ -30,10 +30,12 @@ type TypeThirdPartyProviderAppleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
+    primary?: boolean;
 };
 
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider {
     const id = "apple";
+    const primary = config.primary === undefined ? false : config.primary;
 
     function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): string {
         return jwtSign(
@@ -63,10 +65,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         });
     }
 
-    async function get(
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined
-    ): Promise<TypeProviderGetResponse> {
+    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://appleid.apple.com/auth/token";
         let clientSecret = getClientSecret(
             config.clientId,
@@ -152,5 +151,6 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
     return {
         id,
         get,
+        primary,
     };
 }

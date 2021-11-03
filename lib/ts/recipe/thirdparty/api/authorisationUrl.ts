@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
+import { findRightProvider } from "../utils";
 
 export default async function authorisationUrlAPI(
     apiImplementation: APIInterface,
@@ -34,19 +35,14 @@ export default async function authorisationUrlAPI(
         });
     }
 
-    let provider = options.providers.find((p) => {
-        if (p.id !== thirdPartyId) {
-            return false;
-        }
-        return true;
-    });
+    let provider = findRightProvider(options.providers, thirdPartyId, undefined);
     if (provider === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
             message:
                 "The third party provider " +
                 thirdPartyId +
-                " seems to not be configured on the backend. Please check your frontend and backend configs.",
+                ` seems to be missing from the backend configs. If it is configured, and you have multiple of them from the same provider, please mark one of them as the primary one by giving it a "primary: true" flag.`,
         });
     }
 

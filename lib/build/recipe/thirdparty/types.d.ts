@@ -32,7 +32,8 @@ export declare type TypeProviderGetResponse = {
 };
 export declare type TypeProvider = {
     id: string;
-    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => Promise<TypeProviderGetResponse>;
+    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
+    primary?: boolean;
 };
 export declare type User = {
     id: string;

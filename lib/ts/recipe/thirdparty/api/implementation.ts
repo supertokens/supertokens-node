@@ -16,7 +16,7 @@ export default function getAPIInterface(): APIInterface {
             status: "OK";
             url: string;
         }> {
-            let providerInfo = await provider.get(undefined, undefined);
+            let providerInfo = provider.get(undefined, undefined);
 
             let params: { [key: string]: string } = {};
             let keys = Object.keys(providerInfo.authorisationRedirect.params);
@@ -89,7 +89,7 @@ export default function getAPIInterface(): APIInterface {
             let accessTokenAPIResponse: any;
 
             {
-                let providerInfo = await provider.get(undefined, undefined);
+                let providerInfo = provider.get(undefined, undefined);
                 if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
                     redirectURI = DEV_OAUTH_REDIRECT_URL;
                 } else if (providerInfo.getRedirectURI !== undefined) {
@@ -99,7 +99,7 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let providerInfo = await provider.get(redirectURI, code);
+            let providerInfo = provider.get(redirectURI, code);
 
             if (authCodeResponse !== undefined) {
                 accessTokenAPIResponse = {

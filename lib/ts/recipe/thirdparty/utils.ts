@@ -16,9 +16,8 @@
 import { NormalisedAppinfo } from "../../types";
 import { validateTheStructureOfUserInput } from "../../utils";
 import Recipe from "./recipe";
-import STError from "./error";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import { RecipeInterface, APIInterface } from "./types";
+import { RecipeInterface, APIInterface, TypeProvider } from "./types";
 import {
     TypeInput,
     InputSchema,
@@ -51,6 +50,34 @@ export function validateAndNormaliseUserInput(
     };
 }
 
+export function findRightProvider(
+    providers: TypeProvider[],
+    thirdPartyId: string,
+    clientId?: string
+): TypeProvider | undefined {
+    return providers.find((p) => {
+        let id = p.id;
+        if (id !== thirdPartyId) {
+            return false;
+        }
+
+        // first if there is only one provider with thirdPartyId in the providers array,
+        let otherProvidersWithSameId = providers.filter((p1) => p1.id === id && p !== p1);
+        if (otherProvidersWithSameId.length === 0) {
+            // they we always return that.
+            return true;
+        }
+
+        // otherwise, we look for the primary provider if clientId is missing
+        if (clientId === undefined) {
+            return p.primary === true;
+        }
+
+        // otherwise, we return a provider that matches based on client ID as well.
+        return p.get(undefined, undefined).getClientId() === clientId;
+    });
+}
+
 function validateAndNormaliseSignInAndUpConfig(
     _: NormalisedAppinfo,
     config: TypeInputSignInAndUp
@@ -58,12 +85,36 @@ function validateAndNormaliseSignInAndUpConfig(
     let providers = config.providers;
 
     if (providers === undefined || providers.length === 0) {
-        throw new STError({
-            type: "BAD_INPUT_ERROR",
-            message:
-                "thirdparty recipe requires atleast 1 provider to be passed in signInAndUpFeature.providers config",
-        });
+        throw new Error(
+            "thirdparty recipe requires atleast 1 provider to be passed in signInAndUpFeature.providers config"
+        );
     }
+
+    // we check if there are multiple providers with the same id that have primary as true.
+    // In this case, we want to throw an error..
+    let primaryProvidersSet = new Set<string>();
+    providers.forEach((p) => {
+        let id = p.id;
+        let isPrimary = p.primary;
+
+        if (isPrimary === undefined) {
+            // if this id is not being used by any other provider, we treat this as the primary
+            let otherProvidersWithSameId = providers.filter((p1) => p1.id === id && p !== p1);
+            if (otherProvidersWithSameId.length === 0) {
+                // we treat this as the primary now...
+                isPrimary = true;
+            }
+        }
+        if (isPrimary) {
+            if (primaryProvidersSet.has(id)) {
+                throw new Error(
+                    `You have provided multiple third party providers that have the id: "${id}" and are marked as primary. Please only mark one of them as primary.`
+                );
+            }
+            primaryProvidersSet.add(id);
+        }
+    });
+
     return {
         providers,
     };

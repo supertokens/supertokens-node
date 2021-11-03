@@ -19,15 +19,14 @@ type TypeThirdPartyProviderFacebookConfig = {
     clientId: string;
     clientSecret: string;
     scope?: string[];
+    primary?: boolean;
 };
 
 export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): TypeProvider {
     const id = "facebook";
+    const primary = config.primary === undefined ? false : config.primary;
 
-    async function get(
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined
-    ): Promise<TypeProviderGetResponse> {
+    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://graph.facebook.com/v9.0/oauth/access_token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
@@ -101,5 +100,6 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
     return {
         id,
         get,
+        primary,
     };
 }

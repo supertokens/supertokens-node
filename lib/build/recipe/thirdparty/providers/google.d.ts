@@ -9,6 +9,7 @@ declare type TypeThirdPartyProviderGoogleConfig = {
             [key: string]: string | ((request: any) => string);
         };
     };
+    primary?: boolean;
 };
 export default function Google(config: TypeThirdPartyProviderGoogleConfig): TypeProvider;
 export {};

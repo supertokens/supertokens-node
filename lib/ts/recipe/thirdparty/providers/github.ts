@@ -22,15 +22,14 @@ type TypeThirdPartyProviderGithubConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
+    primary?: boolean;
 };
 
 export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider {
     const id = "github";
+    const primary = config.primary === undefined ? false : config.primary;
 
-    async function get(
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined
-    ): Promise<TypeProviderGetResponse> {
+    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://github.com/login/oauth/access_token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
@@ -120,5 +119,6 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
     return {
         id,
         get,
+        primary,
     };
 }

@@ -22,15 +22,14 @@ type TypeThirdPartyProviderGoogleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
+    primary?: boolean;
 };
 
 export default function Google(config: TypeThirdPartyProviderGoogleConfig): TypeProvider {
     const id = "google";
+    const primary = config.primary === undefined ? false : config.primary;
 
-    async function get(
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined
-    ): Promise<TypeProviderGetResponse> {
+    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://accounts.google.com/o/oauth2/token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
@@ -117,5 +116,6 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
     return {
         id,
         get,
+        primary,
     };
 }

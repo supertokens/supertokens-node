@@ -16,6 +16,7 @@
 import STError from "../error";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
+import { findRightProvider } from "../utils";
 
 export default async function signInUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.signInUpPOST === undefined) {
@@ -64,24 +65,25 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         });
     }
 
-    let provider = options.providers.find(async (p) => {
-        if (p.id !== thirdPartyId) {
-            return false;
-        }
-        if (clientId === undefined) {
-            return true;
-        }
-        let pInfo = await p.get(undefined, undefined);
-        return pInfo.getClientId() === clientId;
-    });
+    let provider = findRightProvider(options.providers, thirdPartyId, clientId);
     if (provider === undefined) {
-        throw new STError({
-            type: STError.BAD_INPUT_ERROR,
-            message:
-                "The third party provider " +
-                thirdPartyId +
-                " seems to not be configured on the backend. Please check your frontend and backend configs.",
-        });
+        if (clientId === undefined) {
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message:
+                    "The third party provider " +
+                    thirdPartyId +
+                    ` seems to be missing from the backend configs. If it is configured, and you have multiple of them from the same provider, please mark one of them as the primary one by giving it a "primary: true" flag.`,
+            });
+        } else {
+            throw new STError({
+                type: STError.BAD_INPUT_ERROR,
+                message:
+                    "The third party provider " +
+                    thirdPartyId +
+                    ` seems to be missing from the backend configs. If it is configured, then please make sure that you are passing the correct clientId from the frontend.`,
+            });
+        }
     }
 
     let result = await apiImplementation.signInUpPOST({
