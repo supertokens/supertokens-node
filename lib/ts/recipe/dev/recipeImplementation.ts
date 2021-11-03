@@ -2,7 +2,14 @@ import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { isUsingDevelopmentClientId } from "./utils";
-import { USING_DEV_CORE, USING_DEV_OAUTH_KEY, INVALID_API_KEY, NO_API_KEY } from "./constants";
+import {
+    USING_DEV_CORE,
+    USING_DEV_OAUTH_KEY,
+    INVALID_API_KEY,
+    NO_API_KEY,
+    VALID_SETUP,
+    INTERNAL_ERROR,
+} from "./constants";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
@@ -38,7 +45,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                     } else {
                         return {
                             status: "OK",
-                            message: "",
+                            message: VALID_SETUP,
                         };
                     }
                 }
@@ -64,7 +71,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             return {
                 status: "NOT_OK",
-                message: "Internal Error",
+                message: INTERNAL_ERROR,
             };
         },
     };

@@ -22,3 +22,5 @@ export const INVALID_API_KEY =
     "It seems like the SuperTokens core's API key is incorrect. Please double check that you have provided the right key.";
 export const NO_API_KEY =
     "The configured SuperTokens core requires an API key. Please make sure that you have set it in your backend init function call. If you are using our managed service, you can find your API key on the dashboard at supertokens.io";
+export const INTERNAL_ERROR = "Internal Error";
+export const VALID_SETUP = "You have correctly setup your backend.";

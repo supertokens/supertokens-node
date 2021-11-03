@@ -6,7 +6,7 @@ export default function getAPIImplementation(): APIInterface {
             options,
         }: {
             options: APIOptions;
-        }): Promise<{ status: "OK" | "NOT_OK"; message?: string }> => {
+        }): Promise<{ status: "OK" | "NOT_OK"; message: string }> => {
             let response = await options.recipeImplementation.checkConnectionToCoreAndDevOAuthKeys(
                 options.config.apiKey,
                 options.config.connectionURI

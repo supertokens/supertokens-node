@@ -24,7 +24,7 @@ export default async function healthCheckAPI(apiImplementation: APIInterface, op
     if (response.status === "OK") {
         send200Response(options.res, response);
     } else {
-        sendNon200Response(options.res, response.message || "Internal Error", 500);
+        sendNon200Response(options.res, response.message, 500);
     }
     return true;
 }

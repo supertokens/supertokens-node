@@ -28,6 +28,6 @@ export interface APIInterface {
               options: APIOptions;
           }) => Promise<{
               status: "OK" | "NOT_OK";
-              message?: string;
+              message: string;
           }>);
 }
