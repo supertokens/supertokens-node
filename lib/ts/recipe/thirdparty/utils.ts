@@ -110,7 +110,7 @@ function validateAndNormaliseSignInAndUpConfig(
         if (isDefault) {
             if (isDefaultProvidersSet.has(id)) {
                 throw new Error(
-                    `You have provided multiple third party providers that have the id: "${id}" and are marked as isDefault. Please only mark one of them as isDefault.`
+                    `You have provided multiple third party providers that have the id: "${id}" and are marked as "isDefault: true". Please only mark one of them as isDefault.`
                 );
             }
             isDefaultProvidersSet.add(id);
@@ -120,7 +120,7 @@ function validateAndNormaliseSignInAndUpConfig(
     if (isDefaultProvidersSet.size !== allProvidersSet.size) {
         // this means that there is no provider marked as isDefault
         throw new Error(
-            `You have provided multiple third party providers that have the id and have not set any of them as "isDefault: true". Please make sure to mark exactly one of them as isDefault.`
+            `The providers array has multiple entries for the same third party provider. Please mark one of them as the default one by using "isDefault: true".`
         );
     }
 
