@@ -93,8 +93,11 @@ export type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
             functions?: (
                 originalImplementation: EmailVerificationRecipeInterface,
@@ -123,8 +126,11 @@ export type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
             functions?: (
                 originalImplementation: EmailVerificationRecipeInterface,
@@ -138,7 +144,7 @@ export type TypeNormalisedInput = {
     };
 };
 
-export interface RecipeInterface {
+export type RecipeInterface = {
     getUserById(input: { userId: string }): Promise<User | undefined>;
 
     getUsersByEmail(input: { email: string }): Promise<User[]>;
@@ -159,7 +165,7 @@ export interface RecipeInterface {
               error: string;
           }
     >;
-}
+};
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -172,7 +178,7 @@ export type APIOptions = {
     res: BaseResponse;
 };
 
-export interface APIInterface {
+export type APIInterface = {
     authorisationUrlGET:
         | undefined
         | ((input: {
@@ -204,4 +210,4 @@ export interface APIInterface {
                     error: string;
                 }
           >);
-}
+};

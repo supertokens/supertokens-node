@@ -49,8 +49,11 @@ export declare type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
             functions?: (
                 originalImplementation: EmailVerificationRecipeInterface,
@@ -126,8 +129,11 @@ export declare type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
             functions?: (
                 originalImplementation: EmailVerificationRecipeInterface,
@@ -140,7 +146,7 @@ export declare type TypeNormalisedInput = {
         };
     };
 };
-export interface RecipeInterface {
+export declare type RecipeInterface = {
     getUserById(input: { userId: string }): Promise<User | undefined>;
     getUsersByEmail(input: { email: string }): Promise<User[]>;
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
@@ -210,10 +216,10 @@ export interface RecipeInterface {
     }): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
     }>;
-}
+};
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
-export interface APIInterface {
+export declare type APIInterface = {
     authorisationUrlGET:
         | undefined
         | ((input: {
@@ -312,4 +318,4 @@ export interface APIInterface {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
           >);
-}
+};

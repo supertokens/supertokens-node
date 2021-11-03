@@ -56,8 +56,11 @@ export declare type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
             functions?: (
                 originalImplementation: EmailVerificationRecipeInterface,
@@ -106,8 +109,11 @@ export declare type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
             functions?: (
                 originalImplementation: EmailVerificationRecipeInterface,
@@ -120,7 +126,7 @@ export declare type TypeNormalisedInput = {
         };
     };
 };
-export interface RecipeInterface {
+export declare type RecipeInterface = {
     getUserById(input: { userId: string }): Promise<User | undefined>;
     getUsersByEmail(input: { email: string }): Promise<User[]>;
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
@@ -142,7 +148,7 @@ export interface RecipeInterface {
               error: string;
           }
     >;
-}
+};
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
     emailVerificationRecipeImplementation: EmailVerificationRecipeInterface;
@@ -153,7 +159,7 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-export interface APIInterface {
+export declare type APIInterface = {
     authorisationUrlGET:
         | undefined
         | ((input: {
@@ -186,4 +192,4 @@ export interface APIInterface {
                     error: string;
                 }
           >);
-}
+};
