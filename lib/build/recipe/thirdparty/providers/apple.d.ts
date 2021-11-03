@@ -13,7 +13,7 @@ declare type TypeThirdPartyProviderAppleConfig = {
             [key: string]: string | ((request: any) => string);
         };
     };
-    primary?: boolean;
+    isDefault?: boolean;
 };
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider;
 export {};

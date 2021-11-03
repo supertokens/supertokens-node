@@ -9,7 +9,7 @@ declare type TypeThirdPartyProviderGithubConfig = {
             [key: string]: string | ((request: any) => string);
         };
     };
-    primary?: boolean;
+    isDefault?: boolean;
 };
 export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider;
 export {};

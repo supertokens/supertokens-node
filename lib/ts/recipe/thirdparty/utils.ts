@@ -68,9 +68,9 @@ export function findRightProvider(
             return true;
         }
 
-        // otherwise, we look for the primary provider if clientId is missing
+        // otherwise, we look for the isDefault provider if clientId is missing
         if (clientId === undefined) {
-            return p.primary === true;
+            return p.isDefault === true;
         }
 
         // otherwise, we return a provider that matches based on client ID as well.
@@ -90,37 +90,37 @@ function validateAndNormaliseSignInAndUpConfig(
         );
     }
 
-    // we check if there are multiple providers with the same id that have primary as true.
+    // we check if there are multiple providers with the same id that have isDefault as true.
     // In this case, we want to throw an error..
-    let primaryProvidersSet = new Set<string>();
+    let isDefaultProvidersSet = new Set<string>();
     let allProvidersSet = new Set<string>();
     providers.forEach((p) => {
         let id = p.id;
         allProvidersSet.add(p.id);
-        let isPrimary = p.primary;
+        let isDefault = p.isDefault;
 
-        if (isPrimary === undefined) {
-            // if this id is not being used by any other provider, we treat this as the primary
+        if (isDefault === undefined) {
+            // if this id is not being used by any other provider, we treat this as the isDefault
             let otherProvidersWithSameId = providers.filter((p1) => p1.id === id && p !== p1);
             if (otherProvidersWithSameId.length === 0) {
-                // we treat this as the primary now...
-                isPrimary = true;
+                // we treat this as the isDefault now...
+                isDefault = true;
             }
         }
-        if (isPrimary) {
-            if (primaryProvidersSet.has(id)) {
+        if (isDefault) {
+            if (isDefaultProvidersSet.has(id)) {
                 throw new Error(
-                    `You have provided multiple third party providers that have the id: "${id}" and are marked as primary. Please only mark one of them as primary.`
+                    `You have provided multiple third party providers that have the id: "${id}" and are marked as isDefault. Please only mark one of them as isDefault.`
                 );
             }
-            primaryProvidersSet.add(id);
+            isDefaultProvidersSet.add(id);
         }
     });
 
-    if (primaryProvidersSet.size !== allProvidersSet.size) {
-        // this means that there is no provider marked as primary
+    if (isDefaultProvidersSet.size !== allProvidersSet.size) {
+        // this means that there is no provider marked as isDefault
         throw new Error(
-            `You have provided multiple third party providers that have the id and have not set any of them as "primary: true". Please make sure to mark exactly one of them as primary.`
+            `You have provided multiple third party providers that have the id and have not set any of them as "isDefault: true". Please make sure to mark exactly one of them as isDefault.`
         );
     }
 

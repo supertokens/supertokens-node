@@ -22,7 +22,7 @@ type TypeThirdPartyProviderGoogleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-    primary?: boolean;
+    isDefault?: boolean;
 };
 
 export default function Google(config: TypeThirdPartyProviderGoogleConfig): TypeProvider {
@@ -115,6 +115,6 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
     return {
         id,
         get,
-        primary: config.primary,
+        isDefault: config.isDefault,
     };
 }

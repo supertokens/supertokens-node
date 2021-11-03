@@ -19,7 +19,7 @@ type TypeThirdPartyProviderFacebookConfig = {
     clientId: string;
     clientSecret: string;
     scope?: string[];
-    primary?: boolean;
+    isDefault?: boolean;
 };
 
 export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): TypeProvider {
@@ -99,6 +99,6 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
     return {
         id,
         get,
-        primary: config.primary,
+        isDefault: config.isDefault,
     };
 }

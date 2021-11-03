@@ -30,7 +30,7 @@ type TypeThirdPartyProviderAppleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-    primary?: boolean;
+    isDefault?: boolean;
 };
 
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider {
@@ -150,6 +150,6 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
     return {
         id,
         get,
-        primary: config.primary,
+        isDefault: config.isDefault,
     };
 }

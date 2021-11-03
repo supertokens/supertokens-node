@@ -22,7 +22,7 @@ type TypeThirdPartyProviderGithubConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-    primary?: boolean;
+    isDefault?: boolean;
 };
 
 export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider {
@@ -83,8 +83,8 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
             let id = userInfo.id.toString(); // github userId will be a number
             // if user has choosen not to show their email publicly, userInfo here will
             // have email as null. So we instead get the info from the emails api and
-            // use the email which is maked as primary one.
-            let emailInfo = emailsInfo.find((e: any) => e.primary);
+            // use the email which is maked as isDefault one.
+            let emailInfo = emailsInfo.find((e: any) => e.isDefault);
             if (emailInfo === undefined) {
                 return {
                     id,
@@ -118,6 +118,6 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
     return {
         id,
         get,
-        primary: config.primary,
+        isDefault: config.isDefault,
     };
 }

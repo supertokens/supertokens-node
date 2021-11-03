@@ -44,7 +44,7 @@ export type TypeProviderGetResponse = {
 export type TypeProvider = {
     id: string;
     get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
-    primary?: boolean; // if not present, we treat it as false
+    isDefault?: boolean; // if not present, we treat it as false
 };
 
 export type User = {
