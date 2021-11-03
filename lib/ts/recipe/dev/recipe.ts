@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction } from "../../types";
+import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import { TypeInput, RecipeInterface, APIInterface } from "./types";
 import STError from "./error";
 import { STATUS } from "./constants";
@@ -75,7 +75,13 @@ export default class Recipe extends RecipeModule {
         ];
     };
 
-    handleAPIRequest = async (id: string, req: BaseRequest, res: BaseResponse): Promise<boolean> => {
+    handleAPIRequest = async (
+        _: string,
+        req: BaseRequest,
+        res: BaseResponse,
+        __: NormalisedURLPath,
+        ___: HTTPMethod
+    ): Promise<boolean> => {
         let options = {
             config: this.config,
             recipeId: this.getRecipeId(),
@@ -84,11 +90,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
         };
-        if (id == STATUS) {
-            return await healthCheckAPI(this.apiImpl, options);
-        } else {
-            return false;
-        }
+        return await healthCheckAPI(this.apiImpl, options);
     };
 
     handleError = async (err: STError, _: BaseRequest, __: BaseResponse): Promise<void> => {
