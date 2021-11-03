@@ -61,8 +61,10 @@ export default class OverrideableBuilder<T extends Record<string, undefined | ((
                 if (func !== undefined) {
                     if (func === null) {
                         this.result[key] = undefined as any;
-                    } else {
+                    } else if (typeof func === "function") {
                         this.result[key] = func.bind(this.result) as T[keyof T];
+                    } else {
+                        this.result[key] = func as T[keyof T];
                     }
                 }
             }
