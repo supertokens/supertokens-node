@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 export declare type JsonWebKey = {
     kty: string;
     kid: string;

@@ -26,7 +26,7 @@ import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

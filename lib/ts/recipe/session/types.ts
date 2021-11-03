@@ -14,7 +14,7 @@
  */
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 
 export type KeyInfo = {
     publicKey: string;

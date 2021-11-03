@@ -26,7 +26,7 @@ import {
     InputResetPasswordUsingTokenFeatureSchema,
     APIOptions as EmailPasswordAPIOptionsOriginal,
 } from "../emailpassword/types";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 
 const TypeString = {
     type: "string",

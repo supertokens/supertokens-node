@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;

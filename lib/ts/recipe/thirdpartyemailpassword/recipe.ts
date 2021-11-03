@@ -31,7 +31,7 @@ import getThirdPartyIterfaceImpl from "./api/thirdPartyAPIImplementation";
 import getEmailPasswordIterfaceImpl from "./api/emailPasswordAPIImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;

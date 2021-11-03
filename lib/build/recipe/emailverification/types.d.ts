@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 export declare type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
     getEmailVerificationURL?: (user: User) => Promise<string>;

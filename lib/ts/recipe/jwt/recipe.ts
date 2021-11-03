@@ -27,7 +27,7 @@ import { GET_JWKS_API } from "./constants";
 import RecipeImplementation from "./recipeImplementation";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "jwt";

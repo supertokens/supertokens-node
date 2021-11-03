@@ -12,7 +12,7 @@ import {
     TypeInputResetPasswordUsingTokenFeature,
     APIOptions as EmailPasswordAPIOptionsOriginal,
 } from "../emailpassword/types";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 export declare type User = {
     id: string;
     timeJoined: number;

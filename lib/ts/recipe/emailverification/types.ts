@@ -14,7 +14,7 @@
  */
 
 import { BaseRequest, BaseResponse } from "../../framework";
-import OverrideableBuilder from "../../override";
+import OverrideableBuilder from "supertokens-js-override";
 
 export type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
