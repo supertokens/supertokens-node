@@ -19,6 +19,7 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "supertokens-js-override";
 
 const TypeAny = {
     type: "any",
@@ -92,11 +93,20 @@ export type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -116,16 +126,25 @@ export type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
 
-export interface RecipeInterface {
+export type RecipeInterface = {
     getUserById(input: { userId: string }): Promise<User | undefined>;
 
     getUsersByEmail(input: { email: string }): Promise<User[]>;
@@ -146,7 +165,7 @@ export interface RecipeInterface {
               error: string;
           }
     >;
-}
+};
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -159,7 +178,7 @@ export type APIOptions = {
     res: BaseResponse;
 };
 
-export interface APIInterface {
+export type APIInterface = {
     authorisationUrlGET:
         | undefined
         | ((input: {
@@ -191,4 +210,4 @@ export interface APIInterface {
                     error: string;
                 }
           >);
-}
+};

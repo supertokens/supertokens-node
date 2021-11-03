@@ -37,6 +37,7 @@ import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -70,10 +71,14 @@ export default class Recipe extends RecipeModule {
                 : new EmailVerificationRecipe(recipeId, appInfo, isInServerlessEnv, {
                       ...this.config.emailVerificationFeature,
                   });
-        this.recipeInterfaceImpl = this.config.override.functions(
-            RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId))
-        );
-        this.apiImpl = this.config.override.apis(APIImplementation());
+        {
+            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+        }
+        {
+            let builder = new OverrideableBuilder(APIImplementation());
+            this.apiImpl = builder.override(this.config.override.apis).build();
+        }
     }
 
     static getInstanceOrThrowError(): Recipe {

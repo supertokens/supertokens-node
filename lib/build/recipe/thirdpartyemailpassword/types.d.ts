@@ -12,6 +12,7 @@ import {
     TypeInputResetPasswordUsingTokenFeature,
     APIOptions as EmailPasswordAPIOptionsOriginal,
 } from "../emailpassword/types";
+import OverrideableBuilder from "supertokens-js-override";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -48,11 +49,20 @@ export declare type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -119,15 +129,24 @@ export declare type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
-export interface RecipeInterface {
+export declare type RecipeInterface = {
     getUserById(input: { userId: string }): Promise<User | undefined>;
     getUsersByEmail(input: { email: string }): Promise<User[]>;
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
@@ -197,10 +216,10 @@ export interface RecipeInterface {
     }): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
     }>;
-}
+};
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
-export interface APIInterface {
+export declare type APIInterface = {
     authorisationUrlGET:
         | undefined
         | ((input: {
@@ -299,4 +318,4 @@ export interface APIInterface {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
           >);
-}
+};

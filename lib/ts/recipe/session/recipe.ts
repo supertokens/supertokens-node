@@ -27,6 +27,7 @@ import RecipeImplementation from "./recipeImplementation";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "supertokens-js-override";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -45,10 +46,17 @@ export default class SessionRecipe extends RecipeModule {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
-        this.recipeInterfaceImpl = this.config.override.functions(
-            RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
-        );
-        this.apiImpl = this.config.override.apis(APIImplementation());
+
+        {
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
+            );
+            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+        }
+        {
+            let builder = new OverrideableBuilder(APIImplementation());
+            this.apiImpl = builder.override(this.config.override.apis).build();
+        }
     }
 
     static getInstanceOrThrowError(): SessionRecipe {

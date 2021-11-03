@@ -27,6 +27,7 @@ import { GET_JWKS_API } from "./constants";
 import RecipeImplementation from "./recipeImplementation";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
+import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "jwt";
@@ -41,10 +42,17 @@ export default class Recipe extends RecipeModule {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
-        this.recipeInterfaceImpl = this.config.override.functions(
-            RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, appInfo)
-        );
-        this.apiImpl = this.config.override.apis(APIImplementation());
+
+        {
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, appInfo)
+            );
+            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+        }
+        {
+            let builder = new OverrideableBuilder(APIImplementation());
+            this.apiImpl = builder.override(this.config.override.apis).build();
+        }
     }
 
     /* Init functions */
