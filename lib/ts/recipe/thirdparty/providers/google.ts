@@ -27,7 +27,6 @@ type TypeThirdPartyProviderGoogleConfig = {
 
 export default function Google(config: TypeThirdPartyProviderGoogleConfig): TypeProvider {
     const id = "google";
-    const primary = config.primary === undefined ? false : config.primary;
 
     function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://accounts.google.com/o/oauth2/token";
@@ -116,6 +115,6 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
     return {
         id,
         get,
-        primary,
+        primary: config.primary,
     };
 }

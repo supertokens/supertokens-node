@@ -27,7 +27,6 @@ type TypeThirdPartyProviderGithubConfig = {
 
 export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider {
     const id = "github";
-    const primary = config.primary === undefined ? false : config.primary;
 
     function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://github.com/login/oauth/access_token";
@@ -119,6 +118,6 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
     return {
         id,
         get,
-        primary,
+        primary: config.primary,
     };
 }

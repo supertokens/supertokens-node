@@ -93,8 +93,10 @@ function validateAndNormaliseSignInAndUpConfig(
     // we check if there are multiple providers with the same id that have primary as true.
     // In this case, we want to throw an error..
     let primaryProvidersSet = new Set<string>();
+    let allProvidersSet = new Set<string>();
     providers.forEach((p) => {
         let id = p.id;
+        allProvidersSet.add(p.id);
         let isPrimary = p.primary;
 
         if (isPrimary === undefined) {
@@ -114,6 +116,13 @@ function validateAndNormaliseSignInAndUpConfig(
             primaryProvidersSet.add(id);
         }
     });
+
+    if (primaryProvidersSet.size !== allProvidersSet.size) {
+        // this means that there is no provider marked as primary
+        throw new Error(
+            `You have provided multiple third party providers that have the id and have not set any of them as "primary: true". Please make sure to mark exactly one of them as primary.`
+        );
+    }
 
     return {
         providers,

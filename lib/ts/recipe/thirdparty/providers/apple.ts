@@ -35,7 +35,6 @@ type TypeThirdPartyProviderAppleConfig = {
 
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider {
     const id = "apple";
-    const primary = config.primary === undefined ? false : config.primary;
 
     function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): string {
         return jwtSign(
@@ -151,6 +150,6 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
     return {
         id,
         get,
-        primary,
+        primary: config.primary,
     };
 }
