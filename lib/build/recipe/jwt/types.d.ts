@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "../../override";
 export declare type JsonWebKey = {
     kty: string;
     kid: string;
@@ -11,15 +12,21 @@ export declare type JsonWebKey = {
 export declare type TypeInput = {
     jwtValiditySeconds?: number;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type TypeNormalisedInput = {
     jwtValiditySeconds: number;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare type APIOptions = {
@@ -30,7 +37,7 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-export interface RecipeInterface {
+export declare type RecipeInterface = {
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
@@ -47,8 +54,8 @@ export interface RecipeInterface {
         status: "OK";
         keys: JsonWebKey[];
     }>;
-}
-export interface APIInterface {
+};
+export declare type APIInterface = {
     getJWKSGET:
         | undefined
         | ((input: {
@@ -57,4 +64,4 @@ export interface APIInterface {
               status: "OK";
               keys: JsonWebKey[];
           }>);
-}
+};

@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
+import OverrideableBuilder from "../../override";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;
@@ -69,8 +70,11 @@ export declare type TypeInput = {
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export declare const InputSchema: {
@@ -118,8 +122,11 @@ export declare type TypeNormalisedInput = {
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 export interface SessionRequest extends BaseRequest {
@@ -140,7 +147,7 @@ export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
 }
-export interface RecipeInterface {
+export declare type RecipeInterface = {
     createNewSession(input: {
         res: any;
         userId: string;
@@ -167,7 +174,7 @@ export interface RecipeInterface {
     updateAccessTokenPayload(input: { sessionHandle: string; newAccessTokenPayload: any }): Promise<void>;
     getAccessTokenLifeTimeMS(): Promise<number>;
     getRefreshTokenLifeTimeMS(): Promise<number>;
-}
+};
 export interface SessionContainerInterface {
     revokeSession(): Promise<void>;
     getSessionData(): Promise<any>;
@@ -188,7 +195,7 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
 };
-export interface APIInterface {
+export declare type APIInterface = {
     refreshPOST: undefined | ((input: { options: APIOptions }) => Promise<void>);
     signOutPOST:
         | undefined
@@ -201,7 +208,7 @@ export interface APIInterface {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
     }): Promise<SessionContainerInterface | undefined>;
-}
+};
 export declare type SessionInformation = {
     sessionHandle: string;
     userId: string;
