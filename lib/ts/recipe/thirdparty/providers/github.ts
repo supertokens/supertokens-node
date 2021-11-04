@@ -81,10 +81,22 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
             let userInfo = response.data;
             let emailsInfo = emailsInfoResponse.data;
             let id = userInfo.id.toString(); // github userId will be a number
-            // if user has choosen not to show their email publicly, userInfo here will
-            // have email as null. So we instead get the info from the emails api and
-            // use the email which is maked as isDefault one.
-            let emailInfo = emailsInfo.find((e: any) => e.isDefault);
+            /*
+                if user has choosen not to show their email publicly, userInfo here will
+                have email as null. So we instead get the info from the emails api and
+                use the email which is marked as primary one.
+
+                Sample github response for email info
+                [
+                    {
+                        email: '<email>',
+                        primary: true,
+                        verified: true,
+                        visibility: 'public'
+                    }
+                ]
+            */
+            let emailInfo = emailsInfo.find((e: any) => e.primary);
             if (emailInfo === undefined) {
                 return {
                     id,
