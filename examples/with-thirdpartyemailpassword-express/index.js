@@ -8,6 +8,7 @@ let { verifySession } = require("supertokens-node/recipe/session/framework/expre
 let { middleware, errorHandler } = require("supertokens-node/framework/express");
 let ThirdPartyEmailPassword = require("supertokens-node/recipe/thirdpartyemailpassword");
 
+// Change these values if you want to run the server on another adress
 const apiPort = process.env.REACT_APP_API_PORT || 3001;
 const apiDomain = process.env.REACT_APP_API_URL || `http://localhost:${apiPort}`;
 const websitePort = process.env.REACT_APP_WEBSITE_PORT || 3000;
@@ -27,8 +28,17 @@ supertokens.init({
     },
     recipeList: [
         ThirdPartyEmailPassword.init({
+            /*
+                We use different credentials for different platforms when required. For example the redirect URI for Github
+                is different for Web and mobile. In such a case we can provide multiple providers with different client Ids.
+                
+                When the frontend makes a request and wants to use a specific clientId, it needs to send the clientId to use in the 
+                request. In the absence of a clientId in the request the SDK uses the default provider, indicated by `isDefault: true`.
+
+                When adding multiple providers for the same type (Google, Github etc), make sure to set `isDefault: true`.
+            */
             providers: [
-                // We have provided you with development keys which you can use for testing.
+                // We have provided you with development keys which you can use for testing or when running our demo apps.
                 // IMPORTANT: Please replace them with your own OAuth keys for production use.
                 ThirdPartyEmailPassword.Google({
                     isDefault: true,
@@ -48,6 +58,13 @@ supertokens.init({
                     clientSecret: "00e841f10f288363cd3786b1b1f538f05cfdbda2",
                     clientId: "8a9152860ce869b64c44",
                 }),
+                /*
+                    For Apple signin, iOS apps always use the bundle identifier as the client ID when communicating with Apple. Android, Web and other platforms
+                    need to configure a Service ID on the Apple developer dashboard and use that as client ID.
+
+                    In the example below 4398792-io.supertokens.example.service is the client ID for Web. Android etc and thus we mark it as default. For iOS
+                    the frontend for the demo app sends the clientId in the request which is then used by the SDK.
+                */
                 ThirdPartyEmailPassword.Apple({
                     isDefault: true,
                     clientId: "4398792-io.supertokens.example.service",
@@ -67,6 +84,12 @@ supertokens.init({
                         teamId: "YWQCXGJRJL",
                     },
                 }),
+
+                // we have commented the below because our app domain (ThirdPartyEmailPassword.demo.supertokens.io) is not approved by Facebook since it's only a demo app.
+                // ThirdPartyEmailPassword.Facebook({
+                //     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+                //     clientId: process.env.FACEBOOK_CLIENT_ID
+                // })
             ],
         }),
         Session.init(),
@@ -104,7 +127,6 @@ app.get("/sessioninfo", verifySession(), async (req, res) => {
 app.use(errorHandler());
 
 app.use((err, req, res, next) => {
-    console.log(err);
     res.status(500).send("Internal error: " + err.message);
 });
 
