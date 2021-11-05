@@ -41,7 +41,7 @@
         "jsonschema": "1.4.0",
         "jsonwebtoken": "8.5.1",
         "psl": "1.8.0",
-        "supertokens-js-override": "git+https://github.com/supertokens/supertokens-js-override.git#v0.0.2"
+        "supertokens-js-override": "git+https://github.com/supertokens/supertokens-js-override.git#v0.0.3"
     },
     "devDependencies": {
         "@hapi/hapi": "^20.2.0",
