@@ -71,22 +71,22 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                     antiCsrf: "VIA_TOKEN",
                     enableJWTFeature: true,
                     override: {
-                        functions: (oI) => {
+                        functions: function (oI) {
                             return {
                                 ...oI,
-                                createNewSession: async (input) => {
+                                createNewSession: async function (input) {
                                     let response = await oI.createNewSession(input);
                                     createNewSessionCalled = true;
                                     session = response;
                                     return response;
                                 },
-                                getSession: async (input) => {
+                                getSession: async function (input) {
                                     let response = await oI.getSession(input);
                                     getSessionCalled = true;
                                     session = response;
                                     return response;
                                 },
-                                refreshSession: async (input) => {
+                                refreshSession: async function (input) {
                                     let response = await oI.refreshSession(input);
                                     refreshSessionCalled = true;
                                     session = response;
@@ -281,10 +281,10 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                     antiCsrf: "VIA_TOKEN",
                     enableJWTFeature: true,
                     override: {
-                        functions: (oI) => {
+                        functions: function (oI) {
                             return {
                                 ...oI,
-                                createNewSession: async (input) => {
+                                createNewSession: async function (input) {
                                     let response = await oI.createNewSession(input);
                                     createNewSessionCalled = true;
                                     session = response;
@@ -358,10 +358,10 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                     antiCsrf: "VIA_TOKEN",
                     enableJWTFeature: true,
                     override: {
-                        apis: (oI) => {
+                        apis: function (oI) {
                             return {
                                 ...oI,
-                                signOutPOST: async (input) => {
+                                signOutPOST: async function (input) {
                                     let response = await oI.signOutPOST(input);
                                     signoutCalled = true;
                                     return response;
@@ -453,10 +453,10 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                     antiCsrf: "VIA_TOKEN",
                     enableJWTFeature: true,
                     override: {
-                        apis: (oI) => {
+                        apis: function (oI) {
                             return {
                                 ...oI,
-                                signOutPOST: async (input) => {
+                                signOutPOST: async function (input) {
                                     let response = await oI.signOutPOST(input);
                                     signoutCalled = true;
                                     throw {
@@ -546,7 +546,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                 Session.init({
                     enableJWTFeature: true,
                     override: {
-                        apis: (oI) => {
+                        apis: function (oI) {
                             return {
                                 ...oI,
                                 refreshPOST: undefined,
@@ -612,7 +612,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                 Session.init({
                     enableJWTFeature: true,
                     override: {
-                        apis: (oI) => {
+                        apis: function (oI) {
                             return {
                                 ...oI,
                                 signOutPOST: undefined,

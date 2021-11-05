@@ -24,6 +24,9 @@ let SuperTokens = require("../../../");
 let Session = require("../../../recipe/session");
 let { middleware, errorHandler } = require("../../../framework/express");
 
+/**
+ * Test that overriding the jwt recipe functions and apis still work when the JWT feature is enabled
+ */
 describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -56,10 +59,10 @@ describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, fu
                     enableJWTFeature: true,
                     override: {
                         jwtFeature: {
-                            functions: (originalImplementation) => {
+                            functions: function (originalImplementation) {
                                 return {
                                     ...originalImplementation,
-                                    createJWT: async (input) => {
+                                    createJWT: async function (input) {
                                         let createJWTResponse = await originalImplementation.createJWT(input);
 
                                         if (createJWTResponse.status === "OK") {
@@ -68,7 +71,7 @@ describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, fu
 
                                         return createJWTResponse;
                                     },
-                                    getJWKS: async () => {
+                                    getJWKS: async function () {
                                         let getJWKSResponse = await originalImplementation.getJWKS();
 
                                         if (getJWKSResponse.status === "OK") {
@@ -139,7 +142,7 @@ describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, fu
         assert.deepStrictEqual(jwksKeys, getJWKSResponse.keys);
     });
 
-    it.only("Test overriding APIs", async function () {
+    it("Test overriding APIs", async function () {
         await startST();
 
         let jwksKeys = undefined;
@@ -158,10 +161,10 @@ describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, fu
                     enableJWTFeature: true,
                     override: {
                         jwtFeature: {
-                            apis: (originalImplementation) => {
+                            apis: function (originalImplementation) {
                                 return {
                                     ...originalImplementation,
-                                    getJWKSGET: async (input) => {
+                                    getJWKSGET: async function (input) {
                                         let response = await originalImplementation.getJWKSGET(input);
                                         jwksKeys = response.keys;
                                         return response;
