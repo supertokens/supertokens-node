@@ -14,6 +14,7 @@
  */
 
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "supertokens-js-override";
 
 export type JsonWebKey = {
     kty: string;
@@ -27,16 +28,22 @@ export type JsonWebKey = {
 export type TypeInput = {
     jwtValiditySeconds?: number;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
 export type TypeNormalisedInput = {
     jwtValiditySeconds: number;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
@@ -49,7 +56,7 @@ export type APIOptions = {
     res: BaseResponse;
 };
 
-export interface RecipeInterface {
+export type RecipeInterface = {
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
@@ -67,8 +74,8 @@ export interface RecipeInterface {
         status: "OK";
         keys: JsonWebKey[];
     }>;
-}
+};
 
-export interface APIInterface {
+export type APIInterface = {
     getJWKSGET: undefined | ((input: { options: APIOptions }) => Promise<{ status: "OK"; keys: JsonWebKey[] }>);
-}
+};

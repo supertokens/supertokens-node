@@ -6,6 +6,7 @@ import {
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
+import OverrideableBuilder from "supertokens-js-override";
 export declare type UserInfo = {
     id: string;
     email?: {
@@ -58,11 +59,20 @@ export declare type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -102,15 +112,24 @@ export declare type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
-export interface RecipeInterface {
+export declare type RecipeInterface = {
     getUserById(input: { userId: string }): Promise<User | undefined>;
     getUsersByEmail(input: { email: string }): Promise<User[]>;
     getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
@@ -132,7 +151,7 @@ export interface RecipeInterface {
               error: string;
           }
     >;
-}
+};
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
     emailVerificationRecipeImplementation: EmailVerificationRecipeInterface;
@@ -144,7 +163,7 @@ export declare type APIOptions = {
     res: BaseResponse;
     appInfo: NormalisedAppinfo;
 };
-export interface APIInterface {
+export declare type APIInterface = {
     authorisationUrlGET:
         | undefined
         | ((input: {
@@ -181,4 +200,4 @@ export interface APIInterface {
     appleRedirectHandlerPOST:
         | undefined
         | ((input: { code: string; state: string; options: APIOptions }) => Promise<void>);
-}
+};

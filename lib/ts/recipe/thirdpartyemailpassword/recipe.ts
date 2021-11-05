@@ -31,6 +31,7 @@ import getThirdPartyIterfaceImpl from "./api/thirdPartyAPIImplementation";
 import getEmailPasswordIterfaceImpl from "./api/emailPasswordAPIImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
+import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -62,14 +63,19 @@ export default class Recipe extends RecipeModule {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
-        this.recipeInterfaceImpl = this.config.override.functions(
-            RecipeImplementation(
-                Querier.getNewInstanceOrThrowError(EmailPasswordRecipe.RECIPE_ID),
-                Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID)
-            )
-        );
-
-        this.apiImpl = this.config.override.apis(APIImplementation());
+        {
+            let builder = new OverrideableBuilder(
+                RecipeImplementation(
+                    Querier.getNewInstanceOrThrowError(EmailPasswordRecipe.RECIPE_ID),
+                    Querier.getNewInstanceOrThrowError(ThirdPartyRecipe.RECIPE_ID)
+                )
+            );
+            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+        }
+        {
+            let builder = new OverrideableBuilder(APIImplementation());
+            this.apiImpl = builder.override(this.config.override.apis).build();
+        }
 
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined

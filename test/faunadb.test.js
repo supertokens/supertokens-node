@@ -192,14 +192,18 @@ describe(`faunaDB: ${printPath("[test/faunadb.test.js]")}`, function () {
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                     override: {
-                        functions: (oI) => {
-                            return new RecipeImplementation(oI, {
-                                userCollectionName: "users",
-                                accessFaunadbTokenFromFrontend: true,
-                                faunaDBClient: new faunadb.Client({
-                                    secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
-                                }),
+                        functions: (originalImpl, builder) => {
+                            builder.override((oI) => {
+                                return new RecipeImplementation(oI, {
+                                    userCollectionName: "users",
+                                    accessFaunadbTokenFromFrontend: true,
+                                    faunaDBClient: new faunadb.Client({
+                                        secret: "fnAD2HH-Q6ACBSJxMjwU5YT7hvkaVo6Te8PJWqsT",
+                                    }),
+                                });
                             });
+
+                            return originalImpl;
                         },
                     },
                 }),

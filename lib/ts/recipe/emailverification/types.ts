@@ -14,14 +14,18 @@
  */
 
 import { BaseRequest, BaseResponse } from "../../framework";
+import OverrideableBuilder from "supertokens-js-override";
 
 export type TypeInput = {
     getEmailForUserId: (userId: string) => Promise<string>;
     getEmailVerificationURL?: (user: User) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
@@ -30,8 +34,11 @@ export type TypeNormalisedInput = {
     getEmailVerificationURL: (user: User) => Promise<string>;
     createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
 
@@ -40,7 +47,7 @@ export type User = {
     email: string;
 };
 
-export interface RecipeInterface {
+export type RecipeInterface = {
     createEmailVerificationToken(input: {
         userId: string;
         email: string;
@@ -61,7 +68,7 @@ export interface RecipeInterface {
     revokeEmailVerificationTokens(input: { userId: string; email: string }): Promise<{ status: "OK" }>;
 
     unverifyEmail(input: { userId: string; email: string }): Promise<{ status: "OK" }>;
-}
+};
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -72,7 +79,7 @@ export type APIOptions = {
     res: BaseResponse;
 };
 
-export interface APIInterface {
+export type APIInterface = {
     verifyEmailPOST:
         | undefined
         | ((input: {
@@ -92,4 +99,4 @@ export interface APIInterface {
     generateEmailVerifyTokenPOST:
         | undefined
         | ((input: { options: APIOptions }) => Promise<{ status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" }>);
-}
+};
