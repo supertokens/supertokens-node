@@ -13,6 +13,9 @@ export declare function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
     request: Request | NextApiRequest
 ): Promise<void>;
+export declare function assertForDataBodyParserHasBeenUsedForExpressLikeRequest(
+    request: Request | NextApiRequest
+): Promise<void>;
 export declare function setHeaderForExpressLikeResponse(
     res: Response,
     key: string,

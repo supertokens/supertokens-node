@@ -10,4 +10,5 @@ export declare abstract class BaseRequest {
     abstract getCookieValue: (key_: string) => string | undefined;
     abstract getHeaderValue: (key: string) => string | undefined;
     abstract getOriginalURL: () => string;
+    abstract getFormData: () => Promise<any>;
 }

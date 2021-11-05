@@ -19,6 +19,8 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
+import { NormalisedAppinfo } from "../../types";
+import OverrideableBuilder from "supertokens-js-override";
 
 const TypeAny = {
     type: "any",
@@ -37,11 +39,13 @@ export type TypeProviderGetResponse = {
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
     getClientId: () => string;
+    getRedirectURI?: () => string; // if undefined, the redirect_uri is set on the frontend.
 };
 
 export type TypeProvider = {
     id: string;
-    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => Promise<TypeProviderGetResponse>;
+    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
+    isDefault?: boolean; // if not present, we treat it as false
 };
 
 export type User = {
@@ -92,11 +96,20 @@ export type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -116,16 +129,25 @@ export type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
 
-export interface RecipeInterface {
+export type RecipeInterface = {
     getUserById(input: { userId: string }): Promise<User | undefined>;
 
     getUsersByEmail(input: { email: string }): Promise<User[]>;
@@ -146,7 +168,7 @@ export interface RecipeInterface {
               error: string;
           }
     >;
-}
+};
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -157,9 +179,10 @@ export type APIOptions = {
     providers: TypeProvider[];
     req: BaseRequest;
     res: BaseResponse;
+    appInfo: NormalisedAppinfo;
 };
 
-export interface APIInterface {
+export type APIInterface = {
     authorisationUrlGET:
         | undefined
         | ((input: {
@@ -176,6 +199,8 @@ export interface APIInterface {
               provider: TypeProvider;
               code: string;
               redirectURI: string;
+              authCodeResponse?: any;
+              clientId?: string;
               options: APIOptions;
           }) => Promise<
               | {
@@ -190,4 +215,8 @@ export interface APIInterface {
                     error: string;
                 }
           >);
-}
+
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: { code: string; state: string; options: APIOptions }) => Promise<void>);
+};

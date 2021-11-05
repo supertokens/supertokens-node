@@ -29,7 +29,7 @@ describe(`overrideTest: ${printPath("[test/thirdparty/override.test.js]")}`, fun
     before(function () {
         this.customProvider1 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",

@@ -29,6 +29,7 @@ import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
 import { BaseRequest, BaseResponse } from "../../framework";
 import JWTRecipe from "../jwt/recipe";
+import OverrideableBuilder from "supertokens-js-override";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -54,20 +55,28 @@ export default class SessionRecipe extends RecipeModule {
                 ...this.config.override.jwtFeature,
             },
         });
-        if (this.config.enableJWTFeature === true) {
-            let defaultRecipeImplementation = RecipeImplementation(
-                Querier.getNewInstanceOrThrowError(recipeId),
-                this.config
-            );
-            this.recipeInterfaceImpl = this.config.override.functions(
-                RecipeImplementationWithJWT(defaultRecipeImplementation, this.jwtRecipe.recipeInterfaceImpl)
-            );
-        } else {
-            this.recipeInterfaceImpl = this.config.override.functions(
+        if (this.config.enableJWTFeature) {
+            let builder = new OverrideableBuilder(
                 RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
             );
+            this.recipeInterfaceImpl = builder
+                .override((oI) => {
+                    return RecipeImplementationWithJWT(oI, this.jwtRecipe.recipeInterfaceImpl);
+                })
+                .override(this.config.override.functions)
+                .build();
+        } else {
+            {
+                let builder = new OverrideableBuilder(
+                    RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
+                );
+                this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+            }
         }
-        this.apiImpl = this.config.override.apis(APIImplementation());
+        {
+            let builder = new OverrideableBuilder(APIImplementation());
+            this.apiImpl = builder.override(this.config.override.apis).build();
+        }
     }
 
     static getInstanceOrThrowError(): SessionRecipe {

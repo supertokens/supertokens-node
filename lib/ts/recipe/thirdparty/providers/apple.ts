@@ -13,9 +13,11 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import { validateTheStructureOfUserInput } from "../../../utils";
 import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
 import STError from "../error";
+import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
+import SuperTokens from "../../../supertokens";
+import { APPLE_REDIRECT_HANDLER } from "../constants";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -28,56 +30,10 @@ type TypeThirdPartyProviderAppleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-};
-
-const InputSchemaTypeThirdPartyProviderAppleConfig = {
-    type: "object",
-    properties: {
-        clientId: {
-            type: "string",
-        },
-        clientSecret: {
-            type: "object",
-            properties: {
-                keyId: {
-                    type: "string",
-                },
-                privateKey: {
-                    type: "string",
-                },
-                teamId: {
-                    type: "string",
-                },
-            },
-            required: ["keyId", "privateKey", "teamId"],
-            additionalProperties: false,
-        },
-        scope: {
-            type: "array",
-            items: {
-                type: "string",
-            },
-        },
-        authorisationRedirect: {
-            type: "object",
-            properties: {
-                params: {
-                    type: "any",
-                },
-            },
-            additionalProperties: false,
-        },
-    },
-    required: ["clientId", "clientSecret"],
-    additionalProperties: false,
+    isDefault?: boolean;
 };
 
 export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypeProvider {
-    validateTheStructureOfUserInput(
-        config,
-        InputSchemaTypeThirdPartyProviderAppleConfig,
-        "thirdparty recipe, provider apple"
-    );
     const id = "apple";
 
     function getClientSecret(clientId: string, keyId: string, teamId: string, privateKey: string): string {
@@ -87,7 +43,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
                 iat: Math.floor(Date.now() / 1000),
                 exp: Math.floor(Date.now() / 1000) + 86400 * 180, // 6 months
                 aud: "https://appleid.apple.com",
-                sub: clientId,
+                sub: getActualClientIdFromDevelopmentClientId(clientId),
             },
             privateKey.replace(/\\n/g, "\n"),
             { algorithm: "ES256", keyid: keyId }
@@ -108,10 +64,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         });
     }
 
-    async function get(
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined
-    ): Promise<TypeProviderGetResponse> {
+    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://appleid.apple.com/auth/token";
         let clientSecret = getClientSecret(
             config.clientId,
@@ -131,7 +84,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             accessTokenAPIParams.redirect_uri = redirectURI;
         }
         let authorisationRedirectURL = "https://appleid.apple.com/auth/authorize";
-        let scopes = ["email"];
+        let scopes: string[] = ["email"];
         if (config.scope !== undefined) {
             scopes = config.scope;
             scopes = Array.from(new Set(scopes));
@@ -140,6 +93,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             config.authorisationRedirect === undefined || config.authorisationRedirect.params === undefined
                 ? {}
                 : config.authorisationRedirect.params;
+
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
             response_mode: "form_post",
@@ -172,6 +126,10 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
                 },
             };
         }
+        function getRedirectURI() {
+            let supertokens = SuperTokens.getInstanceOrThrowError();
+            return supertokens.appInfo.apiDomain.getAsStringDangerous() + APPLE_REDIRECT_HANDLER;
+        }
         return {
             accessTokenAPI: {
                 url: accessTokenAPIURL,
@@ -185,11 +143,13 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             getClientId: () => {
                 return config.clientId;
             },
+            getRedirectURI,
         };
     }
 
     return {
         id,
         get,
+        isDefault: config.isDefault,
     };
 }

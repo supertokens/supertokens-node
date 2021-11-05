@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 .
 
+## [8.1.0] - 2021-10-29
+
+### Added
+
+-   Support for FDI 1.10:
+    -   Allow thirdparty `/signinup POST` API to take `authCodeResponse` XOR `code` so that it can supprt OAuth via PKCE
+    -   Adds apple sign in callback API
+-   Optional `getRedirectURI` function added to social providers in case we set the `redirect_uri` on the backend.
+-   Adds optional `isDefault` param to auth providers so that they can be reused with different credentials.
+
+## [8.0.4] - 2021-10-28
+
+### Fixes
+
+-   Uses `accessTokenPayload` instead of `jwtPayload` when creating SessionInformation object
+
 ## [8.0.3] - 2021-10-27
 
 ### Changes

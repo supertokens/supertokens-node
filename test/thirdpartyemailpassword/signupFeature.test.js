@@ -30,7 +30,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
     before(function () {
         this.customProvider1 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -55,13 +55,13 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         };
         this.customProvider2 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 throw new Error("error from get function");
             },
         };
         this.customProvider3 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -82,7 +82,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         };
         this.customProvider4 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -101,7 +101,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         };
         this.customProvider5 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",

@@ -15,6 +15,7 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
+import OverrideableBuilder from "supertokens-js-override";
 
 export type KeyInfo = {
     publicKey: string;
@@ -104,11 +105,20 @@ export type TypeInput = {
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     enableJWTFeature?: boolean;
     override?: {
-        functions?: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface) => APIInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         jwtFeature?: {
-            functions?: (originalImplementation: JWTRecipeInterface) => JWTRecipeInterface;
-            apis?: (originalImplementation: JWTAPIInterface) => JWTAPIInterface;
+            functions?: (
+                originalImplementation: JWTRecipeInterface,
+                builder?: OverrideableBuilder<JWTRecipeInterface>
+            ) => JWTRecipeInterface;
+            apis?: (
+                originalImplementation: JWTAPIInterface,
+                builder?: OverrideableBuilder<JWTAPIInterface>
+            ) => JWTAPIInterface;
         };
     };
 };
@@ -138,11 +148,20 @@ export type TypeNormalisedInput = {
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     enableJWTFeature: boolean;
     override: {
-        functions: (originalImplementation: RecipeInterface) => RecipeInterface;
-        apis: (originalImplementation: APIInterface) => APIInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         jwtFeature?: {
-            functions?: (originalImplementation: JWTRecipeInterface) => JWTRecipeInterface;
-            apis?: (originalImplementation: JWTAPIInterface) => JWTAPIInterface;
+            functions?: (
+                originalImplementation: JWTRecipeInterface,
+                builder?: OverrideableBuilder<JWTRecipeInterface>
+            ) => JWTRecipeInterface;
+            apis?: (
+                originalImplementation: JWTAPIInterface,
+                builder?: OverrideableBuilder<JWTAPIInterface>
+            ) => JWTAPIInterface;
         };
     };
 };
@@ -170,7 +189,7 @@ export interface VerifySessionOptions {
     sessionRequired?: boolean;
 }
 
-export interface RecipeInterface {
+export type RecipeInterface = {
     createNewSession(input: {
         res: any;
         userId: string;
@@ -207,7 +226,7 @@ export interface RecipeInterface {
     getAccessTokenLifeTimeMS(): Promise<number>;
 
     getRefreshTokenLifeTimeMS(): Promise<number>;
-}
+};
 
 export interface SessionContainerInterface {
     revokeSession(): Promise<void>;
@@ -241,7 +260,7 @@ export type APIOptions = {
     res: BaseResponse;
 };
 
-export interface APIInterface {
+export type APIInterface = {
     refreshPOST: undefined | ((input: { options: APIOptions }) => Promise<void>);
 
     signOutPOST:
@@ -256,7 +275,7 @@ export interface APIInterface {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
     }): Promise<SessionContainerInterface | undefined>;
-}
+};
 
 export type SessionInformation = {
     sessionHandle: string;

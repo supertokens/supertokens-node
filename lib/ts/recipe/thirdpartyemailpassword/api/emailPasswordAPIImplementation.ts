@@ -3,10 +3,10 @@ import { APIInterface as ThirdPartyEmailPasswordAPIInterface } from "../";
 
 export default function getIterfaceImpl(apiImplmentation: ThirdPartyEmailPasswordAPIInterface): APIInterface {
     return {
-        emailExistsGET: apiImplmentation.emailExistsGET,
-        generatePasswordResetTokenPOST: apiImplmentation.generatePasswordResetTokenPOST,
-        passwordResetPOST: apiImplmentation.passwordResetPOST,
-        signInPOST: apiImplmentation.emailPasswordSignInPOST,
-        signUpPOST: apiImplmentation.emailPasswordSignUpPOST,
+        emailExistsGET: apiImplmentation.emailExistsGET?.bind(apiImplmentation),
+        generatePasswordResetTokenPOST: apiImplmentation.generatePasswordResetTokenPOST?.bind(apiImplmentation),
+        passwordResetPOST: apiImplmentation.passwordResetPOST?.bind(apiImplmentation),
+        signInPOST: apiImplmentation.emailPasswordSignInPOST?.bind(apiImplmentation),
+        signUpPOST: apiImplmentation.emailPasswordSignUpPOST?.bind(apiImplmentation),
     };
 }

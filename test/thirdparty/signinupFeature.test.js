@@ -28,7 +28,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     before(function () {
         this.customProvider1 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -53,13 +53,13 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         };
         this.customProvider2 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 throw new Error("error from get function");
             },
         };
         this.customProvider3 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -80,7 +80,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         };
         this.customProvider4 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -99,7 +99,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         };
         this.customProvider5 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -113,6 +113,34 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                             email: {
                                 id: "email@test.com",
                                 isVerified: false,
+                            },
+                        };
+                    },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
+                };
+            },
+        };
+        this.customProvider6 = {
+            id: "custom",
+            get: (recipe, authCode) => {
+                return {
+                    accessTokenAPI: {
+                        url: "https://test.com/oauth/token",
+                    },
+                    authorisationRedirect: {
+                        url: "https://test.com/oauth/auth",
+                    },
+                    getProfileInfo: async (authCodeResponse) => {
+                        if (authCodeResponse.access_token === undefined) {
+                            return {};
+                        }
+                        return {
+                            id: "user",
+                            email: {
+                                id: "email@test.com",
+                                isVerified: true,
                             },
                         };
                     },
@@ -190,6 +218,166 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
         );
         assert.strictEqual(response.status, 404);
+    });
+
+    it("test minimum config without code for thirdparty module", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+                ThirdPartyRecipe.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider6],
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .send({
+                    thirdPartyId: "custom",
+                    authCodeResponse: {
+                        access_token: "saodiasjodai",
+                    },
+                    redirectURI: "http://127.0.0.1/callback",
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.notStrictEqual(response1, undefined);
+        assert.strictEqual(response1.body.status, "OK");
+        assert.strictEqual(response1.body.createdNewUser, true);
+        assert.strictEqual(response1.body.user.thirdParty.id, "custom");
+        assert.strictEqual(response1.body.user.thirdParty.userId, "user");
+        assert.strictEqual(response1.body.user.email, "email@test.com");
+
+        let cookies1 = extractInfoFromResponse(response1);
+        assert.notStrictEqual(cookies1.accessToken, undefined);
+        assert.notStrictEqual(cookies1.refreshToken, undefined);
+        assert.notStrictEqual(cookies1.antiCsrf, undefined);
+        assert.notStrictEqual(cookies1.idRefreshTokenFromHeader, undefined);
+        assert.notStrictEqual(cookies1.idRefreshTokenFromCookie, undefined);
+        assert.notStrictEqual(cookies1.accessTokenExpiry, undefined);
+        assert.notStrictEqual(cookies1.refreshTokenExpiry, undefined);
+        assert.notStrictEqual(cookies1.idRefreshTokenExpiry, undefined);
+        assert.notStrictEqual(cookies1.refreshToken, undefined);
+        assert.strictEqual(cookies1.accessTokenDomain, undefined);
+        assert.strictEqual(cookies1.refreshTokenDomain, undefined);
+        assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
+        assert.notStrictEqual(cookies1.frontToken, undefined);
+
+        assert.strictEqual(await ThirdParty.isEmailVerified(response1.body.user.id), true);
+
+        let response2 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .send({
+                    thirdPartyId: "custom",
+                    authCodeResponse: {
+                        access_token: "saodiasjodai",
+                    },
+                    redirectURI: "http://127.0.0.1/callback",
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert.notStrictEqual(response2, undefined);
+        assert.strictEqual(response2.body.status, "OK");
+        assert.strictEqual(response2.body.createdNewUser, false);
+        assert.strictEqual(response2.body.user.thirdParty.id, "custom");
+        assert.strictEqual(response2.body.user.thirdParty.userId, "user");
+        assert.strictEqual(response2.body.user.email, "email@test.com");
+
+        let cookies2 = extractInfoFromResponse(response2);
+        assert.notStrictEqual(cookies2.accessToken, undefined);
+        assert.notStrictEqual(cookies2.refreshToken, undefined);
+        assert.notStrictEqual(cookies2.antiCsrf, undefined);
+        assert.notStrictEqual(cookies2.idRefreshTokenFromHeader, undefined);
+        assert.notStrictEqual(cookies2.idRefreshTokenFromCookie, undefined);
+        assert.notStrictEqual(cookies2.accessTokenExpiry, undefined);
+        assert.notStrictEqual(cookies2.refreshTokenExpiry, undefined);
+        assert.notStrictEqual(cookies2.idRefreshTokenExpiry, undefined);
+        assert.notStrictEqual(cookies2.refreshToken, undefined);
+        assert.strictEqual(cookies2.accessTokenDomain, undefined);
+        assert.strictEqual(cookies2.refreshTokenDomain, undefined);
+        assert.strictEqual(cookies2.idRefreshTokenDomain, undefined);
+        assert.notStrictEqual(cookies2.frontToken, undefined);
+    });
+
+    it("test missing code and authCodeResponse", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+                ThirdPartyRecipe.init({
+                    signInAndUpFeature: {
+                        providers: [this.customProvider6],
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response1 = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup")
+                .send({
+                    thirdPartyId: "custom",
+                    redirectURI: "http://127.0.0.1/callback",
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert.strictEqual(response1.status, 400);
     });
 
     it("test minimum config for thirdparty module", async function () {
@@ -423,7 +611,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(response1.statusCode, 400);
         assert.strictEqual(
             response1.body.message,
-            "The third party provider google seems to not be configured on the backend. Please check your frontend and backend configs."
+            "The third party provider google seems to be missing from the backend configs."
         );
     });
 
@@ -641,7 +829,10 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
         );
         assert.strictEqual(response2.statusCode, 400);
-        assert.strictEqual(response2.body.message, "Please provide the code in request body");
+        assert.strictEqual(
+            response2.body.message,
+            "Please provide one of code or authCodeResponse in the request body"
+        );
 
         let response3 = await new Promise((resolve) =>
             request(app)
@@ -693,7 +884,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
         );
         assert.strictEqual(response5.statusCode, 400);
-        assert.strictEqual(response5.body.message, "Please provide the code in request body");
+        assert.strictEqual(response5.body.message, "Please make sure that the code in the request body is a string");
 
         let response6 = await new Promise((resolve) =>
             request(app)
@@ -711,7 +902,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 })
         );
         assert.strictEqual(response6.statusCode, 400);
-        assert.strictEqual(response6.body.message, "Please provide the code in request body");
+        assert.strictEqual(response6.body.message, "Please make sure that the code in the request body is a string");
 
         let response7 = await new Promise((resolve) =>
             request(app)

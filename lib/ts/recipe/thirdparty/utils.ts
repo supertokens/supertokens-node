@@ -16,9 +16,8 @@
 import { NormalisedAppinfo } from "../../types";
 import { validateTheStructureOfUserInput } from "../../utils";
 import Recipe from "./recipe";
-import STError from "./error";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import { RecipeInterface, APIInterface } from "./types";
+import { RecipeInterface, APIInterface, TypeProvider } from "./types";
 import {
     TypeInput,
     InputSchema,
@@ -51,6 +50,34 @@ export function validateAndNormaliseUserInput(
     };
 }
 
+export function findRightProvider(
+    providers: TypeProvider[],
+    thirdPartyId: string,
+    clientId?: string
+): TypeProvider | undefined {
+    return providers.find((p) => {
+        let id = p.id;
+        if (id !== thirdPartyId) {
+            return false;
+        }
+
+        // first if there is only one provider with thirdPartyId in the providers array,
+        let otherProvidersWithSameId = providers.filter((p1) => p1.id === id && p !== p1);
+        if (otherProvidersWithSameId.length === 0) {
+            // they we always return that.
+            return true;
+        }
+
+        // otherwise, we look for the isDefault provider if clientId is missing
+        if (clientId === undefined) {
+            return p.isDefault === true;
+        }
+
+        // otherwise, we return a provider that matches based on client ID as well.
+        return p.get(undefined, undefined).getClientId() === clientId;
+    });
+}
+
 function validateAndNormaliseSignInAndUpConfig(
     _: NormalisedAppinfo,
     config: TypeInputSignInAndUp
@@ -58,12 +85,45 @@ function validateAndNormaliseSignInAndUpConfig(
     let providers = config.providers;
 
     if (providers === undefined || providers.length === 0) {
-        throw new STError({
-            type: "BAD_INPUT_ERROR",
-            message:
-                "thirdparty recipe requires atleast 1 provider to be passed in signInAndUpFeature.providers config",
-        });
+        throw new Error(
+            "thirdparty recipe requires atleast 1 provider to be passed in signInAndUpFeature.providers config"
+        );
     }
+
+    // we check if there are multiple providers with the same id that have isDefault as true.
+    // In this case, we want to throw an error..
+    let isDefaultProvidersSet = new Set<string>();
+    let allProvidersSet = new Set<string>();
+    providers.forEach((p) => {
+        let id = p.id;
+        allProvidersSet.add(p.id);
+        let isDefault = p.isDefault;
+
+        if (isDefault === undefined) {
+            // if this id is not being used by any other provider, we treat this as the isDefault
+            let otherProvidersWithSameId = providers.filter((p1) => p1.id === id && p !== p1);
+            if (otherProvidersWithSameId.length === 0) {
+                // we treat this as the isDefault now...
+                isDefault = true;
+            }
+        }
+        if (isDefault) {
+            if (isDefaultProvidersSet.has(id)) {
+                throw new Error(
+                    `You have provided multiple third party providers that have the id: "${id}" and are marked as "isDefault: true". Please only mark one of them as isDefault.`
+                );
+            }
+            isDefaultProvidersSet.add(id);
+        }
+    });
+
+    if (isDefaultProvidersSet.size !== allProvidersSet.size) {
+        // this means that there is no provider marked as isDefault
+        throw new Error(
+            `The providers array has multiple entries for the same third party provider. Please mark one of them as the default one by using "isDefault: true".`
+        );
+    }
+
     return {
         providers,
     };

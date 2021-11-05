@@ -9,6 +9,7 @@ export declare class KoaRequest extends BaseRequest {
     private ctx;
     private parsedJSONBody;
     constructor(ctx: Context);
+    getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
     getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
@@ -19,6 +20,7 @@ export declare class KoaRequest extends BaseRequest {
 export declare class KoaResponse extends BaseResponse {
     private ctx;
     constructor(ctx: Context);
+    sendHTMLResponse: (_: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

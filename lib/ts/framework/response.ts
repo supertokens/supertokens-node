@@ -32,4 +32,5 @@ export abstract class BaseResponse {
     ) => void;
     abstract setStatusCode: (statusCode: number) => void;
     abstract sendJSONResponse: (content: any) => void;
+    abstract sendHTMLResponse: (html: string) => void;
 }

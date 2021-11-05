@@ -26,6 +26,7 @@ import {
     assertThatBodyParserHasBeenUsedForExpressLikeRequest,
     setHeaderForExpressLikeResponse,
     setCookieForServerResponse,
+    assertForDataBodyParserHasBeenUsedForExpressLikeRequest,
 } from "../utils";
 import SuperTokens from "../../supertokens";
 import type { Framework } from "../types";
@@ -33,13 +34,23 @@ import type { Framework } from "../types";
 export class LoopbackRequest extends BaseRequest {
     private request: Request;
     private parserChecked: boolean;
+    private formDataParserChecked: boolean;
 
     constructor(ctx: MiddlewareContext) {
         super();
         this.original = ctx.request;
         this.request = ctx.request;
         this.parserChecked = false;
+        this.formDataParserChecked = false;
     }
+
+    getFormData = async (): Promise<any> => {
+        if (!this.formDataParserChecked) {
+            await assertForDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
+            this.formDataParserChecked = true;
+        }
+        return this.request.body;
+    };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {
@@ -87,6 +98,13 @@ export class LoopbackResponse extends BaseResponse {
         this.response = ctx.response;
         this.statusCode = 200;
     }
+
+    sendHTMLResponse = (html: string) => {
+        if (!this.response.writableEnded) {
+            this.response.set("Content-Type", "text/html");
+            this.response.status(this.statusCode).send(Buffer.from(html));
+        }
+    };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         setHeaderForExpressLikeResponse(this.response, key, value, allowDuplicateKey);
