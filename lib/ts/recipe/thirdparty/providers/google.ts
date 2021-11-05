@@ -14,7 +14,6 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
-import { validateTheStructureOfUserInput } from "../../../utils";
 
 type TypeThirdPartyProviderGoogleConfig = {
     clientId: string;
@@ -23,49 +22,13 @@ type TypeThirdPartyProviderGoogleConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-};
-
-const InputSchemaTypeThirdPartyProviderGoogleConfig = {
-    type: "object",
-    properties: {
-        clientId: {
-            type: "string",
-        },
-        clientSecret: {
-            type: "string",
-        },
-        scope: {
-            type: "array",
-            items: {
-                type: "string",
-            },
-        },
-        authorisationRedirect: {
-            type: "object",
-            properties: {
-                params: {
-                    type: "any",
-                },
-            },
-            additionalProperties: false,
-        },
-    },
-    required: ["clientId", "clientSecret"],
-    additionalProperties: false,
+    isDefault?: boolean;
 };
 
 export default function Google(config: TypeThirdPartyProviderGoogleConfig): TypeProvider {
-    validateTheStructureOfUserInput(
-        config,
-        InputSchemaTypeThirdPartyProviderGoogleConfig,
-        "thirdparty recipe, provider google"
-    );
     const id = "google";
 
-    async function get(
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined
-    ): Promise<TypeProviderGetResponse> {
+    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://accounts.google.com/o/oauth2/token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
@@ -152,5 +115,6 @@ export default function Google(config: TypeThirdPartyProviderGoogleConfig): Type
     return {
         id,
         get,
+        isDefault: config.isDefault,
     };
 }

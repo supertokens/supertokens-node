@@ -42,6 +42,11 @@ export class AWSRequest extends BaseRequest {
         this.parsedJSONBody = undefined;
     }
 
+    getFormData = async (): Promise<any> => {
+        // TODO:
+        return undefined;
+    };
+
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.event.queryStringParameters === undefined || this.event.queryStringParameters === null) {
             return undefined;
@@ -153,6 +158,10 @@ export class AWSResponse extends BaseResponse {
             },
         };
     }
+
+    sendHTMLResponse = (_: string) => {
+        // TODO:
+    };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         this.event.supertokens.response.headers.push({

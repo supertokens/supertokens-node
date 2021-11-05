@@ -8,7 +8,9 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 export declare class ExpressRequest extends BaseRequest {
     private request;
     private parserChecked;
+    private formDataParserChecked;
     constructor(request: Request);
+    getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
     getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
@@ -20,6 +22,7 @@ export declare class ExpressResponse extends BaseResponse {
     private response;
     private statusCode;
     constructor(response: Response);
+    sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

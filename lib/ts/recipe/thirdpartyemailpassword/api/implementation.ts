@@ -17,5 +17,6 @@ export default function getAPIImplementation(): APIInterface {
         ),
         passwordResetPOST: emailPasswordImplementation.passwordResetPOST?.bind(DerivedEP(this)),
         thirdPartySignInUpPOST: thirdPartyImplementation.signInUpPOST?.bind(DerivedTP(this)),
+        appleRedirectHandlerPOST: thirdPartyImplementation.appleRedirectHandlerPOST?.bind(DerivedTP(this)),
     };
 }

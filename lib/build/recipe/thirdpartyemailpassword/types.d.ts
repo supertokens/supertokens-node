@@ -268,6 +268,7 @@ export declare type APIInterface = {
               code: string;
               redirectURI: string;
               authCodeResponse?: any;
+              clientId?: string;
               options: ThirdPartyAPIOptions;
           }) => Promise<
               | {
@@ -318,4 +319,7 @@ export declare type APIInterface = {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
           >);
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions }) => Promise<void>);
 };

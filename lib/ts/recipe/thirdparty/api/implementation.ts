@@ -16,7 +16,7 @@ export default function getAPIInterface(): APIInterface {
             status: "OK";
             url: string;
         }> {
-            let providerInfo = await provider.get(undefined, undefined);
+            let providerInfo = provider.get(undefined, undefined);
 
             let params: { [key: string]: string } = {};
             let keys = Object.keys(providerInfo.authorisationRedirect.params);
@@ -24,6 +24,16 @@ export default function getAPIInterface(): APIInterface {
                 let key = keys[i];
                 let value = providerInfo.authorisationRedirect.params[key];
                 params[key] = typeof value === "function" ? await value(options.req.original) : value;
+            }
+            if (providerInfo.getRedirectURI !== undefined && !isUsingDevelopmentClientId(providerInfo.getClientId())) {
+                // the backend wants to set the redirectURI - so we set that here.
+
+                // we add the not development keys because the oauth provider will
+                // redirect to supertokens.io's URL which will redirect the app
+                // to the the user's website, which will handle the callback as usual.
+                // If we add this, then instead, the supertokens' site will redirect
+                // the user to this API layer, which is not needed.
+                params["redirect_uri"] = providerInfo.getRedirectURI();
             }
 
             if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
@@ -60,6 +70,7 @@ export default function getAPIInterface(): APIInterface {
             code: string;
             redirectURI: string;
             authCodeResponse?: any;
+            clientId?: string;
             options: APIOptions;
         }): Promise<
             | {
@@ -78,13 +89,17 @@ export default function getAPIInterface(): APIInterface {
             let accessTokenAPIResponse: any;
 
             {
-                let providerInfo = await provider.get(undefined, undefined);
+                let providerInfo = provider.get(undefined, undefined);
                 if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
                     redirectURI = DEV_OAUTH_REDIRECT_URL;
+                } else if (providerInfo.getRedirectURI !== undefined) {
+                    // we overwrite the redirectURI provided by the frontend
+                    // since the backend wants to take charge of setting this.
+                    redirectURI = providerInfo.getRedirectURI();
                 }
             }
 
-            let providerInfo = await provider.get(redirectURI, code);
+            let providerInfo = provider.get(redirectURI, code);
 
             if (authCodeResponse !== undefined) {
                 accessTokenAPIResponse = {
@@ -101,6 +116,7 @@ export default function getAPIInterface(): APIInterface {
                         }
                     });
                 }
+
                 accessTokenAPIResponse = await axios.default({
                     method: "post",
                     url: providerInfo.accessTokenAPI.url,
@@ -153,6 +169,19 @@ export default function getAPIInterface(): APIInterface {
                 authCodeResponse: accessTokenAPIResponse.data,
             };
         },
+
+        appleRedirectHandlerPOST: async function ({ code, state, options }): Promise<void> {
+            const redirectURL =
+                options.appInfo.websiteDomain.getAsStringDangerous() +
+                options.appInfo.websiteBasePath.getAsStringDangerous() +
+                "/callback/apple?state=" +
+                state +
+                "&code=" +
+                code;
+            options.res.sendHTMLResponse(
+                `<html><head><script>window.location.replace("${redirectURL}");</script></head></html>`
+            );
+        },
     };
 }
 
@@ -170,7 +199,7 @@ function isUsingDevelopmentClientId(client_id: string): boolean {
     return client_id.startsWith(DEV_KEY_IDENTIFIER) || DEV_OAUTH_CLIENT_IDS.includes(client_id);
 }
 
-function getActualClientIdFromDevelopmentClientId(client_id: string): string {
+export function getActualClientIdFromDevelopmentClientId(client_id: string): string {
     if (client_id.startsWith(DEV_KEY_IDENTIFIER)) {
         return client_id.split(DEV_KEY_IDENTIFIER)[1];
     }

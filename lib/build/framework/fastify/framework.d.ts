@@ -9,6 +9,7 @@ import type { SessionContainerInterface } from "../../recipe/session/types";
 export declare class FastifyRequest extends BaseRequest {
     private request;
     constructor(request: OriginalFastifyRequest);
+    getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
     getJSONBody: () => Promise<any>;
     getMethod: () => HTTPMethod;
@@ -20,6 +21,7 @@ export declare class FastifyResponse extends BaseResponse {
     private response;
     private statusCode;
     constructor(response: FastifyReply);
+    sendHTMLResponse: (_: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

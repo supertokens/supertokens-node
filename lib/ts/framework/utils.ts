@@ -151,6 +151,17 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     }
 }
 
+export async function assertForDataBodyParserHasBeenUsedForExpressLikeRequest(request: Request | NextApiRequest) {
+    let parser = urlencoded({ extended: true });
+    let err = await new Promise((resolve) => parser(request, new ServerResponse(request), resolve));
+    if (err !== undefined) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "API input error: Please make sure to pass valid URL query params",
+        });
+    }
+}
+
 export function setHeaderForExpressLikeResponse(res: Response, key: string, value: string, allowDuplicateKey: boolean) {
     try {
         let existingHeaders = res.getHeaders();

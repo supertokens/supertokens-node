@@ -14,7 +14,6 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
-import { validateTheStructureOfUserInput } from "../../../utils";
 
 type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
@@ -23,49 +22,13 @@ type TypeThirdPartyProviderGithubConfig = {
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-};
-
-const InputSchemaTypeThirdPartyProviderGithubConfig = {
-    type: "object",
-    properties: {
-        clientId: {
-            type: "string",
-        },
-        clientSecret: {
-            type: "string",
-        },
-        scope: {
-            type: "array",
-            items: {
-                type: "string",
-            },
-        },
-        authorisationRedirect: {
-            type: "object",
-            properties: {
-                params: {
-                    type: "any",
-                },
-            },
-            additionalProperties: false,
-        },
-    },
-    required: ["clientId", "clientSecret"],
-    additionalProperties: false,
+    isDefault?: boolean;
 };
 
 export default function Github(config: TypeThirdPartyProviderGithubConfig): TypeProvider {
-    validateTheStructureOfUserInput(
-        config,
-        InputSchemaTypeThirdPartyProviderGithubConfig,
-        "thirdparty recipe, provider github"
-    );
     const id = "github";
 
-    async function get(
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined
-    ): Promise<TypeProviderGetResponse> {
+    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://github.com/login/oauth/access_token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
@@ -118,9 +81,21 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
             let userInfo = response.data;
             let emailsInfo = emailsInfoResponse.data;
             let id = userInfo.id.toString(); // github userId will be a number
-            // if user has choosen not to show their email publicly, userInfo here will
-            // have email as null. So we instead get the info from the emails api and
-            // use the email which is maked as primary one.
+            /*
+                if user has choosen not to show their email publicly, userInfo here will
+                have email as null. So we instead get the info from the emails api and
+                use the email which is marked as primary one.
+
+                Sample github response for email info
+                [
+                    {
+                        email: '<email>',
+                        primary: true,
+                        verified: true,
+                        visibility: 'public'
+                    }
+                ]
+            */
             let emailInfo = emailsInfo.find((e: any) => e.primary);
             if (emailInfo === undefined) {
                 return {
@@ -155,5 +130,6 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
     return {
         id,
         get,
+        isDefault: config.isDefault,
     };
 }

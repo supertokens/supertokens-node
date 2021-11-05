@@ -5,6 +5,7 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
+import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 export declare type UserInfo = {
     id: string;
@@ -28,10 +29,12 @@ export declare type TypeProviderGetResponse = {
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
     getClientId: () => string;
+    getRedirectURI?: () => string;
 };
 export declare type TypeProvider = {
     id: string;
-    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => Promise<TypeProviderGetResponse>;
+    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
+    isDefault?: boolean;
 };
 export declare type User = {
     id: string;
@@ -158,6 +161,7 @@ export declare type APIOptions = {
     providers: TypeProvider[];
     req: BaseRequest;
     res: BaseResponse;
+    appInfo: NormalisedAppinfo;
 };
 export declare type APIInterface = {
     authorisationUrlGET:
@@ -176,6 +180,7 @@ export declare type APIInterface = {
               code: string;
               redirectURI: string;
               authCodeResponse?: any;
+              clientId?: string;
               options: APIOptions;
           }) => Promise<
               | {
@@ -192,4 +197,7 @@ export declare type APIInterface = {
                     error: string;
                 }
           >);
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: { code: string; state: string; options: APIOptions }) => Promise<void>);
 };

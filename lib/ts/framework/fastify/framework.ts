@@ -43,6 +43,11 @@ export class FastifyRequest extends BaseRequest {
         this.request = request;
     }
 
+    getFormData = async (): Promise<any> => {
+        // TODO:
+        return undefined;
+    };
+
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.request.query === undefined) {
             return undefined;
@@ -86,6 +91,9 @@ export class FastifyResponse extends BaseResponse {
         this.statusCode = 200;
     }
 
+    sendHTMLResponse = (_: string) => {
+        // TODO:
+    };
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         try {
             let existingHeaders = this.response.getHeaders();

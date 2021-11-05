@@ -19,6 +19,7 @@ import {
 } from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
+import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 
 const TypeAny = {
@@ -38,11 +39,13 @@ export type TypeProviderGetResponse = {
     };
     getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
     getClientId: () => string;
+    getRedirectURI?: () => string; // if undefined, the redirect_uri is set on the frontend.
 };
 
 export type TypeProvider = {
     id: string;
-    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => Promise<TypeProviderGetResponse>;
+    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
+    isDefault?: boolean; // if not present, we treat it as false
 };
 
 export type User = {
@@ -176,6 +179,7 @@ export type APIOptions = {
     providers: TypeProvider[];
     req: BaseRequest;
     res: BaseResponse;
+    appInfo: NormalisedAppinfo;
 };
 
 export type APIInterface = {
@@ -196,6 +200,7 @@ export type APIInterface = {
               code: string;
               redirectURI: string;
               authCodeResponse?: any;
+              clientId?: string;
               options: APIOptions;
           }) => Promise<
               | {
@@ -210,4 +215,8 @@ export type APIInterface = {
                     error: string;
                 }
           >);
+
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: { code: string; state: string; options: APIOptions }) => Promise<void>);
 };

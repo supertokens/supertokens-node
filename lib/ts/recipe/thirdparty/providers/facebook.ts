@@ -14,46 +14,18 @@
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
 import axios from "axios";
-import { validateTheStructureOfUserInput } from "../../../utils";
 
 type TypeThirdPartyProviderFacebookConfig = {
     clientId: string;
     clientSecret: string;
     scope?: string[];
-};
-
-const InputSchemaTypeThirdPartyProviderFacebookConfig = {
-    type: "object",
-    properties: {
-        clientId: {
-            type: "string",
-        },
-        clientSecret: {
-            type: "string",
-        },
-        scope: {
-            type: "array",
-            items: {
-                type: "string",
-            },
-        },
-    },
-    required: ["clientId", "clientSecret"],
-    additionalProperties: false,
+    isDefault?: boolean;
 };
 
 export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): TypeProvider {
-    validateTheStructureOfUserInput(
-        config,
-        InputSchemaTypeThirdPartyProviderFacebookConfig,
-        "thirdparty recipe, provider facebook"
-    );
     const id = "facebook";
 
-    async function get(
-        redirectURI: string | undefined,
-        authCodeFromRequest: string | undefined
-    ): Promise<TypeProviderGetResponse> {
+    function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
         let accessTokenAPIURL = "https://graph.facebook.com/v9.0/oauth/access_token";
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
@@ -127,5 +99,6 @@ export default function Facebook(config: TypeThirdPartyProviderFacebookConfig): 
     return {
         id,
         get,
+        isDefault: config.isDefault,
     };
 }

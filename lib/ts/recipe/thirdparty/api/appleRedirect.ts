@@ -13,19 +13,27 @@
  * under the License.
  */
 
-import { HTTPMethod } from "../types";
+import { APIInterface, APIOptions } from "../";
 
-export abstract class BaseRequest {
-    wrapperUsed: boolean;
-    original: any;
-    constructor() {
-        this.wrapperUsed = true;
+export default async function appleRedirectHandler(
+    apiImplementation: APIInterface,
+    options: APIOptions
+): Promise<boolean> {
+    if (apiImplementation.appleRedirectHandlerPOST === undefined) {
+        return false;
     }
-    abstract getKeyValueFromQuery: (key: string) => string | undefined;
-    abstract getJSONBody: () => Promise<any>;
-    abstract getMethod: () => HTTPMethod;
-    abstract getCookieValue: (key_: string) => string | undefined;
-    abstract getHeaderValue: (key: string) => string | undefined;
-    abstract getOriginalURL: () => string;
-    abstract getFormData: () => Promise<any>;
+
+    let body = await options.req.getFormData();
+
+    let state = body.state;
+    let code = body.code;
+
+    // this will redirect the user...
+    await apiImplementation.appleRedirectHandlerPOST({
+        code,
+        state,
+        options,
+    });
+
+    return true;
 }

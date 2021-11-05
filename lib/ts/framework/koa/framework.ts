@@ -35,6 +35,11 @@ export class KoaRequest extends BaseRequest {
         this.parsedJSONBody = undefined;
     }
 
+    getFormData = async (): Promise<any> => {
+        // TODO:
+        return undefined;
+    };
+
     getKeyValueFromQuery = (key: string): string | undefined => {
         if (this.ctx.query === undefined) {
             return undefined;
@@ -82,6 +87,10 @@ export class KoaResponse extends BaseResponse {
         this.original = ctx;
         this.ctx = ctx;
     }
+
+    sendHTMLResponse = (_: string) => {
+        // TODO:
+    };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         try {
