@@ -35,7 +35,7 @@ describe(`signoutTest: ${printPath("[test/thirdparty/signoutFeature.test.js]")}`
     before(function () {
         this.customProvider1 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",

@@ -24,7 +24,7 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
     before(function () {
         this.customProvider = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",

@@ -25,7 +25,7 @@ describe(`usersTest: ${printPath("[test/thirdparty/users.test.js]")}`, function 
     before(function () {
         this.customProvider1 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",

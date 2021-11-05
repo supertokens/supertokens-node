@@ -28,7 +28,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
     before(function () {
         this.customProvider1 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -53,13 +53,13 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         };
         this.customProvider2 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 throw new Error("error from get function");
             },
         };
         this.customProvider3 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -80,7 +80,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         };
         this.customProvider4 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -99,7 +99,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         };
         this.customProvider5 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -124,7 +124,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         };
         this.customProvider6 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",
@@ -611,7 +611,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(response1.statusCode, 400);
         assert.strictEqual(
             response1.body.message,
-            "The third party provider google seems to not be configured on the backend. Please check your frontend and backend configs."
+            "The third party provider google seems to be missing from the backend configs."
         );
     });
 

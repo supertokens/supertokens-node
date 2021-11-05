@@ -29,7 +29,7 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
     before(function () {
         this.customProvider1 = {
             id: "custom",
-            get: async (recipe, authCode) => {
+            get: (recipe, authCode) => {
                 return {
                     accessTokenAPI: {
                         url: "https://test.com/oauth/token",

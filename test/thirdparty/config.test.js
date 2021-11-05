@@ -232,7 +232,7 @@ describe(`configTest: ${printPath("[test/thirdparty/config.test.js]")}`, functio
                         providers: [
                             {
                                 id: "custom",
-                                get: async (recipe, authCode) => {
+                                get: (recipe, authCode) => {
                                     return {
                                         accessTokenAPI: {
                                             url: "test.com/oauth/token",

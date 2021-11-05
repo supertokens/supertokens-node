@@ -187,42 +187,6 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
     });
 
-    it("test passing invalid config and check that error gets thrown for thirdparty provider google", async function () {
-        await startST();
-
-        try {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    ThirPartyRecipe.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                ThirParty.Google({
-                                    a: "b",
-                                }),
-                            ],
-                        },
-                    }),
-                ],
-            });
-            assert(false);
-        } catch (error) {
-            if (
-                error.message !==
-                `Config schema error in thirdparty recipe, provider google: input config requires property "clientId"`
-            ) {
-                throw error;
-            }
-        }
-    });
-
     it("test minimum config for third party provider facebook", async function () {
         await startST();
 
@@ -312,42 +276,6 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             response_type: "code",
             scope: "test-scope-1 test-scope-2",
         });
-    });
-
-    it("test passing invalid config and check that error gets thrown for thirdparty provider facebook", async function () {
-        await startST();
-
-        try {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    ThirPartyRecipe.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                ThirParty.Facebook({
-                                    a: "b",
-                                }),
-                            ],
-                        },
-                    }),
-                ],
-            });
-            assert(false);
-        } catch (error) {
-            if (
-                error.message !==
-                `Config schema error in thirdparty recipe, provider facebook: input config requires property "clientId"`
-            ) {
-                throw error;
-            }
-        }
     });
 
     it("test minimum config for third party provider github", async function () {
@@ -479,42 +407,6 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         });
     });
 
-    it("test passing invalid config and check that error gets thrown for thirdparty provider github", async function () {
-        await startST();
-
-        try {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    ThirPartyRecipe.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                ThirParty.Github({
-                                    a: "b",
-                                }),
-                            ],
-                        },
-                    }),
-                ],
-            });
-            assert(false);
-        } catch (error) {
-            if (
-                error.message !==
-                `Config schema error in thirdparty recipe, provider github: input config requires property "clientId"`
-            ) {
-                throw error;
-            }
-        }
-    });
-
     it("test minimum config for third party provider apple", async function () {
         await startST();
 
@@ -618,42 +510,6 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
             key1: "value1",
             key2: "value2",
         });
-    });
-
-    it("test passing invalid config for third party provider apple", async function () {
-        await startST();
-
-        try {
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    ThirPartyRecipe.init({
-                        signInAndUpFeature: {
-                            providers: [
-                                ThirParty.Apple({
-                                    a: "b",
-                                }),
-                            ],
-                        },
-                    }),
-                ],
-            });
-            assert(false);
-        } catch (error) {
-            if (
-                error.message !==
-                `Config schema error in thirdparty recipe, provider apple: input config requires property "clientId"`
-            ) {
-                throw error;
-            }
-        }
     });
 
     it("test passing scopes in config for third party provider apple", async function () {
