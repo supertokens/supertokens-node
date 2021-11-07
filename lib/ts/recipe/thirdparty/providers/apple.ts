@@ -113,7 +113,8 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             if (payload === null) {
                 throw new Error("no user info found from user's id token received from apple");
             }
-            let id = (payload as any).email as string;
+            let id = (payload as any).sub as string;
+            let email = (payload as any).email as string;
             let isVerified = (payload as any).email_verified;
             if (id === undefined || id === null) {
                 throw new Error("no user info found from user's id token received from apple");
@@ -121,7 +122,7 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             return {
                 id,
                 email: {
-                    id,
+                    id: email,
                     isVerified,
                 },
             };
