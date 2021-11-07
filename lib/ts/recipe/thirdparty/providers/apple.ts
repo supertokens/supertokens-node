@@ -129,7 +129,12 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
         }
         function getRedirectURI() {
             let supertokens = SuperTokens.getInstanceOrThrowError();
-            return supertokens.appInfo.apiDomain.getAsStringDangerous() + APPLE_REDIRECT_HANDLER;
+            return (
+                supertokens.appInfo.apiDomain.getAsStringDangerous() +
+                supertokens.appInfo.apiGatewayPath.getAsStringDangerous() +
+                supertokens.appInfo.apiBasePath.getAsStringDangerous() +
+                APPLE_REDIRECT_HANDLER
+            );
         }
         return {
             accessTokenAPI: {
