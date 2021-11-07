@@ -13,11 +13,12 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import { sign as jwtSign, decode as jwtDecode } from "jsonwebtoken";
+import { sign as jwtSign } from "jsonwebtoken";
 import STError from "../error";
 import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
 import SuperTokens from "../../../supertokens";
 import { APPLE_REDIRECT_HANDLER } from "../constants";
+import verifyAppleToken from "verify-apple-id-token";
 
 type TypeThirdPartyProviderAppleConfig = {
     clientId: string;
@@ -109,7 +110,16 @@ export default function Apple(config: TypeThirdPartyProviderAppleConfig): TypePr
             refresh_token: string;
             id_token: string;
         }) {
-            let payload = jwtDecode(accessTokenAPIResponse.id_token);
+            /*
+            - Verify the JWS E256 signature using the server’s public key
+            - Verify the nonce for the authentication
+            - Verify that the iss field contains https://appleid.apple.com
+            - Verify that the aud field is the developer’s client_id
+            - Verify that the time is earlier than the exp value of the token */
+            const payload = await verifyAppleToken({
+                idToken: accessTokenAPIResponse.id_token,
+                clientId: getActualClientIdFromDevelopmentClientId(config.clientId),
+            });
             if (payload === null) {
                 throw new Error("no user info found from user's id token received from apple");
             }
