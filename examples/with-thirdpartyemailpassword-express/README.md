@@ -8,8 +8,6 @@ This server code can be used to implement social auth using:
 -   Github
 -   Apple
 
-For React Native apps (Android and iOS) and Websites
-
 ## Project setup
 
 Use `npm` to install the project dependencies:

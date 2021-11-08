@@ -41,20 +41,24 @@ supertokens.init({
                 // We have provided you with development keys which you can use for testing or when running our demo apps.
                 // IMPORTANT: Please replace them with your own OAuth keys for production use.
                 ThirdPartyEmailPassword.Google({
+                    // We use this for websites
                     isDefault: true,
                     clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
                     clientSecret: "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",
                 }),
                 ThirdPartyEmailPassword.Google({
+                    // we use this for mobile apps
                     clientId: "1060725074195-c7mgk8p0h27c4428prfuo3lg7ould5o7.apps.googleusercontent.com",
                     clientSecret: "",
                 }),
                 ThirdPartyEmailPassword.Github({
+                    // We use this for websites
                     isDefault: true,
                     clientSecret: "e97051221f4b6426e8fe8d51486396703012f5bd",
                     clientId: "467101b197249757c71f",
                 }),
                 ThirdPartyEmailPassword.Github({
+                    // We use this for mobile apps
                     clientSecret: "00e841f10f288363cd3786b1b1f538f05cfdbda2",
                     clientId: "8a9152860ce869b64c44",
                 }),
@@ -62,10 +66,11 @@ supertokens.init({
                     For Apple signin, iOS apps always use the bundle identifier as the client ID when communicating with Apple. Android, Web and other platforms
                     need to configure a Service ID on the Apple developer dashboard and use that as client ID.
 
-                    In the example below 4398792-io.supertokens.example.service is the client ID for Web. Android etc and thus we mark it as default. For iOS
+                    In the example below 4398792-io.supertokens.example.service is the client ID for Web, Android etc. For iOS
                     the frontend for the demo app sends the clientId in the request which is then used by the SDK.
                 */
                 ThirdPartyEmailPassword.Apple({
+                    // For Android and website apps
                     isDefault: true,
                     clientId: "4398792-io.supertokens.example.service",
                     clientSecret: {
@@ -76,6 +81,7 @@ supertokens.init({
                     },
                 }),
                 ThirdPartyEmailPassword.Apple({
+                    // For iOS Apps
                     clientId: "4398792-io.supertokens.example",
                     clientSecret: {
                         keyId: "7M48Y4RYDL",
