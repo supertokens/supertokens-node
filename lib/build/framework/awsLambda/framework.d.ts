@@ -14,6 +14,7 @@ import { Framework } from "../types";
 export declare class AWSRequest extends BaseRequest {
     private event;
     private parsedJSONBody;
+    private parsedUrlEncodedFormData;
     constructor(event: APIGatewayProxyEventV2 | APIGatewayProxyEvent);
     getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
@@ -53,7 +54,7 @@ export declare class AWSResponse extends BaseResponse {
     private content;
     responseSet: boolean;
     constructor(event: SupertokensLambdaEvent | SupertokensLambdaEventV2);
-    sendHTMLResponse: (_: string) => void;
+    sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

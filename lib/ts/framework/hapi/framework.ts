@@ -34,8 +34,7 @@ export class HapiRequest extends BaseRequest {
     }
 
     getFormData = async (): Promise<any> => {
-        // TODO:
-        return undefined;
+        return this.request.payload === undefined || this.request.payload === null ? {} : this.request.payload;
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
@@ -89,8 +88,10 @@ export class HapiResponse extends BaseResponse {
         this.responseSet = false;
     }
 
-    sendHTMLResponse = (_: string) => {
-        // TODO:
+    sendHTMLResponse = (html: string) => {
+        this.content = html;
+        this.setHeader("Content-Type", "text/html", false);
+        this.responseSet = true;
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {

@@ -25,7 +25,7 @@ export declare class HapiResponse extends BaseResponse {
     private content;
     responseSet: boolean;
     constructor(response: ExtendedResponseToolkit);
-    sendHTMLResponse: (_: string) => void;
+    sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,

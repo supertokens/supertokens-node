@@ -44,8 +44,7 @@ export class FastifyRequest extends BaseRequest {
     }
 
     getFormData = async (): Promise<any> => {
-        // TODO:
-        return undefined;
+        return this.request.body; // NOTE: ask user to add require('fastify-formbody')
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
@@ -91,8 +90,11 @@ export class FastifyResponse extends BaseResponse {
         this.statusCode = 200;
     }
 
-    sendHTMLResponse = (_: string) => {
-        // TODO:
+    sendHTMLResponse = (html: string) => {
+        if (!this.response.sent) {
+            this.response.type("text/html");
+            this.response.send(html);
+        }
     };
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         try {

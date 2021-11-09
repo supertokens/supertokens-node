@@ -19,7 +19,7 @@ import { normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
 import { getHeaderValueFromIncomingMessage } from "../utils";
-import { json } from "co-body";
+import { json, form } from "co-body";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
@@ -27,17 +27,21 @@ import { Framework } from "../types";
 export class KoaRequest extends BaseRequest {
     private ctx: Context;
     private parsedJSONBody: Object | undefined;
+    private parsedUrlEncodedFormData: Object | undefined;
 
     constructor(ctx: Context) {
         super();
         this.original = ctx;
         this.ctx = ctx;
         this.parsedJSONBody = undefined;
+        this.parsedUrlEncodedFormData = undefined;
     }
 
     getFormData = async (): Promise<any> => {
-        // TODO:
-        return undefined;
+        if (this.parsedUrlEncodedFormData === undefined) {
+            this.parsedUrlEncodedFormData = await parseURLEncodedFormData(this.ctx);
+        }
+        return this.parsedUrlEncodedFormData;
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
@@ -76,7 +80,17 @@ export class KoaRequest extends BaseRequest {
 }
 
 async function parseJSONBodyFromRequest(ctx: Context) {
+    if (ctx.body !== undefined) {
+        return ctx.body;
+    }
     return await json(ctx);
+}
+
+async function parseURLEncodedFormData(ctx: Context) {
+    if (ctx.body !== undefined) {
+        return ctx.body;
+    }
+    return await form(ctx);
 }
 
 export class KoaResponse extends BaseResponse {
@@ -88,8 +102,9 @@ export class KoaResponse extends BaseResponse {
         this.ctx = ctx;
     }
 
-    sendHTMLResponse = (_: string) => {
-        // TODO:
+    sendHTMLResponse = (html: string) => {
+        this.ctx.set("content-type", "text/html");
+        this.ctx.body = html;
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {

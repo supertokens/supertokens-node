@@ -8,6 +8,7 @@ import { Framework } from "../types";
 export declare class KoaRequest extends BaseRequest {
     private ctx;
     private parsedJSONBody;
+    private parsedUrlEncodedFormData;
     constructor(ctx: Context);
     getFormData: () => Promise<any>;
     getKeyValueFromQuery: (key: string) => string | undefined;
@@ -20,7 +21,7 @@ export declare class KoaRequest extends BaseRequest {
 export declare class KoaResponse extends BaseResponse {
     private ctx;
     constructor(ctx: Context);
-    sendHTMLResponse: (_: string) => void;
+    sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
     setCookie: (
         key: string,
