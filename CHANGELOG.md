@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Optional `getRedirectURI` function added to social providers in case we set the `redirect_uri` on the backend.
 -   Adds optional `isDefault` param to auth providers so that they can be reused with different credentials.
 -   Verifies ID Token sent for sign in with apple as per https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_rest_api/verifying_a_user
+-   `sendHTMLResponse` and `getFormData` functions for frameworks
 
 ## [8.0.4] - 2021-10-28
 

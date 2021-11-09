@@ -30,21 +30,33 @@ import { COOKIE_HEADER } from "../constants";
 import { SessionContainerInterface } from "../../recipe/session/types";
 import SuperTokens from "../../supertokens";
 import { Framework } from "../types";
+import { parse } from "querystring";
 
 export class AWSRequest extends BaseRequest {
     private event: APIGatewayProxyEventV2 | APIGatewayProxyEvent;
     private parsedJSONBody: Object | undefined;
+    private parsedUrlEncodedFormData: Object | undefined;
 
     constructor(event: APIGatewayProxyEventV2 | APIGatewayProxyEvent) {
         super();
         this.original = event;
         this.event = event;
         this.parsedJSONBody = undefined;
+        this.parsedUrlEncodedFormData = undefined;
     }
 
     getFormData = async (): Promise<any> => {
-        // TODO:
-        return undefined;
+        if (this.parsedUrlEncodedFormData === undefined) {
+            if (this.event.body === null || this.event.body === undefined) {
+                this.parsedUrlEncodedFormData = {};
+            } else {
+                this.parsedUrlEncodedFormData = parse(this.event.body);
+                if (this.parsedUrlEncodedFormData === undefined) {
+                    this.parsedUrlEncodedFormData = {};
+                }
+            }
+        }
+        return this.parsedUrlEncodedFormData;
     };
 
     getKeyValueFromQuery = (key: string): string | undefined => {
@@ -159,8 +171,10 @@ export class AWSResponse extends BaseResponse {
         };
     }
 
-    sendHTMLResponse = (_: string) => {
-        // TODO:
+    sendHTMLResponse = (html: string) => {
+        this.content = html;
+        this.setHeader("Content-Type", "text/html", false);
+        this.responseSet = true;
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
