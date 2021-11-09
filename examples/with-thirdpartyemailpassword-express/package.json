@@ -12,7 +12,7 @@
         "express": "^4.17.1",
         "helmet": "^4.4.0",
         "morgan": "^1.10.0",
-        "supertokens-node": "git+https://github.com/supertokens/supertokens-node.git#8.1"
+        "supertokens-node": "^8.1.0"
     },
     "keywords": [],
     "author": "",
