@@ -94,7 +94,7 @@ export default function Google(config: TypeThirdPartyProviderGoogleWorkspacesCon
             // TODO: we check if the domain of the email is the same as what's
             // in the config.
 
-            // If domain is "*", then check that it's non gmail or googleacount etc.. Else check that the domain matches that. Should we check exact or no?
+            // If domain is "*", then check that it's non gmail or googleacount etc.. Else check that the domain matches that. Should we check exact or no? See https://developers.google.com/identity/protocols/oauth2/openid-connect#validatinganidtoken
 
             return {
                 id,
