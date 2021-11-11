@@ -105,6 +105,8 @@ export default class Wrapper {
     static Facebook = thirdPartyProviders.Facebook;
 
     static Apple = thirdPartyProviders.Apple;
+
+    static Discord = thirdPartyProviders.Discord;
 }
 
 export let init = Wrapper.init;
@@ -136,5 +138,7 @@ export let Github = Wrapper.Github;
 export let Facebook = Wrapper.Facebook;
 
 export let Apple = Wrapper.Apple;
+
+export let Discord = Wrapper.Discord;
 
 export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };

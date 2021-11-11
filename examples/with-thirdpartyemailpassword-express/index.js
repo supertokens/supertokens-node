@@ -2,11 +2,11 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 require("dotenv").config();
-let supertokens = require("supertokens-node");
-let Session = require("supertokens-node/recipe/session");
-let { verifySession } = require("supertokens-node/recipe/session/framework/express");
-let { middleware, errorHandler } = require("supertokens-node/framework/express");
-let ThirdPartyEmailPassword = require("supertokens-node/recipe/thirdpartyemailpassword");
+let supertokens = require("../../");
+let Session = require("../../recipe/session");
+let { verifySession } = require("../../recipe/session/framework/express");
+let { middleware, errorHandler } = require("../../framework/express");
+let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 
 // Change these values if you want to run the server on another adress
 const apiPort = process.env.REACT_APP_API_PORT || 3001;
@@ -89,6 +89,10 @@ supertokens.init({
                             "-----BEGIN PRIVATE KEY-----\nMIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgu8gXs+XYkqXD6Ala9Sf/iJXzhbwcoG5dMh1OonpdJUmgCgYIKoZIzj0DAQehRANCAASfrvlFbFCYqn3I2zeknYXLwtH30JuOKestDbSfZYxZNMqhF/OzdZFTV0zc5u5s3eN+oCWbnvl0hM+9IW0UlkdA\n-----END PRIVATE KEY-----",
                         teamId: "YWQCXGJRJL",
                     },
+                }),
+                ThirdPartyEmailPassword.Discord({
+                    clientId: "4398792-907871294886928395",
+                    clientSecret: "His4yXGEovVp5TZkZhEAt0ZXGh8uOVDm",
                 }),
 
                 // we have commented the below because our app domain (ThirdPartyEmailPassword.demo.supertokens.io) is not approved by Facebook since it's only a demo app.
