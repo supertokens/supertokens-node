@@ -124,6 +124,8 @@ export default class Wrapper {
     static Apple = thirdPartyProviders.Apple;
 
     static Discord = thirdPartyProviders.Discord;
+
+    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
 }
 
 export let init = Wrapper.init;
@@ -167,5 +169,7 @@ export let Facebook = Wrapper.Facebook;
 export let Apple = Wrapper.Apple;
 
 export let Discord = Wrapper.Discord;
+
+export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
 
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };

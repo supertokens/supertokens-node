@@ -94,6 +94,10 @@ supertokens.init({
                     clientId: "4398792-907871294886928395",
                     clientSecret: "His4yXGEovVp5TZkZhEAt0ZXGh8uOVDm",
                 }),
+                ThirdPartyEmailPassword.GoogleWorkspaces({
+                    clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                    clientSecret: "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",
+                }),
 
                 // we have commented the below because our app domain (ThirdPartyEmailPassword.demo.supertokens.io) is not approved by Facebook since it's only a demo app.
                 // ThirdPartyEmailPassword.Facebook({
