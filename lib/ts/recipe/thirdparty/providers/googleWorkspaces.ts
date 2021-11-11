@@ -13,7 +13,8 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import { verifyIdTokenFromJWKSEndpoint } from "./utils";
+import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
 
 type TypeThirdPartyProviderGoogleWorkspacesConfig = {
     clientId: string;
@@ -63,44 +64,34 @@ export default function Google(config: TypeThirdPartyProviderGoogleWorkspacesCon
             ...additionalParams,
         };
 
-        async function getProfileInfo(accessTokenAPIResponse: {
-            access_token: string;
-            expires_in: number;
-            token_type: string;
-            scope: string;
-            refresh_token: string;
-        }) {
-            let accessToken = accessTokenAPIResponse.access_token;
-            let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
-                method: "get",
-                url: "https://www.googleapis.com/oauth2/v1/userinfo",
-                params: {
-                    alt: "json",
-                },
-                headers: {
-                    Authorization: authHeader,
-                },
-            });
-            let userInfo = response.data;
-            let id = userInfo.id;
-            let email = userInfo.email;
-            if (email === undefined || email === null) {
-                return {
-                    id,
-                };
-            }
-            let isVerified = userInfo.verified_email;
-            // TODO: we check if the domain of the email is the same as what's
-            // in the config.
+        async function getProfileInfo(authCodeResponse: { id_token: string }) {
+            let payload: any = await verifyIdTokenFromJWKSEndpoint(
+                authCodeResponse.id_token,
+                "https://www.googleapis.com/oauth2/v3/certs",
+                {
+                    audience: getActualClientIdFromDevelopmentClientId(config.clientId),
+                    issuer: ["https://accounts.google.com", "accounts.google.com"],
+                }
+            );
 
-            // If domain is "*", then check that it's non gmail or googleacount etc.. Else check that the domain matches that. Should we check exact or no? See https://developers.google.com/identity/protocols/oauth2/openid-connect#validatinganidtoken
+            if (payload.email === undefined) {
+                throw new Error("Could not get email. Please use a different login method");
+            }
+
+            if (payload.hd === undefined) {
+                throw new Error("Please use a Google Workspace ID to login");
+            }
+
+            // if the domain is "*" in it, it means that any workspace email is allowed.
+            if (!domain.includes("*") && payload.hd !== domain) {
+                throw new Error("Please use emails from " + domain + " to login");
+            }
 
             return {
-                id,
+                id: payload.sub,
                 email: {
-                    id: email,
-                    isVerified,
+                    id: payload.email,
+                    isVerified: payload.email_verified,
                 },
             };
         }
