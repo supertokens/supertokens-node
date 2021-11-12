@@ -126,6 +126,8 @@ export default class Wrapper {
     static Discord = thirdPartyProviders.Discord;
 
     static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
+
+    static Okta = thirdPartyProviders.Okta;
 }
 
 export let init = Wrapper.init;
@@ -171,5 +173,7 @@ export let Apple = Wrapper.Apple;
 export let Discord = Wrapper.Discord;
 
 export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
+
+export let Okta = Wrapper.Okta;
 
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
