@@ -23,7 +23,7 @@ let SuperTokens = require("../../../");
 let Session = require("../../../recipe/session");
 let { middleware, errorHandler } = require("../../../framework/express");
 
-describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.override.test.js]")}`, function () {
+describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -102,7 +102,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.override
         );
 
         let sessionHandle = createJWTResponse.sessionHandle;
-        let accessTokenPayloadJWT = await (await Session.getSessionInformation(sessionHandle)).jwtPayload.jwt;
+        let accessTokenPayloadJWT = await (await Session.getSessionInformation(sessionHandle)).accessTokenPayload.jwt;
 
         assert.notStrictEqual(accessTokenPayloadJWT, undefined);
 
@@ -185,7 +185,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.override
         let sessionHandle = createJWTResponse.body.sessionHandle;
         let sessionInformation = await Session.getSessionInformation(sessionHandle);
 
-        let jwtPayload = sessionInformation.jwtPayload.jwt.split(".")[1];
+        let jwtPayload = sessionInformation.accessTokenPayload.jwt.split(".")[1];
         let jwtExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
         let expiryDiff = jwtExpiryInSeconds - accessTokenExpiryInSeconds;
 
@@ -193,7 +193,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.override
         assert(27 <= expiryDiff && expiryDiff <= 32);
     });
 
-    it.only("Test that when a session is refreshed, the JWT expiry is updated correctly", async function () {
+    it("Test that when a session is refreshed, the JWT expiry is updated correctly", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -269,12 +269,19 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.override
         let sessionHandle = createJWTResponse.body.sessionHandle;
         let sessionInformation = await Session.getSessionInformation(sessionHandle);
 
-        let jwtPayload = sessionInformation.jwtPayload.jwt.split(".")[1];
+        let jwtPayload = sessionInformation.accessTokenPayload.jwt.split(".")[1];
         let jwtExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
         let expiryDiff = jwtExpiryInSeconds - accessTokenExpiryInSeconds;
 
         // We check that JWT expiry is 30 seconds more than access token expiry. Accounting for a 5ms skew
         assert(27 <= expiryDiff && expiryDiff <= 32);
+
+        let delay = 5;
+        await new Promise((res) => {
+            setTimeout(() => {
+                res();
+            }, delay * 1000);
+        });
 
         let res2 = await new Promise((resolve) =>
             request(app)
@@ -283,7 +290,6 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.override
                     "sRefreshToken=" + responseInfo.refreshToken,
                     "sIdRefreshToken=" + responseInfo.idRefreshTokenFromCookie,
                 ])
-                .set("anti-csrf", responseInfo.antiCsrf)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -310,7 +316,101 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.override
         responseInfo = extractInfoFromResponse(getSessionResponse);
         accessTokenExpiryInSeconds = new Date(responseInfo.accessTokenExpiry).getTime() / 1000;
         sessionInformation = await Session.getSessionInformation(sessionHandle);
-        jwtPayload = sessionInformation.jwtPayload.jwt.split(".")[1];
+        jwtPayload = sessionInformation.accessTokenPayload.jwt.split(".")[1];
         let newJWTExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
+
+        // Make sure that the new expiry is greater than the old one by the amount of delay before refresh
+        assert.equal(newJWTExpiryInSeconds - jwtExpiryInSeconds, delay);
+    });
+
+    it.only("Test that when updating access token payload, jwt expiry does not change", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    enableJWTFeature: true,
+                    override: {
+                        functions: function (oi) {
+                            return {
+                                ...oi,
+                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                    accessTokenPayload = {
+                                        ...accessTokenPayload,
+                                        customKey: "customValue",
+                                        customKey2: "customValue2",
+                                    };
+
+                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
+        let app = express();
+
+        app.use(middleware());
+        app.use(express.json());
+
+        app.post("/create", async (req, res) => {
+            let session = await Session.createNewSession(res, "", {}, {});
+            res.status(200).json({ sessionHandle: session.getHandle() });
+        });
+
+        app.get("/getSession", async (req, res) => {
+            let session = await Session.getSession(req, res);
+            res.status(200).json({ sessionHandle: session.getHandle() });
+        });
+
+        app.use(errorHandler());
+
+        let createJWTResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/create")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let responseInfo = extractInfoFromResponse(createJWTResponse);
+        let sessionHandle = createJWTResponse.body.sessionHandle;
+        let sessionInformation = await Session.getSessionInformation(sessionHandle);
+
+        let jwtPayload = sessionInformation.accessTokenPayload.jwt.split(".")[1];
+        let jwtExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
+
+        console.log("OLD JWT EXPIRY", jwtExpiryInSeconds * 1000);
+
+        await Session.updateAccessTokenPayload(sessionHandle, { newKey: "newValue" });
+
+        sessionInformation = await Session.getSessionInformation(sessionHandle);
+        jwtPayload = sessionInformation.accessTokenPayload.jwt.split(".")[1];
+        let newJwtExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
+
+        console.log("NEW JWT EXPIRY", newJwtExpiryInSeconds * 1000);
+
+        assert.equal(jwtExpiryInSeconds, newJwtExpiryInSeconds);
     });
 });

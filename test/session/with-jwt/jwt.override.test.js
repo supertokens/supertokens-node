@@ -124,7 +124,7 @@ describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, fu
         assert.notStrictEqual(jwtCreated, undefined);
 
         let sessionInformation = await Session.getSessionInformation(sessionHandle);
-        assert.deepStrictEqual(jwtCreated, sessionInformation.accessTokenPayload);
+        assert.deepStrictEqual(jwtCreated, sessionInformation.accessTokenPayload.jwt);
 
         let getJWKSResponse = await new Promise((resolve) => {
             request(app)
