@@ -209,6 +209,10 @@ export default class SuperTokens {
         }
 
         let requestRID = request.getHeaderValue(HEADER_RID);
+        if (requestRID === "anti-csrf") {
+            // see https://github.com/supertokens/supertokens-node/issues/202
+            requestRID = undefined;
+        }
         if (requestRID !== undefined) {
             let matchedRecipe: RecipeModule | undefined = undefined;
 

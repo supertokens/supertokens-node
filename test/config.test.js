@@ -563,6 +563,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         assert.strictEqual(normaliseURLPathOrThrowError("127.0.0.1/one/two"), "/one/two");
         assert.strictEqual(normaliseURLPathOrThrowError("https://127.0.0.1:80/one/two"), "/one/two");
         assert.strictEqual(normaliseURLPathOrThrowError("/"), "");
+        assert.strictEqual(normaliseURLPathOrThrowError(""), "");
 
         assert.strictEqual(normaliseURLPathOrThrowError("/.netlify/functions/api"), "/.netlify/functions/api");
         assert.strictEqual(normaliseURLPathOrThrowError("/netlify/.functions/api"), "/netlify/.functions/api");
