@@ -401,15 +401,11 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         let jwtPayload = sessionInformation.accessTokenPayload.jwt.split(".")[1];
         let jwtExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
 
-        console.log("OLD JWT EXPIRY", jwtExpiryInSeconds * 1000);
-
         await Session.updateAccessTokenPayload(sessionHandle, { newKey: "newValue" });
 
         sessionInformation = await Session.getSessionInformation(sessionHandle);
         jwtPayload = sessionInformation.accessTokenPayload.jwt.split(".")[1];
         let newJwtExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
-
-        console.log("NEW JWT EXPIRY", newJwtExpiryInSeconds * 1000);
 
         assert.equal(jwtExpiryInSeconds, newJwtExpiryInSeconds);
     });

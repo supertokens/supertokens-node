@@ -61,7 +61,12 @@ export default class SessionRecipe extends RecipeModule {
             );
             this.recipeInterfaceImpl = builder
                 .override((oI) => {
-                    return RecipeImplementationWithJWT(oI, this.jwtRecipe.recipeInterfaceImpl);
+                    return RecipeImplementationWithJWT(
+                        oI,
+                        this.jwtRecipe.recipeInterfaceImpl,
+                        this.config,
+                        Querier.getNewInstanceOrThrowError(recipeId)
+                    );
                 })
                 .override(this.config.override.functions)
                 .build();

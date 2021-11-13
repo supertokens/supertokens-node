@@ -14,13 +14,63 @@
  */
 import { RecipeInterface } from "../";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
-import { SessionContainerInterface } from "../types";
+import { SessionContainerInterface, TypeNormalisedInput, KeyInfo, VerifySessionOptions } from "../types";
+import SessionClassWithJWT from "./sessionClass";
+import { HandshakeInfo, Helpers } from "../recipeImplementation";
+import { ProcessState, PROCESS_STATE } from "../../../processState";
+import NormalisedURLPath from "../../../normalisedURLPath";
+import { Querier } from "../../../querier";
 
 export default function (
     originalImplementation: RecipeInterface,
-    jwtRecipeImplementation: JWTRecipeInterface
+    jwtRecipeImplementation: JWTRecipeInterface,
+    config: TypeNormalisedInput,
+    querier: Querier
 ): RecipeInterface {
     const EXPIRY_OFFSET_SECONDS = 30;
+    let handshakeInfo: undefined | HandshakeInfo;
+
+    // TODO: See if this duplication for helper can be avoided
+    async function getHandshakeInfo(forceRefetch = false): Promise<HandshakeInfo> {
+        if (handshakeInfo === undefined || handshakeInfo.getJwtSigningPublicKeyList().length === 0 || forceRefetch) {
+            let antiCsrf = config.antiCsrf;
+            ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
+            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
+
+            handshakeInfo = new HandshakeInfo(
+                antiCsrf,
+                response.accessTokenBlacklistingEnabled,
+                response.accessTokenValidity,
+                response.refreshTokenValidity,
+                response.jwtSigningPublicKeyList
+            );
+
+            updateJwtSigningPublicKeyInfo(
+                response.jwtSigningPublicKeyList,
+                response.jwtSigningPublicKey,
+                response.jwtSigningPublicKeyExpiryTime
+            );
+        }
+        return handshakeInfo;
+    }
+
+    function updateJwtSigningPublicKeyInfo(keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) {
+        if (keyList === undefined) {
+            // Setting createdAt to Date.now() emulates the old lastUpdatedAt logic
+            keyList = [{ publicKey, expiryTime, createdAt: Date.now() }];
+        }
+
+        if (handshakeInfo !== undefined) {
+            handshakeInfo.setJwtSigningPublicKeyList(keyList);
+        }
+    }
+
+    let helpers: Helpers = {
+        querier,
+        updateJwtSigningPublicKeyInfo,
+        getHandshakeInfo,
+        config,
+    };
 
     return {
         ...originalImplementation,
@@ -51,12 +101,47 @@ export default function (
                 jwt: jwtResponse.jwt,
             };
 
-            return await originalImplementation.createNewSession({
+            let sessionContainer = await originalImplementation.createNewSession({
                 res,
                 userId,
                 accessTokenPayload,
                 sessionData,
             });
+
+            return new SessionClassWithJWT(
+                helpers,
+                sessionContainer.getAccessToken(),
+                sessionContainer.getHandle(),
+                sessionContainer.getUserId(),
+                sessionContainer.getAccessTokenPayload(),
+                res,
+                jwtRecipeImplementation
+            );
+        },
+        getSession: async function ({
+            req,
+            res,
+            options,
+        }: {
+            req: any;
+            res: any;
+            options?: VerifySessionOptions;
+        }): Promise<SessionContainerInterface | undefined> {
+            let sessionContainer = await originalImplementation.getSession({ req, res, options });
+
+            if (sessionContainer === undefined) {
+                return undefined;
+            }
+
+            return new SessionClassWithJWT(
+                helpers,
+                sessionContainer.getAccessToken(),
+                sessionContainer.getHandle(),
+                sessionContainer.getUserId(),
+                sessionContainer.getAccessTokenPayload(),
+                res,
+                jwtRecipeImplementation
+            );
         },
         refreshSession: async function ({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = (await originalImplementation.getAccessTokenLifeTimeMS()) / 1000;
@@ -84,7 +169,16 @@ export default function (
             };
 
             await newSession.updateAccessTokenPayload(accessTokenPayload);
-            return newSession;
+
+            return new SessionClassWithJWT(
+                helpers,
+                newSession.getAccessToken(),
+                newSession.getHandle(),
+                newSession.getUserId(),
+                newSession.getAccessTokenPayload(),
+                res,
+                jwtRecipeImplementation
+            );
         },
         updateAccessTokenPayload: async function ({
             sessionHandle,
