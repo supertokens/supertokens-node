@@ -128,6 +128,8 @@ export default class Wrapper {
     static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
 
     static Okta = thirdPartyProviders.Okta;
+
+    static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
 }
 
 export let init = Wrapper.init;
@@ -175,5 +177,7 @@ export let Discord = Wrapper.Discord;
 export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
 
 export let Okta = Wrapper.Okta;
+
+export let ActiveDirectory = Wrapper.ActiveDirectory;
 
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };

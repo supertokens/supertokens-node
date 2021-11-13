@@ -113,6 +113,7 @@ export default class Wrapper {
     static Discord: typeof import("../thirdparty/providers/discord").default;
     static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
     static Okta: typeof import("../thirdparty/providers/okta").default;
+    static ActiveDirectory: typeof import("../thirdparty/providers/activeDirectory").default;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -137,4 +138,5 @@ export declare let Apple: typeof import("../thirdparty/providers/apple").default
 export declare let Discord: typeof import("../thirdparty/providers/discord").default;
 export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
 export declare let Okta: typeof import("../thirdparty/providers/okta").default;
+export declare let ActiveDirectory: typeof import("../thirdparty/providers/activeDirectory").default;
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };

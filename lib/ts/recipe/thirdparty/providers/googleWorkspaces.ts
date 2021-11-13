@@ -27,7 +27,7 @@ type TypeThirdPartyProviderGoogleWorkspacesConfig = {
     isDefault?: boolean;
 };
 
-export default function Google(config: TypeThirdPartyProviderGoogleWorkspacesConfig): TypeProvider {
+export default function GW(config: TypeThirdPartyProviderGoogleWorkspacesConfig): TypeProvider {
     const id = "google-workspaces";
     let domain: string = config.domain === undefined ? "*" : config.domain;
 

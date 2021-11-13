@@ -11,5 +11,5 @@ declare type TypeThirdPartyProviderDiscordConfig = {
     };
     isDefault?: boolean;
 };
-export default function Github(config: TypeThirdPartyProviderDiscordConfig): TypeProvider;
+export default function Discord(config: TypeThirdPartyProviderDiscordConfig): TypeProvider;
 export {};

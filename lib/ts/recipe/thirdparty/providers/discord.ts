@@ -25,7 +25,7 @@ type TypeThirdPartyProviderDiscordConfig = {
     isDefault?: boolean;
 };
 
-export default function Github(config: TypeThirdPartyProviderDiscordConfig): TypeProvider {
+export default function Discord(config: TypeThirdPartyProviderDiscordConfig): TypeProvider {
     const id = "discord";
 
     function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {

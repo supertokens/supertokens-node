@@ -7,6 +7,7 @@ let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/express");
 let { middleware, errorHandler } = require("../../framework/express");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
+let axios = require("axios");
 
 // Change these values if you want to run the server on another adress
 const apiPort = process.env.REACT_APP_API_PORT || 3001;
@@ -102,6 +103,11 @@ supertokens.init({
                     clientId: "4398792-0oa6kpw2hM4SO48oI696",
                     clientSecret: "dNvaVoYBUp5RvYKcXtH7p2kKd94yW_jTOFaoq4CX",
                     oktaDomain: "supertokens.okta.com",
+                }),
+                ThirdPartyEmailPassword.ActiveDirectory({
+                    clientId: "4398792-b82b545b-4506-4d99-96e7-16f50dbd3e85",
+                    clientSecret: "TLi7Q~l.NUqCTlyBykkyTFqHXjpnTFoQSv.E0",
+                    tenantId: "57ca402e-7209-4054-9f96-1617f23051ea",
                 }),
             ],
         }),

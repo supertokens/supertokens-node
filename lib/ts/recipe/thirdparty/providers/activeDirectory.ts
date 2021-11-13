@@ -13,27 +13,25 @@
  * under the License.
  */
 import { TypeProvider, TypeProviderGetResponse } from "../types";
-import axios from "axios";
+import { verifyIdTokenFromJWKSEndpoint } from "./utils";
+import { getActualClientIdFromDevelopmentClientId } from "../api/implementation";
 
-type TypeThirdPartyProviderOktaConfig = {
+type TypeThirdPartyProviderActiveDirectoryWorkspacesConfig = {
     clientId: string;
     clientSecret: string;
     scope?: string[];
+    tenantId: string;
     authorisationRedirect?: {
         params?: { [key: string]: string | ((request: any) => string) };
     };
-    oktaDomain: string;
-    authorizationServerId?: string;
     isDefault?: boolean;
 };
 
-export default function Okta(config: TypeThirdPartyProviderOktaConfig): TypeProvider {
-    const id = "okta";
-    const authorizationServerId = config.authorizationServerId === undefined ? "default" : config.authorizationServerId;
-    const baseUrl = `https://${config.oktaDomain}/oauth2/${authorizationServerId}`;
+export default function AD(config: TypeThirdPartyProviderActiveDirectoryWorkspacesConfig): TypeProvider {
+    const id = "active-directory";
 
     function get(redirectURI: string | undefined, authCodeFromRequest: string | undefined): TypeProviderGetResponse {
-        let accessTokenAPIURL = baseUrl + "/v1/token";
+        let accessTokenAPIURL = `https://login.microsoftonline.com/${config.tenantId}/oauth2/v2.0/token`;
         let accessTokenAPIParams: { [key: string]: string } = {
             client_id: config.clientId,
             client_secret: config.clientSecret,
@@ -45,8 +43,8 @@ export default function Okta(config: TypeThirdPartyProviderOktaConfig): TypeProv
         if (redirectURI !== undefined) {
             accessTokenAPIParams.redirect_uri = redirectURI;
         }
-        let authorisationRedirectURL = baseUrl + "/v1/authorize";
-        let scopes = ["openid", "email"];
+        let authorisationRedirectURL = `https://login.microsoftonline.com/${config.tenantId}/oauth2/v2.0/authorize`;
+        let scopes = ["email", "openid"];
         if (config.scope !== undefined) {
             scopes = config.scope;
             scopes = Array.from(new Set(scopes));
@@ -57,31 +55,34 @@ export default function Okta(config: TypeThirdPartyProviderOktaConfig): TypeProv
                 : config.authorisationRedirect.params;
         let authorizationRedirectParams: { [key: string]: string } = {
             scope: scopes.join(" "),
-            client_id: config.clientId,
             response_type: "code",
+            client_id: config.clientId,
             ...additionalParams,
         };
 
-        async function getProfileInfo(accessTokenAPIResponse: {
-            access_token: string;
-            expires_in: number;
-            token_type: string;
-        }) {
-            let accessToken = accessTokenAPIResponse.access_token;
-            let authHeader = `Bearer ${accessToken}`;
-            let response = await axios({
-                method: "get",
-                url: baseUrl + "/v1/userinfo",
-                headers: {
-                    Authorization: authHeader,
-                },
-            });
-            let userInfo = response.data;
+        async function getProfileInfo(authCodeResponse: { id_token: string }) {
+            let payload: any = await verifyIdTokenFromJWKSEndpoint(
+                authCodeResponse.id_token,
+                `https://login.microsoftonline.com/${config.tenantId}/discovery/v2.0/keys`,
+                {
+                    audience: getActualClientIdFromDevelopmentClientId(config.clientId),
+                    issuer: [`https://login.microsoftonline.com/${config.tenantId}/v2.0`],
+                }
+            );
+
+            if (payload.email === undefined) {
+                throw new Error("Could not get email. Please use a different login method");
+            }
+
+            if (payload.tid !== config.tenantId) {
+                throw new Error("Incorrect tenantId used for signing in.");
+            }
+
             return {
-                id: userInfo.sub,
+                id: payload.sub,
                 email: {
-                    id: userInfo.email,
-                    isVerified: userInfo.email_verified,
+                    id: "example@email.com",
+                    isVerified: true,
                 },
             };
         }
