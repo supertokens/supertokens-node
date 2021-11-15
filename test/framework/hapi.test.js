@@ -19,6 +19,7 @@ let SuperTokens = require("../../");
 let HapiFramework = require("../../framework/hapi");
 const Hapi = require("@hapi/hapi");
 let Session = require("../../recipe/session");
+let EmailPassword = require("../../recipe/emailpassword");
 let { verifySession } = require("../../recipe/session/framework/hapi");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
@@ -1321,5 +1322,49 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             },
         });
         assert.strictEqual(invalidSessionResponse.result.success, true);
+    });
+
+    it("sending custom response hapi", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "hapi",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async function (input) {
+                                    input.options.res.sendJSONResponse({
+                                        custom: true,
+                                    });
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        await this.server.register(HapiFramework.plugin);
+
+        await this.server.initialize();
+
+        let response = await this.server.inject({
+            method: "get",
+            url: "/auth/signup/email/exists?email=test@example.com",
+        });
+
+        assert(response.result.custom);
     });
 });

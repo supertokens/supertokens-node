@@ -179,4 +179,54 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         );
         assert(response.status === 404);
     });
+
+    it("custom response express", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async function (input) {
+                                    input.options.res.sendJSONResponse({
+                                        custom: true,
+                                    });
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.body.custom);
+    });
 });
