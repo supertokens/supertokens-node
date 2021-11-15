@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 -   Changes `sendJSONResponse to not allow setting of result if it has already been set
+-   AWS lambda middleware will return `404` response if the API route is not served by the middleware and user has not passed a handler.
 
 ## [8.1.1] - 2021-11-08
 
