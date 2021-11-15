@@ -207,9 +207,11 @@ export class AWSResponse extends BaseResponse {
     };
 
     sendJSONResponse = (content: any) => {
-        this.content = JSON.stringify(content);
-        this.setHeader("Context-Type", "application/json", false);
-        this.responseSet = true;
+        if (!this.responseSet) {
+            this.content = JSON.stringify(content);
+            this.setHeader("Context-Type", "application/json", false);
+            this.responseSet = true;
+        }
     };
 
     sendResponse = (response: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2) => {

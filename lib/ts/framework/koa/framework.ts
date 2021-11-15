@@ -95,6 +95,7 @@ async function parseURLEncodedFormData(ctx: Context) {
 
 export class KoaResponse extends BaseResponse {
     private ctx: Context;
+    public responseSet: boolean = false;
 
     constructor(ctx: Context) {
         super();
@@ -153,7 +154,10 @@ export class KoaResponse extends BaseResponse {
     };
 
     sendJSONResponse = (content: any) => {
-        this.ctx.body = content;
+        if (!this.responseSet) {
+            this.ctx.body = content;
+            this.responseSet = true;
+        }
     };
 }
 

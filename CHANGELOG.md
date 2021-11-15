@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Sign in with Discord, Google workspaces, Active directory and Okta.
 -   If `getProfileInfo` throws an error, then it is sent as a FIELD_ERROR to the frontend
 
+### Changed
+
+-   Changes `sendJSONResponse to not allow setting of result if it has already been set
+
 ## [8.1.1] - 2021-11-08
 
 ### Changes

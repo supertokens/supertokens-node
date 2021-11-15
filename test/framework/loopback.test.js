@@ -18,6 +18,7 @@ let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../..");
 let { middleware } = require("../../framework/awsLambda");
 let Session = require("../../recipe/session");
+let EmailPassword = require("../../recipe/emailpassword");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
 const request = require("supertest");
 const axios = require("axios").default;
@@ -195,5 +196,47 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
         assert(sessionRevokedResponseExtracted.refreshToken === "");
         assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
         assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
+    });
+
+    it("sending custom response", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "loopback",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async function (input) {
+                                    input.options.res.sendJSONResponse({
+                                        custom: true,
+                                    });
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        await this.app.start();
+
+        let result = await axios({
+            url: "/auth/signup/email/exists?email=test@example.com",
+            baseURL: "http://localhost:9876",
+            method: "get",
+        });
+        assert(result.data.custom);
     });
 });

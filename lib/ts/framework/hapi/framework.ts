@@ -138,8 +138,10 @@ export class HapiResponse extends BaseResponse {
      * @param {any} content
      */
     sendJSONResponse = (content: any) => {
-        this.content = content;
-        this.responseSet = true;
+        if (!this.responseSet) {
+            this.content = content;
+            this.responseSet = true;
+        }
     };
 
     sendResponse = (overwriteHeaders = false): ResponseObject => {
