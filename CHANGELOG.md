@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 .
 
+## [8.2.0] - 2021-11-15
+
+### Added
+
+-   Sign in with Discord, Google workspaces, Active directory and Okta.
+-   If `getProfileInfo` throws an error, then it is sent as a FIELD_ERROR to the frontend
+
 ## [8.1.1] - 2021-11-08
 
 ### Changes

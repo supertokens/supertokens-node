@@ -128,7 +128,17 @@ export default function getAPIInterface(): APIInterface {
                 });
             }
 
-            userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data);
+            try {
+                userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data);
+            } catch (err) {
+                if ((err as any).message !== undefined) {
+                    return {
+                        status: "FIELD_ERROR",
+                        error: (err as any).message,
+                    };
+                }
+                throw err;
+            }
 
             let emailInfo = userInfo.email;
             if (emailInfo === undefined) {

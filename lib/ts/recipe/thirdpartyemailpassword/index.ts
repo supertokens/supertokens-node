@@ -122,6 +122,14 @@ export default class Wrapper {
     static Facebook = thirdPartyProviders.Facebook;
 
     static Apple = thirdPartyProviders.Apple;
+
+    static Discord = thirdPartyProviders.Discord;
+
+    static GoogleWorkspaces = thirdPartyProviders.GoogleWorkspaces;
+
+    static Okta = thirdPartyProviders.Okta;
+
+    static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
 }
 
 export let init = Wrapper.init;
@@ -163,5 +171,13 @@ export let Github = Wrapper.Github;
 export let Facebook = Wrapper.Facebook;
 
 export let Apple = Wrapper.Apple;
+
+export let Discord = Wrapper.Discord;
+
+export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
+
+export let Okta = Wrapper.Okta;
+
+export let ActiveDirectory = Wrapper.ActiveDirectory;
 
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
