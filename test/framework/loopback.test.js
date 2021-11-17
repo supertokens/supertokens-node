@@ -217,6 +217,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
                             return {
                                 ...oI,
                                 emailExistsGET: async function (input) {
+                                    input.options.res.setStatusCode(203);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
@@ -237,6 +238,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
             baseURL: "http://localhost:9876",
             method: "get",
         });
+        assert(result.status === 203);
         assert(result.data.custom);
     });
 });

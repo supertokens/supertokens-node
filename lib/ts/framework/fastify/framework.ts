@@ -138,7 +138,9 @@ export class FastifyResponse extends BaseResponse {
      * @param {number} statusCode
      */
     setStatusCode = (statusCode: number) => {
-        this.statusCode = statusCode;
+        if (!this.response.sent) {
+            this.statusCode = statusCode;
+        }
     };
 
     /**

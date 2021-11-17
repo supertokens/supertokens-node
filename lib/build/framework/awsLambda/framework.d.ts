@@ -53,6 +53,7 @@ export declare class AWSResponse extends BaseResponse {
     private event;
     private content;
     responseSet: boolean;
+    statusSet: boolean;
     constructor(event: SupertokensLambdaEvent | SupertokensLambdaEventV2);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;

@@ -1589,6 +1589,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                             return {
                                 ...oI,
                                 emailExistsGET: async function (input) {
+                                    input.options.res.setStatusCode(203);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
@@ -1609,7 +1610,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         let response = await new Promise((resolve) =>
             request(this.server)
                 .get("/auth/signup/email/exists?email=test@example.com")
-                .expect(200)
+                .expect(203)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);

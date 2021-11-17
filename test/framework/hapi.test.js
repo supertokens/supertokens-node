@@ -1343,6 +1343,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                             return {
                                 ...oI,
                                 emailExistsGET: async function (input) {
+                                    input.options.res.setStatusCode(203);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
@@ -1365,6 +1366,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             url: "/auth/signup/email/exists?email=test@example.com",
         });
 
+        assert(response.statusCode === 203);
         assert(response.result.custom);
     });
 });

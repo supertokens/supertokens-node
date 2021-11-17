@@ -78,6 +78,7 @@ export class HapiResponse extends BaseResponse {
     private statusCode: number;
     private content: any;
     public responseSet: boolean;
+    public statusSet = false;
 
     constructor(response: ExtendedResponseToolkit) {
         super();
@@ -133,7 +134,10 @@ export class HapiResponse extends BaseResponse {
      * @param {number} statusCode
      */
     setStatusCode = (statusCode: number) => {
-        this.statusCode = statusCode;
+        if (!this.statusSet) {
+            this.statusCode = statusCode;
+            this.statusSet = true;
+        }
     };
 
     /**

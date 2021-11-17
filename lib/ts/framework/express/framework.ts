@@ -126,7 +126,9 @@ export class ExpressResponse extends BaseResponse {
      * @param {number} statusCode
      */
     setStatusCode = (statusCode: number) => {
-        this.statusCode = statusCode;
+        if (!this.response.writableEnded) {
+            this.statusCode = statusCode;
+        }
     };
 
     sendJSONResponse = (content: any) => {

@@ -155,6 +155,7 @@ export class AWSResponse extends BaseResponse {
     private event: SupertokensLambdaEvent | SupertokensLambdaEventV2;
     private content: string;
     public responseSet: boolean;
+    public statusSet: boolean;
 
     constructor(event: SupertokensLambdaEvent | SupertokensLambdaEventV2) {
         super();
@@ -163,6 +164,7 @@ export class AWSResponse extends BaseResponse {
         this.statusCode = 200;
         this.content = JSON.stringify({});
         this.responseSet = false;
+        this.statusSet = false;
         this.event.supertokens = {
             response: {
                 headers: [],
@@ -205,7 +207,10 @@ export class AWSResponse extends BaseResponse {
      * @param {number} statusCode
      */
     setStatusCode = (statusCode: number) => {
-        this.statusCode = statusCode;
+        if (!this.statusSet) {
+            this.statusCode = statusCode;
+            this.statusSet = true;
+        }
     };
 
     sendJSONResponse = (content: any) => {

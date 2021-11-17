@@ -1313,6 +1313,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                             return {
                                 ...oI,
                                 emailExistsGET: async function (input) {
+                                    input.options.res.setStatusCode(203);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
@@ -1333,6 +1334,8 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             method: "get",
             url: "/auth/signup/email/exists?email=test@example.com",
         });
+
+        assert(response.statusCode === 203);
 
         assert(JSON.parse(response.body).custom);
     });

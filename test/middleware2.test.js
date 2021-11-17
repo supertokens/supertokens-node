@@ -199,6 +199,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                             return {
                                 ...oI,
                                 emailExistsGET: async function (input) {
+                                    input.options.res.setStatusCode(201);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
@@ -219,6 +220,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         let response = await new Promise((resolve) =>
             request(app)
                 .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(201)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
@@ -227,6 +229,7 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
                     }
                 })
         );
+
         assert(response.body.custom);
     });
 });

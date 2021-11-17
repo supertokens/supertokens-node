@@ -410,6 +410,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
                             return {
                                 ...oI,
                                 emailExistsGET: async function (input) {
+                                    input.options.res.setStatusCode(203);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
@@ -428,6 +429,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
             email: "test@example.com",
         });
         let result = await middleware()(event, undefined);
+        assert(result.statusCode === 203);
         assert(JSON.parse(result.body).custom);
     });
 });
