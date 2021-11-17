@@ -172,9 +172,11 @@ export class AWSResponse extends BaseResponse {
     }
 
     sendHTMLResponse = (html: string) => {
-        this.content = html;
-        this.setHeader("Content-Type", "text/html", false);
-        this.responseSet = true;
+        if (!this.responseSet) {
+            this.content = html;
+            this.setHeader("Content-Type", "text/html", false);
+            this.responseSet = true;
+        }
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {

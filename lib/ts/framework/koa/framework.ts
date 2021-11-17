@@ -104,8 +104,11 @@ export class KoaResponse extends BaseResponse {
     }
 
     sendHTMLResponse = (html: string) => {
-        this.ctx.set("content-type", "text/html");
-        this.ctx.body = html;
+        if (!this.responseSet) {
+            this.ctx.set("content-type", "text/html");
+            this.ctx.body = html;
+            this.responseSet = true;
+        }
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
