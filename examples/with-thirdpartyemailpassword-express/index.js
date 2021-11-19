@@ -99,16 +99,16 @@ supertokens.init({
                     clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
                     clientSecret: "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",
                 }),
-                ThirdPartyEmailPassword.Okta({
-                    clientId: "4398792-0oa6kpw2hM4SO48oI696",
-                    clientSecret: "dNvaVoYBUp5RvYKcXtH7p2kKd94yW_jTOFaoq4CX",
-                    oktaDomain: "supertokens.okta.com",
-                }),
-                ThirdPartyEmailPassword.ActiveDirectory({
-                    clientId: "4398792-b82b545b-4506-4d99-96e7-16f50dbd3e85",
-                    clientSecret: "TLi7Q~l.NUqCTlyBykkyTFqHXjpnTFoQSv.E0",
-                    tenantId: "57ca402e-7209-4054-9f96-1617f23051ea",
-                }),
+                // ThirdPartyEmailPassword.Okta({
+                //     clientId: "4398792-0oa6kpw2hM4SO48oI696",
+                //     clientSecret: "dNvaVoYBUp5RvYKcXtH7p2kKd94yW_jTOFaoq4CX",
+                //     oktaDomain: "supertokens.okta.com",
+                // }),
+                // ThirdPartyEmailPassword.ActiveDirectory({
+                //     clientId: "4398792-b82b545b-4506-4d99-96e7-16f50dbd3e85",
+                //     clientSecret: "TLi7Q~l.NUqCTlyBykkyTFqHXjpnTFoQSv.E0",
+                //     tenantId: "57ca402e-7209-4054-9f96-1617f23051ea",
+                // }),
             ],
         }),
         Session.init(),
