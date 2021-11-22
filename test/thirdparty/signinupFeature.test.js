@@ -768,8 +768,8 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                     }
                 })
         );
-        assert.strictEqual(response1.statusCode, 500);
-        assert.deepStrictEqual(response1.body, { message: "error from getProfileInfo" });
+        assert.strictEqual(response1.statusCode, 200);
+        assert.deepStrictEqual(response1.body, { status: "FIELD_ERROR", error: "error from getProfileInfo" });
     });
 
     it("test invalid POST params for thirdparty module", async function () {
