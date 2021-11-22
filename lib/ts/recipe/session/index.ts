@@ -80,6 +80,30 @@ export default class SessionWrapper {
             newAccessTokenPayload,
         });
     }
+
+    static createJWT(payload?: any, validitySeconds?: number) {
+        let jwtRecipe = Recipe.getInstanceOrThrowError().jwtRecipe;
+
+        if (jwtRecipe !== undefined) {
+            return jwtRecipe.recipeInterfaceImpl.createJWT({ payload, validitySeconds });
+        }
+
+        throw new global.Error(
+            "createJWT cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
+        );
+    }
+
+    static getJWKS() {
+        let jwtRecipe = Recipe.getInstanceOrThrowError().jwtRecipe;
+
+        if (jwtRecipe !== undefined) {
+            return jwtRecipe.recipeInterfaceImpl.getJWKS();
+        }
+
+        throw new global.Error(
+            "getJWKS cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
+        );
+    }
 }
 
 export let init = SessionWrapper.init;
@@ -105,5 +129,10 @@ export let updateSessionData = SessionWrapper.updateSessionData;
 export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
 
 export let Error = SessionWrapper.Error;
+
+// JWT Functions
+export let createJWT = SessionWrapper.createJWT;
+
+export let getJWKS = SessionWrapper.getJWKS;
 
 export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation };
