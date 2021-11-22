@@ -1,29 +1,47 @@
-import SessionClass from "../sessionClass";
-import { Helpers } from "../recipeImplementation";
-import { BaseResponse } from "../../../framework";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
+import { SessionContainerInterface } from "../types";
 
-export default class SessionClassWithJWT extends SessionClass {
+export default class SessionClassWithJWT implements SessionContainerInterface {
     private jwtRecipeImplementation: JWTRecipeInterface;
+    private originalSessionClass: SessionContainerInterface;
 
-    constructor(
-        helpers: Helpers,
-        accessToken: string,
-        sessionHandle: string,
-        userId: string,
-        userDataInAccessToken: any,
-        res: BaseResponse,
-        jwtRecipeImplementation: JWTRecipeInterface
-    ) {
-        super(helpers, accessToken, sessionHandle, userId, userDataInAccessToken, res);
+    constructor(originalSessionClass: SessionContainerInterface, jwtRecipeImplementation: JWTRecipeInterface) {
         this.jwtRecipeImplementation = jwtRecipeImplementation;
+        this.originalSessionClass = originalSessionClass;
+    }
+    revokeSession(): Promise<void> {
+        return this.originalSessionClass.revokeSession();
+    }
+    getSessionData(): Promise<any> {
+        return this.originalSessionClass.getSessionData();
+    }
+    updateSessionData(newSessionData: any): Promise<any> {
+        return this.originalSessionClass.updateSessionData(newSessionData);
+    }
+    getUserId(): string {
+        return this.originalSessionClass.getUserId();
+    }
+    getAccessTokenPayload() {
+        return this.originalSessionClass.getAccessTokenPayload();
+    }
+    getHandle(): string {
+        return this.originalSessionClass.getHandle();
+    }
+    getAccessToken(): string {
+        return this.originalSessionClass.getAccessToken();
+    }
+    getTimeCreated(): Promise<number> {
+        return this.originalSessionClass.getTimeCreated();
+    }
+    getExpiry(): Promise<number> {
+        return this.originalSessionClass.getExpiry();
     }
 
-    updateAccessTokenPayload = async (newAccessTokenPayload: any) => {
-        let existingJWT = super.getAccessTokenPayload();
+    updateAccessTokenPayload = async (newAccessTokenPayload: any): Promise<void> => {
+        let existingJWT = this.getAccessTokenPayload();
 
         if (existingJWT === undefined) {
-            return super.updateAccessTokenPayload(newAccessTokenPayload);
+            return this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);
         }
 
         let currentTimeInSeconds = Date.now() / 1000;
@@ -45,7 +63,7 @@ export default class SessionClassWithJWT extends SessionClass {
             jwt: newJWTResponse.jwt,
         };
 
-        return await super.updateAccessTokenPayload({
+        return await this.originalSessionClass.updateAccessTokenPayload({
             newAccessTokenPayload,
         });
     };

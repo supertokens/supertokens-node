@@ -1303,7 +1303,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             },
             recipeList: [Session.init()],
         });
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWTFeature, false);
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWT, false);
     });
 
     it("Test that the jwt feature is disabled when explicitly set to false", async function () {
@@ -1317,9 +1317,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ enableJWTFeature: false })],
+            recipeList: [Session.init({ enableJWT: false })],
         });
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWTFeature, false);
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWT, false);
     });
 
     it("Test that the jwt feature is enabled when explicitly set to true", async function () {
@@ -1333,9 +1333,9 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ enableJWTFeature: true })],
+            recipeList: [Session.init({ enableJWT: true })],
         });
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWTFeature, true);
+        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWT, true);
     });
 
     it("testing getTopLevelDomainForSameSiteResolution function", async function () {

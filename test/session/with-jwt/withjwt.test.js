@@ -48,7 +48,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
-                    enableJWTFeature: true,
+                    enableJWT: true,
                     override: {
                         functions: function (oi) {
                             return {
@@ -127,7 +127,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
-                    enableJWTFeature: true,
+                    enableJWT: true,
                     override: {
                         functions: function (oi) {
                             return {
@@ -206,7 +206,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
-                    enableJWTFeature: true,
+                    enableJWT: true,
                     override: {
                         functions: function (oi) {
                             return {
@@ -271,10 +271,6 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
 
         let jwtPayload = sessionInformation.accessTokenPayload.jwt.split(".")[1];
         let jwtExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
-        let expiryDiff = jwtExpiryInSeconds - accessTokenExpiryInSeconds;
-
-        // We check that JWT expiry is 30 seconds more than access token expiry. Accounting for a 5ms skew
-        assert(27 <= expiryDiff && expiryDiff <= 32);
 
         let delay = 5;
         await new Promise((res) => {
@@ -283,7 +279,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             }, delay * 1000);
         });
 
-        let res2 = await new Promise((resolve) =>
+        let refreshResponse = await new Promise((resolve) =>
             request(app)
                 .post("/auth/session/refresh")
                 .set("Cookie", [
@@ -299,31 +295,20 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                 })
         );
 
-        let getSessionResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/create")
-                .expect(200)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-
-        sessionHandle = getSessionResponse.body.sessionHandle;
-        responseInfo = extractInfoFromResponse(getSessionResponse);
+        responseInfo = extractInfoFromResponse(refreshResponse);
         accessTokenExpiryInSeconds = new Date(responseInfo.accessTokenExpiry).getTime() / 1000;
         sessionInformation = await Session.getSessionInformation(sessionHandle);
         jwtPayload = sessionInformation.accessTokenPayload.jwt.split(".")[1];
         let newJWTExpiryInSeconds = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8")).exp;
 
-        // Make sure that the new expiry is greater than the old one by the amount of delay before refresh
-        assert.equal(newJWTExpiryInSeconds - jwtExpiryInSeconds, delay);
+        // Make sure that the new expiry is greater than the old one by the amount of delay before refresh, accounting for a second skew
+        assert(
+            newJWTExpiryInSeconds - jwtExpiryInSeconds === delay ||
+                newJWTExpiryInSeconds - jwtExpiryInSeconds === delay + 1
+        );
     });
 
-    it.only("Test that when updating access token payload, jwt expiry does not change", async function () {
+    it("Test that when updating access token payload, jwt expiry does not change", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -336,7 +321,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
             },
             recipeList: [
                 Session.init({
-                    enableJWTFeature: true,
+                    enableJWT: true,
                     override: {
                         functions: function (oi) {
                             return {

@@ -64,9 +64,7 @@ export default class SessionRecipe extends RecipeModule {
                     return RecipeImplementationWithJWT(
                         oI,
                         // this.jwtRecipe is never undefined here
-                        this.jwtRecipe!.recipeInterfaceImpl,
-                        this.config,
-                        Querier.getNewInstanceOrThrowError(recipeId)
+                        this.jwtRecipe!.recipeInterfaceImpl
                     );
                 })
                 .override(this.config.override.functions)

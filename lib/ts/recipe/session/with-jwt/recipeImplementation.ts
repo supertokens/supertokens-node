@@ -12,66 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import * as JsonWebToken from "jsonwebtoken";
+
 import { RecipeInterface } from "../";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
-import { SessionContainerInterface, TypeNormalisedInput, KeyInfo, VerifySessionOptions } from "../types";
+import { SessionContainerInterface, VerifySessionOptions } from "../types";
 import SessionClassWithJWT from "./sessionClass";
-import { HandshakeInfo, Helpers } from "../recipeImplementation";
-import { ProcessState, PROCESS_STATE } from "../../../processState";
-import NormalisedURLPath from "../../../normalisedURLPath";
-import { Querier } from "../../../querier";
 
 export default function (
     originalImplementation: RecipeInterface,
-    jwtRecipeImplementation: JWTRecipeInterface,
-    config: TypeNormalisedInput,
-    querier: Querier
+    jwtRecipeImplementation: JWTRecipeInterface
 ): RecipeInterface {
     // Time difference between JWT expiry and access token expiry (JWT expiry = access token expiry + EXPIRY_OFFSET_SECONDS)
     const EXPIRY_OFFSET_SECONDS = 30;
-    let handshakeInfo: undefined | HandshakeInfo;
-
-    // TODO: See if this duplication for helper can be avoided
-    async function getHandshakeInfo(forceRefetch = false): Promise<HandshakeInfo> {
-        if (handshakeInfo === undefined || handshakeInfo.getJwtSigningPublicKeyList().length === 0 || forceRefetch) {
-            let antiCsrf = config.antiCsrf;
-            ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_GET_HANDSHAKE_INFO);
-            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/handshake"), {});
-
-            handshakeInfo = new HandshakeInfo(
-                antiCsrf,
-                response.accessTokenBlacklistingEnabled,
-                response.accessTokenValidity,
-                response.refreshTokenValidity,
-                response.jwtSigningPublicKeyList
-            );
-
-            updateJwtSigningPublicKeyInfo(
-                response.jwtSigningPublicKeyList,
-                response.jwtSigningPublicKey,
-                response.jwtSigningPublicKeyExpiryTime
-            );
-        }
-        return handshakeInfo;
-    }
-
-    function updateJwtSigningPublicKeyInfo(keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) {
-        if (keyList === undefined) {
-            // Setting createdAt to Date.now() emulates the old lastUpdatedAt logic
-            keyList = [{ publicKey, expiryTime, createdAt: Date.now() }];
-        }
-
-        if (handshakeInfo !== undefined) {
-            handshakeInfo.setJwtSigningPublicKeyList(keyList);
-        }
-    }
-
-    let helpers: Helpers = {
-        querier,
-        updateJwtSigningPublicKeyInfo,
-        getHandshakeInfo,
-        config,
-    };
 
     function getJWTExpiry(accessTokenExpiry: number): number {
         return accessTokenExpiry + EXPIRY_OFFSET_SECONDS;
@@ -113,22 +66,14 @@ export default function (
                 jwt: jwtResponse.jwt,
             };
 
-            let sessionContainer = await this.createNewSession({
+            let sessionContainer = await originalImplementation.createNewSession({
                 res,
                 userId,
                 accessTokenPayload,
                 sessionData,
             });
 
-            return new SessionClassWithJWT(
-                helpers,
-                sessionContainer.getAccessToken(),
-                sessionContainer.getHandle(),
-                sessionContainer.getUserId(),
-                sessionContainer.getAccessTokenPayload(),
-                res,
-                jwtRecipeImplementation
-            );
+            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation);
         },
         getSession: async function ({
             req,
@@ -139,27 +84,19 @@ export default function (
             res: any;
             options?: VerifySessionOptions;
         }): Promise<SessionContainerInterface | undefined> {
-            let sessionContainer = await this.getSession({ req, res, options });
+            let sessionContainer = await originalImplementation.getSession({ req, res, options });
 
             if (sessionContainer === undefined) {
                 return undefined;
             }
 
-            return new SessionClassWithJWT(
-                helpers,
-                sessionContainer.getAccessToken(),
-                sessionContainer.getHandle(),
-                sessionContainer.getUserId(),
-                sessionContainer.getAccessTokenPayload(),
-                res,
-                jwtRecipeImplementation
-            );
+            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation);
         },
         refreshSession: async function ({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
 
             // Refresh session first because this will create a new access token
-            let newSession = await this.refreshSession({ req, res });
+            let newSession = await originalImplementation.refreshSession({ req, res });
             let accessTokenPayload = newSession.getAccessTokenPayload();
 
             // Remove the old jwt
@@ -182,15 +119,7 @@ export default function (
 
             await newSession.updateAccessTokenPayload(accessTokenPayload);
 
-            return new SessionClassWithJWT(
-                helpers,
-                newSession.getAccessToken(),
-                newSession.getHandle(),
-                newSession.getUserId(),
-                newSession.getAccessTokenPayload(),
-                res,
-                jwtRecipeImplementation
-            );
+            return new SessionClassWithJWT(newSession, jwtRecipeImplementation);
         },
         updateAccessTokenPayload: async function ({
             sessionHandle,
@@ -203,7 +132,7 @@ export default function (
             let existingJWT = sessionInformation.accessTokenPayload.jwt;
 
             if (existingJWT === undefined) {
-                return await this.updateAccessTokenPayload({
+                return await originalImplementation.updateAccessTokenPayload({
                     sessionHandle,
                     newAccessTokenPayload,
                 });
@@ -211,9 +140,14 @@ export default function (
 
             // Get the validity of the current JWT
             let currentTimeInSeconds = Date.now() / 1000;
-            let existingJWTValidity =
-                JSON.parse(Buffer.from(existingJWT.split(".")[1], "base64").toString("utf-8")).exp -
-                currentTimeInSeconds;
+            let decodedPayload = JsonWebToken.decode(existingJWT, { json: true });
+
+            // JsonWebToken.decode possibly returns null
+            if (decodedPayload === null) {
+                throw new Error("Error reading JWT from session");
+            }
+
+            let existingJWTValidity = decodedPayload.exp - currentTimeInSeconds;
 
             let newJWTResponse = await jwtRecipeImplementation.createJWT({
                 payload: newAccessTokenPayload,
@@ -230,7 +164,7 @@ export default function (
                 jwt: newJWTResponse.jwt,
             };
 
-            return await this.updateAccessTokenPayload({
+            return await originalImplementation.updateAccessTokenPayload({
                 sessionHandle,
                 newAccessTokenPayload,
             });
