@@ -1,10 +1,15 @@
 // @ts-nocheck
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
-import { SessionContainerInterface } from "../types";
+import { SessionContainerInterface, TypeNormalisedInput } from "../types";
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private jwtRecipeImplementation;
     private originalSessionClass;
-    constructor(originalSessionClass: SessionContainerInterface, jwtRecipeImplementation: JWTRecipeInterface);
+    private config;
+    constructor(
+        originalSessionClass: SessionContainerInterface,
+        jwtRecipeImplementation: JWTRecipeInterface,
+        config: TypeNormalisedInput
+    );
     revokeSession(): Promise<void>;
     getSessionData(): Promise<any>;
     updateSessionData(newSessionData: any): Promise<any>;

@@ -226,6 +226,7 @@ export function validateAndNormaliseUserInput(
         antiCsrf,
         override,
         enableJWT,
+        jwtKey: config?.jwtKey ?? "jwt",
     };
 }
 

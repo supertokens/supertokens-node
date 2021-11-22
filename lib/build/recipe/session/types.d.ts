@@ -71,6 +71,7 @@ export declare type TypeInput = {
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     enableJWT?: boolean;
+    jwtKey?: string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -122,6 +123,9 @@ export declare const InputSchema: {
         enableJWT: {
             type: string;
         };
+        jwtKey: {
+            type: string;
+        };
         override: {
             type: string;
         };
@@ -137,6 +141,7 @@ export declare type TypeNormalisedInput = {
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
     enableJWT: boolean;
+    jwtKey: string;
     override: {
         functions: (
             originalImplementation: RecipeInterface,

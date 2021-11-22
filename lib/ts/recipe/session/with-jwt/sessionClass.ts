@@ -1,13 +1,19 @@
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
-import { SessionContainerInterface } from "../types";
+import { SessionContainerInterface, TypeNormalisedInput } from "../types";
 
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private jwtRecipeImplementation: JWTRecipeInterface;
     private originalSessionClass: SessionContainerInterface;
+    private config: TypeNormalisedInput;
 
-    constructor(originalSessionClass: SessionContainerInterface, jwtRecipeImplementation: JWTRecipeInterface) {
+    constructor(
+        originalSessionClass: SessionContainerInterface,
+        jwtRecipeImplementation: JWTRecipeInterface,
+        config: TypeNormalisedInput
+    ) {
         this.jwtRecipeImplementation = jwtRecipeImplementation;
         this.originalSessionClass = originalSessionClass;
+        this.config = config;
     }
     revokeSession(): Promise<void> {
         return this.originalSessionClass.revokeSession();
@@ -38,7 +44,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     }
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any): Promise<void> => {
-        let existingJWT = this.getAccessTokenPayload();
+        let existingJWT = this.getAccessTokenPayload()[this.config.jwtKey];
 
         if (existingJWT === undefined) {
             return this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);
@@ -60,7 +66,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
 
         newAccessTokenPayload = {
             ...newAccessTokenPayload,
-            jwt: newJWTResponse.jwt,
+            [this.config.jwtKey]: newJWTResponse.jwt,
         };
 
         return await this.originalSessionClass.updateAccessTokenPayload({

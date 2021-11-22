@@ -16,12 +16,13 @@ import * as JsonWebToken from "jsonwebtoken";
 
 import { RecipeInterface } from "../";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
-import { SessionContainerInterface, VerifySessionOptions } from "../types";
+import { SessionContainerInterface, TypeNormalisedInput, VerifySessionOptions } from "../types";
 import SessionClassWithJWT from "./sessionClass";
 
 export default function (
     originalImplementation: RecipeInterface,
-    jwtRecipeImplementation: JWTRecipeInterface
+    jwtRecipeImplementation: JWTRecipeInterface,
+    config: TypeNormalisedInput
 ): RecipeInterface {
     // Time difference between JWT expiry and access token expiry (JWT expiry = access token expiry + EXPIRY_OFFSET_SECONDS)
     const EXPIRY_OFFSET_SECONDS = 30;
@@ -63,7 +64,7 @@ export default function (
 
             accessTokenPayload = {
                 ...accessTokenPayload,
-                jwt: jwtResponse.jwt,
+                [config.jwtKey]: jwtResponse.jwt,
             };
 
             let sessionContainer = await originalImplementation.createNewSession({
@@ -73,7 +74,7 @@ export default function (
                 sessionData,
             });
 
-            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation);
+            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation, config);
         },
         getSession: async function ({
             req,
@@ -90,7 +91,7 @@ export default function (
                 return undefined;
             }
 
-            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation);
+            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation, config);
         },
         refreshSession: async function ({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
@@ -100,7 +101,7 @@ export default function (
             let accessTokenPayload = newSession.getAccessTokenPayload();
 
             // Remove the old jwt
-            delete accessTokenPayload.jwt;
+            delete accessTokenPayload[config.jwtKey];
 
             let jwtResponse = await jwtRecipeImplementation.createJWT({
                 payload: accessTokenPayload,
@@ -114,12 +115,12 @@ export default function (
 
             accessTokenPayload = {
                 ...accessTokenPayload,
-                jwt: jwtResponse.jwt,
+                [config.jwtKey]: jwtResponse.jwt,
             };
 
             await newSession.updateAccessTokenPayload(accessTokenPayload);
 
-            return new SessionClassWithJWT(newSession, jwtRecipeImplementation);
+            return new SessionClassWithJWT(newSession, jwtRecipeImplementation, config);
         },
         updateAccessTokenPayload: async function ({
             sessionHandle,
@@ -129,7 +130,7 @@ export default function (
             newAccessTokenPayload: any;
         }): Promise<void> {
             let sessionInformation = await this.getSessionInformation({ sessionHandle });
-            let existingJWT = sessionInformation.accessTokenPayload.jwt;
+            let existingJWT = sessionInformation.accessTokenPayload[config.jwtKey];
 
             if (existingJWT === undefined) {
                 return await originalImplementation.updateAccessTokenPayload({
@@ -161,7 +162,7 @@ export default function (
 
             newAccessTokenPayload = {
                 ...newAccessTokenPayload,
-                jwt: newJWTResponse.jwt,
+                [config.jwtKey]: newJWTResponse.jwt,
             };
 
             return await originalImplementation.updateAccessTokenPayload({
