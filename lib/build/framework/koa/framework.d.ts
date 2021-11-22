@@ -20,6 +20,8 @@ export declare class KoaRequest extends BaseRequest {
 }
 export declare class KoaResponse extends BaseResponse {
     private ctx;
+    responseSet: boolean;
+    statusSet: boolean;
     constructor(ctx: Context);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;

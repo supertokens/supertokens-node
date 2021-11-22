@@ -95,6 +95,8 @@ async function parseURLEncodedFormData(ctx: Context) {
 
 export class KoaResponse extends BaseResponse {
     private ctx: Context;
+    public responseSet: boolean = false;
+    public statusSet = false;
 
     constructor(ctx: Context) {
         super();
@@ -103,8 +105,11 @@ export class KoaResponse extends BaseResponse {
     }
 
     sendHTMLResponse = (html: string) => {
-        this.ctx.set("content-type", "text/html");
-        this.ctx.body = html;
+        if (!this.responseSet) {
+            this.ctx.set("content-type", "text/html");
+            this.ctx.body = html;
+            this.responseSet = true;
+        }
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
@@ -149,11 +154,17 @@ export class KoaResponse extends BaseResponse {
      * @param {number} statusCode
      */
     setStatusCode = (statusCode: number) => {
-        this.ctx.status = statusCode;
+        if (!this.statusSet) {
+            this.ctx.status = statusCode;
+            this.statusSet = true;
+        }
     };
 
     sendJSONResponse = (content: any) => {
-        this.ctx.body = content;
+        if (!this.responseSet) {
+            this.ctx.body = content;
+            this.responseSet = true;
+        }
     };
 }
 

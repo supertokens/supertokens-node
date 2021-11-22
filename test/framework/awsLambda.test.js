@@ -27,6 +27,7 @@ let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
 let { middleware } = require("../../framework/awsLambda");
 let Session = require("../../recipe/session");
+let EmailPassword = require("../../recipe/emailpassword");
 let { verifySession } = require("../../recipe/session/framework/awsLambda");
 
 describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, function () {
@@ -387,5 +388,48 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         assert(sessionRevokedResponseExtracted.refreshToken === "");
         assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
         assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
+    });
+
+    it("sending custom response awslambda", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "awsLambda",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiGatewayPath: "/dev",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async function (input) {
+                                    input.options.res.setStatusCode(203);
+                                    input.options.res.sendJSONResponse({
+                                        custom: true,
+                                    });
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        let proxy = "/dev";
+        let event = mockLambdaProxyEventV2("/auth/signup/email/exists", "GET", null, null, proxy, null, {
+            email: "test@example.com",
+        });
+        let result = await middleware()(event, undefined);
+        assert(result.statusCode === 203);
+        assert(JSON.parse(result.body).custom);
     });
 });

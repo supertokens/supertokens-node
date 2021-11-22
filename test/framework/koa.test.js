@@ -18,6 +18,7 @@ let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
 let KoaFramework = require("../../framework/koa");
 let Session = require("../../recipe/session");
+let EmailPassword = require("../../recipe/emailpassword");
 let Koa = require("koa");
 const Router = require("@koa/router");
 let { verifySession } = require("../../recipe/session/framework/koa");
@@ -1567,5 +1568,57 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
                 })
         );
         assert.strictEqual(invalidSessionResponse.body.success, true);
+    });
+
+    it("sending custom response koa", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "koa",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async function (input) {
+                                    input.options.res.setStatusCode(203);
+                                    input.options.res.sendJSONResponse({
+                                        custom: true,
+                                    });
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        const app = new Koa();
+        app.use(KoaFramework.middleware());
+        this.server = app.listen(9999);
+
+        let response = await new Promise((resolve) =>
+            request(this.server)
+                .get("/auth/signup/email/exists?email=test@example.com")
+                .expect(203)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.body.custom);
     });
 });

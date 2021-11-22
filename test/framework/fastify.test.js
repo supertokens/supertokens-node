@@ -18,6 +18,7 @@ let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
 let FastifyFramework = require("../../framework/fastify");
 const Fastify = require("fastify");
+let EmailPassword = require("../../recipe/emailpassword");
 let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/fastify");
 
@@ -1291,5 +1292,51 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             },
         });
         assert.strictEqual(invalidSessionResponse.json().success, true);
+    });
+
+    it("sending custom response fastify", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "fastify",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                emailExistsGET: async function (input) {
+                                    input.options.res.setStatusCode(203);
+                                    input.options.res.sendJSONResponse({
+                                        custom: true,
+                                    });
+                                    return oI.emailExistsGET(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+        });
+
+        await this.server.register(FastifyFramework.plugin);
+
+        //create a new session
+        let response = await this.server.inject({
+            method: "get",
+            url: "/auth/signup/email/exists?email=test@example.com",
+        });
+
+        assert(response.statusCode === 203);
+
+        assert(JSON.parse(response.body).custom);
     });
 });

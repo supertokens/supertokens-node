@@ -78,6 +78,7 @@ export class HapiResponse extends BaseResponse {
     private statusCode: number;
     private content: any;
     public responseSet: boolean;
+    public statusSet = false;
 
     constructor(response: ExtendedResponseToolkit) {
         super();
@@ -89,9 +90,11 @@ export class HapiResponse extends BaseResponse {
     }
 
     sendHTMLResponse = (html: string) => {
-        this.content = html;
-        this.setHeader("Content-Type", "text/html", false);
-        this.responseSet = true;
+        if (!this.responseSet) {
+            this.content = html;
+            this.setHeader("Content-Type", "text/html", false);
+            this.responseSet = true;
+        }
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
@@ -131,15 +134,20 @@ export class HapiResponse extends BaseResponse {
      * @param {number} statusCode
      */
     setStatusCode = (statusCode: number) => {
-        this.statusCode = statusCode;
+        if (!this.statusSet) {
+            this.statusCode = statusCode;
+            this.statusSet = true;
+        }
     };
 
     /**
      * @param {any} content
      */
     sendJSONResponse = (content: any) => {
-        this.content = content;
-        this.responseSet = true;
+        if (!this.responseSet) {
+            this.content = content;
+            this.responseSet = true;
+        }
     };
 
     sendResponse = (overwriteHeaders = false): ResponseObject => {

@@ -402,7 +402,7 @@ module.exports.mockLambdaProxyEvent = function (path, httpMethod, headers, body,
     };
 };
 
-module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, body, proxy, cookies) {
+module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, body, proxy, cookies, queryParams) {
     return {
         version: "2.0",
         httpMethod,
@@ -415,5 +415,6 @@ module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, bod
             },
             stage: proxy.slice(1),
         },
+        queryStringParameters: queryParams,
     };
 };

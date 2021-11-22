@@ -2,11 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 require("dotenv").config();
-let supertokens = require("supertokens-node");
-let Session = require("supertokens-node/recipe/session");
-let { verifySession } = require("supertokens-node/recipe/session/framework/express");
-let { middleware, errorHandler } = require("supertokens-node/framework/express");
-let ThirdPartyEmailPassword = require("supertokens-node/recipe/thirdpartyemailpassword");
+let supertokens = require("../../");
+let Session = require("../../recipe/session");
+let { verifySession } = require("../../recipe/session/framework/express");
+let { middleware, errorHandler } = require("../../framework/express");
+let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
+let axios = require("axios");
 
 // Change these values if you want to run the server on another adress
 const apiPort = process.env.REACT_APP_API_PORT || 3001;
@@ -90,12 +91,24 @@ supertokens.init({
                         teamId: "YWQCXGJRJL",
                     },
                 }),
-
-                // we have commented the below because our app domain (ThirdPartyEmailPassword.demo.supertokens.io) is not approved by Facebook since it's only a demo app.
-                // ThirdPartyEmailPassword.Facebook({
-                //     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-                //     clientId: process.env.FACEBOOK_CLIENT_ID
-                // })
+                ThirdPartyEmailPassword.Discord({
+                    clientId: "4398792-907871294886928395",
+                    clientSecret: "His4yXGEovVp5TZkZhEAt0ZXGh8uOVDm",
+                }),
+                ThirdPartyEmailPassword.GoogleWorkspaces({
+                    clientId: "1060725074195-kmeum4crr01uirfl2op9kd5acmi9jutn.apps.googleusercontent.com",
+                    clientSecret: "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",
+                }),
+                // ThirdPartyEmailPassword.Okta({
+                //     clientId: "4398792-0oa6kpw2hM4SO48oI696",
+                //     clientSecret: "dNvaVoYBUp5RvYKcXtH7p2kKd94yW_jTOFaoq4CX",
+                //     oktaDomain: "supertokens.okta.com",
+                // }),
+                // ThirdPartyEmailPassword.ActiveDirectory({
+                //     clientId: "4398792-b82b545b-4506-4d99-96e7-16f50dbd3e85",
+                //     clientSecret: "TLi7Q~l.NUqCTlyBykkyTFqHXjpnTFoQSv.E0",
+                //     tenantId: "57ca402e-7209-4054-9f96-1617f23051ea",
+                // }),
             ],
         }),
         Session.init(),

@@ -11,8 +11,7 @@
         "dotenv": "^8.6.0",
         "express": "^4.17.1",
         "helmet": "^4.4.0",
-        "morgan": "^1.10.0",
-        "supertokens-node": "^8.1.0"
+        "morgan": "^1.10.0"
     },
     "keywords": [],
     "author": "",

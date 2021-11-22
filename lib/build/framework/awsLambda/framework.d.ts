@@ -53,6 +53,7 @@ export declare class AWSResponse extends BaseResponse {
     private event;
     private content;
     responseSet: boolean;
+    statusSet: boolean;
     constructor(event: SupertokensLambdaEvent | SupertokensLambdaEventV2);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
@@ -72,7 +73,7 @@ export declare class AWSResponse extends BaseResponse {
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
     sendResponse: (
-        response: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2
+        response?: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2 | undefined
     ) => APIGatewayProxyResult | APIGatewayProxyStructuredResultV2;
 }
 export interface SessionEventV2 extends SupertokensLambdaEventV2 {
@@ -83,7 +84,7 @@ export interface SessionEvent extends SupertokensLambdaEvent {
 }
 export declare const middleware: (handler?: Handler<any, any> | undefined) => Handler<any, any>;
 export interface AWSFramework extends Framework {
-    middleware: () => Handler;
+    middleware: (handler?: Handler) => Handler;
 }
 export declare const AWSWrapper: AWSFramework;
 export {};

@@ -155,6 +155,7 @@ export class AWSResponse extends BaseResponse {
     private event: SupertokensLambdaEvent | SupertokensLambdaEventV2;
     private content: string;
     public responseSet: boolean;
+    public statusSet: boolean;
 
     constructor(event: SupertokensLambdaEvent | SupertokensLambdaEventV2) {
         super();
@@ -163,6 +164,7 @@ export class AWSResponse extends BaseResponse {
         this.statusCode = 200;
         this.content = JSON.stringify({});
         this.responseSet = false;
+        this.statusSet = false;
         this.event.supertokens = {
             response: {
                 headers: [],
@@ -172,9 +174,11 @@ export class AWSResponse extends BaseResponse {
     }
 
     sendHTMLResponse = (html: string) => {
-        this.content = html;
-        this.setHeader("Content-Type", "text/html", false);
-        this.responseSet = true;
+        if (!this.responseSet) {
+            this.content = html;
+            this.setHeader("Content-Type", "text/html", false);
+            this.responseSet = true;
+        }
     };
 
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
@@ -203,16 +207,24 @@ export class AWSResponse extends BaseResponse {
      * @param {number} statusCode
      */
     setStatusCode = (statusCode: number) => {
-        this.statusCode = statusCode;
+        if (!this.statusSet) {
+            this.statusCode = statusCode;
+            this.statusSet = true;
+        }
     };
 
     sendJSONResponse = (content: any) => {
-        this.content = JSON.stringify(content);
-        this.setHeader("Context-Type", "application/json", false);
-        this.responseSet = true;
+        if (!this.responseSet) {
+            this.content = JSON.stringify(content);
+            this.setHeader("Context-Type", "application/json", false);
+            this.responseSet = true;
+        }
     };
 
-    sendResponse = (response: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2) => {
+    sendResponse = (response?: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2) => {
+        if (response === undefined) {
+            response = {};
+        }
         let headers:
             | {
                   [header: string]: boolean | number | string;
@@ -301,17 +313,25 @@ export const middleware = (handler?: Handler): Handler => {
         try {
             let result = await supertokens.middleware(request, response);
             if (result) {
-                return response.sendResponse({});
+                return response.sendResponse();
             }
             if (handler !== undefined) {
                 let handlerResult = await handler(event, context, callback);
                 return response.sendResponse(handlerResult);
             }
-            return response.sendResponse({});
+            /**
+             * it reaches this point only if the API route was not exposed by
+             * the SDK and user didn't provide a handler
+             */
+            response.setStatusCode(404);
+            response.sendJSONResponse({
+                error: `The middleware couldn't serve the API path ${request.getOriginalURL()}, method: ${request.getMethod()}. If this is an unexpected behaviour, please create an issue here: https://github.com/supertokens/supertokens-node/issues`,
+            });
+            return response.sendResponse();
         } catch (err) {
             await supertokens.errorHandler(err, request, response);
             if (response.responseSet) {
-                return response.sendResponse({});
+                return response.sendResponse();
             }
             throw err;
         }
@@ -319,7 +339,7 @@ export const middleware = (handler?: Handler): Handler => {
 };
 
 export interface AWSFramework extends Framework {
-    middleware: () => Handler;
+    middleware: (handler?: Handler) => Handler;
 }
 
 export const AWSWrapper: AWSFramework = {

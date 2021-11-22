@@ -124,7 +124,9 @@ export class LoopbackResponse extends BaseResponse {
     };
 
     setStatusCode = (statusCode: number) => {
-        this.statusCode = statusCode;
+        if (!this.response.writableEnded) {
+            this.statusCode = statusCode;
+        }
     };
     sendJSONResponse = (content: any) => {
         if (!this.response.writableEnded) {

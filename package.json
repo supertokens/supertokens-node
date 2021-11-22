@@ -1,6 +1,6 @@
 {
     "name": "supertokens-node",
-    "version": "8.1.1",
+    "version": "8.2.0",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
@@ -39,9 +39,10 @@
         "co-body": "6.1.0",
         "cookie": "0.4.0",
         "jsonschema": "1.4.0",
-        "jsonwebtoken": "8.5.1",
+        "jsonwebtoken": "^8.5.1",
+        "jwks-rsa": "^2.0.5",
         "psl": "1.8.0",
-        "supertokens-js-override": "git+https://github.com/supertokens/supertokens-js-override.git#v0.0.3",
+        "supertokens-js-override": "^0.0.4",
         "verify-apple-id-token": "^2.1.0"
     },
     "devDependencies": {

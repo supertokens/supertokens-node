@@ -61,6 +61,8 @@ export default class Wrapper {
     static Github: typeof import("./providers/github").default;
     static Facebook: typeof import("./providers/facebook").default;
     static Apple: typeof import("./providers/apple").default;
+    static Discord: typeof import("./providers/discord").default;
+    static GoogleWorkspaces: typeof import("./providers/googleWorkspaces").default;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -77,4 +79,6 @@ export declare let Google: typeof import("./providers/google").default;
 export declare let Github: typeof import("./providers/github").default;
 export declare let Facebook: typeof import("./providers/facebook").default;
 export declare let Apple: typeof import("./providers/apple").default;
+export declare let Discord: typeof import("./providers/discord").default;
+export declare let GoogleWorkspaces: typeof import("./providers/googleWorkspaces").default;
 export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };
