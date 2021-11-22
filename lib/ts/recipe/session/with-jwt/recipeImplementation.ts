@@ -27,6 +27,7 @@ export default function (
     config: TypeNormalisedInput,
     querier: Querier
 ): RecipeInterface {
+    // Time difference between JWT expiry and access token expiry (JWT expiry = access token expiry + EXPIRY_OFFSET_SECONDS)
     const EXPIRY_OFFSET_SECONDS = 30;
     let handshakeInfo: undefined | HandshakeInfo;
 
@@ -72,6 +73,10 @@ export default function (
         config,
     };
 
+    function getJWTExpiry(accessTokenExpiry: number): number {
+        return accessTokenExpiry + EXPIRY_OFFSET_SECONDS;
+    }
+
     return {
         ...originalImplementation,
         createNewSession: async function ({
@@ -85,10 +90,17 @@ export default function (
             accessTokenPayload?: any;
             sessionData?: any;
         }): Promise<SessionContainerInterface> {
-            let accessTokenValidityInSeconds = (await originalImplementation.getAccessTokenLifeTimeMS()) / 1000;
+            let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
             let jwtResponse = await jwtRecipeImplementation.createJWT({
-                payload: accessTokenPayload,
-                validitySeconds: accessTokenValidityInSeconds + EXPIRY_OFFSET_SECONDS,
+                payload: {
+                    /* 
+                        We add our claims before the user provided ones so that if they use the same claims
+                        then the final payload will use the values they provide
+                    */
+                    sub: userId,
+                    ...accessTokenPayload,
+                },
+                validitySeconds: getJWTExpiry(accessTokenValidityInSeconds),
             });
 
             if (jwtResponse.status === "UNSUPPORTED_ALGORITHM_ERROR") {
@@ -101,7 +113,7 @@ export default function (
                 jwt: jwtResponse.jwt,
             };
 
-            let sessionContainer = await originalImplementation.createNewSession({
+            let sessionContainer = await this.createNewSession({
                 res,
                 userId,
                 accessTokenPayload,
@@ -127,7 +139,7 @@ export default function (
             res: any;
             options?: VerifySessionOptions;
         }): Promise<SessionContainerInterface | undefined> {
-            let sessionContainer = await originalImplementation.getSession({ req, res, options });
+            let sessionContainer = await this.getSession({ req, res, options });
 
             if (sessionContainer === undefined) {
                 return undefined;
@@ -144,10 +156,10 @@ export default function (
             );
         },
         refreshSession: async function ({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> {
-            let accessTokenValidityInSeconds = (await originalImplementation.getAccessTokenLifeTimeMS()) / 1000;
+            let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
 
             // Refresh session first because this will create a new access token
-            let newSession = await originalImplementation.refreshSession({ req, res });
+            let newSession = await this.refreshSession({ req, res });
             let accessTokenPayload = newSession.getAccessTokenPayload();
 
             // Remove the old jwt
@@ -155,7 +167,7 @@ export default function (
 
             let jwtResponse = await jwtRecipeImplementation.createJWT({
                 payload: accessTokenPayload,
-                validitySeconds: accessTokenValidityInSeconds + EXPIRY_OFFSET_SECONDS,
+                validitySeconds: getJWTExpiry(accessTokenValidityInSeconds),
             });
 
             if (jwtResponse.status === "UNSUPPORTED_ALGORITHM_ERROR") {
@@ -187,11 +199,11 @@ export default function (
             sessionHandle: string;
             newAccessTokenPayload: any;
         }): Promise<void> {
-            let sessionInformation = await originalImplementation.getSessionInformation({ sessionHandle });
+            let sessionInformation = await this.getSessionInformation({ sessionHandle });
             let existingJWT = sessionInformation.accessTokenPayload.jwt;
 
             if (existingJWT === undefined) {
-                return await originalImplementation.updateAccessTokenPayload({
+                return await this.updateAccessTokenPayload({
                     sessionHandle,
                     newAccessTokenPayload,
                 });
@@ -218,7 +230,7 @@ export default function (
                 jwt: newJWTResponse.jwt,
             };
 
-            return await originalImplementation.updateAccessTokenPayload({
+            return await this.updateAccessTokenPayload({
                 sessionHandle,
                 newAccessTokenPayload,
             });

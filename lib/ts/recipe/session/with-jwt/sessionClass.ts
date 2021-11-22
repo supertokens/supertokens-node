@@ -1,7 +1,6 @@
 import SessionClass from "../sessionClass";
 import { Helpers } from "../recipeImplementation";
 import { BaseResponse } from "../../../framework";
-import * as SessionFunctions from "../sessionFunctions";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 
 export default class SessionClassWithJWT extends SessionClass {
@@ -21,8 +20,7 @@ export default class SessionClassWithJWT extends SessionClass {
     }
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any) => {
-        let sessionInformation = await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle);
-        let existingJWT = sessionInformation.accessTokenPayload.jwt;
+        let existingJWT = super.getAccessTokenPayload();
 
         if (existingJWT === undefined) {
             return super.updateAccessTokenPayload(newAccessTokenPayload);

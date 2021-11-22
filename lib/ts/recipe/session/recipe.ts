@@ -51,11 +51,9 @@ export default class SessionRecipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         this.jwtRecipe = new JWTRecipe(recipeId, appInfo, isInServerlessEnv, {
-            override: {
-                ...this.config.override.jwtFeature,
-            },
+            override: this.config.override.jwtFeature,
         });
-        if (this.config.enableJWTFeature) {
+        if (this.config.enableJWT) {
             let builder = new OverrideableBuilder(
                 RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
             );
