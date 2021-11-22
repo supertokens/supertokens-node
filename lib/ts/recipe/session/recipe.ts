@@ -30,6 +30,7 @@ import APIImplementation from "./api/implementation";
 import { BaseRequest, BaseResponse } from "../../framework";
 import JWTRecipe from "../jwt/recipe";
 import OverrideableBuilder from "supertokens-js-override";
+import { APIOptions } from ".";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -39,7 +40,7 @@ export default class SessionRecipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
-    jwtRecipe: JWTRecipe;
+    jwtRecipe: JWTRecipe | undefined;
 
     apiImpl: APIInterface;
 
@@ -50,10 +51,11 @@ export default class SessionRecipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
-        this.jwtRecipe = new JWTRecipe(recipeId, appInfo, isInServerlessEnv, {
-            override: this.config.override.jwtFeature,
-        });
         if (this.config.enableJWT) {
+            this.jwtRecipe = new JWTRecipe(recipeId, appInfo, isInServerlessEnv, {
+                override: this.config.override.jwtFeature,
+            });
+
             let builder = new OverrideableBuilder(
                 RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
             );
@@ -61,7 +63,8 @@ export default class SessionRecipe extends RecipeModule {
                 .override((oI) => {
                     return RecipeImplementationWithJWT(
                         oI,
-                        this.jwtRecipe.recipeInterfaceImpl,
+                        // this.jwtRecipe is never undefined here
+                        this.jwtRecipe!.recipeInterfaceImpl,
                         this.config,
                         Querier.getNewInstanceOrThrowError(recipeId)
                     );
@@ -110,7 +113,7 @@ export default class SessionRecipe extends RecipeModule {
     // abstract instance functions below...............
 
     getAPIsHandled = (): APIHandled[] => {
-        return [
+        let apisHandled: APIHandled[] = [
             {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(REFRESH_API_PATH),
@@ -123,8 +126,13 @@ export default class SessionRecipe extends RecipeModule {
                 id: SIGNOUT_API_PATH,
                 disabled: this.apiImpl.signOutPOST === undefined,
             },
-            ...this.jwtRecipe.getAPIsHandled(),
         ];
+
+        if (this.jwtRecipe !== undefined) {
+            apisHandled.push(...this.jwtRecipe.getAPIsHandled());
+        }
+
+        return apisHandled;
     };
 
     handleAPIRequest = async (
@@ -134,12 +142,12 @@ export default class SessionRecipe extends RecipeModule {
         path: NormalisedURLPath,
         method: HTTPMethod
     ): Promise<boolean> => {
-        let options = {
+        let options: APIOptions = {
             config: this.config,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
-            jwtRecipeImplementation: this.jwtRecipe.recipeInterfaceImpl,
+            jwtRecipeImplementation: this.jwtRecipe?.recipeInterfaceImpl,
             req,
             res,
         };
@@ -147,8 +155,10 @@ export default class SessionRecipe extends RecipeModule {
             return await handleRefreshAPI(this.apiImpl, options);
         } else if (id === SIGNOUT_API_PATH) {
             return await signOutAPI(this.apiImpl, options);
-        } else {
+        } else if (this.jwtRecipe !== undefined) {
             return await this.jwtRecipe.handleAPIRequest(id, req, res, path, method);
+        } else {
+            return false;
         }
     };
 
@@ -168,19 +178,28 @@ export default class SessionRecipe extends RecipeModule {
             } else {
                 throw err;
             }
-        } else {
+        } else if (this.jwtRecipe !== undefined) {
             return await this.jwtRecipe.handleError(err, request, response);
+        } else {
+            throw err;
         }
     };
 
     getAllCORSHeaders = (): string[] => {
-        return [...getCORSAllowedHeadersFromCookiesAndHeaders(), ...this.jwtRecipe.getAllCORSHeaders()];
+        let corsHeaders: string[] = [...getCORSAllowedHeadersFromCookiesAndHeaders()];
+
+        if (this.jwtRecipe !== undefined) {
+            corsHeaders.push(...this.jwtRecipe.getAllCORSHeaders());
+        }
+
+        return corsHeaders;
     };
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return (
             STError.isErrorFromSuperTokens(err) &&
-            (err.fromRecipe === SessionRecipe.RECIPE_ID || this.jwtRecipe.isErrorFromThisRecipe(err))
+            (err.fromRecipe === SessionRecipe.RECIPE_ID ||
+                (this.jwtRecipe !== undefined && this.jwtRecipe.isErrorFromThisRecipe(err)))
         );
     };
 
@@ -194,7 +213,7 @@ export default class SessionRecipe extends RecipeModule {
                 recipeId: this.getRecipeId(),
                 isInServerlessEnv: this.isInServerlessEnv,
                 recipeImplementation: this.recipeInterfaceImpl,
-                jwtRecipeImplementation: this.jwtRecipe.recipeInterfaceImpl,
+                jwtRecipeImplementation: this.jwtRecipe?.recipeInterfaceImpl,
             },
         });
     };
