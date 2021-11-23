@@ -146,9 +146,7 @@ export type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    jwt:
-        | { enable: true; propertyNameInAccessTokenPayload: string }
-        | { enable: false; propertyNameInAccessTokenPayload: string };
+    jwt: { enable: boolean; propertyNameInAccessTokenPayload: string };
     override: {
         functions: (
             originalImplementation: RecipeInterface,

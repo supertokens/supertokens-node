@@ -69,7 +69,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             recipeList: [
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
-                    enableJWT: true,
+                    jwt: { enable: true },
                     override: {
                         functions: function (oI) {
                             return {
@@ -279,7 +279,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             recipeList: [
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
-                    enableJWT: true,
+                    jwt: { enable: true },
                     override: {
                         functions: function (oI) {
                             return {
@@ -356,7 +356,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             recipeList: [
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
-                    enableJWT: true,
+                    jwt: { enable: true },
                     override: {
                         apis: function (oI) {
                             return {
@@ -451,7 +451,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             recipeList: [
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
-                    enableJWT: true,
+                    jwt: { enable: true },
                     override: {
                         apis: function (oI) {
                             return {
@@ -544,7 +544,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             },
             recipeList: [
                 Session.init({
-                    enableJWT: true,
+                    jwt: { enable: true },
                     override: {
                         apis: function (oI) {
                             return {
@@ -610,7 +610,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             },
             recipeList: [
                 Session.init({
-                    enableJWT: true,
+                    jwt: { enable: true },
                     override: {
                         apis: function (oI) {
                             return {

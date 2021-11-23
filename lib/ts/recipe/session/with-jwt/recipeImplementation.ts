@@ -66,6 +66,8 @@ export default function (
             }
 
             accessTokenPayload = {
+                sub: userId,
+                iss: appInfo.apiDomain.getAsStringDangerous(),
                 ...accessTokenPayload,
                 /*
                     We add the JWT after the user defined keys because we want to make sure that it never
@@ -158,8 +160,16 @@ export default function (
 
             let existingJWTValidity = decodedPayload.exp - currentTimeInSeconds;
 
+            let defaultClaimsToAdd = {
+                sub: sessionInformation.userId,
+                iss: appInfo.apiDomain.getAsStringDangerous(),
+            };
+
             let newJWTResponse = await jwtRecipeImplementation.createJWT({
-                payload: newAccessTokenPayload,
+                payload: {
+                    ...defaultClaimsToAdd,
+                    ...newAccessTokenPayload,
+                },
                 validitySeconds: existingJWTValidity,
             });
 
@@ -169,6 +179,7 @@ export default function (
             }
 
             newAccessTokenPayload = {
+                ...defaultClaimsToAdd,
                 ...newAccessTokenPayload,
                 [config.jwt.propertyNameInAccessTokenPayload]: newJWTResponse.jwt,
             };

@@ -56,7 +56,7 @@ describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, fu
             },
             recipeList: [
                 Session.init({
-                    enableJWT: true,
+                    jwt: { enable: true },
                     override: {
                         jwtFeature: {
                             functions: function (originalImplementation) {
@@ -158,7 +158,7 @@ describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, fu
             },
             recipeList: [
                 Session.init({
-                    enableJWT: true,
+                    jwt: { enable: true },
                     override: {
                         jwtFeature: {
                             apis: function (originalImplementation) {

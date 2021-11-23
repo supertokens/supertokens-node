@@ -1303,7 +1303,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             },
             recipeList: [Session.init()],
         });
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWT, false);
+        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
     });
 
     it("Test that the jwt feature is disabled when explicitly set to false", async function () {
@@ -1317,9 +1317,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ enableJWT: false })],
+            recipeList: [Session.init({ jwt: { enable: false } })],
         });
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWT, false);
+        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
+        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt.enable, false);
     });
 
     it("Test that the jwt feature is enabled when explicitly set to true", async function () {
@@ -1333,9 +1334,32 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [Session.init({ enableJWT: true })],
+            recipeList: [Session.init({ jwt: { enable: true } })],
         });
-        assert.equal(SessionRecipe.getInstanceOrThrowError().config.enableJWT, true);
+
+        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
+        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt.enable, true);
+    });
+
+    it("Test that the custom jwt property name in access token payload is set correctly in config", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ jwt: { enable: true, propertyNameInAccessTokenPayload: "customJWTKey" } })],
+        });
+
+        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
+        assert.strictEqual(
+            SessionRecipe.getInstanceOrThrowError().config.jwt.propertyNameInAccessTokenPayload,
+            "customJWTKey"
+        );
     });
 
     it("testing getTopLevelDomainForSameSiteResolution function", async function () {
