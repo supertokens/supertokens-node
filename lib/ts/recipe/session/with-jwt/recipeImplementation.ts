@@ -111,7 +111,12 @@ export default function (
             let accessTokenPayload = newSession.getAccessTokenPayload();
 
             // Remove the old jwt
-            delete accessTokenPayload[config.jwt.propertyNameInAccessTokenPayload];
+            if (config.jwt.getPropertyNameFromAccessTokenPayload !== undefined) {
+                let jwtPropertyName = config.jwt.getPropertyNameFromAccessTokenPayload(accessTokenPayload);
+                delete accessTokenPayload[jwtPropertyName];
+            } else {
+                delete accessTokenPayload[config.jwt.propertyNameInAccessTokenPayload];
+            }
 
             let jwtResponse = await jwtRecipeImplementation.createJWT({
                 payload: accessTokenPayload,
@@ -140,7 +145,16 @@ export default function (
             newAccessTokenPayload: any;
         }): Promise<void> {
             let sessionInformation = await this.getSessionInformation({ sessionHandle });
-            let existingJWT = sessionInformation.accessTokenPayload[config.jwt.propertyNameInAccessTokenPayload];
+
+            let jwtPropertyName = config.jwt.propertyNameInAccessTokenPayload;
+
+            if (config.jwt.getPropertyNameFromAccessTokenPayload !== undefined) {
+                jwtPropertyName = config.jwt.getPropertyNameFromAccessTokenPayload(
+                    sessionInformation.accessTokenPayload
+                );
+            }
+
+            let existingJWT = sessionInformation.accessTokenPayload[jwtPropertyName];
 
             if (existingJWT === undefined) {
                 return await originalImplementation.updateAccessTokenPayload({
@@ -181,7 +195,7 @@ export default function (
             newAccessTokenPayload = {
                 ...defaultClaimsToAdd,
                 ...newAccessTokenPayload,
-                [config.jwt.propertyNameInAccessTokenPayload]: newJWTResponse.jwt,
+                [jwtPropertyName]: newJWTResponse.jwt,
             };
 
             return await originalImplementation.updateAccessTokenPayload({
