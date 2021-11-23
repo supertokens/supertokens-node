@@ -13,6 +13,7 @@
  * under the License.
  */
 import * as JsonWebToken from "jsonwebtoken";
+import { NormalisedAppinfo } from "../../../types";
 
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 import { SessionContainerInterface, TypeNormalisedInput } from "../types";
@@ -21,15 +22,18 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     private jwtRecipeImplementation: JWTRecipeInterface;
     private originalSessionClass: SessionContainerInterface;
     private config: TypeNormalisedInput;
+    private appInfo: NormalisedAppinfo;
 
     constructor(
         originalSessionClass: SessionContainerInterface,
         jwtRecipeImplementation: JWTRecipeInterface,
-        config: TypeNormalisedInput
+        config: TypeNormalisedInput,
+        appInfo: NormalisedAppinfo
     ) {
         this.jwtRecipeImplementation = jwtRecipeImplementation;
         this.originalSessionClass = originalSessionClass;
         this.config = config;
+        this.appInfo = appInfo;
     }
     revokeSession = (): Promise<void> => {
         return this.originalSessionClass.revokeSession();
@@ -60,7 +64,14 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     };
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any): Promise<void> => {
-        let existingJWT = this.getAccessTokenPayload()[this.config.jwt.propertyNameInAccessTokenPayload];
+        let accessTokenPayload = this.getAccessTokenPayload();
+        let jwtPropertyName = this.config.jwt.propertyNameInAccessTokenPayload;
+
+        if (this.config.jwt.getPropertyNameFromAccessTokenPayload !== undefined) {
+            jwtPropertyName = this.config.jwt.getPropertyNameFromAccessTokenPayload(accessTokenPayload);
+        }
+
+        let existingJWT = accessTokenPayload[jwtPropertyName];
 
         if (existingJWT === undefined) {
             return this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);
@@ -76,8 +87,16 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
 
         let existingJWTValidity = decodedPayload.exp - currentTimeInSeconds;
 
+        let defaultClaimsToAdd = {
+            sub: this.getUserId(),
+            iss: this.appInfo.apiDomain.getAsStringDangerous(),
+        };
+
         let newJWTResponse = await this.jwtRecipeImplementation.createJWT({
-            payload: newAccessTokenPayload,
+            payload: {
+                ...defaultClaimsToAdd,
+                ...newAccessTokenPayload,
+            },
             validitySeconds: existingJWTValidity,
         });
 

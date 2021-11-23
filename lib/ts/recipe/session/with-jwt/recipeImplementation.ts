@@ -84,7 +84,7 @@ export default function (
                 sessionData,
             });
 
-            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation, config);
+            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation, config, appInfo);
         },
         getSession: async function ({
             req,
@@ -101,7 +101,7 @@ export default function (
                 return undefined;
             }
 
-            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation, config);
+            return new SessionClassWithJWT(sessionContainer, jwtRecipeImplementation, config, appInfo);
         },
         refreshSession: async function ({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
@@ -135,7 +135,7 @@ export default function (
 
             await newSession.updateAccessTokenPayload(accessTokenPayload);
 
-            return new SessionClassWithJWT(newSession, jwtRecipeImplementation, config);
+            return new SessionClassWithJWT(newSession, jwtRecipeImplementation, config, appInfo);
         },
         updateAccessTokenPayload: async function ({
             sessionHandle,
