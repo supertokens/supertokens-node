@@ -1,3 +1,19 @@
+/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+ *
+ * This software is licensed under the Apache License, Version 2.0 (the
+ * "License") as published by the Apache Software Foundation.
+ *
+ * You may not use this file except in compliance with the License. You may
+ * obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations
+ * under the License.
+ */
+import * as JsonWebToken from "jsonwebtoken";
+
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 import { SessionContainerInterface, TypeNormalisedInput } from "../types";
 
@@ -51,8 +67,14 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         }
 
         let currentTimeInSeconds = Date.now() / 1000;
-        let existingJWTValidity =
-            JSON.parse(Buffer.from(existingJWT.split(".")[1], "base64").toString("utf-8")).exp - currentTimeInSeconds;
+        let decodedPayload = JsonWebToken.decode(existingJWT, { json: true });
+
+        // JsonWebToken.decode possibly returns null
+        if (decodedPayload === null) {
+            throw new Error("Error reading JWT from session");
+        }
+
+        let existingJWTValidity = decodedPayload.exp - currentTimeInSeconds;
 
         let newJWTResponse = await this.jwtRecipeImplementation.createJWT({
             payload: newAccessTokenPayload,
