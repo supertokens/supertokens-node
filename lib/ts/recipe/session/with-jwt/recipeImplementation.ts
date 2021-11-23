@@ -15,6 +15,7 @@
 import * as JsonWebToken from "jsonwebtoken";
 
 import { RecipeInterface } from "../";
+import { NormalisedAppinfo } from "../../../types";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 import { SessionContainerInterface, TypeNormalisedInput, VerifySessionOptions } from "../types";
 import SessionClassWithJWT from "./sessionClass";
@@ -22,7 +23,8 @@ import SessionClassWithJWT from "./sessionClass";
 export default function (
     originalImplementation: RecipeInterface,
     jwtRecipeImplementation: JWTRecipeInterface,
-    config: TypeNormalisedInput
+    config: TypeNormalisedInput,
+    appInfo: NormalisedAppinfo
 ): RecipeInterface {
     // Time difference between JWT expiry and access token expiry (JWT expiry = access token expiry + EXPIRY_OFFSET_SECONDS)
     const EXPIRY_OFFSET_SECONDS = 30;
@@ -52,6 +54,7 @@ export default function (
                         then the final payload will use the values they provide
                     */
                     sub: userId,
+                    iss: appInfo.apiDomain.getAsStringDangerous(),
                     ...accessTokenPayload,
                 },
                 validitySeconds: getJWTExpiry(accessTokenValidityInSeconds),
@@ -64,6 +67,11 @@ export default function (
 
             accessTokenPayload = {
                 ...accessTokenPayload,
+                /*
+                    We add the JWT after the user defined keys because we want to make sure that it never
+                    gets overwritten by a user defined key. Using the same key as the one configured (or defaulting)
+                    for the JWT should be considered a dev error
+                */
                 [config.jwtKey]: jwtResponse.jwt,
             };
 

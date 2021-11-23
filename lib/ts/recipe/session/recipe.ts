@@ -40,7 +40,7 @@ export default class SessionRecipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
-    jwtRecipe: JWTRecipe | undefined;
+    jwtRecipe?: JWTRecipe;
 
     apiImpl: APIInterface;
 
@@ -65,7 +65,8 @@ export default class SessionRecipe extends RecipeModule {
                         oI,
                         // this.jwtRecipe is never undefined here
                         this.jwtRecipe!.recipeInterfaceImpl,
-                        this.config
+                        this.config,
+                        appInfo
                     );
                 })
                 .override(this.config.override.functions)
