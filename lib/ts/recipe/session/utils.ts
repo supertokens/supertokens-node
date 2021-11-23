@@ -210,9 +210,11 @@ export function validateAndNormaliseUserInput(
 
     let enableJWT = false;
     let accessTokenPayloadJWTPropertyName = "jwt";
+    let getPropertyNameFromAccessTokenPayload;
 
     if (config !== undefined && config.jwt !== undefined && config.jwt.enable === true) {
         enableJWT = true;
+        getPropertyNameFromAccessTokenPayload = config.jwt.getPropertyNameFromAccessTokenPayload;
 
         if (config.jwt.propertyNameInAccessTokenPayload !== undefined) {
             accessTokenPayloadJWTPropertyName = config.jwt.propertyNameInAccessTokenPayload;
@@ -237,6 +239,7 @@ export function validateAndNormaliseUserInput(
         jwt: {
             enable: enableJWT,
             propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
+            getPropertyNameFromAccessTokenPayload,
         },
     };
 }
