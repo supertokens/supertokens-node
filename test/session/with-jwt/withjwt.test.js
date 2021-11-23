@@ -1564,7 +1564,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         assert.notStrictEqual(accessTokenPayload.newJwtKey, undefined);
     });
 
-    it.only("Test that when property name is changed using getPropertyNameFromAccessTokenPayload, updating access token payload results in the old jwt being present", async function () {
+    it("Test that when property name is changed using getPropertyNameFromAccessTokenPayload, updating access token payload results in the old jwt being present", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
