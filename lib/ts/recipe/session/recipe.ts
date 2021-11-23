@@ -51,7 +51,7 @@ export default class SessionRecipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
-        if (this.config.enableJWT) {
+        if (this.config.jwt.enable === true) {
             this.jwtRecipe = new JWTRecipe(recipeId, appInfo, isInServerlessEnv, {
                 override: this.config.override.jwtFeature,
             });

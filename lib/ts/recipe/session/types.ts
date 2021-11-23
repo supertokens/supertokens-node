@@ -103,8 +103,7 @@ export type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    enableJWT?: boolean;
-    jwtKey?: string;
+    jwt?: { enable: true; propertyNameInAccessTokenPayload?: string } | { enable: false };
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -133,8 +132,7 @@ export const InputSchema = {
         cookieDomain: TypeString,
         errorHandlers: InputSchemaErrorHandlers,
         antiCsrf: TypeString,
-        enableJWT: TypeBoolean,
-        jwtKey: TypeString,
+        jwt: TypeAny,
         override: TypeAny,
     },
     additionalProperties: false,
@@ -148,8 +146,9 @@ export type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    enableJWT: boolean;
-    jwtKey: string;
+    jwt:
+        | { enable: true; propertyNameInAccessTokenPayload: string }
+        | { enable: false; propertyNameInAccessTokenPayload: string };
     override: {
         functions: (
             originalImplementation: RecipeInterface,

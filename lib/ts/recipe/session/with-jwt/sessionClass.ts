@@ -60,7 +60,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     }
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any): Promise<void> => {
-        let existingJWT = this.getAccessTokenPayload()[this.config.jwtKey];
+        let existingJWT = this.getAccessTokenPayload()[this.config.jwt.propertyNameInAccessTokenPayload];
 
         if (existingJWT === undefined) {
             return this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);
@@ -88,7 +88,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
 
         newAccessTokenPayload = {
             ...newAccessTokenPayload,
-            [this.config.jwtKey]: newJWTResponse.jwt,
+            [this.config.jwt.propertyNameInAccessTokenPayload]: newJWTResponse.jwt,
         };
 
         return await this.originalSessionClass.updateAccessTokenPayload({

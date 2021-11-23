@@ -72,7 +72,7 @@ export default function (
                     gets overwritten by a user defined key. Using the same key as the one configured (or defaulting)
                     for the JWT should be considered a dev error
                 */
-                [config.jwtKey]: jwtResponse.jwt,
+                [config.jwt.propertyNameInAccessTokenPayload]: jwtResponse.jwt,
             };
 
             let sessionContainer = await originalImplementation.createNewSession({
@@ -109,7 +109,7 @@ export default function (
             let accessTokenPayload = newSession.getAccessTokenPayload();
 
             // Remove the old jwt
-            delete accessTokenPayload[config.jwtKey];
+            delete accessTokenPayload[config.jwt.propertyNameInAccessTokenPayload];
 
             let jwtResponse = await jwtRecipeImplementation.createJWT({
                 payload: accessTokenPayload,
@@ -123,7 +123,7 @@ export default function (
 
             accessTokenPayload = {
                 ...accessTokenPayload,
-                [config.jwtKey]: jwtResponse.jwt,
+                [config.jwt.propertyNameInAccessTokenPayload]: jwtResponse.jwt,
             };
 
             await newSession.updateAccessTokenPayload(accessTokenPayload);
@@ -138,7 +138,7 @@ export default function (
             newAccessTokenPayload: any;
         }): Promise<void> {
             let sessionInformation = await this.getSessionInformation({ sessionHandle });
-            let existingJWT = sessionInformation.accessTokenPayload[config.jwtKey];
+            let existingJWT = sessionInformation.accessTokenPayload[config.jwt.propertyNameInAccessTokenPayload];
 
             if (existingJWT === undefined) {
                 return await originalImplementation.updateAccessTokenPayload({
@@ -170,7 +170,7 @@ export default function (
 
             newAccessTokenPayload = {
                 ...newAccessTokenPayload,
-                [config.jwtKey]: newJWTResponse.jwt,
+                [config.jwt.propertyNameInAccessTokenPayload]: newJWTResponse.jwt,
             };
 
             return await originalImplementation.updateAccessTokenPayload({

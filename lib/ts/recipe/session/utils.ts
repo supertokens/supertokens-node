@@ -208,7 +208,16 @@ export function validateAndNormaliseUserInput(
         );
     }
 
-    let enableJWT = config === undefined || config.enableJWT === undefined ? false : config.enableJWT === true;
+    let enableJWT = false;
+    let accessTokenPayloadJWTPropertyName = "jwt";
+
+    if (config !== undefined && config.jwt !== undefined && config.jwt.enable === true) {
+        enableJWT = true;
+
+        if (config.jwt.propertyNameInAccessTokenPayload !== undefined) {
+            accessTokenPayloadJWTPropertyName = config.jwt.propertyNameInAccessTokenPayload;
+        }
+    }
 
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
@@ -225,8 +234,10 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
-        enableJWT,
-        jwtKey: config?.jwtKey ?? "jwt",
+        jwt: {
+            enable: enableJWT,
+            propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
+        },
     };
 }
 
