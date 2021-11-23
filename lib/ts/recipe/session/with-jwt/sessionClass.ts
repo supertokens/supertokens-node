@@ -31,33 +31,33 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         this.originalSessionClass = originalSessionClass;
         this.config = config;
     }
-    revokeSession(): Promise<void> {
+    revokeSession = (): Promise<void> => {
         return this.originalSessionClass.revokeSession();
-    }
-    getSessionData(): Promise<any> {
+    };
+    getSessionData = (): Promise<any> => {
         return this.originalSessionClass.getSessionData();
-    }
-    updateSessionData(newSessionData: any): Promise<any> {
+    };
+    updateSessionData = (newSessionData: any): Promise<any> => {
         return this.originalSessionClass.updateSessionData(newSessionData);
-    }
-    getUserId(): string {
+    };
+    getUserId = (): string => {
         return this.originalSessionClass.getUserId();
-    }
-    getAccessTokenPayload() {
+    };
+    getAccessTokenPayload = () => {
         return this.originalSessionClass.getAccessTokenPayload();
-    }
-    getHandle(): string {
+    };
+    getHandle = (): string => {
         return this.originalSessionClass.getHandle();
-    }
-    getAccessToken(): string {
+    };
+    getAccessToken = (): string => {
         return this.originalSessionClass.getAccessToken();
-    }
-    getTimeCreated(): Promise<number> {
+    };
+    getTimeCreated = (): Promise<number> => {
         return this.originalSessionClass.getTimeCreated();
-    }
-    getExpiry(): Promise<number> {
+    };
+    getExpiry = (): Promise<number> => {
         return this.originalSessionClass.getExpiry();
-    }
+    };
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any): Promise<void> => {
         let existingJWT = this.getAccessTokenPayload()[this.config.jwt.propertyNameInAccessTokenPayload];

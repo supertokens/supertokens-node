@@ -10,14 +10,14 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         jwtRecipeImplementation: JWTRecipeInterface,
         config: TypeNormalisedInput
     );
-    revokeSession(): Promise<void>;
-    getSessionData(): Promise<any>;
-    updateSessionData(newSessionData: any): Promise<any>;
-    getUserId(): string;
-    getAccessTokenPayload(): any;
-    getHandle(): string;
-    getAccessToken(): string;
-    getTimeCreated(): Promise<number>;
-    getExpiry(): Promise<number>;
+    revokeSession: () => Promise<void>;
+    getSessionData: () => Promise<any>;
+    updateSessionData: (newSessionData: any) => Promise<any>;
+    getUserId: () => string;
+    getAccessTokenPayload: () => any;
+    getHandle: () => string;
+    getAccessToken: () => string;
+    getTimeCreated: () => Promise<number>;
+    getExpiry: () => Promise<number>;
     updateAccessTokenPayload: (newAccessTokenPayload: any) => Promise<void>;
 }
