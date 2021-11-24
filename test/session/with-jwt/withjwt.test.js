@@ -1666,7 +1666,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
     });
 
-    it.only("Test that after changing the jwt property name, refreshing the session changes the _jwtPName", async function () {
+    it("Test that after changing the jwt property name, refreshing the session changes the _jwtPName", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
