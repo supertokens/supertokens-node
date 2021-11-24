@@ -12,10 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
+const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, resetAll } = require("../../utils");
+let { Querier } = require("../../../lib/build/querier");
+let { maxVersion } = require("../../../lib/build/utils");
+let assert = require("assert");
+const express = require("express");
+const request = require("supertest");
 let { ProcessState } = require("../../../lib/build/processState");
 let SuperTokens = require("../../../");
 let Session = require("../../../recipe/session");
+let { middleware, errorHandler } = require("../../../framework/express");
 
 describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunctions.test.js]")}`, function () {
     beforeEach(async function () {
@@ -29,65 +35,7 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
         await cleanST();
     });
 
-    it("Test that JWT functions fail if the jwt feature is not enabled", async function () {
-        await startST();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({
-                    override: {
-                        functions: function (oi) {
-                            return {
-                                ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
-                                    accessTokenPayload = {
-                                        ...accessTokenPayload,
-                                        customKey: "customValue",
-                                        customKey2: "customValue2",
-                                    };
-
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
-                                },
-                            };
-                        },
-                    },
-                }),
-            ],
-        });
-
-        try {
-            await Session.createJWT({});
-            throw new Error("createJWT succeeded when it should have failed");
-        } catch (e) {
-            if (
-                e.message !==
-                "createJWT cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
-            ) {
-                throw e;
-            }
-        }
-
-        try {
-            await Session.getJWKS();
-            throw new Error("getJWKS succeeded when it should have failed");
-        } catch (e) {
-            if (
-                e.message !==
-                "getJWKS cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
-            ) {
-                throw e;
-            }
-        }
-    });
-
-    it("Test that JWT functions work if the jwt feature is enabled", async function () {
+    it.only("Test that updating access token payload works", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
@@ -121,7 +69,46 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
             ],
         });
 
-        await Session.createJWT({});
-        await Session.getJWKS();
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
+        let app = express();
+
+        app.use(middleware());
+        app.use(express.json());
+
+        app.post("/create", async (req, res) => {
+            let session = await Session.createNewSession(res, "userId", {}, {});
+
+            await session.updateAccessTokenPayload({ newKey: "newValue" });
+
+            res.status(200).json({ accessTokenPayload: session.getAccessTokenPayload() });
+        });
+
+        app.use(errorHandler());
+
+        let createJWTResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/create")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let accessTokenPayload = createJWTResponse.body.accessTokenPayload;
+        assert.strictEqual(accessTokenPayload.sub, "userId");
+        assert.strictEqual(accessTokenPayload.iss, "https://api.supertokens.io");
+        assert.strictEqual(accessTokenPayload.newKey, "newValue");
+        assert.notStrictEqual(accessTokenPayload.jwt, undefined);
+        assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
     });
 });

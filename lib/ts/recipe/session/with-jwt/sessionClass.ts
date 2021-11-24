@@ -16,24 +16,21 @@ import * as JsonWebToken from "jsonwebtoken";
 import { NormalisedAppinfo } from "../../../types";
 
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
-import { SessionContainerInterface, TypeNormalisedInput } from "../types";
+import { SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./constants";
 
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private jwtRecipeImplementation: JWTRecipeInterface;
     private originalSessionClass: SessionContainerInterface;
-    private config: TypeNormalisedInput;
     private appInfo: NormalisedAppinfo;
 
     constructor(
         originalSessionClass: SessionContainerInterface,
         jwtRecipeImplementation: JWTRecipeInterface,
-        config: TypeNormalisedInput,
         appInfo: NormalisedAppinfo
     ) {
         this.jwtRecipeImplementation = jwtRecipeImplementation;
         this.originalSessionClass = originalSessionClass;
-        this.config = config;
         this.appInfo = appInfo;
     }
     revokeSession = (): Promise<void> => {
@@ -89,16 +86,14 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
 
         let existingJWTValidity = decodedPayload.exp - currentTimeInSeconds;
 
-        let defaultClaimsToAdd = {
+        newAccessTokenPayload = {
             sub: this.getUserId(),
             iss: this.appInfo.apiDomain.getAsStringDangerous(),
+            ...newAccessTokenPayload,
         };
 
         let newJWTResponse = await this.jwtRecipeImplementation.createJWT({
-            payload: {
-                ...defaultClaimsToAdd,
-                ...newAccessTokenPayload,
-            },
+            payload: newAccessTokenPayload,
             validitySeconds: existingJWTValidity,
         });
 
@@ -109,11 +104,10 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
 
         newAccessTokenPayload = {
             ...newAccessTokenPayload,
-            [this.config.jwt.propertyNameInAccessTokenPayload]: newJWTResponse.jwt,
+            [jwtPropertyName]: newJWTResponse.jwt,
+            [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: jwtPropertyName,
         };
 
-        return await this.originalSessionClass.updateAccessTokenPayload({
-            newAccessTokenPayload,
-        });
+        return await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);
     };
 }
