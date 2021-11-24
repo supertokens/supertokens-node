@@ -509,8 +509,6 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         await Session.updateAccessTokenPayload(sessionHandle, { someKey: "someValue" });
         accessTokenPayload = (await Session.getSessionInformation(sessionHandle)).accessTokenPayload;
 
-        console.log(accessTokenPayload);
-
         assert.equal(accessTokenPayload.someKey, "someValue");
         assert.strictEqual(accessTokenPayload.jwt, undefined);
     });
@@ -642,8 +640,6 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         );
 
         accessTokenPayload = (await Session.getSessionInformation(sessionHandle)).accessTokenPayload;
-
-        console.log(accessTokenPayload);
 
         assert.notStrictEqual(accessTokenPayload.jwt, undefined);
     });

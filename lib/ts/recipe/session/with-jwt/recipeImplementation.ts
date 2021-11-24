@@ -47,16 +47,19 @@ export default function (
             sessionData?: any;
         }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
+
+            accessTokenPayload = {
+                /* 
+                    We add our claims before the user provided ones so that if they use the same claims
+                    then the final payload will use the values they provide
+                */
+                sub: userId,
+                iss: appInfo.apiDomain.getAsStringDangerous(),
+                ...accessTokenPayload,
+            };
+
             let jwtResponse = await jwtRecipeImplementation.createJWT({
-                payload: {
-                    /* 
-                        We add our claims before the user provided ones so that if they use the same claims
-                        then the final payload will use the values they provide
-                    */
-                    sub: userId,
-                    iss: appInfo.apiDomain.getAsStringDangerous(),
-                    ...accessTokenPayload,
-                },
+                payload: accessTokenPayload,
                 validitySeconds: getJWTExpiry(accessTokenValidityInSeconds),
             });
 
@@ -66,8 +69,6 @@ export default function (
             }
 
             accessTokenPayload = {
-                sub: userId,
-                iss: appInfo.apiDomain.getAsStringDangerous(),
                 ...accessTokenPayload,
                 /*
                     We add the JWT after the user defined keys because we want to make sure that it never
@@ -174,16 +175,14 @@ export default function (
 
             let existingJWTValidity = decodedPayload.exp - currentTimeInSeconds;
 
-            let defaultClaimsToAdd = {
+            newAccessTokenPayload = {
                 sub: sessionInformation.userId,
                 iss: appInfo.apiDomain.getAsStringDangerous(),
+                ...newAccessTokenPayload,
             };
 
             let newJWTResponse = await jwtRecipeImplementation.createJWT({
-                payload: {
-                    ...defaultClaimsToAdd,
-                    ...newAccessTokenPayload,
-                },
+                payload: newAccessTokenPayload,
                 validitySeconds: existingJWTValidity,
             });
 
@@ -193,7 +192,6 @@ export default function (
             }
 
             newAccessTokenPayload = {
-                ...defaultClaimsToAdd,
                 ...newAccessTokenPayload,
                 [jwtPropertyName]: newJWTResponse.jwt,
             };
