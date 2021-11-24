@@ -65,6 +65,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     };
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any): Promise<void> => {
+        // Refer to comments in session/with-jwt/recipeImplementation - createNewSession, for a brief note on retriving the JWT
         if (newAccessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY] !== undefined) {
             throw new Error(JWT_RESERVED_KEY_USE_ERROR_MESSAGE);
         }
