@@ -17,6 +17,7 @@ import { NormalisedAppinfo } from "../../../types";
 
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 import { SessionContainerInterface, TypeNormalisedInput } from "../types";
+import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./constants";
 
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private jwtRecipeImplementation: JWTRecipeInterface;
@@ -64,18 +65,18 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     };
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any): Promise<void> => {
-        let accessTokenPayload = this.getAccessTokenPayload();
-        let jwtPropertyName = this.config.jwt.propertyNameInAccessTokenPayload;
+        if (newAccessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY] !== undefined) {
+            throw new Error(JWT_RESERVED_KEY_USE_ERROR_MESSAGE);
+        }
 
-        if (this.config.jwt.getPropertyNameFromAccessTokenPayload !== undefined) {
-            jwtPropertyName = this.config.jwt.getPropertyNameFromAccessTokenPayload(accessTokenPayload);
+        let accessTokenPayload = this.getAccessTokenPayload();
+        let jwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+
+        if (jwtPropertyName === undefined || accessTokenPayload[jwtPropertyName] === undefined) {
+            return this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);
         }
 
         let existingJWT = accessTokenPayload[jwtPropertyName];
-
-        if (existingJWT === undefined) {
-            return this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);
-        }
 
         let currentTimeInSeconds = Date.now() / 1000;
         let decodedPayload = JsonWebToken.decode(existingJWT, { json: true });

@@ -1303,7 +1303,8 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             },
             recipeList: [Session.init()],
         });
-        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
+        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
+        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt.enable, false);
     });
 
     it("Test that the jwt feature is disabled when explicitly set to false", async function () {
@@ -1360,6 +1361,47 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             SessionRecipe.getInstanceOrThrowError().config.jwt.propertyNameInAccessTokenPayload,
             "customJWTKey"
         );
+    });
+
+    it("Test that the the jwt property name uses default value when not set in config", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init({ jwt: { enable: true } })],
+        });
+
+        assert.notStrictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt, undefined);
+        assert.strictEqual(SessionRecipe.getInstanceOrThrowError().config.jwt.propertyNameInAccessTokenPayload, "jwt");
+    });
+
+    it("Test that when setting jwt property name with the same value as the reserved property, init throws an error", async function () {
+        try {
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init({ jwt: { enable: true, propertyNameInAccessTokenPayload: "_jwtPName" } })],
+            });
+
+            throw new Error("Init succeeded when it should have failed");
+        } catch (e) {
+            if (e.message !== "_jwtPName is a reserved property name, please use a different key name for the jwt") {
+                throw e;
+            }
+        }
     });
 
     it("testing getTopLevelDomainForSameSiteResolution function", async function () {

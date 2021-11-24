@@ -37,6 +37,7 @@ import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200Response } from "../../utils";
+import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./with-jwt/constants";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -210,14 +211,17 @@ export function validateAndNormaliseUserInput(
 
     let enableJWT = false;
     let accessTokenPayloadJWTPropertyName = "jwt";
-    let getPropertyNameFromAccessTokenPayload;
 
     if (config !== undefined && config.jwt !== undefined && config.jwt.enable === true) {
         enableJWT = true;
-        getPropertyNameFromAccessTokenPayload = config.jwt.getPropertyNameFromAccessTokenPayload;
+        let jwtPropertyName = config.jwt.propertyNameInAccessTokenPayload;
 
-        if (config.jwt.propertyNameInAccessTokenPayload !== undefined) {
-            accessTokenPayloadJWTPropertyName = config.jwt.propertyNameInAccessTokenPayload;
+        if (jwtPropertyName !== undefined) {
+            if (jwtPropertyName === ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY) {
+                throw new Error(JWT_RESERVED_KEY_USE_ERROR_MESSAGE);
+            }
+
+            accessTokenPayloadJWTPropertyName = jwtPropertyName;
         }
     }
 
@@ -239,7 +243,6 @@ export function validateAndNormaliseUserInput(
         jwt: {
             enable: enableJWT,
             propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
-            getPropertyNameFromAccessTokenPayload,
         },
     };
 }

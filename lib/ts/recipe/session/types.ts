@@ -107,7 +107,6 @@ export type TypeInput = {
         | {
               enable: true;
               propertyNameInAccessTokenPayload?: string;
-              getPropertyNameFromAccessTokenPayload?: (accessTokenPayload: any) => string;
           }
         | { enable: false };
     override?: {
@@ -155,7 +154,6 @@ export type TypeNormalisedInput = {
     jwt: {
         enable: boolean;
         propertyNameInAccessTokenPayload: string;
-        getPropertyNameFromAccessTokenPayload?: (accessTokenPayload: any) => string;
     };
     override: {
         functions: (

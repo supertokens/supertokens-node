@@ -18,6 +18,7 @@ import { RecipeInterface } from "../";
 import { NormalisedAppinfo } from "../../../types";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 import { SessionContainerInterface, TypeNormalisedInput, VerifySessionOptions } from "../types";
+import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./constants";
 import SessionClassWithJWT from "./sessionClass";
 
 export default function (
@@ -46,6 +47,10 @@ export default function (
             accessTokenPayload?: any;
             sessionData?: any;
         }): Promise<SessionContainerInterface> {
+            if (accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY] !== undefined) {
+                throw new Error(JWT_RESERVED_KEY_USE_ERROR_MESSAGE);
+            }
+
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
 
             accessTokenPayload = {
@@ -76,6 +81,7 @@ export default function (
                     for the JWT should be considered a dev error
                 */
                 [config.jwt.propertyNameInAccessTokenPayload]: jwtResponse.jwt,
+                [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: config.jwt.propertyNameInAccessTokenPayload,
             };
 
             let sessionContainer = await originalImplementation.createNewSession({
@@ -111,12 +117,11 @@ export default function (
             let newSession = await originalImplementation.refreshSession({ req, res });
             let accessTokenPayload = newSession.getAccessTokenPayload();
 
-            // Remove the old jwt
-            if (config.jwt.getPropertyNameFromAccessTokenPayload !== undefined) {
-                let jwtPropertyName = config.jwt.getPropertyNameFromAccessTokenPayload(accessTokenPayload);
+            let jwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+
+            // Remove the old JWT
+            if (jwtPropertyName !== undefined) {
                 delete accessTokenPayload[jwtPropertyName];
-            } else {
-                delete accessTokenPayload[config.jwt.propertyNameInAccessTokenPayload];
             }
 
             let jwtResponse = await jwtRecipeImplementation.createJWT({
@@ -132,6 +137,7 @@ export default function (
             accessTokenPayload = {
                 ...accessTokenPayload,
                 [config.jwt.propertyNameInAccessTokenPayload]: jwtResponse.jwt,
+                [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: config.jwt.propertyNameInAccessTokenPayload,
             };
 
             await newSession.updateAccessTokenPayload(accessTokenPayload);
@@ -145,24 +151,22 @@ export default function (
             sessionHandle: string;
             newAccessTokenPayload: any;
         }): Promise<void> {
-            let sessionInformation = await this.getSessionInformation({ sessionHandle });
-
-            let jwtPropertyName = config.jwt.propertyNameInAccessTokenPayload;
-
-            if (config.jwt.getPropertyNameFromAccessTokenPayload !== undefined) {
-                jwtPropertyName = config.jwt.getPropertyNameFromAccessTokenPayload(
-                    sessionInformation.accessTokenPayload
-                );
+            if (newAccessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY] !== undefined) {
+                throw new Error(JWT_RESERVED_KEY_USE_ERROR_MESSAGE);
             }
 
-            let existingJWT = sessionInformation.accessTokenPayload[jwtPropertyName];
+            let sessionInformation = await this.getSessionInformation({ sessionHandle });
 
-            if (existingJWT === undefined) {
+            let jwtPropertyName = sessionInformation.accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+
+            if (jwtPropertyName === undefined || sessionInformation.accessTokenPayload[jwtPropertyName] === undefined) {
                 return await originalImplementation.updateAccessTokenPayload({
                     sessionHandle,
                     newAccessTokenPayload,
                 });
             }
+
+            let existingJWT = sessionInformation.accessTokenPayload[jwtPropertyName];
 
             // Get the validity of the current JWT
             let currentTimeInSeconds = Date.now() / 1000;
@@ -194,6 +198,7 @@ export default function (
             newAccessTokenPayload = {
                 ...newAccessTokenPayload,
                 [jwtPropertyName]: newJWTResponse.jwt,
+                [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: jwtPropertyName,
             };
 
             return await originalImplementation.updateAccessTokenPayload({
