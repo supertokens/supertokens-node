@@ -35,7 +35,7 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
         await cleanST();
     });
 
-    it.only("Test that updating access token payload works", async function () {
+    it("Test that updating access token payload works", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
