@@ -21,7 +21,7 @@ import { SessionContainerInterface, TypeNormalisedInput, VerifySessionOptions } 
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import SessionClassWithJWT from "./sessionClass";
 import * as assert from "assert";
-import { modifyAccessTokenPayload } from "./utils";
+import { addJWTToAccessTokenPayload } from "./utils";
 
 export default function (
     originalImplementation: RecipeInterface,
@@ -50,7 +50,7 @@ export default function (
             sessionData?: any;
         }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
-            accessTokenPayload = await modifyAccessTokenPayload({
+            accessTokenPayload = await addJWTToAccessTokenPayload({
                 accessTokenPayload,
                 jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),
                 userId,
@@ -92,7 +92,7 @@ export default function (
             let newSession = await originalImplementation.refreshSession({ req, res });
             let accessTokenPayload = newSession.getAccessTokenPayload();
 
-            accessTokenPayload = await modifyAccessTokenPayload({
+            accessTokenPayload = await addJWTToAccessTokenPayload({
                 accessTokenPayload,
                 jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),
                 userId: newSession.getUserId(),
@@ -137,7 +137,7 @@ export default function (
 
             let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
 
-            newAccessTokenPayload = await modifyAccessTokenPayload({
+            newAccessTokenPayload = await addJWTToAccessTokenPayload({
                 accessTokenPayload: newAccessTokenPayload,
                 jwtExpiry,
                 userId: sessionInformation.userId,

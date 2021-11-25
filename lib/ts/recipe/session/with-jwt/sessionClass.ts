@@ -19,7 +19,7 @@ import { NormalisedAppinfo } from "../../../types";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 import { SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
-import { modifyAccessTokenPayload } from "./utils";
+import { addJWTToAccessTokenPayload } from "./utils";
 
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private jwtRecipeImplementation: JWTRecipeInterface;
@@ -84,7 +84,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
 
         let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
 
-        newAccessTokenPayload = await modifyAccessTokenPayload({
+        newAccessTokenPayload = await addJWTToAccessTokenPayload({
             accessTokenPayload: newAccessTokenPayload,
             jwtExpiry,
             userId: this.getUserId(),

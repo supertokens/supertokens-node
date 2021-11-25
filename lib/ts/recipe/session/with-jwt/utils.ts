@@ -16,7 +16,7 @@ import { NormalisedAppinfo } from "../../../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 
-export async function modifyAccessTokenPayload({
+export async function addJWTToAccessTokenPayload({
     accessTokenPayload,
     jwtExpiry,
     userId,

@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { NormalisedAppinfo } from "../../../types";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
-export declare function modifyAccessTokenPayload({
+export declare function addJWTToAccessTokenPayload({
     accessTokenPayload,
     jwtExpiry,
     userId,
