@@ -12,6 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+const JsonWebToken = require("jsonwebtoken");
+
 const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse, resetAll } = require("../../utils");
 let { Querier } = require("../../../lib/build/querier");
 let { maxVersion } = require("../../../lib/build/utils");
@@ -110,5 +112,11 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClas
         assert.strictEqual(accessTokenPayload.newKey, "newValue");
         assert.notStrictEqual(accessTokenPayload.jwt, undefined);
         assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
+
+        let decodedJWT = JsonWebToken.decode(accessTokenPayload.jwt);
+        assert.notStrictEqual(decodedJWT, null);
+        assert.strictEqual(decodedJWT["sub"], "userId");
+        assert.strictEqual(decodedJWT.iss, "https://api.supertokens.io");
+        assert.strictEqual(decodedJWT._jwtPName, undefined);
     });
 });

@@ -112,12 +112,10 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
         assert.notStrictEqual(accessTokenPayloadJWT, undefined);
 
-        let jwtpayload = accessTokenPayloadJWT.split(".")[1];
-        let decodedJWTPayload = Buffer.from(jwtpayload, "base64").toString("utf-8");
-        let jwtPayloadJSON = JSON.parse(decodedJWTPayload);
+        let decodedJWTPayload = JsonWebToken.decode(accessTokenPayloadJWT);
 
-        assert(jwtPayloadJSON.customKey === "customValue");
-        assert(jwtPayloadJSON.customKey2 === "customValue2");
+        assert(decodedJWTPayload.customKey === "customValue");
+        assert(decodedJWTPayload.customKey2 === "customValue2");
     });
 
     it("Test that when creating a session the JWT expiry is 30 seconds more than the access token expiry", async function () {

@@ -19,6 +19,7 @@ import { NormalisedAppinfo } from "../../../types";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 import { SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
+import { modifyAccessTokenPayload } from "./utils";
 
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private jwtRecipeImplementation: JWTRecipeInterface;
@@ -84,29 +85,16 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
             throw new Error("Error reading JWT from session");
         }
 
-        let existingJWTValidity = decodedPayload.exp - currentTimeInSeconds;
+        let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
 
-        newAccessTokenPayload = {
-            sub: this.getUserId(),
-            iss: this.appInfo.apiDomain.getAsStringDangerous(),
-            ...newAccessTokenPayload,
-        };
-
-        let newJWTResponse = await this.jwtRecipeImplementation.createJWT({
-            payload: newAccessTokenPayload,
-            validitySeconds: existingJWTValidity,
+        newAccessTokenPayload = await modifyAccessTokenPayload({
+            accessTokenPayload: newAccessTokenPayload,
+            jwtExpiry,
+            userId: this.getUserId(),
+            jwtPropertyName,
+            appInfo: this.appInfo,
+            jwtRecipeImplementation: this.jwtRecipeImplementation,
         });
-
-        if (newJWTResponse.status === "UNSUPPORTED_ALGORITHM_ERROR") {
-            // Should never come here
-            throw new Error("JWT Signing algorithm not supported");
-        }
-
-        newAccessTokenPayload = {
-            ...newAccessTokenPayload,
-            [jwtPropertyName]: newJWTResponse.jwt,
-            [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: jwtPropertyName,
-        };
 
         return await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);
     };
