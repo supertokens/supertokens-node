@@ -84,6 +84,14 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
 
         let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
 
+        if (jwtExpiry <= 0) {
+            // it can come here if someone calls this function well after
+            // the access token and the jwt payload have expired (which can happen if an API takes a VERY long time). In this case, we still want the jwt payload to update, but the resulting JWT should
+            // not be alive for too long (since it's expired already). So we set it to
+            // 1 second lifetime.
+            jwtExpiry = 1;
+        }
+
         newAccessTokenPayload = await addJWTToAccessTokenPayload({
             accessTokenPayload: newAccessTokenPayload,
             jwtExpiry,
