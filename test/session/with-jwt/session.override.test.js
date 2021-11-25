@@ -28,10 +28,9 @@ const request = require("supertest");
 let { ProcessState, PROCESS_STATE } = require("../../../lib/build/processState");
 let SuperTokens = require("../../../");
 let Session = require("../../../recipe/session");
-// let { Querier } = require("../lib/build/querier");
-// const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
+let { Querier } = require("../../../lib/build/querier");
+let { maxVersion } = require("../../../lib/build/utils");
 const { verifySession } = require("../../../recipe/session/framework/express");
-// const { default: next } = require("next");
 let { middleware, errorHandler } = require("../../../framework/express");
 
 /**
@@ -98,6 +97,13 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                 }),
             ],
         });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
 
         const app = express();
 
@@ -299,6 +305,13 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             ],
         });
 
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -372,6 +385,13 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                 }),
             ],
         });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
 
         const app = express();
 
@@ -470,6 +490,13 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
             ],
         });
 
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -557,6 +584,14 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                 }),
             ],
         });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
         const app = express();
         app.use(middleware());
 
@@ -623,6 +658,14 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
                 }),
             ],
         });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
         const app = express();
         app.use(middleware());
 
