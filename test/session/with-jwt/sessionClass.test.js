@@ -23,7 +23,7 @@ let SuperTokens = require("../../../");
 let Session = require("../../../recipe/session");
 let { middleware, errorHandler } = require("../../../framework/express");
 
-describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunctions.test.js]")}`, function () {
+describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClass.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -110,84 +110,5 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
         assert.strictEqual(accessTokenPayload.newKey, "newValue");
         assert.notStrictEqual(accessTokenPayload.jwt, undefined);
         assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
-    });
-
-    it.only("Test that updating access token payload with the reserved property throws an error", async function () {
-        await startST();
-        SuperTokens.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init({
-                    jwt: { enable: true },
-                    override: {
-                        functions: function (oi) {
-                            return {
-                                ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
-                                    accessTokenPayload = {
-                                        ...accessTokenPayload,
-                                        customKey: "customValue",
-                                        customKey2: "customValue2",
-                                    };
-
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
-                                },
-                            };
-                        },
-                    },
-                }),
-            ],
-        });
-
-        // Only run for version >= 2.9
-        let querier = Querier.getNewInstanceOrThrowError(undefined);
-        let apiVersion = await querier.getAPIVersion();
-        if (maxVersion(apiVersion, "2.8") === "2.8") {
-            return;
-        }
-
-        let app = express();
-
-        app.use(middleware());
-        app.use(express.json());
-
-        app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
-
-            try {
-                await session.updateAccessTokenPayload({ _jwtPName: "newValue" });
-                res.status(200).json({ accessTokenPayload: session.getAccessTokenPayload() });
-            } catch (e) {
-                res.status(500).json({ error: e.message });
-            }
-        });
-
-        app.use(errorHandler());
-
-        let createJWTResponse = await new Promise((resolve) =>
-            request(app)
-                .post("/create")
-                .expect(500)
-                .end((err, res) => {
-                    if (err) {
-                        resolve(undefined);
-                    } else {
-                        resolve(res);
-                    }
-                })
-        );
-
-        let errorMessage = createJWTResponse.body.error;
-
-        if (errorMessage !== "_jwtPName is a reserved property name, please use a different key name for the jwt") {
-            throw new Error(errorMessage);
-        }
     });
 });

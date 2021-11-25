@@ -18,8 +18,9 @@ import { RecipeInterface } from "../";
 import { NormalisedAppinfo } from "../../../types";
 import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
 import { SessionContainerInterface, TypeNormalisedInput, VerifySessionOptions } from "../types";
-import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./constants";
+import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import SessionClassWithJWT from "./sessionClass";
+import * as assert from "assert";
 
 export default function (
     originalImplementation: RecipeInterface,
@@ -32,6 +33,74 @@ export default function (
 
     function getJWTExpiry(accessTokenExpiry: number): number {
         return accessTokenExpiry + EXPIRY_OFFSET_SECONDS;
+    }
+
+    async function modifyAccessTokenPayload({
+        accessTokenPayload,
+        jwtExpiry,
+        userId,
+        jwtPropertyName,
+    }: {
+        accessTokenPayload: any;
+        jwtExpiry: number;
+        userId: string;
+        jwtPropertyName: string;
+    }): Promise<any> {
+        // If jwtPropertyName is not undefined it means that the JWT was added to the access token payload already
+        let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+
+        if (existingJwtPropertyName !== undefined) {
+            // Delete the old JWT and the old property name
+            delete accessTokenPayload[existingJwtPropertyName];
+            delete accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+        }
+
+        // Update the access token payload with the default claims to add
+        accessTokenPayload = {
+            /* 
+                We add our claims before the user provided ones so that if they use the same claims
+                then the final payload will use the values they provide
+            */
+            sub: userId,
+            iss: appInfo.apiDomain.getAsStringDangerous(),
+            ...accessTokenPayload,
+        };
+
+        // Create the JWT
+        let jwtResponse = await jwtRecipeImplementation.createJWT({
+            payload: accessTokenPayload,
+            validitySeconds: jwtExpiry,
+        });
+
+        if (jwtResponse.status === "UNSUPPORTED_ALGORITHM_ERROR") {
+            // Should never come here
+            throw new Error("JWT Signing algorithm not supported");
+        }
+
+        // Add the jwt and the property name to the access token payload
+        accessTokenPayload = {
+            ...accessTokenPayload,
+            /*
+                We add the JWT after the user defined keys because we want to make sure that it never
+                gets overwritten by a user defined key. Using the same key as the one configured (or defaulting)
+                for the JWT should be considered a dev error
+
+                ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY indicates a reserved key used to determine the property name
+                with which the JWT is set, used to retrieve the JWT from the access token payload during refresg and
+                updateAccessTokenPayload
+
+                Note: If the user has multiple overrides each with a unique propertyNameInAccessTokenPayload, the logic
+                for checking the existing JWT when refreshing the session or updating the access token payload will not work.
+                This is because even though the jwt itself would be created with unique property names, the _jwtPName value would
+                always be overwritten by the override that runs last and when retrieving the jwt using that key name it cannot be 
+                guaranteed that the right JWT is returned. This case is considered to be a rare requirement and we assume
+                that users will not need multiple JWT representations of their access token payload.
+            */
+            [jwtPropertyName]: jwtResponse.jwt,
+            [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: jwtPropertyName,
+        };
+
+        return accessTokenPayload;
     }
 
     return {
@@ -47,49 +116,13 @@ export default function (
             accessTokenPayload?: any;
             sessionData?: any;
         }): Promise<SessionContainerInterface> {
-            if (accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY] !== undefined) {
-                throw new Error(JWT_RESERVED_KEY_USE_ERROR_MESSAGE);
-            }
-
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
-
-            accessTokenPayload = {
-                /* 
-                    We add our claims before the user provided ones so that if they use the same claims
-                    then the final payload will use the values they provide
-                */
-                sub: userId,
-                iss: appInfo.apiDomain.getAsStringDangerous(),
-                ...accessTokenPayload,
-            };
-
-            let jwtResponse = await jwtRecipeImplementation.createJWT({
-                payload: accessTokenPayload,
-                validitySeconds: getJWTExpiry(accessTokenValidityInSeconds),
+            accessTokenPayload = await modifyAccessTokenPayload({
+                accessTokenPayload,
+                jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),
+                userId,
+                jwtPropertyName: config.jwt.propertyNameInAccessTokenPayload,
             });
-
-            if (jwtResponse.status === "UNSUPPORTED_ALGORITHM_ERROR") {
-                // Should never come here
-                throw new Error("JWT Signing algorithm not supported");
-            }
-
-            accessTokenPayload = {
-                ...accessTokenPayload,
-                /*
-                    We add the JWT after the user defined keys because we want to make sure that it never
-                    gets overwritten by a user defined key. Using the same key as the one configured (or defaulting)
-                    for the JWT should be considered a dev error
-
-                    Note: If the user has multiple overrides each with a unique propertyNameInAccessTokenPayload, the logic
-                    for checking the existing JWT when refreshing the session or updating the access token payload will not work.
-                    This is because even though the jwt itself would be created with unique property names, the _jwtPName value would
-                    always be overwritten by the override that runs last and when retrieving the jwt using that key name it cannot be 
-                    guaranteed that the right JWT is returned. This case is considered to be a rare requirement and we assume
-                    that users will not need multiple JWT representations of their access token payload.
-                */
-                [config.jwt.propertyNameInAccessTokenPayload]: jwtResponse.jwt,
-                [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: config.jwt.propertyNameInAccessTokenPayload,
-            };
 
             let sessionContainer = await originalImplementation.createNewSession({
                 res,
@@ -124,28 +157,12 @@ export default function (
             let newSession = await originalImplementation.refreshSession({ req, res });
             let accessTokenPayload = newSession.getAccessTokenPayload();
 
-            let jwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
-
-            // Remove the old JWT
-            if (jwtPropertyName !== undefined) {
-                delete accessTokenPayload[jwtPropertyName];
-            }
-
-            let jwtResponse = await jwtRecipeImplementation.createJWT({
-                payload: accessTokenPayload,
-                validitySeconds: getJWTExpiry(accessTokenValidityInSeconds),
+            accessTokenPayload = await modifyAccessTokenPayload({
+                accessTokenPayload,
+                jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),
+                userId: newSession.getUserId(),
+                jwtPropertyName: config.jwt.propertyNameInAccessTokenPayload,
             });
-
-            if (jwtResponse.status === "UNSUPPORTED_ALGORITHM_ERROR") {
-                // Should never come here
-                throw new Error("JWT Signing algorithm not supported");
-            }
-
-            accessTokenPayload = {
-                ...accessTokenPayload,
-                [config.jwt.propertyNameInAccessTokenPayload]: jwtResponse.jwt,
-                [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: config.jwt.propertyNameInAccessTokenPayload,
-            };
 
             await newSession.updateAccessTokenPayload(accessTokenPayload);
 
@@ -158,55 +175,37 @@ export default function (
             sessionHandle: string;
             newAccessTokenPayload: any;
         }): Promise<void> {
-            if (newAccessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY] !== undefined) {
-                throw new Error(JWT_RESERVED_KEY_USE_ERROR_MESSAGE);
-            }
-
             let sessionInformation = await this.getSessionInformation({ sessionHandle });
+            let accessTokenPayload = sessionInformation.accessTokenPayload;
 
-            let jwtPropertyName = sessionInformation.accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+            let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
 
-            if (jwtPropertyName === undefined || sessionInformation.accessTokenPayload[jwtPropertyName] === undefined) {
+            if (existingJwtPropertyName === undefined) {
                 return await originalImplementation.updateAccessTokenPayload({
                     sessionHandle,
                     newAccessTokenPayload,
                 });
             }
 
-            let existingJWT = sessionInformation.accessTokenPayload[jwtPropertyName];
+            let existingJwt = accessTokenPayload[existingJwtPropertyName];
+            assert.notStrictEqual(existingJwt, undefined);
 
-            // Get the validity of the current JWT
             let currentTimeInSeconds = Date.now() / 1000;
-            let decodedPayload = JsonWebToken.decode(existingJWT, { json: true });
+            let decodedPayload = JsonWebToken.decode(existingJwt, { json: true });
 
             // JsonWebToken.decode possibly returns null
             if (decodedPayload === null) {
                 throw new Error("Error reading JWT from session");
             }
 
-            let existingJWTValidity = decodedPayload.exp - currentTimeInSeconds;
+            let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
 
-            newAccessTokenPayload = {
-                sub: sessionInformation.userId,
-                iss: appInfo.apiDomain.getAsStringDangerous(),
-                ...newAccessTokenPayload,
-            };
-
-            let newJWTResponse = await jwtRecipeImplementation.createJWT({
-                payload: newAccessTokenPayload,
-                validitySeconds: existingJWTValidity,
+            newAccessTokenPayload = await modifyAccessTokenPayload({
+                accessTokenPayload: newAccessTokenPayload,
+                jwtExpiry,
+                userId: sessionInformation.userId,
+                jwtPropertyName: existingJwtPropertyName,
             });
-
-            if (newJWTResponse.status === "UNSUPPORTED_ALGORITHM_ERROR") {
-                // Should never come here
-                throw new Error("JWT Signing algorithm not supported");
-            }
-
-            newAccessTokenPayload = {
-                ...newAccessTokenPayload,
-                [jwtPropertyName]: newJWTResponse.jwt,
-                [ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY]: jwtPropertyName,
-            };
 
             return await originalImplementation.updateAccessTokenPayload({
                 sessionHandle,
