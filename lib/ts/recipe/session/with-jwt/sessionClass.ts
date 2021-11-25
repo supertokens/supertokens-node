@@ -74,9 +74,6 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         let existingJWT = accessTokenPayload[jwtPropertyName];
         assert.notStrictEqual(existingJWT, undefined);
 
-        delete accessTokenPayload[jwtPropertyName];
-        delete accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
-
         let currentTimeInSeconds = Date.now() / 1000;
         let decodedPayload = JsonWebToken.decode(existingJWT, { json: true });
 
