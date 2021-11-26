@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -14,5 +12,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-exports.version = "8.3.0";
-exports.cdiSupported = ["2.8", "2.9", "2.10"];
+
+import Recipe from "./recipe";
+import { TypeInput, TypeNormalisedInput } from "./types";
+import { NormalisedAppinfo } from "../../types";
+
+export function validateAndNormaliseUserInput(_: Recipe, __: NormalisedAppinfo, ___?: TypeInput): TypeNormalisedInput {
+    throw new Error("TODO: needs impl");
+}

@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -14,5 +12,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-exports.version = "8.3.0";
-exports.cdiSupported = ["2.8", "2.9", "2.10"];
+
+import Recipe from "./recipe";
+import SuperTokensError from "./error";
+import { RecipeInterface, User, APIOptions, APIInterface } from "./types";
+
+/* TODO: Apart from the recipe functions, we should also add:
+- Sign up user function
+- Create magicLink function for email / phoneNumber */
+
+// For Express
+export default class Wrapper {
+    static init = Recipe.init;
+
+    static Error = SuperTokensError;
+
+    // TODO:
+}
+
+export let init = Wrapper.init;
+
+export let Error = Wrapper.Error;
+
+export type { RecipeInterface, User, APIOptions, APIInterface };
