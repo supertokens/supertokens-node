@@ -86,7 +86,7 @@ then
    echo "$(tput setaf 1)CANCELLING commit due to NON-FORMATTED CODE.$(tput sgr 0)"
    echo ""
    exit 1
-elif [ $dotOnly -ne 0 ]
+elif [ $dotOnly -ne 1 ]
 then
    echo "$(tput setaf 1)... done.$(tput sgr 0)"
    echo "$(tput setaf 1)CANCELLING commit due to .only in test files $(tput sgr 0)"

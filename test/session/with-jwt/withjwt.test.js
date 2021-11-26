@@ -1802,7 +1802,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         assert(decodedJWT.exp > currentTimeInSeconds);
     });
 
-    it.only("Test that both access token payload and JWT have valid claims when calling update with a undefined payload", async function () {
+    it("Test that both access token payload and JWT have valid claims when calling update with a undefined payload", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {

@@ -120,7 +120,7 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClas
         assert.strictEqual(decodedJWT._jwtPName, undefined);
     });
 
-    it.only("Test that both access token payload and JWT have valid claims when calling update with a undefined payload", async function () {
+    it("Test that both access token payload and JWT have valid claims when calling update with a undefined payload", async function () {
         await startST();
         SuperTokens.init({
             supertokens: {
