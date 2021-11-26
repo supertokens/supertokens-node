@@ -57,6 +57,8 @@ export default function (
             accessTokenPayload?: any;
             sessionData?: any;
         }): Promise<SessionContainerInterface> {
+            accessTokenPayload =
+                accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
             accessTokenPayload = await addJWTToAccessTokenPayload({
                 accessTokenPayload,
