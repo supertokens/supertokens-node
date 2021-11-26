@@ -8,6 +8,67 @@ import NextJS from "../../nextjs";
 import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
+import Passwordless from "../../recipe/passwordless";
+
+Passwordless.init({
+    contactMethod: "PHONE",
+    createAndSendCustomTextMessage: async (input, userCtx) => {
+        return;
+    },
+    flowType: "MAGIC_LINK",
+    getCustomUserInputCode: (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+    },
+});
+
+Passwordless.init({
+    contactMethod: "EMAIL",
+    createAndSendCustomEmail: async (input, userCtx) => {
+        return;
+    },
+    flowType: "USER_INPUT_CODE",
+    getCustomUserInputCode: async (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: async (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+    },
+});
+
+Passwordless.init({
+    contactMethod: "EMAIL",
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+});
+
+Passwordless.init({
+    contactMethod: "PHONE",
+    createAndSendCustomTextMessage: async (input, userCtx) => {
+        return;
+    },
+    flowType: "MAGIC_LINK",
+});
 
 let app = express();
 
