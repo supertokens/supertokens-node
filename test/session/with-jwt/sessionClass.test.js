@@ -119,4 +119,87 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClas
         assert.strictEqual(decodedJWT.iss, "https://api.supertokens.io");
         assert.strictEqual(decodedJWT._jwtPName, undefined);
     });
+
+    it.only("Test that both access token payload and JWT have valid claims when calling update with a undefined payload", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    jwt: { enable: true },
+                    override: {
+                        functions: function (oi) {
+                            return {
+                                ...oi,
+                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                    accessTokenPayload = {
+                                        ...accessTokenPayload,
+                                        customClaim: "customValue",
+                                    };
+
+                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
+        let app = express();
+
+        app.use(middleware());
+        app.use(express.json());
+
+        app.post("/create", async (req, res) => {
+            let session = await Session.createNewSession(res, "userId", {}, {});
+
+            await session.updateAccessTokenPayload(undefined);
+
+            res.status(200).json({ accessTokenPayload: session.getAccessTokenPayload() });
+        });
+
+        app.use(errorHandler());
+
+        let createJWTResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/create")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let accessTokenPayload = createJWTResponse.body.accessTokenPayload;
+        assert.equal(accessTokenPayload.sub, "userId");
+        assert.equal(accessTokenPayload.iss, "https://api.supertokens.io");
+        assert.notStrictEqual(accessTokenPayload.jwt, undefined);
+        assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
+        assert.strictEqual(accessTokenPayload.customClaim, undefined);
+
+        let decodedJWT = JsonWebToken.decode(accessTokenPayload.jwt);
+        assert.notStrictEqual(decodedJWT, null);
+        assert.strictEqual(decodedJWT["sub"], "userId");
+        assert.strictEqual(decodedJWT.iss, "https://api.supertokens.io");
+        assert.strictEqual(decodedJWT._jwtPName, undefined);
+        assert.strictEqual(decodedJWT.customClaim, undefined);
+    });
 });

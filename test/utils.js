@@ -418,3 +418,7 @@ module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, bod
         queryStringParameters: queryParams,
     };
 };
+
+module.exports.delay = async function (time) {
+    await new Promise((r) => setTimeout(r, time * 1000));
+};

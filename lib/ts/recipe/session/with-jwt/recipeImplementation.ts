@@ -23,15 +23,23 @@ import SessionClassWithJWT from "./sessionClass";
 import * as assert from "assert";
 import { addJWTToAccessTokenPayload } from "./utils";
 
+// Time difference between JWT expiry and access token expiry (JWT expiry = access token expiry + EXPIRY_OFFSET_SECONDS)
+let EXPIRY_OFFSET_SECONDS = 30;
+
+// This function should only be used during testing
+export function setJWTExpiryOffsetSecondsForTesting(offset: number) {
+    if (process.env.TEST_MODE !== "testing") {
+        throw Error("calling testing function in non testing env");
+    }
+    EXPIRY_OFFSET_SECONDS = offset;
+}
+
 export default function (
     originalImplementation: RecipeInterface,
     jwtRecipeImplementation: JWTRecipeInterface,
     config: TypeNormalisedInput,
     appInfo: NormalisedAppinfo
 ): RecipeInterface {
-    // Time difference between JWT expiry and access token expiry (JWT expiry = access token expiry + EXPIRY_OFFSET_SECONDS)
-    const EXPIRY_OFFSET_SECONDS = 30;
-
     function getJWTExpiry(accessTokenExpiry: number): number {
         return accessTokenExpiry + EXPIRY_OFFSET_SECONDS;
     }
@@ -112,6 +120,8 @@ export default function (
             sessionHandle: string;
             newAccessTokenPayload: any;
         }): Promise<void> {
+            newAccessTokenPayload =
+                newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
             let sessionInformation = await this.getSessionInformation({ sessionHandle });
             let accessTokenPayload = sessionInformation.accessTokenPayload;
 
