@@ -39,7 +39,7 @@ export function validateAndNormaliseUserInput(
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
-        ...config?.override,
+        ...config.override,
     };
 
     if (config.contactMethod === "EMAIL") {
