@@ -12,7 +12,7 @@ export declare type TypeInput = (
     | {
           contactMethod: "PHONE";
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomTextMessage: (
+          createAndSendCustomTextMessage?: (
               input: {
                   phoneNumber: string;
                   userInputCode?: string;

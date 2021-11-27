@@ -22,13 +22,7 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    if (config.contactMethod === "PHONE") {
-        if (config.createAndSendCustomTextMessage === undefined) {
-            throw new Error(
-                'Please pass createAndSendCustomTextMessage since you have set the contactMethod as "PHONE"'
-            );
-        }
-    } else if (config.contactMethod !== "EMAIL") {
+    if (config.contactMethod !== "PHONE" && config.contactMethod !== "EMAIL") {
         throw new Error('Please pass one of "PHONE" or "EMAIL" as the contactMethod');
     }
 
@@ -64,7 +58,10 @@ export function validateAndNormaliseUserInput(
             override,
             flowType: config.flowType,
             contactMethod: "PHONE",
-            createAndSendCustomTextMessage: config.createAndSendCustomTextMessage,
+            createAndSendCustomTextMessage:
+                config.createAndSendCustomTextMessage === undefined
+                    ? defaultCreateAndSendTextMessage
+                    : config.createAndSendCustomTextMessage,
             getLinkDomainAndPath:
                 config.getLinkDomainAndPath === undefined
                     ? getDefaultGetLinkDomainAndPath(appInfo)
@@ -108,6 +105,23 @@ async function defaultCreateAndSendCustomEmail(
     _: {
         // Where the message should be delivered.
         email: string;
+        // This has to be entered on the starting device  to finish sign in/up
+        userInputCode?: string;
+        // Full url that the end-user can click to finish sign in/up
+        urlWithLinkCode?: string;
+        codeLifetime: number;
+        // Unlikely, but someone could display this (or a derived thing) to identify the device
+        preAuthSessionId: string;
+    },
+    __: any
+): Promise<void> {
+    // TODO:
+}
+
+async function defaultCreateAndSendTextMessage(
+    _: {
+        // Where the message should be delivered.
+        phoneNumber: string;
         // This has to be entered on the starting device  to finish sign in/up
         userInputCode?: string;
         // Full url that the end-user can click to finish sign in/up

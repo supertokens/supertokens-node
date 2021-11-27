@@ -64,9 +64,6 @@ Passwordless.init({
 
 Passwordless.init({
     contactMethod: "PHONE",
-    createAndSendCustomTextMessage: async (input, userCtx) => {
-        return;
-    },
     flowType: "MAGIC_LINK",
 });
 
