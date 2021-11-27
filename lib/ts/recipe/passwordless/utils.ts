@@ -14,9 +14,109 @@
  */
 
 import Recipe from "./recipe";
-import { TypeInput, TypeNormalisedInput } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 
-export function validateAndNormaliseUserInput(_: Recipe, __: NormalisedAppinfo, ___?: TypeInput): TypeNormalisedInput {
-    throw new Error("TODO: needs impl");
+export function validateAndNormaliseUserInput(
+    _: Recipe,
+    appInfo: NormalisedAppinfo,
+    config: TypeInput
+): TypeNormalisedInput {
+    if (config.contactMethod === "PHONE") {
+        if (config.createAndSendCustomTextMessage === undefined) {
+            throw new Error(
+                'Please pass createAndSendCustomTextMessage since you have set the contactMethod as "PHONE"'
+            );
+        }
+    } else if (config.contactMethod !== "EMAIL") {
+        throw new Error('Please pass one of "PHONE" or "EMAIL" as the contactMethod');
+    }
+
+    if (config.flowType === undefined) {
+        throw new Error("Please pass flowType argument in the config");
+    }
+
+    let override = {
+        functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        apis: (originalImplementation: APIInterface) => originalImplementation,
+        ...config?.override,
+    };
+
+    if (config.contactMethod === "EMAIL") {
+        return {
+            override,
+            flowType: config.flowType,
+            contactMethod: "EMAIL",
+            createAndSendCustomEmail:
+                config.createAndSendCustomEmail === undefined
+                    ? defaultCreateAndSendCustomEmail
+                    : config.createAndSendCustomEmail,
+            getLinkDomainAndPath:
+                config.getLinkDomainAndPath === undefined
+                    ? getDefaultGetLinkDomainAndPath(appInfo)
+                    : config.getLinkDomainAndPath,
+            validateEmailAddress:
+                config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
+            getCustomUserInputCode: config.getCustomUserInputCode,
+        };
+    } else {
+        return {
+            override,
+            flowType: config.flowType,
+            contactMethod: "PHONE",
+            createAndSendCustomTextMessage: config.createAndSendCustomTextMessage,
+            getLinkDomainAndPath:
+                config.getLinkDomainAndPath === undefined
+                    ? getDefaultGetLinkDomainAndPath(appInfo)
+                    : config.getLinkDomainAndPath,
+            validatePhoneNumber:
+                config.validatePhoneNumber === undefined ? defaultValidatePhoneNumber : config.validatePhoneNumber,
+            getCustomUserInputCode: config.getCustomUserInputCode,
+        };
+    }
+}
+
+function getDefaultGetLinkDomainAndPath(appInfo: NormalisedAppinfo) {
+    return (
+        _:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              },
+        __: any
+    ): Promise<string> | string => {
+        // TODO: is this gonna be the correct path?
+        return (
+            appInfo.websiteDomain.getAsStringDangerous() + appInfo.websiteBasePath.getAsStringDangerous() + "/verify"
+        );
+    };
+}
+
+function defaultValidatePhoneNumber(_: string): Promise<string | undefined> | string | undefined {
+    // TODO:
+    return undefined;
+}
+
+function defaultValidateEmail(_: string): Promise<string | undefined> | string | undefined {
+    // TODO:
+    return undefined;
+}
+
+async function defaultCreateAndSendCustomEmail(
+    _: {
+        // Where the message should be delivered.
+        email: string;
+        // This has to be entered on the starting device  to finish sign in/up
+        userInputCode?: string;
+        // Full url that the end-user can click to finish sign in/up
+        urlWithLinkCode?: string;
+        codeLifetime: number;
+        // Unlikely, but someone could display this (or a derived thing) to identify the device
+        preAuthSessionId: string;
+    },
+    __: any
+): Promise<void> {
+    // TODO:
 }
