@@ -96,11 +96,6 @@ function defaultValidatePhoneNumber(_: string): Promise<string | undefined> | st
     return undefined;
 }
 
-function defaultValidateEmail(_: string): Promise<string | undefined> | string | undefined {
-    // TODO:
-    return undefined;
-}
-
 async function defaultCreateAndSendCustomEmail(
     _: {
         // Where the message should be delivered.
@@ -133,4 +128,24 @@ async function defaultCreateAndSendTextMessage(
     __: any
 ): Promise<void> {
     // TODO:
+}
+
+function defaultValidateEmail(value: string): Promise<string | undefined> | string | undefined {
+    // We check if the email syntax is correct
+    // As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
+    // Regex from https://stackoverflow.com/a/46181/3867175
+
+    if (typeof value !== "string") {
+        return "Development bug: Please make sure the email field yields a string";
+    }
+
+    if (
+        value.match(
+            /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        ) === null
+    ) {
+        return "Email is invalid";
+    }
+
+    return undefined;
 }
