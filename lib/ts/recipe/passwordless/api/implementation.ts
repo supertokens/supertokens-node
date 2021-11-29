@@ -80,6 +80,8 @@ export default function getAPIImplementation(): APIInterface {
                         )) +
                         "?rid=" +
                         input.options.recipeId +
+                        "&preAuthSessionId=" +
+                        response.preAuthSessionId +
                         "#" +
                         response.linkCode;
                 }
@@ -245,6 +247,8 @@ export default function getAPIImplementation(): APIInterface {
                             )) +
                             "?rid=" +
                             input.options.recipeId +
+                            "&preAuthSessionId=" +
+                            response.preAuthSessionId +
                             "#" +
                             response.linkCode;
                     }
