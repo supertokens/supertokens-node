@@ -37,4 +37,19 @@ export default class Recipe extends RecipeModule {
               },
         userContext?: any
     ) => Promise<string>;
+    signInUp: (
+        input:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              },
+        userContext?: any
+    ) => Promise<{
+        status: string;
+        preAuthSessionId: string;
+        createdNewUser: boolean;
+        user: import("./types").User;
+    }>;
 }

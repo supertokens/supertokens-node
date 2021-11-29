@@ -225,4 +225,54 @@ export default class Recipe extends RecipeModule {
             }
         }
     };
+
+    signInUp = async (
+        input:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              },
+        userContext: any = {}
+    ) => {
+        let codeInfo = await this.recipeInterfaceImpl.createCode(
+            "email" in input
+                ? {
+                      email: input.email,
+                  }
+                : {
+                      phoneNumber: input.phoneNumber,
+                  },
+            userContext
+        );
+
+        if (codeInfo.status === "USER_INPUT_CODE_ALREADY_USED_ERROR") {
+            // it should never come here because we are not using the user's code generation function here
+            throw new Error("This should never be thrown");
+        }
+
+        let consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
+            this.config.flowType === "MAGIC_LINK"
+                ? {
+                      linkCode: codeInfo.linkCode,
+                  }
+                : {
+                      deviceId: codeInfo.deviceId,
+                      userInputCode: codeInfo.userInputCode,
+                  },
+            userContext
+        );
+
+        if (consumeCodeResponse.status === "OK") {
+            return {
+                status: "OK",
+                preAuthSessionId: consumeCodeResponse.preAuthSessionId,
+                createdNewUser: consumeCodeResponse.createdNewUser,
+                user: consumeCodeResponse.user,
+            };
+        } else {
+            throw new Error("Failed to create user. Please retry");
+        }
+    };
 }

@@ -218,6 +218,21 @@ export default class Wrapper {
               },
         userContext?: any
     ): Promise<string>;
+    static signInUp(
+        input:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              },
+        userContext?: any
+    ): Promise<{
+        status: string;
+        preAuthSessionId: string;
+        createdNewUser: boolean;
+        user: User;
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;

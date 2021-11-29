@@ -17,7 +17,6 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIOptions, APIInterface } from "./types";
 
-// For Express
 export default class Wrapper {
     static init = Recipe.init;
 

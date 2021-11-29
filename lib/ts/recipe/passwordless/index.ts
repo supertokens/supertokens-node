@@ -17,12 +17,6 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIOptions, APIInterface } from "./types";
 
-/* TODO: Apart from the recipe functions, we should also add:
-- Sign up user function
-
-*/
-
-// For Express
 export default class Wrapper {
     static init = Recipe.init;
 
@@ -173,6 +167,19 @@ export default class Wrapper {
         userContext: any = {}
     ) {
         return Recipe.getInstanceOrThrowError().createMagicLink(input, userContext);
+    }
+
+    static signInUp(
+        input:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().signInUp(input, userContext);
     }
 }
 
