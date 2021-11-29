@@ -127,7 +127,7 @@ export declare type RecipeInterface = {
               preAuthSessionId: string;
               codeId: string;
               deviceId: string;
-              code: string;
+              userInputCode: string;
               linkCode: string;
               codeLifetime: number;
               timeCreated: number;
@@ -148,7 +148,7 @@ export declare type RecipeInterface = {
               preAuthSessionId: string;
               codeId: string;
               deviceId: string;
-              code: string;
+              userInputCode: string;
               linkCode: string;
               codeLifetime: number;
               timeCreated: number;
@@ -251,7 +251,10 @@ export declare type RecipeInterface = {
             deviceId: string;
         },
         userContext: any
-    ) => Promise<ListCodeOutputType>;
+    ) => Promise<{
+        status: "OK";
+        device: DeviceType | undefined;
+    }>;
     listCodesByPreAuthSessionId: (
         input: {
             preAuthSessionId: string;
@@ -261,16 +264,17 @@ export declare type RecipeInterface = {
 };
 declare type ListCodeOutputType = {
     status: "OK";
-    devices: {
-        preAuthSessionId: string;
-        failedCodeInputAttemptCount: number;
-        email?: string;
-        phoneNumber?: string;
-        codes: {
-            codeId: string;
-            timeCreated: string;
-            codeLifetime: number;
-        }[];
+    devices: DeviceType[];
+};
+declare type DeviceType = {
+    preAuthSessionId: string;
+    failedCodeInputAttemptCount: number;
+    email?: string;
+    phoneNumber?: string;
+    codes: {
+        codeId: string;
+        timeCreated: string;
+        codeLifetime: number;
     }[];
 };
 export declare type APIOptions = {

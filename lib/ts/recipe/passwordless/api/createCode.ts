@@ -26,10 +26,26 @@ export default async function createCode(apiImplementation: APIInterface, option
     const email = body.email;
     const phoneNumber = body.phoneNumber;
 
+    // TODO: email validation + phoneNumber validation for all APIs.
+
     if ((email !== undefined && phoneNumber !== undefined) || (email === undefined && phoneNumber === undefined)) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
             message: "Please provide exactly one of email or phoneNumber",
+        });
+    }
+
+    if (email === undefined && options.config.contactMethod === "EMAIL") {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: 'Please provide an email since you have set the contactMethod to "EMAIL"',
+        });
+    }
+
+    if (phoneNumber === undefined && options.config.contactMethod === "PHONE") {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: 'Please provide a phoneNumber since you have set the contactMethod to "PHONE"',
         });
     }
 

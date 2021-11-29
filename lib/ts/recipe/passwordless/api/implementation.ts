@@ -62,6 +62,87 @@ export default function getAPIImplementation(): APIInterface {
                     continue;
                 }
 
+                // now we send the email / text message.
+                let magicLink: string | undefined = undefined;
+                let userInputCode: string | undefined = undefined;
+                const flowType = input.options.config.flowType;
+                if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
+                    magicLink =
+                        (await input.options.config.getLinkDomainAndPath(
+                            "phoneNumber" in input
+                                ? {
+                                      phoneNumber: input.phoneNumber!,
+                                  }
+                                : {
+                                      email: input.email,
+                                  },
+                            userContext
+                        )) +
+                        "?rid=" +
+                        input.options.recipeId +
+                        "#" +
+                        response.linkCode;
+                }
+                if (flowType === "USER_INPUT_CODE" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
+                    userInputCode = response.userInputCode;
+                }
+
+                try {
+                    if (!input.options.isInServerlessEnv) {
+                        if (input.options.config.contactMethod === "PHONE") {
+                            input.options.config
+                                .createAndSendCustomTextMessage(
+                                    {
+                                        codeLifetime: response.codeLifetime,
+                                        phoneNumber: (input as any).phoneNumber,
+                                        preAuthSessionId: response.preAuthSessionId,
+                                        urlWithLinkCode: magicLink,
+                                        userInputCode,
+                                    },
+                                    userContext
+                                )
+                                .catch((_) => {});
+                        } else {
+                            input.options.config
+                                .createAndSendCustomEmail(
+                                    {
+                                        codeLifetime: response.codeLifetime,
+                                        email: (input as any).email!,
+                                        preAuthSessionId: response.preAuthSessionId,
+                                        urlWithLinkCode: magicLink,
+                                        userInputCode,
+                                    },
+                                    userContext
+                                )
+                                .catch((_) => {});
+                        }
+                    } else {
+                        if (input.options.config.contactMethod === "PHONE") {
+                            await input.options.config.createAndSendCustomTextMessage(
+                                {
+                                    codeLifetime: response.codeLifetime,
+                                    phoneNumber: (input as any).phoneNumber!,
+                                    preAuthSessionId: response.preAuthSessionId,
+                                    urlWithLinkCode: magicLink,
+                                    userInputCode,
+                                },
+                                userContext
+                            );
+                        } else {
+                            await input.options.config.createAndSendCustomEmail(
+                                {
+                                    codeLifetime: response.codeLifetime,
+                                    email: (input as any).email!,
+                                    preAuthSessionId: response.preAuthSessionId,
+                                    urlWithLinkCode: magicLink,
+                                    userInputCode,
+                                },
+                                userContext
+                            );
+                        }
+                    }
+                } catch (_) {}
+
                 return {
                     status: "OK",
                     deviceId: response.deviceId,
@@ -120,6 +201,112 @@ export default function getAPIImplementation(): APIInterface {
                         };
                     }
                     continue;
+                }
+
+                if (response.status === "OK") {
+                    let deviceInfo = (
+                        await input.options.recipeImplementation.listCodesByDeviceId(
+                            {
+                                deviceId: response.deviceId,
+                            },
+                            userContext
+                        )
+                    ).device;
+
+                    if (deviceInfo === undefined) {
+                        return {
+                            status: "RESTART_FLOW_ERROR",
+                        };
+                    }
+
+                    if (
+                        (input.options.config.contactMethod === "PHONE" && deviceInfo.phoneNumber === undefined) ||
+                        (input.options.config.contactMethod === "EMAIL" && deviceInfo.email === undefined)
+                    ) {
+                        return {
+                            status: "RESTART_FLOW_ERROR",
+                        };
+                    }
+
+                    let magicLink: string | undefined = undefined;
+                    let userInputCode: string | undefined = undefined;
+                    const flowType = input.options.config.flowType;
+                    if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
+                        magicLink =
+                            (await input.options.config.getLinkDomainAndPath(
+                                deviceInfo.email === undefined
+                                    ? {
+                                          phoneNumber: deviceInfo.phoneNumber!,
+                                      }
+                                    : {
+                                          email: deviceInfo.email,
+                                      },
+                                userContext
+                            )) +
+                            "?rid=" +
+                            input.options.recipeId +
+                            "#" +
+                            response.linkCode;
+                    }
+                    if (flowType === "USER_INPUT_CODE" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
+                        userInputCode = response.userInputCode;
+                    }
+
+                    try {
+                        if (!input.options.isInServerlessEnv) {
+                            if (input.options.config.contactMethod === "PHONE") {
+                                input.options.config
+                                    .createAndSendCustomTextMessage(
+                                        {
+                                            codeLifetime: response.codeLifetime,
+                                            phoneNumber: deviceInfo.phoneNumber!,
+                                            preAuthSessionId: response.preAuthSessionId,
+                                            urlWithLinkCode: magicLink,
+                                            userInputCode,
+                                        },
+                                        userContext
+                                    )
+                                    .catch((_) => {});
+                            } else {
+                                input.options.config
+                                    .createAndSendCustomEmail(
+                                        {
+                                            codeLifetime: response.codeLifetime,
+                                            email: deviceInfo.email!,
+                                            preAuthSessionId: response.preAuthSessionId,
+                                            urlWithLinkCode: magicLink,
+                                            userInputCode,
+                                        },
+                                        userContext
+                                    )
+                                    .catch((_) => {});
+                            }
+                        } else {
+                            if (input.options.config.contactMethod === "PHONE") {
+                                await input.options.config.createAndSendCustomTextMessage(
+                                    {
+                                        codeLifetime: response.codeLifetime,
+                                        phoneNumber: deviceInfo.phoneNumber!,
+                                        preAuthSessionId: response.preAuthSessionId,
+                                        urlWithLinkCode: magicLink,
+                                        userInputCode,
+                                    },
+                                    userContext
+                                );
+                            } else {
+                                await input.options.config.createAndSendCustomEmail(
+                                    {
+                                        codeLifetime: response.codeLifetime,
+                                        email: deviceInfo.email!,
+                                        preAuthSessionId: response.preAuthSessionId,
+                                        urlWithLinkCode: magicLink,
+                                        userInputCode,
+                                    },
+                                    userContext
+                                );
+                            }
+                        }
+                    } catch (_) {}
                 }
 
                 return {
