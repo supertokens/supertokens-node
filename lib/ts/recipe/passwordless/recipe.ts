@@ -24,6 +24,18 @@ import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
+import consumeCodeAPI from "./api/consumeCode";
+import createCodeAPI from "./api/createCode";
+import emailExistsAPI from "./api/emailExists";
+import phoneNumberExistsAPI from "./api/phoneNumberExists";
+import resendCodeAPI from "./api/resendCode";
+import {
+    CONSUME_CODE_API,
+    CREATE_CODE_API,
+    DOES_EMAIL_EXIST_API,
+    DOES_PHONE_NUMBER_EXIST_API,
+    RESEND_CODE_API,
+} from "./constants";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -80,27 +92,65 @@ export default class Recipe extends RecipeModule {
 
     getAPIsHandled = (): APIHandled[] => {
         return [
-            // TODO:
+            {
+                id: CONSUME_CODE_API,
+                disabled: this.apiImpl.consumeCodePOST === undefined,
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(CONSUME_CODE_API),
+            },
+            {
+                id: CREATE_CODE_API,
+                disabled: this.apiImpl.createCodePOST === undefined,
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(CREATE_CODE_API),
+            },
+            {
+                id: DOES_EMAIL_EXIST_API,
+                disabled: this.apiImpl.emailExistsGET === undefined,
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(DOES_EMAIL_EXIST_API),
+            },
+            {
+                id: DOES_PHONE_NUMBER_EXIST_API,
+                disabled: this.apiImpl.phoneNumberExistsGET === undefined,
+                method: "get",
+                pathWithoutApiBasePath: new NormalisedURLPath(DOES_PHONE_NUMBER_EXIST_API),
+            },
+            {
+                id: RESEND_CODE_API,
+                disabled: this.apiImpl.resendCodePOST === undefined,
+                method: "post",
+                pathWithoutApiBasePath: new NormalisedURLPath(RESEND_CODE_API),
+            },
         ];
     };
 
     handleAPIRequest = async (
-        _: string,
-        __: BaseRequest,
-        ___: BaseResponse,
-        ____: NormalisedURLPath,
-        _____: HTTPMethod
+        id: string,
+        req: BaseRequest,
+        res: BaseResponse,
+        _: NormalisedURLPath,
+        __: HTTPMethod
     ): Promise<boolean> => {
-        // const options = {
-        //     config: this.config,
-        //     recipeId: this.getRecipeId(),
-        //     isInServerlessEnv: this.isInServerlessEnv,
-        //     recipeImplementation: this.recipeInterfaceImpl,
-        //     req,
-        //     res,
-        // };
-        // TODO:
-        return false;
+        const options = {
+            config: this.config,
+            recipeId: this.getRecipeId(),
+            isInServerlessEnv: this.isInServerlessEnv,
+            recipeImplementation: this.recipeInterfaceImpl,
+            req,
+            res,
+        };
+        if (id === CONSUME_CODE_API) {
+            return await consumeCodeAPI(this.apiImpl, options);
+        } else if (id === CREATE_CODE_API) {
+            return await createCodeAPI(this.apiImpl, options);
+        } else if (id === DOES_EMAIL_EXIST_API) {
+            return await emailExistsAPI(this.apiImpl, options);
+        } else if (id === DOES_PHONE_NUMBER_EXIST_API) {
+            return await phoneNumberExistsAPI(this.apiImpl, options);
+        } else {
+            return await resendCodeAPI(this.apiImpl, options);
+        }
     };
 
     handleError = async (err: STError, _: BaseRequest, __: BaseResponse): Promise<void> => {

@@ -18,11 +18,11 @@ export default class Recipe extends RecipeModule {
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
-        _: string,
-        __: BaseRequest,
-        ___: BaseResponse,
-        ____: NormalisedURLPath,
-        _____: HTTPMethod
+        id: string,
+        req: BaseRequest,
+        res: BaseResponse,
+        _: NormalisedURLPath,
+        __: HTTPMethod
     ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
