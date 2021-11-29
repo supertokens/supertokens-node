@@ -15,6 +15,8 @@
 
 export const CREATE_CODE_API = "/signinup/code";
 
+export const RESEND_CODE_API = "/signinup/code/resend";
+
 export const CONSUME_CODE_API = "/signinup/code/consume";
 
 export const DOES_EMAIL_EXIST_API = "/signup/email/exists";
