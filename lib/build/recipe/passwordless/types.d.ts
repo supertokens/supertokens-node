@@ -117,10 +117,28 @@ export declare type RecipeInterface = {
             | {
                   phoneNumber: string;
               }
-            | {
-                  deviceId: string;
-              }
         ) & {
+            userInputCode?: string;
+        },
+        userContext: any
+    ) => Promise<
+        | {
+              status: "OK";
+              preAuthSessionId: string;
+              codeId: string;
+              deviceId: string;
+              code: string;
+              linkCode: string;
+              codeLifetime: number;
+              timeCreated: number;
+          }
+        | {
+              status: "USER_INPUT_CODE_ALREADY_USED_ERROR";
+          }
+    >;
+    resendCode: (
+        input: {
+            deviceId: string;
             userInputCode?: string;
         },
         userContext: any
@@ -189,10 +207,8 @@ export declare type RecipeInterface = {
     updateUser: (
         input: {
             userId: string;
-            userInfoUpdate: {
-                email?: string | null;
-                phoneNumber?: string | null;
-            };
+            email?: string | null;
+            phoneNumber?: string | null;
         },
         userContext: any
     ) => Promise<{
@@ -218,35 +234,44 @@ export declare type RecipeInterface = {
     ) => Promise<{
         status: "OK";
     }>;
-    listCodes: (
-        input:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              }
-            | {
-                  deviceId: string;
-              }
-            | {
-                  preAuthSessionId: string;
-              },
+    listCodesByEmail: (
+        input: {
+            email: string;
+        },
         userContext: any
-    ) => Promise<{
-        status: "OK";
-        devices: {
+    ) => Promise<ListCodeOutputType>;
+    listCodesByPhoneNumber: (
+        input: {
+            phoneNumber: string;
+        },
+        userContext: any
+    ) => Promise<ListCodeOutputType>;
+    listCodesByDeviceId: (
+        input: {
+            deviceId: string;
+        },
+        userContext: any
+    ) => Promise<ListCodeOutputType>;
+    listCodesByPreAuthSessionId: (
+        input: {
             preAuthSessionId: string;
-            failedCodeInputAttemptCount: number;
-            email?: string;
-            phoneNumber?: string;
-            codes: {
-                codeId: string;
-                timeCreated: string;
-                codeLifetime: number;
-            }[];
+        },
+        userContext: any
+    ) => Promise<ListCodeOutputType>;
+};
+declare type ListCodeOutputType = {
+    status: "OK";
+    devices: {
+        preAuthSessionId: string;
+        failedCodeInputAttemptCount: number;
+        email?: string;
+        phoneNumber?: string;
+        codes: {
+            codeId: string;
+            timeCreated: string;
+            codeLifetime: number;
         }[];
-    }>;
+    }[];
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -265,10 +290,6 @@ export declare type APIInterface = {
             | {
                   phoneNumber: string;
               }
-            | {
-                  deviceId: string;
-                  preAuthSessionId: string;
-              }
         ) & {
             options: APIOptions;
         },
@@ -284,8 +305,22 @@ export declare type APIInterface = {
               status: "GENERAL_ERROR";
               message: string;
           }
+    >;
+    resendCodePOST?: (
+        input: {
+            deviceId: string;
+            preAuthSessionId: string;
+        } & {
+            options: APIOptions;
+        },
+        userContext: any
+    ) => Promise<
         | {
-              status: "RESTART_FLOW_ERROR";
+              status: "GENERAL_ERROR";
+              message: string;
+          }
+        | {
+              status: "RESTART_FLOW_ERROR" | "OK";
           }
     >;
     consumeCodePOST?: (
@@ -348,3 +383,4 @@ export declare type APIInterface = {
         exists: boolean;
     }>;
 };
+export {};

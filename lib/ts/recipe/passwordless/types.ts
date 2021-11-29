@@ -170,7 +170,33 @@ export type TypeNormalisedInput = (
 
 export type RecipeInterface = {
     createCode: (
-        input: ({ email: string } | { phoneNumber: string } | { deviceId: string }) & { userInputCode?: string },
+        input: (
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              }
+        ) & { userInputCode?: string },
+        userContext: any
+    ) => Promise<
+        | {
+              status: "OK";
+              preAuthSessionId: string;
+              codeId: string;
+              deviceId: string;
+              code: string;
+              linkCode: string;
+              codeLifetime: number;
+              timeCreated: number;
+          }
+        | { status: "USER_INPUT_CODE_ALREADY_USED_ERROR" }
+    >;
+    resendCode: (
+        input: {
+            deviceId: string;
+            userInputCode?: string;
+        },
         userContext: any
     ) => Promise<
         | {
@@ -233,10 +259,8 @@ export type RecipeInterface = {
     updateUser: (
         input: {
             userId: string;
-            userInfoUpdate: {
-                email?: string | null;
-                phoneNumber?: string | null;
-            };
+            email?: string | null;
+            phoneNumber?: string | null;
         },
         userContext: any
     ) => Promise<{
@@ -265,34 +289,51 @@ export type RecipeInterface = {
         status: "OK";
     }>;
 
-    listCodes: (
-        input:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              }
-            | { deviceId: string }
-            | { preAuthSessionId: string },
+    listCodesByEmail: (
+        input: {
+            email: string;
+        },
         userContext: any
-    ) => Promise<{
-        status: "OK";
-        devices: {
+    ) => Promise<ListCodeOutputType>;
+
+    listCodesByPhoneNumber: (
+        input: {
+            phoneNumber: string;
+        },
+        userContext: any
+    ) => Promise<ListCodeOutputType>;
+
+    listCodesByDeviceId: (
+        input: {
+            deviceId: string;
+        },
+        userContext: any
+    ) => Promise<ListCodeOutputType>;
+
+    listCodesByPreAuthSessionId: (
+        input: {
             preAuthSessionId: string;
+        },
+        userContext: any
+    ) => Promise<ListCodeOutputType>;
+};
 
-            failedCodeInputAttemptCount: number;
+type ListCodeOutputType = {
+    status: "OK";
+    devices: {
+        preAuthSessionId: string;
 
-            email?: string;
-            phoneNumber?: string;
+        failedCodeInputAttemptCount: number;
 
-            codes: {
-                codeId: string;
-                timeCreated: string;
-                codeLifetime: number;
-            }[];
+        email?: string;
+        phoneNumber?: string;
+
+        codes: {
+            codeId: string;
+            timeCreated: string;
+            codeLifetime: number;
         }[];
-    }>;
+    }[];
 };
 
 export type APIOptions = {
@@ -306,7 +347,7 @@ export type APIOptions = {
 
 export type APIInterface = {
     createCodePOST?: (
-        input: ({ email: string } | { phoneNumber: string } | { deviceId: string; preAuthSessionId: string }) & {
+        input: ({ email: string } | { phoneNumber: string }) & {
             options: APIOptions;
         },
         userContext: any
@@ -318,8 +359,14 @@ export type APIInterface = {
               flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
           }
         | { status: "GENERAL_ERROR"; message: string }
-        | { status: "RESTART_FLOW_ERROR" }
     >;
+
+    resendCodePOST?: (
+        input: { deviceId: string; preAuthSessionId: string } & {
+            options: APIOptions;
+        },
+        userContext: any
+    ) => Promise<{ status: "GENERAL_ERROR"; message: string } | { status: "RESTART_FLOW_ERROR" | "OK" }>;
 
     consumeCodePOST?: (
         input: (
