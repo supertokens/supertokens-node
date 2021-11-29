@@ -23,10 +23,8 @@ export default async function createCode(apiImplementation: APIInterface, option
     }
 
     const body = await options.req.getJSONBody();
-    const email = body.email;
-    const phoneNumber = body.phoneNumber;
-
-    // TODO: email validation + phoneNumber validation for all APIs.
+    let email: string | undefined = body.email;
+    let phoneNumber: string | undefined = body.phoneNumber;
 
     if ((email !== undefined && phoneNumber !== undefined) || (email === undefined && phoneNumber === undefined)) {
         throw new STError({
@@ -49,8 +47,34 @@ export default async function createCode(apiImplementation: APIInterface, option
         });
     }
 
+    // normalise and validate format of input
+    if (email !== undefined && options.config.contactMethod === "EMAIL") {
+        email = email.trim();
+        const validateError = await options.config.validateEmailAddress(email);
+        if (validateError !== undefined) {
+            send200Response(options.res, {
+                status: "GENERAL_ERROR",
+                message: validateError,
+            });
+            return true;
+        }
+    }
+
+    if (phoneNumber !== undefined && options.config.contactMethod === "PHONE") {
+        phoneNumber = phoneNumber.trim();
+        // TODO: normalise phoneNumber?? how??
+        const validateError = await options.config.validatePhoneNumber(phoneNumber);
+        if (validateError !== undefined) {
+            send200Response(options.res, {
+                status: "GENERAL_ERROR",
+                message: validateError,
+            });
+            return true;
+        }
+    }
+
     let result = await apiImplementation.createCodePOST(
-        email !== undefined ? { email, options } : { phoneNumber, options },
+        email !== undefined ? { email, options } : { phoneNumber: phoneNumber!, options },
         {}
     );
 
