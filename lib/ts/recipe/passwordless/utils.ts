@@ -84,7 +84,6 @@ function getDefaultGetLinkDomainAndPath(appInfo: NormalisedAppinfo) {
               },
         __: any
     ): Promise<string> | string => {
-        // TODO: is this gonna be the correct path?
         return (
             appInfo.websiteDomain.getAsStringDangerous() + appInfo.websiteBasePath.getAsStringDangerous() + "/verify"
         );
