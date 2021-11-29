@@ -27,4 +27,14 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
+    createMagicLink: (
+        input:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              },
+        userContext?: any
+    ) => Promise<string>;
 }

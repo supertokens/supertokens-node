@@ -164,4 +164,65 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
+
+    // helper functions below...
+
+    createMagicLink = async (
+        input:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              },
+        userContext: any = {}
+    ): Promise<string> => {
+        let numberOfTriesToCreateNewCode = 0;
+        while (true) {
+            numberOfTriesToCreateNewCode++;
+            let userInputCode =
+                this.config.getCustomUserInputCode !== undefined
+                    ? await this.config.getCustomUserInputCode(userContext)
+                    : undefined;
+
+            const codeInfo = await this.recipeInterfaceImpl.createCode(
+                "email" in input
+                    ? {
+                          email: input.email,
+                          userInputCode,
+                      }
+                    : {
+                          phoneNumber: input.phoneNumber,
+                          userInputCode,
+                      },
+                userContext
+            );
+
+            if (codeInfo.status === "OK") {
+                let magicLink =
+                    (await this.config.getLinkDomainAndPath(
+                        "phoneNumber" in input
+                            ? {
+                                  phoneNumber: input.phoneNumber!,
+                              }
+                            : {
+                                  email: input.email,
+                              },
+                        userContext
+                    )) +
+                    "?rid=" +
+                    this.getRecipeId() +
+                    "#" +
+                    codeInfo.linkCode;
+
+                return magicLink;
+            } else {
+                if (numberOfTriesToCreateNewCode >= 3) {
+                    // we retry 3 times.
+                    throw new Error("Failed to generate a one time code. Please try again");
+                }
+                continue;
+            }
+        }
+    };
 }

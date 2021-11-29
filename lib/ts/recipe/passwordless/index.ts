@@ -19,7 +19,8 @@ import { RecipeInterface, User, APIOptions, APIInterface } from "./types";
 
 /* TODO: Apart from the recipe functions, we should also add:
 - Sign up user function
-- Create magicLink function for email / phoneNumber */
+
+*/
 
 // For Express
 export default class Wrapper {
@@ -27,11 +28,184 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    // TODO:
+    static createCode(
+        input: (
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              }
+        ) & { userInputCode?: string },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode(input, userContext);
+    }
+
+    static resendCode(
+        input: {
+            deviceId: string;
+            userInputCode?: string;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resendCode(input, userContext);
+    }
+
+    static consumeCode(
+        input:
+            | {
+                  userInputCode: string;
+                  deviceId: string;
+              }
+            | {
+                  linkCode: string;
+              },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.consumeCode(input, userContext);
+    }
+
+    static getUserById(
+        input: {
+            userId: string;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById(input, userContext);
+    }
+
+    static getUserByEmail(
+        input: {
+            email: string;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByEmail(input, userContext);
+    }
+
+    static getUserByPhoneNumber(
+        input: {
+            phoneNumber: string;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber(input, userContext);
+    }
+
+    static updateUser(
+        input: {
+            userId: string;
+            email?: string | null;
+            phoneNumber?: string | null;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateUser(input, userContext);
+    }
+
+    static revokeAllCodes(
+        input:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllCodes(input, userContext);
+    }
+
+    static revokeCode(
+        input: {
+            codeId: string;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeCode(input, userContext);
+    }
+
+    static listCodesByEmail(
+        input: {
+            email: string;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByEmail(input, userContext);
+    }
+
+    static listCodesByPhoneNumber(
+        input: {
+            phoneNumber: string;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPhoneNumber(input, userContext);
+    }
+
+    static listCodesByDeviceId(
+        input: {
+            deviceId: string;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByDeviceId(input, userContext);
+    }
+
+    static listCodesByPreAuthSessionId(
+        input: {
+            preAuthSessionId: string;
+        },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.listCodesByPreAuthSessionId(input, userContext);
+    }
+
+    static createMagicLink(
+        input:
+            | {
+                  email: string;
+              }
+            | {
+                  phoneNumber: string;
+              },
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().createMagicLink(input, userContext);
+    }
 }
 
 export let init = Wrapper.init;
 
 export let Error = Wrapper.Error;
+
+export let createCode = Wrapper.createCode;
+
+export let consumeCode = Wrapper.consumeCode;
+
+export let getUserByEmail = Wrapper.getUserByEmail;
+
+export let getUserById = Wrapper.getUserById;
+
+export let getUserByPhoneNumber = Wrapper.getUserByPhoneNumber;
+
+export let listCodesByDeviceId = Wrapper.listCodesByDeviceId;
+
+export let listCodesByEmail = Wrapper.listCodesByEmail;
+
+export let listCodesByPhoneNumber = Wrapper.listCodesByPhoneNumber;
+
+export let listCodesByPreAuthSessionId = Wrapper.listCodesByPreAuthSessionId;
+
+export let resendCode = Wrapper.resendCode;
+
+export let updateUser = Wrapper.updateUser;
+
+export let revokeAllCodes = Wrapper.revokeAllCodes;
+
+export let revokeCode = Wrapper.revokeCode;
+
+export let createMagicLink = Wrapper.createMagicLink;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };
