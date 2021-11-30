@@ -194,8 +194,6 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 deviceId: codeInfo.deviceId,
             });
 
-            console.log(resp);
-
             assert(resp.status === "EXPIRED_USER_INPUT_CODE_ERROR");
             assert(resp.failedCodeInputAttemptCount === 1);
             assert(resp.maximumCodeInputAttempts === 5);
