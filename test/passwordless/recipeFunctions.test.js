@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, resetAll } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let Passwordless = require("../../recipe/passwordless");
@@ -30,6 +30,61 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    it("createCode test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        {
+            let resp = await Passwordless.createCode({
+                email: "test@example.com",
+            });
+
+            assert(resp.status === "OK");
+            assert(typeof resp.preAuthSessionId === "string");
+            assert(typeof resp.codeId === "string");
+            assert(typeof resp.deviceId === "string");
+            assert(typeof resp.userInputCode === "string");
+            assert(typeof resp.linkCode === "string");
+            assert(typeof resp.codeLifetime === "number");
+            assert(typeof resp.timeCreated === "number");
+            assert(Object.keys(resp).length === 8);
+        }
+
+        {
+            let resp = await Passwordless.createCode({
+                email: "test@example.com",
+                userInputCode: "123",
+            });
+
+            assert(resp.status === "OK");
+            assert(typeof resp.preAuthSessionId === "string");
+            assert(typeof resp.codeId === "string");
+            assert(typeof resp.deviceId === "string");
+            assert(typeof resp.userInputCode === "string");
+            assert(typeof resp.linkCode === "string");
+            assert(typeof resp.codeLifetime === "number");
+            assert(typeof resp.timeCreated === "number");
+            assert(Object.keys(resp).length === 8);
+        }
     });
 
     it("consumeCode test", async function () {
@@ -102,6 +157,49 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
             assert(resp.status === "RESTART_FLOW_ERROR");
             assert(Object.keys(resp).length === 1);
+        }
+    });
+
+    it("consumeCode test with EXPIRED_USER_INPUT_CODE_ERROR", async function () {
+        await setKeyValueInConfig("passwordless_code_lifetime", 1000); // one second lifetime
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        {
+            let codeInfo = await Passwordless.createCode({
+                email: "test@example.com",
+            });
+
+            await new Promise((r) => setTimeout(r, 2000)); // wait for code to expire
+
+            let resp = await Passwordless.consumeCode({
+                userInputCode: codeInfo.userInputCode,
+                deviceId: codeInfo.deviceId,
+            });
+
+            console.log(resp);
+
+            // TODO: assert(resp.status === "EXPIRED_USER_INPUT_CODE_ERROR");
+            assert(resp.failedCodeInputAttemptCount === 1);
+            assert(resp.maximumCodeInputAttempts === 5);
+            assert(Object.keys(resp).length === 3);
         }
     });
 });

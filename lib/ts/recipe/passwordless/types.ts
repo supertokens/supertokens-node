@@ -179,19 +179,16 @@ export type RecipeInterface = {
               }
         ) & { userInputCode?: string },
         userContext: any
-    ) => Promise<
-        | {
-              status: "OK";
-              preAuthSessionId: string;
-              codeId: string;
-              deviceId: string;
-              userInputCode: string;
-              linkCode: string;
-              codeLifetime: number;
-              timeCreated: number;
-          }
-        | { status: "USER_INPUT_CODE_ALREADY_USED_ERROR" }
-    >;
+    ) => Promise<{
+        status: "OK";
+        preAuthSessionId: string;
+        codeId: string;
+        deviceId: string;
+        userInputCode: string;
+        linkCode: string;
+        codeLifetime: number;
+        timeCreated: number;
+    }>;
     resendCode: (
         input: {
             deviceId: string;
@@ -209,8 +206,7 @@ export type RecipeInterface = {
               codeLifetime: number;
               timeCreated: number;
           }
-        | { status: "RESTART_FLOW_ERROR" }
-        | { status: "USER_INPUT_CODE_ALREADY_USED_ERROR" }
+        | { status: "RESTART_FLOW_ERROR" | "USER_INPUT_CODE_ALREADY_USED_ERROR" }
     >;
     consumeCode: (
         input:

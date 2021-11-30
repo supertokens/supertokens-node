@@ -17,21 +17,16 @@ export default class Wrapper {
             userInputCode?: string;
         },
         userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              preAuthSessionId: string;
-              codeId: string;
-              deviceId: string;
-              userInputCode: string;
-              linkCode: string;
-              codeLifetime: number;
-              timeCreated: number;
-          }
-        | {
-              status: "USER_INPUT_CODE_ALREADY_USED_ERROR";
-          }
-    >;
+    ): Promise<{
+        status: "OK";
+        preAuthSessionId: string;
+        codeId: string;
+        deviceId: string;
+        userInputCode: string;
+        linkCode: string;
+        codeLifetime: number;
+        timeCreated: number;
+    }>;
     static resendCode(
         input: {
             deviceId: string;
@@ -50,10 +45,7 @@ export default class Wrapper {
               timeCreated: number;
           }
         | {
-              status: "RESTART_FLOW_ERROR";
-          }
-        | {
-              status: "USER_INPUT_CODE_ALREADY_USED_ERROR";
+              status: "RESTART_FLOW_ERROR" | "USER_INPUT_CODE_ALREADY_USED_ERROR";
           }
     >;
     static consumeCode(

@@ -177,55 +177,43 @@ export default class Recipe extends RecipeModule {
               },
         userContext: any = {}
     ): Promise<string> => {
-        let numberOfTriesToCreateNewCode = 0;
-        while (true) {
-            numberOfTriesToCreateNewCode++;
-            let userInputCode =
-                this.config.getCustomUserInputCode !== undefined
-                    ? await this.config.getCustomUserInputCode(userContext)
-                    : undefined;
+        let userInputCode =
+            this.config.getCustomUserInputCode !== undefined
+                ? await this.config.getCustomUserInputCode(userContext)
+                : undefined;
 
-            const codeInfo = await this.recipeInterfaceImpl.createCode(
-                "email" in input
+        const codeInfo = await this.recipeInterfaceImpl.createCode(
+            "email" in input
+                ? {
+                      email: input.email,
+                      userInputCode,
+                  }
+                : {
+                      phoneNumber: input.phoneNumber,
+                      userInputCode,
+                  },
+            userContext
+        );
+
+        let magicLink =
+            (await this.config.getLinkDomainAndPath(
+                "phoneNumber" in input
                     ? {
-                          email: input.email,
-                          userInputCode,
+                          phoneNumber: input.phoneNumber!,
                       }
                     : {
-                          phoneNumber: input.phoneNumber,
-                          userInputCode,
+                          email: input.email,
                       },
                 userContext
-            );
+            )) +
+            "?rid=" +
+            this.getRecipeId() +
+            "&preAuthSessionId=" +
+            codeInfo.preAuthSessionId +
+            "#" +
+            codeInfo.linkCode;
 
-            if (codeInfo.status === "OK") {
-                let magicLink =
-                    (await this.config.getLinkDomainAndPath(
-                        "phoneNumber" in input
-                            ? {
-                                  phoneNumber: input.phoneNumber!,
-                              }
-                            : {
-                                  email: input.email,
-                              },
-                        userContext
-                    )) +
-                    "?rid=" +
-                    this.getRecipeId() +
-                    "&preAuthSessionId=" +
-                    codeInfo.preAuthSessionId +
-                    "#" +
-                    codeInfo.linkCode;
-
-                return magicLink;
-            } else {
-                if (numberOfTriesToCreateNewCode >= 3) {
-                    // we retry 3 times.
-                    throw new Error("Failed to generate a one time code. Please try again");
-                }
-                continue;
-            }
-        }
+        return magicLink;
     };
 
     signInUp = async (
@@ -248,11 +236,6 @@ export default class Recipe extends RecipeModule {
                   },
             userContext
         );
-
-        if (codeInfo.status === "USER_INPUT_CODE_ALREADY_USED_ERROR") {
-            // it should never come here because we are not using the user's code generation function here
-            throw new Error("This should never be thrown");
-        }
 
         let consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
             this.config.flowType === "MAGIC_LINK"
