@@ -87,6 +87,97 @@ describe.only(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.
         }
     });
 
+    it("resendCode test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        {
+            let resp = await Passwordless.createCode({
+                email: "test@example.com",
+            });
+
+            resp = await Passwordless.resendCode({
+                deviceId: resp.deviceId,
+            });
+
+            assert(resp.status === "OK");
+            assert(typeof resp.preAuthSessionId === "string");
+            assert(typeof resp.codeId === "string");
+            assert(typeof resp.deviceId === "string");
+            assert(typeof resp.userInputCode === "string");
+            assert(typeof resp.linkCode === "string");
+            assert(typeof resp.codeLifetime === "number");
+            assert(typeof resp.timeCreated === "number");
+            assert(Object.keys(resp).length === 8);
+        }
+
+        {
+            let resp = await Passwordless.createCode({
+                email: "test@example.com",
+            });
+
+            resp = await Passwordless.resendCode({
+                deviceId: resp.deviceId,
+                userInputCode: "1234",
+            });
+
+            assert(resp.status === "OK");
+            assert(typeof resp.preAuthSessionId === "string");
+            assert(typeof resp.codeId === "string");
+            assert(typeof resp.deviceId === "string");
+            assert(typeof resp.userInputCode === "string");
+            assert(typeof resp.linkCode === "string");
+            assert(typeof resp.codeLifetime === "number");
+            assert(typeof resp.timeCreated === "number");
+            assert(Object.keys(resp).length === 8);
+        }
+
+        {
+            let resp = await Passwordless.createCode({
+                email: "test@example.com",
+            });
+
+            resp = await Passwordless.resendCode({
+                deviceId: "random",
+            });
+
+            assert(resp.status === "RESTART_FLOW_ERROR");
+            assert(Object.keys(resp).length === 1);
+        }
+
+        {
+            let resp = await Passwordless.createCode({
+                email: "test@example.com",
+                userInputCode: "1234",
+            });
+
+            resp = await Passwordless.resendCode({
+                deviceId: resp.deviceId,
+                userInputCode: "1234",
+            });
+
+            assert(resp.status === "USER_INPUT_CODE_ALREADY_USED_ERROR");
+            assert(Object.keys(resp).length === 1);
+        }
+    });
+
     it("consumeCode test", async function () {
         await startST();
 
