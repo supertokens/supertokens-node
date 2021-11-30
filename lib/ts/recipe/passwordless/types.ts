@@ -23,7 +23,7 @@ export type User = {
     id: string;
     email?: string;
     phoneNumber?: string;
-    joinedAt: string;
+    timeJoined: number;
 };
 
 export type TypeInput = (
