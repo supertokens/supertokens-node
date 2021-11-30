@@ -290,36 +290,28 @@ export type RecipeInterface = {
             email: string;
         },
         userContext: any
-    ) => Promise<ListCodeOutputType>;
+    ) => Promise<DeviceType[]>;
 
     listCodesByPhoneNumber: (
         input: {
             phoneNumber: string;
         },
         userContext: any
-    ) => Promise<ListCodeOutputType>;
+    ) => Promise<DeviceType[]>;
 
     listCodesByDeviceId: (
         input: {
             deviceId: string;
         },
         userContext: any
-    ) => Promise<{
-        status: "OK";
-        device: DeviceType | undefined;
-    }>;
+    ) => Promise<DeviceType | undefined>;
 
     listCodesByPreAuthSessionId: (
         input: {
             preAuthSessionId: string;
         },
         userContext: any
-    ) => Promise<ListCodeOutputType>;
-};
-
-type ListCodeOutputType = {
-    status: "OK";
-    devices: DeviceType[];
+    ) => Promise<DeviceType[]>;
 };
 
 type DeviceType = {

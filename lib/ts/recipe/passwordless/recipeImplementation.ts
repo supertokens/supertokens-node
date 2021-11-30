@@ -39,22 +39,19 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         listCodesByDeviceId: async function (input) {
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/signinup/codes"), input);
-            return {
-                status: "OK",
-                device: response.devices.length === 1 ? response.devices[0] : undefined,
-            };
+            return response.devices.length === 1 ? response.devices[0] : undefined;
         },
         listCodesByEmail: async function (input) {
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/signinup/codes"), input);
-            return response;
+            return response.devices;
         },
         listCodesByPhoneNumber: async function (input) {
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/signinup/codes"), input);
-            return response;
+            return response.devices;
         },
         listCodesByPreAuthSessionId: async function (input) {
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/signinup/codes"), input);
-            return response;
+            return response.devices;
         },
         revokeAllCodes: async function (input) {
             await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup/codes/remove"), input);

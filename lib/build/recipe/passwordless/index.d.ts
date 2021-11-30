@@ -127,9 +127,8 @@ export default class Wrapper {
             email: string;
         },
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        devices: {
+    ): Promise<
+        {
             preAuthSessionId: string;
             failedCodeInputAttemptCount: number;
             email?: string | undefined;
@@ -139,16 +138,15 @@ export default class Wrapper {
                 timeCreated: string;
                 codeLifetime: number;
             }[];
-        }[];
-    }>;
+        }[]
+    >;
     static listCodesByPhoneNumber(
         input: {
             phoneNumber: string;
         },
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        devices: {
+    ): Promise<
+        {
             preAuthSessionId: string;
             failedCodeInputAttemptCount: number;
             email?: string | undefined;
@@ -158,37 +156,34 @@ export default class Wrapper {
                 timeCreated: string;
                 codeLifetime: number;
             }[];
-        }[];
-    }>;
+        }[]
+    >;
     static listCodesByDeviceId(
         input: {
             deviceId: string;
         },
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        device:
-            | {
-                  preAuthSessionId: string;
-                  failedCodeInputAttemptCount: number;
-                  email?: string | undefined;
-                  phoneNumber?: string | undefined;
-                  codes: {
-                      codeId: string;
-                      timeCreated: string;
-                      codeLifetime: number;
-                  }[];
-              }
-            | undefined;
-    }>;
+    ): Promise<
+        | {
+              preAuthSessionId: string;
+              failedCodeInputAttemptCount: number;
+              email?: string | undefined;
+              phoneNumber?: string | undefined;
+              codes: {
+                  codeId: string;
+                  timeCreated: string;
+                  codeLifetime: number;
+              }[];
+          }
+        | undefined
+    >;
     static listCodesByPreAuthSessionId(
         input: {
             preAuthSessionId: string;
         },
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        devices: {
+    ): Promise<
+        {
             preAuthSessionId: string;
             failedCodeInputAttemptCount: number;
             email?: string | undefined;
@@ -198,8 +193,8 @@ export default class Wrapper {
                 timeCreated: string;
                 codeLifetime: number;
             }[];
-        }[];
-    }>;
+        }[]
+    >;
     static createMagicLink(
         input:
             | {

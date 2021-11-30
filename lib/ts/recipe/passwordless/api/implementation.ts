@@ -191,14 +191,12 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 if (response.status === "OK") {
-                    let deviceInfo = (
-                        await input.options.recipeImplementation.listCodesByDeviceId(
-                            {
-                                deviceId: response.deviceId,
-                            },
-                            userContext
-                        )
-                    ).device;
+                    let deviceInfo = await input.options.recipeImplementation.listCodesByDeviceId(
+                        {
+                            deviceId: response.deviceId,
+                        },
+                        userContext
+                    );
 
                     if (deviceInfo === undefined) {
                         return {
