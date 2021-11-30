@@ -119,13 +119,13 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             });
 
             assert(resp.status === "OK");
-            // TODO: assert(typeof resp.preAuthSessionId === "string");
+            assert(typeof resp.preAuthSessionId === "string");
             assert(resp.createdNewUser);
             assert(typeof resp.user.id === "string");
             assert(resp.user.email === "test@example.com");
             assert(resp.user.phoneNumber === undefined);
             assert(typeof resp.user.timeJoined === "number");
-            // TODO: assert(Object.keys(resp).length === 4);
+            assert(Object.keys(resp).length === 4);
             assert(Object.keys(resp.user).length === 3);
         }
 
@@ -139,7 +139,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 deviceId: codeInfo.deviceId,
             });
 
-            // TODO: assert(resp.status === "INCORRECT_USER_INPUT_CODE_ERROR");
+            assert(resp.status === "INCORRECT_USER_INPUT_CODE_ERROR");
             assert(resp.failedCodeInputAttemptCount === 1);
             assert(resp.maximumCodeInputAttempts === 5);
             assert(Object.keys(resp).length === 3);
@@ -196,7 +196,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
             console.log(resp);
 
-            // TODO: assert(resp.status === "EXPIRED_USER_INPUT_CODE_ERROR");
+            assert(resp.status === "EXPIRED_USER_INPUT_CODE_ERROR");
             assert(resp.failedCodeInputAttemptCount === 1);
             assert(resp.maximumCodeInputAttempts === 5);
             assert(Object.keys(resp).length === 3);
