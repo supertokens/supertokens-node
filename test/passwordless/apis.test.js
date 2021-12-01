@@ -26,6 +26,7 @@ TODO: We actually want to query the APIs with JSON input and check if the JSON o
 - consumeCode API
 - createCode API
     - provider invalid email and phone number to see a GENERAL_ERROR output as well.
+    - check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
 - emailExists API
 - phoneNumberExists API
 - resendCode API

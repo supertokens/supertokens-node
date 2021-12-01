@@ -31,6 +31,7 @@ TODO: We want to use the exposed functions and make sure that the all the possib
 - listCodesByDeviceId
 - listCodesByPreAuthSessionId
 - createMagicLink
+    - check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
 - signInUp
 */
 
