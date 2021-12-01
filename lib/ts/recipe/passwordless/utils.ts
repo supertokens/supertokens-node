@@ -90,8 +90,17 @@ function getDefaultGetLinkDomainAndPath(appInfo: NormalisedAppinfo) {
     };
 }
 
-function defaultValidatePhoneNumber(_: string): Promise<string | undefined> | string | undefined {
-    // TODO:
+function defaultValidatePhoneNumber(value: string): Promise<string | undefined> | string | undefined {
+    if (typeof value !== "string") {
+        return "Development bug: Please make sure the phoneNumber field is a string";
+    }
+
+    // we can even use Twilio's phone number validity lookup service: https://www.twilio.com/docs/glossary/what-e164.
+
+    if (value.match(/^\+[1-9]\d{1,14}$/) === null) {
+        return "Phone number is invalid";
+    }
+
     return undefined;
 }
 
@@ -135,7 +144,7 @@ function defaultValidateEmail(value: string): Promise<string | undefined> | stri
     // Regex from https://stackoverflow.com/a/46181/3867175
 
     if (typeof value !== "string") {
-        return "Development bug: Please make sure the email field yields a string";
+        return "Development bug: Please make sure the email field is a string";
     }
 
     if (
