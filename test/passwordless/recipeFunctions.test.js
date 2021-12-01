@@ -59,6 +59,70 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             });
 
             assert(user === undefined);
+
+            user = (
+                await Passwordless.signInUp({
+                    email: "test@example.com",
+                })
+            ).user;
+
+            let result = await Passwordless.getUserById({
+                userId: user.id,
+            });
+
+            assert(result.id === user.id);
+            assert(result.email !== undefined && user.email === result.email);
+            assert(result.phoneNumber === undefined);
+            assert(typeof result.timeJoined === "number");
+            assert(Object.keys(result).length === 3);
+        }
+
+        {
+            let user = await Passwordless.getUserByEmail({
+                email: "random",
+            });
+
+            assert(user === undefined);
+
+            user = (
+                await Passwordless.signInUp({
+                    email: "test@example.com",
+                })
+            ).user;
+
+            let result = await Passwordless.getUserByEmail({
+                email: user.email,
+            });
+
+            assert(result.id === user.id);
+            assert(result.email !== undefined && user.email === result.email);
+            assert(result.phoneNumber === undefined);
+            assert(typeof result.timeJoined === "number");
+            assert(Object.keys(result).length === 3);
+        }
+
+        {
+            let user = await Passwordless.getUserByPhoneNumber({
+                phoneNumber: "random",
+            });
+
+            assert(user === undefined);
+
+            user = (
+                await Passwordless.signInUp({
+                    phoneNumber: "+1234567890",
+                })
+            ).user;
+
+            let result = await Passwordless.getUserByPhoneNumber({
+                phoneNumber: user.phoneNumber,
+            });
+
+            assert(result.id === user.id);
+            assert(result.phoneNumber !== undefined && user.phoneNumber === result.phoneNumber);
+            assert(result.email === undefined);
+            assert(typeof result.timeJoined === "number");
+            assert(Object.keys(result).length === 3);
         }
     });
 

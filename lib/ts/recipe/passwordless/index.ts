@@ -215,4 +215,6 @@ export let revokeCode = Wrapper.revokeCode;
 
 export let createMagicLink = Wrapper.createMagicLink;
 
+export let signInUp = Wrapper.signInUp;
+
 export type { RecipeInterface, User, APIOptions, APIInterface };

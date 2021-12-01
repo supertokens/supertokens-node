@@ -237,4 +237,5 @@ export declare let updateUser: typeof Wrapper.updateUser;
 export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;
+export declare let signInUp: typeof Wrapper.signInUp;
 export type { RecipeInterface, User, APIOptions, APIInterface };
