@@ -88,6 +88,19 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
                                 refreshPOST: undefined,
                             };
                         },
+                        functions: function (oI) {
+                            return {
+                                ...oI,
+                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                    accessTokenPayload = {
+                                        ...accessTokenPayload,
+                                        customClaim: "customValue",
+                                    };
+
+                                    return await oI.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                },
+                            };
+                        },
                     },
                 }),
             ],
@@ -188,7 +201,7 @@ app.post("/reinitialiseBackendConfig", async (req, res) => {
 app.post("/login", async (req, res) => {
     let userId = req.body.userId;
     let session = await Session.createNewSession(res, userId);
-    res.send(session.userId);
+    res.send(session.getUserId());
 });
 
 app.post("/beforeeach", async (req, res) => {
