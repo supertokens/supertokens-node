@@ -20,7 +20,7 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
 
-describe.only(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.js]")}`, function () {
+describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -30,6 +30,36 @@ describe.only(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    it("getUser test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        {
+            let user = await Passwordless.getUserById({
+                userId: "random",
+            });
+
+            assert(user === undefined);
+        }
     });
 
     it("createCode test", async function () {
