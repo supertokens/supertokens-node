@@ -20,6 +20,20 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
 
+/*
+TODO: We want to use the exposed functions and make sure that the all the possible outputs of the recipe interface are according to the types files.
+
+- updateUser
+- revokeAllCodes
+- revokeCode
+- listCodesByEmail
+- listCodesByPhoneNumber
+- listCodesByDeviceId
+- listCodesByPreAuthSessionId
+- createMagicLink
+- signInUp
+*/
+
 describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
