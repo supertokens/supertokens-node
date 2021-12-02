@@ -380,7 +380,7 @@ export type APIInterface = {
         | {
               status: "OK";
               createdNewUser: boolean;
-              user: { id: string; email?: string; phoneNumber?: string };
+              user: User;
               session: SessionContainerInterface;
           }
         | {
