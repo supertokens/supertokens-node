@@ -311,7 +311,7 @@ export type RecipeInterface = {
             preAuthSessionId: string;
         },
         userContext: any
-    ) => Promise<DeviceType[]>;
+    ) => Promise<DeviceType | undefined>;
 };
 
 type DeviceType = {

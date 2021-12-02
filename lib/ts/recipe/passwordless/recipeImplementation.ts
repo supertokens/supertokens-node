@@ -51,7 +51,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         listCodesByPreAuthSessionId: async function (input) {
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/signinup/codes"), input);
-            return response.devices;
+            return response.devices.length === 1 ? response.devices[0] : undefined;
         },
         revokeAllCodes: async function (input) {
             await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup/codes/remove"), input);

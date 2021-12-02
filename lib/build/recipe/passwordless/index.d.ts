@@ -183,17 +183,18 @@ export default class Wrapper {
         },
         userContext?: any
     ): Promise<
-        {
-            preAuthSessionId: string;
-            failedCodeInputAttemptCount: number;
-            email?: string | undefined;
-            phoneNumber?: string | undefined;
-            codes: {
-                codeId: string;
-                timeCreated: string;
-                codeLifetime: number;
-            }[];
-        }[]
+        | {
+              preAuthSessionId: string;
+              failedCodeInputAttemptCount: number;
+              email?: string | undefined;
+              phoneNumber?: string | undefined;
+              codes: {
+                  codeId: string;
+                  timeCreated: string;
+                  codeLifetime: number;
+              }[];
+          }
+        | undefined
     >;
     static createMagicLink(
         input:
