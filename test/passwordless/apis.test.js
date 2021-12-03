@@ -299,7 +299,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         }
     });
 
-    it("test createCodeAPI", async function () {
+    it("test createCodeAPI with email", async function () {
         await startST();
 
         STExpress.init({
@@ -351,6 +351,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         }
 
         {
+            // passing invalid email
             let invalidEmailCreateCodeResponse = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup/code")
@@ -368,6 +369,79 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             );
             assert(invalidEmailCreateCodeResponse.status === "GENERAL_ERROR");
             assert(invalidEmailCreateCodeResponse.message === "Email is invalid");
+        }
+    });
+
+    it("test createCodeAPI with phoneNumber", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // passing valid field
+            let validCreateCodeResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        phoneNumber: "+919810400951",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(validCreateCodeResponse.status === "OK");
+            assert(typeof validCreateCodeResponse.deviceId === "string");
+            assert(typeof validCreateCodeResponse.preAuthSessionId === "string");
+            assert(validCreateCodeResponse.flowType === "USER_INPUT_CODE_AND_MAGIC_LINK");
+            assert(Object.keys(validCreateCodeResponse).length === 4);
+        }
+
+        {
+            // passing invalid phoneNumber
+            let invalidPhoneNumberCreateCodeResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        phoneNumber: "123",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(invalidPhoneNumberCreateCodeResponse.status === "GENERAL_ERROR");
+            assert(invalidPhoneNumberCreateCodeResponse.message === "Phone number is invalid");
         }
     });
 });
