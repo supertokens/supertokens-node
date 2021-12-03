@@ -33,6 +33,7 @@ TODO: We actually want to query the APIs with JSON input and check if the JSON o
 - emailExists API
 - phoneNumberExists API
 - resendCode API
+    - test that you create a code with PHONE in config, you then change the config to use EMAIL, you call resendCode API, it should return RESTART_FLOW_ERROR
 */
 
 describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
@@ -442,6 +443,66 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             );
             assert(invalidPhoneNumberCreateCodeResponse.status === "GENERAL_ERROR");
             assert(invalidPhoneNumberCreateCodeResponse.message === "Phone number is invalid");
+        }
+    });
+
+    it("test magicLink format in createCodeAPI", async function () {
+        await startST();
+
+        let magicLinkURL = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        magicLinkURL = new URL(input.urlWithLinkCode);
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // passing valid field
+            let validCreateCodeResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(validCreateCodeResponse.status === "OK");
+
+            // check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
+            assert(magicLinkURL.hostname === "supertokens.io");
+            assert(magicLinkURL.pathname === "/auth/verify");
+            assert(magicLinkURL.searchParams.get("rid") === "passwordless");
+            assert(magicLinkURL.searchParams.get("preAuthSessionId") === validCreateCodeResponse.preAuthSessionId);
+            assert(magicLinkURL.hash.length > 1);
         }
     });
 });
