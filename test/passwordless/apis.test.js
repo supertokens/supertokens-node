@@ -509,7 +509,6 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     it("test emailExistsAPI", async function () {
         await startST();
 
-        let magicLinkURL = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -524,9 +523,6 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    createAndSendCustomEmail: (input) => {
-                        magicLinkURL = new URL(input.urlWithLinkCode);
-                    },
                 }),
             ],
         });
@@ -561,7 +557,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         {
             // email exists
 
-            // create a passwordless user
+            // create a passwordless user through email
             let codeInfo = await Passwordless.createCode({
                 email: "test@example.com",
             });
@@ -587,6 +583,86 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             );
             assert(emailExistsResponse.status === "OK");
             assert(emailExistsResponse.exists === true);
+        }
+    });
+
+    it("test phoneNumberExistsAPI", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // phoneNumber does not exist
+            let phoneNumberDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/phonenumber/exists")
+                    .query({
+                        phoneNumber: "+919826122944",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(phoneNumberDoesNotExistResponse.status === "OK");
+            assert(phoneNumberDoesNotExistResponse.exists === false);
+        }
+
+        {
+            // phoneNumber exists
+
+            // create a passwordless user through phone
+            let codeInfo = await Passwordless.createCode({
+                phoneNumber: "+919826122944",
+            });
+
+            await Passwordless.consumeCode({
+                linkCode: codeInfo.linkCode,
+            });
+
+            let phoneNumberExistsResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/phonenumber/exists")
+                    .query({
+                        phoneNumber: "+919826122944",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(phoneNumberExistsResponse.status === "OK");
+            assert(phoneNumberExistsResponse.exists === true);
         }
     });
 });
