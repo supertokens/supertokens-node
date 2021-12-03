@@ -22,15 +22,6 @@ let SuperTokens = require("../../lib/build/supertokens").default;
 const request = require("supertest");
 const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
-const request = require("supertest");
-const express = require("express");
-let { middleware, errorHandler } = require("../../framework/express");
-const request = require("supertest");
-const express = require("express");
-let { middleware, errorHandler } = require("../../framework/express");
-const request = require("supertest");
-const express = require("express");
-let { middleware, errorHandler } = require("../../framework/express");
 
 /*
 TODO: We actually want to query the APIs with JSON input and check if the JSON output matches the FDI spec for all possible inputs / outputs of the APIs
@@ -44,303 +35,19 @@ TODO: We actually want to query the APIs with JSON input and check if the JSON o
 - resendCode API
 */
 
-describe(`apisFunctinos: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
+describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
         ProcessState.getInstance().reset();
-
-        it("test consumeCodeAPI", async function () {
-            await startST();
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    Passwordless.init({
-                        contactMethod: "EMAIL",
-                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    }),
-                ],
-            });
-
-            const app = express();
-
-            app.use(middleware());
-
-            app.use(errorHandler());
-
-            {
-                // send an Invalid preAuthSessionId and linkCode
-                let responseText = await new Promise((resolve) =>
-                    request(app)
-                        .post("/auth/signinup/code/consume")
-                        .send({
-                            preAuthSessionId: "invalidSessionId",
-                            linkCode: "invalidLinkCode",
-                        })
-                        .expect(200)
-                        .end((err, res) => {
-                            if (err) {
-                                resolve(undefined);
-                            } else {
-                                resolve(JSON.parse(res.text));
-                            }
-                        })
-                );
-                assert(responseText.status === "RESTART_FLOW_ERROR");
-            }
-
-            {
-                let codeInfo = await Passwordless.createCode({
-                    email: "test@example.com",
-                });
-
-                // send a valid preAuthSessionId and invalidLinkCode
-                let responseText = await new Promise((resolve) =>
-                    request(app)
-                        .post("/auth/signinup/code/consume")
-                        .send({
-                            preAuthSessionId: codeInfo.preAuthSessionId,
-                            linkCode: "invalidLinkCode",
-                        })
-                        .expect(200)
-                        .end((err, res) => {
-                            if (err) {
-                                resolve(undefined);
-                            } else {
-                                resolve(JSON.parse(res.text));
-                            }
-                        })
-                );
-
-                assert(responseText.status === "RESTART_FLOW_ERROR");
-
-                // send a valid preAuthSessionId and invalidLinkCode
-                responseText = await new Promise((resolve) =>
-                    request(app)
-                        .post("/auth/signinup/code/consume")
-                        .send({
-                            preAuthSessionId: codeInfo.preAuthSessionId,
-                            linkCode: codeInfo.linkCode,
-                        })
-                        .expect(200)
-                        .end((err, res) => {
-                            if (err) {
-                                resolve(undefined);
-                            } else {
-                                resolve(JSON.parse(res.text));
-                            }
-                        })
-                );
-
-                console.log(responseText);
-            }
-        });
     });
 
-    it("test consumeCodeAPI", async function () {
-        await startST();
-
-        STExpress.init({
-            supertokens: {
-                connectionURI: "http://localhost:8080",
-            },
-            appInfo: {
-                apiDomain: "api.supertokens.io",
-                appName: "SuperTokens",
-                websiteDomain: "supertokens.io",
-            },
-            recipeList: [
-                Session.init(),
-                Passwordless.init({
-                    contactMethod: "EMAIL",
-                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                }),
-            ],
-        });
-
-        const app = express();
-
-        app.use(middleware());
-
-        app.use(errorHandler());
-
-        {
-            // send an Invalid preAuthSessionId and linkCode
-            let responseText = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signinup/code/consume")
-                    .send({
-                        preAuthSessionId: "invalidSessionId",
-                        linkCode: "invalidLinkCode",
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-            assert(responseText.status === "RESTART_FLOW_ERROR");
-        }
-
-        {
-            let codeInfo = await Passwordless.createCode({
-                email: "test@example.com",
-            });
-
-            // send a valid preAuthSessionId and invalidLinkCode
-            let responseText = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signinup/code/consume")
-                    .send({
-                        preAuthSessionId: codeInfo.preAuthSessionId,
-                        linkCode: "invalidLinkCode",
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-
-            assert(responseText.status === "RESTART_FLOW_ERROR");
-
-            // send a valid preAuthSessionId and invalidLinkCode
-            responseText = await new Promise((resolve) =>
-                request(app)
-                    .post("/auth/signinup/code/consume")
-                    .send({
-                        preAuthSessionId: codeInfo.preAuthSessionId,
-                        linkCode: codeInfo.linkCode,
-                    })
-                    .expect(200)
-                    .end((err, res) => {
-                        if (err) {
-                            resolve(undefined);
-                        } else {
-                            resolve(JSON.parse(res.text));
-                        }
-                    })
-            );
-
-            console.log(responseText);
-        }
-    });
     after(async function () {
         await killAllST();
-
-        it("test consumeCodeAPI", async function () {
-            await startST();
-
-            STExpress.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init(),
-                    Passwordless.init({
-                        contactMethod: "EMAIL",
-                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                    }),
-                ],
-            });
-
-            const app = express();
-
-            app.use(middleware());
-
-            app.use(errorHandler());
-
-            {
-                // send an Invalid preAuthSessionId and linkCode
-                let responseText = await new Promise((resolve) =>
-                    request(app)
-                        .post("/auth/signinup/code/consume")
-                        .send({
-                            preAuthSessionId: "invalidSessionId",
-                            linkCode: "invalidLinkCode",
-                        })
-                        .expect(200)
-                        .end((err, res) => {
-                            if (err) {
-                                resolve(undefined);
-                            } else {
-                                resolve(JSON.parse(res.text));
-                            }
-                        })
-                );
-                assert(responseText.status === "RESTART_FLOW_ERROR");
-            }
-
-            {
-                let codeInfo = await Passwordless.createCode({
-                    email: "test@example.com",
-                });
-
-                // send a valid preAuthSessionId and invalidLinkCode
-                let responseText = await new Promise((resolve) =>
-                    request(app)
-                        .post("/auth/signinup/code/consume")
-                        .send({
-                            preAuthSessionId: codeInfo.preAuthSessionId,
-                            linkCode: "invalidLinkCode",
-                        })
-                        .expect(200)
-                        .end((err, res) => {
-                            if (err) {
-                                resolve(undefined);
-                            } else {
-                                resolve(JSON.parse(res.text));
-                            }
-                        })
-                );
-
-                assert(responseText.status === "RESTART_FLOW_ERROR");
-
-                // send a valid preAuthSessionId and invalidLinkCode
-                responseText = await new Promise((resolve) =>
-                    request(app)
-                        .post("/auth/signinup/code/consume")
-                        .send({
-                            preAuthSessionId: codeInfo.preAuthSessionId,
-                            linkCode: codeInfo.linkCode,
-                        })
-                        .expect(200)
-                        .end((err, res) => {
-                            if (err) {
-                                resolve(undefined);
-                            } else {
-                                resolve(JSON.parse(res.text));
-                            }
-                        })
-                );
-
-                console.log(responseText);
-            }
-        });
         await cleanST();
     });
 
-    it("test consumeCodeAPI", async function () {
+    it("test consumeCodeAPI with magic link", async function () {
         await startST();
 
         STExpress.init({
@@ -431,7 +138,12 @@ describe(`apisFunctinos: ${printPath("[test/passwordless/apis.test.js]")}`, func
                     })
             );
 
-            console.log(responseText);
+            assert(responseText.status === "OK");
+            assert(responseText.createdNewUser === true);
+            assert(typeof responseText.user.id === "string");
+            assert(typeof responseText.user.email === "string");
+            assert(typeof responseText.user.phoneNumber === "number");
+            assert(typeof responseText.user.timeJoined === "number");
         }
     });
 });
