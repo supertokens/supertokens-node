@@ -238,4 +238,64 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             assert(usedUserInputCodeResponse.status === "RESTART_FLOW_ERROR");
         }
     });
+
+    it("test consumeCodeAPI with expired code", async function () {
+        await setKeyValueInConfig("passwordless_code_lifetime", 1000); // one second lifetime
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            let codeInfo = await Passwordless.createCode({
+                email: "test@example.com",
+            });
+
+            await new Promise((r) => setTimeout(r, 2000)); // wait for code to expire
+            let expiredUserInputCodeResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code/consume")
+                    .send({
+                        preAuthSessionId: codeInfo.preAuthSessionId,
+                        userInputCode: codeInfo.userInputCode,
+                        deviceId: codeInfo.deviceId,
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(expiredUserInputCodeResponse.status === "EXPIRED_USER_INPUT_CODE_ERROR");
+            assert(expiredUserInputCodeResponse.failedCodeInputAttemptCount === 1);
+            //checking default value for maximumCodeInputAttempts is 5
+            assert(expiredUserInputCodeResponse.maximumCodeInputAttempts === 5);
+            assert(Object.keys(expiredUserInputCodeResponse).length === 3);
+        }
+    });
 });
