@@ -33,7 +33,7 @@ export default async function resendCode(apiImplementation: APIInterface, option
         });
     }
 
-    if (deviceId !== undefined) {
+    if (deviceId === undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
             message: "Please provide a deviceId",
