@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, stopST } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let Passwordless = require("../../recipe/passwordless");
@@ -740,6 +740,84 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             );
 
             assert(response.status === "RESTART_FLOW_ERROR");
+        }
+    });
+
+    // test that you create a code with PHONE in config, you then change the config to use EMAIL, you call resendCode API, it should return RESTART_FLOW_ERROR
+    it("test resendCodeAPI when changing contact method", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            let codeInfo = await Passwordless.createCode({
+                phoneNumber: "+919826122944",
+            });
+
+            await killAllST();
+            await startST();
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    }),
+                ],
+            });
+
+            {
+                // invalid preAuthSessionId and deviceId
+                let response = await new Promise((resolve) =>
+                    request(app)
+                        .post("/auth/signinup/code/resend")
+                        .send({
+                            deviceId: codeInfo.deviceId,
+                            preAuthSessionId: codeInfo.preAuthSessionId,
+                        })
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(JSON.parse(res.text));
+                            }
+                        })
+                );
+
+                assert(response.status === "RESTART_FLOW_ERROR");
+            }
         }
     });
 });
