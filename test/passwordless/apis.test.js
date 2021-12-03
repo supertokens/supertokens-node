@@ -505,4 +505,88 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             assert(magicLinkURL.hash.length > 1);
         }
     });
+
+    it("test emailExistsAPI", async function () {
+        await startST();
+
+        let magicLinkURL = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        magicLinkURL = new URL(input.urlWithLinkCode);
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // email does not exist
+            let emailDoesNotExistResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/email/exists")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailDoesNotExistResponse.status === "OK");
+            assert(emailDoesNotExistResponse.exists === false);
+        }
+
+        {
+            // email exists
+
+            // create a passwordless user
+            let codeInfo = await Passwordless.createCode({
+                email: "test@example.com",
+            });
+
+            await Passwordless.consumeCode({
+                linkCode: codeInfo.linkCode,
+            });
+
+            let emailExistsResponse = await new Promise((resolve) =>
+                request(app)
+                    .get("/auth/signup/email/exists")
+                    .query({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(emailExistsResponse.status === "OK");
+            assert(emailExistsResponse.exists === true);
+        }
+    });
 });
