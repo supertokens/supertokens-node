@@ -48,6 +48,11 @@ export default async function consumeCode(apiImplementation: APIInterface, optio
                 message: "Please provide both deviceId and userInputCode",
             });
         }
+    } else if (linkCode === undefined) {
+        throw new STError({
+            type: STError.BAD_INPUT_ERROR,
+            message: "Please provide one of (linkCode) or (deviceId+userInputCode) and not both",
+        });
     }
 
     let result = await apiImplementation.consumeCodePOST(
