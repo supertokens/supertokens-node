@@ -24,6 +24,8 @@ let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").de
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
+let { Querier } = require("../lib/build/querier");
+let { maxVersion } = require("../lib/build/utils");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -419,4 +421,14 @@ module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, bod
         },
         queryStringParameters: queryParams,
     };
+};
+
+module.exports.isCDIVersionCompatible = async function (maxIncompatibleCDIVersion) {
+    let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+    if (maxVersion(currCDIVersion, maxIncompatibleCDIVersion) === maxIncompatibleCDIVersion) {
+        // we don't run the tests below for older versions of the core since it
+        // was introduced in >= maxInCompatibleCDIVersion+1 CDI
+        return false;
+    }
+    return true;
 };

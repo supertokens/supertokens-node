@@ -22,6 +22,7 @@ let SuperTokens = require("../../lib/build/supertokens").default;
 const request = require("supertest");
 const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
+let { isCDIVersionCompatible } = require("../utils");
 
 /*
 TODO: We actually want to query the APIs with JSON input and check if the JSON output matches the FDI spec for all possible inputs / outputs of the APIs
@@ -71,6 +72,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -116,6 +122,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         const app = express();
 
@@ -198,6 +209,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         const app = express();
 
@@ -310,6 +326,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -368,6 +389,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         const app = express();
 
@@ -441,6 +467,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         const app = express();
 
@@ -519,6 +550,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -574,6 +610,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         const app = express();
 
@@ -654,6 +695,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         const app = express();
 
@@ -737,6 +783,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -812,6 +863,11 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         const app = express();
 

@@ -19,6 +19,7 @@ let Passwordless = require("../../recipe/passwordless");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
+let { isCDIVersionCompatible } = require("../utils");
 
 /*
 TODO: We want to use the exposed functions and make sure that the all the possible outputs of the recipe interface are according to the types files.
@@ -67,6 +68,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         {
             let user = await Passwordless.getUserById({
@@ -162,6 +168,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
         {
             let resp = await Passwordless.createCode({
                 email: "test@example.com",
@@ -216,6 +227,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         {
             let resp = await Passwordless.createCode({
@@ -308,6 +324,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
         {
             let codeInfo = await Passwordless.createCode({
                 email: "test@example.com",
@@ -381,6 +402,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
 
         {
             let codeInfo = await Passwordless.createCode({
