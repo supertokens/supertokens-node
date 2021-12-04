@@ -189,7 +189,7 @@ export type RecipeInterface = {
         codeLifetime: number;
         timeCreated: number;
     }>;
-    resendCode: (
+    createNewCodeForDevice: (
         input: {
             deviceId: string;
             userInputCode?: string;

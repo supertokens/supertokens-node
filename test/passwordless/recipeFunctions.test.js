@@ -207,7 +207,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
     });
 
-    it("resendCode test", async function () {
+    it("createNewCodeForDevice test", async function () {
         await startST();
 
         STExpress.init({
@@ -238,7 +238,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 email: "test@example.com",
             });
 
-            resp = await Passwordless.resendCode({
+            resp = await Passwordless.createNewCodeForDevice({
                 deviceId: resp.deviceId,
             });
 
@@ -258,7 +258,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 email: "test@example.com",
             });
 
-            resp = await Passwordless.resendCode({
+            resp = await Passwordless.createNewCodeForDevice({
                 deviceId: resp.deviceId,
                 userInputCode: "1234",
             });
@@ -279,7 +279,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 email: "test@example.com",
             });
 
-            resp = await Passwordless.resendCode({
+            resp = await Passwordless.createNewCodeForDevice({
                 deviceId: "random",
             });
 
@@ -293,7 +293,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 userInputCode: "1234",
             });
 
-            resp = await Passwordless.resendCode({
+            resp = await Passwordless.createNewCodeForDevice({
                 deviceId: resp.deviceId,
                 userInputCode: "1234",
             });

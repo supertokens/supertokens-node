@@ -170,7 +170,7 @@ export default function getAPIImplementation(): APIInterface {
             let numberOfTriesToCreateNewCode = 0;
             while (true) {
                 numberOfTriesToCreateNewCode++;
-                let response = await input.options.recipeImplementation.resendCode(
+                let response = await input.options.recipeImplementation.createNewCodeForDevice(
                     {
                         deviceId: input.deviceId,
                         userInputCode:

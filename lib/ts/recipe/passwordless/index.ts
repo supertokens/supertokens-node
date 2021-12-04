@@ -36,14 +36,14 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createCode(input, userContext);
     }
 
-    static resendCode(
+    static createNewCodeForDevice(
         input: {
             deviceId: string;
             userInputCode?: string;
         },
         userContext: any = {}
     ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resendCode(input, userContext);
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewCodeForDevice(input, userContext);
     }
 
     static consumeCode(
@@ -205,7 +205,7 @@ export let listCodesByPhoneNumber = Wrapper.listCodesByPhoneNumber;
 
 export let listCodesByPreAuthSessionId = Wrapper.listCodesByPreAuthSessionId;
 
-export let resendCode = Wrapper.resendCode;
+export let createNewCodeForDevice = Wrapper.createNewCodeForDevice;
 
 export let updateUser = Wrapper.updateUser;
 
