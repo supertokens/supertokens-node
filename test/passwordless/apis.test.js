@@ -27,6 +27,7 @@ let { middleware, errorHandler } = require("../../framework/express");
 TODO: We actually want to query the APIs with JSON input and check if the JSON output matches the FDI spec for all possible inputs / outputs of the APIs
 
 - consumeCode API
+    - check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
 - createCode API
     - provider invalid email and phone number to see a GENERAL_ERROR output as well.
     - check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
@@ -46,6 +47,53 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    // check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
+    it("test not passing any fields to consumeCodeAPI", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // send no fields
+            let letInvalidLinkCodeResponse = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code/consume")
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            console.log(err);
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert(letInvalidLinkCodeResponse.res.statusMessage === "Bad Request");
+        }
     });
 
     it("test consumeCodeAPI with magic link", async function () {
