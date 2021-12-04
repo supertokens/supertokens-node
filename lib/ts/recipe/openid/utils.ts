@@ -12,14 +12,22 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import NormalisedURLDomain from "../../normalisedURLDomain";
+import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
-    let issuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
+    let issuerDomain = appInfo.apiDomain;
+    let issuerPath = appInfo.apiBasePath;
 
     if (config !== undefined) {
-        issuer = config.issuer;
+        issuerDomain = new NormalisedURLDomain(config.issuer);
+        issuerPath = new NormalisedURLPath(config.issuer);
+
+        if (!issuerPath.equals(appInfo.apiBasePath)) {
+            throw new Error("Issuer URL must end with apiBasePath");
+        }
     }
 
     let override = {
@@ -29,7 +37,8 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
     };
 
     return {
-        issuer,
+        issuerDomain,
+        issuerPath,
         override,
     };
 }

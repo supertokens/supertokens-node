@@ -17,10 +17,11 @@ import { DiscoveryConfiguration, RecipeInterface, TypeNormalisedInput } from "./
 export default function getRecipeInterface(config: TypeNormalisedInput): RecipeInterface {
     return {
         getDiscoveryConfiguration: async function (): Promise<DiscoveryConfiguration> {
+            let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
             return {
                 status: "OK",
-                issuer: config.issuer,
-                jwks_uri: config.issuer + "/jwt/jwks.json",
+                issuer,
+                jwks_uri: issuer + "/jwt/jwks.json",
             };
         },
     };
