@@ -12,7 +12,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup/code"), input);
             return response;
         },
-        resendCode: async function (input) {
+        createNewCodeForDevice: async function (input) {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup/code"), input);
             return response;
         },

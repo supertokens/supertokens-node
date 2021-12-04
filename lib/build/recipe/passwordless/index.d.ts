@@ -27,7 +27,7 @@ export default class Wrapper {
         codeLifetime: number;
         timeCreated: number;
     }>;
-    static resendCode(
+    static createNewCodeForDevice(
         input: {
             deviceId: string;
             userInputCode?: string;
@@ -233,7 +233,7 @@ export declare let listCodesByDeviceId: typeof Wrapper.listCodesByDeviceId;
 export declare let listCodesByEmail: typeof Wrapper.listCodesByEmail;
 export declare let listCodesByPhoneNumber: typeof Wrapper.listCodesByPhoneNumber;
 export declare let listCodesByPreAuthSessionId: typeof Wrapper.listCodesByPreAuthSessionId;
-export declare let resendCode: typeof Wrapper.resendCode;
+export declare let createNewCodeForDevice: typeof Wrapper.createNewCodeForDevice;
 export declare let updateUser: typeof Wrapper.updateUser;
 export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
