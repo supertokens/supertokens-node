@@ -5,13 +5,13 @@ import STError from "./error";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
-import JWTRecipe from "../jwt/recipe";
+import OpenIDRecipe from "../openid/recipe";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
-    jwtRecipe?: JWTRecipe;
+    openIdRecipe?: OpenIDRecipe;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);

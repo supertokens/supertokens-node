@@ -211,10 +211,13 @@ export function validateAndNormaliseUserInput(
 
     let enableJWT = false;
     let accessTokenPayloadJWTPropertyName = "jwt";
+    // By default the issuer should be apiDomain + apiBasePath
+    let jwtIssuer = appInfo.apiDomain.getAsStringDangerous() + appInfo.apiBasePath.getAsStringDangerous();
 
     if (config !== undefined && config.jwt !== undefined && config.jwt.enable === true) {
         enableJWT = true;
         let jwtPropertyName = config.jwt.propertyNameInAccessTokenPayload;
+        let issuer = config.jwt.issuer;
 
         if (jwtPropertyName !== undefined) {
             if (jwtPropertyName === ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY) {
@@ -222,6 +225,10 @@ export function validateAndNormaliseUserInput(
             }
 
             accessTokenPayloadJWTPropertyName = jwtPropertyName;
+        }
+
+        if (issuer !== undefined) {
+            jwtIssuer = issuer;
         }
     }
 
@@ -243,6 +250,7 @@ export function validateAndNormaliseUserInput(
         jwt: {
             enable: enableJWT,
             propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
+            issuer: jwtIssuer,
         },
     };
 }

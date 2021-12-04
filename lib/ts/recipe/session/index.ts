@@ -82,7 +82,7 @@ export default class SessionWrapper {
     }
 
     static createJWT(payload?: any, validitySeconds?: number) {
-        let jwtRecipe = Recipe.getInstanceOrThrowError().jwtRecipe;
+        let jwtRecipe = Recipe.getInstanceOrThrowError().openIdRecipe?.jwtRecipe;
 
         if (jwtRecipe !== undefined) {
             return jwtRecipe.recipeInterfaceImpl.createJWT({ payload, validitySeconds });
@@ -94,7 +94,7 @@ export default class SessionWrapper {
     }
 
     static getJWKS() {
-        let jwtRecipe = Recipe.getInstanceOrThrowError().jwtRecipe;
+        let jwtRecipe = Recipe.getInstanceOrThrowError().openIdRecipe?.jwtRecipe;
 
         if (jwtRecipe !== undefined) {
             return jwtRecipe.recipeInterfaceImpl.getJWKS();

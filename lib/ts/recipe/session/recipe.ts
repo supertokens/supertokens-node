@@ -28,9 +28,9 @@ import RecipeImplementationWithJWT from "./with-jwt";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
 import { BaseRequest, BaseResponse } from "../../framework";
-import JWTRecipe from "../jwt/recipe";
 import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
+import OpenIDRecipe from "../openid/recipe";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -40,7 +40,7 @@ export default class SessionRecipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
-    jwtRecipe?: JWTRecipe;
+    openIdRecipe?: OpenIDRecipe;
 
     apiImpl: APIInterface;
 
@@ -52,8 +52,9 @@ export default class SessionRecipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         if (this.config.jwt.enable === true) {
-            this.jwtRecipe = new JWTRecipe(recipeId, appInfo, isInServerlessEnv, {
-                override: this.config.override.jwtFeature,
+            this.openIdRecipe = new OpenIDRecipe(recipeId, appInfo, isInServerlessEnv, {
+                issuer: this.config.jwt.issuer,
+                override: this.config.override.openId,
             });
 
             let builder = new OverrideableBuilder(
@@ -64,7 +65,7 @@ export default class SessionRecipe extends RecipeModule {
                     return RecipeImplementationWithJWT(
                         oI,
                         // this.jwtRecipe is never undefined here
-                        this.jwtRecipe!.recipeInterfaceImpl,
+                        this.openIdRecipe!.jwtRecipe.recipeInterfaceImpl,
                         this.config,
                         appInfo
                     );
@@ -128,8 +129,8 @@ export default class SessionRecipe extends RecipeModule {
             },
         ];
 
-        if (this.jwtRecipe !== undefined) {
-            apisHandled.push(...this.jwtRecipe.getAPIsHandled());
+        if (this.openIdRecipe !== undefined) {
+            apisHandled.push(...this.openIdRecipe.getAPIsHandled());
         }
 
         return apisHandled;
@@ -147,7 +148,7 @@ export default class SessionRecipe extends RecipeModule {
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
-            jwtRecipeImplementation: this.jwtRecipe?.recipeInterfaceImpl,
+            jwtRecipeImplementation: this.openIdRecipe?.jwtRecipe.recipeInterfaceImpl,
             req,
             res,
         };
@@ -155,8 +156,8 @@ export default class SessionRecipe extends RecipeModule {
             return await handleRefreshAPI(this.apiImpl, options);
         } else if (id === SIGNOUT_API_PATH) {
             return await signOutAPI(this.apiImpl, options);
-        } else if (this.jwtRecipe !== undefined) {
-            return await this.jwtRecipe.handleAPIRequest(id, req, res, path, method);
+        } else if (this.openIdRecipe !== undefined) {
+            return await this.openIdRecipe.handleAPIRequest(id, req, res, path, method);
         } else {
             return false;
         }
@@ -178,8 +179,8 @@ export default class SessionRecipe extends RecipeModule {
             } else {
                 throw err;
             }
-        } else if (this.jwtRecipe !== undefined) {
-            return await this.jwtRecipe.handleError(err, request, response);
+        } else if (this.openIdRecipe !== undefined) {
+            return await this.openIdRecipe.handleError(err, request, response);
         } else {
             throw err;
         }
@@ -188,8 +189,8 @@ export default class SessionRecipe extends RecipeModule {
     getAllCORSHeaders = (): string[] => {
         let corsHeaders: string[] = [...getCORSAllowedHeadersFromCookiesAndHeaders()];
 
-        if (this.jwtRecipe !== undefined) {
-            corsHeaders.push(...this.jwtRecipe.getAllCORSHeaders());
+        if (this.openIdRecipe !== undefined) {
+            corsHeaders.push(...this.openIdRecipe.getAllCORSHeaders());
         }
 
         return corsHeaders;
@@ -199,7 +200,7 @@ export default class SessionRecipe extends RecipeModule {
         return (
             STError.isErrorFromSuperTokens(err) &&
             (err.fromRecipe === SessionRecipe.RECIPE_ID ||
-                (this.jwtRecipe !== undefined && this.jwtRecipe.isErrorFromThisRecipe(err)))
+                (this.openIdRecipe !== undefined && this.openIdRecipe.isErrorFromThisRecipe(err)))
         );
     };
 
@@ -213,7 +214,7 @@ export default class SessionRecipe extends RecipeModule {
                 recipeId: this.getRecipeId(),
                 isInServerlessEnv: this.isInServerlessEnv,
                 recipeImplementation: this.recipeInterfaceImpl,
-                jwtRecipeImplementation: this.jwtRecipe?.recipeInterfaceImpl,
+                jwtRecipeImplementation: this.openIdRecipe?.jwtRecipe.recipeInterfaceImpl,
             },
         });
     };
