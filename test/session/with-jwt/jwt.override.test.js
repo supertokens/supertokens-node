@@ -27,7 +27,7 @@ let { middleware, errorHandler } = require("../../../framework/express");
 /**
  * Test that overriding the jwt recipe functions and apis still work when the JWT feature is enabled
  */
-describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, function () {
+describe(`session-with-jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -58,29 +58,31 @@ describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, fu
                 Session.init({
                     jwt: { enable: true },
                     override: {
-                        jwtFeature: {
-                            functions: function (originalImplementation) {
-                                return {
-                                    ...originalImplementation,
-                                    createJWT: async function (input) {
-                                        let createJWTResponse = await originalImplementation.createJWT(input);
+                        openId: {
+                            jwtFeature: {
+                                functions: function (originalImplementation) {
+                                    return {
+                                        ...originalImplementation,
+                                        createJWT: async function (input) {
+                                            let createJWTResponse = await originalImplementation.createJWT(input);
 
-                                        if (createJWTResponse.status === "OK") {
-                                            jwtCreated = createJWTResponse.jwt;
-                                        }
+                                            if (createJWTResponse.status === "OK") {
+                                                jwtCreated = createJWTResponse.jwt;
+                                            }
 
-                                        return createJWTResponse;
-                                    },
-                                    getJWKS: async function () {
-                                        let getJWKSResponse = await originalImplementation.getJWKS();
+                                            return createJWTResponse;
+                                        },
+                                        getJWKS: async function () {
+                                            let getJWKSResponse = await originalImplementation.getJWKS();
 
-                                        if (getJWKSResponse.status === "OK") {
-                                            jwksKeys = getJWKSResponse.keys;
-                                        }
+                                            if (getJWKSResponse.status === "OK") {
+                                                jwksKeys = getJWKSResponse.keys;
+                                            }
 
-                                        return getJWKSResponse;
-                                    },
-                                };
+                                            return getJWKSResponse;
+                                        },
+                                    };
+                                },
                             },
                         },
                     },
@@ -160,16 +162,18 @@ describe(`jwt: ${printPath("[test/session/with-jwt/jwt.override.test.js]")}`, fu
                 Session.init({
                     jwt: { enable: true },
                     override: {
-                        jwtFeature: {
-                            apis: function (originalImplementation) {
-                                return {
-                                    ...originalImplementation,
-                                    getJWKSGET: async function (input) {
-                                        let response = await originalImplementation.getJWKSGET(input);
-                                        jwksKeys = response.keys;
-                                        return response;
-                                    },
-                                };
+                        openId: {
+                            jwtFeature: {
+                                apis: function (originalImplementation) {
+                                    return {
+                                        ...originalImplementation,
+                                        getJWKSGET: async function (input) {
+                                            let response = await originalImplementation.getJWKSGET(input);
+                                            jwksKeys = response.keys;
+                                            return response;
+                                        },
+                                    };
+                                },
                             },
                         },
                     },
