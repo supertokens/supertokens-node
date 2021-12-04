@@ -84,21 +84,27 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         app.use(errorHandler());
 
         {
-            // send no fields
-            let letInvalidLinkCodeResponse = await new Promise((resolve) =>
+            // dont send linkCode or (deviceId+userInputCode)
+            let badResponse = await new Promise((resolve) =>
                 request(app)
                     .post("/auth/signinup/code/consume")
+                    .send({
+                        preAuthSessionId: "sessionId",
+                    })
                     .expect(400)
                     .end((err, res) => {
                         if (err) {
-                            console.log(err);
                             resolve(undefined);
                         } else {
                             resolve(res);
                         }
                     })
             );
-            assert(letInvalidLinkCodeResponse.res.statusMessage === "Bad Request");
+            assert(badResponse.res.statusMessage === "Bad Request");
+            assert(
+                JSON.parse(badResponse.text).message ===
+                    "Please provide one of (linkCode) or (deviceId+userInputCode) and not both"
+            );
         }
     });
 
