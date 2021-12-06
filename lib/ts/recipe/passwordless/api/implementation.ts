@@ -167,6 +167,28 @@ export default function getAPIImplementation(): APIInterface {
             };
         },
         resendCodePOST: async function (input, userContext) {
+            let deviceInfo = await input.options.recipeImplementation.listCodesByDeviceId(
+                {
+                    deviceId: input.deviceId,
+                },
+                userContext
+            );
+
+            if (deviceInfo === undefined) {
+                return {
+                    status: "RESTART_FLOW_ERROR",
+                };
+            }
+
+            if (
+                (input.options.config.contactMethod === "PHONE" && deviceInfo.phoneNumber === undefined) ||
+                (input.options.config.contactMethod === "EMAIL" && deviceInfo.email === undefined)
+            ) {
+                return {
+                    status: "RESTART_FLOW_ERROR",
+                };
+            }
+
             let numberOfTriesToCreateNewCode = 0;
             while (true) {
                 numberOfTriesToCreateNewCode++;
@@ -193,28 +215,6 @@ export default function getAPIImplementation(): APIInterface {
                 }
 
                 if (response.status === "OK") {
-                    let deviceInfo = await input.options.recipeImplementation.listCodesByDeviceId(
-                        {
-                            deviceId: response.deviceId,
-                        },
-                        userContext
-                    );
-
-                    if (deviceInfo === undefined) {
-                        return {
-                            status: "RESTART_FLOW_ERROR",
-                        };
-                    }
-
-                    if (
-                        (input.options.config.contactMethod === "PHONE" && deviceInfo.phoneNumber === undefined) ||
-                        (input.options.config.contactMethod === "EMAIL" && deviceInfo.email === undefined)
-                    ) {
-                        return {
-                            status: "RESTART_FLOW_ERROR",
-                        };
-                    }
-
                     let magicLink: string | undefined = undefined;
                     let userInputCode: string | undefined = undefined;
                     const flowType = input.options.config.flowType;
