@@ -15,7 +15,6 @@
 import * as JsonWebToken from "jsonwebtoken";
 
 import { RecipeInterface } from "../";
-import { NormalisedAppinfo } from "../../../types";
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 import { SessionContainerInterface, TypeNormalisedInput, VerifySessionOptions } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
@@ -37,8 +36,7 @@ export function setJWTExpiryOffsetSecondsForTesting(offset: number) {
 export default function (
     originalImplementation: RecipeInterface,
     openIdRecipeImplementation: OpenIdRecipeInterface,
-    config: TypeNormalisedInput,
-    appInfo: NormalisedAppinfo
+    config: TypeNormalisedInput
 ): RecipeInterface {
     function getJWTExpiry(accessTokenExpiry: number): number {
         return accessTokenExpiry + EXPIRY_OFFSET_SECONDS;
@@ -65,7 +63,6 @@ export default function (
                 jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),
                 userId,
                 jwtPropertyName: config.jwt.propertyNameInAccessTokenPayload,
-                appInfo,
                 openIdRecipeImplementation,
             });
 
@@ -76,7 +73,7 @@ export default function (
                 sessionData,
             });
 
-            return new SessionClassWithJWT(sessionContainer, openIdRecipeImplementation, appInfo);
+            return new SessionClassWithJWT(sessionContainer, openIdRecipeImplementation);
         },
         getSession: async function ({
             req,
@@ -93,7 +90,7 @@ export default function (
                 return undefined;
             }
 
-            return new SessionClassWithJWT(sessionContainer, openIdRecipeImplementation, appInfo);
+            return new SessionClassWithJWT(sessionContainer, openIdRecipeImplementation);
         },
         refreshSession: async function ({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
@@ -107,13 +104,12 @@ export default function (
                 jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),
                 userId: newSession.getUserId(),
                 jwtPropertyName: config.jwt.propertyNameInAccessTokenPayload,
-                appInfo,
                 openIdRecipeImplementation,
             });
 
             await newSession.updateAccessTokenPayload(accessTokenPayload);
 
-            return new SessionClassWithJWT(newSession, openIdRecipeImplementation, appInfo);
+            return new SessionClassWithJWT(newSession, openIdRecipeImplementation);
         },
         updateAccessTokenPayload: async function ({
             sessionHandle,
@@ -163,7 +159,6 @@ export default function (
                 jwtExpiry,
                 userId: sessionInformation.userId,
                 jwtPropertyName: existingJwtPropertyName,
-                appInfo,
                 openIdRecipeImplementation,
             });
 

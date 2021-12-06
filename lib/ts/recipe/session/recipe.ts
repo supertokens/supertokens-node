@@ -66,8 +66,7 @@ export default class SessionRecipe extends RecipeModule {
                         oI,
                         // this.jwtRecipe is never undefined here
                         this.openIdRecipe!.recipeImplementation,
-                        this.config,
-                        appInfo
+                        this.config
                     );
                 })
                 .override(this.config.override.functions)

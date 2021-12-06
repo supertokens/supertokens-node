@@ -14,7 +14,6 @@
  */
 import * as JsonWebToken from "jsonwebtoken";
 import * as assert from "assert";
-import { NormalisedAppinfo } from "../../../types";
 
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 import { SessionContainerInterface } from "../types";
@@ -24,16 +23,10 @@ import { addJWTToAccessTokenPayload } from "./utils";
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private openIdRecipeImplementation: OpenIdRecipeInterface;
     private originalSessionClass: SessionContainerInterface;
-    private appInfo: NormalisedAppinfo;
 
-    constructor(
-        originalSessionClass: SessionContainerInterface,
-        openIdRecipeImplementation: OpenIdRecipeInterface,
-        appInfo: NormalisedAppinfo
-    ) {
+    constructor(originalSessionClass: SessionContainerInterface, openIdRecipeImplementation: OpenIdRecipeInterface) {
         this.openIdRecipeImplementation = openIdRecipeImplementation;
         this.originalSessionClass = originalSessionClass;
-        this.appInfo = appInfo;
     }
     revokeSession = (): Promise<void> => {
         return this.originalSessionClass.revokeSession();
@@ -99,7 +92,6 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
             jwtExpiry,
             userId: this.getUserId(),
             jwtPropertyName,
-            appInfo: this.appInfo,
             openIdRecipeImplementation: this.openIdRecipeImplementation,
         });
 
