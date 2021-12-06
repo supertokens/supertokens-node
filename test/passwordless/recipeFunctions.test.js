@@ -426,4 +426,135 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(Object.keys(resp).length === 3);
         }
     });
+
+    // updateUser
+    it("updateUser contactMethod email test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        let userInfo = await Passwordless.signInUp({
+            email: "test@example.com",
+        });
+
+        {
+            // update users email
+            let response = await Passwordless.updateUser({
+                userId: userInfo.user.id,
+                email: "test2@example.com",
+            });
+            assert(response.status === "OK");
+
+            let result = await Passwordless.getUserById({
+                userId: userInfo.user.id,
+            });
+
+            assert(result.email === "test2@example.com");
+        }
+        {
+            // update user with invalid userId
+            let response = await Passwordless.updateUser({
+                userId: "invalidUserId",
+                email: "test2@example.com",
+            });
+            assert(response.status === "UNKNOWN_USER_ID_ERROR");
+        }
+        {
+            // update user with an email that already exists
+            let userInfo2 = await Passwordless.signInUp({
+                email: "test3@example.com",
+            });
+
+            let result = await Passwordless.updateUser({
+                userId: userInfo2.user.id,
+                email: "test2@example.com",
+            });
+
+            assert(result.status === "EMAIL_ALREADY_EXISTS_ERROR");
+        }
+    });
+
+    it("updateUser contactMethod phone test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        let phoneNumber_1 = "+911234567899";
+        let phoneNumber_2 = "+912234567899";
+        let phoneNumber_3 = "+913345678999";
+
+        let userInfo = await Passwordless.signInUp({
+            phoneNumber: phoneNumber_1,
+        });
+
+        {
+            // update users email
+            let response = await Passwordless.updateUser({
+                userId: userInfo.user.id,
+                phoneNumber: phoneNumber_2,
+            });
+            assert(response.status === "OK");
+
+            let result = await Passwordless.getUserById({
+                userId: userInfo.user.id,
+            });
+
+            assert(result.phoneNumber === phoneNumber_2);
+        }
+        {
+            // update user with a phoneNumber that already exists
+            let userInfo2 = await Passwordless.signInUp({
+                phoneNumber: phoneNumber_3,
+            });
+
+            let result = await Passwordless.updateUser({
+                userId: userInfo2.user.id,
+                phoneNumber: phoneNumber_2,
+            });
+
+            assert(result.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR");
+        }
+    });
 });
