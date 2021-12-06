@@ -22,7 +22,7 @@ let SuperTokens = require("../../lib/build/supertokens").default;
 const request = require("supertest");
 const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
-let { isCDIVersionCompatible } = require("../utils");
+let { isCDIVersionCompatible, generateRandomCode } = require("../utils");
 let PasswordlessRecipe = require("../../lib/build/recipe/passwordless/recipe").default;
 
 /*
@@ -1037,5 +1037,186 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(response.status === "OK");
         assert(magicLinkFromAPI.startsWith(customPath));
         assert(magicLinkFromFunction.startsWith(customPath));
+    });
+
+    /*
+    - Passing getCustomUserInputCode:
+    - Check that it is called when the createCode and resendCode APIs are called
+        - Check that the result returned from this are actually what the user input code is
+    - Check that is you return the same code everytime from this function and call resendCode API, you get USER_INPUT_CODE_ALREADY_USED_ERROR output from the API
+    */
+
+    it("test passing getCustomUserInputCode using different codes", async function () {
+        await startST();
+
+        let customCode = undefined;
+        let userCodeSent = undefined;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                    getCustomUserInputCode: (input) => {
+                        customCode = generateRandomCode(5);
+                        return customCode;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        userCodeSent = input.userInputCode;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let createCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(createCodeResponse.status === "OK");
+
+        assert(userCodeSent === customCode);
+
+        customCode = undefined;
+        userCodeSent = undefined;
+
+        let resendUserCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/resend")
+                .send({
+                    deviceId: createCodeResponse.deviceId,
+                    preAuthSessionId: createCodeResponse.preAuthSessionId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(resendUserCodeResponse.status === "OK");
+        assert(userCodeSent === customCode);
+    });
+
+    it("test passing getCustomUserInputCode using the same code", async function () {
+        await startST();
+
+        // using the same customCode
+        let customCode = "customCode";
+        let userCodeSent = undefined;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                    getCustomUserInputCode: (input) => {
+                        return customCode;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        userCodeSent = input.userInputCode;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let createCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(createCodeResponse.status === "OK");
+        assert(userCodeSent === customCode);
+
+        let createNewCodeForDeviceResponse = await Passwordless.createNewCodeForDevice({
+            deviceId: createCodeResponse.deviceId,
+            userInputCode: customCode,
+        });
+
+        assert(createNewCodeForDeviceResponse.status === "USER_INPUT_CODE_ALREADY_USED_ERROR");
+
+        let resendUserCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/resend")
+                .send({
+                    deviceId: createCodeResponse.deviceId,
+                    preAuthSessionId: createCodeResponse.preAuthSessionId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(resendUserCodeResponse.status === "GENERAL_ERROR");
+        assert(resendUserCodeResponse.message === "Failed to generate a one time code. Please try again");
     });
 });

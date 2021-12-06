@@ -432,3 +432,15 @@ module.exports.isCDIVersionCompatible = async function (maxIncompatibleCDIVersio
     }
     return true;
 };
+
+module.exports.generateRandomCode = function (size) {
+    let characters = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+    let randomString = "";
+
+    //loop to select a new character in each iteration
+    for (let i = 0; i < size; i++) {
+        let randdomNumber = Math.floor(Math.random() * characters.length);
+        randomString += characters.substring(randdomNumber, randdomNumber + 1);
+    }
+    return randomString;
+};
