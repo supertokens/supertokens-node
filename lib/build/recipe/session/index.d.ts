@@ -43,7 +43,7 @@ export default class SessionWrapper {
         status: "OK";
         keys: import("../jwt").JsonWebKey[];
     }>;
-    static getDiscoveryConfiguration(): Promise<{
+    static getOpenIdDiscoveryConfiguration(): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;
@@ -63,5 +63,5 @@ export declare let updateAccessTokenPayload: typeof SessionWrapper.updateAccessT
 export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;
 export declare let getJWKS: typeof SessionWrapper.getJWKS;
-export declare let getDiscoveryConfiguration: typeof SessionWrapper.getDiscoveryConfiguration;
+export declare let getOpenIdDiscoveryConfiguration: typeof SessionWrapper.getOpenIdDiscoveryConfiguration;
 export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation };

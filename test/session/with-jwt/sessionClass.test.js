@@ -107,8 +107,8 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClas
         );
 
         let accessTokenPayload = createJWTResponse.body.accessTokenPayload;
-        assert.strictEqual(accessTokenPayload.sub, "userId");
-        assert.strictEqual(accessTokenPayload.iss, "https://api.supertokens.io");
+        assert.strictEqual(accessTokenPayload.sub, undefined);
+        assert.strictEqual(accessTokenPayload.iss, undefined);
         assert.strictEqual(accessTokenPayload.newKey, "newValue");
         assert.notStrictEqual(accessTokenPayload.jwt, undefined);
         assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
@@ -116,7 +116,7 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClas
         let decodedJWT = JsonWebToken.decode(accessTokenPayload.jwt);
         assert.notStrictEqual(decodedJWT, null);
         assert.strictEqual(decodedJWT["sub"], "userId");
-        assert.strictEqual(decodedJWT.iss, "https://api.supertokens.io");
+        assert.strictEqual(decodedJWT.iss, "https://api.supertokens.io/auth");
         assert.strictEqual(decodedJWT._jwtPName, undefined);
     });
 
@@ -189,8 +189,8 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClas
         );
 
         let accessTokenPayload = createJWTResponse.body.accessTokenPayload;
-        assert.equal(accessTokenPayload.sub, "userId");
-        assert.equal(accessTokenPayload.iss, "https://api.supertokens.io");
+        assert.equal(accessTokenPayload.sub, undefined);
+        assert.equal(accessTokenPayload.iss, undefined);
         assert.notStrictEqual(accessTokenPayload.jwt, undefined);
         assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
         assert.strictEqual(accessTokenPayload.customClaim, undefined);
@@ -198,7 +198,7 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/sessionClas
         let decodedJWT = JsonWebToken.decode(accessTokenPayload.jwt);
         assert.notStrictEqual(decodedJWT, null);
         assert.strictEqual(decodedJWT["sub"], "userId");
-        assert.strictEqual(decodedJWT.iss, "https://api.supertokens.io");
+        assert.strictEqual(decodedJWT.iss, "https://api.supertokens.io/auth");
         assert.strictEqual(decodedJWT._jwtPName, undefined);
         assert.strictEqual(decodedJWT.customClaim, undefined);
     });

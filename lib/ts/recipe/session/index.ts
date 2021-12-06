@@ -105,7 +105,7 @@ export default class SessionWrapper {
         );
     }
 
-    static getDiscoveryConfiguration() {
+    static getOpenIdDiscoveryConfiguration() {
         let openIdRecipe = Recipe.getInstanceOrThrowError().openIdRecipe;
 
         if (openIdRecipe !== undefined) {
@@ -113,7 +113,7 @@ export default class SessionWrapper {
         }
 
         throw new global.Error(
-            "getDiscoveryConfiguration cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
+            "getOpenIdDiscoveryConfiguration cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
         );
     }
 }
@@ -149,6 +149,6 @@ export let getJWKS = SessionWrapper.getJWKS;
 
 // Open id functions
 
-export let getDiscoveryConfiguration = SessionWrapper.getDiscoveryConfiguration;
+export let getOpenIdDiscoveryConfiguration = SessionWrapper.getOpenIdDiscoveryConfiguration;
 
 export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation };

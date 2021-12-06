@@ -58,7 +58,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/jwt.override.tes
                 Session.init({
                     jwt: { enable: true },
                     override: {
-                        openId: {
+                        openIdFeature: {
                             jwtFeature: {
                                 functions: function (originalImplementation) {
                                     return {
@@ -162,7 +162,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/jwt.override.tes
                 Session.init({
                     jwt: { enable: true },
                     override: {
-                        openId: {
+                        openIdFeature: {
                             jwtFeature: {
                                 apis: function (originalImplementation) {
                                     return {

@@ -41,7 +41,7 @@ describe(`overrideTest: ${printPath("[test/openid/override.test.js]")}`, functio
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                getDiscoveryConfiguration: function () {
+                                getOpenIdDiscoveryConfiguration: function () {
                                     return {
                                         issuer: "https://customissuer",
                                         jwks_uri: "https://customissuer/jwks",

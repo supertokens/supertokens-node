@@ -41,7 +41,7 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
             return;
         }
 
-        let discoveryConfig = await OpenId.getDiscoveryConfiguration();
+        let discoveryConfig = await OpenId.getOpenIdDiscoveryConfiguration();
 
         assert.equal(discoveryConfig.issuer, "https://api.supertokens.io/auth");
         assert.equal(discoveryConfig.jwks_uri, "https://api.supertokens.io/auth/jwt/jwks.json");
@@ -69,7 +69,7 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
             return;
         }
 
-        let discoveryConfig = await OpenId.getDiscoveryConfiguration();
+        let discoveryConfig = await OpenId.getOpenIdDiscoveryConfiguration();
 
         assert.equal(discoveryConfig.issuer, "https://api.supertokens.io");
         assert.equal(discoveryConfig.jwks_uri, "https://api.supertokens.io/jwt/jwks.json");
@@ -100,7 +100,7 @@ describe(`openIdTest: ${printPath("[test/openid/openid.test.js]")}`, function ()
             return;
         }
 
-        let discoveryConfig = await OpenId.getDiscoveryConfiguration();
+        let discoveryConfig = await OpenId.getOpenIdDiscoveryConfiguration();
 
         assert.equal(discoveryConfig.issuer, "https://cusomissuer/auth");
         assert.equal(discoveryConfig.jwks_uri, "https://cusomissuer/auth/jwt/jwks.json");

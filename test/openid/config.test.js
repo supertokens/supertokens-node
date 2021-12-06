@@ -126,7 +126,7 @@ describe(`configTest: ${printPath("[test/openid/config.test.js]")}`, function ()
                 ],
             });
         } catch (e) {
-            if (e.message !== "Issuer URL must end with apiBasePath") {
+            if (e.message !== "Issuer URL must end with apiBasePath. The default value is /auth") {
                 throw e;
             }
         }
