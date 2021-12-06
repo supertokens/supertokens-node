@@ -16,6 +16,7 @@
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
+import parsePhoneNumber from "libphonenumber-js/max";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -95,11 +96,12 @@ function defaultValidatePhoneNumber(value: string): Promise<string | undefined> 
         return "Development bug: Please make sure the phoneNumber field is a string";
     }
 
-    // we can even use Twilio's phone number validity lookup service: https://www.twilio.com/docs/glossary/what-e164.
-
-    if (value.match(/^\+[1-9]\d{1,14}$/) === null) {
+    let parsedPhoneNumber = parsePhoneNumber(value);
+    if (parsedPhoneNumber === undefined || !parsedPhoneNumber.isValid()) {
         return "Phone number is invalid";
     }
+
+    // we can even use Twilio's phone number validity lookup service: https://www.twilio.com/docs/glossary/what-e164.
 
     return undefined;
 }

@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
+import parsePhoneNumber from "libphonenumber-js/max";
 
 export default async function createCode(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.createCodePOST === undefined) {
@@ -61,8 +62,6 @@ export default async function createCode(apiImplementation: APIInterface, option
     }
 
     if (phoneNumber !== undefined && options.config.contactMethod === "PHONE") {
-        phoneNumber = phoneNumber.trim();
-        // TODO: normalise phoneNumber?? how??
         const validateError = await options.config.validatePhoneNumber(phoneNumber);
         if (validateError !== undefined) {
             send200Response(options.res, {
@@ -70,6 +69,14 @@ export default async function createCode(apiImplementation: APIInterface, option
                 message: validateError,
             });
             return true;
+        }
+        const parsedPhoneNumber = parsePhoneNumber(phoneNumber);
+        if (parsedPhoneNumber === undefined) {
+            // this can come here if the user has provided their own impl of validatePhoneNumber and
+            // the phone number is valid according to their impl, but not according to the libphonenumber-js lib.
+            phoneNumber = phoneNumber.trim();
+        } else {
+            phoneNumber = parsedPhoneNumber.formatInternational();
         }
     }
 
