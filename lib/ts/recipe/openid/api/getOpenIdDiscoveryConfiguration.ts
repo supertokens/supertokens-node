@@ -23,6 +23,7 @@ export default async function getOpenIdDiscoveryConfiguration(
         return false;
     }
 
+    options.res.setHeader("Access-Control-Allow-Origin", "*", false);
     let result = await apiImplementation.getOpenIdDiscoveryConfigurationGET({ options });
     send200Response(options.res, {
         issuer: result.issuer,
