@@ -12,13 +12,18 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, stopST } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let Passwordless = require("../../recipe/passwordless");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
+const request = require("supertest");
+const express = require("express");
+let { middleware, errorHandler } = require("../../framework/express");
+let { isCDIVersionCompatible } = require("../utils");
+let PasswordlessRecipe = require("../../lib/build/recipe/passwordless/recipe").default;
 
 /*
 TODO: We actually want to test all possible config inputs and make sure they work as expected
@@ -55,7 +60,7 @@ TODO: We actually want to test all possible config inputs and make sure they wor
 - Check basic override usage
 */
 
-describe(`apisFunctinos: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
+describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -65,5 +70,420 @@ describe(`apisFunctinos: ${printPath("[test/passwordless/apis.test.js]")}`, func
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    /*
+        contactMethod: PHONE
+            - minimal input works
+    */
+    it("test minimum config with phone contactMethod", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        let passwordlessRecipe = await PasswordlessRecipe.getInstanceOrThrowError();
+        assert(passwordlessRecipe.config.contactMethod === "PHONE");
+        assert(passwordlessRecipe.config.flowType === "USER_INPUT_CODE_AND_MAGIC_LINK");
+    });
+
+    /*  contactMethod: PHONE
+        If passed validatePhoneNumber, it gets called when the createCode API is called
+            - If you return undefined from the function, the API works.
+            - If you return a string from the function, the API throws a GENERIC ERROR
+    */
+
+    it("test if validatePhoneNumber is called with phone contactMethod", async function () {
+        await startST();
+
+        let isValidatePhoneNumberCalled = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    validatePhoneNumber: (phoneNumber) => {
+                        isValidatePhoneNumberCalled = true;
+                        return undefined;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // If you return undefined from the function, the API works
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        phoneNumber: "+919820367548",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isValidatePhoneNumberCalled);
+            assert(response.status === "OK");
+        }
+
+        {
+            // If you return a string from the function, the API throws a GENERIC ERROR
+
+            await killAllST();
+            await startST();
+
+            isValidatePhoneNumberCalled = false;
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init(),
+                    Passwordless.init({
+                        contactMethod: "PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        validatePhoneNumber: (phoneNumber) => {
+                            isValidatePhoneNumberCalled = true;
+                            return "test error";
+                        },
+                    }),
+                ],
+            });
+
+            {
+                let response = await new Promise((resolve) =>
+                    request(app)
+                        .post("/auth/signinup/code")
+                        .send({
+                            phoneNumber: "+919820367548",
+                        })
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(JSON.parse(res.text));
+                            }
+                        })
+                );
+
+                assert(isValidatePhoneNumberCalled);
+                assert(response.status === "GENERAL_ERROR");
+                assert(response.message === "test error");
+            }
+        }
+    });
+
+    /*  contactMethod: PHONE
+        If passed createAndSendCustomTextMessage, it gets called with the right inputs:
+            - flowType: USER_INPUT_CODE -> userInputCode !== undefined && urlWithLinkCode == undefined
+            - check all other inputs to this function are as expected
+    */
+
+    it("test createAndSendCustomTextMessage with flowType: USER_INPUT_CODE and phone contact method", async function () {
+        await startST();
+
+        let isUserInputCodeAndUrlWithLinkCodeValid = false;
+        let isOtherInputValid = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE",
+                    createAndSendCustomTextMessage: (input) => {
+                        if (input.userInputCode !== undefined && input.urlWithLinkCode === undefined) {
+                            isUserInputCodeAndUrlWithLinkCodeValid = true;
+                        }
+
+                        if (
+                            typeof input.codeLifetime === "number" &&
+                            typeof input.phoneNumber === "string" &&
+                            typeof input.preAuthSessionId === "string"
+                        ) {
+                            isOtherInputValid = true;
+                        }
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    phoneNumber: "+919820367548",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(isUserInputCodeAndUrlWithLinkCodeValid);
+        assert(isOtherInputValid);
+    });
+
+    /*  contactMethod: PHONE
+        If passed createAndSendCustomTextMessage, it gets called with the right inputs:
+            - flowType: MAGIC_LINK -> userInputCode === undefined && urlWithLinkCode !== undefined
+    */
+
+    it("test createAndSendCustomTextMessage with flowType: MAGIC_LINK and phone contact method", async function () {
+        await startST();
+
+        let isUserInputCodeAndUrlWithLinkCodeValid = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        if (input.userInputCode === undefined && input.urlWithLinkCode !== undefined) {
+                            isUserInputCodeAndUrlWithLinkCodeValid = true;
+                        }
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    phoneNumber: "+919820367548",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(isUserInputCodeAndUrlWithLinkCodeValid);
+    });
+
+    /*  contactMethod: PHONE
+        If passed createAndSendCustomTextMessage, it gets called with the right inputs:
+            - flowType: USER_INPUT_CODE_AND_MAGIC_LINK -> userInputCode !== undefined && urlWithLinkCode !== undefined
+    */
+    it("test createAndSendCustomTextMessage with flowType: USER_INPUT_CODE_AND_MAGIC_LINK and phone contact method", async function () {
+        await startST();
+
+        let isUserInputCodeAndUrlWithLinkCodeValid = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        if (input.userInputCode !== undefined && input.urlWithLinkCode !== undefined) {
+                            isUserInputCodeAndUrlWithLinkCodeValid = true;
+                        }
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    phoneNumber: "+919820367548",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(isUserInputCodeAndUrlWithLinkCodeValid);
+    });
+
+    /*  contactMethod: PHONE
+        If passed createAndSendCustomTextMessage, it gets called with the right inputs:
+            - if you throw an error from this function, that is ignored by the API
+    */
+
+    it("test createAndSendCustomTextMessage, if error is thrown, it is ignored", async function () {
+        await startST();
+
+        let isCreateAndSendCustomTextMessageCalled = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        isCreateAndSendCustomTextMessageCalled = true;
+                        throw new Error("fail");
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    phoneNumber: "+919820367548",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(isCreateAndSendCustomTextMessageCalled);
     });
 });
