@@ -486,4 +486,423 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(response.status === "OK");
         assert(isCreateAndSendCustomTextMessageCalled);
     });
+
+    /*
+    - contactMethod: EMAIL
+        - minimal input works
+    */
+
+    it("test minimum config with email contactMethod", async function () {
+        await startST();
+
+        let isCreateAndSendCustomTextMessageCalled = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        let passwordlessRecipe = await PasswordlessRecipe.getInstanceOrThrowError();
+        assert(passwordlessRecipe.config.contactMethod === "EMAIL");
+        assert(passwordlessRecipe.config.flowType === "USER_INPUT_CODE_AND_MAGIC_LINK");
+    });
+
+    /*
+    - contactMethod: EMAIL
+    - if passed validateEmailAddress, it gets called when the createCode API is called
+        - If you return undefined from the function, the API works.
+        - If you return a string from the function, the API throws a GENERIC ERROR
+    */
+
+    it("test if validateEmailAddress is called with email contactMethod", async function () {
+        await startST();
+
+        let isValidateEmailAddressCalled = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    validateEmailAddress: (email) => {
+                        isValidateEmailAddressCalled = true;
+                        return undefined;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // If you return undefined from the function, the API works
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isValidateEmailAddressCalled);
+            assert(response.status === "OK");
+        }
+
+        {
+            // If you return a string from the function, the API throws a GENERIC ERROR
+
+            await killAllST();
+            await startST();
+
+            isValidateEmailAddressCalled = false;
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    Session.init(),
+                    Passwordless.init({
+                        contactMethod: "EMAIL",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        validateEmailAddress: (email) => {
+                            isValidateEmailAddressCalled = true;
+                            return "test error";
+                        },
+                    }),
+                ],
+            });
+
+            {
+                let response = await new Promise((resolve) =>
+                    request(app)
+                        .post("/auth/signinup/code")
+                        .send({
+                            email: "test@example.com",
+                        })
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) {
+                                resolve(undefined);
+                            } else {
+                                resolve(JSON.parse(res.text));
+                            }
+                        })
+                );
+
+                assert(isValidateEmailAddressCalled);
+                assert(response.status === "GENERAL_ERROR");
+                assert(response.message === "test error");
+            }
+        }
+    });
+
+    /*
+    - contactMethod: EMAIL
+    - if passed createAndSendCustomEmail, it gets called with the right inputs:
+        - flowType: USER_INPUT_CODE -> userInputCode !== undefined && urlWithLinkCode == undefined
+        - check all other inputs to this function are as expected
+    */
+
+    it("test createAndSendCustomEmail with flowType: USER_INPUT_CODE and email contact method", async function () {
+        await startST();
+
+        let isUserInputCodeAndUrlWithLinkCodeValid = false;
+        let isOtherInputValid = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                    createAndSendCustomEmail: (input) => {
+                        if (input.userInputCode !== undefined && input.urlWithLinkCode === undefined) {
+                            isUserInputCodeAndUrlWithLinkCodeValid = true;
+                        }
+
+                        if (
+                            typeof input.codeLifetime === "number" &&
+                            typeof input.email === "string" &&
+                            typeof input.preAuthSessionId === "string"
+                        ) {
+                            isOtherInputValid = true;
+                        }
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(isUserInputCodeAndUrlWithLinkCodeValid);
+        assert(isOtherInputValid);
+    });
+
+    /*  contactMethod: EMAIL
+        If passed createAndSendCustomEmail, it gets called with the right inputs:
+            - flowType: MAGIC_LINK -> userInputCode === undefined && urlWithLinkCode !== undefined
+    */
+
+    it("test createAndSendCustomEmail with flowType: MAGIC_LINK and email contact method", async function () {
+        await startST();
+
+        let isUserInputCodeAndUrlWithLinkCodeValid = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        if (input.userInputCode === undefined && input.urlWithLinkCode !== undefined) {
+                            isUserInputCodeAndUrlWithLinkCodeValid = true;
+                        }
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(isUserInputCodeAndUrlWithLinkCodeValid);
+    });
+
+    /*  contactMethod: EMAIL
+        If passed createAndSendCustomEmail, it gets called with the right inputs:
+            - flowType: USER_INPUT_CODE_AND_MAGIC_LINK -> userInputCode !== undefined && urlWithLinkCode !== undefined
+    */
+    it("test createAndSendCustomTextMessage with flowType: USER_INPUT_CODE_AND_MAGIC_LINK and email contact method", async function () {
+        await startST();
+
+        let isUserInputCodeAndUrlWithLinkCodeValid = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        if (input.userInputCode !== undefined && input.urlWithLinkCode !== undefined) {
+                            isUserInputCodeAndUrlWithLinkCodeValid = true;
+                        }
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(isUserInputCodeAndUrlWithLinkCodeValid);
+    });
+
+    /*  contactMethod: EMAIL
+        If passed createAndSendCustomEmail, it gets called with the right inputs:
+            - if you throw an error from this function, that is ignored by the API
+    */
+
+    it("test createAndSendCustomEmail, if error is thrown, it is ignored", async function () {
+        await startST();
+
+        let isCreateAndSendCustomEmailCalled = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        isCreateAndSendCustomEmailCalled = true;
+                        throw new Error("fail");
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(isCreateAndSendCustomEmailCalled);
+    });
 });
