@@ -16,10 +16,10 @@ import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLDomain from "../../normalisedURLDomain";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
+import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface, JsonWebKey } from "../jwt/types";
 
 export type TypeInput = {
-    issuer: string;
+    issuer?: string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -72,15 +72,36 @@ export type APIOptions = {
 export type APIInterface = {
     getOpenIdDiscoveryConfigurationGET:
         | undefined
-        | ((input: { options: APIOptions }) => Promise<DiscoveryConfiguration>);
-};
-
-export type DiscoveryConfiguration = {
-    status: "OK";
-    issuer: string;
-    jwks_uri: string;
+        | ((input: {
+              options: APIOptions;
+          }) => Promise<{
+              status: "OK";
+              issuer: string;
+              jwks_uri: string;
+          }>);
 };
 
 export type RecipeInterface = {
-    getDiscoveryConfiguration(): Promise<DiscoveryConfiguration>;
+    getOpenIdDiscoveryConfiguration(): Promise<{
+        status: "OK";
+        issuer: string;
+        jwks_uri: string;
+    }>;
+    createJWT(input: {
+        payload?: any;
+        validitySeconds?: number;
+    }): Promise<
+        | {
+              status: "OK";
+              jwt: string;
+          }
+        | {
+              status: "UNSUPPORTED_ALGORITHM_ERROR";
+          }
+    >;
+
+    getJWKS(): Promise<{
+        status: "OK";
+        keys: JsonWebKey[];
+    }>;
 };

@@ -16,22 +16,22 @@ import * as JsonWebToken from "jsonwebtoken";
 import * as assert from "assert";
 import { NormalisedAppinfo } from "../../../types";
 
-import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
+import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 import { SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import { addJWTToAccessTokenPayload } from "./utils";
 
 export default class SessionClassWithJWT implements SessionContainerInterface {
-    private jwtRecipeImplementation: JWTRecipeInterface;
+    private openIdRecipeImplementation: OpenIdRecipeInterface;
     private originalSessionClass: SessionContainerInterface;
     private appInfo: NormalisedAppinfo;
 
     constructor(
         originalSessionClass: SessionContainerInterface,
-        jwtRecipeImplementation: JWTRecipeInterface,
+        openIdRecipeImplementation: OpenIdRecipeInterface,
         appInfo: NormalisedAppinfo
     ) {
-        this.jwtRecipeImplementation = jwtRecipeImplementation;
+        this.openIdRecipeImplementation = openIdRecipeImplementation;
         this.originalSessionClass = originalSessionClass;
         this.appInfo = appInfo;
     }
@@ -100,7 +100,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
             userId: this.getUserId(),
             jwtPropertyName,
             appInfo: this.appInfo,
-            jwtRecipeImplementation: this.jwtRecipeImplementation,
+            openIdRecipeImplementation: this.openIdRecipeImplementation,
         });
 
         return await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);

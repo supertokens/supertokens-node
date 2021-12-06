@@ -6,7 +6,7 @@ import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import JWTRecipe from "../jwt/recipe";
-export default class OpenIDRecipe extends RecipeModule {
+export default class OpenIdRecipe extends RecipeModule {
     static RECIPE_ID: string;
     private static instance;
     config: TypeNormalisedInput;
@@ -14,7 +14,7 @@ export default class OpenIDRecipe extends RecipeModule {
     recipeImplementation: RecipeInterface;
     apiImpl: APIInterface;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
-    static getInstanceOrThrowError(): OpenIDRecipe;
+    static getInstanceOrThrowError(): OpenIdRecipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];

@@ -21,7 +21,7 @@ export default function getAPIImplementation(): APIInterface {
         }: {
             options: APIOptions;
         }): Promise<{ status: "OK"; issuer: string; jwks_uri: string }> {
-            return await options.recipeImplementation.getDiscoveryConfiguration();
+            return await options.recipeImplementation.getOpenIdDiscoveryConfiguration();
         },
     };
 }

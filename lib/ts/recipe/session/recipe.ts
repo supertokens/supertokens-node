@@ -30,7 +30,7 @@ import APIImplementation from "./api/implementation";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
-import OpenIDRecipe from "../openid/recipe";
+import OpenIdRecipe from "../openid/recipe";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -40,7 +40,7 @@ export default class SessionRecipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
-    openIdRecipe?: OpenIDRecipe;
+    openIdRecipe?: OpenIdRecipe;
 
     apiImpl: APIInterface;
 
@@ -52,9 +52,9 @@ export default class SessionRecipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
 
         if (this.config.jwt.enable === true) {
-            this.openIdRecipe = new OpenIDRecipe(recipeId, appInfo, isInServerlessEnv, {
+            this.openIdRecipe = new OpenIdRecipe(recipeId, appInfo, isInServerlessEnv, {
                 issuer: this.config.jwt.issuer,
-                override: this.config.override.openId,
+                override: this.config.override.openIdFeature,
             });
 
             let builder = new OverrideableBuilder(
@@ -65,7 +65,7 @@ export default class SessionRecipe extends RecipeModule {
                     return RecipeImplementationWithJWT(
                         oI,
                         // this.jwtRecipe is never undefined here
-                        this.openIdRecipe!.jwtRecipe.recipeInterfaceImpl,
+                        this.openIdRecipe!.recipeImplementation,
                         this.config,
                         appInfo
                     );

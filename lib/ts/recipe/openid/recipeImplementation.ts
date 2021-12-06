@@ -12,17 +12,53 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { DiscoveryConfiguration, RecipeInterface, TypeNormalisedInput } from "./types";
+import { RecipeInterface, TypeNormalisedInput } from "./types";
+import { RecipeInterface as JWTRecipeInterface, JsonWebKey } from "../jwt/types";
+import NormalisedURLPath from "../../normalisedURLPath";
+import { GET_JWKS_API } from "../jwt/constants";
 
-export default function getRecipeInterface(config: TypeNormalisedInput): RecipeInterface {
+export default function getRecipeInterface(
+    config: TypeNormalisedInput,
+    jwtRecipeImplementation: JWTRecipeInterface
+): RecipeInterface {
     return {
-        getDiscoveryConfiguration: async function (): Promise<DiscoveryConfiguration> {
+        getOpenIdDiscoveryConfiguration: async function (): Promise<{
+            status: "OK";
+            issuer: string;
+            jwks_uri: string;
+        }> {
             let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
+            let jwks_uri =
+                config.issuerDomain.getAsStringDangerous() +
+                config.issuerPath.appendPath(new NormalisedURLPath(GET_JWKS_API)).getAsStringDangerous();
             return {
                 status: "OK",
                 issuer,
-                jwks_uri: issuer + "/jwt/jwks.json",
+                jwks_uri,
             };
+        },
+        createJWT: async function ({
+            payload,
+            validitySeconds,
+        }: {
+            payload?: any;
+            validitySeconds?: number;
+        }): Promise<
+            | {
+                  status: "OK";
+                  jwt: string;
+              }
+            | {
+                  status: "UNSUPPORTED_ALGORITHM_ERROR";
+              }
+        > {
+            return await jwtRecipeImplementation.createJWT({
+                payload,
+                validitySeconds,
+            });
+        },
+        getJWKS: async function (this: RecipeInterface): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
+            return await jwtRecipeImplementation.getJWKS();
         },
     };
 }

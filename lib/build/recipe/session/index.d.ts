@@ -43,7 +43,11 @@ export default class SessionWrapper {
         status: "OK";
         keys: import("../jwt").JsonWebKey[];
     }>;
-    static getDiscoveryConfiguration(): Promise<import("../openid/types").DiscoveryConfiguration>;
+    static getDiscoveryConfiguration(): Promise<{
+        status: "OK";
+        issuer: string;
+        jwks_uri: string;
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;

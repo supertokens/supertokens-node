@@ -27,9 +27,9 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { GET_DISCOVERY_CONFIG_URL } from "./constants";
 import getOpenIdDiscoveryConfiguration from "./api/getOpenIdDiscoveryConfiguration";
 
-export default class OpenIDRecipe extends RecipeModule {
+export default class OpenIdRecipe extends RecipeModule {
     static RECIPE_ID = "opeinid";
-    private static instance: OpenIDRecipe | undefined = undefined;
+    private static instance: OpenIdRecipe | undefined = undefined;
     config: TypeNormalisedInput;
     jwtRecipe: JWTRecipe;
     recipeImplementation: RecipeInterface;
@@ -43,7 +43,7 @@ export default class OpenIDRecipe extends RecipeModule {
             override: this.config.override.jwtFeature,
         });
 
-        let builder = new OverrideableBuilder(RecipeImplementation(this.config));
+        let builder = new OverrideableBuilder(RecipeImplementation(this.config, this.jwtRecipe.recipeInterfaceImpl));
 
         this.recipeImplementation = builder.override(this.config.override.functions).build();
 
@@ -52,20 +52,20 @@ export default class OpenIDRecipe extends RecipeModule {
         this.apiImpl = apiBuilder.override(this.config.override.apis).build();
     }
 
-    static getInstanceOrThrowError(): OpenIDRecipe {
-        if (OpenIDRecipe.instance !== undefined) {
-            return OpenIDRecipe.instance;
+    static getInstanceOrThrowError(): OpenIdRecipe {
+        if (OpenIdRecipe.instance !== undefined) {
+            return OpenIdRecipe.instance;
         }
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
 
     static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
-            if (OpenIDRecipe.instance === undefined) {
-                OpenIDRecipe.instance = new OpenIDRecipe(OpenIDRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
-                return OpenIDRecipe.instance;
+            if (OpenIdRecipe.instance === undefined) {
+                OpenIdRecipe.instance = new OpenIdRecipe(OpenIdRecipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                return OpenIdRecipe.instance;
             } else {
-                throw new Error("OpenID recipe has already been initialised. Please check your code for bugs.");
+                throw new Error("OpenId recipe has already been initialised. Please check your code for bugs.");
             }
         };
     }
@@ -74,7 +74,7 @@ export default class OpenIDRecipe extends RecipeModule {
         if (process.env.TEST_MODE !== "testing") {
             throw new Error("calling testing function in non testing env");
         }
-        OpenIDRecipe.instance = undefined;
+        OpenIdRecipe.instance = undefined;
     }
 
     getAPIsHandled = (): APIHandled[] => {
@@ -110,7 +110,7 @@ export default class OpenIDRecipe extends RecipeModule {
         }
     };
     handleError = async (error: STError, request: BaseRequest, response: BaseResponse): Promise<void> => {
-        if (error.fromRecipe === OpenIDRecipe.RECIPE_ID) {
+        if (error.fromRecipe === OpenIdRecipe.RECIPE_ID) {
             throw error;
         } else {
             return await this.jwtRecipe.handleError(error, request, response);
@@ -120,6 +120,9 @@ export default class OpenIDRecipe extends RecipeModule {
         return [];
     };
     isErrorFromThisRecipe = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === OpenIDRecipe.RECIPE_ID;
+        return (
+            (STError.isErrorFromSuperTokens(err) && err.fromRecipe === OpenIdRecipe.RECIPE_ID) ||
+            this.jwtRecipe.isErrorFromThisRecipe(err)
+        );
     };
 }

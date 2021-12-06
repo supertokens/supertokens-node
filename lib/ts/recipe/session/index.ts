@@ -109,7 +109,7 @@ export default class SessionWrapper {
         let openIdRecipe = Recipe.getInstanceOrThrowError().openIdRecipe;
 
         if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.getDiscoveryConfiguration();
+            return openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration();
         }
 
         throw new global.Error(

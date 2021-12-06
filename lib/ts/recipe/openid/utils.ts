@@ -19,14 +19,16 @@ import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from ".
 
 export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config?: TypeInput): TypeNormalisedInput {
     let issuerDomain = appInfo.apiDomain;
-    let issuerPath = appInfo.apiBasePath;
+    let issuerPath = appInfo.apiGatewayPath.appendPath(appInfo.apiBasePath);
 
     if (config !== undefined) {
-        issuerDomain = new NormalisedURLDomain(config.issuer);
-        issuerPath = new NormalisedURLPath(config.issuer);
+        if (config.issuer !== undefined) {
+            issuerDomain = new NormalisedURLDomain(config.issuer);
+            issuerPath = new NormalisedURLPath(config.issuer);
+        }
 
         if (!issuerPath.equals(appInfo.apiBasePath)) {
-            throw new Error("Issuer URL must end with apiBasePath");
+            throw new Error("Issuer URL must end with apiBasePath. The default value is /auth");
         }
     }
 

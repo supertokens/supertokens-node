@@ -1,8 +1,12 @@
 // @ts-nocheck
-import OpenIDRecipe from "./recipe";
-export default class OpenIDRecipeWrapper {
-    static init: typeof OpenIDRecipe.init;
-    static getDiscoveryConfiguration(): Promise<import("./types").DiscoveryConfiguration>;
+import OpenIdRecipe from "./recipe";
+export default class OpenIdRecipeWrapper {
+    static init: typeof OpenIdRecipe.init;
+    static getOpenIdDiscoveryConfiguration(): Promise<{
+        status: "OK";
+        issuer: string;
+        jwks_uri: string;
+    }>;
     static createJWT(
         payload?: any,
         validitySeconds?: number
@@ -20,7 +24,7 @@ export default class OpenIDRecipeWrapper {
         keys: import("../jwt").JsonWebKey[];
     }>;
 }
-export declare let init: typeof OpenIDRecipe.init;
-export declare let getDiscoveryConfiguration: typeof OpenIDRecipeWrapper.getDiscoveryConfiguration;
-export declare let createJWT: typeof OpenIDRecipeWrapper.createJWT;
-export declare let getJWKS: typeof OpenIDRecipeWrapper.getJWKS;
+export declare let init: typeof OpenIdRecipe.init;
+export declare let getOpenIdDiscoveryConfiguration: typeof OpenIdRecipeWrapper.getOpenIdDiscoveryConfiguration;
+export declare let createJWT: typeof OpenIdRecipeWrapper.createJWT;
+export declare let getJWKS: typeof OpenIdRecipeWrapper.getJWKS;

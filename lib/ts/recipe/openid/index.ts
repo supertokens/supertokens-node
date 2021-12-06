@@ -1,25 +1,25 @@
-import OpenIDRecipe from "./recipe";
+import OpenIdRecipe from "./recipe";
 
-export default class OpenIDRecipeWrapper {
-    static init = OpenIDRecipe.init;
+export default class OpenIdRecipeWrapper {
+    static init = OpenIdRecipe.init;
 
-    static getDiscoveryConfiguration() {
-        return OpenIDRecipe.getInstanceOrThrowError().recipeImplementation.getDiscoveryConfiguration();
+    static getOpenIdDiscoveryConfiguration() {
+        return OpenIdRecipe.getInstanceOrThrowError().recipeImplementation.getOpenIdDiscoveryConfiguration();
     }
 
     static createJWT(payload?: any, validitySeconds?: number) {
-        return OpenIDRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.createJWT({
+        return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.createJWT({
             payload,
             validitySeconds,
         });
     }
 
     static getJWKS() {
-        return OpenIDRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.getJWKS();
+        return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.getJWKS();
     }
 }
 
-export let init = OpenIDRecipeWrapper.init;
-export let getDiscoveryConfiguration = OpenIDRecipeWrapper.getDiscoveryConfiguration;
-export let createJWT = OpenIDRecipeWrapper.createJWT;
-export let getJWKS = OpenIDRecipeWrapper.getJWKS;
+export let init = OpenIdRecipeWrapper.init;
+export let getOpenIdDiscoveryConfiguration = OpenIdRecipeWrapper.getOpenIdDiscoveryConfiguration;
+export let createJWT = OpenIdRecipeWrapper.createJWT;
+export let getJWKS = OpenIdRecipeWrapper.getJWKS;

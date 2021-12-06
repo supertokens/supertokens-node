@@ -117,7 +117,7 @@ export type TypeInput = {
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        openId?: {
+        openIdFeature?: {
             functions?: (
                 originalImplementation: OpenIdRecipeInterface,
                 builder?: OverrideableBuilder<OpenIdRecipeInterface>
@@ -166,7 +166,7 @@ export type TypeNormalisedInput = {
     jwt: {
         enable: boolean;
         propertyNameInAccessTokenPayload: string;
-        issuer: string;
+        issuer?: string;
     };
     override: {
         functions: (
@@ -174,7 +174,7 @@ export type TypeNormalisedInput = {
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        openId?: {
+        openIdFeature?: {
             functions?: (
                 originalImplementation: OpenIdRecipeInterface,
                 builder?: OverrideableBuilder<OpenIdRecipeInterface>

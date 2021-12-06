@@ -14,7 +14,7 @@
  */
 import { NormalisedAppinfo } from "../../../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
-import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
+import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 
 export async function addJWTToAccessTokenPayload({
     accessTokenPayload,
@@ -22,14 +22,14 @@ export async function addJWTToAccessTokenPayload({
     userId,
     jwtPropertyName,
     appInfo,
-    jwtRecipeImplementation,
+    openIdRecipeImplementation,
 }: {
     accessTokenPayload: any;
     jwtExpiry: number;
     userId: string;
     jwtPropertyName: string;
     appInfo: NormalisedAppinfo;
-    jwtRecipeImplementation: JWTRecipeInterface;
+    openIdRecipeImplementation: OpenIdRecipeInterface;
 }): Promise<any> {
     // If jwtPropertyName is not undefined it means that the JWT was added to the access token payload already
     let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
@@ -52,7 +52,7 @@ export async function addJWTToAccessTokenPayload({
     };
 
     // Create the JWT
-    let jwtResponse = await jwtRecipeImplementation.createJWT({
+    let jwtResponse = await openIdRecipeImplementation.createJWT({
         payload: accessTokenPayload,
         validitySeconds: jwtExpiry,
     });
