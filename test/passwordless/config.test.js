@@ -1219,4 +1219,70 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(resendUserCodeResponse.status === "GENERAL_ERROR");
         assert(resendUserCodeResponse.message === "Failed to generate a one time code. Please try again");
     });
+
+    // Check basic override usage
+    it("test basic override usage in passwordless", async function () {
+        await startST();
+
+        let customDeviceId = "customDeviceId";
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE",
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                createCodePOST: async (input) => {
+                                    let response = await oI.createCodePOST(input);
+                                    response.deviceId = customDeviceId;
+                                    return response;
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let createCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(createCodeResponse.deviceId === customDeviceId);
+    });
 });
