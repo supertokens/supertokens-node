@@ -905,4 +905,137 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(response.status === "OK");
         assert(isCreateAndSendCustomEmailCalled);
     });
+
+    /*
+    - Missing compulsory configs throws as error:
+        - flowType is necessary, contactMethod is necessary
+    */
+
+    it("test missing compulsory configs throws an error", async function () {
+        await startST();
+
+        {
+            // missing flowType
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        Session.init(),
+                        Passwordless.init({
+                            contactMethod: "EMAIL",
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (err.message !== "Please pass flowType argument in the config") {
+                    throw err;
+                }
+            }
+        }
+
+        {
+            await killAllST();
+            await startST();
+
+            // missing contactMethod
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        Session.init(),
+                        Passwordless.init({
+                            flowType: "USER_INPUT_CODE",
+                        }),
+                    ],
+                });
+                assert(false);
+            } catch (err) {
+                if (err.message !== `Please pass one of "PHONE" or "EMAIL" as the contactMethod`) {
+                    throw err;
+                }
+            }
+        }
+    });
+
+    // Passing getLinkDomainAndPath should call that, and the resulting magic link (from API call and from Passwordless.createMagicLink function call) should use the custom link returned from the function
+    it("test passing getLinkDomainAndPath", async function () {
+        await startST();
+
+        let magicLinkFromAPI = undefined;
+        let customPath = "http://customPath.com";
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "MAGIC_LINK",
+                    getLinkDomainAndPath: (contactInfo) => {
+                        return customPath;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        magicLinkFromAPI = input.urlWithLinkCode;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.9"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let magicLinkFromFunction = await Passwordless.createMagicLink({
+            email: "test@example.com",
+        });
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(response.status === "OK");
+        assert(magicLinkFromAPI.startsWith(customPath));
+        assert(magicLinkFromFunction.startsWith(customPath));
+    });
 });
