@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Adds passwordless recipe
 -   Adds compatibility with FDI 1.11 and CDI 2.10
+-   Adds passwordless tests
 
 ## [8.2.0] - 2021-11-15
 

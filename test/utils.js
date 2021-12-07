@@ -24,6 +24,8 @@ let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").de
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
+let { Querier } = require("../lib/build/querier");
+let { maxVersion } = require("../lib/build/utils");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -419,4 +421,28 @@ module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, bod
         },
         queryStringParameters: queryParams,
     };
+};
+
+module.exports.isCDIVersionCompatible = async function (compatibleCDIVersion) {
+    let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+
+    if (
+        maxVersion(currCDIVersion, compatibleCDIVersion) === compatibleCDIVersion &&
+        currCDIVersion !== compatibleCDIVersion
+    ) {
+        return false;
+    }
+    return true;
+};
+
+module.exports.generateRandomCode = function (size) {
+    let characters = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+    let randomString = "";
+
+    //loop to select a new character in each iteration
+    for (let i = 0; i < size; i++) {
+        let randdomNumber = Math.floor(Math.random() * characters.length);
+        randomString += characters.substring(randdomNumber, randdomNumber + 1);
+    }
+    return randomString;
 };
