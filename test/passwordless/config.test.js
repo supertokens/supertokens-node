@@ -98,7 +98,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -140,7 +140,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -156,7 +156,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
-                        phoneNumber: "+919820367548",
+                        phoneNumber: "+1234567890",
                     })
                     .expect(200)
                     .end((err, res) => {
@@ -207,7 +207,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                     request(app)
                         .post("/auth/signinup/code")
                         .send({
-                            phoneNumber: "+919820367548",
+                            phoneNumber: "+1234567890",
                         })
                         .expect(200)
                         .end((err, res) => {
@@ -269,7 +269,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -283,7 +283,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    phoneNumber: "+919820367548",
+                    phoneNumber: "+1234567890",
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -333,7 +333,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -347,7 +347,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    phoneNumber: "+919820367548",
+                    phoneNumber: "+1234567890",
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -395,7 +395,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -409,7 +409,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    phoneNumber: "+919820367548",
+                    phoneNumber: "+1234567890",
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -457,7 +457,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -471,7 +471,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    phoneNumber: "+919820367548",
+                    phoneNumber: "+1234567890",
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -515,7 +515,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -558,7 +558,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -688,7 +688,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -752,7 +752,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -814,7 +814,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -876,7 +876,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -1004,7 +1004,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -1078,7 +1078,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -1163,7 +1163,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
@@ -1257,7 +1257,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         });
 
         // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.9"))) {
+        if (!(await isCDIVersionCompatible("2.10"))) {
             return;
         }
 
