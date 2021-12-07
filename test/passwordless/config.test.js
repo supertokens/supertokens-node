@@ -495,7 +495,6 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
     it("test minimum config with email contactMethod", async function () {
         await startST();
 
-        let isCreateAndSendCustomTextMessageCalled = false;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
