@@ -425,20 +425,12 @@ module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, bod
 
 module.exports.isCDIVersionCompatible = async function (compatibleCDIVersion) {
     let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
-    let splittedV1 = currCDIVersion.split(".");
-    let splittedV2 = compatibleCDIVersion.split(".");
-    let minLength = Math.min(splittedV1.length, splittedV2.length);
 
-    for (let i = 0; i < minLength; i++) {
-        let v1 = Number(splittedV1[i]);
-        let v2 = Number(splittedV2[i]);
-        if (v1 > v2) {
-            return true;
-        } else if (v1 === v2) {
-            continue;
-        } else {
-            return false;
-        }
+    if (
+        maxVersion(currCDIVersion, compatibleCDIVersion) === compatibleCDIVersion &&
+        currCDIVersion !== compatibleCDIVersion
+    ) {
+        return false;
     }
     return true;
 };
