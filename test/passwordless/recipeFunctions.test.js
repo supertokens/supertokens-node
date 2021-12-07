@@ -521,9 +521,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             return;
         }
 
-        let phoneNumber_1 = "+1234567890";
-        let phoneNumber_2 = "+1234567890";
-        let phoneNumber_3 = "+1234567890";
+        let phoneNumber_1 = "+1234567891";
+        let phoneNumber_2 = "+1234567892";
+        let phoneNumber_3 = "+1234567893";
 
         let userInfo = await Passwordless.signInUp({
             phoneNumber: phoneNumber_1,
