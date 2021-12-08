@@ -1,4 +1,4 @@
 {
     "_comment": "contains a list of frontend-driver interfaces branch names that this core supports",
-    "versions": ["1.8", "1.9", "1.10", "1.11"]
+    "versions": ["1.8", "1.9", "1.10", "1.12"]
 }
