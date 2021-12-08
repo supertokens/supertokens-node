@@ -12,17 +12,16 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-
-import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
 
-export default async function getJWKS(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    if (apiImplementation.getJWKSGET === undefined) {
-        return false;
-    }
-
-    options.res.setHeader("Access-Control-Allow-Origin", "*", false);
-    let result = await apiImplementation.getJWKSGET({ options });
-    send200Response(options.res, { keys: result.keys });
-    return true;
+export default function getAPIImplementation(): APIInterface {
+    return {
+        getOpenIdDiscoveryConfigurationGET: async function ({
+            options,
+        }: {
+            options: APIOptions;
+        }): Promise<{ status: "OK"; issuer: string; jwks_uri: string }> {
+            return await options.recipeImplementation.getOpenIdDiscoveryConfiguration();
+        },
+    };
 }

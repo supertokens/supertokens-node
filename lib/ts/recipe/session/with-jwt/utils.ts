@@ -12,24 +12,21 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { NormalisedAppinfo } from "../../../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
-import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
+import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 
 export async function addJWTToAccessTokenPayload({
     accessTokenPayload,
     jwtExpiry,
     userId,
     jwtPropertyName,
-    appInfo,
-    jwtRecipeImplementation,
+    openIdRecipeImplementation,
 }: {
     accessTokenPayload: any;
     jwtExpiry: number;
     userId: string;
     jwtPropertyName: string;
-    appInfo: NormalisedAppinfo;
-    jwtRecipeImplementation: JWTRecipeInterface;
+    openIdRecipeImplementation: OpenIdRecipeInterface;
 }): Promise<any> {
     // If jwtPropertyName is not undefined it means that the JWT was added to the access token payload already
     let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
@@ -40,20 +37,16 @@ export async function addJWTToAccessTokenPayload({
         delete accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
     }
 
-    // Update the access token payload with the default claims to add
-    accessTokenPayload = {
-        /* 
-            We add our claims before the user provided ones so that if they use the same claims
-            then the final payload will use the values they provide
-        */
-        sub: userId,
-        iss: appInfo.apiDomain.getAsStringDangerous(),
-        ...accessTokenPayload,
-    };
-
     // Create the JWT
-    let jwtResponse = await jwtRecipeImplementation.createJWT({
-        payload: accessTokenPayload,
+    let jwtResponse = await openIdRecipeImplementation.createJWT({
+        payload: {
+            /* 
+                We add our claims before the user provided ones so that if they use the same claims
+                then the final payload will use the values they provide
+            */
+            sub: userId,
+            ...accessTokenPayload,
+        },
         validitySeconds: jwtExpiry,
     });
 

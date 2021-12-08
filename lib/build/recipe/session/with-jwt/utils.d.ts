@@ -1,18 +1,15 @@
 // @ts-nocheck
-import { NormalisedAppinfo } from "../../../types";
-import { RecipeInterface as JWTRecipeInterface } from "../../jwt/types";
+import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 export declare function addJWTToAccessTokenPayload({
     accessTokenPayload,
     jwtExpiry,
     userId,
     jwtPropertyName,
-    appInfo,
-    jwtRecipeImplementation,
+    openIdRecipeImplementation,
 }: {
     accessTokenPayload: any;
     jwtExpiry: number;
     userId: string;
     jwtPropertyName: string;
-    appInfo: NormalisedAppinfo;
-    jwtRecipeImplementation: JWTRecipeInterface;
+    openIdRecipeImplementation: OpenIdRecipeInterface;
 }): Promise<any>;
