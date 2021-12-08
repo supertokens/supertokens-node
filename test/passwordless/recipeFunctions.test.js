@@ -19,6 +19,7 @@ let Passwordless = require("../../recipe/passwordless");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
+let { isCDIVersionCompatible } = require("../utils");
 
 /*
 TODO: We want to use the exposed functions and make sure that the all the possible outputs of the recipe interface are according to the types files.
@@ -67,6 +68,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
 
         {
             let user = await Passwordless.getUserById({
@@ -162,6 +168,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
         {
             let resp = await Passwordless.createCode({
                 email: "test@example.com",
@@ -216,6 +227,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
 
         {
             let resp = await Passwordless.createCode({
@@ -308,6 +324,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
         {
             let codeInfo = await Passwordless.createCode({
                 email: "test@example.com",
@@ -382,6 +403,11 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
         {
             let codeInfo = await Passwordless.createCode({
                 email: "test@example.com",
@@ -399,5 +425,483 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(resp.maximumCodeInputAttempts === 5);
             assert(Object.keys(resp).length === 3);
         }
+    });
+
+    // updateUser
+    it("updateUser contactMethod email test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let userInfo = await Passwordless.signInUp({
+            email: "test@example.com",
+        });
+
+        {
+            // update users email
+            let response = await Passwordless.updateUser({
+                userId: userInfo.user.id,
+                email: "test2@example.com",
+            });
+            assert(response.status === "OK");
+
+            let result = await Passwordless.getUserById({
+                userId: userInfo.user.id,
+            });
+
+            assert(result.email === "test2@example.com");
+        }
+        {
+            // update user with invalid userId
+            let response = await Passwordless.updateUser({
+                userId: "invalidUserId",
+                email: "test2@example.com",
+            });
+            assert(response.status === "UNKNOWN_USER_ID_ERROR");
+        }
+        {
+            // update user with an email that already exists
+            let userInfo2 = await Passwordless.signInUp({
+                email: "test3@example.com",
+            });
+
+            let result = await Passwordless.updateUser({
+                userId: userInfo2.user.id,
+                email: "test2@example.com",
+            });
+
+            assert(result.status === "EMAIL_ALREADY_EXISTS_ERROR");
+        }
+    });
+
+    it("updateUser contactMethod phone test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let phoneNumber_1 = "+1234567891";
+        let phoneNumber_2 = "+1234567892";
+        let phoneNumber_3 = "+1234567893";
+
+        let userInfo = await Passwordless.signInUp({
+            phoneNumber: phoneNumber_1,
+        });
+
+        {
+            // update users email
+            let response = await Passwordless.updateUser({
+                userId: userInfo.user.id,
+                phoneNumber: phoneNumber_2,
+            });
+            assert(response.status === "OK");
+
+            let result = await Passwordless.getUserById({
+                userId: userInfo.user.id,
+            });
+
+            assert(result.phoneNumber === phoneNumber_2);
+        }
+        {
+            // update user with a phoneNumber that already exists
+            let userInfo2 = await Passwordless.signInUp({
+                phoneNumber: phoneNumber_3,
+            });
+
+            let result = await Passwordless.updateUser({
+                userId: userInfo2.user.id,
+                phoneNumber: phoneNumber_2,
+            });
+
+            assert(result.status === "PHONE_NUMBER_ALREADY_EXISTS_ERROR");
+        }
+    });
+
+    // revokeAllCodes
+    it("revokeAllCodes test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let codeInfo_1 = await Passwordless.createCode({
+            email: "test@example.com",
+        });
+
+        let codeInfo_2 = await Passwordless.createCode({
+            email: "test@example.com",
+        });
+
+        {
+            let result = await Passwordless.revokeAllCodes({
+                email: "test@example.com",
+            });
+
+            assert(result.status === "OK");
+        }
+
+        {
+            let result_1 = await Passwordless.consumeCode({
+                deviceId: codeInfo_1.deviceId,
+                userInputCode: codeInfo_1.userInputCode,
+            });
+
+            assert(result_1.status === "RESTART_FLOW_ERROR");
+
+            let result_2 = await Passwordless.consumeCode({
+                deviceId: codeInfo_2.deviceId,
+                userInputCode: codeInfo_2.userInputCode,
+            });
+
+            assert(result_2.status === "RESTART_FLOW_ERROR");
+        }
+    });
+
+    it("revokeCode test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let codeInfo_1 = await Passwordless.createCode({
+            email: "test@example.com",
+        });
+
+        let codeInfo_2 = await Passwordless.createCode({
+            email: "test@example.com",
+        });
+
+        {
+            let result = await Passwordless.revokeCode({
+                codeId: codeInfo_1.codeId,
+            });
+
+            assert(result.status === "OK");
+        }
+
+        {
+            let result_1 = await Passwordless.consumeCode({
+                deviceId: codeInfo_1.deviceId,
+                userInputCode: codeInfo_1.userInputCode,
+            });
+
+            assert(result_1.status === "RESTART_FLOW_ERROR");
+
+            let result_2 = await Passwordless.consumeCode({
+                deviceId: codeInfo_2.deviceId,
+                userInputCode: codeInfo_2.userInputCode,
+            });
+
+            assert(result_2.status === "OK");
+        }
+    });
+
+    // listCodesByEmail
+    it("listCodesByEmail test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let codeInfo_1 = await Passwordless.createCode({
+            email: "test@example.com",
+        });
+
+        let codeInfo_2 = await Passwordless.createCode({
+            email: "test@example.com",
+        });
+
+        let result = await Passwordless.listCodesByEmail({
+            email: "test@example.com",
+        });
+        assert(result.length === 2);
+        result.forEach((element) => {
+            element.codes.forEach((code) => {
+                if (!(code.codeId === codeInfo_1.codeId || code.codeId === codeInfo_2.codeId)) {
+                    assert(false);
+                }
+            });
+        });
+    });
+
+    //listCodesByPhoneNumber
+    it("listCodesByPhoneNumber test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let codeInfo_1 = await Passwordless.createCode({
+            phoneNumber: "+1234567890",
+        });
+
+        let codeInfo_2 = await Passwordless.createCode({
+            phoneNumber: "+1234567890",
+        });
+
+        let result = await Passwordless.listCodesByPhoneNumber({
+            phoneNumber: "+1234567890",
+        });
+        assert(result.length === 2);
+        result.forEach((element) => {
+            element.codes.forEach((code) => {
+                if (!(code.codeId === codeInfo_1.codeId || code.codeId === codeInfo_2.codeId)) {
+                    assert(false);
+                }
+            });
+        });
+    });
+
+    // listCodesByDeviceId and listCodesByPreAuthSessionId
+    it("listCodesByDeviceId and listCodesByPreAuthSessionId test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let codeInfo_1 = await Passwordless.createCode({
+            phoneNumber: "+1234567890",
+        });
+
+        {
+            let result = await Passwordless.listCodesByDeviceId({
+                deviceId: codeInfo_1.deviceId,
+            });
+            assert(result.codes[0].codeId === codeInfo_1.codeId);
+        }
+
+        {
+            let result = await Passwordless.listCodesByPreAuthSessionId({
+                preAuthSessionId: codeInfo_1.preAuthSessionId,
+            });
+            assert(result.codes[0].codeId === codeInfo_1.codeId);
+        }
+    });
+
+    /*
+    - createMagicLink
+    - check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
+    */
+
+    it("createMagicLink test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let result = await Passwordless.createMagicLink({
+            phoneNumber: "+1234567890",
+        });
+
+        let magicLinkURL = new URL(result);
+
+        assert(magicLinkURL.hostname === "supertokens.io");
+        assert(magicLinkURL.pathname === "/auth/verify");
+        assert(magicLinkURL.searchParams.get("rid") === "passwordless");
+        assert(typeof magicLinkURL.searchParams.get("preAuthSessionId") === "string");
+        assert(magicLinkURL.hash.length > 1);
+    });
+
+    // signInUp test
+    it("signInUp test", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let result = await Passwordless.signInUp({
+            phoneNumber: "+1234567890",
+        });
+
+        assert(result.status === "OK");
+        assert(result.createdNewUser === true);
+        assert(typeof result.preAuthSessionId === "string");
+        assert(Object.keys(result).length === 4);
+
+        assert(result.user.phoneNumber === "+1234567890");
+        assert(typeof result.user.id === "string");
+        assert(typeof result.user.timeJoined === "number");
+        assert(Object.keys(result.user).length === 3);
     });
 });
