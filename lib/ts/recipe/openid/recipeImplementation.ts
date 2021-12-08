@@ -52,7 +52,7 @@ export default function getRecipeInterface(
                   status: "UNSUPPORTED_ALGORITHM_ERROR";
               }
         > {
-            payload = payload === undefined ? {} : payload;
+            payload = payload === undefined || payload === null ? {} : payload;
 
             let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
             return await jwtRecipeImplementation.createJWT({
