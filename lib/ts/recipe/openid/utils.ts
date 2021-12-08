@@ -27,8 +27,8 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
             issuerPath = new NormalisedURLPath(config.issuer);
         }
 
-        if (!issuerPath.getAsStringDangerous().endsWith(appInfo.apiBasePath.getAsStringDangerous())) {
-            throw new Error("Issuer URL must end with apiBasePath. The default value is /auth");
+        if (!issuerPath.equals(appInfo.apiBasePath)) {
+            throw new Error("The path of the issuer URL must be equal to the apiBasePath. The default value is /auth");
         }
     }
 
@@ -41,6 +41,7 @@ export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config
     return {
         issuerDomain,
         issuerPath,
+        jwtValiditySeconds: config?.jwtValiditySeconds,
         override,
     };
 }

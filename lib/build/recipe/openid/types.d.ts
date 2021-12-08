@@ -6,6 +6,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface, JsonWebKey } from "../jwt/types";
 export declare type TypeInput = {
     issuer?: string;
+    jwtValiditySeconds?: number;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -27,6 +28,7 @@ export declare type TypeInput = {
 export declare type TypeNormalisedInput = {
     issuerDomain: NormalisedURLDomain;
     issuerPath: NormalisedURLPath;
+    jwtValiditySeconds?: number;
     override: {
         functions: (
             originalImplementation: RecipeInterface,

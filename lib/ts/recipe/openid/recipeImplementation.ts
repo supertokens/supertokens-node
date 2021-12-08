@@ -52,6 +52,8 @@ export default function getRecipeInterface(
                   status: "UNSUPPORTED_ALGORITHM_ERROR";
               }
         > {
+            payload = payload === undefined ? {} : payload;
+
             let issuer = config.issuerDomain.getAsStringDangerous() + config.issuerPath.getAsStringDangerous();
             return await jwtRecipeImplementation.createJWT({
                 payload: {

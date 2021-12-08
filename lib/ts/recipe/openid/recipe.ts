@@ -40,6 +40,7 @@ export default class OpenIdRecipe extends RecipeModule {
 
         this.config = validateAndNormaliseUserInput(appInfo, config);
         this.jwtRecipe = new JWTRecipe(recipeId, appInfo, isInServerlessEnv, {
+            jwtValiditySeconds: this.config.jwtValiditySeconds,
             override: this.config.override.jwtFeature,
         });
 
@@ -117,7 +118,7 @@ export default class OpenIdRecipe extends RecipeModule {
         }
     };
     getAllCORSHeaders = (): string[] => {
-        return [];
+        return [...this.jwtRecipe.getAllCORSHeaders()];
     };
     isErrorFromThisRecipe = (err: any): err is STError => {
         return (

@@ -22,6 +22,7 @@ import {
     APIInterface,
     APIOptions,
 } from "./types";
+import OpenIdRecipe from "../openid/recipe";
 import Recipe from "./recipe";
 
 // For Express
@@ -82,10 +83,10 @@ export default class SessionWrapper {
     }
 
     static createJWT(payload?: any, validitySeconds?: number) {
-        let jwtRecipe = Recipe.getInstanceOrThrowError().openIdRecipe?.jwtRecipe;
+        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
 
-        if (jwtRecipe !== undefined) {
-            return jwtRecipe.recipeInterfaceImpl.createJWT({ payload, validitySeconds });
+        if (openIdRecipe !== undefined) {
+            return openIdRecipe.recipeImplementation.createJWT({ payload, validitySeconds });
         }
 
         throw new global.Error(
@@ -94,10 +95,10 @@ export default class SessionWrapper {
     }
 
     static getJWKS() {
-        let jwtRecipe = Recipe.getInstanceOrThrowError().openIdRecipe?.jwtRecipe;
+        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
 
-        if (jwtRecipe !== undefined) {
-            return jwtRecipe.recipeInterfaceImpl.getJWKS();
+        if (openIdRecipe !== undefined) {
+            return openIdRecipe.recipeImplementation.getJWKS();
         }
 
         throw new global.Error(
@@ -106,7 +107,7 @@ export default class SessionWrapper {
     }
 
     static getOpenIdDiscoveryConfiguration() {
-        let openIdRecipe = Recipe.getInstanceOrThrowError().openIdRecipe;
+        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
 
         if (openIdRecipe !== undefined) {
             return openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration();

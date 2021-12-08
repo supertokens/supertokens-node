@@ -20,6 +20,7 @@ import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface,
 
 export type TypeInput = {
     issuer?: string;
+    jwtValiditySeconds?: number;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -42,6 +43,7 @@ export type TypeInput = {
 export type TypeNormalisedInput = {
     issuerDomain: NormalisedURLDomain;
     issuerPath: NormalisedURLPath;
+    jwtValiditySeconds?: number;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
