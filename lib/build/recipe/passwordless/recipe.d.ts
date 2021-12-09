@@ -48,7 +48,6 @@ export default class Recipe extends RecipeModule {
         userContext?: any
     ) => Promise<{
         status: string;
-        preAuthSessionId: string;
         createdNewUser: boolean;
         user: import("./types").User;
     }>;

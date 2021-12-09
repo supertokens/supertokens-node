@@ -49,10 +49,12 @@ export default class Wrapper {
     static consumeCode(
         input:
             | {
+                  preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
               }
             | {
+                  preAuthSessionId: string;
                   linkCode: string;
               },
         userContext: any = {}

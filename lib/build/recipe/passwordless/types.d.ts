@@ -157,15 +157,16 @@ export declare type RecipeInterface = {
             | {
                   userInputCode: string;
                   deviceId: string;
+                  preAuthSessionId: string;
               }
             | {
                   linkCode: string;
+                  preAuthSessionId: string;
               },
         userContext: any
     ) => Promise<
         | {
               status: "OK";
-              preAuthSessionId: string;
               createdNewUser: boolean;
               user: User;
           }

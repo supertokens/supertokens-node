@@ -240,9 +240,11 @@ export default class Recipe extends RecipeModule {
         let consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
             this.config.flowType === "MAGIC_LINK"
                 ? {
+                      preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
                   }
                 : {
+                      preAuthSessionId: codeInfo.preAuthSessionId,
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
                   },
@@ -252,7 +254,6 @@ export default class Recipe extends RecipeModule {
         if (consumeCodeResponse.status === "OK") {
             return {
                 status: "OK",
-                preAuthSessionId: consumeCodeResponse.preAuthSessionId,
                 createdNewUser: consumeCodeResponse.createdNewUser,
                 user: consumeCodeResponse.user,
             };

@@ -7,10 +7,12 @@ export default function getAPIImplementation(): APIInterface {
             let response = await input.options.recipeImplementation.consumeCode(
                 "deviceId" in input
                     ? {
+                          preAuthSessionId: input.preAuthSessionId,
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
                       }
                     : {
+                          preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
                       },
                 userContext

@@ -51,17 +51,18 @@ export default class Wrapper {
     static consumeCode(
         input:
             | {
+                  preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
               }
             | {
+                  preAuthSessionId: string;
                   linkCode: string;
               },
         userContext?: any
     ): Promise<
         | {
               status: "OK";
-              preAuthSessionId: string;
               createdNewUser: boolean;
               user: User;
           }
@@ -217,7 +218,6 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         status: string;
-        preAuthSessionId: string;
         createdNewUser: boolean;
         user: User;
     }>;
