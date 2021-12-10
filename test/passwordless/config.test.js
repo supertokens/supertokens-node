@@ -60,7 +60,7 @@ TODO: We actually want to test all possible config inputs and make sure they wor
 - Check basic override usage
 */
 
-describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
+describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -283,7 +283,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    phoneNumber: "+1234567890",
+                    phoneNumber: "+12345678901",
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -347,7 +347,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    phoneNumber: "+1234567890",
+                    phoneNumber: "+12345678901",
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -409,7 +409,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    phoneNumber: "+1234567890",
+                    phoneNumber: "+12345678901",
                 })
                 .expect(200)
                 .end((err, res) => {
@@ -471,7 +471,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             request(app)
                 .post("/auth/signinup/code")
                 .send({
-                    phoneNumber: "+1234567890",
+                    phoneNumber: "+12345678901",
                 })
                 .expect(200)
                 .end((err, res) => {
