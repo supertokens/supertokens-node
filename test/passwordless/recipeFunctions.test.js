@@ -335,18 +335,18 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             });
 
             let resp = await Passwordless.consumeCode({
+                preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
             });
 
             assert(resp.status === "OK");
-            assert(typeof resp.preAuthSessionId === "string");
             assert(resp.createdNewUser);
             assert(typeof resp.user.id === "string");
             assert(resp.user.email === "test@example.com");
             assert(resp.user.phoneNumber === undefined);
             assert(typeof resp.user.timeJoined === "number");
-            assert(Object.keys(resp).length === 4);
+            assert(Object.keys(resp).length === 3);
             assert(Object.keys(resp.user).length === 3);
         }
 
@@ -356,6 +356,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             });
 
             let resp = await Passwordless.consumeCode({
+                preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: "random",
                 deviceId: codeInfo.deviceId,
             });
@@ -371,13 +372,16 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 email: "test@example.com",
             });
 
-            let resp = await Passwordless.consumeCode({
-                userInputCode: codeInfo.userInputCode,
-                deviceId: "random",
-            });
-
-            assert(resp.status === "RESTART_FLOW_ERROR");
-            assert(Object.keys(resp).length === 1);
+            try {
+                await Passwordless.consumeCode({
+                    preAuthSessionId: codeInfo.preAuthSessionId,
+                    userInputCode: codeInfo.userInputCode,
+                    deviceId: "random",
+                });
+                assert(false);
+            } catch (err) {
+                assert(err.message.includes("preAuthSessionId and deviceId doesn't match"));
+            }
         }
     });
 
@@ -416,6 +420,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             await new Promise((r) => setTimeout(r, 2000)); // wait for code to expire
 
             let resp = await Passwordless.consumeCode({
+                preAuthSessionId: codeInfo.preAuthSessionId,
                 userInputCode: codeInfo.userInputCode,
                 deviceId: codeInfo.deviceId,
             });
@@ -603,6 +608,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let result_1 = await Passwordless.consumeCode({
+                preAuthSessionId: codeInfo_1.preAuthSessionId,
                 deviceId: codeInfo_1.deviceId,
                 userInputCode: codeInfo_1.userInputCode,
             });
@@ -610,6 +616,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(result_1.status === "RESTART_FLOW_ERROR");
 
             let result_2 = await Passwordless.consumeCode({
+                preAuthSessionId: codeInfo_2.preAuthSessionId,
                 deviceId: codeInfo_2.deviceId,
                 userInputCode: codeInfo_2.userInputCode,
             });
@@ -662,6 +669,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
         {
             let result_1 = await Passwordless.consumeCode({
+                preAuthSessionId: codeInfo_1.preAuthSessionId,
                 deviceId: codeInfo_1.deviceId,
                 userInputCode: codeInfo_1.userInputCode,
             });
@@ -669,6 +677,7 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             assert(result_1.status === "RESTART_FLOW_ERROR");
 
             let result_2 = await Passwordless.consumeCode({
+                preAuthSessionId: codeInfo_2.preAuthSessionId,
                 deviceId: codeInfo_2.deviceId,
                 userInputCode: codeInfo_2.userInputCode,
             });

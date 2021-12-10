@@ -658,6 +658,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             });
 
             await Passwordless.consumeCode({
+                preAuthSessionId: codeInfo.preAuthSessionId,
                 linkCode: codeInfo.linkCode,
             });
 
@@ -743,6 +744,7 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             });
 
             await Passwordless.consumeCode({
+                preAuthSessionId: codeInfo.preAuthSessionId,
                 linkCode: codeInfo.linkCode,
             });
 
