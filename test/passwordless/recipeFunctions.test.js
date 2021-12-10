@@ -900,15 +900,14 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
         }
 
         let result = await Passwordless.signInUp({
-            phoneNumber: "+1234567890",
+            phoneNumber: "+12345678901",
         });
 
         assert(result.status === "OK");
         assert(result.createdNewUser === true);
-        assert(typeof result.preAuthSessionId === "string");
-        assert(Object.keys(result).length === 4);
+        assert(Object.keys(result).length === 3);
 
-        assert(result.user.phoneNumber === "+1234567890");
+        assert(result.user.phoneNumber === "+12345678901");
         assert(typeof result.user.id === "string");
         assert(typeof result.user.timeJoined === "number");
         assert(Object.keys(result.user).length === 3);
