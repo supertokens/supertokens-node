@@ -63,7 +63,7 @@ export default function getRecipeInterface(
                 validitySeconds,
             });
         },
-        getJWKS: async function (this: RecipeInterface): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
+        getJWKS: async function (): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
             return await jwtRecipeImplementation.getJWKS();
         },
     };
