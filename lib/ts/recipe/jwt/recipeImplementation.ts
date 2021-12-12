@@ -63,7 +63,7 @@ export default function getRecipeInterface(
             }
         },
 
-        getJWKS: async function (this: RecipeInterface): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
+        getJWKS: async function (): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
             return await querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/jwks"), {});
         },
     };
