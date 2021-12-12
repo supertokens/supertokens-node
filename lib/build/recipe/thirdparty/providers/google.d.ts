@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TypeProvider } from "../types";
 declare type TypeThirdPartyProviderGoogleConfig = {
     clientId: string;

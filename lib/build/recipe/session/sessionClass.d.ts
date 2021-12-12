@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseResponse } from "../../framework";
 import { SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
@@ -16,14 +17,14 @@ export default class Session implements SessionContainerInterface {
         userDataInAccessToken: any,
         res: BaseResponse
     );
-    revokeSession: () => Promise<void>;
-    getSessionData: () => Promise<any>;
-    updateSessionData: (newSessionData: any) => Promise<void>;
+    revokeSession: (_?: any) => Promise<void>;
+    getSessionData: (_?: any) => Promise<any>;
+    updateSessionData: (newSessionData: any, _?: any) => Promise<void>;
     getUserId: () => string;
     getAccessTokenPayload: () => any;
     getHandle: () => string;
     getAccessToken: () => string;
-    updateAccessTokenPayload: (newAccessTokenPayload: any) => Promise<void>;
-    getTimeCreated: () => Promise<number>;
-    getExpiry: () => Promise<number>;
+    updateAccessTokenPayload: (newAccessTokenPayload: any, _?: any) => Promise<void>;
+    getTimeCreated: (_?: any) => Promise<number>;
+    getExpiry: (_?: any) => Promise<number>;
 }

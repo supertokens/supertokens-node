@@ -1,3 +1,4 @@
+// @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, VerifySessionOptions } from "./types";
 import STError from "./error";
@@ -32,5 +33,5 @@ export default class SessionRecipe extends RecipeModule {
         options: VerifySessionOptions | undefined,
         request: BaseRequest,
         response: BaseResponse
-    ) => Promise<any>;
+    ) => Promise<import("./types").SessionContainerInterface | undefined>;
 }

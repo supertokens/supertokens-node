@@ -1,3 +1,4 @@
+// @ts-nocheck
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 export default class SuperTokensWrapper {

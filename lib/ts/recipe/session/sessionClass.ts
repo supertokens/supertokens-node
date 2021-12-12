@@ -44,13 +44,13 @@ export default class Session implements SessionContainerInterface {
         this.helpers = helpers;
     }
 
-    revokeSession = async () => {
+    revokeSession = async (_: any = {}) => {
         if (await SessionFunctions.revokeSession(this.helpers, this.sessionHandle)) {
             clearSessionFromCookie(this.helpers.config, this.res);
         }
     };
 
-    getSessionData = async (): Promise<any> => {
+    getSessionData = async (_: any = {}): Promise<any> => {
         try {
             return (await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle)).sessionData;
         } catch (err) {
@@ -61,7 +61,7 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    updateSessionData = async (newSessionData: any) => {
+    updateSessionData = async (newSessionData: any, _: any = {}) => {
         try {
             await SessionFunctions.updateSessionData(this.helpers, this.sessionHandle, newSessionData);
         } catch (err) {
@@ -88,7 +88,7 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     };
 
-    updateAccessTokenPayload = async (newAccessTokenPayload: any) => {
+    updateAccessTokenPayload = async (newAccessTokenPayload: any, _: any = {}) => {
         newAccessTokenPayload =
             newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
         let response = await this.helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
@@ -120,7 +120,7 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    getTimeCreated = async (): Promise<number> => {
+    getTimeCreated = async (_: any = {}): Promise<number> => {
         try {
             return (await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle)).timeCreated;
         } catch (err) {
@@ -131,7 +131,7 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    getExpiry = async (): Promise<number> => {
+    getExpiry = async (_: any = {}): Promise<number> => {
         try {
             return (await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle)).expiry;
         } catch (err) {

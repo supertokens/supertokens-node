@@ -215,6 +215,7 @@ export default class SessionRecipe extends RecipeModule {
                 recipeImplementation: this.recipeInterfaceImpl,
                 jwtRecipeImplementation: this.openIdRecipe?.jwtRecipe.recipeInterfaceImpl,
             },
+            userContext: {},
         });
     };
 }

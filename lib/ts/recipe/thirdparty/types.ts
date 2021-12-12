@@ -61,7 +61,7 @@ export type User = {
 };
 
 export type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User) => Promise<string>;
+    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 

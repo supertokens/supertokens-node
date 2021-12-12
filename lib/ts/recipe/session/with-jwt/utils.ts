@@ -21,12 +21,14 @@ export async function addJWTToAccessTokenPayload({
     userId,
     jwtPropertyName,
     openIdRecipeImplementation,
+    userContext,
 }: {
     accessTokenPayload: any;
     jwtExpiry: number;
     userId: string;
     jwtPropertyName: string;
     openIdRecipeImplementation: OpenIdRecipeInterface;
+    userContext: any;
 }): Promise<any> {
     // If jwtPropertyName is not undefined it means that the JWT was added to the access token payload already
     let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
@@ -48,6 +50,7 @@ export async function addJWTToAccessTokenPayload({
             ...accessTokenPayload,
         },
         validitySeconds: jwtExpiry,
+        userContext,
     });
 
     if (jwtResponse.status === "UNSUPPORTED_ALGORITHM_ERROR") {

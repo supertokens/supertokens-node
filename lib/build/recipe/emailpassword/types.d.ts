@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,

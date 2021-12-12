@@ -33,6 +33,7 @@ export default async function appleRedirectHandler(
         code,
         state,
         options,
+        userContext: {},
     });
 
     return true;

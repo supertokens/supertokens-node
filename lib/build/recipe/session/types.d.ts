@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
@@ -240,16 +241,16 @@ export declare type RecipeInterface = {
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 };
 export interface SessionContainerInterface {
-    revokeSession(): Promise<void>;
-    getSessionData(): Promise<any>;
-    updateSessionData(newSessionData: any): Promise<any>;
+    revokeSession(userContext?: any): Promise<void>;
+    getSessionData(userContext?: any): Promise<any>;
+    updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(): string;
     getAccessTokenPayload(): any;
     getHandle(): string;
     getAccessToken(): string;
-    updateAccessTokenPayload(newAccessTokenPayload: any): Promise<void>;
-    getTimeCreated(): Promise<number>;
-    getExpiry(): Promise<number>;
+    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
+    getTimeCreated(userContext?: any): Promise<number>;
+    getExpiry(userContext?: any): Promise<number>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

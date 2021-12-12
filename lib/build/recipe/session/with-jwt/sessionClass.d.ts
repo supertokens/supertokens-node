@@ -1,17 +1,18 @@
+// @ts-nocheck
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 import { SessionContainerInterface } from "../types";
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private openIdRecipeImplementation;
     private originalSessionClass;
     constructor(originalSessionClass: SessionContainerInterface, openIdRecipeImplementation: OpenIdRecipeInterface);
-    revokeSession: () => Promise<void>;
-    getSessionData: () => Promise<any>;
-    updateSessionData: (newSessionData: any) => Promise<any>;
+    revokeSession: (userContext?: any) => Promise<void>;
+    getSessionData: (userContext?: any) => Promise<any>;
+    updateSessionData: (newSessionData: any, userContext?: any) => Promise<any>;
     getUserId: () => string;
     getAccessTokenPayload: () => any;
     getHandle: () => string;
     getAccessToken: () => string;
-    getTimeCreated: () => Promise<number>;
-    getExpiry: () => Promise<number>;
-    updateAccessTokenPayload: (newAccessTokenPayload: any) => Promise<void>;
+    getTimeCreated: (userContext?: any) => Promise<number>;
+    getExpiry: (userContext?: any) => Promise<number>;
+    updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
 }

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NormalisedAppinfo } from "../../types";
 import Recipe from "./recipe";
 import { TypeProvider } from "./types";

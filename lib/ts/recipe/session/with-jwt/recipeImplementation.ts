@@ -49,11 +49,13 @@ export default function (
             userId,
             accessTokenPayload,
             sessionData,
+            userContext,
         }: {
             res: any;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
+            userContext: any;
         }): Promise<SessionContainerInterface> {
             accessTokenPayload =
                 accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
@@ -64,6 +66,7 @@ export default function (
                 userId,
                 jwtPropertyName: config.jwt.propertyNameInAccessTokenPayload,
                 openIdRecipeImplementation,
+                userContext,
             });
 
             let sessionContainer = await originalImplementation.createNewSession({
@@ -71,6 +74,7 @@ export default function (
                 userId,
                 accessTokenPayload,
                 sessionData,
+                userContext,
             });
 
             return new SessionClassWithJWT(sessionContainer, openIdRecipeImplementation);
@@ -79,12 +83,14 @@ export default function (
             req,
             res,
             options,
+            userContext,
         }: {
             req: any;
             res: any;
             options?: VerifySessionOptions;
+            userContext: any;
         }): Promise<SessionContainerInterface | undefined> {
-            let sessionContainer = await originalImplementation.getSession({ req, res, options });
+            let sessionContainer = await originalImplementation.getSession({ req, res, options, userContext });
 
             if (sessionContainer === undefined) {
                 return undefined;
@@ -92,11 +98,19 @@ export default function (
 
             return new SessionClassWithJWT(sessionContainer, openIdRecipeImplementation);
         },
-        refreshSession: async function ({ req, res }: { req: any; res: any }): Promise<SessionContainerInterface> {
+        refreshSession: async function ({
+            req,
+            res,
+            userContext,
+        }: {
+            req: any;
+            res: any;
+            userContext: any;
+        }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
 
             // Refresh session first because this will create a new access token
-            let newSession = await originalImplementation.refreshSession({ req, res });
+            let newSession = await originalImplementation.refreshSession({ req, res, userContext });
             let accessTokenPayload = newSession.getAccessTokenPayload();
 
             accessTokenPayload = await addJWTToAccessTokenPayload({
@@ -105,6 +119,7 @@ export default function (
                 userId: newSession.getUserId(),
                 jwtPropertyName: config.jwt.propertyNameInAccessTokenPayload,
                 openIdRecipeImplementation,
+                userContext,
             });
 
             await newSession.updateAccessTokenPayload(accessTokenPayload);
@@ -114,9 +129,11 @@ export default function (
         updateAccessTokenPayload: async function ({
             sessionHandle,
             newAccessTokenPayload,
+            userContext,
         }: {
             sessionHandle: string;
             newAccessTokenPayload: any;
+            userContext: any;
         }): Promise<void> {
             newAccessTokenPayload =
                 newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
@@ -129,6 +146,7 @@ export default function (
                 return await originalImplementation.updateAccessTokenPayload({
                     sessionHandle,
                     newAccessTokenPayload,
+                    userContext,
                 });
             }
 
@@ -160,11 +178,13 @@ export default function (
                 userId: sessionInformation.userId,
                 jwtPropertyName: existingJwtPropertyName,
                 openIdRecipeImplementation,
+                userContext,
             });
 
             return await originalImplementation.updateAccessTokenPayload({
                 sessionHandle,
                 newAccessTokenPayload,
+                userContext,
             });
         },
     };
