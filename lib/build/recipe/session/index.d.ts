@@ -27,6 +27,27 @@ export default class SessionWrapper {
     static revokeMultipleSessions(sessionHandles: string[]): Promise<string[]>;
     static updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
     static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any): Promise<void>;
+    static createJWT(
+        payload?: any,
+        validitySeconds?: number
+    ): Promise<
+        | {
+              status: "OK";
+              jwt: string;
+          }
+        | {
+              status: "UNSUPPORTED_ALGORITHM_ERROR";
+          }
+    >;
+    static getJWKS(): Promise<{
+        status: "OK";
+        keys: import("../jwt").JsonWebKey[];
+    }>;
+    static getOpenIdDiscoveryConfiguration(): Promise<{
+        status: "OK";
+        issuer: string;
+        jwks_uri: string;
+    }>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;
@@ -40,4 +61,7 @@ export declare let revokeMultipleSessions: typeof SessionWrapper.revokeMultipleS
 export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
 export declare let updateAccessTokenPayload: typeof SessionWrapper.updateAccessTokenPayload;
 export declare let Error: typeof SuperTokensError;
+export declare let createJWT: typeof SessionWrapper.createJWT;
+export declare let getJWKS: typeof SessionWrapper.getJWKS;
+export declare let getOpenIdDiscoveryConfiguration: typeof SessionWrapper.getOpenIdDiscoveryConfiguration;
 export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation };

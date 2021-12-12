@@ -298,6 +298,13 @@ Supertokens.init({
     },
 });
 
+Session.init({
+    jwt: {
+        enable: true,
+        propertyNameInAccessTokenPayload: "someKey",
+    },
+});
+
 ThirdPartyEmailPassword.init({
     override: {
         apis: (oI) => {

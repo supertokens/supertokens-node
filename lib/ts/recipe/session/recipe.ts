@@ -24,10 +24,13 @@ import { REFRESH_API_PATH, SIGNOUT_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { getCORSAllowedHeaders as getCORSAllowedHeadersFromCookiesAndHeaders } from "./cookieAndHeaders";
 import RecipeImplementation from "./recipeImplementation";
+import RecipeImplementationWithJWT from "./with-jwt";
 import { Querier } from "../../querier";
 import APIImplementation from "./api/implementation";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
+import { APIOptions } from ".";
+import OpenIdRecipe from "../openid/recipe";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -37,6 +40,7 @@ export default class SessionRecipe extends RecipeModule {
     config: TypeNormalisedInput;
 
     recipeInterfaceImpl: RecipeInterface;
+    openIdRecipe?: OpenIdRecipe;
 
     apiImpl: APIInterface;
 
@@ -47,11 +51,33 @@ export default class SessionRecipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
-        {
+        if (this.config.jwt.enable === true) {
+            this.openIdRecipe = new OpenIdRecipe(recipeId, appInfo, isInServerlessEnv, {
+                issuer: this.config.jwt.issuer,
+                override: this.config.override.openIdFeature,
+            });
+
             let builder = new OverrideableBuilder(
                 RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
             );
-            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+            this.recipeInterfaceImpl = builder
+                .override((oI) => {
+                    return RecipeImplementationWithJWT(
+                        oI,
+                        // this.jwtRecipe is never undefined here
+                        this.openIdRecipe!.recipeImplementation,
+                        this.config
+                    );
+                })
+                .override(this.config.override.functions)
+                .build();
+        } else {
+            {
+                let builder = new OverrideableBuilder(
+                    RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
+                );
+                this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+            }
         }
         {
             let builder = new OverrideableBuilder(APIImplementation());
@@ -87,7 +113,7 @@ export default class SessionRecipe extends RecipeModule {
     // abstract instance functions below...............
 
     getAPIsHandled = (): APIHandled[] => {
-        return [
+        let apisHandled: APIHandled[] = [
             {
                 method: "post",
                 pathWithoutApiBasePath: new NormalisedURLPath(REFRESH_API_PATH),
@@ -101,27 +127,38 @@ export default class SessionRecipe extends RecipeModule {
                 disabled: this.apiImpl.signOutPOST === undefined,
             },
         ];
+
+        if (this.openIdRecipe !== undefined) {
+            apisHandled.push(...this.openIdRecipe.getAPIsHandled());
+        }
+
+        return apisHandled;
     };
 
     handleAPIRequest = async (
         id: string,
         req: BaseRequest,
         res: BaseResponse,
-        __: NormalisedURLPath,
-        ___: HTTPMethod
+        path: NormalisedURLPath,
+        method: HTTPMethod
     ): Promise<boolean> => {
-        let options = {
+        let options: APIOptions = {
             config: this.config,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
+            jwtRecipeImplementation: this.openIdRecipe?.jwtRecipe.recipeInterfaceImpl,
             req,
             res,
         };
         if (id === REFRESH_API_PATH) {
             return await handleRefreshAPI(this.apiImpl, options);
-        } else {
+        } else if (id === SIGNOUT_API_PATH) {
             return await signOutAPI(this.apiImpl, options);
+        } else if (this.openIdRecipe !== undefined) {
+            return await this.openIdRecipe.handleAPIRequest(id, req, res, path, method);
+        } else {
+            return false;
         }
     };
 
@@ -141,17 +178,29 @@ export default class SessionRecipe extends RecipeModule {
             } else {
                 throw err;
             }
+        } else if (this.openIdRecipe !== undefined) {
+            return await this.openIdRecipe.handleError(err, request, response);
         } else {
             throw err;
         }
     };
 
     getAllCORSHeaders = (): string[] => {
-        return getCORSAllowedHeadersFromCookiesAndHeaders();
+        let corsHeaders: string[] = [...getCORSAllowedHeadersFromCookiesAndHeaders()];
+
+        if (this.openIdRecipe !== undefined) {
+            corsHeaders.push(...this.openIdRecipe.getAllCORSHeaders());
+        }
+
+        return corsHeaders;
     };
 
     isErrorFromThisRecipe = (err: any): err is STError => {
-        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === SessionRecipe.RECIPE_ID;
+        return (
+            STError.isErrorFromSuperTokens(err) &&
+            (err.fromRecipe === SessionRecipe.RECIPE_ID ||
+                (this.openIdRecipe !== undefined && this.openIdRecipe.isErrorFromThisRecipe(err)))
+        );
     };
 
     verifySession = async (options: VerifySessionOptions | undefined, request: BaseRequest, response: BaseResponse) => {
@@ -164,6 +213,7 @@ export default class SessionRecipe extends RecipeModule {
                 recipeId: this.getRecipeId(),
                 isInServerlessEnv: this.isInServerlessEnv,
                 recipeImplementation: this.recipeInterfaceImpl,
+                jwtRecipeImplementation: this.openIdRecipe?.jwtRecipe.recipeInterfaceImpl,
             },
         });
     };
