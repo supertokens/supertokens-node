@@ -3,19 +3,24 @@ import OpenIdRecipe from "./recipe";
 export default class OpenIdRecipeWrapper {
     static init = OpenIdRecipe.init;
 
-    static getOpenIdDiscoveryConfiguration() {
-        return OpenIdRecipe.getInstanceOrThrowError().recipeImplementation.getOpenIdDiscoveryConfiguration();
-    }
-
-    static createJWT(payload?: any, validitySeconds?: number) {
-        return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.createJWT({
-            payload,
-            validitySeconds,
+    static getOpenIdDiscoveryConfiguration(userContext?: any) {
+        return OpenIdRecipe.getInstanceOrThrowError().recipeImplementation.getOpenIdDiscoveryConfiguration({
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static getJWKS() {
-        return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.getJWKS();
+    static createJWT(payload?: any, validitySeconds?: number, userContext?: any) {
+        return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.createJWT({
+            payload,
+            validitySeconds,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+
+    static getJWKS(userContext?: any) {
+        return OpenIdRecipe.getInstanceOrThrowError().jwtRecipe.recipeInterfaceImpl.getJWKS({
+            userContext: userContext === undefined ? {} : userContext,
+        });
     }
 }
 

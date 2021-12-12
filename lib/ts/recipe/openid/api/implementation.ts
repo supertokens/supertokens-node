@@ -18,10 +18,12 @@ export default function getAPIImplementation(): APIInterface {
     return {
         getOpenIdDiscoveryConfigurationGET: async function ({
             options,
+            userContext,
         }: {
             options: APIOptions;
+            userContext: any;
         }): Promise<{ status: "OK"; issuer: string; jwks_uri: string }> {
-            return await options.recipeImplementation.getOpenIdDiscoveryConfiguration();
+            return await options.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext });
         },
     };
 }

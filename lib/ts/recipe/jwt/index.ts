@@ -19,15 +19,18 @@ import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 export default class Wrapper {
     static init = Recipe.init;
 
-    static async createJWT(payload: any, validitySeconds?: number) {
+    static async createJWT(payload: any, validitySeconds?: number, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createJWT({
             payload,
             validitySeconds,
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async getJWKS() {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWKS();
+    static async getJWKS(userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getJWKS({
+            userContext: userContext === undefined ? {} : userContext,
+        });
     }
 }
 

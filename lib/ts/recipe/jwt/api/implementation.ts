@@ -19,10 +19,12 @@ export default function getAPIImplementation(): APIInterface {
     return {
         getJWKSGET: async function ({
             options,
+            userContext,
         }: {
             options: APIOptions;
+            userContext: any;
         }): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
-            return await options.recipeImplementation.getJWKS();
+            return await options.recipeImplementation.getJWKS({ userContext });
         },
     };
 }
