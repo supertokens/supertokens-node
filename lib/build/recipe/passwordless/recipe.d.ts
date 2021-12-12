@@ -31,21 +31,23 @@ export default class Recipe extends RecipeModule {
         input:
             | {
                   email: string;
+                  userContext?: any;
               }
             | {
                   phoneNumber: string;
-              },
-        userContext?: any
+                  userContext?: any;
+              }
     ) => Promise<string>;
     signInUp: (
         input:
             | {
                   email: string;
+                  userContext?: any;
               }
             | {
                   phoneNumber: string;
-              },
-        userContext?: any
+                  userContext?: any;
+              }
     ) => Promise<{
         status: string;
         createdNewUser: boolean;

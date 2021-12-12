@@ -57,13 +57,13 @@ export default async function consumeCode(apiImplementation: APIInterface, optio
 
     let result = await apiImplementation.consumeCodePOST(
         deviceId !== undefined
-            ? { deviceId, userInputCode, preAuthSessionId, options }
+            ? { deviceId, userInputCode, preAuthSessionId, options, userContext: {} }
             : {
                   linkCode,
                   options,
                   preAuthSessionId,
-              },
-        {}
+                  userContext: {},
+              }
     );
 
     if (result.status === "OK") {

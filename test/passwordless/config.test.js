@@ -25,41 +25,6 @@ let { middleware, errorHandler } = require("../../framework/express");
 let { isCDIVersionCompatible, generateRandomCode } = require("../utils");
 let PasswordlessRecipe = require("../../lib/build/recipe/passwordless/recipe").default;
 
-/*
-TODO: We actually want to test all possible config inputs and make sure they work as expected
-
-- contactMethod: PHONE
-    - minimal input works
-    - if passed validatePhoneNumber, it gets called when the createCode API is called
-        - If you return undefined from the function, the API works.
-        - If you return a string from the function, the API throws a GENERIC ERROR
-    - if passed createAndSendCustomTextMessage, it gets called with the right inputs:
-        - flowType: USER_INPUT_CODE -> userInputCode !== undefined && urlWithLinkCode == undefined
-        - flowType: MAGIC_LINK -> userInputCode === undefined && urlWithLinkCode !== undefined
-        - flowType: USER_INPUT_CODE_AND_MAGIC_LINK -> userInputCode !== undefined && urlWithLinkCode !== undefined
-        - if you throw an error from this function, that is ignored by the API
-        - check all other inputs to this function are as expected
-- contactMethod: EMAIL
-    - minimal input works
-    - if passed validateEmailAddress, it gets called when the createCode API is called
-        - If you return undefined from the function, the API works.
-        - If you return a string from the function, the API throws a GENERIC ERROR
-    - if passed createAndSendCustomEmail, it gets called with the right inputs:
-        - flowType: USER_INPUT_CODE -> userInputCode !== undefined && urlWithLinkCode == undefined
-        - flowType: MAGIC_LINK -> userInputCode === undefined && urlWithLinkCode !== undefined
-        - flowType: USER_INPUT_CODE_AND_MAGIC_LINK -> userInputCode !== undefined && urlWithLinkCode !== undefined
-        - if you throw an error from this function, that is ignored by the API
-        - check all other inputs to this function are as expected
-- Missing compulsory configs throws as error:
-    - flowType is necessary, contactMethod is necessary
-- Passing getLinkDomainAndPath should call that, and the resulting magic link (from API call and from Passwordless.createMagicLink function call) should use the custom link returned from the function
-- Passing getCustomUserInputCode:
-    - Check that it is called when the createCode and resendCode APIs are called
-        - Check that the result returned from this are actually what the user input code is
-    - Check that is you return the same code everytime from this function and call resendCode API, you get USER_INPUT_CODE_ALREADY_USED_ERROR output from the API
-- Check basic override usage
-*/
-
 describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

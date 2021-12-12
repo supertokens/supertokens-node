@@ -34,7 +34,7 @@ export default async function phoneNumberExists(
         });
     }
 
-    let result = await apiImplementation.phoneNumberExistsGET({ phoneNumber, options }, {});
+    let result = await apiImplementation.phoneNumberExistsGET({ phoneNumber, options, userContext: {} });
 
     send200Response(options.res, result);
     return true;

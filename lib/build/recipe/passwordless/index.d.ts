@@ -15,8 +15,8 @@ export default class Wrapper {
               }
         ) & {
             userInputCode?: string;
-        },
-        userContext?: any
+            userContext?: any;
+        }
     ): Promise<{
         status: "OK";
         preAuthSessionId: string;
@@ -27,13 +27,11 @@ export default class Wrapper {
         codeLifetime: number;
         timeCreated: number;
     }>;
-    static createNewCodeForDevice(
-        input: {
-            deviceId: string;
-            userInputCode?: string;
-        },
-        userContext?: any
-    ): Promise<
+    static createNewCodeForDevice(input: {
+        deviceId: string;
+        userInputCode?: string;
+        userContext?: any;
+    }): Promise<
         | {
               status: "OK";
               preAuthSessionId: string;
@@ -54,12 +52,13 @@ export default class Wrapper {
                   preAuthSessionId: string;
                   userInputCode: string;
                   deviceId: string;
+                  userContext?: any;
               }
             | {
                   preAuthSessionId: string;
                   linkCode: string;
-              },
-        userContext?: any
+                  userContext?: any;
+              }
     ): Promise<
         | {
               status: "OK";
@@ -75,60 +74,40 @@ export default class Wrapper {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    static getUserById(
-        input: {
-            userId: string;
-        },
-        userContext?: any
-    ): Promise<User | undefined>;
-    static getUserByEmail(
-        input: {
-            email: string;
-        },
-        userContext?: any
-    ): Promise<User | undefined>;
-    static getUserByPhoneNumber(
-        input: {
-            phoneNumber: string;
-        },
-        userContext?: any
-    ): Promise<User | undefined>;
-    static updateUser(
-        input: {
-            userId: string;
-            email?: string | null;
-            phoneNumber?: string | null;
-        },
-        userContext?: any
-    ): Promise<{
+    static getUserById(input: { userId: string; userContext?: any }): Promise<User | undefined>;
+    static getUserByEmail(input: { email: string; userContext?: any }): Promise<User | undefined>;
+    static getUserByPhoneNumber(input: { phoneNumber: string; userContext?: any }): Promise<User | undefined>;
+    static updateUser(input: {
+        userId: string;
+        email?: string | null;
+        phoneNumber?: string | null;
+        userContext?: any;
+    }): Promise<{
         status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
     }>;
     static revokeAllCodes(
         input:
             | {
                   email: string;
+                  userContext?: any;
               }
             | {
                   phoneNumber: string;
-              },
-        userContext?: any
+                  userContext?: any;
+              }
     ): Promise<{
         status: "OK";
     }>;
-    static revokeCode(
-        input: {
-            codeId: string;
-        },
-        userContext?: any
-    ): Promise<{
+    static revokeCode(input: {
+        codeId: string;
+        userContext?: any;
+    }): Promise<{
         status: "OK";
     }>;
-    static listCodesByEmail(
-        input: {
-            email: string;
-        },
-        userContext?: any
-    ): Promise<
+    static listCodesByEmail(input: {
+        email: string;
+        userContext?: any;
+    }): Promise<
         {
             preAuthSessionId: string;
             failedCodeInputAttemptCount: number;
@@ -141,12 +120,10 @@ export default class Wrapper {
             }[];
         }[]
     >;
-    static listCodesByPhoneNumber(
-        input: {
-            phoneNumber: string;
-        },
-        userContext?: any
-    ): Promise<
+    static listCodesByPhoneNumber(input: {
+        phoneNumber: string;
+        userContext?: any;
+    }): Promise<
         {
             preAuthSessionId: string;
             failedCodeInputAttemptCount: number;
@@ -159,12 +136,10 @@ export default class Wrapper {
             }[];
         }[]
     >;
-    static listCodesByDeviceId(
-        input: {
-            deviceId: string;
-        },
-        userContext?: any
-    ): Promise<
+    static listCodesByDeviceId(input: {
+        deviceId: string;
+        userContext?: any;
+    }): Promise<
         | {
               preAuthSessionId: string;
               failedCodeInputAttemptCount: number;
@@ -178,12 +153,10 @@ export default class Wrapper {
           }
         | undefined
     >;
-    static listCodesByPreAuthSessionId(
-        input: {
-            preAuthSessionId: string;
-        },
-        userContext?: any
-    ): Promise<
+    static listCodesByPreAuthSessionId(input: {
+        preAuthSessionId: string;
+        userContext?: any;
+    }): Promise<
         | {
               preAuthSessionId: string;
               failedCodeInputAttemptCount: number;
@@ -201,21 +174,23 @@ export default class Wrapper {
         input:
             | {
                   email: string;
+                  userContext?: any;
               }
             | {
                   phoneNumber: string;
-              },
-        userContext?: any
+                  userContext?: any;
+              }
     ): Promise<string>;
     static signInUp(
         input:
             | {
                   email: string;
+                  userContext?: any;
               }
             | {
                   phoneNumber: string;
-              },
-        userContext?: any
+                  userContext?: any;
+              }
     ): Promise<{
         status: string;
         createdNewUser: boolean;

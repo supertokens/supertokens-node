@@ -171,15 +171,16 @@ export default class Recipe extends RecipeModule {
         input:
             | {
                   email: string;
+                  userContext?: any;
               }
             | {
                   phoneNumber: string;
-              },
-        userContext: any = {}
+                  userContext?: any;
+              }
     ): Promise<string> => {
         let userInputCode =
             this.config.getCustomUserInputCode !== undefined
-                ? await this.config.getCustomUserInputCode(userContext)
+                ? await this.config.getCustomUserInputCode(input.userContext)
                 : undefined;
 
         const codeInfo = await this.recipeInterfaceImpl.createCode(
@@ -187,12 +188,13 @@ export default class Recipe extends RecipeModule {
                 ? {
                       email: input.email,
                       userInputCode,
+                      userContext: input.userContext,
                   }
                 : {
                       phoneNumber: input.phoneNumber,
                       userInputCode,
-                  },
-            userContext
+                      userContext: input.userContext,
+                  }
         );
 
         let magicLink =
@@ -204,7 +206,7 @@ export default class Recipe extends RecipeModule {
                     : {
                           email: input.email,
                       },
-                userContext
+                input.userContext
             )) +
             "?rid=" +
             this.getRecipeId() +
@@ -220,21 +222,23 @@ export default class Recipe extends RecipeModule {
         input:
             | {
                   email: string;
+                  userContext?: any;
               }
             | {
                   phoneNumber: string;
-              },
-        userContext: any = {}
+                  userContext?: any;
+              }
     ) => {
         let codeInfo = await this.recipeInterfaceImpl.createCode(
             "email" in input
                 ? {
                       email: input.email,
+                      userContext: input.userContext,
                   }
                 : {
                       phoneNumber: input.phoneNumber,
-                  },
-            userContext
+                      userContext: input.userContext,
+                  }
         );
 
         let consumeCodeResponse = await this.recipeInterfaceImpl.consumeCode(
@@ -242,13 +246,14 @@ export default class Recipe extends RecipeModule {
                 ? {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       linkCode: codeInfo.linkCode,
+                      userContext: input.userContext,
                   }
                 : {
                       preAuthSessionId: codeInfo.preAuthSessionId,
                       deviceId: codeInfo.deviceId,
                       userInputCode: codeInfo.userInputCode,
-                  },
-            userContext
+                      userContext: input.userContext,
+                  }
         );
 
         if (consumeCodeResponse.status === "OK") {

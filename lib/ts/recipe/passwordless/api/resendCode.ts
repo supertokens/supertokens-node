@@ -40,7 +40,7 @@ export default async function resendCode(apiImplementation: APIInterface, option
         });
     }
 
-    let result = await apiImplementation.resendCodePOST({ deviceId, preAuthSessionId, options }, {});
+    let result = await apiImplementation.resendCodePOST({ deviceId, preAuthSessionId, options, userContext: {} });
 
     send200Response(options.res, result);
     return true;

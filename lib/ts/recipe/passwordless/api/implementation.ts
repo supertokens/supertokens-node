@@ -3,19 +3,20 @@ import Session from "../../session";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        consumeCodePOST: async function (input, userContext) {
+        consumeCodePOST: async function (input) {
             let response = await input.options.recipeImplementation.consumeCode(
                 "deviceId" in input
                     ? {
                           preAuthSessionId: input.preAuthSessionId,
                           deviceId: input.deviceId,
                           userInputCode: input.userInputCode,
+                          userContext: input.userContext,
                       }
                     : {
                           preAuthSessionId: input.preAuthSessionId,
                           linkCode: input.linkCode,
-                      },
-                userContext
+                          userContext: input.userContext,
+                      }
             );
 
             if (response.status !== "OK") {
@@ -32,24 +33,25 @@ export default function getAPIImplementation(): APIInterface {
                 session,
             };
         },
-        createCodePOST: async function (input, userContext) {
+        createCodePOST: async function (input) {
             let response = await input.options.recipeImplementation.createCode(
                 "email" in input
                     ? {
+                          userContext: input.userContext,
                           email: input.email,
                           userInputCode:
                               input.options.config.getCustomUserInputCode === undefined
                                   ? undefined
-                                  : await input.options.config.getCustomUserInputCode(userContext),
+                                  : await input.options.config.getCustomUserInputCode(input.userContext),
                       }
                     : {
+                          userContext: input.userContext,
                           phoneNumber: input.phoneNumber,
                           userInputCode:
                               input.options.config.getCustomUserInputCode === undefined
                                   ? undefined
-                                  : await input.options.config.getCustomUserInputCode(userContext),
-                      },
-                userContext
+                                  : await input.options.config.getCustomUserInputCode(input.userContext),
+                      }
             );
 
             // now we send the email / text message.
@@ -66,7 +68,7 @@ export default function getAPIImplementation(): APIInterface {
                             : {
                                   email: input.email,
                               },
-                        userContext
+                        input.userContext
                     )) +
                     "?rid=" +
                     input.options.recipeId +
@@ -91,7 +93,7 @@ export default function getAPIImplementation(): APIInterface {
                                     urlWithLinkCode: magicLink,
                                     userInputCode,
                                 },
-                                userContext
+                                input.userContext
                             )
                             .catch((_) => {});
                     } else {
@@ -104,7 +106,7 @@ export default function getAPIImplementation(): APIInterface {
                                     urlWithLinkCode: magicLink,
                                     userInputCode,
                                 },
-                                userContext
+                                input.userContext
                             )
                             .catch((_) => {});
                     }
@@ -118,7 +120,7 @@ export default function getAPIImplementation(): APIInterface {
                                 urlWithLinkCode: magicLink,
                                 userInputCode,
                             },
-                            userContext
+                            input.userContext
                         );
                     } else {
                         await input.options.config.createAndSendCustomEmail(
@@ -129,7 +131,7 @@ export default function getAPIImplementation(): APIInterface {
                                 urlWithLinkCode: magicLink,
                                 userInputCode,
                             },
-                            userContext
+                            input.userContext
                         );
                     }
                 }
@@ -142,39 +144,33 @@ export default function getAPIImplementation(): APIInterface {
                 preAuthSessionId: response.preAuthSessionId,
             };
         },
-        emailExistsGET: async function (input, userContext) {
-            let response = await input.options.recipeImplementation.getUserByEmail(
-                {
-                    email: input.email,
-                },
-                userContext
-            );
+        emailExistsGET: async function (input) {
+            let response = await input.options.recipeImplementation.getUserByEmail({
+                userContext: input.userContext,
+                email: input.email,
+            });
 
             return {
                 exists: response !== undefined,
                 status: "OK",
             };
         },
-        phoneNumberExistsGET: async function (input, userContext) {
-            let response = await input.options.recipeImplementation.getUserByPhoneNumber(
-                {
-                    phoneNumber: input.phoneNumber,
-                },
-                userContext
-            );
+        phoneNumberExistsGET: async function (input) {
+            let response = await input.options.recipeImplementation.getUserByPhoneNumber({
+                userContext: input.userContext,
+                phoneNumber: input.phoneNumber,
+            });
 
             return {
                 exists: response !== undefined,
                 status: "OK",
             };
         },
-        resendCodePOST: async function (input, userContext) {
-            let deviceInfo = await input.options.recipeImplementation.listCodesByDeviceId(
-                {
-                    deviceId: input.deviceId,
-                },
-                userContext
-            );
+        resendCodePOST: async function (input) {
+            let deviceInfo = await input.options.recipeImplementation.listCodesByDeviceId({
+                userContext: input.userContext,
+                deviceId: input.deviceId,
+            });
 
             if (deviceInfo === undefined) {
                 return {
@@ -194,16 +190,14 @@ export default function getAPIImplementation(): APIInterface {
             let numberOfTriesToCreateNewCode = 0;
             while (true) {
                 numberOfTriesToCreateNewCode++;
-                let response = await input.options.recipeImplementation.createNewCodeForDevice(
-                    {
-                        deviceId: input.deviceId,
-                        userInputCode:
-                            input.options.config.getCustomUserInputCode === undefined
-                                ? undefined
-                                : await input.options.config.getCustomUserInputCode(userContext),
-                    },
-                    userContext
-                );
+                let response = await input.options.recipeImplementation.createNewCodeForDevice({
+                    userContext: input.userContext,
+                    deviceId: input.deviceId,
+                    userInputCode:
+                        input.options.config.getCustomUserInputCode === undefined
+                            ? undefined
+                            : await input.options.config.getCustomUserInputCode(input.userContext),
+                });
 
                 if (response.status === "USER_INPUT_CODE_ALREADY_USED_ERROR") {
                     if (numberOfTriesToCreateNewCode >= 3) {
@@ -230,7 +224,7 @@ export default function getAPIImplementation(): APIInterface {
                                     : {
                                           email: deviceInfo.email,
                                       },
-                                userContext
+                                input.userContext
                             )) +
                             "?rid=" +
                             input.options.recipeId +
@@ -255,7 +249,7 @@ export default function getAPIImplementation(): APIInterface {
                                             urlWithLinkCode: magicLink,
                                             userInputCode,
                                         },
-                                        userContext
+                                        input.userContext
                                     )
                                     .catch((_) => {});
                             } else {
@@ -268,7 +262,7 @@ export default function getAPIImplementation(): APIInterface {
                                             urlWithLinkCode: magicLink,
                                             userInputCode,
                                         },
-                                        userContext
+                                        input.userContext
                                     )
                                     .catch((_) => {});
                             }
@@ -282,7 +276,7 @@ export default function getAPIImplementation(): APIInterface {
                                         urlWithLinkCode: magicLink,
                                         userInputCode,
                                     },
-                                    userContext
+                                    input.userContext
                                 );
                             } else {
                                 await input.options.config.createAndSendCustomEmail(
@@ -293,7 +287,7 @@ export default function getAPIImplementation(): APIInterface {
                                         urlWithLinkCode: magicLink,
                                         userInputCode,
                                     },
-                                    userContext
+                                    input.userContext
                                 );
                             }
                         }

@@ -21,21 +21,6 @@ let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
 let { isCDIVersionCompatible } = require("../utils");
 
-/*
-TODO: We want to use the exposed functions and make sure that the all the possible outputs of the recipe interface are according to the types files.
-
-- updateUser
-- revokeAllCodes
-- revokeCode
-- listCodesByEmail
-- listCodesByPhoneNumber
-- listCodesByDeviceId
-- listCodesByPreAuthSessionId
-- createMagicLink
-    - check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
-- signInUp
-*/
-
 describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

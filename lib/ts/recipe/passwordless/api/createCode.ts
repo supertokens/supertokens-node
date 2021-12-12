@@ -81,8 +81,9 @@ export default async function createCode(apiImplementation: APIInterface, option
     }
 
     let result = await apiImplementation.createCodePOST(
-        email !== undefined ? { email, options } : { phoneNumber: phoneNumber!, options },
-        {}
+        email !== undefined
+            ? { email, options, userContext: {} }
+            : { phoneNumber: phoneNumber!, options, userContext: {} }
     );
 
     send200Response(options.res, result);

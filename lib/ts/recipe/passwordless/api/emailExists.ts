@@ -31,7 +31,7 @@ export default async function emailExists(apiImplementation: APIInterface, optio
         });
     }
 
-    let result = await apiImplementation.emailExistsGET({ email, options }, {});
+    let result = await apiImplementation.emailExistsGET({ email, options, userContext: {} });
 
     send200Response(options.res, result);
     return true;

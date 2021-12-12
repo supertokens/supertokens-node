@@ -119,8 +119,8 @@ export declare type RecipeInterface = {
               }
         ) & {
             userInputCode?: string;
-        },
-        userContext: any
+            userContext: any;
+        }
     ) => Promise<{
         status: "OK";
         preAuthSessionId: string;
@@ -131,13 +131,11 @@ export declare type RecipeInterface = {
         codeLifetime: number;
         timeCreated: number;
     }>;
-    createNewCodeForDevice: (
-        input: {
-            deviceId: string;
-            userInputCode?: string;
-        },
-        userContext: any
-    ) => Promise<
+    createNewCodeForDevice: (input: {
+        deviceId: string;
+        userInputCode?: string;
+        userContext: any;
+    }) => Promise<
         | {
               status: "OK";
               preAuthSessionId: string;
@@ -158,12 +156,13 @@ export declare type RecipeInterface = {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
+                  userContext: any;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
-              },
-        userContext: any
+                  userContext: any;
+              }
     ) => Promise<
         | {
               status: "OK";
@@ -179,78 +178,43 @@ export declare type RecipeInterface = {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    getUserById: (
-        input: {
-            userId: string;
-        },
-        userContext: any
-    ) => Promise<User | undefined>;
-    getUserByEmail: (
-        input: {
-            email: string;
-        },
-        userContext: any
-    ) => Promise<User | undefined>;
-    getUserByPhoneNumber: (
-        input: {
-            phoneNumber: string;
-        },
-        userContext: any
-    ) => Promise<User | undefined>;
-    updateUser: (
-        input: {
-            userId: string;
-            email?: string | null;
-            phoneNumber?: string | null;
-        },
-        userContext: any
-    ) => Promise<{
+    getUserById: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
+    getUserByEmail: (input: { email: string; userContext: any }) => Promise<User | undefined>;
+    getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>;
+    updateUser: (input: {
+        userId: string;
+        email?: string | null;
+        phoneNumber?: string | null;
+        userContext: any;
+    }) => Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
     }>;
     revokeAllCodes: (
         input:
             | {
                   email: string;
+                  userContext: any;
               }
             | {
                   phoneNumber: string;
-              },
-        userContext: any
+                  userContext: any;
+              }
     ) => Promise<{
         status: "OK";
     }>;
-    revokeCode: (
-        input: {
-            codeId: string;
-        },
-        userContext: any
-    ) => Promise<{
+    revokeCode: (input: {
+        codeId: string;
+        userContext: any;
+    }) => Promise<{
         status: "OK";
     }>;
-    listCodesByEmail: (
-        input: {
-            email: string;
-        },
-        userContext: any
-    ) => Promise<DeviceType[]>;
-    listCodesByPhoneNumber: (
-        input: {
-            phoneNumber: string;
-        },
-        userContext: any
-    ) => Promise<DeviceType[]>;
-    listCodesByDeviceId: (
-        input: {
-            deviceId: string;
-        },
-        userContext: any
-    ) => Promise<DeviceType | undefined>;
-    listCodesByPreAuthSessionId: (
-        input: {
-            preAuthSessionId: string;
-        },
-        userContext: any
-    ) => Promise<DeviceType | undefined>;
+    listCodesByEmail: (input: { email: string; userContext: any }) => Promise<DeviceType[]>;
+    listCodesByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<DeviceType[]>;
+    listCodesByDeviceId: (input: { deviceId: string; userContext: any }) => Promise<DeviceType | undefined>;
+    listCodesByPreAuthSessionId: (input: {
+        preAuthSessionId: string;
+        userContext: any;
+    }) => Promise<DeviceType | undefined>;
 };
 declare type DeviceType = {
     preAuthSessionId: string;
@@ -282,8 +246,8 @@ export declare type APIInterface = {
               }
         ) & {
             options: APIOptions;
-        },
-        userContext: any
+            userContext: any;
+        }
     ) => Promise<
         | {
               status: "OK";
@@ -302,8 +266,8 @@ export declare type APIInterface = {
             preAuthSessionId: string;
         } & {
             options: APIOptions;
-        },
-        userContext: any
+            userContext: any;
+        }
     ) => Promise<
         | {
               status: "GENERAL_ERROR";
@@ -326,8 +290,8 @@ export declare type APIInterface = {
               }
         ) & {
             options: APIOptions;
-        },
-        userContext: any
+            userContext: any;
+        }
     ) => Promise<
         | {
               status: "OK";
@@ -348,23 +312,19 @@ export declare type APIInterface = {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    emailExistsGET?: (
-        input: {
-            email: string;
-            options: APIOptions;
-        },
-        userContext: any
-    ) => Promise<{
+    emailExistsGET?: (input: {
+        email: string;
+        options: APIOptions;
+        userContext: any;
+    }) => Promise<{
         status: "OK";
         exists: boolean;
     }>;
-    phoneNumberExistsGET?: (
-        input: {
-            phoneNumber: string;
-            options: APIOptions;
-        },
-        userContext: any
-    ) => Promise<{
+    phoneNumberExistsGET?: (input: {
+        phoneNumber: string;
+        options: APIOptions;
+        userContext: any;
+    }) => Promise<{
         status: "OK";
         exists: boolean;
     }>;

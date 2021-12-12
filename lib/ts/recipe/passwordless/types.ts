@@ -177,8 +177,7 @@ export type RecipeInterface = {
             | {
                   phoneNumber: string;
               }
-        ) & { userInputCode?: string },
-        userContext: any
+        ) & { userInputCode?: string; userContext: any }
     ) => Promise<{
         status: "OK";
         preAuthSessionId: string;
@@ -189,13 +188,11 @@ export type RecipeInterface = {
         codeLifetime: number;
         timeCreated: number;
     }>;
-    createNewCodeForDevice: (
-        input: {
-            deviceId: string;
-            userInputCode?: string;
-        },
-        userContext: any
-    ) => Promise<
+    createNewCodeForDevice: (input: {
+        deviceId: string;
+        userInputCode?: string;
+        userContext: any;
+    }) => Promise<
         | {
               status: "OK";
               preAuthSessionId: string;
@@ -214,12 +211,13 @@ export type RecipeInterface = {
                   userInputCode: string;
                   deviceId: string;
                   preAuthSessionId: string;
+                  userContext: any;
               }
             | {
                   linkCode: string;
                   preAuthSessionId: string;
-              },
-        userContext: any
+                  userContext: any;
+              }
     ) => Promise<
         | {
               status: "OK";
@@ -234,33 +232,16 @@ export type RecipeInterface = {
         | { status: "RESTART_FLOW_ERROR" }
     >;
 
-    getUserById: (
-        input: {
-            userId: string;
-        },
-        userContext: any
-    ) => Promise<User | undefined>;
-    getUserByEmail: (
-        input: {
-            email: string;
-        },
-        userContext: any
-    ) => Promise<User | undefined>;
-    getUserByPhoneNumber: (
-        input: {
-            phoneNumber: string;
-        },
-        userContext: any
-    ) => Promise<User | undefined>;
+    getUserById: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
+    getUserByEmail: (input: { email: string; userContext: any }) => Promise<User | undefined>;
+    getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>;
 
-    updateUser: (
-        input: {
-            userId: string;
-            email?: string | null;
-            phoneNumber?: string | null;
-        },
-        userContext: any
-    ) => Promise<{
+    updateUser: (input: {
+        userId: string;
+        email?: string | null;
+        phoneNumber?: string | null;
+        userContext: any;
+    }) => Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" | "PHONE_NUMBER_ALREADY_EXISTS_ERROR";
     }>;
 
@@ -268,51 +249,33 @@ export type RecipeInterface = {
         input:
             | {
                   email: string;
+                  userContext: any;
               }
             | {
                   phoneNumber: string;
-              },
-        userContext: any
+                  userContext: any;
+              }
     ) => Promise<{
         status: "OK";
     }>;
 
-    revokeCode: (
-        input: {
-            codeId: string;
-        },
-        userContext: any
-    ) => Promise<{
+    revokeCode: (input: {
+        codeId: string;
+        userContext: any;
+    }) => Promise<{
         status: "OK";
     }>;
 
-    listCodesByEmail: (
-        input: {
-            email: string;
-        },
-        userContext: any
-    ) => Promise<DeviceType[]>;
+    listCodesByEmail: (input: { email: string; userContext: any }) => Promise<DeviceType[]>;
 
-    listCodesByPhoneNumber: (
-        input: {
-            phoneNumber: string;
-        },
-        userContext: any
-    ) => Promise<DeviceType[]>;
+    listCodesByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<DeviceType[]>;
 
-    listCodesByDeviceId: (
-        input: {
-            deviceId: string;
-        },
-        userContext: any
-    ) => Promise<DeviceType | undefined>;
+    listCodesByDeviceId: (input: { deviceId: string; userContext: any }) => Promise<DeviceType | undefined>;
 
-    listCodesByPreAuthSessionId: (
-        input: {
-            preAuthSessionId: string;
-        },
-        userContext: any
-    ) => Promise<DeviceType | undefined>;
+    listCodesByPreAuthSessionId: (input: {
+        preAuthSessionId: string;
+        userContext: any;
+    }) => Promise<DeviceType | undefined>;
 };
 
 type DeviceType = {
@@ -343,8 +306,8 @@ export type APIInterface = {
     createCodePOST?: (
         input: ({ email: string } | { phoneNumber: string }) & {
             options: APIOptions;
-        },
-        userContext: any
+            userContext: any;
+        }
     ) => Promise<
         | {
               status: "OK";
@@ -358,8 +321,8 @@ export type APIInterface = {
     resendCodePOST?: (
         input: { deviceId: string; preAuthSessionId: string } & {
             options: APIOptions;
-        },
-        userContext: any
+            userContext: any;
+        }
     ) => Promise<{ status: "GENERAL_ERROR"; message: string } | { status: "RESTART_FLOW_ERROR" | "OK" }>;
 
     consumeCodePOST?: (
@@ -375,8 +338,8 @@ export type APIInterface = {
               }
         ) & {
             options: APIOptions;
-        },
-        userContext: any
+            userContext: any;
+        }
     ) => Promise<
         | {
               status: "OK";
@@ -393,24 +356,20 @@ export type APIInterface = {
         | { status: "RESTART_FLOW_ERROR" }
     >;
 
-    emailExistsGET?: (
-        input: {
-            email: string;
-            options: APIOptions;
-        },
-        userContext: any
-    ) => Promise<{
+    emailExistsGET?: (input: {
+        email: string;
+        options: APIOptions;
+        userContext: any;
+    }) => Promise<{
         status: "OK";
         exists: boolean;
     }>;
 
-    phoneNumberExistsGET?: (
-        input: {
-            phoneNumber: string;
-            options: APIOptions;
-        },
-        userContext: any
-    ) => Promise<{
+    phoneNumberExistsGET?: (input: {
+        phoneNumber: string;
+        options: APIOptions;
+        userContext: any;
+    }) => Promise<{
         status: "OK";
         exists: boolean;
     }>;

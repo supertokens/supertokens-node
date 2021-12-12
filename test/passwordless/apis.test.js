@@ -24,20 +24,6 @@ const express = require("express");
 let { middleware, errorHandler } = require("../../framework/express");
 let { isCDIVersionCompatible } = require("../utils");
 
-/*
-TODO: We actually want to query the APIs with JSON input and check if the JSON output matches the FDI spec for all possible inputs / outputs of the APIs
-
-- consumeCode API
-    - check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
-- createCode API
-    - provider invalid email and phone number to see a GENERAL_ERROR output as well.
-    - check that the magicLink format is {websiteDomain}{websiteBasePath}/verify?rid=passwordless&preAuthSessionId=<some string>#linkCode
-- emailExists API
-- phoneNumberExists API
-- resendCode API
-    - test that you create a code with PHONE in config, you then change the config to use EMAIL, you call resendCode API, it should return RESTART_FLOW_ERROR
-*/
-
 describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
