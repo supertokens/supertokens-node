@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { RecipeInterface, TypeNormalisedInput, KeyInfo, AntiCsrfType } from "./types";
 import { Querier } from "../../querier";
 export declare class HandshakeInfo {

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,
@@ -6,6 +5,7 @@ import {
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
+import { SessionContainerInterface } from "../session/types";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -30,8 +30,8 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User) => Promise<string>;
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeInputFormField = {
     id: string;
@@ -57,8 +57,8 @@ export declare type TypeNormalisedInputSignIn = {
     formFields: NormalisedFormField[];
 };
 export declare type TypeInputResetPasswordUsingTokenFeature = {
-    getResetPasswordURL?: (user: User) => Promise<string>;
-    createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string) => Promise<void>;
+    getResetPasswordURL?: (user: User, userContext: any) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare const InputResetPasswordUsingTokenFeatureSchema: {
     type: string;
@@ -73,8 +73,8 @@ export declare const InputResetPasswordUsingTokenFeatureSchema: {
     additionalProperties: boolean;
 };
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
-    getResetPasswordURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string) => Promise<void>;
+    getResetPasswordURL: (user: User, userContext: any) => Promise<string>;
+    createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
@@ -167,6 +167,7 @@ export declare type RecipeInterface = {
     signUp(input: {
         email: string;
         password: string;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -179,6 +180,7 @@ export declare type RecipeInterface = {
     signIn(input: {
         email: string;
         password: string;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -188,10 +190,11 @@ export declare type RecipeInterface = {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    getUserById(input: { userId: string }): Promise<User | undefined>;
-    getUserByEmail(input: { email: string }): Promise<User | undefined>;
+    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
+    getUserByEmail(input: { email: string; userContext: any }): Promise<User | undefined>;
     createResetPasswordToken(input: {
         userId: string;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -204,6 +207,7 @@ export declare type RecipeInterface = {
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
+        userContext: any;
     }): Promise<{
         status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
     }>;
@@ -211,6 +215,7 @@ export declare type RecipeInterface = {
         userId: string;
         email?: string;
         password?: string;
+        userContext: any;
     }): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
     }>;
@@ -230,6 +235,7 @@ export declare type APIInterface = {
         | ((input: {
               email: string;
               options: APIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
               exists: boolean;
@@ -242,6 +248,7 @@ export declare type APIInterface = {
                   value: string;
               }[];
               options: APIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
           }>);
@@ -254,6 +261,7 @@ export declare type APIInterface = {
               }[];
               token: string;
               options: APIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
           }>);
@@ -265,10 +273,12 @@ export declare type APIInterface = {
                   value: string;
               }[];
               options: APIOptions;
+              userContext: any;
           }) => Promise<
               | {
                     status: "OK";
                     user: User;
+                    session: SessionContainerInterface;
                 }
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
@@ -282,10 +292,12 @@ export declare type APIInterface = {
                   value: string;
               }[];
               options: APIOptions;
+              userContext: any;
           }) => Promise<
               | {
                     status: "OK";
                     user: User;
+                    session: SessionContainerInterface;
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";

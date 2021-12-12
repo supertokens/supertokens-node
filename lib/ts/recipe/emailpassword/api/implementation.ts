@@ -1,19 +1,22 @@
 import { APIInterface, APIOptions, User } from "../";
 import Session from "../../session";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
         emailExistsGET: async function ({
             email,
             options,
+            userContext,
         }: {
             email: string;
             options: APIOptions;
+            userContext: any;
         }): Promise<{
             status: "OK";
             exists: boolean;
         }> {
-            let user = await options.recipeImplementation.getUserByEmail({ email });
+            let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
 
             return {
                 status: "OK",
@@ -23,25 +26,30 @@ export default function getAPIImplementation(): APIInterface {
         generatePasswordResetTokenPOST: async function ({
             formFields,
             options,
+            userContext,
         }: {
             formFields: {
                 id: string;
                 value: string;
             }[];
             options: APIOptions;
+            userContext: any;
         }): Promise<{
             status: "OK";
         }> {
             let email = formFields.filter((f) => f.id === "email")[0].value;
 
-            let user = await options.recipeImplementation.getUserByEmail({ email });
+            let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
             if (user === undefined) {
                 return {
                     status: "OK",
                 };
             }
 
-            let response = await options.recipeImplementation.createResetPasswordToken({ userId: user.id });
+            let response = await options.recipeImplementation.createResetPasswordToken({
+                userId: user.id,
+                userContext,
+            });
             if (response.status === "UNKNOWN_USER_ID_ERROR") {
                 return {
                     status: "OK",
@@ -49,7 +57,7 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let passwordResetLink =
-                (await options.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user)) +
+                (await options.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user, userContext)) +
                 "?token=" +
                 response.token +
                 "&rid=" +
@@ -58,13 +66,14 @@ export default function getAPIImplementation(): APIInterface {
             try {
                 if (!options.isInServerlessEnv) {
                     options.config.resetPasswordUsingTokenFeature
-                        .createAndSendCustomEmail(user, passwordResetLink)
+                        .createAndSendCustomEmail(user, passwordResetLink, userContext)
                         .catch((_) => {});
                 } else {
                     // see https://github.com/supertokens/supertokens-node/pull/135
                     await options.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
                         user,
-                        passwordResetLink
+                        passwordResetLink,
+                        userContext
                     );
                 }
             } catch (_) {}
@@ -77,6 +86,7 @@ export default function getAPIImplementation(): APIInterface {
             formFields,
             token,
             options,
+            userContext,
         }: {
             formFields: {
                 id: string;
@@ -84,27 +94,35 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             token: string;
             options: APIOptions;
+            userContext: any;
         }): Promise<{
             status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
         }> {
             let newPassword = formFields.filter((f) => f.id === "password")[0].value;
 
-            let response = await options.recipeImplementation.resetPasswordUsingToken({ token, newPassword });
+            let response = await options.recipeImplementation.resetPasswordUsingToken({
+                token,
+                newPassword,
+                userContext,
+            });
 
             return response;
         },
         signInPOST: async function ({
             formFields,
             options,
+            userContext,
         }: {
             formFields: {
                 id: string;
                 value: string;
             }[];
             options: APIOptions;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
+                  session: SessionContainerInterface;
                   user: User;
               }
             | {
@@ -114,30 +132,34 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            let response = await options.recipeImplementation.signIn({ email, password });
+            let response = await options.recipeImplementation.signIn({ email, password, userContext });
             if (response.status === "WRONG_CREDENTIALS_ERROR") {
                 return response;
             }
             let user = response.user;
 
-            await Session.createNewSession(options.res, user.id, {}, {});
+            let session = await Session.createNewSession(options.res, user.id, {}, {});
             return {
                 status: "OK",
+                session,
                 user,
             };
         },
         signUpPOST: async function ({
             formFields,
             options,
+            userContext,
         }: {
             formFields: {
                 id: string;
                 value: string;
             }[];
             options: APIOptions;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
+                  session: SessionContainerInterface;
                   user: User;
               }
             | {
@@ -147,15 +169,16 @@ export default function getAPIImplementation(): APIInterface {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
 
-            let response = await options.recipeImplementation.signUp({ email, password });
+            let response = await options.recipeImplementation.signUp({ email, password, userContext });
             if (response.status === "EMAIL_ALREADY_EXISTS_ERROR") {
                 return response;
             }
             let user = response.user;
 
-            await Session.createNewSession(options.res, user.id, {}, {});
+            let session = await Session.createNewSession(options.res, user.id, {}, {});
             return {
                 status: "OK",
+                session,
                 user,
             };
         },

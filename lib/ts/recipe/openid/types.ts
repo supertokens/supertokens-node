@@ -76,6 +76,7 @@ export type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
               issuer: string;
@@ -84,7 +85,9 @@ export type APIInterface = {
 };
 
 export type RecipeInterface = {
-    getOpenIdDiscoveryConfiguration(): Promise<{
+    getOpenIdDiscoveryConfiguration(input: {
+        userContext: any;
+    }): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;
@@ -92,6 +95,7 @@ export type RecipeInterface = {
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -102,7 +106,9 @@ export type RecipeInterface = {
           }
     >;
 
-    getJWKS(): Promise<{
+    getJWKS(input: {
+        userContext: any;
+    }): Promise<{
         status: "OK";
         keys: JsonWebKey[];
     }>;

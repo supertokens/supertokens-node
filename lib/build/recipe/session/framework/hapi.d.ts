@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { VerifySessionOptions } from "..";
 import { ResponseToolkit } from "@hapi/hapi";
 import { SessionRequest } from "../../../framework/hapi/framework";

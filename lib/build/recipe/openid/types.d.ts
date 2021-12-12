@@ -1,4 +1,3 @@
-// @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLDomain from "../../normalisedURLDomain";
@@ -59,6 +58,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
               issuer: string;
@@ -66,7 +66,9 @@ export declare type APIInterface = {
           }>);
 };
 export declare type RecipeInterface = {
-    getOpenIdDiscoveryConfiguration(): Promise<{
+    getOpenIdDiscoveryConfiguration(input: {
+        userContext: any;
+    }): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;
@@ -74,6 +76,7 @@ export declare type RecipeInterface = {
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -83,7 +86,9 @@ export declare type RecipeInterface = {
               status: "UNSUPPORTED_ALGORITHM_ERROR";
           }
     >;
-    getJWKS(): Promise<{
+    getJWKS(input: {
+        userContext: any;
+    }): Promise<{
         status: "OK";
         keys: JsonWebKey[];
     }>;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 export type { SessionRequest } from "./framework";
 export declare const plugin: import("@hapi/hapi").Plugin<{}>;
 export declare const wrapRequest: (unwrapped: any) => import("..").BaseRequest;

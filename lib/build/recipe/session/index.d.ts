@@ -1,4 +1,3 @@
-// @ts-nocheck
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,
@@ -12,42 +11,19 @@ import Recipe from "./recipe";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static createNewSession(
-        res: any,
-        userId: string,
-        accessTokenPayload?: any,
-        sessionData?: any
-    ): Promise<SessionContainer>;
-    static getSession(req: any, res: any, options?: VerifySessionOptions): Promise<SessionContainer | undefined>;
-    static getSessionInformation(sessionHandle: string): Promise<SessionInformation>;
-    static refreshSession(req: any, res: any): Promise<SessionContainer>;
-    static revokeAllSessionsForUser(userId: string): Promise<string[]>;
-    static getAllSessionHandlesForUser(userId: string): Promise<string[]>;
-    static revokeSession(sessionHandle: string): Promise<boolean>;
-    static revokeMultipleSessions(sessionHandles: string[]): Promise<string[]>;
-    static updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
-    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any): Promise<void>;
-    static createJWT(
-        payload?: any,
-        validitySeconds?: number
-    ): Promise<
-        | {
-              status: "OK";
-              jwt: string;
-          }
-        | {
-              status: "UNSUPPORTED_ALGORITHM_ERROR";
-          }
-    >;
-    static getJWKS(): Promise<{
-        status: "OK";
-        keys: import("../jwt").JsonWebKey[];
-    }>;
-    static getOpenIdDiscoveryConfiguration(): Promise<{
-        status: "OK";
-        issuer: string;
-        jwks_uri: string;
-    }>;
+    static createNewSession(res: any, userId: string, accessTokenPayload?: any, sessionData?: any): any;
+    static getSession(req: any, res: any, options?: VerifySessionOptions): any;
+    static getSessionInformation(sessionHandle: string): any;
+    static refreshSession(req: any, res: any): any;
+    static revokeAllSessionsForUser(userId: string): any;
+    static getAllSessionHandlesForUser(userId: string): any;
+    static revokeSession(sessionHandle: string): any;
+    static revokeMultipleSessions(sessionHandles: string[]): any;
+    static updateSessionData(sessionHandle: string, newSessionData: any): any;
+    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any): any;
+    static createJWT(payload?: any, validitySeconds?: number): any;
+    static getJWKS(): any;
+    static getOpenIdDiscoveryConfiguration(): any;
 }
 export declare let init: typeof Recipe.init;
 export declare let createNewSession: typeof SessionWrapper.createNewSession;

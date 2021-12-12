@@ -1,4 +1,3 @@
-// @ts-nocheck
 export declare function getInfoFromAccessToken(
     token: string,
     jwtSigningPublicKey: string,

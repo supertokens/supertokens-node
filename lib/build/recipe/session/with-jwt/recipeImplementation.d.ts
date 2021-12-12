@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { RecipeInterface } from "../";
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
 import { TypeNormalisedInput } from "../types";

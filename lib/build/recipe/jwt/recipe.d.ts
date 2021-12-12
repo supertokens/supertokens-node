@@ -1,4 +1,3 @@
-// @ts-nocheck
 import error from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";

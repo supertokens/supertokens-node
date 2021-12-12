@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
@@ -12,51 +11,15 @@ export default class Wrapper {
             id: string;
             isVerified: boolean;
         }
-    ): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
-    static getUserById(userId: string): Promise<User | undefined>;
-    static getUsersByEmail(email: string): Promise<User[]>;
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
-    static createEmailVerificationToken(
-        userId: string
-    ): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "EMAIL_ALREADY_VERIFIED_ERROR";
-          }
-    >;
-    static verifyEmailUsingToken(
-        token: string
-    ): Promise<
-        | {
-              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-          }
-        | User
-        | undefined
-    >;
-    static isEmailVerified(userId: string): Promise<boolean>;
-    static revokeEmailVerificationTokens(
-        userId: string
-    ): Promise<{
-        status: "OK";
-    }>;
-    static unverifyEmail(
-        userId: string
-    ): Promise<{
-        status: "OK";
-    }>;
+    ): Promise<any>;
+    static getUserById(userId: string): any;
+    static getUsersByEmail(email: string): any;
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): any;
+    static createEmailVerificationToken(userId: string): Promise<any>;
+    static verifyEmailUsingToken(token: string): Promise<any>;
+    static isEmailVerified(userId: string): Promise<any>;
+    static revokeEmailVerificationTokens(userId: string): Promise<any>;
+    static unverifyEmail(userId: string): Promise<any>;
     static Google: typeof import("./providers/google").default;
     static Github: typeof import("./providers/github").default;
     static Facebook: typeof import("./providers/facebook").default;

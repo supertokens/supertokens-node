@@ -1,4 +1,3 @@
-// @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, APIInterface } from "./types";
@@ -38,5 +37,5 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    getEmailForUserId: (userId: string) => Promise<string>;
+    getEmailForUserId: (userId: string) => Promise<any>;
 }

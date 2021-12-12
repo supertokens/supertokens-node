@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { VerifySessionOptions } from "..";
 import type { Next } from "koa";
 import type { SessionContext } from "../../../framework/koa/framework";

@@ -33,7 +33,7 @@ export default async function signInAPI(apiImplementation: APIInterface, options
         (await options.req.getJSONBody()).formFields
     );
 
-    let result = await apiImplementation.signInPOST({ formFields, options });
+    let result = await apiImplementation.signInPOST({ formFields, options, userContext: {} });
 
     send200Response(options.res, result);
     return true;

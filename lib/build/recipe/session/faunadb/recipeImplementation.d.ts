@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { VerifySessionOptions, RecipeInterface } from "../";
 import * as faunadb from "faunadb";
 import type { Session as FaunaDBSessionContainer } from "./types";
@@ -72,7 +71,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }: {
             userId: string;
         }
-    ) => Promise<string[]>;
+    ) => any;
     getAllSessionHandlesForUser: (
         this: RecipeImplementation,
         {
@@ -96,7 +95,7 @@ export default class RecipeImplementation implements RecipeInterface {
         }: {
             sessionHandles: string[];
         }
-    ) => Promise<string[]>;
+    ) => any;
     updateSessionData: (
         this: RecipeImplementation,
         {
@@ -106,14 +105,14 @@ export default class RecipeImplementation implements RecipeInterface {
             sessionHandle: string;
             newSessionData: any;
         }
-    ) => Promise<void>;
+    ) => any;
     updateAccessTokenPayload: (
         this: RecipeImplementation,
         input: {
             sessionHandle: string;
             newAccessTokenPayload: any;
         }
-    ) => Promise<void>;
+    ) => any;
     getAccessTokenLifeTimeMS: (this: RecipeImplementation) => Promise<number>;
     getRefreshTokenLifeTimeMS: (this: RecipeImplementation) => Promise<number>;
 }

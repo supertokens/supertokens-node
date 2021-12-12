@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { NormalisedAppinfo } from "../../types";
 import { TypeInput, TypeNormalisedInput } from "./types";
 import Recipe from "./recipe";

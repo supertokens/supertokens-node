@@ -1,4 +1,3 @@
-// @ts-nocheck
 /// <reference types="node" />
 import { VerifySessionOptions } from "..";
 import { SessionRequest } from "../../../framework/fastify/framework";

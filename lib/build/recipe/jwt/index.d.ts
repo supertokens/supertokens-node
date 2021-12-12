@@ -1,24 +1,9 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import { APIInterface, RecipeInterface, APIOptions, JsonWebKey } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
-    static createJWT(
-        payload: any,
-        validitySeconds?: number
-    ): Promise<
-        | {
-              status: "OK";
-              jwt: string;
-          }
-        | {
-              status: "UNSUPPORTED_ALGORITHM_ERROR";
-          }
-    >;
-    static getJWKS(): Promise<{
-        status: "OK";
-        keys: JsonWebKey[];
-    }>;
+    static createJWT(payload: any, validitySeconds?: number): Promise<any>;
+    static getJWKS(): Promise<any>;
 }
 export declare let init: typeof Recipe.init;
 export declare let createJWT: typeof Wrapper.createJWT;

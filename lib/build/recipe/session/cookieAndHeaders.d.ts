@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import { TypeNormalisedInput } from "./types";
 /**

@@ -1,4 +1,4 @@
-// @ts-nocheck
+/// <reference types="express" />
 export type { SessionRequest } from "./framework";
 export declare const middleware: () => (
     req: import("express").Request,

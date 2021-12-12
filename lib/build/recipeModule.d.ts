@@ -1,4 +1,3 @@
-// @ts-nocheck
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";

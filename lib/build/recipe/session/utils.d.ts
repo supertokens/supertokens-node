@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";

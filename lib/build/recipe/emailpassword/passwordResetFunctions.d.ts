@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { User } from "./types";
 import { NormalisedAppinfo } from "../../types";
 export declare function getResetPasswordURL(appInfo: NormalisedAppinfo): (_: User) => Promise<string>;
