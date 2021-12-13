@@ -28,7 +28,7 @@ import { GET_DISCOVERY_CONFIG_URL } from "./constants";
 import getOpenIdDiscoveryConfiguration from "./api/getOpenIdDiscoveryConfiguration";
 
 export default class OpenIdRecipe extends RecipeModule {
-    static RECIPE_ID = "opeinid";
+    static RECIPE_ID = "openid";
     private static instance: OpenIdRecipe | undefined = undefined;
     config: TypeNormalisedInput;
     jwtRecipe: JWTRecipe;
