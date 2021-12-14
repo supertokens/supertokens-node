@@ -31,7 +31,7 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            let userId = session.getUserId();
+            let userId = session.getUserId(userContext);
 
             let email = await options.config.getEmailForUserId(userId, userContext);
 
