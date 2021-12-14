@@ -241,16 +241,16 @@ export declare type RecipeInterface = {
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 };
 export interface SessionContainerInterface {
-    revokeSession(userContext?: any): Promise<void>;
-    getSessionData(userContext?: any): Promise<any>;
-    updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
-    getUserId(userContext?: any): string;
-    getAccessTokenPayload(userContext?: any): any;
-    getHandle(userContext?: any): string;
-    getAccessToken(userContext?: any): string;
-    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
-    getTimeCreated(userContext?: any): Promise<number>;
-    getExpiry(userContext?: any): Promise<number>;
+    revokeSession(): Promise<void>;
+    getSessionData(): Promise<any>;
+    updateSessionData(newSessionData: any): Promise<any>;
+    getUserId(): string;
+    getAccessTokenPayload(): any;
+    getHandle(): string;
+    getAccessToken(): string;
+    updateAccessTokenPayload(newAccessTokenPayload: any): Promise<void>;
+    getTimeCreated(): Promise<number>;
+    getExpiry(): Promise<number>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

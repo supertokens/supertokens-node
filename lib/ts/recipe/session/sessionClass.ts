@@ -44,13 +44,13 @@ export default class Session implements SessionContainerInterface {
         this.helpers = helpers;
     }
 
-    revokeSession = async (_: any = {}) => {
+    revokeSession = async () => {
         if (await SessionFunctions.revokeSession(this.helpers, this.sessionHandle)) {
             clearSessionFromCookie(this.helpers.config, this.res);
         }
     };
 
-    getSessionData = async (_: any = {}): Promise<any> => {
+    getSessionData = async (): Promise<any> => {
         try {
             return (await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle)).sessionData;
         } catch (err) {
@@ -61,7 +61,7 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    updateSessionData = async (newSessionData: any, _: any = {}) => {
+    updateSessionData = async (newSessionData: any) => {
         try {
             await SessionFunctions.updateSessionData(this.helpers, this.sessionHandle, newSessionData);
         } catch (err) {
@@ -72,23 +72,23 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    getUserId = (_: any = {}) => {
+    getUserId = () => {
         return this.userId;
     };
 
-    getAccessTokenPayload = (_: any = {}) => {
+    getAccessTokenPayload = () => {
         return this.userDataInAccessToken;
     };
 
-    getHandle = (_: any = {}) => {
+    getHandle = () => {
         return this.sessionHandle;
     };
 
-    getAccessToken = (_: any = {}) => {
+    getAccessToken = () => {
         return this.accessToken;
     };
 
-    updateAccessTokenPayload = async (newAccessTokenPayload: any, _: any = {}) => {
+    updateAccessTokenPayload = async (newAccessTokenPayload: any) => {
         newAccessTokenPayload =
             newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
         let response = await this.helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
@@ -120,7 +120,7 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    getTimeCreated = async (_: any = {}): Promise<number> => {
+    getTimeCreated = async (): Promise<number> => {
         try {
             return (await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle)).timeCreated;
         } catch (err) {
@@ -131,7 +131,7 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    getExpiry = async (_: any = {}): Promise<number> => {
+    getExpiry = async (): Promise<number> => {
         try {
             return (await SessionFunctions.getSessionInformation(this.helpers, this.sessionHandle)).expiry;
         } catch (err) {

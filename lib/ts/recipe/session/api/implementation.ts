@@ -80,7 +80,7 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            await session.revokeSession(userContext);
+            await session.revokeSession();
 
             return {
                 status: "OK",

@@ -216,13 +216,13 @@ export default class RecipeImplementation implements RecipeInterface {
 function getModifiedSession(session: SessionContainer): FaunaDBSessionContainer {
     return {
         ...session,
-        getFaunadbToken: async (userContext?: any): Promise<string> => {
+        getFaunadbToken: async (): Promise<string> => {
             let accessTokenPayload = session.getAccessTokenPayload();
             if (accessTokenPayload[FAUNADB_SESSION_KEY] !== undefined) {
                 // this operation costs nothing. So we can check
                 return accessTokenPayload[FAUNADB_SESSION_KEY];
             } else {
-                let sessionData = await session.getSessionData(userContext);
+                let sessionData = await session.getSessionData();
                 return sessionData[FAUNADB_SESSION_KEY];
             }
         },

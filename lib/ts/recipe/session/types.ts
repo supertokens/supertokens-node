@@ -266,25 +266,25 @@ export type RecipeInterface = {
 };
 
 export interface SessionContainerInterface {
-    revokeSession(userContext?: any): Promise<void>;
+    revokeSession(): Promise<void>;
 
-    getSessionData(userContext?: any): Promise<any>;
+    getSessionData(): Promise<any>;
 
-    updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
+    updateSessionData(newSessionData: any): Promise<any>;
 
-    getUserId(userContext?: any): string;
+    getUserId(): string;
 
-    getAccessTokenPayload(userContext?: any): any;
+    getAccessTokenPayload(): any;
 
-    getHandle(userContext?: any): string;
+    getHandle(): string;
 
-    getAccessToken(userContext?: any): string;
+    getAccessToken(): string;
 
-    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
+    updateAccessTokenPayload(newAccessTokenPayload: any): Promise<void>;
 
-    getTimeCreated(userContext?: any): Promise<number>;
+    getTimeCreated(): Promise<number>;
 
-    getExpiry(userContext?: any): Promise<number>;
+    getExpiry(): Promise<number>;
 }
 
 export type APIOptions = {

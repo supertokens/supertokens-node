@@ -28,35 +28,35 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         this.openIdRecipeImplementation = openIdRecipeImplementation;
         this.originalSessionClass = originalSessionClass;
     }
-    revokeSession = (userContext: any = {}): Promise<void> => {
-        return this.originalSessionClass.revokeSession(userContext);
+    revokeSession = (): Promise<void> => {
+        return this.originalSessionClass.revokeSession();
     };
-    getSessionData = (userContext: any = {}): Promise<any> => {
-        return this.originalSessionClass.getSessionData(userContext);
+    getSessionData = (): Promise<any> => {
+        return this.originalSessionClass.getSessionData();
     };
-    updateSessionData = (newSessionData: any, userContext: any = {}): Promise<any> => {
-        return this.originalSessionClass.updateSessionData(newSessionData, userContext);
+    updateSessionData = (newSessionData: any): Promise<any> => {
+        return this.originalSessionClass.updateSessionData(newSessionData);
     };
-    getUserId = (userContext: any = {}): string => {
-        return this.originalSessionClass.getUserId(userContext);
+    getUserId = (): string => {
+        return this.originalSessionClass.getUserId();
     };
-    getAccessTokenPayload = (userContext: any = {}) => {
-        return this.originalSessionClass.getAccessTokenPayload(userContext);
+    getAccessTokenPayload = () => {
+        return this.originalSessionClass.getAccessTokenPayload();
     };
-    getHandle = (userContext: any = {}): string => {
-        return this.originalSessionClass.getHandle(userContext);
+    getHandle = (): string => {
+        return this.originalSessionClass.getHandle();
     };
-    getAccessToken = (userContext: any = {}): string => {
-        return this.originalSessionClass.getAccessToken(userContext);
+    getAccessToken = (): string => {
+        return this.originalSessionClass.getAccessToken();
     };
-    getTimeCreated = (userContext: any = {}): Promise<number> => {
-        return this.originalSessionClass.getTimeCreated(userContext);
+    getTimeCreated = (): Promise<number> => {
+        return this.originalSessionClass.getTimeCreated();
     };
-    getExpiry = (userContext: any = {}): Promise<number> => {
-        return this.originalSessionClass.getExpiry(userContext);
+    getExpiry = (): Promise<number> => {
+        return this.originalSessionClass.getExpiry();
     };
 
-    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext: any = {}): Promise<void> => {
+    updateAccessTokenPayload = async (newAccessTokenPayload: any): Promise<void> => {
         newAccessTokenPayload =
             newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
         let accessTokenPayload = this.getAccessTokenPayload();
@@ -93,7 +93,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
             userId: this.getUserId(),
             jwtPropertyName,
             openIdRecipeImplementation: this.openIdRecipeImplementation,
-            userContext,
+            userContext: {},
         });
 
         return await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);
