@@ -72,19 +72,19 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    getUserId = () => {
+    getUserId = (_: any = {}) => {
         return this.userId;
     };
 
-    getAccessTokenPayload = () => {
+    getAccessTokenPayload = (_: any = {}) => {
         return this.userDataInAccessToken;
     };
 
-    getHandle = () => {
+    getHandle = (_: any = {}) => {
         return this.sessionHandle;
     };
 
-    getAccessToken = () => {
+    getAccessToken = (_: any = {}) => {
         return this.accessToken;
     };
 

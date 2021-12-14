@@ -37,17 +37,17 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     updateSessionData = (newSessionData: any, userContext: any = {}): Promise<any> => {
         return this.originalSessionClass.updateSessionData(newSessionData, userContext);
     };
-    getUserId = (): string => {
-        return this.originalSessionClass.getUserId();
+    getUserId = (userContext: any = {}): string => {
+        return this.originalSessionClass.getUserId(userContext);
     };
-    getAccessTokenPayload = () => {
-        return this.originalSessionClass.getAccessTokenPayload();
+    getAccessTokenPayload = (userContext: any = {}) => {
+        return this.originalSessionClass.getAccessTokenPayload(userContext);
     };
-    getHandle = (): string => {
-        return this.originalSessionClass.getHandle();
+    getHandle = (userContext: any = {}): string => {
+        return this.originalSessionClass.getHandle(userContext);
     };
-    getAccessToken = (): string => {
-        return this.originalSessionClass.getAccessToken();
+    getAccessToken = (userContext: any = {}): string => {
+        return this.originalSessionClass.getAccessToken(userContext);
     };
     getTimeCreated = (userContext: any = {}): Promise<number> => {
         return this.originalSessionClass.getTimeCreated(userContext);

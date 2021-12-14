@@ -59,7 +59,7 @@ export default function (
         }): Promise<SessionContainerInterface> {
             accessTokenPayload =
                 accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
-            let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
+            let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS({ userContext })) / 1000);
             accessTokenPayload = await addJWTToAccessTokenPayload({
                 accessTokenPayload,
                 jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),
@@ -107,7 +107,7 @@ export default function (
             res: any;
             userContext: any;
         }): Promise<SessionContainerInterface> {
-            let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS()) / 1000);
+            let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS({ userContext })) / 1000);
 
             // Refresh session first because this will create a new access token
             let newSession = await originalImplementation.refreshSession({ req, res, userContext });
@@ -137,7 +137,7 @@ export default function (
         }): Promise<void> {
             newAccessTokenPayload =
                 newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
-            let sessionInformation = await this.getSessionInformation({ sessionHandle });
+            let sessionInformation = await this.getSessionInformation({ sessionHandle, userContext });
             let accessTokenPayload = sessionInformation.accessTokenPayload;
 
             let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];

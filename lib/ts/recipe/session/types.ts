@@ -272,13 +272,13 @@ export interface SessionContainerInterface {
 
     updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
 
-    getUserId(): string;
+    getUserId(userContext?: any): string;
 
-    getAccessTokenPayload(): any;
+    getAccessTokenPayload(userContext?: any): any;
 
-    getHandle(): string;
+    getHandle(userContext?: any): string;
 
-    getAccessToken(): string;
+    getAccessToken(userContext?: any): string;
 
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
 

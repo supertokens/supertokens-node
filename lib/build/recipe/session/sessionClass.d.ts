@@ -20,10 +20,10 @@ export default class Session implements SessionContainerInterface {
     revokeSession: (_?: any) => Promise<void>;
     getSessionData: (_?: any) => Promise<any>;
     updateSessionData: (newSessionData: any, _?: any) => Promise<void>;
-    getUserId: () => string;
-    getAccessTokenPayload: () => any;
-    getHandle: () => string;
-    getAccessToken: () => string;
+    getUserId: (_?: any) => string;
+    getAccessTokenPayload: (_?: any) => any;
+    getHandle: (_?: any) => string;
+    getAccessToken: (_?: any) => string;
     updateAccessTokenPayload: (newAccessTokenPayload: any, _?: any) => Promise<void>;
     getTimeCreated: (_?: any) => Promise<number>;
     getExpiry: (_?: any) => Promise<number>;
