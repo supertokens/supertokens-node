@@ -21,12 +21,12 @@ import { SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 
 export default class Session implements SessionContainerInterface {
-    private sessionHandle: string;
-    private userId: string;
-    private userDataInAccessToken: any;
-    private res: BaseResponse;
-    private accessToken: string;
-    private helpers: Helpers;
+    protected sessionHandle: string;
+    protected userId: string;
+    protected userDataInAccessToken: any;
+    protected res: BaseResponse;
+    protected accessToken: string;
+    protected helpers: Helpers;
 
     constructor(
         helpers: Helpers,

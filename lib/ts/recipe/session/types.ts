@@ -14,7 +14,9 @@
  */
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
+import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
 
 export type KeyInfo = {
     publicKey: string;
@@ -102,12 +104,39 @@ export type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    jwt?:
+        | {
+              enable: true;
+              propertyNameInAccessTokenPayload?: string;
+              issuer?: string;
+          }
+        | { enable: false };
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        openIdFeature?: {
+            functions?: (
+                originalImplementation: OpenIdRecipeInterface,
+                builder?: OverrideableBuilder<OpenIdRecipeInterface>
+            ) => OpenIdRecipeInterface;
+            apis?: (
+                originalImplementation: OpenIdAPIInterface,
+                builder?: OverrideableBuilder<OpenIdAPIInterface>
+            ) => OpenIdAPIInterface;
+            jwtFeature?: {
+                functions?: (
+                    originalImplementation: JWTRecipeInterface,
+                    builder?: OverrideableBuilder<JWTRecipeInterface>
+                ) => JWTRecipeInterface;
+                apis?: (
+                    originalImplementation: JWTAPIInterface,
+                    builder?: OverrideableBuilder<JWTAPIInterface>
+                ) => JWTAPIInterface;
+            };
+        };
     };
 };
 
@@ -120,6 +149,7 @@ export const InputSchema = {
         cookieDomain: TypeString,
         errorHandlers: InputSchemaErrorHandlers,
         antiCsrf: TypeString,
+        jwt: TypeAny,
         override: TypeAny,
     },
     additionalProperties: false,
@@ -133,12 +163,37 @@ export type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    jwt: {
+        enable: boolean;
+        propertyNameInAccessTokenPayload: string;
+        issuer?: string;
+    };
     override: {
         functions: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        openIdFeature?: {
+            functions?: (
+                originalImplementation: OpenIdRecipeInterface,
+                builder?: OverrideableBuilder<OpenIdRecipeInterface>
+            ) => OpenIdRecipeInterface;
+            apis?: (
+                originalImplementation: OpenIdAPIInterface,
+                builder?: OverrideableBuilder<OpenIdAPIInterface>
+            ) => OpenIdAPIInterface;
+            jwtFeature?: {
+                functions?: (
+                    originalImplementation: JWTRecipeInterface,
+                    builder?: OverrideableBuilder<JWTRecipeInterface>
+                ) => JWTRecipeInterface;
+                apis?: (
+                    originalImplementation: JWTAPIInterface,
+                    builder?: OverrideableBuilder<JWTAPIInterface>
+                ) => JWTAPIInterface;
+            };
+        };
     };
 };
 
@@ -228,6 +283,7 @@ export interface SessionContainerInterface {
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
+    jwtRecipeImplementation: JWTRecipeInterface | undefined;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;

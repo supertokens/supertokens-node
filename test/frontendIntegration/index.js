@@ -25,6 +25,7 @@ let noOfTimesGetSessionCalledDuringTest = 0;
 let noOfTimesRefreshAttemptedDuringTest = 0;
 let { verifySession } = require("../../recipe/session/framework/express");
 let { middleware, errorHandler } = require("../../framework/express");
+let supertokens_node_version = require("../../lib/build/version").version;
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
@@ -34,7 +35,78 @@ app.use(urlencodedParser);
 app.use(jsonParser);
 app.use(cookieParser());
 
-function getConfig(enableAntiCsrf) {
+let lastSetEnableAntiCSRF = true;
+let lastSetEnableJWT = false;
+
+const maxVersion = function (version1, version2) {
+    let splittedv1 = version1.split(".");
+    let splittedv2 = version2.split(".");
+    let minLength = Math.min(splittedv1.length, splittedv2.length);
+    for (let i = 0; i < minLength; i++) {
+        let v1 = Number(splittedv1[i]);
+        let v2 = Number(splittedv2[i]);
+        if (v1 > v2) {
+            return version1;
+        } else if (v2 > v1) {
+            return version2;
+        }
+    }
+    if (splittedv1.length >= splittedv2.length) {
+        return version1;
+    }
+    return version2;
+};
+
+function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
+    if (maxVersion(supertokens_node_version, "8.3.0") === supertokens_node_version && enableJWT) {
+        return {
+            appInfo: {
+                appName: "SuperTokens",
+                apiDomain: "0.0.0.0:" + (process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT),
+                websiteDomain: "http://localhost.org:8080",
+            },
+            supertokens: {
+                connectionURI: "http://localhost:9000",
+            },
+            recipeList: [
+                Session.init({
+                    jwt: {
+                        enable: true,
+                        propertyNameInAccessTokenPayload: jwtPropertyName,
+                    },
+                    errorHandlers: {
+                        onUnauthorised: (err, req, res) => {
+                            res.setStatusCode(401);
+                            res.sendJSONResponse({});
+                        },
+                    },
+                    antiCsrf: enableAntiCsrf ? "VIA_TOKEN" : "NONE",
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                refreshPOST: undefined,
+                            };
+                        },
+                        functions: function (oI) {
+                            return {
+                                ...oI,
+                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                    accessTokenPayload = {
+                                        ...accessTokenPayload,
+                                        customClaim: "customValue",
+                                    };
+
+                                    return await oI.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        };
+    }
+
     return {
         appInfo: {
             appName: "SuperTokens",
@@ -84,6 +156,8 @@ app.use(middleware());
 
 app.post("/setAntiCsrf", async (req, res) => {
     let enableAntiCsrf = req.body.enableAntiCsrf === undefined ? true : req.body.enableAntiCsrf;
+    lastSetEnableAntiCSRF = enableAntiCsrf;
+
     if (enableAntiCsrf !== undefined) {
         SuperTokensRaw.reset();
         SessionRecipeRaw.reset();
@@ -92,10 +166,42 @@ app.post("/setAntiCsrf", async (req, res) => {
     res.send("success");
 });
 
+app.post("/setEnableJWT", async (req, res) => {
+    let enableJWT = req.body.enableJWT === undefined ? false : req.body.enableJWT;
+    lastSetEnableJWT = enableJWT;
+
+    if (enableJWT !== undefined) {
+        SuperTokensRaw.reset();
+        SessionRecipeRaw.reset();
+        SuperTokens.init(getConfig(lastSetEnableAntiCSRF, enableJWT));
+    }
+    res.send("success");
+});
+
+app.get("/featureFlags", async (req, res) => {
+    let currentEnableJWT = lastSetEnableJWT;
+
+    res.status(200).json({
+        sessionJwt:
+            maxVersion(supertokens_node_version, "8.3") === supertokens_node_version && currentEnableJWT === true,
+    });
+});
+
+app.post("/reinitialiseBackendConfig", async (req, res) => {
+    let currentEnableJWT = lastSetEnableJWT;
+    let jwtPropertyName = req.body.jwtPropertyName;
+
+    SuperTokensRaw.reset();
+    SessionRecipeRaw.reset();
+    SuperTokens.init(getConfig(lastSetEnableAntiCSRF, currentEnableJWT, jwtPropertyName));
+
+    res.send("");
+});
+
 app.post("/login", async (req, res) => {
     let userId = req.body.userId;
     let session = await Session.createNewSession(res, userId);
-    res.send(session.userId);
+    res.send(session.getUserId());
 });
 
 app.post("/beforeeach", async (req, res) => {
