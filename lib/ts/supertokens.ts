@@ -204,7 +204,7 @@ export default class SuperTokens {
         let cdiVersion = await querier.getAPIVersion();
         if (maxVersion("2.10", cdiVersion) === cdiVersion) {
             // delete user is only available >= CDI 2.10
-            await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/remove"), {
+            await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
                 userId: input.userId,
             });
 
