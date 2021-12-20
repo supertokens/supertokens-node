@@ -199,6 +199,23 @@ export default class SuperTokens {
         };
     };
 
+    deleteUser = async (input: { userId: string }): Promise<{ status: "OK" }> => {
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let cdiVersion = await querier.getAPIVersion();
+        if (maxVersion("2.10", cdiVersion) === cdiVersion) {
+            // delete user is only available >= CDI 2.10
+            await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
+                userId: input.userId,
+            });
+
+            return {
+                status: "OK",
+            };
+        } else {
+            throw new global.Error("Please upgrade the SuperTokens core to >= 3.7.0");
+        }
+    };
+
     middleware = async (request: BaseRequest, response: BaseResponse): Promise<boolean> => {
         let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
