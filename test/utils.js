@@ -23,6 +23,7 @@ let ThirdPartyEmailPasswordRecipe = require("../lib/build/recipe/thirdpartyemail
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
+const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -194,6 +195,7 @@ module.exports.resetAll = function () {
     EmailPasswordRecipe.reset();
     ThirPartyRecipe.reset();
     JWTRecipe.reset();
+    OpenIDRecipe.reset();
     ProcessState.getInstance().reset();
 };
 
@@ -417,4 +419,8 @@ module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, bod
         },
         queryStringParameters: queryParams,
     };
+};
+
+module.exports.delay = async function (time) {
+    await new Promise((r) => setTimeout(r, time * 1000));
 };

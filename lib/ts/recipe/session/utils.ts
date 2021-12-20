@@ -37,6 +37,7 @@ import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200Response } from "../../utils";
+import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./with-jwt/constants";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -208,6 +209,24 @@ export function validateAndNormaliseUserInput(
         );
     }
 
+    let enableJWT = false;
+    let accessTokenPayloadJWTPropertyName = "jwt";
+    let issuer: string | undefined;
+
+    if (config !== undefined && config.jwt !== undefined && config.jwt.enable === true) {
+        enableJWT = true;
+        let jwtPropertyName = config.jwt.propertyNameInAccessTokenPayload;
+        issuer = config.jwt.issuer;
+
+        if (jwtPropertyName !== undefined) {
+            if (jwtPropertyName === ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY) {
+                throw new Error(JWT_RESERVED_KEY_USE_ERROR_MESSAGE);
+            }
+
+            accessTokenPayloadJWTPropertyName = jwtPropertyName;
+        }
+    }
+
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -223,6 +242,11 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
+        jwt: {
+            enable: enableJWT,
+            propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
+            issuer,
+        },
     };
 }
 

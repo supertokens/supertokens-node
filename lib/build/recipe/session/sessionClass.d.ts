@@ -3,12 +3,12 @@ import { BaseResponse } from "../../framework";
 import { SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {
-    private sessionHandle;
-    private userId;
-    private userDataInAccessToken;
-    private res;
-    private accessToken;
-    private helpers;
+    protected sessionHandle: string;
+    protected userId: string;
+    protected userDataInAccessToken: any;
+    protected res: BaseResponse;
+    protected accessToken: string;
+    protected helpers: Helpers;
     constructor(
         helpers: Helpers,
         accessToken: string,
