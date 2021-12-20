@@ -9,8 +9,8 @@ import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/sess
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import { TypeInput } from "../../types";
-import { TypeInput as SessionTypeInput } from "../../types/recipe/session";
-import { TypeInput as EPTypeInput } from "../../types/recipe/emailpassword";
+import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
+import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 
 let app = express();
 let sessionConfig: SessionTypeInput = {
