@@ -12,6 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Delete user functionality
 
+## [8.3.1] - 2021-12-20
+
+### Added
+
+-   Exposes all essential `types` files. Fixes [#230](https://github.com/supertokens/supertokens-node/issues/230)
+
 ## [8.3.0] - 2021-12-08
 
 ### Added
