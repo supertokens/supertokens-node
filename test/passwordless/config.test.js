@@ -25,6 +25,14 @@ let { middleware, errorHandler } = require("../../framework/express");
 let { isCDIVersionCompatible, generateRandomCode } = require("../utils");
 let PasswordlessRecipe = require("../../lib/build/recipe/passwordless/recipe").default;
 
+/**
+ * - with contactMethod EMAIL_OR_PHONE
+ *  - minimum config
+ *  - adding custom validators for phone and email and making sure that they are called
+ *  - adding custom functions to send email and making sure that is called
+ *  - adding custom functions to send text SMS, and making sure that is called
+ *
+ */
 describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

@@ -29,12 +29,10 @@ let { isCDIVersionCompatible } = require("../utils");
  * - With contactMethod = EMAIL_OR_PHONE:
  *   - finish full sign up / in flow with email (create code -> consume code)
  *   - finish full sign up / in flow with phone (create code -> consume code)
- *   - create code with email and then resend code and make sure that sending email function is called
- *   - create code with phone and then resend code and make sure that sending text message function is called
+ *   - create code with email and then resend code and make sure that sending email function is called  while resending code
+ *   - create code with phone and then resend code and make sure that sending text message function is called while resending code
  *   - sending both email and phone in createCode API throws bad request
  *   - sending neither email and phone in createCode API throws bad request
- *   - sending email in createCode calls validator function for email validation
- *   - sending phone in createCode calls validator function for phone validation
  *   - do full sign in with email, then manually add a user's phone to their user Info, then so sign in with that phone number and make sure that the same userId signs in.
  */
 
