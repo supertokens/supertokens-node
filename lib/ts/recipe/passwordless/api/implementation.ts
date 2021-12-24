@@ -83,7 +83,10 @@ export default function getAPIImplementation(): APIInterface {
 
             try {
                 if (!input.options.isInServerlessEnv) {
-                    if (input.options.config.contactMethod === "PHONE") {
+                    if (
+                        input.options.config.contactMethod === "PHONE" ||
+                        (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phone" in input)
+                    ) {
                         input.options.config
                             .createAndSendCustomTextMessage(
                                 {
@@ -111,7 +114,10 @@ export default function getAPIImplementation(): APIInterface {
                             .catch((_) => {});
                     }
                 } else {
-                    if (input.options.config.contactMethod === "PHONE") {
+                    if (
+                        input.options.config.contactMethod === "PHONE" ||
+                        (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phone" in input)
+                    ) {
                         await input.options.config.createAndSendCustomTextMessage(
                             {
                                 codeLifetime: response.codeLifetime,
@@ -239,7 +245,10 @@ export default function getAPIImplementation(): APIInterface {
 
                     try {
                         if (!input.options.isInServerlessEnv) {
-                            if (input.options.config.contactMethod === "PHONE") {
+                            if (
+                                input.options.config.contactMethod === "PHONE" ||
+                                (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phone" in input)
+                            ) {
                                 input.options.config
                                     .createAndSendCustomTextMessage(
                                         {
@@ -267,7 +276,10 @@ export default function getAPIImplementation(): APIInterface {
                                     .catch((_) => {});
                             }
                         } else {
-                            if (input.options.config.contactMethod === "PHONE") {
+                            if (
+                                input.options.config.contactMethod === "PHONE" ||
+                                (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phone" in input)
+                            ) {
                                 await input.options.config.createAndSendCustomTextMessage(
                                     {
                                         codeLifetime: response.codeLifetime,

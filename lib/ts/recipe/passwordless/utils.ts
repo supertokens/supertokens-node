@@ -23,8 +23,12 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    if (config.contactMethod !== "PHONE" && config.contactMethod !== "EMAIL") {
-        throw new Error('Please pass one of "PHONE" or "EMAIL" as the contactMethod');
+    if (
+        config.contactMethod !== "PHONE" &&
+        config.contactMethod !== "EMAIL" &&
+        config.contactMethod !== "EMAIL_OR_PHONE"
+    ) {
+        throw new Error('Please pass one of "PHONE", "EMAIL" or "EMAIL_OR_PHONE" as the contactMethod');
     }
 
     if (config.flowType === undefined) {
@@ -54,11 +58,34 @@ export function validateAndNormaliseUserInput(
                 config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
             getCustomUserInputCode: config.getCustomUserInputCode,
         };
-    } else {
+    } else if (config.contactMethod === "PHONE") {
         return {
             override,
             flowType: config.flowType,
             contactMethod: "PHONE",
+            createAndSendCustomTextMessage:
+                config.createAndSendCustomTextMessage === undefined
+                    ? defaultCreateAndSendTextMessage
+                    : config.createAndSendCustomTextMessage,
+            getLinkDomainAndPath:
+                config.getLinkDomainAndPath === undefined
+                    ? getDefaultGetLinkDomainAndPath(appInfo)
+                    : config.getLinkDomainAndPath,
+            validatePhoneNumber:
+                config.validatePhoneNumber === undefined ? defaultValidatePhoneNumber : config.validatePhoneNumber,
+            getCustomUserInputCode: config.getCustomUserInputCode,
+        };
+    } else {
+        return {
+            override,
+            flowType: config.flowType,
+            contactMethod: "EMAIL_OR_PHONE",
+            createAndSendCustomEmail:
+                config.createAndSendCustomEmail === undefined
+                    ? defaultCreateAndSendCustomEmail
+                    : config.createAndSendCustomEmail,
+            validateEmailAddress:
+                config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
             createAndSendCustomTextMessage:
                 config.createAndSendCustomTextMessage === undefined
                     ? defaultCreateAndSendTextMessage

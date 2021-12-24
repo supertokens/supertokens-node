@@ -49,7 +49,10 @@ export default async function createCode(apiImplementation: APIInterface, option
     }
 
     // normalise and validate format of input
-    if (email !== undefined && options.config.contactMethod === "EMAIL") {
+    if (
+        email !== undefined &&
+        (options.config.contactMethod === "EMAIL" || options.config.contactMethod === "EMAIL_OR_PHONE")
+    ) {
         email = email.trim();
         const validateError = await options.config.validateEmailAddress(email);
         if (validateError !== undefined) {
@@ -61,7 +64,10 @@ export default async function createCode(apiImplementation: APIInterface, option
         }
     }
 
-    if (phoneNumber !== undefined && options.config.contactMethod === "PHONE") {
+    if (
+        phoneNumber !== undefined &&
+        (options.config.contactMethod === "PHONE" || options.config.contactMethod === "EMAIL_OR_PHONE")
+    ) {
         const validateError = await options.config.validatePhoneNumber(phoneNumber);
         if (validateError !== undefined) {
             send200Response(options.res, {

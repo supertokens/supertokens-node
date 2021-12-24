@@ -67,6 +67,43 @@ export type TypeInput = (
               userContext: any
           ) => Promise<void>;
       }
+    | {
+          contactMethod: "EMAIL_OR_PHONE";
+          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
+
+          // Override to use custom template/contact method
+          createAndSendCustomEmail?: (
+              input: {
+                  // Where the message should be delivered.
+                  email: string;
+                  // This has to be entered on the starting device  to finish sign in/up
+                  userInputCode?: string;
+                  // Full url that the end-user can click to finish sign in/up
+                  urlWithLinkCode?: string;
+                  codeLifetime: number;
+                  // Unlikely, but someone could display this (or a derived thing) to identify the device
+                  preAuthSessionId: string;
+              },
+              userContext: any
+          ) => Promise<void>;
+          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+
+          // Override to use custom template/contact method
+          createAndSendCustomTextMessage?: (
+              input: {
+                  // Where the message should be delivered.
+                  phoneNumber: string;
+                  // This has to be entered on the starting device  to finish sign in/up
+                  userInputCode?: string;
+                  // Full url that the end-user can click to finish sign in/up
+                  urlWithLinkCode?: string;
+                  codeLifetime: number;
+                  // Unlikely, but someone could display this (or a derived thing) to identify the device
+                  preAuthSessionId: string;
+              },
+              userContext: any
+          ) => Promise<void>;
+      }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
 
@@ -127,6 +164,44 @@ export type TypeNormalisedInput = (
               input: {
                   // Where the message should be delivered.
                   email: string;
+                  // This has to be entered on the starting device  to finish sign in/up
+                  userInputCode?: string;
+                  // Full url that the end-user can click to finish sign in/up
+                  urlWithLinkCode?: string;
+                  codeLifetime: number;
+                  // Unlikely, but someone could display this (or a derived thing) to identify the device
+                  preAuthSessionId: string;
+              },
+              userContext: any
+          ) => Promise<void>;
+      }
+    | {
+          contactMethod: "EMAIL_OR_PHONE";
+          validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
+
+          // Override to use custom template/contact method
+          createAndSendCustomEmail: (
+              input: {
+                  // Where the message should be delivered.
+                  email: string;
+                  // This has to be entered on the starting device  to finish sign in/up
+                  userInputCode?: string;
+                  // Full url that the end-user can click to finish sign in/up
+                  urlWithLinkCode?: string;
+                  codeLifetime: number;
+                  // Unlikely, but someone could display this (or a derived thing) to identify the device
+                  preAuthSessionId: string;
+              },
+              userContext: any
+          ) => Promise<void>;
+
+          validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+
+          // Override to use custom template/contact method
+          createAndSendCustomTextMessage: (
+              input: {
+                  // Where the message should be delivered.
+                  phoneNumber: string;
                   // This has to be entered on the starting device  to finish sign in/up
                   userInputCode?: string;
                   // Full url that the end-user can click to finish sign in/up
