@@ -85,7 +85,7 @@ export default function getAPIImplementation(): APIInterface {
                 if (!input.options.isInServerlessEnv) {
                     if (
                         input.options.config.contactMethod === "PHONE" ||
-                        (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phone" in input)
+                        (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
                     ) {
                         input.options.config
                             .createAndSendCustomTextMessage(
@@ -116,7 +116,7 @@ export default function getAPIImplementation(): APIInterface {
                 } else {
                     if (
                         input.options.config.contactMethod === "PHONE" ||
-                        (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phone" in input)
+                        (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
                     ) {
                         await input.options.config.createAndSendCustomTextMessage(
                             {
@@ -247,7 +247,8 @@ export default function getAPIImplementation(): APIInterface {
                         if (!input.options.isInServerlessEnv) {
                             if (
                                 input.options.config.contactMethod === "PHONE" ||
-                                (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phone" in input)
+                                (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
+                                    deviceInfo.phoneNumber !== undefined)
                             ) {
                                 input.options.config
                                     .createAndSendCustomTextMessage(
@@ -278,7 +279,8 @@ export default function getAPIImplementation(): APIInterface {
                         } else {
                             if (
                                 input.options.config.contactMethod === "PHONE" ||
-                                (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phone" in input)
+                                (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
+                                    deviceInfo.phoneNumber !== undefined)
                             ) {
                                 await input.options.config.createAndSendCustomTextMessage(
                                     {
