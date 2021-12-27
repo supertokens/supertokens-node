@@ -82,66 +82,41 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             try {
-                if (!input.options.isInServerlessEnv) {
-                    if (
-                        input.options.config.contactMethod === "PHONE" ||
-                        (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
-                    ) {
-                        input.options.config
-                            .createAndSendCustomTextMessage(
-                                {
-                                    codeLifetime: response.codeLifetime,
-                                    phoneNumber: (input as any).phoneNumber,
-                                    preAuthSessionId: response.preAuthSessionId,
-                                    urlWithLinkCode: magicLink,
-                                    userInputCode,
-                                },
-                                input.userContext
-                            )
-                            .catch((_) => {});
-                    } else {
-                        input.options.config
-                            .createAndSendCustomEmail(
-                                {
-                                    codeLifetime: response.codeLifetime,
-                                    email: (input as any).email!,
-                                    preAuthSessionId: response.preAuthSessionId,
-                                    urlWithLinkCode: magicLink,
-                                    userInputCode,
-                                },
-                                input.userContext
-                            )
-                            .catch((_) => {});
-                    }
+                // we don't do something special for serverless env here
+                // cause we want to wait for service's reply since it can show
+                // a UI error message for if sending an SMS / email failed or not.
+                if (
+                    input.options.config.contactMethod === "PHONE" ||
+                    (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
+                ) {
+                    await input.options.config.createAndSendCustomTextMessage(
+                        {
+                            codeLifetime: response.codeLifetime,
+                            phoneNumber: (input as any).phoneNumber!,
+                            preAuthSessionId: response.preAuthSessionId,
+                            urlWithLinkCode: magicLink,
+                            userInputCode,
+                        },
+                        input.userContext
+                    );
                 } else {
-                    if (
-                        input.options.config.contactMethod === "PHONE" ||
-                        (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
-                    ) {
-                        await input.options.config.createAndSendCustomTextMessage(
-                            {
-                                codeLifetime: response.codeLifetime,
-                                phoneNumber: (input as any).phoneNumber!,
-                                preAuthSessionId: response.preAuthSessionId,
-                                urlWithLinkCode: magicLink,
-                                userInputCode,
-                            },
-                            input.userContext
-                        );
-                    } else {
-                        await input.options.config.createAndSendCustomEmail(
-                            {
-                                codeLifetime: response.codeLifetime,
-                                email: (input as any).email!,
-                                preAuthSessionId: response.preAuthSessionId,
-                                urlWithLinkCode: magicLink,
-                                userInputCode,
-                            },
-                            input.userContext
-                        );
-                    }
+                    await input.options.config.createAndSendCustomEmail(
+                        {
+                            codeLifetime: response.codeLifetime,
+                            email: (input as any).email!,
+                            preAuthSessionId: response.preAuthSessionId,
+                            urlWithLinkCode: magicLink,
+                            userInputCode,
+                        },
+                        input.userContext
+                    );
                 }
-            } catch (_) {}
+            } catch (err) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: (err as any).message,
+                };
+            }
 
             return {
                 status: "OK",
@@ -244,68 +219,42 @@ export default function getAPIImplementation(): APIInterface {
                     }
 
                     try {
-                        if (!input.options.isInServerlessEnv) {
-                            if (
-                                input.options.config.contactMethod === "PHONE" ||
-                                (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
-                                    deviceInfo.phoneNumber !== undefined)
-                            ) {
-                                input.options.config
-                                    .createAndSendCustomTextMessage(
-                                        {
-                                            codeLifetime: response.codeLifetime,
-                                            phoneNumber: deviceInfo.phoneNumber!,
-                                            preAuthSessionId: response.preAuthSessionId,
-                                            urlWithLinkCode: magicLink,
-                                            userInputCode,
-                                        },
-                                        input.userContext
-                                    )
-                                    .catch((_) => {});
-                            } else {
-                                input.options.config
-                                    .createAndSendCustomEmail(
-                                        {
-                                            codeLifetime: response.codeLifetime,
-                                            email: deviceInfo.email!,
-                                            preAuthSessionId: response.preAuthSessionId,
-                                            urlWithLinkCode: magicLink,
-                                            userInputCode,
-                                        },
-                                        input.userContext
-                                    )
-                                    .catch((_) => {});
-                            }
+                        // we don't do something special for serverless env here
+                        // cause we want to wait for service's reply since it can show
+                        // a UI error message for if sending an SMS / email failed or not.
+                        if (
+                            input.options.config.contactMethod === "PHONE" ||
+                            (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
+                                deviceInfo.phoneNumber !== undefined)
+                        ) {
+                            await input.options.config.createAndSendCustomTextMessage(
+                                {
+                                    codeLifetime: response.codeLifetime,
+                                    phoneNumber: deviceInfo.phoneNumber!,
+                                    preAuthSessionId: response.preAuthSessionId,
+                                    urlWithLinkCode: magicLink,
+                                    userInputCode,
+                                },
+                                input.userContext
+                            );
                         } else {
-                            if (
-                                input.options.config.contactMethod === "PHONE" ||
-                                (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
-                                    deviceInfo.phoneNumber !== undefined)
-                            ) {
-                                await input.options.config.createAndSendCustomTextMessage(
-                                    {
-                                        codeLifetime: response.codeLifetime,
-                                        phoneNumber: deviceInfo.phoneNumber!,
-                                        preAuthSessionId: response.preAuthSessionId,
-                                        urlWithLinkCode: magicLink,
-                                        userInputCode,
-                                    },
-                                    input.userContext
-                                );
-                            } else {
-                                await input.options.config.createAndSendCustomEmail(
-                                    {
-                                        codeLifetime: response.codeLifetime,
-                                        email: deviceInfo.email!,
-                                        preAuthSessionId: response.preAuthSessionId,
-                                        urlWithLinkCode: magicLink,
-                                        userInputCode,
-                                    },
-                                    input.userContext
-                                );
-                            }
+                            await input.options.config.createAndSendCustomEmail(
+                                {
+                                    codeLifetime: response.codeLifetime,
+                                    email: deviceInfo.email!,
+                                    preAuthSessionId: response.preAuthSessionId,
+                                    urlWithLinkCode: magicLink,
+                                    userInputCode,
+                                },
+                                input.userContext
+                            );
                         }
-                    } catch (_) {}
+                    } catch (err) {
+                        return {
+                            status: "GENERAL_ERROR",
+                            message: (err as any).message,
+                        };
+                    }
                 }
 
                 return {

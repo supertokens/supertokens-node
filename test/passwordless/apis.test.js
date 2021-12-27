@@ -34,6 +34,8 @@ let { isCDIVersionCompatible } = require("../utils");
  *   - sending both email and phone in createCode API throws bad request
  *   - sending neither email and phone in createCode API throws bad request
  *   - do full sign in with email, then manually add a user's phone to their user Info, then so sign in with that phone number and make sure that the same userId signs in.
+ *
+ * - If we throw some error from createAndSendCustomEmail or createAndSendCustomTextMessage, it's message should be sent as a general error response to the frontend (for createCode API and resendCode APi).
  */
 
 describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, function () {
