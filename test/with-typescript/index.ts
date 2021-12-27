@@ -58,11 +58,13 @@ Passwordless.init({
 });
 
 Passwordless.init({
+    createAndSendCustomEmail: async function (input) {},
     contactMethod: "EMAIL",
     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
 });
 
 Passwordless.init({
+    createAndSendCustomTextMessage: async function (input) {},
     contactMethod: "PHONE",
     flowType: "MAGIC_LINK",
 });

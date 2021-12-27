@@ -42,11 +42,15 @@ export function validateAndNormaliseUserInput(
     };
 
     if (config.contactMethod === "EMAIL") {
+        if (config.createAndSendCustomEmail === undefined) {
+            throw new Error("Please provide a callback function (createAndSendCustomEmail) to send emails. ");
+        }
         return {
             override,
             flowType: config.flowType,
             contactMethod: "EMAIL",
             createAndSendCustomEmail:
+                // until we add a service to send emails, config.createAndSendCustomEmail will never be undefined
                 config.createAndSendCustomEmail === undefined
                     ? defaultCreateAndSendCustomEmail
                     : config.createAndSendCustomEmail,
@@ -59,10 +63,16 @@ export function validateAndNormaliseUserInput(
             getCustomUserInputCode: config.getCustomUserInputCode,
         };
     } else if (config.contactMethod === "PHONE") {
+        if (config.createAndSendCustomTextMessage === undefined) {
+            throw new Error(
+                "Please provide a callback function (createAndSendCustomTextMessage) to send text messages. "
+            );
+        }
         return {
             override,
             flowType: config.flowType,
             contactMethod: "PHONE",
+            // until we add a service to send sms, config.createAndSendCustomTextMessage will never be undefined
             createAndSendCustomTextMessage:
                 config.createAndSendCustomTextMessage === undefined
                     ? defaultCreateAndSendTextMessage
@@ -76,16 +86,26 @@ export function validateAndNormaliseUserInput(
             getCustomUserInputCode: config.getCustomUserInputCode,
         };
     } else {
+        if (config.createAndSendCustomEmail === undefined) {
+            throw new Error("Please provide a callback function (createAndSendCustomEmail) to send emails. ");
+        }
+        if (config.createAndSendCustomTextMessage === undefined) {
+            throw new Error(
+                "Please provide a callback function (createAndSendCustomTextMessage) to send text messages. "
+            );
+        }
         return {
             override,
             flowType: config.flowType,
             contactMethod: "EMAIL_OR_PHONE",
+            // until we add a service to send email, config.createAndSendCustomEmail will never be undefined
             createAndSendCustomEmail:
                 config.createAndSendCustomEmail === undefined
                     ? defaultCreateAndSendCustomEmail
                     : config.createAndSendCustomEmail,
             validateEmailAddress:
                 config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
+            // until we add a service to send sms, config.createAndSendCustomTextMessage will never be undefined
             createAndSendCustomTextMessage:
                 config.createAndSendCustomTextMessage === undefined
                     ? defaultCreateAndSendTextMessage

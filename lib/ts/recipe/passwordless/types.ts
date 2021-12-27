@@ -32,7 +32,7 @@ export type TypeInput = (
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
-          createAndSendCustomTextMessage?: (
+          createAndSendCustomTextMessage: (
               input: {
                   // Where the message should be delivered.
                   phoneNumber: string;
@@ -52,7 +52,7 @@ export type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
-          createAndSendCustomEmail?: (
+          createAndSendCustomEmail: (
               input: {
                   // Where the message should be delivered.
                   email: string;
@@ -72,7 +72,7 @@ export type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
-          createAndSendCustomEmail?: (
+          createAndSendCustomEmail: (
               input: {
                   // Where the message should be delivered.
                   email: string;
@@ -89,7 +89,7 @@ export type TypeInput = (
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
-          createAndSendCustomTextMessage?: (
+          createAndSendCustomTextMessage: (
               input: {
                   // Where the message should be delivered.
                   phoneNumber: string;
