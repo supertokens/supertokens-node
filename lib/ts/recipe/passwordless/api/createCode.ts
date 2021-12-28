@@ -82,7 +82,7 @@ export default async function createCode(apiImplementation: APIInterface, option
             // the phone number is valid according to their impl, but not according to the libphonenumber-js lib.
             phoneNumber = phoneNumber.trim();
         } else {
-            phoneNumber = parsedPhoneNumber.formatInternational();
+            phoneNumber = parsedPhoneNumber.format("E.164");
         }
     }
 
