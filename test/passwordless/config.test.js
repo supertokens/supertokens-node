@@ -66,6 +66,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -104,6 +107,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                     validatePhoneNumber: (phoneNumber) => {
                         isValidatePhoneNumberCalled = true;
                         return undefined;
@@ -167,6 +173,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     Passwordless.init({
                         contactMethod: "PHONE",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        createAndSendCustomTextMessage: (input) => {
+                            return;
+                        },
                         validatePhoneNumber: (phoneNumber) => {
                             isValidatePhoneNumberCalled = true;
                             return "test error";
@@ -400,10 +409,10 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
 
     /*  contactMethod: PHONE
         If passed createAndSendCustomTextMessage, it gets called with the right inputs:
-            - if you throw an error from this function, that is ignored by the API
+            - if you throw an error from this function, it should contain a general error in the response
     */
 
-    it("test createAndSendCustomTextMessage, if error is thrown, it is ignored", async function () {
+    it("test createAndSendCustomTextMessage, if error is thrown, it should contain a general error in the response", async function () {
         await startST();
 
         let isCreateAndSendCustomTextMessageCalled = false;
@@ -423,7 +432,7 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     flowType: "MAGIC_LINK",
                     createAndSendCustomTextMessage: (input) => {
                         isCreateAndSendCustomTextMessageCalled = true;
-                        throw new Error("fail");
+                        throw new Error("test message");
                     },
                 }),
             ],
@@ -455,8 +464,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     }
                 })
         );
-
-        assert(response.status === "OK");
+        assert(response.status === "GENERAL_ERROR");
+        assert(response.message === "test message");
         assert(isCreateAndSendCustomTextMessageCalled);
     });
 
@@ -482,6 +491,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -521,6 +533,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                     validateEmailAddress: (email) => {
                         isValidateEmailAddressCalled = true;
                         return undefined;
@@ -584,6 +599,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     Passwordless.init({
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        createAndSendCustomEmail: (input) => {
+                            return;
+                        },
                         validateEmailAddress: (email) => {
                             isValidateEmailAddressCalled = true;
                             return "test error";
@@ -818,10 +836,10 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
 
     /*  contactMethod: EMAIL
         If passed createAndSendCustomEmail, it gets called with the right inputs:
-            - if you throw an error from this function, that is ignored by the API
+            - if you throw an error from this function, the status in the response should be a general error
     */
 
-    it("test createAndSendCustomEmail, if error is thrown, it is ignored", async function () {
+    it("test createAndSendCustomEmail, if error is thrown, the status in the response should be a general error", async function () {
         await startST();
 
         let isCreateAndSendCustomEmailCalled = false;
@@ -841,7 +859,7 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     flowType: "MAGIC_LINK",
                     createAndSendCustomEmail: (input) => {
                         isCreateAndSendCustomEmailCalled = true;
-                        throw new Error("fail");
+                        throw new Error("test message");
                     },
                 }),
             ],
@@ -874,7 +892,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 })
         );
 
-        assert(response.status === "OK");
+        assert(response.status === "GENERAL_ERROR");
+        assert(response.message === "test message");
         assert(isCreateAndSendCustomEmailCalled);
     });
 
@@ -937,7 +956,7 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 });
                 assert(false);
             } catch (err) {
-                if (err.message !== `Please pass one of "PHONE" or "EMAIL" as the contactMethod`) {
+                if (err.message !== `Please pass one of "PHONE", "EMAIL" or "EMAIL_OR_PHONE" as the contactMethod`) {
                     throw err;
                 }
             }
@@ -1212,6 +1231,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                     override: {
                         apis: (oI) => {
                             return {

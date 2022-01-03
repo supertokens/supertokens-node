@@ -68,6 +68,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -125,6 +128,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -212,6 +218,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: () => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -328,6 +337,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -392,6 +404,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -470,6 +485,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -613,6 +631,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -699,6 +720,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -787,6 +811,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -868,6 +895,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -905,6 +935,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                     Passwordless.init({
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        createAndSendCustomEmail: (input) => {
+                            return;
+                        },
                     }),
                 ],
             });

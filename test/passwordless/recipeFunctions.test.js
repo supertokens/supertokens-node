@@ -50,6 +50,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -149,6 +152,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -209,6 +215,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -305,6 +314,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -359,9 +371,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
             try {
                 await Passwordless.consumeCode({
-                    preAuthSessionId: codeInfo.preAuthSessionId,
+                    preAuthSessionId: "random",
                     userInputCode: codeInfo.userInputCode,
-                    deviceId: "random",
+                    deviceId: codeInfo.deviceId,
                 });
                 assert(false);
             } catch (err) {
@@ -388,6 +400,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -435,6 +450,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -502,6 +520,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -566,6 +587,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -627,6 +651,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -689,6 +716,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -737,6 +767,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -785,6 +818,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -835,6 +871,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -875,6 +914,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
