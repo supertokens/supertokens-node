@@ -414,6 +414,88 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(isCreateAndSendCustomTextMessageCalled);
     });
 
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - sending both email and phone in createCode API throws bad request
+     *   - sending neither email and phone in createCode API throws bad request
+     */
+    it("test invalid input to createCodeAPI while using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // sending both email and phone in createCode API throws bad request
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        phoneNumber: "+12345678901",
+                        email: "test@example.com",
+                    })
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(response.message === "Please provide exactly one of email or phoneNumber");
+        }
+
+        {
+            // sending neither email and phone in createCode API throws bad request
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(response.message === "Please provide exactly one of email or phoneNumber");
+        }
+    });
+
     // check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
     it("test not passing any fields to consumeCodeAPI", async function () {
         await startST();
