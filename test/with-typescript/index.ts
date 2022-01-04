@@ -28,9 +28,15 @@ Passwordless.init({
                 ...oI,
             };
         },
-        functions: (oI) => {
+        functions: (originalImplementation) => {
             return {
-                ...oI,
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
             };
         },
     },
@@ -379,6 +385,35 @@ EmailPassword.init({
                             status: "WRONG_CREDENTIALS_ERROR",
                         };
                     }
+                },
+            };
+        },
+    },
+});
+
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                refreshSession: async function (input) {
+                    let session = await originalImplementation.refreshSession(input);
+
+                    let currAccessTokenPayload = session.getAccessTokenPayload();
+
+                    await session.updateAccessTokenPayload({
+                        ...currAccessTokenPayload,
+                        lastTokenRefresh: Date.now(),
+                    });
+
+                    return session;
+                },
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        lastTokenRefresh: Date.now(),
+                    };
+                    return originalImplementation.createNewSession(input);
                 },
             };
         },
