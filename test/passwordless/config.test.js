@@ -46,6 +46,284 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
     });
 
     /*
+        contactMethod: EMAIL_OR_PHONE
+            - minimal config
+    */
+    it("test minimum config with EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let passwordlessRecipe = await PasswordlessRecipe.getInstanceOrThrowError();
+        assert(passwordlessRecipe.config.contactMethod === "EMAIL_OR_PHONE");
+        assert(passwordlessRecipe.config.flowType === "USER_INPUT_CODE_AND_MAGIC_LINK");
+    });
+
+    /*
+        contactMethod: EMAIL_OR_PHONE
+            - adding custom validators for phone and email and making sure that they are called
+    */
+    it("test adding custom validators for phone and email with EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isValidateEmailAddressCalled = false;
+        let isValidatePhoneNumberCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    validateEmailAddress: (email) => {
+                        isValidateEmailAddressCalled = true;
+                        return undefined;
+                    },
+                    validatePhoneNumber: (phoneNumber) => {
+                        isValidatePhoneNumberCalled = true;
+                        return undefined;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // check if validatePhoneNumber is called
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        phoneNumber: "+1234567890",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isValidatePhoneNumberCalled);
+            assert(response.status === "OK");
+        }
+
+        {
+            // check if validateEmailAddress is called
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isValidateEmailAddressCalled);
+            assert(response.status === "OK");
+        }
+    });
+
+    /**
+     * - with contactMethod EMAIL_OR_PHONE
+     *  - adding custom functions to send email and making sure that is called
+     */
+
+    it("test custom function to send email with EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isCreateAndSendCustomEmailCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        isCreateAndSendCustomEmailCalled = true;
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // check if createAndSendCustomEmail is called
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isCreateAndSendCustomEmailCalled);
+            assert(response.status === "OK");
+        }
+    });
+
+    /**
+     * - with contactMethod EMAIL_OR_PHONE
+     *  - adding custom functions to send text SMS, and making sure that is called
+     *
+     */
+
+    it("test custom function to send text SMS with EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isCreateAndSendCustomTextMessageCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        isCreateAndSendCustomTextMessageCalled = false;
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // check if createAndSendCustomTextMessage is called
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        phoneNumber: "+1234567890",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isCreateAndSendCustomTextMessageCalled);
+            assert(response.status === "OK");
+        }
+    });
+
+    /*
         contactMethod: PHONE
             - minimal input works
     */
