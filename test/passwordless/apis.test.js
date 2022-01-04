@@ -496,6 +496,142 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         }
     });
 
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - do full sign in with email, then manually add a user's phone to their user Info, then so sign in with that phone number and make sure that the same userId signs in.
+    
+    */
+
+    it("test adding phoneNumber to a users info and signing in will sign in the same user, using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let userInputCode = undefined;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        userInputCode = input.userInputCode;
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        userInputCode = input.userInputCode;
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // create a passwordless user with email
+        let emailCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(emailCreateCodeResponse.status === "OK");
+
+        // consumeCode API
+        let emailUserInputCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: emailCreateCodeResponse.preAuthSessionId,
+                    userInputCode,
+                    deviceId: emailCreateCodeResponse.deviceId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(emailUserInputCodeResponse.status === "OK");
+
+        // add users phoneNumber to userInfo
+        await Passwordless.updateUser({
+            userId: emailUserInputCodeResponse.user.id,
+            phoneNumber: "+12345678901",
+        });
+
+        // sign in user with phone numbers
+        let phoneCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    phoneNumber: "+12345678901",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(phoneCreateCodeResponse.status === "OK");
+
+        let phoneUserInputCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: phoneCreateCodeResponse.preAuthSessionId,
+                    userInputCode,
+                    deviceId: phoneCreateCodeResponse.deviceId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(phoneUserInputCodeResponse.status === "OK");
+
+        // check that the same user has signed in
+        assert(phoneUserInputCodeResponse.user.id === emailUserInputCodeResponse.user.id);
+    });
+
     // check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
     it("test not passing any fields to consumeCodeAPI", async function () {
         await startST();
