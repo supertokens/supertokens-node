@@ -240,6 +240,180 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         assert(Object.keys(validUserInputCodeResponse).length === 3);
     });
 
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - create code with email and then resend code and make sure that sending email function is called  while resending code
+     */
+    it("test creating a code with email and then resending the code and check that the sending custom email function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isCreateAndSendCustomEmailCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        isCreateAndSendCustomEmailCalled = true;
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // createCodeAPI with email
+        let validCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(validCreateCodeResponse.status === "OK");
+        assert(isCreateAndSendCustomEmailCalled);
+
+        isCreateAndSendCustomEmailCalled = false;
+
+        // resendCode API
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/resend")
+                .send({
+                    deviceId: validCreateCodeResponse.deviceId,
+                    preAuthSessionId: validCreateCodeResponse.preAuthSessionId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.status === "OK");
+        assert(isCreateAndSendCustomEmailCalled);
+    });
+
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - create code with phone and then resend code and make sure that sending SMS function is called  while resending code
+     */
+    it("test creating a code with phone and then resending the code and check that the sending custom SMS function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isCreateAndSendCustomTextMessageCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        isCreateAndSendCustomTextMessageCalled = true;
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // createCodeAPI with email
+        let validCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    phoneNumber: "+12345678901",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(validCreateCodeResponse.status === "OK");
+        assert(isCreateAndSendCustomTextMessageCalled);
+
+        isCreateAndSendCustomTextMessageCalled = false;
+
+        // resendCode API
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/resend")
+                .send({
+                    deviceId: validCreateCodeResponse.deviceId,
+                    preAuthSessionId: validCreateCodeResponse.preAuthSessionId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.status === "OK");
+        assert(isCreateAndSendCustomTextMessageCalled);
+    });
+
     // check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
     it("test not passing any fields to consumeCodeAPI", async function () {
         await startST();
