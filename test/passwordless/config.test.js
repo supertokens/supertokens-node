@@ -46,6 +46,284 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
     });
 
     /*
+        contactMethod: EMAIL_OR_PHONE
+            - minimal config
+    */
+    it("test minimum config with EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        let passwordlessRecipe = await PasswordlessRecipe.getInstanceOrThrowError();
+        assert(passwordlessRecipe.config.contactMethod === "EMAIL_OR_PHONE");
+        assert(passwordlessRecipe.config.flowType === "USER_INPUT_CODE_AND_MAGIC_LINK");
+    });
+
+    /*
+        contactMethod: EMAIL_OR_PHONE
+            - adding custom validators for phone and email and making sure that they are called
+    */
+    it("test adding custom validators for phone and email with EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isValidateEmailAddressCalled = false;
+        let isValidatePhoneNumberCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    validateEmailAddress: (email) => {
+                        isValidateEmailAddressCalled = true;
+                        return undefined;
+                    },
+                    validatePhoneNumber: (phoneNumber) => {
+                        isValidatePhoneNumberCalled = true;
+                        return undefined;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // check if validatePhoneNumber is called
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        phoneNumber: "+1234567890",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isValidatePhoneNumberCalled);
+            assert(response.status === "OK");
+        }
+
+        {
+            // check if validateEmailAddress is called
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isValidateEmailAddressCalled);
+            assert(response.status === "OK");
+        }
+    });
+
+    /**
+     * - with contactMethod EMAIL_OR_PHONE
+     *  - adding custom functions to send email and making sure that is called
+     */
+
+    it("test custom function to send email with EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isCreateAndSendCustomEmailCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        isCreateAndSendCustomEmailCalled = true;
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // check if createAndSendCustomEmail is called
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        email: "test@example.com",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isCreateAndSendCustomEmailCalled);
+            assert(response.status === "OK");
+        }
+    });
+
+    /**
+     * - with contactMethod EMAIL_OR_PHONE
+     *  - adding custom functions to send text SMS, and making sure that is called
+     *
+     */
+
+    it("test custom function to send text SMS with EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isCreateAndSendCustomTextMessageCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        isCreateAndSendCustomTextMessageCalled = true;
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // check if createAndSendCustomTextMessage is called
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        phoneNumber: "+12345678901",
+                    })
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+
+            assert(isCreateAndSendCustomTextMessageCalled);
+            assert(response.status === "OK");
+        }
+    });
+
+    /*
         contactMethod: PHONE
             - minimal input works
     */
@@ -66,6 +344,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -104,6 +385,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                     validatePhoneNumber: (phoneNumber) => {
                         isValidatePhoneNumberCalled = true;
                         return undefined;
@@ -167,6 +451,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     Passwordless.init({
                         contactMethod: "PHONE",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        createAndSendCustomTextMessage: (input) => {
+                            return;
+                        },
                         validatePhoneNumber: (phoneNumber) => {
                             isValidatePhoneNumberCalled = true;
                             return "test error";
@@ -400,10 +687,10 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
 
     /*  contactMethod: PHONE
         If passed createAndSendCustomTextMessage, it gets called with the right inputs:
-            - if you throw an error from this function, that is ignored by the API
+            - if you throw an error from this function, it should contain a general error in the response
     */
 
-    it("test createAndSendCustomTextMessage, if error is thrown, it is ignored", async function () {
+    it("test createAndSendCustomTextMessage, if error is thrown, it should contain a general error in the response", async function () {
         await startST();
 
         let isCreateAndSendCustomTextMessageCalled = false;
@@ -423,7 +710,7 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     flowType: "MAGIC_LINK",
                     createAndSendCustomTextMessage: (input) => {
                         isCreateAndSendCustomTextMessageCalled = true;
-                        throw new Error("fail");
+                        throw new Error("test message");
                     },
                 }),
             ],
@@ -455,8 +742,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     }
                 })
         );
-
-        assert(response.status === "OK");
+        assert(response.status === "GENERAL_ERROR");
+        assert(response.message === "test message");
         assert(isCreateAndSendCustomTextMessageCalled);
     });
 
@@ -482,6 +769,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -521,6 +811,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                     validateEmailAddress: (email) => {
                         isValidateEmailAddressCalled = true;
                         return undefined;
@@ -584,6 +877,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     Passwordless.init({
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        createAndSendCustomEmail: (input) => {
+                            return;
+                        },
                         validateEmailAddress: (email) => {
                             isValidateEmailAddressCalled = true;
                             return "test error";
@@ -818,10 +1114,10 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
 
     /*  contactMethod: EMAIL
         If passed createAndSendCustomEmail, it gets called with the right inputs:
-            - if you throw an error from this function, that is ignored by the API
+            - if you throw an error from this function, the status in the response should be a general error
     */
 
-    it("test createAndSendCustomEmail, if error is thrown, it is ignored", async function () {
+    it("test createAndSendCustomEmail, if error is thrown, the status in the response should be a general error", async function () {
         await startST();
 
         let isCreateAndSendCustomEmailCalled = false;
@@ -841,7 +1137,7 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                     flowType: "MAGIC_LINK",
                     createAndSendCustomEmail: (input) => {
                         isCreateAndSendCustomEmailCalled = true;
-                        throw new Error("fail");
+                        throw new Error("test message");
                     },
                 }),
             ],
@@ -874,7 +1170,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 })
         );
 
-        assert(response.status === "OK");
+        assert(response.status === "GENERAL_ERROR");
+        assert(response.message === "test message");
         assert(isCreateAndSendCustomEmailCalled);
     });
 
@@ -937,7 +1234,7 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 });
                 assert(false);
             } catch (err) {
-                if (err.message !== `Please pass one of "PHONE" or "EMAIL" as the contactMethod`) {
+                if (err.message !== `Please pass one of "PHONE", "EMAIL" or "EMAIL_OR_PHONE" as the contactMethod`) {
                     throw err;
                 }
             }
@@ -1212,6 +1509,9 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                     override: {
                         apis: (oI) => {
                             return {

@@ -50,6 +50,588 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
         await cleanST();
     });
 
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - finish full sign up / in flow with email (create code -> consume code)
+     */
+
+    it("test the sign up /in flow with email using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let userInputCode = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        userInputCode = input.userInputCode;
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // createCodeAPI with email
+        let validCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(validCreateCodeResponse.status === "OK");
+        assert(typeof validCreateCodeResponse.deviceId === "string");
+        assert(typeof validCreateCodeResponse.preAuthSessionId === "string");
+        assert(validCreateCodeResponse.flowType === "USER_INPUT_CODE_AND_MAGIC_LINK");
+        assert(Object.keys(validCreateCodeResponse).length === 4);
+
+        // consumeCode API
+        let validUserInputCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: validCreateCodeResponse.preAuthSessionId,
+                    userInputCode,
+                    deviceId: validCreateCodeResponse.deviceId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(validUserInputCodeResponse.status === "OK");
+        assert(validUserInputCodeResponse.createdNewUser === true);
+        assert(typeof validUserInputCodeResponse.user.id === "string");
+        assert(typeof validUserInputCodeResponse.user.email === "string");
+        assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
+        assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+        assert(Object.keys(validUserInputCodeResponse).length === 3);
+    });
+
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - finish full sign up / in flow with phoneNumber (create code -> consume code)
+     */
+
+    it("test the sign up /in flow with phoneNumber using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let userInputCode = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        userInputCode = input.userInputCode;
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // createCodeAPI with phoneNumber
+        let validCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    phoneNumber: "+12345678901",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(validCreateCodeResponse.status === "OK");
+        assert(typeof validCreateCodeResponse.deviceId === "string");
+        assert(typeof validCreateCodeResponse.preAuthSessionId === "string");
+        assert(validCreateCodeResponse.flowType === "USER_INPUT_CODE_AND_MAGIC_LINK");
+        assert(Object.keys(validCreateCodeResponse).length === 4);
+
+        // consumeCode API
+        let validUserInputCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: validCreateCodeResponse.preAuthSessionId,
+                    userInputCode,
+                    deviceId: validCreateCodeResponse.deviceId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(validUserInputCodeResponse.status === "OK");
+        assert(validUserInputCodeResponse.createdNewUser === true);
+        assert(typeof validUserInputCodeResponse.user.id === "string");
+        assert(typeof validUserInputCodeResponse.user.phoneNumber === "string");
+        assert(typeof validUserInputCodeResponse.user.timeJoined === "number");
+        assert(Object.keys(validUserInputCodeResponse.user).length === 3);
+        assert(Object.keys(validUserInputCodeResponse).length === 3);
+    });
+
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - create code with email and then resend code and make sure that sending email function is called  while resending code
+     */
+    it("test creating a code with email and then resending the code and check that the sending custom email function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isCreateAndSendCustomEmailCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        isCreateAndSendCustomEmailCalled = true;
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // createCodeAPI with email
+        let validCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(validCreateCodeResponse.status === "OK");
+        assert(isCreateAndSendCustomEmailCalled);
+
+        isCreateAndSendCustomEmailCalled = false;
+
+        // resendCode API
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/resend")
+                .send({
+                    deviceId: validCreateCodeResponse.deviceId,
+                    preAuthSessionId: validCreateCodeResponse.preAuthSessionId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.status === "OK");
+        assert(isCreateAndSendCustomEmailCalled);
+    });
+
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - create code with phone and then resend code and make sure that sending SMS function is called  while resending code
+     */
+    it("test creating a code with phone and then resending the code and check that the sending custom SMS function is called while using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let isCreateAndSendCustomTextMessageCalled = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        isCreateAndSendCustomTextMessageCalled = true;
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // createCodeAPI with email
+        let validCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    phoneNumber: "+12345678901",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(validCreateCodeResponse.status === "OK");
+        assert(isCreateAndSendCustomTextMessageCalled);
+
+        isCreateAndSendCustomTextMessageCalled = false;
+
+        // resendCode API
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/resend")
+                .send({
+                    deviceId: validCreateCodeResponse.deviceId,
+                    preAuthSessionId: validCreateCodeResponse.preAuthSessionId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(response.status === "OK");
+        assert(isCreateAndSendCustomTextMessageCalled);
+    });
+
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - sending both email and phone in createCode API throws bad request
+     *   - sending neither email and phone in createCode API throws bad request
+     */
+    it("test invalid input to createCodeAPI while using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        {
+            // sending both email and phone in createCode API throws bad request
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .send({
+                        phoneNumber: "+12345678901",
+                        email: "test@example.com",
+                    })
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(response.message === "Please provide exactly one of email or phoneNumber");
+        }
+
+        {
+            // sending neither email and phone in createCode API throws bad request
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup/code")
+                    .expect(400)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(JSON.parse(res.text));
+                        }
+                    })
+            );
+            assert(response.message === "Please provide exactly one of email or phoneNumber");
+        }
+    });
+
+    /**
+     * - With contactMethod = EMAIL_OR_PHONE:
+     *   - do full sign in with email, then manually add a user's phone to their user Info, then so sign in with that phone number and make sure that the same userId signs in.
+    
+    */
+
+    it("test adding phoneNumber to a users info and signing in will sign in the same user, using the EMAIL_OR_PHONE contactMethod", async function () {
+        await startST();
+
+        let userInputCode = undefined;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                Passwordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        userInputCode = input.userInputCode;
+                        return;
+                    },
+                    createAndSendCustomEmail: (input) => {
+                        userInputCode = input.userInputCode;
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.10
+        if (!(await isCDIVersionCompatible("2.10"))) {
+            return;
+        }
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        // create a passwordless user with email
+        let emailCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    email: "test@example.com",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+        assert(emailCreateCodeResponse.status === "OK");
+
+        // consumeCode API
+        let emailUserInputCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: emailCreateCodeResponse.preAuthSessionId,
+                    userInputCode,
+                    deviceId: emailCreateCodeResponse.deviceId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(emailUserInputCodeResponse.status === "OK");
+
+        // add users phoneNumber to userInfo
+        await Passwordless.updateUser({
+            userId: emailUserInputCodeResponse.user.id,
+            phoneNumber: "+12345678901",
+        });
+
+        // sign in user with phone numbers
+        let phoneCreateCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code")
+                .send({
+                    phoneNumber: "+12345678901",
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(phoneCreateCodeResponse.status === "OK");
+
+        let phoneUserInputCodeResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signinup/code/consume")
+                .send({
+                    preAuthSessionId: phoneCreateCodeResponse.preAuthSessionId,
+                    userInputCode,
+                    deviceId: phoneCreateCodeResponse.deviceId,
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text));
+                    }
+                })
+        );
+
+        assert(phoneUserInputCodeResponse.status === "OK");
+
+        // check that the same user has signed in
+        assert(phoneUserInputCodeResponse.user.id === emailUserInputCodeResponse.user.id);
+    });
+
     // check that if user has not given linkCode nor (deviceId+userInputCode), it throws a bad request error.
     it("test not passing any fields to consumeCodeAPI", async function () {
         await startST();
@@ -68,6 +650,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -125,6 +710,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -212,6 +800,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: () => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -328,6 +919,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -392,6 +986,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -470,6 +1067,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -613,6 +1213,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -699,6 +1302,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -787,6 +1393,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -868,6 +1477,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
@@ -905,6 +1517,9 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
                     Passwordless.init({
                         contactMethod: "EMAIL",
                         flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        createAndSendCustomEmail: (input) => {
+                            return;
+                        },
                     }),
                 ],
             });
