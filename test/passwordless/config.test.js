@@ -282,7 +282,7 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                         return;
                     },
                     createAndSendCustomTextMessage: (input) => {
-                        isCreateAndSendCustomTextMessageCalled = false;
+                        isCreateAndSendCustomTextMessageCalled = true;
                         return;
                     },
                 }),
@@ -306,7 +306,7 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 request(app)
                     .post("/auth/signinup/code")
                     .send({
-                        phoneNumber: "+1234567890",
+                        phoneNumber: "+12345678901",
                     })
                     .expect(200)
                     .end((err, res) => {
