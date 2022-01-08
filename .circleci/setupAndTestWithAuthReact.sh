@@ -62,6 +62,11 @@ cd ../../../supertokens-auth-react/
 
 # This says non-node, but what it actually means is that we will
 # be using the sever on this repo instead of the one in auth-react repo
+
+# When testing with supertokens-auth-react for version >= 0.18 the SKIP_OAUTH 
+# flag will not be checked because Auth0 is used as a provider so that the Thirdparty tests can run reliably. 
+# In versions lower than 0.18 Github is used as the provider.
+
 SKIP_OAUTH=true npm run test-with-non-node
 if [[ $? -ne 0 ]]
 then

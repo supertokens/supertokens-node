@@ -14,6 +14,7 @@
  */
 const { exec } = require("child_process");
 let fs = require("fs");
+let axios = require("axios").default;
 
 module.exports.executeCommand = async function (cmd) {
     return new Promise((resolve, reject) => {
@@ -138,6 +139,59 @@ module.exports.startST = async function (host = "localhost", port = 9000) {
             reject("could not start ST process");
         }
     });
+};
+
+module.exports.customAuth0Provider = () => {
+    return {
+        id: "auth0",
+        get: (redirectURI, authCodeFromRequest) => {
+            return {
+                accessTokenAPI: {
+                    // this contains info about the token endpoint which exchanges the auth code with the access token and profile info.
+                    url: `https://${process.env.AUTH0_DOMAIN}/oauth/token`,
+                    params: {
+                        // example post params
+                        client_id: process.env.AUTH0_CLIENT_ID,
+                        client_secret: process.env.AUTH0_CLIENT_SECRET,
+                        grant_type: "authorization_code",
+                        redirect_uri: redirectURI,
+                        code: authCodeFromRequest,
+                    },
+                },
+                authorisationRedirect: {
+                    // this contains info about forming the authorisation redirect URL without the state params and without the redirect_uri param
+                    url: `https://${process.env.AUTH0_DOMAIN}/authorize`,
+                    params: {
+                        client_id: process.env.AUTH0_CLIENT_ID,
+                        scope: "openid profile",
+                        response_type: "code",
+                    },
+                },
+                getClientId: () => {
+                    return process.env.AUTH0_CLIENT_ID;
+                },
+                getProfileInfo: async (accessTokenAPIResponse) => {
+                    let accessToken = accessTokenAPIResponse.access_token;
+                    let authHeader = `Bearer ${accessToken}`;
+                    let response = await axios({
+                        method: "get",
+                        url: `https://${process.env.AUTH0_DOMAIN}/userinfo`,
+                        headers: {
+                            Authorization: authHeader,
+                        },
+                    });
+                    let userInfo = response.data;
+                    return {
+                        id: userInfo.sub,
+                        email: {
+                            id: userInfo.name,
+                            isVerified: true,
+                        },
+                    };
+                },
+            };
+        },
+    };
 };
 
 async function getListOfPids() {

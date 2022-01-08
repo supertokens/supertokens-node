@@ -25,7 +25,7 @@ let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
 let http = require("http");
 let cors = require("cors");
-let { startST, killAllST, setupST, cleanST } = require("./utils");
+let { startST, killAllST, setupST, cleanST, customAuth0Provider } = require("./utils");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
@@ -101,6 +101,7 @@ SuperTokens.init({
                         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
                         clientId: process.env.FACEBOOK_CLIENT_ID,
                     }),
+                    customAuth0Provider(),
                 ],
             },
         }),
@@ -121,6 +122,7 @@ SuperTokens.init({
                     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
                     clientId: process.env.FACEBOOK_CLIENT_ID,
                 }),
+                customAuth0Provider(),
             ],
         }),
         Session.init({}),
