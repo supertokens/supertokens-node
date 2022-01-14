@@ -26,6 +26,7 @@ let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").def
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
 let { maxVersion } = require("../lib/build/utils");
+const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -198,6 +199,7 @@ module.exports.resetAll = function () {
     ThirPartyRecipe.reset();
     JWTRecipe.reset();
     PasswordlessRecipe.reset();
+    OpenIDRecipe.reset();
     ProcessState.getInstance().reset();
 };
 
@@ -445,4 +447,7 @@ module.exports.generateRandomCode = function (size) {
         randomString += characters.substring(randdomNumber, randdomNumber + 1);
     }
     return randomString;
+};
+module.exports.delay = async function (time) {
+    await new Promise((r) => setTimeout(r, time * 1000));
 };

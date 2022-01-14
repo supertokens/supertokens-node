@@ -33,6 +33,7 @@ const { default: EmailPasswordRaw } = require("../../lib/build/recipe/emailpassw
 const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/recipe");
 const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
+let { startST, killAllST, setupST, cleanST, customAuth0Provider } = require("./utils");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });

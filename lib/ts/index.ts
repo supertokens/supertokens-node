@@ -57,6 +57,12 @@ export default class SuperTokensWrapper {
             ...input,
         });
     }
+
+    static deleteUser(userId: string) {
+        return SuperTokens.getInstanceOrThrowError().deleteUser({
+            userId,
+        });
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -68,5 +74,7 @@ export let getUserCount = SuperTokensWrapper.getUserCount;
 export let getUsersOldestFirst = SuperTokensWrapper.getUsersOldestFirst;
 
 export let getUsersNewestFirst = SuperTokensWrapper.getUsersNewestFirst;
+
+export let deleteUser = SuperTokensWrapper.deleteUser;
 
 export let Error = SuperTokensWrapper.Error;

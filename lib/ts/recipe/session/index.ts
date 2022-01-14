@@ -22,6 +22,7 @@ import {
     APIInterface,
     APIOptions,
 } from "./types";
+import OpenIdRecipe from "../openid/recipe";
 import Recipe from "./recipe";
 
 // For Express
@@ -80,6 +81,42 @@ export default class SessionWrapper {
             newAccessTokenPayload,
         });
     }
+
+    static createJWT(payload?: any, validitySeconds?: number) {
+        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
+
+        if (openIdRecipe !== undefined) {
+            return openIdRecipe.recipeImplementation.createJWT({ payload, validitySeconds });
+        }
+
+        throw new global.Error(
+            "createJWT cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
+        );
+    }
+
+    static getJWKS() {
+        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
+
+        if (openIdRecipe !== undefined) {
+            return openIdRecipe.recipeImplementation.getJWKS();
+        }
+
+        throw new global.Error(
+            "getJWKS cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
+        );
+    }
+
+    static getOpenIdDiscoveryConfiguration() {
+        let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
+
+        if (openIdRecipe !== undefined) {
+            return openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration();
+        }
+
+        throw new global.Error(
+            "getOpenIdDiscoveryConfiguration cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
+        );
+    }
 }
 
 export let init = SessionWrapper.init;
@@ -105,5 +142,14 @@ export let updateSessionData = SessionWrapper.updateSessionData;
 export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
 
 export let Error = SessionWrapper.Error;
+
+// JWT Functions
+export let createJWT = SessionWrapper.createJWT;
+
+export let getJWKS = SessionWrapper.getJWKS;
+
+// Open id functions
+
+export let getOpenIdDiscoveryConfiguration = SessionWrapper.getOpenIdDiscoveryConfiguration;
 
 export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation };
