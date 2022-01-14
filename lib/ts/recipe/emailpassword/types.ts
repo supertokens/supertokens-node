@@ -200,7 +200,17 @@ export type RecipeInterface = {
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
-    }): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }>;
+    }): Promise<
+        | {
+              status: "OK";
+              /**
+               * The id of the user whose password was reset.
+               * Defined for Core versions 2.11 or later
+               */
+              userId?: string;
+          }
+        | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+    >;
 
     updateEmailOrPassword(input: {
         userId: string;
@@ -251,9 +261,17 @@ export type APIInterface = {
               }[];
               token: string;
               options: APIOptions;
-          }) => Promise<{
-              status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    /**
+                     * The id of the user whose password was reset.
+                     * Defined for Core versions 2.11 or later
+                     */
+                    userId?: string;
+                }
+              | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+          >);
 
     signInPOST:
         | undefined
