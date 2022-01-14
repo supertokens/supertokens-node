@@ -68,8 +68,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -120,8 +120,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -211,8 +211,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -281,8 +281,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -343,8 +343,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -388,8 +388,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -520,8 +520,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -584,8 +584,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -646,8 +646,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -708,8 +708,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -768,8 +768,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -814,8 +814,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -947,8 +947,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1011,8 +1011,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1073,8 +1073,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1135,8 +1135,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1264,8 +1264,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1338,8 +1338,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1423,8 +1423,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1520,8 +1520,8 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
