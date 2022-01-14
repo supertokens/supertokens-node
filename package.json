@@ -1,6 +1,6 @@
 {
     "name": "supertokens-node",
-    "version": "8.4.0",
+    "version": "8.5.0",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
@@ -41,6 +41,7 @@
         "jsonschema": "1.4.0",
         "jsonwebtoken": "^8.5.1",
         "jwks-rsa": "^2.0.5",
+        "libphonenumber-js": "^1.9.44",
         "psl": "1.8.0",
         "supertokens-js-override": "^0.0.4",
         "verify-apple-id-token": "^2.1.0"
@@ -76,8 +77,8 @@
         "prettier": "2.0.5",
         "pretty-quick": "^3.1.1",
         "supertest": "4.0.2",
-        "typescript": "3.8.3",
-        "typedoc": "^0.22.5"
+        "typedoc": "^0.22.5",
+        "typescript": "3.8.3"
     },
     "browser": {
         "fs": false

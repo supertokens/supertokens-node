@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -14,5 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-exports.version = "8.5.0";
-exports.cdiSupported = ["2.8", "2.9", "2.10", "2.11"];
+
+export const CREATE_CODE_API = "/signinup/code";
+
+export const RESEND_CODE_API = "/signinup/code/resend";
+
+export const CONSUME_CODE_API = "/signinup/code/consume";
+
+export const DOES_EMAIL_EXIST_API = "/signup/email/exists";
+
+export const DOES_PHONE_NUMBER_EXIST_API = "/signup/phonenumber/exists";

@@ -19,7 +19,6 @@ import * as thirdPartyProviders from "../thirdparty/providers";
 import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
 
-// For Express
 export default class Wrapper {
     static init = Recipe.init;
 

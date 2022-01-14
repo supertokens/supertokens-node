@@ -25,6 +25,14 @@ let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
 let http = require("http");
 let cors = require("cors");
+let { startST, killAllST, setupST, cleanST } = require("./utils");
+let PasswordlessRaw = require("../../lib/build/recipe/passwordless/recipe").default;
+let Passwordless = require("../../recipe/passwordless");
+let { default: SuperTokensRaw } = require("../../lib/build/supertokens");
+const { default: EmailPasswordRaw } = require("../../lib/build/recipe/emailpassword/recipe");
+const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/recipe");
+const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
+const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
 let { startST, killAllST, setupST, cleanST, customAuth0Provider } = require("./utils");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
@@ -38,6 +46,19 @@ app.use(cookieParser());
 const WEB_PORT = process.env.WEB_PORT || 3031;
 const websiteDomain = `http://localhost:${WEB_PORT}`;
 let latestURLWithToken = "";
+
+let deviceStore = new Map();
+function saveCode({ email, phoneNumber, preAuthSessionId, urlWithLinkCode, userInputCode }) {
+    const device = deviceStore.get(preAuthSessionId) || {
+        preAuthSessionId,
+        codes: [],
+    };
+    device.codes.push({
+        urlWithLinkCode,
+        userInputCode,
+    });
+    deviceStore.set(preAuthSessionId, device);
+}
 
 const formFields = (process.env.MIN_FIELDS && []) || [
     {
@@ -59,75 +80,8 @@ const formFields = (process.env.MIN_FIELDS && []) || [
         optional: true,
     },
 ];
-SuperTokens.init({
-    appInfo: {
-        appName: "SuperTokens",
-        apiDomain: "localhost:" + (process.env.NODE_PORT === undefined ? 8083 : process.env.NODE_PORT),
-        websiteDomain,
-    },
-    supertokens: {
-        connectionURI: "http://localhost:9000",
-    },
-    recipeList: [
-        EmailPassword.init({
-            signUpFeature: {
-                formFields,
-            },
-            resetPasswordUsingTokenFeature: {
-                createAndSendCustomEmail: (_, passwordResetURLWithToken) => {
-                    console.log(passwordResetURLWithToken);
-                    latestURLWithToken = passwordResetURLWithToken;
-                },
-            },
-            emailVerificationFeature: {
-                createAndSendCustomEmail: (_, emailVerificationURLWithToken) => {
-                    console.log(emailVerificationURLWithToken);
-                    latestURLWithToken = emailVerificationURLWithToken;
-                },
-            },
-        }),
-        ThirdParty.init({
-            signInAndUpFeature: {
-                providers: [
-                    ThirdParty.Google({
-                        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                        clientId: process.env.GOOGLE_CLIENT_ID,
-                    }),
-                    ThirdParty.Github({
-                        clientSecret: process.env.GITHUB_CLIENT_SECRET,
-                        clientId: process.env.GITHUB_CLIENT_ID,
-                    }),
-                    ThirdParty.Facebook({
-                        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-                        clientId: process.env.FACEBOOK_CLIENT_ID,
-                    }),
-                    customAuth0Provider(),
-                ],
-            },
-        }),
-        ThirdPartyEmailPassword.init({
-            signUpFeature: {
-                formFields,
-            },
-            providers: [
-                ThirdPartyEmailPassword.Google({
-                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-                    clientId: process.env.GOOGLE_CLIENT_ID,
-                }),
-                ThirdPartyEmailPassword.Github({
-                    clientSecret: process.env.GITHUB_CLIENT_SECRET,
-                    clientId: process.env.GITHUB_CLIENT_ID,
-                }),
-                ThirdPartyEmailPassword.Facebook({
-                    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-                    clientId: process.env.FACEBOOK_CLIENT_ID,
-                }),
-                customAuth0Provider(),
-            ],
-        }),
-        Session.init({}),
-    ],
-});
+
+initST();
 
 app.use(
     cors({
@@ -139,6 +93,35 @@ app.use(
 );
 
 app.use(middleware());
+
+app.post("/beforeeach", async (req, res) => {
+    deviceStore = new Map();
+    res.send();
+});
+
+app.post("/test/setFlow", (req, res) => {
+    initST({
+        passwordlessConfig: {
+            contactMethod: req.body.contactMethod,
+            flowType: req.body.flowType,
+            createAndSendCustomTextMessage: saveCode,
+            createAndSendCustomEmail: saveCode,
+        },
+    });
+    res.sendStatus(200);
+});
+
+app.get("/test/getDevice", (req, res) => {
+    res.send(deviceStore.get(req.query.preAuthSessionId));
+});
+
+app.get("/test/featureFlags", (req, res) => {
+    const available = ["passwordless"];
+
+    res.send({
+        available,
+    });
+});
 
 app.get("/ping", async (req, res) => {
     res.send("success");
@@ -195,8 +178,7 @@ app.get("/token", async (_, res) => {
 app.use(errorHandler());
 
 app.use(async (err, req, res, next) => {
-    console.log(err);
-    res.send(500).send(err);
+    res.status(500).send(err);
 });
 
 let server = http.createServer(app);
@@ -222,3 +204,87 @@ server.listen(process.env.NODE_PORT === undefined ? 8083 : process.env.NODE_PORT
         console.log(`processId: ${pid}`);
     }
 })(process.env.START === "true");
+
+function initST({ passwordlessConfig } = {}) {
+    PasswordlessRaw.reset();
+    EmailPasswordRaw.reset();
+    ThirdPartyRaw.reset();
+    ThirdPartyEmailPasswordRaw.reset();
+    SessionRaw.reset();
+
+    SuperTokensRaw.reset();
+    const recipeList = [
+        EmailPassword.init({
+            signUpFeature: {
+                formFields,
+            },
+            resetPasswordUsingTokenFeature: {
+                createAndSendCustomEmail: (_, passwordResetURLWithToken) => {
+                    latestURLWithToken = passwordResetURLWithToken;
+                },
+            },
+            emailVerificationFeature: {
+                createAndSendCustomEmail: (_, emailVerificationURLWithToken) => {
+                    latestURLWithToken = emailVerificationURLWithToken;
+                },
+            },
+        }),
+        ThirdParty.init({
+            signInAndUpFeature: {
+                providers: [
+                    ThirdParty.Google({
+                        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                        clientId: process.env.GOOGLE_CLIENT_ID,
+                    }),
+                    ThirdParty.Github({
+                        clientSecret: process.env.GITHUB_CLIENT_SECRET,
+                        clientId: process.env.GITHUB_CLIENT_ID,
+                    }),
+                    ThirdParty.Facebook({
+                        clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+                        clientId: process.env.FACEBOOK_CLIENT_ID,
+                    }),
+                ],
+            },
+        }),
+        ThirdPartyEmailPassword.init({
+            signUpFeature: {
+                formFields,
+            },
+            providers: [
+                ThirdPartyEmailPassword.Google({
+                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                    clientId: process.env.GOOGLE_CLIENT_ID,
+                }),
+                ThirdPartyEmailPassword.Github({
+                    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+                    clientId: process.env.GITHUB_CLIENT_ID,
+                }),
+                ThirdPartyEmailPassword.Facebook({
+                    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+                    clientId: process.env.FACEBOOK_CLIENT_ID,
+                }),
+            ],
+        }),
+        Session.init({}),
+        Passwordless.init(
+            passwordlessConfig || {
+                contactMethod: "PHONE",
+                flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                createAndSendCustomTextMessage: saveCode,
+            }
+        ),
+    ];
+
+    SuperTokens.init({
+        appInfo: {
+            appName: "SuperTokens",
+            apiDomain: "localhost:" + (process.env.NODE_PORT === undefined ? 8080 : process.env.NODE_PORT),
+            websiteDomain,
+        },
+        supertokens: {
+            connectionURI: "http://localhost:9000",
+        },
+        recipeList,
+    });
+}

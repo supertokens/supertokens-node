@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 .
 
+## [unreleased]
+
+## [8.5.0] - 2022-01-14
+
+### Added
+
+-   Adds passwordless recipe
+-   Adds compatibility with FDI 1.12 and CDI 2.11
+-   Adds passwordless tests
+
 ## [8.4.0] - 2021-12-20
 
 ### Added

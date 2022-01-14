@@ -8,6 +8,72 @@ import NextJS from "../../nextjs";
 import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
+import Passwordless from "../../recipe/passwordless";
+
+Passwordless.init({
+    contactMethod: "PHONE",
+    createAndSendCustomTextMessage: async (input, userCtx) => {
+        return;
+    },
+    flowType: "MAGIC_LINK",
+    getCustomUserInputCode: (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
+            };
+        },
+    },
+});
+
+Passwordless.init({
+    contactMethod: "EMAIL",
+    createAndSendCustomEmail: async (input, userCtx) => {
+        return;
+    },
+    flowType: "USER_INPUT_CODE",
+    getCustomUserInputCode: async (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: async (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+    },
+});
+
+Passwordless.init({
+    createAndSendCustomEmail: async function (input) {},
+    contactMethod: "EMAIL",
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+});
+
+Passwordless.init({
+    createAndSendCustomTextMessage: async function (input) {},
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+});
 import { TypeInput } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
@@ -331,6 +397,35 @@ EmailPassword.init({
                             status: "WRONG_CREDENTIALS_ERROR",
                         };
                     }
+                },
+            };
+        },
+    },
+});
+
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                refreshSession: async function (input) {
+                    let session = await originalImplementation.refreshSession(input);
+
+                    let currAccessTokenPayload = session.getAccessTokenPayload();
+
+                    await session.updateAccessTokenPayload({
+                        ...currAccessTokenPayload,
+                        lastTokenRefresh: Date.now(),
+                    });
+
+                    return session;
+                },
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        lastTokenRefresh: Date.now(),
+                    };
+                    return originalImplementation.createNewSession(input);
                 },
             };
         },

@@ -22,7 +22,10 @@ let ThirPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
 let ThirdPartyEmailPasswordRecipe = require("../lib/build/recipe/thirdpartyemailpassword/recipe").default;
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
+let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
+let { Querier } = require("../lib/build/querier");
+let { maxVersion } = require("../lib/build/utils");
 const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
 
 module.exports.printPath = function (path) {
@@ -195,6 +198,7 @@ module.exports.resetAll = function () {
     EmailPasswordRecipe.reset();
     ThirPartyRecipe.reset();
     JWTRecipe.reset();
+    PasswordlessRecipe.reset();
     OpenIDRecipe.reset();
     ProcessState.getInstance().reset();
 };
@@ -421,6 +425,29 @@ module.exports.mockLambdaProxyEventV2 = function (path, httpMethod, headers, bod
     };
 };
 
+module.exports.isCDIVersionCompatible = async function (compatibleCDIVersion) {
+    let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+
+    if (
+        maxVersion(currCDIVersion, compatibleCDIVersion) === compatibleCDIVersion &&
+        currCDIVersion !== compatibleCDIVersion
+    ) {
+        return false;
+    }
+    return true;
+};
+
+module.exports.generateRandomCode = function (size) {
+    let characters = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+    let randomString = "";
+
+    //loop to select a new character in each iteration
+    for (let i = 0; i < size; i++) {
+        let randdomNumber = Math.floor(Math.random() * characters.length);
+        randomString += characters.substring(randdomNumber, randdomNumber + 1);
+    }
+    return randomString;
+};
 module.exports.delay = async function (time) {
     await new Promise((r) => setTimeout(r, time * 1000));
 };

@@ -56,7 +56,7 @@ npm i git+https://github.com:supertokens/supertokens-node.git#$3
 cd ../../
 cd ../project/test/auth-react-server
 npm i -d
-node . &
+TEST_MODE=testing node . &
 pid=$!
 cd ../../../supertokens-auth-react/
 
