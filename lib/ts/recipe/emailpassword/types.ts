@@ -205,7 +205,7 @@ export type RecipeInterface = {
               status: "OK";
               /**
                * The id of the user whose password was reset.
-               * Defined for Core versions 2.11 or later
+               * Defined for Core versions 3.8 or later
                */
               userId?: string;
           }
@@ -266,7 +266,7 @@ export type APIInterface = {
                     status: "OK";
                     /**
                      * The id of the user whose password was reset.
-                     * Defined for Core versions 2.11 or later
+                     * Defined for Core versions 3.8 or later
                      */
                     userId?: string;
                 }
