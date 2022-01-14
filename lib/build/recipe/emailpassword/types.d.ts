@@ -209,7 +209,7 @@ export declare type RecipeInterface = {
               status: "OK";
               /**
                * The id of the user whose password was reset.
-               * Defined for Core versions 2.11 or later
+               * Defined for Core versions 3.8 or later
                */
               userId?: string;
           }
@@ -264,19 +264,9 @@ export declare type APIInterface = {
               }[];
               token: string;
               options: APIOptions;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    /**
-                     * The id of the user whose password was reset.
-                     * Defined for Core versions 2.11 or later
-                     */
-                    userId?: string;
-                }
-              | {
-                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-                }
-          >);
+          }) => Promise<{
+              status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }>);
     signInPOST:
         | undefined
         | ((input: {
