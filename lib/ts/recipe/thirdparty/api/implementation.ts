@@ -3,6 +3,7 @@ import Session from "../../session";
 import { URLSearchParams } from "url";
 import * as axios from "axios";
 import * as qs from "querystring";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -12,6 +13,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             provider: TypeProvider;
             options: APIOptions;
+            userContext: any;
         }): Promise<{
             status: "OK";
             url: string;
@@ -65,6 +67,7 @@ export default function getAPIInterface(): APIInterface {
             redirectURI,
             authCodeResponse,
             options,
+            userContext,
         }: {
             provider: TypeProvider;
             code: string;
@@ -72,11 +75,13 @@ export default function getAPIInterface(): APIInterface {
             authCodeResponse?: any;
             clientId?: string;
             options: APIOptions;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
                   createdNewUser: boolean;
                   user: User;
+                  session: SessionContainerInterface;
                   authCodeResponse: any;
               }
             | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
@@ -150,6 +155,7 @@ export default function getAPIInterface(): APIInterface {
                 thirdPartyId: provider.id,
                 thirdPartyUserId: userInfo.id,
                 email: emailInfo,
+                userContext,
             });
 
             if (response.status === "FIELD_ERROR") {
@@ -162,20 +168,23 @@ export default function getAPIInterface(): APIInterface {
                 const tokenResponse = await options.emailVerificationRecipeImplementation.createEmailVerificationToken({
                     userId: response.user.id,
                     email: response.user.email,
+                    userContext,
                 });
 
                 if (tokenResponse.status === "OK") {
                     await options.emailVerificationRecipeImplementation.verifyEmailUsingToken({
                         token: tokenResponse.token,
+                        userContext,
                     });
                 }
             }
 
-            await Session.createNewSession(options.res, response.user.id, {}, {});
+            let session = await Session.createNewSession(options.res, response.user.id, {}, {}, userContext);
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,
                 user: response.user,
+                session,
                 authCodeResponse: accessTokenAPIResponse.data,
             };
         },

@@ -64,7 +64,7 @@ export async function sendTokenTheftDetectedResponse(
     __: BaseRequest,
     response: BaseResponse
 ) {
-    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle });
+    await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext: {} });
     sendNon200Response(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
 }
 

@@ -31,62 +31,80 @@ export default class SessionWrapper {
 
     static Error = SuperTokensError;
 
-    static createNewSession(res: any, userId: string, accessTokenPayload: any = {}, sessionData: any = {}) {
+    static createNewSession(
+        res: any,
+        userId: string,
+        accessTokenPayload: any = {},
+        sessionData: any = {},
+        userContext: any = {}
+    ) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
             accessTokenPayload,
             sessionData,
+            userContext,
         });
     }
 
-    static getSession(req: any, res: any, options?: VerifySessionOptions) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession({ req, res, options });
+    static getSession(req: any, res: any, options?: VerifySessionOptions, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession({ req, res, options, userContext });
     }
 
-    static getSessionInformation(sessionHandle: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({ sessionHandle });
+    static getSessionInformation(sessionHandle: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSessionInformation({
+            sessionHandle,
+            userContext,
+        });
     }
 
-    static refreshSession(req: any, res: any) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res });
+    static refreshSession(req: any, res: any, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res, userContext });
     }
 
-    static revokeAllSessionsForUser(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId });
+    static revokeAllSessionsForUser(userId: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeAllSessionsForUser({ userId, userContext });
     }
 
-    static getAllSessionHandlesForUser(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({ userId });
+    static getAllSessionHandlesForUser(userId: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getAllSessionHandlesForUser({
+            userId,
+            userContext,
+        });
     }
 
-    static revokeSession(sessionHandle: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({ sessionHandle });
+    static revokeSession(sessionHandle: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeSession({ sessionHandle, userContext });
     }
 
-    static revokeMultipleSessions(sessionHandles: string[]) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({ sessionHandles });
+    static revokeMultipleSessions(sessionHandles: string[], userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeMultipleSessions({
+            sessionHandles,
+            userContext,
+        });
     }
 
-    static updateSessionData(sessionHandle: string, newSessionData: any) {
+    static updateSessionData(sessionHandle: string, newSessionData: any, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateSessionData({
             sessionHandle,
             newSessionData,
+            userContext,
         });
     }
 
-    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any) {
+    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateAccessTokenPayload({
             sessionHandle,
             newAccessTokenPayload,
+            userContext,
         });
     }
 
-    static createJWT(payload?: any, validitySeconds?: number) {
+    static createJWT(payload?: any, validitySeconds?: number, userContext: any = {}) {
         let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
 
         if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.createJWT({ payload, validitySeconds });
+            return openIdRecipe.recipeImplementation.createJWT({ payload, validitySeconds, userContext });
         }
 
         throw new global.Error(
@@ -94,11 +112,11 @@ export default class SessionWrapper {
         );
     }
 
-    static getJWKS() {
+    static getJWKS(userContext: any = {}) {
         let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
 
         if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.getJWKS();
+            return openIdRecipe.recipeImplementation.getJWKS({ userContext });
         }
 
         throw new global.Error(
@@ -106,11 +124,11 @@ export default class SessionWrapper {
         );
     }
 
-    static getOpenIdDiscoveryConfiguration() {
+    static getOpenIdDiscoveryConfiguration(userContext: any = {}) {
         let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
 
         if (openIdRecipe !== undefined) {
-            return openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration();
+            return openIdRecipe.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext });
         }
 
         throw new global.Error(

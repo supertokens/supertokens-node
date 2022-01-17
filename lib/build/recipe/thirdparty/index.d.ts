@@ -11,7 +11,8 @@ export default class Wrapper {
         email: {
             id: string;
             isVerified: boolean;
-        }
+        },
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -23,11 +24,16 @@ export default class Wrapper {
               error: string;
           }
     >;
-    static getUserById(userId: string): Promise<User | undefined>;
-    static getUsersByEmail(email: string): Promise<User[]>;
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string): Promise<User | undefined>;
+    static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
+    static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
+    static getUserByThirdPartyInfo(
+        thirdPartyId: string,
+        thirdPartyUserId: string,
+        userContext?: any
+    ): Promise<User | undefined>;
     static createEmailVerificationToken(
-        userId: string
+        userId: string,
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -38,7 +44,8 @@ export default class Wrapper {
           }
     >;
     static verifyEmailUsingToken(
-        token: string
+        token: string,
+        userContext?: any
     ): Promise<
         | {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
@@ -46,14 +53,16 @@ export default class Wrapper {
         | User
         | undefined
     >;
-    static isEmailVerified(userId: string): Promise<boolean>;
+    static isEmailVerified(userId: string, userContext?: any): Promise<boolean>;
     static revokeEmailVerificationTokens(
-        userId: string
+        userId: string,
+        userContext?: any
     ): Promise<{
         status: "OK";
     }>;
     static unverifyEmail(
-        userId: string
+        userId: string,
+        userContext?: any
     ): Promise<{
         status: "OK";
     }>;

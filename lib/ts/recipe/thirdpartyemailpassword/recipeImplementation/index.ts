@@ -21,6 +21,7 @@ export default function getRecipeInterface(
         signUp: async function (input: {
             email: string;
             password: string;
+            userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },
@@ -28,6 +29,7 @@ export default function getRecipeInterface(
         signIn: async function (input: {
             email: string;
             password: string;
+            userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
@@ -39,6 +41,7 @@ export default function getRecipeInterface(
                 id: string;
                 isVerified: boolean;
             };
+            userContext: any;
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: User }
             | {
@@ -52,7 +55,7 @@ export default function getRecipeInterface(
             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
         },
 
-        getUserById: async function (input: { userId: string }): Promise<User | undefined> {
+        getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
             let user: User | undefined = await originalEmailPasswordImplementation.getUserById.bind(DerivedEP(this))(
                 input
             );
@@ -65,17 +68,17 @@ export default function getRecipeInterface(
             return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
         },
 
-        getUsersByEmail: async function ({ email }: { email: string }): Promise<User[]> {
+        getUsersByEmail: async function ({ email, userContext }: { email: string; userContext: any }): Promise<User[]> {
             let userFromEmailPass: User | undefined = await originalEmailPasswordImplementation.getUserByEmail.bind(
                 DerivedEP(this)
-            )({ email });
+            )({ email, userContext });
 
             if (originalThirdPartyImplementation === undefined) {
                 return userFromEmailPass === undefined ? [] : [userFromEmailPass];
             }
             let usersFromThirdParty: User[] = await originalThirdPartyImplementation.getUsersByEmail.bind(
                 DerivedTP(this)
-            )({ email });
+            )({ email, userContext });
 
             if (userFromEmailPass !== undefined) {
                 return [...usersFromThirdParty, userFromEmailPass];
@@ -86,6 +89,7 @@ export default function getRecipeInterface(
         getUserByThirdPartyInfo: async function (input: {
             thirdPartyId: string;
             thirdPartyUserId: string;
+            userContext: any;
         }): Promise<User | undefined> {
             if (originalThirdPartyImplementation === undefined) {
                 return undefined;
@@ -95,11 +99,12 @@ export default function getRecipeInterface(
 
         createResetPasswordToken: async function (input: {
             userId: string;
+            userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             return originalEmailPasswordImplementation.createResetPasswordToken.bind(DerivedEP(this))(input);
         },
 
-        resetPasswordUsingToken: async function (input: { token: string; newPassword: string }) {
+        resetPasswordUsingToken: async function (input: { token: string; newPassword: string; userContext: any }) {
             return originalEmailPasswordImplementation.resetPasswordUsingToken.bind(DerivedEP(this))(input);
         },
 
@@ -107,6 +112,7 @@ export default function getRecipeInterface(
             userId: string;
             email?: string;
             password?: string;
+            userContext: any;
         }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
             return originalEmailPasswordImplementation.updateEmailOrPassword.bind(DerivedEP(this))(input);
         },

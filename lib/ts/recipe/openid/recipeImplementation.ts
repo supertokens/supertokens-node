@@ -40,9 +40,11 @@ export default function getRecipeInterface(
         createJWT: async function ({
             payload,
             validitySeconds,
+            userContext,
         }: {
             payload?: any;
             validitySeconds?: number;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -61,10 +63,11 @@ export default function getRecipeInterface(
                     ...payload,
                 },
                 validitySeconds,
+                userContext,
             });
         },
-        getJWKS: async function (): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
-            return await jwtRecipeImplementation.getJWKS();
+        getJWKS: async function (input): Promise<{ status: "OK"; keys: JsonWebKey[] }> {
+            return await jwtRecipeImplementation.getJWKS(input);
         },
     };
 }

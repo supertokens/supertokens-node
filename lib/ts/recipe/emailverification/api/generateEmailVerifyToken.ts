@@ -26,7 +26,7 @@ export default async function generateEmailVerifyToken(
         return false;
     }
 
-    let result = await apiImplementation.generateEmailVerifyTokenPOST({ options });
+    let result = await apiImplementation.generateEmailVerifyTokenPOST({ options, userContext: {} });
 
     send200Response(options.res, result);
     return true;

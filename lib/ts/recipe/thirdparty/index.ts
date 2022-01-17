@@ -29,71 +29,82 @@ export default class Wrapper {
         email: {
             id: string;
             isVerified: boolean;
-        }
+        },
+        userContext: any = {}
     ) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
             thirdPartyId,
             thirdPartyUserId,
             email,
+            userContext,
         });
     }
 
-    static getUserById(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
+    static getUserById(userId: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
     }
 
-    static getUsersByEmail(email: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email });
+    static getUsersByEmail(email: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
     }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string) {
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
             thirdPartyUserId,
+            userContext,
         });
     }
 
-    static async createEmailVerificationToken(userId: string) {
+    static async createEmailVerificationToken(userId: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken({
             userId,
-            email: await recipeInstance.getEmailForUserId(userId),
+            email: await recipeInstance.getEmailForUserId(userId, userContext),
+            userContext,
         });
     }
 
-    static async verifyEmailUsingToken(token: string) {
+    static async verifyEmailUsingToken(token: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         let response = await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken({
             token,
+            userContext,
         });
         if (response.status === "OK") {
-            let userInThisRecipe = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: response.user.id });
+            let userInThisRecipe = await recipeInstance.recipeInterfaceImpl.getUserById({
+                userId: response.user.id,
+                userContext,
+            });
             return userInThisRecipe;
         }
         return response;
     }
 
-    static async isEmailVerified(userId: string) {
+    static async isEmailVerified(userId: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
             userId,
-            email: await recipeInstance.getEmailForUserId(userId),
+            email: await recipeInstance.getEmailForUserId(userId, userContext),
+            userContext,
         });
     }
 
-    static async revokeEmailVerificationTokens(userId: string) {
+    static async revokeEmailVerificationTokens(userId: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens({
             userId,
-            email: await recipeInstance.getEmailForUserId(userId),
+            email: await recipeInstance.getEmailForUserId(userId, userContext),
+            userContext,
         });
     }
 
-    static async unverifyEmail(userId: string) {
+    static async unverifyEmail(userId: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
             userId,
-            email: await recipeInstance.getEmailForUserId(userId),
+            email: await recipeInstance.getEmailForUserId(userId, userContext),
+            userContext,
         });
     }
 

@@ -81,28 +81,38 @@ function validateAndNormaliseEmailVerificationConfig(
         createAndSendCustomEmail:
             config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
                 ? undefined
-                : async (user, link) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: user.id });
+                : async (user, link, userContext: any) => {
+                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({
+                          userId: user.id,
+                          userContext,
+                      });
                       if (
                           userInfo === undefined ||
                           config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
                       ) {
                           throw new Error("Unknown User ID provided");
                       }
-                      return await config.emailVerificationFeature.createAndSendCustomEmail(userInfo, link);
+                      return await config.emailVerificationFeature.createAndSendCustomEmail(
+                          userInfo,
+                          link,
+                          userContext
+                      );
                   },
         getEmailVerificationURL:
             config?.emailVerificationFeature?.getEmailVerificationURL === undefined
                 ? undefined
-                : async (user) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: user.id });
+                : async (user, userContext: any) => {
+                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({
+                          userId: user.id,
+                          userContext,
+                      });
                       if (
                           userInfo === undefined ||
                           config?.emailVerificationFeature?.getEmailVerificationURL === undefined
                       ) {
                           throw new Error("Unknown User ID provided");
                       }
-                      return await config.emailVerificationFeature.getEmailVerificationURL(userInfo);
+                      return await config.emailVerificationFeature.getEmailVerificationURL(userInfo, userContext);
                   },
     };
 }
