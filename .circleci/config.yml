@@ -15,7 +15,16 @@ jobs:
                       cd .circleci
                       ./publish.sh
             - slack/status
-    test:
+    test-dev-tag-as-not-passed:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        steps:
+            - add_ssh_keys:
+                  fingerprints:
+                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
+            - checkout
+            - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
+    test-unit:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         resource_class: large
@@ -27,7 +36,45 @@ jobs:
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: apt-get install lsof
             - run: npm i -d
-            - run: (cd .circleci/ && ./doTests.sh)
+            - run: (cd .circleci/ && ./doUnitTests.sh)
+            - slack/status
+    test-website:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        resource_class: large
+        steps:
+            - add_ssh_keys:
+                  fingerprints:
+                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
+            - checkout
+            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+            - run: apt-get install lsof
+            - run: npm i -d
+            - run: (cd .circleci/ && ./website.sh)
+            - slack/status
+    test-authreact:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        resource_class: large
+        steps:
+            - add_ssh_keys:
+                  fingerprints:
+                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
+            - checkout
+            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+            - run: apt-get install lsof
+            - run: npm i -d
+            - run: (cd .circleci/ && ./authReact.sh)
+            - slack/status
+    test-success:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        steps:
+            - add_ssh_keys:
+                  fingerprints:
+                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
+            - checkout
+            - run: (cd .circleci/ && ./markAsSuccess.sh)
             - slack/status
     update-docs:
         docker:
@@ -50,7 +97,47 @@ workflows:
                           only: /v[0-9]+(\.[0-9]+)*/
                       branches:
                           ignore: /.*/
-            - test:
+            - test-dev-tag-as-not-passed:
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/
+            - test-unit:
+                  requires:
+                      - test-dev-tag-as-not-passed
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/
+            - test-website:
+                  requires:
+                      - test-dev-tag-as-not-passed
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/
+            - test-authreact:
+                  requires:
+                      - test-dev-tag-as-not-passed
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/
+            - test-success:
+                  requires:
+                      - test-unit
+                      - test-website
+                      - test-authreact
                   context:
                       - slack-notification
                   filters:

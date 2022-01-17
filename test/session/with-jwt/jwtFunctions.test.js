@@ -16,6 +16,8 @@ const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils
 let { ProcessState } = require("../../../lib/build/processState");
 let SuperTokens = require("../../../");
 let Session = require("../../../recipe/session");
+let { Querier } = require("../../../lib/build/querier");
+let { maxVersion } = require("../../../lib/build/utils");
 
 describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunctions.test.js]")}`, function () {
     beforeEach(async function () {
@@ -61,6 +63,13 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
                 }),
             ],
         });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
 
         try {
             await Session.createJWT({});
@@ -120,6 +129,13 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
                 }),
             ],
         });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
 
         await Session.createJWT({});
         await Session.getJWKS();

@@ -28,9 +28,15 @@ Passwordless.init({
                 ...oI,
             };
         },
-        functions: (oI) => {
+        functions: (originalImplementation) => {
             return {
-                ...oI,
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
             };
         },
     },
@@ -58,64 +64,69 @@ Passwordless.init({
 });
 
 Passwordless.init({
+    createAndSendCustomEmail: async function (input) {},
     contactMethod: "EMAIL",
     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
 });
 
 Passwordless.init({
+    createAndSendCustomTextMessage: async function (input) {},
     contactMethod: "PHONE",
     flowType: "MAGIC_LINK",
 });
+import { TypeInput } from "../../types";
+import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
+import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
 
 let app = express();
+let sessionConfig: SessionTypeInput = {
+    antiCsrf: "NONE",
+    cookieDomain: "",
+    override: {
+        functions: (originalImpl: RecipeInterface) => {
+            return {
+                getSession: originalImpl.getSession,
+                createNewSession: async (input) => {
+                    let session = await originalImpl.createNewSession(input);
+                    return {
+                        getAccessToken: session.getAccessToken,
+                        getHandle: session.getHandle,
+                        getAccessTokenPayload: session.getAccessTokenPayload,
+                        getSessionData: session.getSessionData,
+                        getUserId: session.getUserId,
+                        revokeSession: session.revokeSession,
+                        updateAccessTokenPayload: session.updateAccessTokenPayload,
+                        updateSessionData: session.updateSessionData,
+                        getExpiry: session.getExpiry,
+                        getTimeCreated: session.getTimeCreated,
+                    };
+                },
+                getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
+                refreshSession: originalImpl.refreshSession,
+                revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
+                revokeMultipleSessions: originalImpl.revokeMultipleSessions,
+                revokeSession: originalImpl.revokeSession,
+                updateAccessTokenPayload: originalImpl.updateAccessTokenPayload,
+                updateSessionData: originalImpl.updateSessionData,
+                getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
+                getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
+                getSessionInformation: originalImpl.getSessionInformation,
+            };
+        },
+    },
+};
 
-Supertokens.init({
+let epConfig: EPTypeInput = {
+    override: {},
+};
+
+let config: TypeInput = {
     appInfo: {
         apiDomain: "",
         appName: "",
         websiteDomain: "",
     },
-    recipeList: [
-        Session.init({
-            antiCsrf: "NONE",
-            cookieDomain: "",
-            override: {
-                functions: (originalImpl: RecipeInterface) => {
-                    return {
-                        getSession: originalImpl.getSession,
-                        createNewSession: async (input) => {
-                            let session = await originalImpl.createNewSession(input);
-                            return {
-                                getAccessToken: session.getAccessToken,
-                                getHandle: session.getHandle,
-                                getAccessTokenPayload: session.getAccessTokenPayload,
-                                getSessionData: session.getSessionData,
-                                getUserId: session.getUserId,
-                                revokeSession: session.revokeSession,
-                                updateAccessTokenPayload: session.updateAccessTokenPayload,
-                                updateSessionData: session.updateSessionData,
-                                getExpiry: session.getExpiry,
-                                getTimeCreated: session.getTimeCreated,
-                            };
-                        },
-                        getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
-                        refreshSession: originalImpl.refreshSession,
-                        revokeAllSessionsForUser: originalImpl.revokeAllSessionsForUser,
-                        revokeMultipleSessions: originalImpl.revokeMultipleSessions,
-                        revokeSession: originalImpl.revokeSession,
-                        updateAccessTokenPayload: originalImpl.updateAccessTokenPayload,
-                        updateSessionData: originalImpl.updateSessionData,
-                        getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
-                        getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
-                        getSessionInformation: originalImpl.getSessionInformation,
-                    };
-                },
-            },
-        }),
-        EmailPassword.init({
-            override: {},
-        }),
-    ],
+    recipeList: [Session.init(sessionConfig), EmailPassword.init(epConfig)],
     isInServerlessEnv: true,
     framework: "express",
     supertokens: {
@@ -123,7 +134,9 @@ Supertokens.init({
         apiKey: "",
     },
     telemetry: true,
-});
+};
+
+Supertokens.init(config);
 
 app.use(middleware());
 
@@ -394,6 +407,35 @@ EmailPassword.init({
                             status: "WRONG_CREDENTIALS_ERROR",
                         };
                     }
+                },
+            };
+        },
+    },
+});
+
+Session.init({
+    override: {
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                refreshSession: async function (input) {
+                    let session = await originalImplementation.refreshSession(input);
+
+                    let currAccessTokenPayload = session.getAccessTokenPayload();
+
+                    await session.updateAccessTokenPayload({
+                        ...currAccessTokenPayload,
+                        lastTokenRefresh: Date.now(),
+                    });
+
+                    return session;
+                },
+                createNewSession: async function (input) {
+                    input.accessTokenPayload = {
+                        ...input.accessTokenPayload,
+                        lastTokenRefresh: Date.now(),
+                    };
+                    return originalImplementation.createNewSession(input);
                 },
             };
         },

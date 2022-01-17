@@ -50,12 +50,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -149,12 +152,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -209,12 +215,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -305,12 +314,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -359,9 +371,9 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
 
             try {
                 await Passwordless.consumeCode({
-                    preAuthSessionId: codeInfo.preAuthSessionId,
+                    preAuthSessionId: "random",
                     userInputCode: codeInfo.userInputCode,
-                    deviceId: "random",
+                    deviceId: codeInfo.deviceId,
                 });
                 assert(false);
             } catch (err) {
@@ -388,12 +400,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -435,12 +450,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -502,12 +520,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -566,12 +587,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -627,12 +651,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -689,12 +716,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -737,12 +767,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -785,12 +818,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -835,12 +871,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -875,12 +914,15 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
                 Passwordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
                 }),
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 

@@ -8,10 +8,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [8.5.0] - 2022-01-14
+
+### Added
+
 -   Adds passwordless recipe
--   Adds compatibility with FDI 1.11 and CDI 2.10
+-   Adds compatibility with FDI 1.12 and CDI 2.11
 -   Adds passwordless tests
--   passwordless test fixs
+
+## [8.4.0] - 2021-12-20
+
+### Added
+
+-   Delete user functionality
+
+## [8.3.1] - 2021-12-20
+
+### Added
+
+-   Exposes all essential `types` files. Fixes [#230](https://github.com/supertokens/supertokens-node/issues/230)
 
 ## [8.3.0] - 2021-12-08
 

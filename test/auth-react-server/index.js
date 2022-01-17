@@ -25,7 +25,6 @@ let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
 let http = require("http");
 let cors = require("cors");
-let { startST, killAllST, setupST, cleanST } = require("./utils");
 let PasswordlessRaw = require("../../lib/build/recipe/passwordless/recipe").default;
 let Passwordless = require("../../recipe/passwordless");
 let { default: SuperTokensRaw } = require("../../lib/build/supertokens");
@@ -33,6 +32,7 @@ const { default: EmailPasswordRaw } = require("../../lib/build/recipe/emailpassw
 const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/recipe");
 const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
+let { startST, killAllST, setupST, cleanST, customAuth0Provider } = require("./utils");
 
 let urlencodedParser = bodyParser.urlencoded({ limit: "20mb", extended: true, parameterLimit: 20000 });
 let jsonParser = bodyParser.json({ limit: "20mb" });
@@ -243,6 +243,7 @@ function initST({ passwordlessConfig } = {}) {
                         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
                         clientId: process.env.FACEBOOK_CLIENT_ID,
                     }),
+                    customAuth0Provider(),
                 ],
             },
         }),
@@ -263,6 +264,7 @@ function initST({ passwordlessConfig } = {}) {
                     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
                     clientId: process.env.FACEBOOK_CLIENT_ID,
                 }),
+                customAuth0Provider(),
             ],
         }),
         Session.init({}),
