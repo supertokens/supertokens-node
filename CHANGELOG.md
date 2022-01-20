@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+
+-   Added userId as an optional property to the response of `recipe/user/password/reset`.
+
 ## [8.5.0] - 2022-01-14
 
 ### Added
@@ -15,10 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Adds passwordless recipe
 -   Adds compatibility with FDI 1.12 and CDI 2.11
 -   Adds passwordless tests
-
-### Changed
-
--   Added userId as an optional property to the response of `recipe/user/password/reset`.
 
 ## [8.4.0] - 2021-12-20
 
