@@ -819,4 +819,121 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert(usersNewest2.users[0].recipeId === "emailpassword");
         assert(usersNewest2.users[0].user.email === "random@gmail.com");
     });
+
+    it("updateEmailOrPassword function test for third party login", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    providers: [this.customProvider1],
+                }),
+                Session.init(),
+            ],
+        });
+
+        let thirdPartyRecipe = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError();
+
+        assert.strictEqual(await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user"), undefined);
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        nock("https://test.com").post("/oauth/token").reply(200, {});
+
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signinup")
+                    .send({
+                        thirdPartyId: "custom",
+                        code: "32432432",
+                        redirectURI: "http://localhost.org",
+                    })
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.strictEqual(response.statusCode, 200);
+
+            let signUpUserInfo = response.body.user;
+            let userInfo = await ThirdPartyEmailPassword.getUserByThirdPartyInfo("custom", "user");
+
+            assert.strictEqual(userInfo.email, signUpUserInfo.email);
+            assert.strictEqual(userInfo.id, signUpUserInfo.id);
+
+            try {
+                await ThirdPartyEmailPassword.updateEmailOrPassword({
+                    userId: userInfo.id,
+                    email: "test2@example.com",
+                });
+                throw new Error("test failed");
+            } catch (err) {
+                if (
+                    err.message !== "Cannot update email or password of a user who signed up using third party login."
+                ) {
+                    throw err;
+                }
+            }
+        }
+
+        {
+            let response = await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/signup")
+                    .send({
+                        formFields: [
+                            {
+                                id: "email",
+                                value: "test@example.com",
+                            },
+                            {
+                                id: "password",
+                                value: "pass@123",
+                            },
+                        ],
+                    })
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            );
+            assert.strictEqual(response.statusCode, 200);
+
+            let signUpUserInfo = response.body.user;
+
+            let r = await ThirdPartyEmailPassword.updateEmailOrPassword({
+                userId: signUpUserInfo.id,
+                email: "test2@example.com",
+                password: "haha@1234",
+            });
+
+            assert(r.status === "OK");
+
+            let r2 = await ThirdPartyEmailPassword.updateEmailOrPassword({
+                userId: signUpUserInfo.id + "123",
+                email: "test2@example.com",
+            });
+
+            assert(r2.status === "UNKNOWN_USER_ID_ERROR");
+        }
+    });
 });
