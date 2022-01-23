@@ -1339,4 +1339,55 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
 
         assert(JSON.parse(response.body).custom);
     });
+
+    it("generating email verification token without payload", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "fastify",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [EmailPassword.init(), Session.init()],
+        });
+
+        await this.server.register(FastifyFramework.plugin);
+
+        // sign up a user first
+        let response = extractInfoFromResponse(
+            await this.server.inject({
+                method: "post",
+                url: "/auth/signup",
+                payload: {
+                    formFields: [
+                        {
+                            id: "email",
+                            value: "johndoe@gmail.com",
+                        },
+                        {
+                            id: "password",
+                            value: "testPass123",
+                        },
+                    ],
+                },
+            })
+        );
+
+        // send generate email verification token request
+        let res2 = await this.server.inject({
+            method: "post",
+            url: "/auth/user/email/verify/token",
+            payload: {},
+            headers: {
+                Cookie: `sAccessToken=${response.accessToken}; sIdRefreshToken=${response.idRefreshTokenFromCookie}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        assert(res2.statusCode === 200);
+    });
 });
