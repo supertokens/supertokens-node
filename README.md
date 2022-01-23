@@ -21,7 +21,7 @@ Please see the [CONTRIBUTING.md](https://github.com/supertokens/supertokens-node
 
 ## Contact us
 
-For any queries, or support requests, please email us at team@supertokens.io, or join our [Discord](supertokens.io/discord) server.
+For any queries, or support requests, please email us at team@supertokens.io, or join our [Discord](https://supertokens.io/discord) server.
 
 ## Authors
 
