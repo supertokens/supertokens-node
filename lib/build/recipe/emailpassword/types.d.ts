@@ -264,9 +264,15 @@ export declare type APIInterface = {
               }[];
               token: string;
               options: APIOptions;
-          }) => Promise<{
-              status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    userId?: string;
+                }
+              | {
+                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+                }
+          >);
     signInPOST:
         | undefined
         | ((input: {
