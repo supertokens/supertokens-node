@@ -70,8 +70,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -165,8 +165,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -260,8 +260,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -347,8 +347,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -432,8 +432,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -519,8 +519,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -643,8 +643,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -703,8 +703,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -793,8 +793,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -912,8 +912,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -979,8 +979,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1060,8 +1060,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1142,8 +1142,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1206,8 +1206,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1295,8 +1295,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1386,8 +1386,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -1470,8 +1470,8 @@ describe(`apisFunctions: ${printPath("[test/passwordless/apis.test.js]")}`, func
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 

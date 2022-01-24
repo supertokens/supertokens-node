@@ -103,11 +103,22 @@ export default function getRecipeInterface(
             return originalEmailPasswordImplementation.resetPasswordUsingToken.bind(DerivedEP(this))(input);
         },
 
-        updateEmailOrPassword: async function (input: {
-            userId: string;
-            email?: string;
-            password?: string;
-        }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        updateEmailOrPassword: async function (
+            this: RecipeInterface,
+            input: {
+                userId: string;
+                email?: string;
+                password?: string;
+            }
+        ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            let user = await this.getUserById({ userId: input.userId });
+            if (user === undefined) {
+                return {
+                    status: "UNKNOWN_USER_ID_ERROR",
+                };
+            } else if (user.thirdParty !== undefined) {
+                throw new Error("Cannot update email or password of a user who signed up using third party login.");
+            }
             return originalEmailPasswordImplementation.updateEmailOrPassword.bind(DerivedEP(this))(input);
         },
     };

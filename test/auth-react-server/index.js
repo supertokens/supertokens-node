@@ -25,7 +25,6 @@ let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
 let http = require("http");
 let cors = require("cors");
-let { startST, killAllST, setupST, cleanST } = require("./utils");
 let PasswordlessRaw = require("../../lib/build/recipe/passwordless/recipe").default;
 let Passwordless = require("../../recipe/passwordless");
 let { default: SuperTokensRaw } = require("../../lib/build/supertokens");
@@ -244,6 +243,7 @@ function initST({ passwordlessConfig } = {}) {
                         clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
                         clientId: process.env.FACEBOOK_CLIENT_ID,
                     }),
+                    customAuth0Provider(),
                 ],
             },
         }),
@@ -264,6 +264,7 @@ function initST({ passwordlessConfig } = {}) {
                     clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
                     clientId: process.env.FACEBOOK_CLIENT_ID,
                 }),
+                customAuth0Provider(),
             ],
         }),
         Session.init({}),

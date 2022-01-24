@@ -413,7 +413,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         assert.strictEqual(accessTokenPayload.sub, undefined);
         assert.strictEqual(accessTokenPayload.iss, undefined);
         assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
-        assert.equal(jwtExpiryInSeconds, newJwtExpiryInSeconds);
+        assert(jwtExpiryInSeconds + 100 >= newJwtExpiryInSeconds && jwtExpiryInSeconds - 100 <= newJwtExpiryInSeconds);
     });
 
     it("Test that for sessions created without jwt enabled, calling updateAccessTokenPayload after enabling jwt does not create a jwt", async function () {

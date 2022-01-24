@@ -57,8 +57,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -159,8 +159,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -222,8 +222,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -321,8 +321,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -407,8 +407,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -457,8 +457,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -527,8 +527,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -594,8 +594,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -658,8 +658,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -723,8 +723,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -774,8 +774,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -825,8 +825,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -878,8 +878,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
@@ -921,8 +921,8 @@ describe(`recipeFunctions: ${printPath("[test/passwordless/recipeFunctions.test.
             ],
         });
 
-        // run test if current CDI version >= 2.10
-        if (!(await isCDIVersionCompatible("2.10"))) {
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
             return;
         }
 
