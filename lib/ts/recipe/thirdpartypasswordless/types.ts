@@ -12,18 +12,32 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-
-import { BaseRequest, BaseResponse } from "../../framework";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
+import {
+    RecipeInterface as EmailVerificationRecipeInterface,
+    APIInterface as EmailVerificationAPIInterface,
+} from "../emailverification";
+import { DeviceType as DeviceTypeOriginal, APIOptions as PasswordlessAPIOptionsOriginal } from "../passwordless/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 
-// As per https://github.com/supertokens/supertokens-core/issues/325
+export type DeviceType = DeviceTypeOriginal;
 
 export type User = {
     id: string;
+    timeJoined: number;
     email?: string;
     phoneNumber?: string;
-    timeJoined: number;
+    thirdParty?: {
+        id: string;
+        userId: string;
+    };
+};
+
+export type TypeInputEmailVerificationFeature = {
+    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 
 export type TypeInput = (
@@ -105,6 +119,8 @@ export type TypeInput = (
           ) => Promise<void>;
       }
 ) & {
+    providers?: TypeProvider[];
+    emailVerificationFeature?: TypeInputEmailVerificationFeature;
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
 
     // Customize information in the URL.
@@ -124,13 +140,22 @@ export type TypeInput = (
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis?: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
+        };
     };
 };
 
@@ -233,17 +258,56 @@ export type TypeNormalisedInput = (
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-
+    providers: TypeProvider[];
+    emailVerificationFeature: TypeInputEmailVerification;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
-            builder: OverrideableBuilder<RecipeInterface>
+            builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
-        apis: (originalImplementation: APIInterface, builder: OverrideableBuilder<APIInterface>) => APIInterface;
+        apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
+        emailVerificationFeature?: {
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
+        };
     };
 };
 
 export type RecipeInterface = {
+    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
+
+    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+
+    getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>;
+
+    getUserByThirdPartyInfo(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        userContext: any;
+    }): Promise<User | undefined>;
+
+    thirdPartySignInUp(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        email: {
+            id: string;
+            isVerified: boolean;
+        };
+        userContext: any;
+    }): Promise<
+        | { status: "OK"; createdNewUser: boolean; user: User }
+        | {
+              status: "FIELD_ERROR";
+              error: string;
+          }
+    >;
+
     createCode: (
         input: (
             | {
@@ -263,6 +327,7 @@ export type RecipeInterface = {
         codeLifetime: number;
         timeCreated: number;
     }>;
+
     createNewCodeForDevice: (input: {
         deviceId: string;
         userInputCode?: string;
@@ -280,6 +345,7 @@ export type RecipeInterface = {
           }
         | { status: "RESTART_FLOW_ERROR" | "USER_INPUT_CODE_ALREADY_USED_ERROR" }
     >;
+
     consumeCode: (
         input:
             | {
@@ -306,10 +372,6 @@ export type RecipeInterface = {
           }
         | { status: "RESTART_FLOW_ERROR" }
     >;
-
-    getUserById: (input: { userId: string; userContext: any }) => Promise<User | undefined>;
-    getUserByEmail: (input: { email: string; userContext: any }) => Promise<User | undefined>;
-    getUserByPhoneNumber: (input: { phoneNumber: string; userContext: any }) => Promise<User | undefined>;
 
     updateUser: (input: {
         userId: string;
@@ -353,99 +415,130 @@ export type RecipeInterface = {
     }) => Promise<DeviceType | undefined>;
 };
 
-export type DeviceType = {
-    preAuthSessionId: string;
+export type PasswordlessAPIOptions = PasswordlessAPIOptionsOriginal;
 
-    failedCodeInputAttemptCount: number;
-
-    email?: string;
-    phoneNumber?: string;
-
-    codes: {
-        codeId: string;
-        timeCreated: string;
-        codeLifetime: number;
-    }[];
-};
-
-export type APIOptions = {
-    recipeImplementation: RecipeInterface;
-    config: TypeNormalisedInput;
-    recipeId: string;
-    isInServerlessEnv: boolean;
-    req: BaseRequest;
-    res: BaseResponse;
-};
-
+export type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 export type APIInterface = {
-    createCodePOST?: (
-        input: ({ email: string } | { phoneNumber: string }) & {
-            options: APIOptions;
-            userContext: any;
-        }
-    ) => Promise<
-        | {
+    authorisationUrlGET:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              options: ThirdPartyAPIOptions;
+              userContext: any;
+          }) => Promise<{
               status: "OK";
-              deviceId: string;
-              preAuthSessionId: string;
-              flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-          }
-        | { status: "GENERAL_ERROR"; message: string }
-    >;
+              url: string;
+          }>);
 
-    resendCodePOST?: (
-        input: { deviceId: string; preAuthSessionId: string } & {
-            options: APIOptions;
-            userContext: any;
-        }
-    ) => Promise<{ status: "GENERAL_ERROR"; message: string } | { status: "RESTART_FLOW_ERROR" | "OK" }>;
+    thirdPartySignInUpPOST:
+        | undefined
+        | ((input: {
+              provider: TypeProvider;
+              code: string;
+              redirectURI: string;
+              authCodeResponse?: any;
+              clientId?: string;
+              options: ThirdPartyAPIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    createdNewUser: boolean;
+                    user: User;
+                    session: SessionContainerInterface;
+                    authCodeResponse: any;
+                }
+              | {
+                    status: "FIELD_ERROR";
+                    error: string;
+                }
+              | {
+                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+                }
+          >);
 
-    consumeCodePOST?: (
-        input: (
-            | {
-                  userInputCode: string;
-                  deviceId: string;
-                  preAuthSessionId: string;
+    appleRedirectHandlerPOST:
+        | undefined
+        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions; userContext: any }) => Promise<void>);
+
+    createCodePOST:
+        | undefined
+        | ((
+              input: ({ email: string } | { phoneNumber: string }) & {
+                  options: PasswordlessAPIOptions;
+                  userContext: any;
               }
-            | {
-                  linkCode: string;
-                  preAuthSessionId: string;
+          ) => Promise<
+              | {
+                    status: "OK";
+                    deviceId: string;
+                    preAuthSessionId: string;
+                    flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
+                }
+              | { status: "GENERAL_ERROR"; message: string }
+          >);
+
+    resendCodePOST:
+        | undefined
+        | ((
+              input: { deviceId: string; preAuthSessionId: string } & {
+                  options: PasswordlessAPIOptions;
+                  userContext: any;
               }
-        ) & {
-            options: APIOptions;
-            userContext: any;
-        }
-    ) => Promise<
-        | {
+          ) => Promise<{ status: "GENERAL_ERROR"; message: string } | { status: "RESTART_FLOW_ERROR" | "OK" }>);
+
+    consumeCodePOST:
+        | undefined
+        | ((
+              input: (
+                  | {
+                        userInputCode: string;
+                        deviceId: string;
+                        preAuthSessionId: string;
+                    }
+                  | {
+                        linkCode: string;
+                        preAuthSessionId: string;
+                    }
+              ) & {
+                  options: PasswordlessAPIOptions;
+                  userContext: any;
+              }
+          ) => Promise<
+              | {
+                    status: "OK";
+                    createdNewUser: boolean;
+                    user: User;
+                    session: SessionContainerInterface;
+                }
+              | {
+                    status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
+                    failedCodeInputAttemptCount: number;
+                    maximumCodeInputAttempts: number;
+                }
+              | { status: "GENERAL_ERROR"; message: string }
+              | { status: "RESTART_FLOW_ERROR" }
+          >);
+
+    passwordlessUserEmailExistsGET:
+        | undefined
+        | ((input: {
+              email: string;
+              options: PasswordlessAPIOptions;
+              userContext: any;
+          }) => Promise<{
               status: "OK";
-              createdNewUser: boolean;
-              user: User;
-              session: SessionContainerInterface;
-          }
-        | {
-              status: "INCORRECT_USER_INPUT_CODE_ERROR" | "EXPIRED_USER_INPUT_CODE_ERROR";
-              failedCodeInputAttemptCount: number;
-              maximumCodeInputAttempts: number;
-          }
-        | { status: "GENERAL_ERROR"; message: string }
-        | { status: "RESTART_FLOW_ERROR" }
-    >;
+              exists: boolean;
+          }>);
 
-    emailExistsGET?: (input: {
-        email: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        exists: boolean;
-    }>;
-
-    phoneNumberExistsGET?: (input: {
-        phoneNumber: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        exists: boolean;
-    }>;
+    passwordlessUserPhoneNumberExistsGET:
+        | undefined
+        | ((input: {
+              phoneNumber: string;
+              options: PasswordlessAPIOptions;
+              userContext: any;
+          }) => Promise<{
+              status: "OK";
+              exists: boolean;
+          }>);
 };
