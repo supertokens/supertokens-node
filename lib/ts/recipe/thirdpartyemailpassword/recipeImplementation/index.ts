@@ -108,13 +108,16 @@ export default function getRecipeInterface(
             return originalEmailPasswordImplementation.resetPasswordUsingToken.bind(DerivedEP(this))(input);
         },
 
-        updateEmailOrPassword: async function (input: {
-            userId: string;
-            email?: string;
-            password?: string;
-            userContext: any;
-        }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
-            let user = await this.getUserById({ userId: input.userId });
+        updateEmailOrPassword: async function (
+            this: RecipeInterface,
+            input: {
+                userId: string;
+                email?: string;
+                password?: string;
+                userContext: any;
+            }
+        ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
             if (user === undefined) {
                 return {
                     status: "UNKNOWN_USER_ID_ERROR",
