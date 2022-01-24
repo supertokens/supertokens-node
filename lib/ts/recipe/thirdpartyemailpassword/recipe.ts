@@ -237,8 +237,8 @@ export default class Recipe extends RecipeModule {
 
     // helper functions...
 
-    getEmailForUserId = async (userId: string) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId });
+    getEmailForUserId = async (userId: string, userContext: any) => {
+        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
         if (userInfo === undefined) {
             throw new Error("Unknown User ID provided");
         }

@@ -43,7 +43,7 @@ export default async function authorisationUrlAPI(
         });
     }
 
-    let result = await apiImplementation.authorisationUrlGET({ provider, options });
+    let result = await apiImplementation.authorisationUrlGET({ provider, options, userContext: {} });
 
     send200Response(options.res, result);
     return true;

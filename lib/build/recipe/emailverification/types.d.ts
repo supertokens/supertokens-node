@@ -2,9 +2,9 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 export declare type TypeInput = {
-    getEmailForUserId: (userId: string) => Promise<string>;
-    getEmailVerificationURL?: (user: User) => Promise<string>;
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
+    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -14,9 +14,9 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    getEmailForUserId: (userId: string) => Promise<string>;
-    getEmailVerificationURL: (user: User) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
+    getEmailVerificationURL: (user: User, userContext: any) => Promise<string>;
+    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -33,6 +33,7 @@ export declare type RecipeInterface = {
     createEmailVerificationToken(input: {
         userId: string;
         email: string;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -44,6 +45,7 @@ export declare type RecipeInterface = {
     >;
     verifyEmailUsingToken(input: {
         token: string;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -53,16 +55,18 @@ export declare type RecipeInterface = {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    isEmailVerified(input: { userId: string; email: string }): Promise<boolean>;
+    isEmailVerified(input: { userId: string; email: string; userContext: any }): Promise<boolean>;
     revokeEmailVerificationTokens(input: {
         userId: string;
         email: string;
+        userContext: any;
     }): Promise<{
         status: "OK";
     }>;
     unverifyEmail(input: {
         userId: string;
         email: string;
+        userContext: any;
     }): Promise<{
         status: "OK";
     }>;
@@ -81,6 +85,7 @@ export declare type APIInterface = {
         | ((input: {
               token: string;
               options: APIOptions;
+              userContext: any;
           }) => Promise<
               | {
                     status: "OK";
@@ -94,6 +99,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
               isVerified: boolean;
@@ -102,6 +108,7 @@ export declare type APIInterface = {
         | undefined
         | ((input: {
               options: APIOptions;
+              userContext: any;
           }) => Promise<{
               status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
           }>);

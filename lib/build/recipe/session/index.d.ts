@@ -16,20 +16,31 @@ export default class SessionWrapper {
         res: any,
         userId: string,
         accessTokenPayload?: any,
-        sessionData?: any
+        sessionData?: any,
+        userContext?: any
     ): Promise<SessionContainer>;
-    static getSession(req: any, res: any, options?: VerifySessionOptions): Promise<SessionContainer | undefined>;
-    static getSessionInformation(sessionHandle: string): Promise<SessionInformation>;
-    static refreshSession(req: any, res: any): Promise<SessionContainer>;
-    static revokeAllSessionsForUser(userId: string): Promise<string[]>;
-    static getAllSessionHandlesForUser(userId: string): Promise<string[]>;
-    static revokeSession(sessionHandle: string): Promise<boolean>;
-    static revokeMultipleSessions(sessionHandles: string[]): Promise<string[]>;
-    static updateSessionData(sessionHandle: string, newSessionData: any): Promise<void>;
-    static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any): Promise<void>;
+    static getSession(
+        req: any,
+        res: any,
+        options?: VerifySessionOptions,
+        userContext?: any
+    ): Promise<SessionContainer | undefined>;
+    static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation>;
+    static refreshSession(req: any, res: any, userContext?: any): Promise<SessionContainer>;
+    static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
+    static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
+    static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
+    static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
+    static updateSessionData(sessionHandle: string, newSessionData: any, userContext?: any): Promise<void>;
+    static updateAccessTokenPayload(
+        sessionHandle: string,
+        newAccessTokenPayload: any,
+        userContext?: any
+    ): Promise<void>;
     static createJWT(
         payload?: any,
-        validitySeconds?: number
+        validitySeconds?: number,
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -39,11 +50,15 @@ export default class SessionWrapper {
               status: "UNSUPPORTED_ALGORITHM_ERROR";
           }
     >;
-    static getJWKS(): Promise<{
+    static getJWKS(
+        userContext?: any
+    ): Promise<{
         status: "OK";
         keys: import("../jwt").JsonWebKey[];
     }>;
-    static getOpenIdDiscoveryConfiguration(): Promise<{
+    static getOpenIdDiscoveryConfiguration(
+        userContext?: any
+    ): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;

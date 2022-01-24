@@ -93,6 +93,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
             userId: this.getUserId(),
             jwtPropertyName,
             openIdRecipeImplementation: this.openIdRecipeImplementation,
+            userContext: {},
         });
 
         return await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload);

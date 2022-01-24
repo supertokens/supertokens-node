@@ -20,7 +20,7 @@ export default class RecipeImplementation implements RecipeInterface {
             faunaDBClient: faunadb.Client;
         }
     );
-    getFDAT: (userId: string) => Promise<any>;
+    getFDAT: (userId: string, userContext: any) => Promise<any>;
     createNewSession: (
         this: RecipeImplementation,
         {
@@ -28,11 +28,13 @@ export default class RecipeImplementation implements RecipeInterface {
             userId,
             accessTokenPayload,
             sessionData,
+            userContext,
         }: {
             res: BaseResponse;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
+            userContext: any;
         }
     ) => Promise<FaunaDBSessionContainer>;
     getSession: (
@@ -41,18 +43,22 @@ export default class RecipeImplementation implements RecipeInterface {
             req,
             res,
             options,
+            userContext,
         }: {
             req: BaseRequest;
             res: BaseResponse;
             options?: VerifySessionOptions | undefined;
+            userContext: any;
         }
     ) => Promise<FaunaDBSessionContainer | undefined>;
     getSessionInformation: (
         this: RecipeImplementation,
         {
             sessionHandle,
+            userContext,
         }: {
             sessionHandle: string;
+            userContext: any;
         }
     ) => Promise<SessionInformation>;
     refreshSession: (
@@ -60,41 +66,51 @@ export default class RecipeImplementation implements RecipeInterface {
         {
             req,
             res,
+            userContext,
         }: {
             req: BaseRequest;
             res: BaseResponse;
+            userContext: any;
         }
     ) => Promise<FaunaDBSessionContainer>;
     revokeAllSessionsForUser: (
         this: RecipeImplementation,
         {
             userId,
+            userContext,
         }: {
             userId: string;
+            userContext: any;
         }
     ) => Promise<string[]>;
     getAllSessionHandlesForUser: (
         this: RecipeImplementation,
         {
             userId,
+            userContext,
         }: {
             userId: string;
+            userContext: any;
         }
     ) => Promise<string[]>;
     revokeSession: (
         this: RecipeImplementation,
         {
             sessionHandle,
+            userContext,
         }: {
             sessionHandle: string;
+            userContext: any;
         }
     ) => Promise<boolean>;
     revokeMultipleSessions: (
         this: RecipeImplementation,
         {
             sessionHandles,
+            userContext,
         }: {
             sessionHandles: string[];
+            userContext: any;
         }
     ) => Promise<string[]>;
     updateSessionData: (
@@ -102,9 +118,11 @@ export default class RecipeImplementation implements RecipeInterface {
         {
             sessionHandle,
             newSessionData,
+            userContext,
         }: {
             sessionHandle: string;
             newSessionData: any;
+            userContext: any;
         }
     ) => Promise<void>;
     updateAccessTokenPayload: (
@@ -112,8 +130,19 @@ export default class RecipeImplementation implements RecipeInterface {
         input: {
             sessionHandle: string;
             newAccessTokenPayload: any;
+            userContext: any;
         }
     ) => Promise<void>;
-    getAccessTokenLifeTimeMS: (this: RecipeImplementation) => Promise<number>;
-    getRefreshTokenLifeTimeMS: (this: RecipeImplementation) => Promise<number>;
+    getAccessTokenLifeTimeMS: (
+        this: RecipeImplementation,
+        input: {
+            userContext: any;
+        }
+    ) => Promise<number>;
+    getRefreshTokenLifeTimeMS: (
+        this: RecipeImplementation,
+        input: {
+            userContext: any;
+        }
+    ) => Promise<number>;
 }

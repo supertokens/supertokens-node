@@ -22,30 +22,43 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static async createEmailVerificationToken(userId: string, email: string) {
+    static async createEmailVerificationToken(userId: string, email: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken({
             userId,
             email,
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async verifyEmailUsingToken(token: string) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({ token });
+    static async verifyEmailUsingToken(token: string, userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.verifyEmailUsingToken({
+            token,
+            userContext: userContext === undefined ? {} : userContext,
+        });
     }
 
-    static async isEmailVerified(userId: string, email: string) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified({ userId, email });
+    static async isEmailVerified(userId: string, email: string, userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.isEmailVerified({
+            userId,
+            email,
+            userContext: userContext === undefined ? {} : userContext,
+        });
     }
 
-    static async revokeEmailVerificationTokens(userId: string, email: string) {
+    static async revokeEmailVerificationTokens(userId: string, email: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.revokeEmailVerificationTokens({
             userId,
             email,
+            userContext: userContext === undefined ? {} : userContext,
         });
     }
 
-    static async unverifyEmail(userId: string, email: string) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unverifyEmail({ userId, email });
+    static async unverifyEmail(userId: string, email: string, userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.unverifyEmail({
+            userId,
+            email,
+            userContext: userContext === undefined ? {} : userContext,
+        });
     }
 }
 

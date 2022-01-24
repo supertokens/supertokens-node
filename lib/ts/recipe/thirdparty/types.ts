@@ -21,6 +21,7 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
+import { SessionContainerInterface } from "../session/types";
 
 const TypeAny = {
     type: "any",
@@ -60,8 +61,8 @@ export type User = {
 };
 
 export type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User) => Promise<string>;
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 
 const InputEmailVerificationFeatureSchema = {
@@ -148,11 +149,15 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getUserById(input: { userId: string }): Promise<User | undefined>;
+    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
 
-    getUsersByEmail(input: { email: string }): Promise<User[]>;
+    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
 
-    getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
+    getUserByThirdPartyInfo(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        userContext: any;
+    }): Promise<User | undefined>;
 
     signInUp(input: {
         thirdPartyId: string;
@@ -161,6 +166,7 @@ export type RecipeInterface = {
             id: string;
             isVerified: boolean;
         };
+        userContext: any;
     }): Promise<
         | { status: "OK"; createdNewUser: boolean; user: User }
         | {
@@ -188,6 +194,7 @@ export type APIInterface = {
         | ((input: {
               provider: TypeProvider;
               options: APIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
               url: string;
@@ -202,11 +209,13 @@ export type APIInterface = {
               authCodeResponse?: any;
               clientId?: string;
               options: APIOptions;
+              userContext: any;
           }) => Promise<
               | {
                     status: "OK";
                     createdNewUser: boolean;
                     user: User;
+                    session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
@@ -218,5 +227,5 @@ export type APIInterface = {
 
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { code: string; state: string; options: APIOptions }) => Promise<void>);
+        | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
 };

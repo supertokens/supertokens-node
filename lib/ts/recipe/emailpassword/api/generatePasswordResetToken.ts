@@ -36,7 +36,7 @@ export default async function generatePasswordResetToken(
         (await options.req.getJSONBody()).formFields
     );
 
-    let result = await apiImplementation.generatePasswordResetTokenPOST({ formFields, options });
+    let result = await apiImplementation.generatePasswordResetTokenPOST({ formFields, options, userContext: {} });
 
     send200Response(options.res, result);
     return true;
