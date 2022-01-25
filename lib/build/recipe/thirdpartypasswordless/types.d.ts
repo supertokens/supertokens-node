@@ -9,15 +9,21 @@ import { DeviceType as DeviceTypeOriginal, APIOptions as PasswordlessAPIOptionsO
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 export declare type DeviceType = DeviceTypeOriginal;
-export declare type User = {
+export declare type User = (
+    | {
+          email?: string;
+          phoneNumber?: string;
+      }
+    | {
+          email: string;
+          thirdParty: {
+              id: string;
+              userId: string;
+          };
+      }
+) & {
     id: string;
     timeJoined: number;
-    email?: string;
-    phoneNumber?: string;
-    thirdParty?: {
-        id: string;
-        userId: string;
-    };
 };
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
@@ -294,7 +300,7 @@ export declare type RecipeInterface = {
               status: "RESTART_FLOW_ERROR";
           }
     >;
-    updateUser: (input: {
+    updatePasswordlessUser: (input: {
         userId: string;
         email?: string | null;
         phoneNumber?: string | null;

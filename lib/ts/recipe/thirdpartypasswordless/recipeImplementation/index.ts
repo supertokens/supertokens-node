@@ -1,128 +1,126 @@
-// import { RecipeInterface, User } from "../types";
-// import EmailPasswordImplemenation from "../../emailpassword/recipeImplementation";
+import { RecipeInterface, User } from "../types";
+import PasswordlessImplemenation from "../../passwordless/recipeImplementation";
 
-// import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
-// import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
-// import { Querier } from "../../../querier";
-// import DerivedEP from "./emailPasswordRecipeImplementation";
-// import DerivedTP from "./thirdPartyRecipeImplementation";
+import ThirdPartyImplemenation from "../../thirdparty/recipeImplementation";
+import { RecipeInterface as ThirdPartyRecipeInterface } from "../../thirdparty";
+import { Querier } from "../../../querier";
+import DerivedPwdless from "./passwordlessRecipeImplementation";
+import DerivedTP from "./thirdPartyRecipeImplementation";
 
-// export default function getRecipeInterface(
-//     emailPasswordQuerier: Querier,
-//     thirdPartyQuerier?: Querier
-// ): RecipeInterface {
-//     let originalEmailPasswordImplementation = EmailPasswordImplemenation(emailPasswordQuerier);
-//     let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
-//     if (thirdPartyQuerier !== undefined) {
-//         originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier);
-//     }
+export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPartyQuerier?: Querier): RecipeInterface {
+    let originalPasswordlessImplementation = PasswordlessImplemenation(passwordlessQuerier);
+    let originalThirdPartyImplementation: undefined | ThirdPartyRecipeInterface;
+    if (thirdPartyQuerier !== undefined) {
+        originalThirdPartyImplementation = ThirdPartyImplemenation(thirdPartyQuerier);
+    }
 
-//     return {
-//         signUp: async function (input: {
-//             email: string;
-//             password: string;
-//             userContext: any;
-//         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
-//             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
-//         },
+    return {
+        consumeCode: async function (input) {
+            return originalPasswordlessImplementation.consumeCode.bind(DerivedPwdless(this))(input);
+        },
+        createCode: async function (input) {
+            return originalPasswordlessImplementation.createCode.bind(DerivedPwdless(this))(input);
+        },
+        createNewCodeForDevice: async function (input) {
+            return originalPasswordlessImplementation.createNewCodeForDevice.bind(DerivedPwdless(this))(input);
+        },
+        getUserByPhoneNumber: async function (input) {
+            return originalPasswordlessImplementation.getUserByPhoneNumber.bind(DerivedPwdless(this))(input);
+        },
+        listCodesByDeviceId: async function (input) {
+            return originalPasswordlessImplementation.listCodesByDeviceId.bind(DerivedPwdless(this))(input);
+        },
+        listCodesByEmail: async function (input) {
+            return originalPasswordlessImplementation.listCodesByEmail.bind(DerivedPwdless(this))(input);
+        },
+        listCodesByPhoneNumber: async function (input) {
+            return originalPasswordlessImplementation.listCodesByPhoneNumber.bind(DerivedPwdless(this))(input);
+        },
+        listCodesByPreAuthSessionId: async function (input) {
+            return originalPasswordlessImplementation.listCodesByPreAuthSessionId.bind(DerivedPwdless(this))(input);
+        },
+        revokeAllCodes: async function (input) {
+            return originalPasswordlessImplementation.revokeAllCodes.bind(DerivedPwdless(this))(input);
+        },
+        revokeCode: async function (input) {
+            return originalPasswordlessImplementation.revokeCode.bind(DerivedPwdless(this))(input);
+        },
 
-//         signIn: async function (input: {
-//             email: string;
-//             password: string;
-//             userContext: any;
-//         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
-//             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
-//         },
+        updatePasswordlessUser: async function (this: RecipeInterface, input) {
+            let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
+            if (user === undefined) {
+                return {
+                    status: "UNKNOWN_USER_ID_ERROR",
+                };
+            } else if ("thirdParty" in user) {
+                throw new Error(
+                    "Cannot update passwordless user info for those who signed up using third party login."
+                );
+            }
+            return originalPasswordlessImplementation.updateUser.bind(DerivedPwdless(this))(input);
+        },
 
-//         signInUp: async function (input: {
-//             thirdPartyId: string;
-//             thirdPartyUserId: string;
-//             email: {
-//                 id: string;
-//                 isVerified: boolean;
-//             };
-//             userContext: any;
-//         }): Promise<
-//             | { status: "OK"; createdNewUser: boolean; user: User }
-//             | {
-//                   status: "FIELD_ERROR";
-//                   error: string;
-//               }
-//         > {
-//             if (originalThirdPartyImplementation === undefined) {
-//                 throw new Error("No thirdparty provider configured");
-//             }
-//             return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
-//         },
+        thirdPartySignInUp: async function (input: {
+            thirdPartyId: string;
+            thirdPartyUserId: string;
+            email: {
+                id: string;
+                isVerified: boolean;
+            };
+            userContext: any;
+        }): Promise<
+            | { status: "OK"; createdNewUser: boolean; user: User }
+            | {
+                  status: "FIELD_ERROR";
+                  error: string;
+              }
+        > {
+            if (originalThirdPartyImplementation === undefined) {
+                throw new Error("No thirdparty provider configured");
+            }
+            return originalThirdPartyImplementation.signInUp.bind(DerivedTP(this))(input);
+        },
 
-//         getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
-//             let user: User | undefined = await originalEmailPasswordImplementation.getUserById.bind(DerivedEP(this))(
-//                 input
-//             );
-//             if (user !== undefined) {
-//                 return user;
-//             }
-//             if (originalThirdPartyImplementation === undefined) {
-//                 return undefined;
-//             }
-//             return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
-//         },
+        getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
+            let user: User | undefined = await originalPasswordlessImplementation.getUserById.bind(
+                DerivedPwdless(this)
+            )(input);
+            if (user !== undefined) {
+                return user;
+            }
+            if (originalThirdPartyImplementation === undefined) {
+                return undefined;
+            }
+            return await originalThirdPartyImplementation.getUserById.bind(DerivedTP(this))(input);
+        },
 
-//         getUsersByEmail: async function ({ email, userContext }: { email: string; userContext: any }): Promise<User[]> {
-//             let userFromEmailPass: User | undefined = await originalEmailPasswordImplementation.getUserByEmail.bind(
-//                 DerivedEP(this)
-//             )({ email, userContext });
+        getUsersByEmail: async function ({ email, userContext }: { email: string; userContext: any }): Promise<User[]> {
+            let userFromEmailPass: User | undefined = await originalPasswordlessImplementation.getUserByEmail.bind(
+                DerivedPwdless(this)
+            )({ email, userContext });
 
-//             if (originalThirdPartyImplementation === undefined) {
-//                 return userFromEmailPass === undefined ? [] : [userFromEmailPass];
-//             }
-//             let usersFromThirdParty: User[] = await originalThirdPartyImplementation.getUsersByEmail.bind(
-//                 DerivedTP(this)
-//             )({ email, userContext });
+            if (originalThirdPartyImplementation === undefined) {
+                return userFromEmailPass === undefined ? [] : [userFromEmailPass];
+            }
+            let usersFromThirdParty: User[] = await originalThirdPartyImplementation.getUsersByEmail.bind(
+                DerivedTP(this)
+            )({ email, userContext });
 
-//             if (userFromEmailPass !== undefined) {
-//                 return [...usersFromThirdParty, userFromEmailPass];
-//             }
-//             return usersFromThirdParty;
-//         },
+            if (userFromEmailPass !== undefined) {
+                return [...usersFromThirdParty, userFromEmailPass];
+            }
+            return usersFromThirdParty;
+        },
 
-//         getUserByThirdPartyInfo: async function (input: {
-//             thirdPartyId: string;
-//             thirdPartyUserId: string;
-//             userContext: any;
-//         }): Promise<User | undefined> {
-//             if (originalThirdPartyImplementation === undefined) {
-//                 return undefined;
-//             }
-//             return originalThirdPartyImplementation.getUserByThirdPartyInfo.bind(DerivedTP(this))(input);
-//         },
-
-//         createResetPasswordToken: async function (input: {
-//             userId: string;
-//             userContext: any;
-//         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-//             return originalEmailPasswordImplementation.createResetPasswordToken.bind(DerivedEP(this))(input);
-//         },
-
-//         resetPasswordUsingToken: async function (input: { token: string; newPassword: string; userContext: any }) {
-//             return originalEmailPasswordImplementation.resetPasswordUsingToken.bind(DerivedEP(this))(input);
-//         },
-
-//         updateEmailOrPassword: async function (input: {
-//             userId: string;
-//             email?: string;
-//             password?: string;
-//             userContext: any;
-//         }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
-//             let user = await this.getUserById({ userId: input.userId });
-//             if (user === undefined) {
-//                 return {
-//                     status: "UNKNOWN_USER_ID_ERROR",
-//                 };
-//             } else if (user.thirdParty !== undefined) {
-//                 throw new Error("Cannot update email or password of a user who signed up using third party login.");
-//             }
-//             return originalEmailPasswordImplementation.updateEmailOrPassword.bind(DerivedEP(this))(input);
-//         },
-//     };
-// }
+        getUserByThirdPartyInfo: async function (input: {
+            thirdPartyId: string;
+            thirdPartyUserId: string;
+            userContext: any;
+        }): Promise<User | undefined> {
+            if (originalThirdPartyImplementation === undefined) {
+                return undefined;
+            }
+            return originalThirdPartyImplementation.getUserByThirdPartyInfo.bind(DerivedTP(this))(input);
+        },
+    };
+}

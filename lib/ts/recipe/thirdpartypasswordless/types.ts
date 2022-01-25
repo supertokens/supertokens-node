@@ -24,15 +24,23 @@ import { SessionContainerInterface } from "../session/types";
 
 export type DeviceType = DeviceTypeOriginal;
 
-export type User = {
+export type User = (
+    | {
+          // passwordless user properties
+          email?: string;
+          phoneNumber?: string;
+      }
+    | {
+          // third party user properties
+          email: string;
+          thirdParty: {
+              id: string;
+              userId: string;
+          };
+      }
+) & {
     id: string;
     timeJoined: number;
-    email?: string;
-    phoneNumber?: string;
-    thirdParty?: {
-        id: string;
-        userId: string;
-    };
 };
 
 export type TypeInputEmailVerificationFeature = {
@@ -373,7 +381,7 @@ export type RecipeInterface = {
         | { status: "RESTART_FLOW_ERROR" }
     >;
 
-    updateUser: (input: {
+    updatePasswordlessUser: (input: {
         userId: string;
         email?: string | null;
         phoneNumber?: string | null;
