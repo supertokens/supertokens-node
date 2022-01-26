@@ -119,7 +119,7 @@ export declare type TypeInput = (
 export declare type TypeNormalisedInput = (
     | {
           contactMethod: "PHONE";
-          validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
           createAndSendCustomTextMessage: (
               input: {
                   phoneNumber: string;
@@ -133,7 +133,7 @@ export declare type TypeNormalisedInput = (
       }
     | {
           contactMethod: "EMAIL";
-          validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
           createAndSendCustomEmail: (
               input: {
                   email: string;
@@ -147,7 +147,7 @@ export declare type TypeNormalisedInput = (
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
-          validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
           createAndSendCustomEmail: (
               input: {
                   email: string;
@@ -158,7 +158,7 @@ export declare type TypeNormalisedInput = (
               },
               userContext: any
           ) => Promise<void>;
-          validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
           createAndSendCustomTextMessage: (
               input: {
                   phoneNumber: string;
@@ -172,7 +172,7 @@ export declare type TypeNormalisedInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getLinkDomainAndPath: (
+    getLinkDomainAndPath?: (
         contactInfo:
             | {
                   email: string;

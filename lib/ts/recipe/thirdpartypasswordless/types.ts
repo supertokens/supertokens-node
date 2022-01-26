@@ -170,7 +170,7 @@ export type TypeInput = (
 export type TypeNormalisedInput = (
     | {
           contactMethod: "PHONE";
-          validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
           createAndSendCustomTextMessage: (
@@ -190,7 +190,7 @@ export type TypeNormalisedInput = (
       }
     | {
           contactMethod: "EMAIL";
-          validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
           createAndSendCustomEmail: (
@@ -210,7 +210,7 @@ export type TypeNormalisedInput = (
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
-          validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
+          validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
           createAndSendCustomEmail: (
@@ -227,8 +227,7 @@ export type TypeNormalisedInput = (
               },
               userContext: any
           ) => Promise<void>;
-
-          validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
           createAndSendCustomTextMessage: (
@@ -249,10 +248,7 @@ export type TypeNormalisedInput = (
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
 
-    // Customize information in the URL.
-    // By default: `${websiteDomain}/auth/verify`
-    // `?rid=passwordless&preAuthSessionId=${preAuthSessionId}#${linkCode}` will be added after it.
-    getLinkDomainAndPath: (
+    getLinkDomainAndPath?: (
         contactInfo:
             | {
                   email: string;
