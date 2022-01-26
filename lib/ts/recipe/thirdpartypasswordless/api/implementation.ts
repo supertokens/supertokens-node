@@ -1,22 +1,22 @@
-// import { APIInterface } from "../";
-// import EmailPasswordAPIImplementation from "../../emailpassword/api/implementation";
-// import ThirdPartyAPIImplementation from "../../thirdparty/api/implementation";
-// import DerivedEP from "./emailPasswordAPIImplementation";
-// import DerivedTP from "./thirdPartyAPIImplementation";
+import { APIInterface } from "../types";
+import PasswordlessAPIImplementation from "../../passwordless/api/implementation";
+import ThirdPartyAPIImplementation from "../../thirdparty/api/implementation";
+import DerivedPwdless from "./passwordlessAPIImplementation";
+import DerivedTP from "./thirdPartyAPIImplementation";
 
-// export default function getAPIImplementation(): APIInterface {
-//     let emailPasswordImplementation = EmailPasswordAPIImplementation();
-//     let thirdPartyImplementation = ThirdPartyAPIImplementation();
-//     return {
-//         emailExistsGET: emailPasswordImplementation.emailExistsGET?.bind(DerivedEP(this)),
-//         authorisationUrlGET: thirdPartyImplementation.authorisationUrlGET?.bind(DerivedTP(this)),
-//         emailPasswordSignInPOST: emailPasswordImplementation.signInPOST?.bind(DerivedEP(this)),
-//         emailPasswordSignUpPOST: emailPasswordImplementation.signUpPOST?.bind(DerivedEP(this)),
-//         generatePasswordResetTokenPOST: emailPasswordImplementation.generatePasswordResetTokenPOST?.bind(
-//             DerivedEP(this)
-//         ),
-//         passwordResetPOST: emailPasswordImplementation.passwordResetPOST?.bind(DerivedEP(this)),
-//         thirdPartySignInUpPOST: thirdPartyImplementation.signInUpPOST?.bind(DerivedTP(this)),
-//         appleRedirectHandlerPOST: thirdPartyImplementation.appleRedirectHandlerPOST?.bind(DerivedTP(this)),
-//     };
-// }
+export default function getAPIImplementation(): APIInterface {
+    let passwordlessImplementation = PasswordlessAPIImplementation();
+    let thirdPartyImplementation = ThirdPartyAPIImplementation();
+    return {
+        consumeCodePOST: passwordlessImplementation.consumeCodePOST?.bind(DerivedPwdless(this)),
+        createCodePOST: passwordlessImplementation.createCodePOST?.bind(DerivedPwdless(this)),
+        passwordlessUserEmailExistsGET: passwordlessImplementation.emailExistsGET?.bind(DerivedPwdless(this)),
+        passwordlessUserPhoneNumberExistsGET: passwordlessImplementation.phoneNumberExistsGET?.bind(
+            DerivedPwdless(this)
+        ),
+        resendCodePOST: passwordlessImplementation.resendCodePOST?.bind(DerivedPwdless(this)),
+        authorisationUrlGET: thirdPartyImplementation.authorisationUrlGET?.bind(DerivedTP(this)),
+        thirdPartySignInUpPOST: thirdPartyImplementation.signInUpPOST?.bind(DerivedTP(this)),
+        appleRedirectHandlerPOST: thirdPartyImplementation.appleRedirectHandlerPOST?.bind(DerivedTP(this)),
+    };
+}
