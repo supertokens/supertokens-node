@@ -9,6 +9,78 @@ import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/sess
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import Passwordless from "../../recipe/passwordless";
+import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
+
+ThirdPartyPasswordless.init({
+    providers: [
+        ThirdPartyPasswordless.Google({
+            clientId: "",
+            clientSecret: "",
+        }),
+    ],
+    contactMethod: "PHONE",
+    createAndSendCustomTextMessage: async (input, userCtx) => {
+        return;
+    },
+    flowType: "MAGIC_LINK",
+    getCustomUserInputCode: (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
+            };
+        },
+    },
+});
+
+ThirdPartyPasswordless.init({
+    contactMethod: "EMAIL",
+    createAndSendCustomEmail: async (input, userCtx) => {
+        return;
+    },
+    flowType: "USER_INPUT_CODE",
+    getCustomUserInputCode: async (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: async (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+    },
+});
+
+ThirdPartyPasswordless.init({
+    createAndSendCustomEmail: async function (input) {},
+    contactMethod: "EMAIL",
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+});
+
+ThirdPartyPasswordless.init({
+    createAndSendCustomTextMessage: async function (input) {},
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+});
 
 Passwordless.init({
     contactMethod: "PHONE",
