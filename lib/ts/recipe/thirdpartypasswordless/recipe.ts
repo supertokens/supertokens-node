@@ -41,7 +41,7 @@ export default class Recipe extends RecipeModule {
 
     emailVerificationRecipe: EmailVerificationRecipe;
 
-    private passwordlessRecipe: PasswordlessRecipe;
+    passwordlessRecipe: PasswordlessRecipe;
 
     private thirdPartyRecipe: ThirdPartyRecipe | undefined;
 

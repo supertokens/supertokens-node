@@ -15,7 +15,7 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     emailVerificationRecipe: EmailVerificationRecipe;
-    private passwordlessRecipe;
+    passwordlessRecipe: PasswordlessRecipe;
     private thirdPartyRecipe;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
