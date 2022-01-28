@@ -103,7 +103,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                    * The id of the user whose password was reset.
                    * Defined for Core versions 3.9 or later
                    */
-                  statusId?: string;
+                  userId?: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
         > {
