@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST } = require("./utils");
+const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig } = require("./utils");
 let ST = require("../");
 let { Querier } = require("../lib/build/querier");
 let assert = require("assert");
@@ -23,6 +23,8 @@ let nock = require("nock");
 const { default: NormalisedURLPath } = require("../lib/build/normalisedURLPath");
 let EmailPassword = require("../recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
+const { default: axios } = require("axios");
+const { fail } = require("assert");
 
 describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
     beforeEach(async function () {
@@ -270,5 +272,110 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         });
 
         assert((await Session.getSessionInformation("someHandle")) === "someHandle");
+    });
+
+    it("test with core base path", async function () {
+        // first we need to know if the core used supports base_path config
+        setKeyValueInConfig("base_path", "/test");
+        await startST();
+
+        let response = await axios.get("http://localhost:8080/test/hello");
+        if (response.status === 404) {
+            //core must be an older version, so we return early
+            return;
+        } else if (response.status !== 200) {
+            throw new Error("test failed");
+        }
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080/test",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+
+        // we query the core now
+        let res = await Session.getAllSessionHandlesForUser("user1");
+        assert(res.length === 0);
+    });
+
+    it("test with incorrect core base path should fail", async function () {
+        // first we need to know if the core used supports base_path config
+        setKeyValueInConfig("base_path", "/some/path");
+        await startST();
+
+        let response = await axios.get("http://localhost:8080/some/path/hello");
+        if (response.status === 404) {
+            //core must be an older version, so we return early
+            return;
+        } else if (response.status !== 200) {
+            throw new Error("test failed");
+        }
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080/test",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+
+        try {
+            // we query the core now
+            await Session.getAllSessionHandlesForUser("user1");
+            fail();
+        } catch (err) {
+            assert(err.message.startsWith("SuperTokens core threw an error"));
+        }
+    });
+
+    it("test with multiple core base path", async function () {
+        // first we need to know if the core used supports base_path config
+        setKeyValueInConfig("base_path", "/some/path");
+        await startST();
+
+        setKeyValueInConfig("base_path", "/test");
+        await startST("localhost", 8082);
+
+        let response = await axios.get("http://localhost:8080/some/path/hello");
+        if (response.status === 404) {
+            //core must be an older version, so we return early
+            return;
+        } else if (response.status !== 200) {
+            throw new Error("test failed");
+        }
+
+        ST.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080/some/path;http://localhost:8082/test",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [Session.init()],
+        });
+
+        {
+            // we query the first core now
+            let res = await Session.getAllSessionHandlesForUser("user1");
+            assert(res.length === 0);
+        }
+
+        {
+            // we query the second core now
+            let res = await Session.getAllSessionHandlesForUser("user1");
+            assert(res.length === 0);
+        }
     });
 });

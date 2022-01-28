@@ -52,7 +52,12 @@ export default class SuperTokens {
             config.supertokens?.connectionURI
                 .split(";")
                 .filter((h) => h !== "")
-                .map((h) => new NormalisedURLDomain(h.trim())),
+                .map((h) => {
+                    return {
+                        domain: new NormalisedURLDomain(h.trim()),
+                        basePath: new NormalisedURLPath(h.trim()),
+                    };
+                }),
             config.supertokens?.apiKey
         );
 
