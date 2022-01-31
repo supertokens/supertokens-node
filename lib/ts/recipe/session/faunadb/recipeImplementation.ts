@@ -198,6 +198,10 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.originalImplementation.updateAccessTokenPayload(input);
     };
 
+    regenerateAccessToken = function (input: { accessToken: string; newAccessTokenPayload?: any; userContext: any }) {
+        return this.originalImplementation.regenerateAccessToken(input);
+    };
+
     getAccessTokenLifeTimeMS = async function (
         this: RecipeImplementation,
         input: { userContext: any }
@@ -216,13 +220,13 @@ export default class RecipeImplementation implements RecipeInterface {
 function getModifiedSession(session: SessionContainer): FaunaDBSessionContainer {
     return {
         ...session,
-        getFaunadbToken: async (): Promise<string> => {
-            let accessTokenPayload = session.getAccessTokenPayload();
+        getFaunadbToken: async (userContext?: any): Promise<string> => {
+            let accessTokenPayload = session.getAccessTokenPayload(userContext);
             if (accessTokenPayload[FAUNADB_SESSION_KEY] !== undefined) {
                 // this operation costs nothing. So we can check
                 return accessTokenPayload[FAUNADB_SESSION_KEY];
             } else {
-                let sessionData = await session.getSessionData();
+                let sessionData = await session.getSessionData(userContext);
                 return sessionData[FAUNADB_SESSION_KEY];
             }
         },
