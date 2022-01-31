@@ -96,7 +96,17 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         }: {
             token: string;
             newPassword: string;
-        }): Promise<{ status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR" }> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  /**
+                   * The id of the user whose password was reset.
+                   * Defined for Core versions 3.9 or later
+                   */
+                  userId?: string;
+              }
+            | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+        > {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset"), {
                 method: "token",
                 token,

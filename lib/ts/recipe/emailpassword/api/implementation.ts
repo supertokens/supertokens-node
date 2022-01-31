@@ -84,9 +84,17 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             token: string;
             options: APIOptions;
-        }): Promise<{
-            status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  /**
+                   * The id of the user whose password was reset.
+                   * Defined for Core versions 3.9 or later
+                   */
+                  userId?: string;
+              }
+            | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+        > {
             let newPassword = formFields.filter((f) => f.id === "password")[0].value;
 
             let response = await options.recipeImplementation.resetPasswordUsingToken({ token, newPassword });
