@@ -279,12 +279,14 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         setKeyValueInConfig("base_path", "/test");
         await startST();
 
-        let response = await axios.get("http://localhost:8080/test/hello");
-        if (response.status === 404) {
-            //core must be an older version, so we return early
-            return;
-        } else if (response.status !== 200) {
-            throw new Error("test failed");
+        try {
+            await axios.get("http://localhost:8080/test/hello");
+        } catch (error) {
+            if (error.response.status === 404) {
+                //core must be an older version, so we return early
+                return;
+            }
+            throw error;
         }
 
         ST.init({
@@ -309,12 +311,14 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         setKeyValueInConfig("base_path", "/some/path");
         await startST();
 
-        let response = await axios.get("http://localhost:8080/some/path/hello");
-        if (response.status === 404) {
-            //core must be an older version, so we return early
-            return;
-        } else if (response.status !== 200) {
-            throw new Error("test failed");
+        try {
+            await axios.get("http://localhost:8080/some/path/hello");
+        } catch (error) {
+            if (error.response.status === 404) {
+                //core must be an older version, so we return early
+                return;
+            }
+            throw error;
         }
 
         ST.init({
@@ -346,12 +350,14 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         setKeyValueInConfig("base_path", "/test");
         await startST("localhost", 8082);
 
-        let response = await axios.get("http://localhost:8080/some/path/hello");
-        if (response.status === 404) {
-            //core must be an older version, so we return early
-            return;
-        } else if (response.status !== 200) {
-            throw new Error("test failed");
+        try {
+            await axios.get("http://localhost:8080/some/path/hello");
+        } catch (error) {
+            if (error.response.status === 404) {
+                //core must be an older version, so we return early
+                return;
+            }
+            throw error;
         }
 
         ST.init({
