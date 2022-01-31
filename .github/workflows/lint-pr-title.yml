@@ -13,7 +13,7 @@ jobs:
         name: Lint PR title
         runs-on: ubuntu-latest
         steps:
-            - uses: rishabhpoddar/action-semantic-pull-request@v4
+            - uses: amannn/action-semantic-pull-request@v3
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
