@@ -8,10 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [8.6.0] - 2022-01-31
+
 ### Changed
 
--   Added userId as an optional property to the response of `recipe/user/password/reset`.
+-   Added userId as an optional property to the response of `recipe/user/password/reset` (compatibility with CDI 2.12).
 -   Fixes https://github.com/supertokens/supertokens-node/issues/244 - throws an error if a user tries to update email / password of a third party login user.
+
+### Added
+
 -   Adds ability to give a path for each of the hostnames in the connectionURI: https://github.com/supertokens/supertokens-node/issues/252
 -   add workflow to verify if pr title follows conventional commits
 
