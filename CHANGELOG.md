@@ -8,8 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Fixes
+
 -   Fixes https://github.com/supertokens/supertokens-node/issues/244 - throws an error if a user tries to update email / password of a third party login user.
+
+### Added
+
 -   add workflow to verify if pr title follows conventional commits
+-   Added `regenerateAccessToken` as a new recipe function for the session recipe.
+
+### Breaking changes:
+
+-   Allows passing of custom user context everywhere: https://github.com/supertokens/supertokens-node/issues/215
+-   Returns session object from API interface functions which create a new session: https://github.com/supertokens/supertokens-node/issues/215
 
 ## [8.5.0] - 2022-01-14
 

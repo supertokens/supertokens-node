@@ -260,31 +260,49 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<void>;
 
+    regenerateAccessToken(input: {
+        accessToken: string;
+        newAccessTokenPayload?: any;
+        userContext: any;
+    }): Promise<{
+        status: "OK";
+        session: {
+            handle: string;
+            userId: string;
+            userDataInJWT: any;
+        };
+        accessToken?: {
+            token: string;
+            expiry: number;
+            createdTime: number;
+        };
+    }>;
+
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 };
 
 export interface SessionContainerInterface {
-    revokeSession(): Promise<void>;
+    revokeSession(userContext?: any): Promise<void>;
 
-    getSessionData(): Promise<any>;
+    getSessionData(userContext?: any): Promise<any>;
 
-    updateSessionData(newSessionData: any): Promise<any>;
+    updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
 
-    getUserId(): string;
+    getUserId(userContext?: any): string;
 
-    getAccessTokenPayload(): any;
+    getAccessTokenPayload(userContext?: any): any;
 
-    getHandle(): string;
+    getHandle(userContext?: any): string;
 
-    getAccessToken(): string;
+    getAccessToken(userContext?: any): string;
 
-    updateAccessTokenPayload(newAccessTokenPayload: any): Promise<void>;
+    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
 
-    getTimeCreated(): Promise<number>;
+    getTimeCreated(userContext?: any): Promise<number>;
 
-    getExpiry(): Promise<number>;
+    getExpiry(userContext?: any): Promise<number>;
 }
 
 export type APIOptions = {
