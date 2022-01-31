@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, stopST } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, setKeyValueInConfig, stopST, resetAll } = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
@@ -1548,5 +1548,95 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
         );
 
         assert(createCodeResponse.deviceId === customDeviceId);
+    });
+
+    it("test for thirdPartyPasswordless, default config for thirdparty", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                    providers: [
+                        ThirdPartyPasswordless.Google({
+                            clientId: "test",
+                            clientSecret: "test",
+                        }),
+                    ],
+                }),
+            ],
+        });
+
+        let thirdPartyPasswordless = await ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
+        let config = thirdPartyPasswordless.config;
+
+        assert(config.providers.length === 1);
+        let provider = config.providers[0];
+        assert(provider.id === "google");
+    });
+
+    it("test for thirdPartyPasswordless, minimum config for thirdparty module, custom provider", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                    providers: [
+                        {
+                            id: "custom",
+                            get: (recipe, authCode) => {
+                                return {
+                                    accessTokenAPI: {
+                                        url: "test.com/oauth/token",
+                                    },
+                                    authorisationRedirect: {
+                                        url: "test.com/oauth/auth",
+                                    },
+                                    getProfileInfo: async (authCodeResponse) => {
+                                        return {
+                                            id: "user",
+                                            email: {
+                                                id: "email@test.com",
+                                                isVerified: true,
+                                            },
+                                        };
+                                    },
+                                };
+                            },
+                        },
+                    ],
+                }),
+            ],
+        });
     });
 });
