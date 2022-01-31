@@ -45,9 +45,15 @@ export default class Wrapper {
     static resetPasswordUsingToken(
         token: string,
         newPassword: string
-    ): Promise<{
-        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              userId?: string | undefined;
+          }
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+    >;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
