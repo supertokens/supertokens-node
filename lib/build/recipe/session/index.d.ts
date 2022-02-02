@@ -32,6 +32,25 @@ export default class SessionWrapper {
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
     static updateSessionData(sessionHandle: string, newSessionData: any, userContext?: any): Promise<void>;
+    static regenerateAccessToken(
+        accessToken: string,
+        newAccessTokenPayload?: any,
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+        session: {
+            handle: string;
+            userId: string;
+            userDataInJWT: any;
+        };
+        accessToken?:
+            | {
+                  token: string;
+                  expiry: number;
+                  createdTime: number;
+              }
+            | undefined;
+    }>;
     static updateAccessTokenPayload(
         sessionHandle: string,
         newAccessTokenPayload: any,
