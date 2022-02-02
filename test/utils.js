@@ -19,6 +19,7 @@ let fs = require("fs");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let ThirPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
+let ThirPartyPasswordless = require("../lib/build/recipe/thirdpartypasswordless/recipe").default;
 let ThirdPartyEmailPasswordRecipe = require("../lib/build/recipe/thirdpartyemailpassword/recipe").default;
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
@@ -195,6 +196,7 @@ module.exports.resetAll = function () {
     SuperTokens.reset();
     SessionRecipe.reset();
     ThirdPartyEmailPasswordRecipe.reset();
+    ThirPartyPasswordless.reset();
     EmailPasswordRecipe.reset();
     ThirPartyRecipe.reset();
     JWTRecipe.reset();
