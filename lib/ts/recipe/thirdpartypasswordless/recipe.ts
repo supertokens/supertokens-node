@@ -15,6 +15,7 @@
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import EmailVerificationRecipe from "../emailverification/recipe";
+import { RecipeInterface as EmailVerificationRecipeInterface } from "../emailverification/types";
 import PasswordlessRecipe from "../passwordless/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -78,6 +79,7 @@ export default class Recipe extends RecipeModule {
         }
 
         const recipImplReference = this.recipeInterfaceImpl;
+        const emailVerificationConfig = this.config.emailVerificationFeature;
 
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined
@@ -85,27 +87,43 @@ export default class Recipe extends RecipeModule {
                 : new EmailVerificationRecipe(recipeId, appInfo, isInServerlessEnv, {
                       ...this.config.emailVerificationFeature,
                       override: {
-                          functions: (oI) => {
-                              return {
-                                  ...oI,
-                                  isEmailVerified: async function (input) {
-                                      let user = await recipImplReference.getUserById({
-                                          userId: input.userId,
-                                          userContext: input.userContext,
-                                      });
+                          ...this.config.emailVerificationFeature.override,
+                          functions: (oI, builder) => {
+                              let passwordlessOverride = (
+                                  oI: EmailVerificationRecipeInterface
+                              ): EmailVerificationRecipeInterface => {
+                                  return {
+                                      ...oI,
+                                      isEmailVerified: async function (input) {
+                                          let user = await recipImplReference.getUserById({
+                                              userId: input.userId,
+                                              userContext: input.userContext,
+                                          });
 
-                                      if (user === undefined) {
-                                          return false;
-                                      }
-                                      if ("thirdParty" in user) {
-                                          return oI.isEmailVerified(input);
-                                      } else {
-                                          // this is a passwordless user, so we always want
-                                          // to return that their info / email is verified
-                                          return true;
-                                      }
-                                  },
+                                          if (user === undefined) {
+                                              return false;
+                                          }
+                                          if ("thirdParty" in user) {
+                                              return oI.isEmailVerified(input);
+                                          } else {
+                                              // this is a passwordless user, so we always want
+                                              // to return that their info / email is verified
+                                              return true;
+                                          }
+                                      },
+                                  };
                               };
+                              if (emailVerificationConfig.override?.functions !== undefined) {
+                                  // First we apply the override from what we have above,
+                                  // and then we apply their override. Notice that we don't
+                                  // pass in oI in here, but that is OK since that's how the
+                                  // override works!
+                                  return builder!
+                                      .override(passwordlessOverride)
+                                      .override(emailVerificationConfig.override.functions)
+                                      .build();
+                              }
+                              return passwordlessOverride(oI);
                           },
                       },
                   });
