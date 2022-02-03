@@ -20,7 +20,6 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let SuperTokens = require("../../lib/build/supertokens").default;
 let { isCDIVersionCompatible } = require("../utils");
-
 describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -31,6 +30,109 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
     after(async function () {
         await killAllST();
         await cleanST();
+    });
+
+    // test that creating a user with ThirdParty, and they have a verified email that, isEmailVerified returns true and the opposite case
+    it("test with thirdPartyPasswordless, for ThirdParty user that isEmailVerified returns the correct email verification status", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        // create a ThirdParty user with a verified email
+        let response = await ThirdPartyPasswordless.thirdPartySignInUp("customProvider", "verifiedUser", {
+            id: "test@example.com",
+            isVerified: true,
+        });
+
+        // verify the user's email
+        let emailVerificationToken = await ThirdPartyPasswordless.createEmailVerificationToken(response.user.id);
+        await ThirdPartyPasswordless.verifyEmailUsingToken(emailVerificationToken.token);
+
+        // check that the ThirdParty user's email is verified
+        assert(await ThirdPartyPasswordless.isEmailVerified(response.user.id));
+
+        // create a ThirdParty user with an unverfied email and check that it is not verified
+        let response2 = await ThirdPartyPasswordless.thirdPartySignInUp("customProvider2", "NotVerifiedUser", {
+            id: "test@example.com",
+            isVerified: false,
+        });
+
+        assert(!(await ThirdPartyPasswordless.isEmailVerified(response2.user.id)));
+    });
+
+    it("test with thirdPartyPasswordless, for Passwordless user that isEmailVerified returns true for both email and phone", async function () {
+        await startST();
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL_OR_PHONE",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    createAndSendCustomEmail: (input) => {
+                        return;
+                    },
+                    createAndSendCustomTextMessage: (input) => {
+                        return;
+                    },
+                }),
+            ],
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        // create a Passwordless user with email
+        let response = await ThirdPartyPasswordless.passwordlessSignInUp({
+            email: "test@example.com",
+        });
+
+        // check that the Passwordless user's email is verified
+        assert(await ThirdPartyPasswordless.isEmailVerified(response.user.id));
+
+        // create a Passwordless user with phone and check that it is verified
+        let response2 = await ThirdPartyPasswordless.passwordlessSignInUp({
+            phoneNumber: "+123456789012",
+        });
+
+        assert(await ThirdPartyPasswordless.isEmailVerified(response2.user.id));
     });
 
     it("test with thirdPartyPasswordless, getUser functionality", async function () {
