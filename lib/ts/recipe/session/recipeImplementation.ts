@@ -60,6 +60,7 @@ export type Helpers = {
     getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
     config: TypeNormalisedInput;
+    sessionRecipeImpl: RecipeInterface;
 };
 
 export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
@@ -98,13 +99,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             handshakeInfo.setJwtSigningPublicKeyList(keyList);
         }
     }
-
-    let helpers: Helpers = {
-        querier,
-        updateJwtSigningPublicKeyInfo,
-        getHandshakeInfo,
-        config,
-    };
 
     let obj = {
         createNewSession: async function ({
@@ -290,6 +284,43 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             }
         },
 
+        regenerateAccessToken: async function (
+            this: RecipeInterface,
+            input: {
+                accessToken: string;
+                newAccessTokenPayload?: any;
+                userContext: any;
+            }
+        ): Promise<{
+            status: "OK";
+            session: {
+                handle: string;
+                userId: string;
+                userDataInJWT: any;
+            };
+            accessToken?: {
+                token: string;
+                expiry: number;
+                createdTime: number;
+            };
+        }> {
+            let newAccessTokenPayload =
+                input.newAccessTokenPayload === null || input.newAccessTokenPayload === undefined
+                    ? {}
+                    : input.newAccessTokenPayload;
+            let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
+                accessToken: input.accessToken,
+                userDataInJWT: newAccessTokenPayload,
+            });
+            if (response.status === "UNAUTHORISED") {
+                throw new STError({
+                    message: response.message,
+                    type: STError.UNAUTHORISED,
+                });
+            }
+            return response;
+        },
+
         revokeAllSessionsForUser: function ({ userId }: { userId: string }) {
             return SessionFunctions.revokeAllSessionsForUser(helpers, userId);
         },
@@ -333,6 +364,14 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         getRefreshTokenLifeTimeMS: async function (): Promise<number> {
             return (await getHandshakeInfo()).refreshTokenValidity;
         },
+    };
+
+    let helpers: Helpers = {
+        querier,
+        updateJwtSigningPublicKeyInfo,
+        getHandshakeInfo,
+        config,
+        sessionRecipeImpl: obj,
     };
 
     if (process.env.TEST_MODE === "testing") {

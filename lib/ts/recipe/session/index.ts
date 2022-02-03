@@ -92,6 +92,14 @@ export default class SessionWrapper {
         });
     }
 
+    static regenerateAccessToken(accessToken: string, newAccessTokenPayload?: any, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.regenerateAccessToken({
+            accessToken,
+            newAccessTokenPayload,
+            userContext,
+        });
+    }
+
     static updateAccessTokenPayload(sessionHandle: string, newAccessTokenPayload: any, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateAccessTokenPayload({
             sessionHandle,

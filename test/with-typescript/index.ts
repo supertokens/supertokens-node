@@ -183,6 +183,7 @@ let sessionConfig: SessionTypeInput = {
                 getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
                 getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
                 getSessionInformation: originalImpl.getSessionInformation,
+                regenerateAccessToken: originalImpl.regenerateAccessToken,
             };
         },
     },
