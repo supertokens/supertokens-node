@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
+const { printPath, setupST, startST, killAllST, cleanST, isCDIVersionCompatible } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -83,6 +83,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "google");
         let providerInfoGetResult = await providerInfo.get();
@@ -139,6 +144,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "google");
         let providerInfoGetResult = await providerInfo.get();
@@ -182,6 +192,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "google");
@@ -227,6 +242,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "facebook");
@@ -283,6 +303,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "facebook");
         let providerInfoGetResult = await providerInfo.get();
@@ -324,6 +349,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "github");
@@ -378,6 +408,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "github");
         let providerInfoGetResult = await providerInfo.get();
@@ -421,6 +456,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "github");
@@ -466,6 +506,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "apple");
@@ -529,6 +574,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "apple");
         let providerInfoGetResult = await providerInfo.get();
@@ -579,6 +629,11 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         let providerInfo = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError().config.providers[0];
         assert.strictEqual(providerInfo.id, "apple");
         let providerInfoGetResult = await providerInfo.get();
@@ -625,6 +680,7 @@ describe(`providerTest: ${printPath("[test/thirdpartypasswordless/provider.test.
                     }),
                 ],
             });
+
             assert(false);
         } catch (error) {
             if (error.type !== ThirdPartyPasswordless.Error.BAD_INPUT_ERROR) {

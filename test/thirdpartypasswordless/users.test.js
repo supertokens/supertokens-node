@@ -12,7 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, signInUPCustomRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    killAllST,
+    cleanST,
+    signInUPCustomRequest,
+    isCDIVersionCompatible,
+} = require("../utils");
 const { getUserCount, getUsersNewestFirst, getUsersOldestFirst } = require("../../lib/build/");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -84,6 +92,11 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                 Session.init(),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const express = require("express");
         const app = express();
@@ -159,6 +172,11 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const express = require("express");
         const app = express();
 
@@ -232,6 +250,11 @@ describe(`usersTest: ${printPath("[test/thirdpartypasswordless/users.test.js]")}
                 Session.init(),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         let userCount = await getUserCount();
         assert.strictEqual(userCount, 0);

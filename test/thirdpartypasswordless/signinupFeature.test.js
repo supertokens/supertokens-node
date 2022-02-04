@@ -12,7 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    killAllST,
+    cleanST,
+    extractInfoFromResponse,
+    isCDIVersionCompatible,
+} = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
@@ -197,6 +205,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -248,6 +261,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
         const app = express();
 
         app.use(middleware());
@@ -364,6 +381,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -413,6 +435,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
 
@@ -530,6 +557,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -603,6 +635,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -655,6 +692,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
 
@@ -712,6 +754,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -763,6 +810,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
 
@@ -821,6 +873,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
 
@@ -1005,6 +1062,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
 
         app.use(errorHandler());
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
         let response = await new Promise((resolve) =>
@@ -1056,6 +1118,11 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init(),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         assert.strictEqual(await ThirdPartyPasswordless.getUserByThirdPartyInfo("custom", "user"), undefined);
 

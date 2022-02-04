@@ -12,7 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    resetAll,
+    signUPRequest,
+    isCDIVersionCompatible,
+} = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let SessionRecipe = require("../../lib/build/recipe/session/recipe").default;
@@ -107,6 +117,11 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                 Session.init(),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         let app = express();
 
@@ -230,6 +245,11 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         let app = express();
 
         app.use(middleware());
@@ -339,6 +359,11 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                 Session.init(),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         let app = express();
 
@@ -468,6 +493,11 @@ describe(`overrideTest: ${printPath("[test/thirdpartypasswordless/override.test.
                 Session.init(),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         let app = express();
 

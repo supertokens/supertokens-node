@@ -20,6 +20,7 @@ const {
     cleanST,
     extractInfoFromResponse,
     setKeyValueInConfig,
+    isCDIVersionCompatible,
 } = require("../utils");
 let STExpress = require("../../");
 let assert = require("assert");
@@ -96,6 +97,11 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
 
@@ -191,6 +197,11 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
 
         app.use(middleware());
@@ -237,6 +248,10 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
             ],
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
         const app = express();
 
         app.use(middleware());
@@ -288,6 +303,11 @@ describe(`signoutTest: ${printPath("[test/thirdpartypasswordless/signoutFeature.
                 }),
             ],
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
 
