@@ -333,7 +333,7 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
             },
             recipeList: [
                 Session.init(),
-                Passwordless.init({
+                ThirdPartyPasswordless.init({
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     createAndSendCustomTextMessage: (input) => {
@@ -348,7 +348,7 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
             return;
         }
 
-        let thirdPartyPasswordlessRecipe = await ThirdPartyPasswordless.getInstanceOrThrowError();
+        let thirdPartyPasswordlessRecipe = await ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
         assert(thirdPartyPasswordlessRecipe.config.contactMethod === "PHONE");
         assert(thirdPartyPasswordlessRecipe.config.flowType === "USER_INPUT_CODE_AND_MAGIC_LINK");
     });

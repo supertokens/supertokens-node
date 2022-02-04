@@ -564,8 +564,9 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             return;
         }
 
-        let userInfo = await ThirdPartyPasswordless.passwordlessSignInUp("test@example.com");
-
+        let userInfo = await ThirdPartyPasswordless.passwordlessSignInUp({
+            email: "test@example.com",
+        });
         {
             // update users email
             let response = await ThirdPartyPasswordless.updateUser({
@@ -581,11 +582,13 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             assert(result.email === "test2@example.com");
         }
         {
+            console.log("comes here");
             // update user with invalid userId
             let response = await ThirdPartyPasswordless.updateUser({
                 userId: "invalidUserId",
                 email: "test2@example.com",
             });
+            console.log("1111111111");
             assert(response.status === "UNKNOWN_USER_ID_ERROR");
         }
         {

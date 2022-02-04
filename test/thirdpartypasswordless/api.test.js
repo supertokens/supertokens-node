@@ -804,7 +804,7 @@ describe(`apisFunctions: ${printPath("[test/thirdpartypasswordless/apis.test.js]
 
         app.use(errorHandler());
 
-        let codeInfo = await Passwordless.createCode({
+        let codeInfo = await ThirdPartyPasswordless.createCode({
             email: "test@example.com",
         });
 
