@@ -16,7 +16,6 @@ const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse
 let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let ThirdPartyPasswordlessRecipe = require("../../lib/build/recipe/thirdpartypasswordless/recipe").default;
 let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
 let nock = require("nock");
 const express = require("express");
@@ -238,10 +237,13 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider6],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider6],
                 }),
             ],
         });
@@ -292,7 +294,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(await ThirdParty.isEmailVerified(response1.body.user.id), true);
+        assert.strictEqual(await ThirdPartyPasswordless.isEmailVerified(response1.body.user.id), true);
 
         let response2 = await new Promise((resolve) =>
             request(app)
@@ -352,9 +354,12 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                     antiCsrf: "VIA_TOKEN",
                 }),
                 ThirdPartyPasswordless.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider6],
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider6],
                 }),
             ],
         });
@@ -383,7 +388,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response1.status, 400);
     });
 
-    it("test minimum config for thirdparty module", async function () {
+    it("test for thirdPartyPasswordless, minimum config for thirdParty module", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -398,10 +403,13 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider1],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider1],
                 }),
             ],
         });
@@ -452,7 +460,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(await ThirdParty.isEmailVerified(response1.body.user.id), true);
+        assert.strictEqual(await ThirdPartyPasswordless.isEmailVerified(response1.body.user.id), true);
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -496,7 +504,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.notStrictEqual(cookies2.frontToken, undefined);
     });
 
-    it("test minimum config for thirdparty module, email unverified", async function () {
+    it("test with thirdPartyPasswordless, with minimum config for thirdparty module, email unverified", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -511,10 +519,13 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider5],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider5],
                 }),
             ],
         });
@@ -565,10 +576,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(await ThirdParty.isEmailVerified(response1.body.user.id), false);
+        assert.strictEqual(await ThirdPartyPasswordless.isEmailVerified(response1.body.user.id), false);
     });
 
-    it("test thirdparty provider doesn't exist", async function () {
+    it("test with thirdPartyPasswordless, thirdparty provider doesn't exist in config", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -581,10 +592,13 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             },
             recipeList: [
                 Session.init(),
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider1],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider1],
                 }),
             ],
         });
@@ -618,7 +632,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         );
     });
 
-    it("test provider get function throws error", async function () {
+    it("test with thirdPartyPasswordless, provider get function throws error", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -631,10 +645,13 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             },
             recipeList: [
                 Session.init(),
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider2],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider2],
                 }),
             ],
         });
@@ -671,7 +688,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.deepStrictEqual(response1.body, { message: "error from get function" });
     });
 
-    it("test email not returned in getProfileInfo function", async function () {
+    it("test with thirdPartyPasswordless, email not returned in getProfileInfo function", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -684,10 +701,13 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             },
             recipeList: [
                 Session.init(),
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider3],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider3],
                 }),
             ],
         });
@@ -720,7 +740,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response1.body.status, "NO_EMAIL_GIVEN_BY_PROVIDER");
     });
 
-    it("test error thrown from getProfileInfo function", async function () {
+    it("test with thirdPartyPasswordless, error thrown from getProfileInfo function", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -733,10 +753,13 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             },
             recipeList: [
                 Session.init(),
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider4],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider4],
                 }),
             ],
         });
@@ -775,7 +798,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.deepStrictEqual(response1.body, { status: "FIELD_ERROR", error: "error from getProfileInfo" });
     });
 
-    it("test invalid POST params for thirdparty module", async function () {
+    it("test with thirdPartyPasswordless, invalid POST params for thirdparty module", async function () {
         await startST();
         STExpress.init({
             supertokens: {
@@ -788,10 +811,13 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
             },
             recipeList: [
                 Session.init(),
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider1],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider1],
                 }),
             ],
         });
@@ -946,7 +972,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response8.statusCode, 200);
     });
 
-    it("test getUserById when user does not exist", async function () {
+    it("test with thirdPartyPasswordless, getUserById when user does not exist", async function () {
         await startST();
 
         STExpress.init({
@@ -959,18 +985,19 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider1],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider1],
                 }),
                 Session.init(),
             ],
         });
 
-        let thirdPartyRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-
-        assert.strictEqual(await ThirdParty.getUserById("randomID"), undefined);
+        assert.strictEqual(await ThirdPartyPasswordless.getUserById("randomID"), undefined);
 
         const app = express();
 
@@ -999,7 +1026,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdParty.getUserById(signUpUserInfo.id);
+        let userInfo = await ThirdPartyPasswordless.getUserById(signUpUserInfo.id);
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
@@ -1018,18 +1045,19 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirdPartyPasswordlessRecipe.init({
-                    signInAndUpFeature: {
-                        providers: [this.customProvider1],
+                ThirdPartyPasswordless.init({
+                    contactMethod: "EMAIL",
+                    createAndSendCustomEmail: (input) => {
+                        return;
                     },
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [this.customProvider1],
                 }),
                 Session.init(),
             ],
         });
 
-        let thirdPartyRecipe = ThirdPartyPasswordlessRecipe.getInstanceOrThrowError();
-
-        assert.strictEqual(await ThirdParty.getUserByThirdPartyInfo("custom", "user"), undefined);
+        assert.strictEqual(await ThirdPartyPasswordless.getUserByThirdPartyInfo("custom", "user"), undefined);
 
         const app = express();
 
@@ -1058,7 +1086,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(response.statusCode, 200);
 
         let signUpUserInfo = response.body.user;
-        let userInfo = await ThirdParty.getUserByThirdPartyInfo("custom", "user");
+        let userInfo = await ThirdPartyPasswordless.getUserByThirdPartyInfo("custom", "user");
 
         assert.strictEqual(userInfo.email, signUpUserInfo.email);
         assert.strictEqual(userInfo.id, signUpUserInfo.id);
