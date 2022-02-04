@@ -94,16 +94,27 @@ export default class Recipe extends RecipeModule {
                               ): EmailVerificationRecipeInterface => {
                                   return {
                                       ...oI,
+                                      createEmailVerificationToken: async function (input) {
+                                          let user = await recipImplReference.getUserById({
+                                              userId: input.userId,
+                                              userContext: input.userContext,
+                                          });
+
+                                          if (user === undefined || "thirdParty" in user) {
+                                              return oI.createEmailVerificationToken(input);
+                                          } else {
+                                              return {
+                                                  status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                                              };
+                                          }
+                                      },
                                       isEmailVerified: async function (input) {
                                           let user = await recipImplReference.getUserById({
                                               userId: input.userId,
                                               userContext: input.userContext,
                                           });
 
-                                          if (user === undefined) {
-                                              return false;
-                                          }
-                                          if ("thirdParty" in user) {
+                                          if (user === undefined || "thirdParty" in user) {
                                               return oI.isEmailVerified(input);
                                           } else {
                                               // this is a passwordless user, so we always want
