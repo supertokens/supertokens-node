@@ -127,6 +127,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         // check that the Passwordless user's email is verified
         assert(await ThirdPartyPasswordless.isEmailVerified(response.user.id));
 
+        // check that creating an email verification should return EMAIL_ALREADY_VERIFIED
+        assert(
+            (await (await ThirdPartyPasswordless.createEmailVerificationToken(response.user.id)).status) ===
+                "EMAIL_ALREADY_VERIFIED_ERROR"
+        );
+
         // create a Passwordless user with phone and check that it is verified
         let response2 = await ThirdPartyPasswordless.passwordlessSignInUp({
             phoneNumber: "+123456789012",
