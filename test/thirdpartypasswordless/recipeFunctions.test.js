@@ -575,25 +575,22 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             });
             assert(response.status === "OK");
 
-            let result = await ThirdPartyPasswordless.getUserById({
-                userId: userInfo.user.id,
-            });
+            let result = await ThirdPartyPasswordless.getUserById(userInfo.user.id);
 
             assert(result.email === "test2@example.com");
         }
         {
-            console.log("comes here");
             // update user with invalid userId
             let response = await ThirdPartyPasswordless.updateUser({
                 userId: "invalidUserId",
                 email: "test2@example.com",
             });
-            console.log("1111111111");
+
             assert(response.status === "UNKNOWN_USER_ID_ERROR");
         }
         {
             // update user with an email that already exists
-            let userInfo2 = await ThirdPartyPasswordless.signInUp({
+            let userInfo2 = await ThirdPartyPasswordless.passwordlessSignInUp({
                 email: "test3@example.com",
             });
 
