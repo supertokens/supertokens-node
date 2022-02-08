@@ -127,9 +127,9 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         // check that the Passwordless user's email is verified
         assert(await ThirdPartyPasswordless.isEmailVerified(response.user.id));
 
-        // check that creating an email verification should return EMAIL_ALREADY_VERIFIED
+        // check that creating an email verification with passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
         assert(
-            (await (await ThirdPartyPasswordless.createEmailVerificationToken(response.user.id)).status) ===
+            (await ThirdPartyPasswordless.createEmailVerificationToken(response.user.id)).status ===
                 "EMAIL_ALREADY_VERIFIED_ERROR"
         );
 
@@ -139,6 +139,12 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         });
 
         assert(await ThirdPartyPasswordless.isEmailVerified(response2.user.id));
+
+        // check that creating an email verification with passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
+        assert(
+            (await ThirdPartyPasswordless.createEmailVerificationToken(response2.user.id)).status ===
+                "EMAIL_ALREADY_VERIFIED_ERROR"
+        );
     });
 
     it("test with thirdPartyPasswordless, getUser functionality", async function () {
