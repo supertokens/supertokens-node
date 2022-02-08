@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   add workflow to verify if pr title follows conventional commits
 -   Added `regenerateAccessToken` as a new recipe function for the session recipe.
+-   Adds `ThirdPartyPasswordless` tests
 
 ### Breaking changes:
 
