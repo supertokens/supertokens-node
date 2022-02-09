@@ -147,7 +147,6 @@ export default class SessionRecipe extends RecipeModule {
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
-            jwtRecipeImplementation: this.openIdRecipe?.jwtRecipe.recipeInterfaceImpl,
             req,
             res,
         };
@@ -213,7 +212,6 @@ export default class SessionRecipe extends RecipeModule {
                 recipeId: this.getRecipeId(),
                 isInServerlessEnv: this.isInServerlessEnv,
                 recipeImplementation: this.recipeInterfaceImpl,
-                jwtRecipeImplementation: this.openIdRecipe?.jwtRecipe.recipeInterfaceImpl,
             },
         });
     };
