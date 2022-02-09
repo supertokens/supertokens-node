@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [8.6.0] - 2022-01-31
 
+-   Removes unused property from session recipe
+
 ### Changed
 
 -   Added userId as an optional property to the response of `recipe/user/password/reset` (compatibility with CDI 2.12).
