@@ -28,13 +28,17 @@ export declare type TypeProviderGetResponse = {
             [key: string]: string | ((request: any) => string);
         };
     };
-    getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
-    getClientId: () => string;
-    getRedirectURI?: () => string;
+    getProfileInfo: (authCodeResponse: any, userContext: any) => Promise<UserInfo>;
+    getClientId: (userContext: any) => string;
+    getRedirectURI?: (userContext: any) => string;
 };
 export declare type TypeProvider = {
     id: string;
-    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
+    get: (
+        redirectURI: string | undefined,
+        authCodeFromRequest: string | undefined,
+        userContext: any
+    ) => TypeProviderGetResponse;
     isDefault?: boolean;
 };
 export declare type User = {

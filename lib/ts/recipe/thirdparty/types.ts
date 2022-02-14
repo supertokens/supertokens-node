@@ -38,14 +38,18 @@ export type TypeProviderGetResponse = {
         url: string;
         params: { [key: string]: string | ((request: any) => string) };
     };
-    getProfileInfo: (authCodeResponse: any) => Promise<UserInfo>;
-    getClientId: () => string;
-    getRedirectURI?: () => string; // if undefined, the redirect_uri is set on the frontend.
+    getProfileInfo: (authCodeResponse: any, userContext: any) => Promise<UserInfo>;
+    getClientId: (userContext: any) => string;
+    getRedirectURI?: (userContext: any) => string; // if undefined, the redirect_uri is set on the frontend.
 };
 
 export type TypeProvider = {
     id: string;
-    get: (redirectURI: string | undefined, authCodeFromRequest: string | undefined) => TypeProviderGetResponse;
+    get: (
+        redirectURI: string | undefined,
+        authCodeFromRequest: string | undefined,
+        userContext: any
+    ) => TypeProviderGetResponse;
     isDefault?: boolean; // if not present, we treat it as false
 };
 
