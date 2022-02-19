@@ -22,19 +22,22 @@ import { PROCESS_STATE, ProcessState } from "./processState";
 
 export class Querier {
     private static initCalled = false;
-    private static hosts: NormalisedURLDomain[] | undefined = undefined;
+    private static hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined = undefined;
     private static apiKey: string | undefined = undefined;
     private static apiVersion: string | undefined = undefined;
 
     private static lastTriedIndex = 0;
     private static hostsAliveForTesting: Set<string> = new Set<string>();
 
-    private __hosts: NormalisedURLDomain[] | undefined;
+    private __hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined;
     private rIdToCore: string | undefined;
 
     // we have rIdToCore so that recipes can force change the rId sent to core. This is a hack until the core is able
     // to support multiple rIds per API
-    private constructor(hosts: NormalisedURLDomain[] | undefined, rIdToCore?: string) {
+    private constructor(
+        hosts: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[] | undefined,
+        rIdToCore?: string
+    ) {
         this.__hosts = hosts;
         this.rIdToCore = rIdToCore;
     }
@@ -92,7 +95,7 @@ export class Querier {
         return new Querier(Querier.hosts, rIdToCore);
     }
 
-    static init(hosts?: NormalisedURLDomain[], apiKey?: string) {
+    static init(hosts?: { domain: NormalisedURLDomain; basePath: NormalisedURLPath }[], apiKey?: string) {
         if (!Querier.initCalled) {
             Querier.initCalled = true;
             Querier.hosts = hosts;
@@ -245,14 +248,15 @@ export class Querier {
         if (numberOfTries === 0) {
             throw Error("No SuperTokens core available to query");
         }
-        let currentHost: string = this.__hosts[Querier.lastTriedIndex].getAsStringDangerous();
+        let currentDomain: string = this.__hosts[Querier.lastTriedIndex].domain.getAsStringDangerous();
+        let currentBasePath: string = this.__hosts[Querier.lastTriedIndex].basePath.getAsStringDangerous();
         Querier.lastTriedIndex++;
         Querier.lastTriedIndex = Querier.lastTriedIndex % this.__hosts.length;
         try {
             ProcessState.getInstance().addState(PROCESS_STATE.CALLING_SERVICE_IN_REQUEST_HELPER);
-            let response = await axiosFunction(currentHost + path.getAsStringDangerous());
+            let response = await axiosFunction(currentDomain + currentBasePath + path.getAsStringDangerous());
             if (process.env.TEST_MODE === "testing") {
-                Querier.hostsAliveForTesting.add(currentHost);
+                Querier.hostsAliveForTesting.add(currentDomain + currentBasePath);
             }
             if (response.status !== 200) {
                 throw response;

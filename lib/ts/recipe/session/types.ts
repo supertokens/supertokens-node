@@ -307,7 +307,6 @@ export interface SessionContainerInterface {
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
-    jwtRecipeImplementation: JWTRecipeInterface | undefined;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
