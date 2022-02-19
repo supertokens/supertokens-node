@@ -7,7 +7,8 @@ export default class Wrapper {
     static Error: typeof SuperTokensError;
     static signUp(
         email: string,
-        password: string
+        password: string,
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -19,7 +20,8 @@ export default class Wrapper {
     >;
     static signIn(
         email: string,
-        password: string
+        password: string,
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -29,10 +31,11 @@ export default class Wrapper {
               status: "WRONG_CREDENTIALS_ERROR";
           }
     >;
-    static getUserById(userId: string): Promise<User | undefined>;
-    static getUserByEmail(email: string): Promise<User | undefined>;
+    static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
+    static getUserByEmail(email: string, userContext?: any): Promise<User | undefined>;
     static createResetPasswordToken(
-        userId: string
+        userId: string,
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -44,7 +47,8 @@ export default class Wrapper {
     >;
     static resetPasswordUsingToken(
         token: string,
-        newPassword: string
+        newPassword: string,
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -58,11 +62,13 @@ export default class Wrapper {
         userId: string;
         email?: string;
         password?: string;
+        userContext?: any;
     }): Promise<{
         status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
     }>;
     static createEmailVerificationToken(
-        userId: string
+        userId: string,
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -73,7 +79,8 @@ export default class Wrapper {
           }
     >;
     static verifyEmailUsingToken(
-        token: string
+        token: string,
+        userContext?: any
     ): Promise<
         | {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
@@ -81,14 +88,16 @@ export default class Wrapper {
         | User
         | undefined
     >;
-    static isEmailVerified(userId: string): Promise<boolean>;
+    static isEmailVerified(userId: string, userContext?: any): Promise<boolean>;
     static revokeEmailVerificationTokens(
-        userId: string
+        userId: string,
+        userContext?: any
     ): Promise<{
         status: "OK";
     }>;
     static unverifyEmail(
-        userId: string
+        userId: string,
+        userContext?: any
     ): Promise<{
         status: "OK";
     }>;

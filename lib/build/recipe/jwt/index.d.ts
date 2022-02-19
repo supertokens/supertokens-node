@@ -5,7 +5,8 @@ export default class Wrapper {
     static init: typeof Recipe.init;
     static createJWT(
         payload: any,
-        validitySeconds?: number
+        validitySeconds?: number,
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -15,7 +16,9 @@ export default class Wrapper {
               status: "UNSUPPORTED_ALGORITHM_ERROR";
           }
     >;
-    static getJWKS(): Promise<{
+    static getJWKS(
+        userContext?: any
+    ): Promise<{
         status: "OK";
         keys: JsonWebKey[];
     }>;

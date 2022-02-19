@@ -2,14 +2,17 @@
 import OpenIdRecipe from "./recipe";
 export default class OpenIdRecipeWrapper {
     static init: typeof OpenIdRecipe.init;
-    static getOpenIdDiscoveryConfiguration(): Promise<{
+    static getOpenIdDiscoveryConfiguration(
+        userContext?: any
+    ): Promise<{
         status: "OK";
         issuer: string;
         jwks_uri: string;
     }>;
     static createJWT(
         payload?: any,
-        validitySeconds?: number
+        validitySeconds?: number,
+        userContext?: any
     ): Promise<
         | {
               status: "OK";
@@ -19,7 +22,9 @@ export default class OpenIdRecipeWrapper {
               status: "UNSUPPORTED_ALGORITHM_ERROR";
           }
     >;
-    static getJWKS(): Promise<{
+    static getJWKS(
+        userContext?: any
+    ): Promise<{
         status: "OK";
         keys: import("../jwt").JsonWebKey[];
     }>;

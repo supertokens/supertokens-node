@@ -6,22 +6,26 @@ export default function getAPIInterface(): APIInterface {
         verifyEmailPOST: async function ({
             token,
             options,
+            userContext,
         }: {
             token: string;
             options: APIOptions;
+            userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
-            return await options.recipeImplementation.verifyEmailUsingToken({ token });
+            return await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
         },
 
         isEmailVerifiedGET: async function ({
             options,
+            userContext,
         }: {
             options: APIOptions;
+            userContext: any;
         }): Promise<{
             status: "OK";
             isVerified: boolean;
         }> {
-            let session = await Session.getSession(options.req, options.res);
+            let session = await Session.getSession(options.req, options.res, userContext);
 
             if (session === undefined) {
                 throw new Error("Session is undefined. Should not come here.");
@@ -29,20 +33,22 @@ export default function getAPIInterface(): APIInterface {
 
             let userId = session.getUserId();
 
-            let email = await options.config.getEmailForUserId(userId);
+            let email = await options.config.getEmailForUserId(userId, userContext);
 
             return {
                 status: "OK",
-                isVerified: await options.recipeImplementation.isEmailVerified({ userId, email }),
+                isVerified: await options.recipeImplementation.isEmailVerified({ userId, email, userContext }),
             };
         },
 
         generateEmailVerifyTokenPOST: async function ({
             options,
+            userContext,
         }: {
             options: APIOptions;
+            userContext: any;
         }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" }> {
-            let session = await Session.getSession(options.req, options.res);
+            let session = await Session.getSession(options.req, options.res, userContext);
 
             if (session === undefined) {
                 throw new Error("Session is undefined. Should not come here.");
@@ -50,16 +56,20 @@ export default function getAPIInterface(): APIInterface {
 
             let userId = session.getUserId();
 
-            let email = await options.config.getEmailForUserId(userId);
+            let email = await options.config.getEmailForUserId(userId, userContext);
 
-            let response = await options.recipeImplementation.createEmailVerificationToken({ userId, email });
+            let response = await options.recipeImplementation.createEmailVerificationToken({
+                userId,
+                email,
+                userContext,
+            });
 
             if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
                 return response;
             }
 
             let emailVerifyLink =
-                (await options.config.getEmailVerificationURL({ id: userId, email })) +
+                (await options.config.getEmailVerificationURL({ id: userId, email }, userContext)) +
                 "?token=" +
                 response.token +
                 "&rid=" +
@@ -67,10 +77,12 @@ export default function getAPIInterface(): APIInterface {
 
             try {
                 if (!options.isInServerlessEnv) {
-                    options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink).catch((_) => {});
+                    options.config
+                        .createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext)
+                        .catch((_) => {});
                 } else {
                     // see https://github.com/supertokens/supertokens-node/pull/135
-                    await options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink);
+                    await options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext);
                 }
             } catch (_) {}
 

@@ -213,6 +213,7 @@ export default class SessionRecipe extends RecipeModule {
                 isInServerlessEnv: this.isInServerlessEnv,
                 recipeImplementation: this.recipeInterfaceImpl,
             },
+            userContext: {},
         });
     };
 }

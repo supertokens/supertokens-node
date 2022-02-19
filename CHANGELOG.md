@@ -6,7 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 .
 
+## [9.0.0] - 2022-02-20
+
+### Breaking Change
+
+-   Adds user context to all functions exposed to the user, and to API and Recipe interface functions.
+-   Returns session from API interface functions that create a session
+
+### Change:
+
+-   Uses recipe interface inside session class so that any modification to those get reflected in the session class functions too.
+
 ## [8.6.1] - 2022-02-09
+
+### Refactor
 
 -   Removes unused property from session recipe
 
@@ -21,6 +34,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Adds ability to give a path for each of the hostnames in the connectionURI: https://github.com/supertokens/supertokens-node/issues/252
 -   add workflow to verify if pr title follows conventional commits
+-   Added `regenerateAccessToken` as a new recipe function for the session recipe.
+
+### Breaking changes:
+
+-   Allows passing of custom user context everywhere: https://github.com/supertokens/supertokens-node/issues/215
+-   Returns session object from API interface functions which create a new session: https://github.com/supertokens/supertokens-node/issues/215
 
 ## [8.5.0] - 2022-01-14
 

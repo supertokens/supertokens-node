@@ -34,9 +34,12 @@ export default async function signUpAPI(apiImplementation: APIInterface, options
         (await options.req.getJSONBody()).formFields
     );
 
-    let result = await apiImplementation.signUpPOST({ formFields, options });
+    let result = await apiImplementation.signUpPOST({ formFields, options, userContext: {} });
     if (result.status === "OK") {
-        send200Response(options.res, result);
+        send200Response(options.res, {
+            status: "OK",
+            user: result.user,
+        });
     } else {
         throw new STError({
             type: STError.FIELD_ERROR,

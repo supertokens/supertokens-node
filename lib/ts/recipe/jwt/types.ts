@@ -60,6 +60,7 @@ export type RecipeInterface = {
     createJWT(input: {
         payload?: any;
         validitySeconds?: number;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -70,12 +71,16 @@ export type RecipeInterface = {
           }
     >;
 
-    getJWKS(): Promise<{
+    getJWKS(input: {
+        userContext: any;
+    }): Promise<{
         status: "OK";
         keys: JsonWebKey[];
     }>;
 };
 
 export type APIInterface = {
-    getJWKSGET: undefined | ((input: { options: APIOptions }) => Promise<{ status: "OK"; keys: JsonWebKey[] }>);
+    getJWKSGET:
+        | undefined
+        | ((input: { options: APIOptions; userContext: any }) => Promise<{ status: "OK"; keys: JsonWebKey[] }>);
 };

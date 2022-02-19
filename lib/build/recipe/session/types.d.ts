@@ -212,39 +212,62 @@ export declare type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
+        userContext: any;
     }): Promise<SessionContainerInterface>;
     getSession(input: {
         req: any;
         res: any;
         options?: VerifySessionOptions;
+        userContext: any;
     }): Promise<SessionContainerInterface | undefined>;
-    refreshSession(input: { req: any; res: any }): Promise<SessionContainerInterface>;
+    refreshSession(input: { req: any; res: any; userContext: any }): Promise<SessionContainerInterface>;
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionData
      * - getAccessTokenPayload
      */
-    getSessionInformation(input: { sessionHandle: string }): Promise<SessionInformation>;
-    revokeAllSessionsForUser(input: { userId: string }): Promise<string[]>;
-    getAllSessionHandlesForUser(input: { userId: string }): Promise<string[]>;
-    revokeSession(input: { sessionHandle: string }): Promise<boolean>;
-    revokeMultipleSessions(input: { sessionHandles: string[] }): Promise<string[]>;
-    updateSessionData(input: { sessionHandle: string; newSessionData: any }): Promise<void>;
-    updateAccessTokenPayload(input: { sessionHandle: string; newAccessTokenPayload: any }): Promise<void>;
-    getAccessTokenLifeTimeMS(): Promise<number>;
-    getRefreshTokenLifeTimeMS(): Promise<number>;
+    getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation>;
+    revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
+    revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
+    revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
+    updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<void>;
+    updateAccessTokenPayload(input: {
+        sessionHandle: string;
+        newAccessTokenPayload: any;
+        userContext: any;
+    }): Promise<void>;
+    regenerateAccessToken(input: {
+        accessToken: string;
+        newAccessTokenPayload?: any;
+        userContext: any;
+    }): Promise<{
+        status: "OK";
+        session: {
+            handle: string;
+            userId: string;
+            userDataInJWT: any;
+        };
+        accessToken?: {
+            token: string;
+            expiry: number;
+            createdTime: number;
+        };
+    }>;
+    getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
+    getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 };
 export interface SessionContainerInterface {
-    revokeSession(): Promise<void>;
-    getSessionData(): Promise<any>;
-    updateSessionData(newSessionData: any): Promise<any>;
-    getUserId(): string;
-    getAccessTokenPayload(): any;
-    getHandle(): string;
-    getAccessToken(): string;
-    updateAccessTokenPayload(newAccessTokenPayload: any): Promise<void>;
-    getTimeCreated(): Promise<number>;
-    getExpiry(): Promise<number>;
+    revokeSession(userContext?: any): Promise<void>;
+    getSessionData(userContext?: any): Promise<any>;
+    updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
+    getUserId(userContext?: any): string;
+    getAccessTokenPayload(userContext?: any): any;
+    getHandle(userContext?: any): string;
+    getAccessToken(userContext?: any): string;
+    updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
+    getTimeCreated(userContext?: any): Promise<number>;
+    getExpiry(userContext?: any): Promise<number>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -255,17 +278,19 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
-    refreshPOST: undefined | ((input: { options: APIOptions }) => Promise<void>);
+    refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<void>);
     signOutPOST:
         | undefined
         | ((input: {
               options: APIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
           }>);
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;
+        userContext: any;
     }): Promise<SessionContainerInterface | undefined>;
 };
 export declare type SessionInformation = {

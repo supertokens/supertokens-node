@@ -6,10 +6,12 @@ export declare function addJWTToAccessTokenPayload({
     userId,
     jwtPropertyName,
     openIdRecipeImplementation,
+    userContext,
 }: {
     accessTokenPayload: any;
     jwtExpiry: number;
     userId: string;
     jwtPropertyName: string;
     openIdRecipeImplementation: OpenIdRecipeInterface;
+    userContext: any;
 }): Promise<any>;

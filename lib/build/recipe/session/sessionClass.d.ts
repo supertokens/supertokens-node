@@ -17,14 +17,14 @@ export default class Session implements SessionContainerInterface {
         userDataInAccessToken: any,
         res: BaseResponse
     );
-    revokeSession: () => Promise<void>;
-    getSessionData: () => Promise<any>;
-    updateSessionData: (newSessionData: any) => Promise<void>;
+    revokeSession: (userContext?: any) => Promise<void>;
+    getSessionData: (userContext?: any) => Promise<any>;
+    updateSessionData: (newSessionData: any, userContext?: any) => Promise<void>;
     getUserId: () => string;
     getAccessTokenPayload: () => any;
     getHandle: () => string;
     getAccessToken: () => string;
-    updateAccessTokenPayload: (newAccessTokenPayload: any) => Promise<void>;
-    getTimeCreated: () => Promise<number>;
-    getExpiry: () => Promise<number>;
+    updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
+    getTimeCreated: (userContext?: any) => Promise<number>;
+    getExpiry: (userContext?: any) => Promise<number>;
 }
