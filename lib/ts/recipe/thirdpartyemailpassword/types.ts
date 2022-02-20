@@ -178,7 +178,7 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<User | undefined>;
 
-    signInUp(input: {
+    thirdPartySignInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: {
@@ -194,13 +194,13 @@ export type RecipeInterface = {
           }
     >;
 
-    signUp(input: {
+    emailPasswordSignUp(input: {
         email: string;
         password: string;
         userContext: any;
     }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }>;
 
-    signIn(input: {
+    emailPasswordSignIn(input: {
         email: string;
         password: string;
         userContext: any;
@@ -250,7 +250,7 @@ export type APIInterface = {
               url: string;
           }>);
 
-    emailExistsGET:
+    emailPasswordEmailExistsGET:
         | undefined
         | ((input: {
               email: string;
