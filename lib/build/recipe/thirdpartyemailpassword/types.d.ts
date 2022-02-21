@@ -155,7 +155,7 @@ export declare type RecipeInterface = {
         thirdPartyUserId: string;
         userContext: any;
     }): Promise<User | undefined>;
-    signInUp(input: {
+    thirdPartySignInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: {
@@ -174,7 +174,7 @@ export declare type RecipeInterface = {
               error: string;
           }
     >;
-    signUp(input: {
+    emailPasswordSignUp(input: {
         email: string;
         password: string;
         userContext: any;
@@ -187,7 +187,7 @@ export declare type RecipeInterface = {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
     >;
-    signIn(input: {
+    emailPasswordSignIn(input: {
         email: string;
         password: string;
         userContext: any;
@@ -251,7 +251,7 @@ export declare type APIInterface = {
               status: "OK";
               url: string;
           }>);
-    emailExistsGET:
+    emailPasswordEmailExistsGET:
         | undefined
         | ((input: {
               email: string;

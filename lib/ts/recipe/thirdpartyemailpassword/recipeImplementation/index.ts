@@ -18,7 +18,7 @@ export default function getRecipeInterface(
     }
 
     return {
-        signUp: async function (input: {
+        emailPasswordSignUp: async function (input: {
             email: string;
             password: string;
             userContext: any;
@@ -26,7 +26,7 @@ export default function getRecipeInterface(
             return await originalEmailPasswordImplementation.signUp.bind(DerivedEP(this))(input);
         },
 
-        signIn: async function (input: {
+        emailPasswordSignIn: async function (input: {
             email: string;
             password: string;
             userContext: any;
@@ -34,7 +34,7 @@ export default function getRecipeInterface(
             return originalEmailPasswordImplementation.signIn.bind(DerivedEP(this))(input);
         },
 
-        signInUp: async function (input: {
+        thirdPartySignInUp: async function (input: {
             thirdPartyId: string;
             thirdPartyUserId: string;
             email: {

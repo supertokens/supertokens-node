@@ -24,7 +24,7 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signInUp(
+    static thirdPartySignInUp(
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: {
@@ -33,7 +33,7 @@ export default class Wrapper {
         },
         userContext: any = {}
     ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
             thirdPartyId,
             thirdPartyUserId,
             email,
@@ -49,12 +49,20 @@ export default class Wrapper {
         });
     }
 
-    static signUp(email: string, password: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({ email, password, userContext });
+    static emailPasswordSignUp(email: string, password: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
+            email,
+            password,
+            userContext,
+        });
     }
 
-    static signIn(email: string, password: string, userContext: any = {}) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({ email, password, userContext });
+    static emailPasswordSignIn(email: string, password: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignIn({
+            email,
+            password,
+            userContext,
+        });
     }
 
     static getUserById(userId: string, userContext: any = {}) {
@@ -157,11 +165,11 @@ export let init = Wrapper.init;
 
 export let Error = Wrapper.Error;
 
-export let signUp = Wrapper.signUp;
+export let emailPasswordSignUp = Wrapper.emailPasswordSignUp;
 
-export let signIn = Wrapper.signIn;
+export let emailPasswordSignIn = Wrapper.emailPasswordSignIn;
 
-export let signInUp = Wrapper.signInUp;
+export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
 
 export let getUserById = Wrapper.getUserById;
 
