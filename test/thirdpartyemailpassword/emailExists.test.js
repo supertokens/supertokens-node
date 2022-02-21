@@ -54,7 +54,7 @@ describe(`emailExists: ${printPath("[test/thirdpartyemailpassword/emailExists.te
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                emailExistsGET: undefined,
+                                emailPasswordEmailExistsGET: undefined,
                             };
                         },
                     },
