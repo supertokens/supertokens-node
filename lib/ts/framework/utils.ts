@@ -127,7 +127,9 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
                     });
                 }
             }
-        } else if (request.body === undefined || Buffer.isBuffer(request.body)) {
+            // } else if (request.body === undefined || Buffer.isBuffer(request.body)) { /** old logic */
+        } else {
+            // always parsing it again to make sure that the request is parsed atleast once by a json parser
             let jsonParser = json();
             let err = await new Promise((resolve) => jsonParser(request, new ServerResponse(request), resolve));
             if (err !== undefined) {
