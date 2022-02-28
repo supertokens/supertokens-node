@@ -155,7 +155,7 @@ export declare type RecipeInterface = {
         thirdPartyUserId: string;
         userContext: any;
     }): Promise<User | undefined>;
-    signInUp(input: {
+    thirdPartySignInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: {
@@ -174,7 +174,7 @@ export declare type RecipeInterface = {
               error: string;
           }
     >;
-    signUp(input: {
+    emailPasswordSignUp(input: {
         email: string;
         password: string;
         userContext: any;
@@ -187,7 +187,7 @@ export declare type RecipeInterface = {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
     >;
-    signIn(input: {
+    emailPasswordSignIn(input: {
         email: string;
         password: string;
         userContext: any;
@@ -216,9 +216,19 @@ export declare type RecipeInterface = {
         token: string;
         newPassword: string;
         userContext: any;
-    }): Promise<{
-        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              /**
+               * The id of the user whose password was reset.
+               * Defined for Core versions 3.9 or later
+               */
+              userId?: string;
+          }
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+    >;
     updateEmailOrPassword(input: {
         userId: string;
         email?: string;
@@ -241,7 +251,7 @@ export declare type APIInterface = {
               status: "OK";
               url: string;
           }>);
-    emailExistsGET:
+    emailPasswordEmailExistsGET:
         | undefined
         | ((input: {
               email: string;
@@ -273,9 +283,15 @@ export declare type APIInterface = {
               token: string;
               options: EmailPasswordAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    userId?: string;
+                }
+              | {
+                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+                }
+          >);
     thirdPartySignInUpPOST:
         | undefined
         | ((input: {

@@ -6,7 +6,7 @@ import { TypeProvider } from "../thirdparty/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static signInUp(
+    static thirdPartySignInUp(
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: {
@@ -30,7 +30,7 @@ export default class Wrapper {
         thirdPartyUserId: string,
         userContext?: any
     ): Promise<User | undefined>;
-    static signUp(
+    static emailPasswordSignUp(
         email: string,
         password: string,
         userContext?: any
@@ -43,7 +43,7 @@ export default class Wrapper {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
     >;
-    static signIn(
+    static emailPasswordSignIn(
         email: string,
         password: string,
         userContext?: any
@@ -74,9 +74,15 @@ export default class Wrapper {
         token: string,
         newPassword: string,
         userContext?: any
-    ): Promise<{
-        status: "OK" | "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              userId?: string | undefined;
+          }
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+    >;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
@@ -129,9 +135,9 @@ export default class Wrapper {
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
-export declare let signUp: typeof Wrapper.signUp;
-export declare let signIn: typeof Wrapper.signIn;
-export declare let signInUp: typeof Wrapper.signInUp;
+export declare let emailPasswordSignUp: typeof Wrapper.emailPasswordSignUp;
+export declare let emailPasswordSignIn: typeof Wrapper.emailPasswordSignIn;
+export declare let thirdPartySignInUp: typeof Wrapper.thirdPartySignInUp;
 export declare let getUserById: typeof Wrapper.getUserById;
 export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
 export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;

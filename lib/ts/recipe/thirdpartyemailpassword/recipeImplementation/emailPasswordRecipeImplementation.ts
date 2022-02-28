@@ -8,7 +8,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
-            return await recipeInterface.signUp(input);
+            return await recipeInterface.emailPasswordSignUp(input);
         },
 
         signIn: async function (input: {
@@ -16,7 +16,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             password: string;
             userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
-            return recipeInterface.signIn(input);
+            return recipeInterface.emailPasswordSignIn(input);
         },
 
         getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {

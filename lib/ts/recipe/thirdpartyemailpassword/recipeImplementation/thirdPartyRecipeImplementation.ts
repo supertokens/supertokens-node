@@ -35,7 +35,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                   error: string;
               }
         > {
-            let result = await recipeInterface.signInUp(input);
+            let result = await recipeInterface.thirdPartySignInUp(input);
             if (result.status === "FIELD_ERROR") {
                 return result;
             }

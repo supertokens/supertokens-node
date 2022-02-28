@@ -50,6 +50,13 @@ export default async function passwordReset(apiImplementation: APIInterface, opt
 
     let result = await apiImplementation.passwordResetPOST({ formFields, token, options, userContext: {} });
 
-    send200Response(options.res, result);
+    send200Response(
+        options.res,
+        result.status === "OK"
+            ? {
+                  status: "OK",
+              }
+            : result
+    );
     return true;
 }

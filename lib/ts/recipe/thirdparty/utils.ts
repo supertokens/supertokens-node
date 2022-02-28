@@ -74,7 +74,7 @@ export function findRightProvider(
         }
 
         // otherwise, we return a provider that matches based on client ID as well.
-        return p.get(undefined, undefined).getClientId() === clientId;
+        return p.get(undefined, undefined, {}).getClientId({}) === clientId;
     });
 }
 

@@ -30,6 +30,7 @@ let passwordReset = require("../../lib/build/recipe/emailpassword/api/passwordRe
 const express = require("express");
 const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
+let { maxVersion } = require("../../lib/build/utils");
 
 /**
  * TODO: (later) in passwordResetFunctions.ts:
@@ -333,6 +334,7 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
     it("test valid token input and passoword has changed", async function () {
         await startST();
 
+        let passwordResetUserId = undefined;
         let token = "";
         STExpress.init({
             supertokens: {
@@ -345,6 +347,20 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
             },
             recipeList: [
                 EmailPassword.init({
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                passwordResetPOST: async function (input) {
+                                    let resp = await oI.passwordResetPOST(input);
+                                    if (resp.userId !== undefined) {
+                                        passwordResetUserId = resp.userId;
+                                    }
+                                    return resp;
+                                },
+                            };
+                        },
+                    },
                     resetPasswordUsingTokenFeature: {
                         createAndSendCustomEmail: (user, passwordResetURLWithToken) => {
                             token = passwordResetURLWithToken.split("?")[1].split("&")[0].split("=")[1];
@@ -409,6 +425,13 @@ describe(`passwordreset: ${printPath("[test/emailpassword/passwordreset.test.js]
                     }
                 })
         );
+
+        let currCDIVersion = await Querier.getNewInstanceOrThrowError(undefined).getAPIVersion();
+        if (maxVersion(currCDIVersion, "2.12") === currCDIVersion) {
+            assert(passwordResetUserId !== undefined && passwordResetUserId === userInfo.id);
+        } else {
+            assert(passwordResetUserId === undefined);
+        }
 
         let failureResponse = await new Promise((resolve) =>
             request(app)
