@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [8.6.2] - 2022-02-09
 
--   Fixes #269. The json body parser will always be usd regardless of the fact whether the user has added the parser or not
+-   Fixes #269. The json body parser will additionally be used to parse the request body if the request body is of type `{}`
+-   `init` function will throw error if there are empty items in recipeList when passing the config
 
 ## [8.6.1] - 2022-02-09
 
