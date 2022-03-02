@@ -134,7 +134,26 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
         ) {
             // parsing it again to make sure that the request is parsed atleast once by a json parser
             let jsonParser = json();
-            let err = await new Promise((resolve) => jsonParser(request, new ServerResponse(request), resolve));
+            let err = await new Promise((resolve) => {
+                let resolvedCalled = false;
+                /**
+                 * the setImmediate here is to counter the next.js issue
+                 * where the json parser would not resolve and thus the request
+                 * just hangs forever.
+                 */
+                setImmediate(() => {
+                    if (!resolvedCalled) {
+                        resolvedCalled = true;
+                        resolve(undefined);
+                    }
+                });
+                jsonParser(request, new ServerResponse(request), (e) => {
+                    if (!resolvedCalled) {
+                        resolvedCalled = true;
+                        resolve(e);
+                    }
+                });
+            });
             if (err !== undefined) {
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
