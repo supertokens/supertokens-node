@@ -23,10 +23,20 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyPasswordle
             return undefined;
         },
         getUserById: async function (input) {
-            return await recipeInterface.getUserById(input);
+            let user = await recipeInterface.getUserById(input);
+            if (user !== undefined && "thirdParty" in user) {
+                // this is a thirdparty user.
+                return undefined;
+            }
+            return user;
         },
         getUserByPhoneNumber: async function (input) {
-            return await recipeInterface.getUserByPhoneNumber(input);
+            let user = await recipeInterface.getUserByPhoneNumber(input);
+            if (user !== undefined && "thirdParty" in user) {
+                // this is a thirdparty user.
+                return undefined;
+            }
+            return user;
         },
         listCodesByDeviceId: async function (input) {
             return await recipeInterface.listCodesByDeviceId(input);
