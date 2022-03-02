@@ -303,6 +303,172 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         assert(userInfo.email === signUpUserInfo.email);
     });
 
+    it("test singinAPI works when input is fine and user has added JSON middleware", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(express.json());
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let signUpUserInfo = JSON.parse(response.text).user;
+
+        let userInfo = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text).user);
+                    }
+                })
+        );
+        assert(userInfo.id === signUpUserInfo.id);
+        assert(userInfo.email === signUpUserInfo.email);
+    });
+
+    it("test singinAPI works when input is fine and user has added urlencoded middleware", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(express.urlencoded({ extended: true }));
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let signUpUserInfo = JSON.parse(response.text).user;
+
+        let userInfo = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text).user);
+                    }
+                })
+        );
+        assert(userInfo.id === signUpUserInfo.id);
+        assert(userInfo.email === signUpUserInfo.email);
+    });
+
+    it("test singinAPI works when input is fine and user has added both JSON and urlencoded middleware", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(express.json());
+        app.use(express.urlencoded({ extended: true }));
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "random@gmail.com", "validpass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let signUpUserInfo = JSON.parse(response.text).user;
+
+        let userInfo = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(JSON.parse(res.text).user);
+                    }
+                })
+        );
+        assert(userInfo.id === signUpUserInfo.id);
+        assert(userInfo.email === signUpUserInfo.email);
+    });
+
     /*
     Setting the email value in form field as random@gmail.com causes the test to fail
     */
