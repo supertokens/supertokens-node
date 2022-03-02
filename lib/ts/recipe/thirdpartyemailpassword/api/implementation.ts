@@ -8,7 +8,7 @@ export default function getAPIImplementation(): APIInterface {
     let emailPasswordImplementation = EmailPasswordAPIImplementation();
     let thirdPartyImplementation = ThirdPartyAPIImplementation();
     return {
-        emailExistsGET: emailPasswordImplementation.emailExistsGET?.bind(DerivedEP(this)),
+        emailPasswordEmailExistsGET: emailPasswordImplementation.emailExistsGET?.bind(DerivedEP(this)),
         authorisationUrlGET: thirdPartyImplementation.authorisationUrlGET?.bind(DerivedTP(this)),
         emailPasswordSignInPOST: emailPasswordImplementation.signInPOST?.bind(DerivedEP(this)),
         emailPasswordSignUpPOST: emailPasswordImplementation.signUpPOST?.bind(DerivedEP(this)),

@@ -24,93 +24,123 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static signInUp(
+    static thirdPartySignInUp(
         thirdPartyId: string,
         thirdPartyUserId: string,
         email: {
             id: string;
             isVerified: boolean;
-        }
+        },
+        userContext: any = {}
     ) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({ thirdPartyId, thirdPartyUserId, email });
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.thirdPartySignInUp({
+            thirdPartyId,
+            thirdPartyUserId,
+            email,
+            userContext,
+        });
     }
 
-    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string) {
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext: any = {}) {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByThirdPartyInfo({
             thirdPartyId,
             thirdPartyUserId,
+            userContext,
         });
     }
 
-    static signUp(email: string, password: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signUp({ email, password });
+    static emailPasswordSignUp(email: string, password: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignUp({
+            email,
+            password,
+            userContext,
+        });
     }
 
-    static signIn(email: string, password: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signIn({ email, password });
+    static emailPasswordSignIn(email: string, password: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.emailPasswordSignIn({
+            email,
+            password,
+            userContext,
+        });
     }
 
-    static getUserById(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId });
+    static getUserById(userId: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserById({ userId, userContext });
     }
 
-    static getUsersByEmail(email: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email });
+    static getUsersByEmail(email: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersByEmail({ email, userContext });
     }
 
-    static createResetPasswordToken(userId: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId });
+    static createResetPasswordToken(userId: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createResetPasswordToken({ userId, userContext });
     }
 
-    static resetPasswordUsingToken(token: string, newPassword: string) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({ token, newPassword });
+    static resetPasswordUsingToken(token: string, newPassword: string, userContext: any = {}) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.resetPasswordUsingToken({
+            token,
+            newPassword,
+            userContext,
+        });
     }
 
-    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string }) {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword(input);
+    static updateEmailOrPassword(input: { userId: string; email?: string; password?: string; userContext?: any }) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateEmailOrPassword({
+            userContext: {},
+            ...input,
+        });
     }
 
-    static async createEmailVerificationToken(userId: string) {
+    static async createEmailVerificationToken(userId: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.createEmailVerificationToken({
             userId,
-            email: await recipeInstance.getEmailForUserId(userId),
+            email: await recipeInstance.getEmailForUserId(userId, userContext),
+            userContext,
         });
     }
 
-    static async verifyEmailUsingToken(token: string) {
+    static async verifyEmailUsingToken(token: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         let response = await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.verifyEmailUsingToken({
             token,
+            userContext,
         });
         if (response.status === "OK") {
-            let userInThisRecipe = await recipeInstance.recipeInterfaceImpl.getUserById({ userId: response.user.id });
+            let userInThisRecipe = await recipeInstance.recipeInterfaceImpl.getUserById({
+                userId: response.user.id,
+                userContext,
+            });
             return userInThisRecipe;
         }
         return response;
     }
 
-    static async isEmailVerified(userId: string) {
+    static async isEmailVerified(userId: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.isEmailVerified({
             userId,
-            email: await recipeInstance.getEmailForUserId(userId),
+            email: await recipeInstance.getEmailForUserId(userId, userContext),
+            userContext,
         });
     }
 
-    static async revokeEmailVerificationTokens(userId: string) {
+    static async revokeEmailVerificationTokens(userId: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.revokeEmailVerificationTokens({
             userId,
-            email: await recipeInstance.getEmailForUserId(userId),
+            email: await recipeInstance.getEmailForUserId(userId, userContext),
+            userContext,
         });
     }
 
-    static async unverifyEmail(userId: string) {
+    static async unverifyEmail(userId: string, userContext: any = {}) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
         return await recipeInstance.emailVerificationRecipe.recipeInterfaceImpl.unverifyEmail({
             userId,
-            email: await recipeInstance.getEmailForUserId(userId),
+            email: await recipeInstance.getEmailForUserId(userId, userContext),
+            userContext,
         });
     }
 
@@ -135,11 +165,11 @@ export let init = Wrapper.init;
 
 export let Error = Wrapper.Error;
 
-export let signUp = Wrapper.signUp;
+export let emailPasswordSignUp = Wrapper.emailPasswordSignUp;
 
-export let signIn = Wrapper.signIn;
+export let emailPasswordSignIn = Wrapper.emailPasswordSignIn;
 
-export let signInUp = Wrapper.signInUp;
+export let thirdPartySignInUp = Wrapper.thirdPartySignInUp;
 
 export let getUserById = Wrapper.getUserById;
 

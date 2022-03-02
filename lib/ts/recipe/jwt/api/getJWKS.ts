@@ -22,7 +22,7 @@ export default async function getJWKS(apiImplementation: APIInterface, options: 
     }
 
     options.res.setHeader("Access-Control-Allow-Origin", "*", false);
-    let result = await apiImplementation.getJWKSGET({ options });
+    let result = await apiImplementation.getJWKSGET({ options, userContext: {} });
     send200Response(options.res, { keys: result.keys });
     return true;
 }

@@ -3,20 +3,23 @@ import Session from "../../session";
 import { URLSearchParams } from "url";
 import * as axios from "axios";
 import * as qs from "querystring";
+import { SessionContainerInterface } from "../../session/types";
 
 export default function getAPIInterface(): APIInterface {
     return {
         authorisationUrlGET: async function ({
             provider,
             options,
+            userContext,
         }: {
             provider: TypeProvider;
             options: APIOptions;
+            userContext: any;
         }): Promise<{
             status: "OK";
             url: string;
         }> {
-            let providerInfo = provider.get(undefined, undefined);
+            let providerInfo = provider.get(undefined, undefined, userContext);
 
             let params: { [key: string]: string } = {};
             let keys = Object.keys(providerInfo.authorisationRedirect.params);
@@ -25,7 +28,10 @@ export default function getAPIInterface(): APIInterface {
                 let value = providerInfo.authorisationRedirect.params[key];
                 params[key] = typeof value === "function" ? await value(options.req.original) : value;
             }
-            if (providerInfo.getRedirectURI !== undefined && !isUsingDevelopmentClientId(providerInfo.getClientId())) {
+            if (
+                providerInfo.getRedirectURI !== undefined &&
+                !isUsingDevelopmentClientId(providerInfo.getClientId(userContext))
+            ) {
                 // the backend wants to set the redirectURI - so we set that here.
 
                 // we add the not development keys because the oauth provider will
@@ -33,15 +39,15 @@ export default function getAPIInterface(): APIInterface {
                 // to the the user's website, which will handle the callback as usual.
                 // If we add this, then instead, the supertokens' site will redirect
                 // the user to this API layer, which is not needed.
-                params["redirect_uri"] = providerInfo.getRedirectURI();
+                params["redirect_uri"] = providerInfo.getRedirectURI(userContext);
             }
 
-            if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
+            if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
                 params["actual_redirect_uri"] = providerInfo.authorisationRedirect.url;
 
                 Object.keys(params).forEach((key) => {
-                    if (params[key] === providerInfo.getClientId()) {
-                        params[key] = getActualClientIdFromDevelopmentClientId(providerInfo.getClientId());
+                    if (params[key] === providerInfo.getClientId(userContext)) {
+                        params[key] = getActualClientIdFromDevelopmentClientId(providerInfo.getClientId(userContext));
                     }
                 });
             }
@@ -50,7 +56,7 @@ export default function getAPIInterface(): APIInterface {
 
             let url = `${providerInfo.authorisationRedirect.url}?${paramsString}`;
 
-            if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
+            if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
                 url = `${DEV_OAUTH_AUTHORIZATION_URL}?${paramsString}`;
             }
 
@@ -65,6 +71,7 @@ export default function getAPIInterface(): APIInterface {
             redirectURI,
             authCodeResponse,
             options,
+            userContext,
         }: {
             provider: TypeProvider;
             code: string;
@@ -72,11 +79,13 @@ export default function getAPIInterface(): APIInterface {
             authCodeResponse?: any;
             clientId?: string;
             options: APIOptions;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
                   createdNewUser: boolean;
                   user: User;
+                  session: SessionContainerInterface;
                   authCodeResponse: any;
               }
             | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
@@ -89,17 +98,17 @@ export default function getAPIInterface(): APIInterface {
             let accessTokenAPIResponse: any;
 
             {
-                let providerInfo = provider.get(undefined, undefined);
-                if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
+                let providerInfo = provider.get(undefined, undefined, userContext);
+                if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
                     redirectURI = DEV_OAUTH_REDIRECT_URL;
                 } else if (providerInfo.getRedirectURI !== undefined) {
                     // we overwrite the redirectURI provided by the frontend
                     // since the backend wants to take charge of setting this.
-                    redirectURI = providerInfo.getRedirectURI();
+                    redirectURI = providerInfo.getRedirectURI(userContext);
                 }
             }
 
-            let providerInfo = provider.get(redirectURI, code);
+            let providerInfo = provider.get(redirectURI, code, userContext);
 
             if (authCodeResponse !== undefined) {
                 accessTokenAPIResponse = {
@@ -107,11 +116,11 @@ export default function getAPIInterface(): APIInterface {
                 };
             } else {
                 // we should use code to get the authCodeResponse body
-                if (isUsingDevelopmentClientId(providerInfo.getClientId())) {
+                if (isUsingDevelopmentClientId(providerInfo.getClientId(userContext))) {
                     Object.keys(providerInfo.accessTokenAPI.params).forEach((key) => {
-                        if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId()) {
+                        if (providerInfo.accessTokenAPI.params[key] === providerInfo.getClientId(userContext)) {
                             providerInfo.accessTokenAPI.params[key] = getActualClientIdFromDevelopmentClientId(
-                                providerInfo.getClientId()
+                                providerInfo.getClientId(userContext)
                             );
                         }
                     });
@@ -129,7 +138,7 @@ export default function getAPIInterface(): APIInterface {
             }
 
             try {
-                userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data);
+                userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data, userContext);
             } catch (err) {
                 if ((err as any).message !== undefined) {
                     return {
@@ -150,6 +159,7 @@ export default function getAPIInterface(): APIInterface {
                 thirdPartyId: provider.id,
                 thirdPartyUserId: userInfo.id,
                 email: emailInfo,
+                userContext,
             });
 
             if (response.status === "FIELD_ERROR") {
@@ -162,20 +172,23 @@ export default function getAPIInterface(): APIInterface {
                 const tokenResponse = await options.emailVerificationRecipeImplementation.createEmailVerificationToken({
                     userId: response.user.id,
                     email: response.user.email,
+                    userContext,
                 });
 
                 if (tokenResponse.status === "OK") {
                     await options.emailVerificationRecipeImplementation.verifyEmailUsingToken({
                         token: tokenResponse.token,
+                        userContext,
                     });
                 }
             }
 
-            await Session.createNewSession(options.res, response.user.id, {}, {});
+            let session = await Session.createNewSession(options.res, response.user.id, {}, {}, userContext);
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,
                 user: response.user,
+                session,
                 authCodeResponse: accessTokenAPIResponse.data,
             };
         },

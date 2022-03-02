@@ -37,5 +37,5 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    getEmailForUserId: (userId: string) => Promise<string>;
+    getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
 }

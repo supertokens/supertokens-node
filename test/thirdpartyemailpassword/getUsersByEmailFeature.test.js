@@ -3,7 +3,11 @@ let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
-const { signInUp, getUsersByEmail, signUp } = require("../../lib/build/recipe/thirdpartyemailpassword");
+const {
+    thirdPartySignInUp,
+    getUsersByEmail,
+    emailPasswordSignUp,
+} = require("../../lib/build/recipe/thirdpartyemailpassword");
 const { maxVersion } = require("../../lib/build/utils");
 let { Querier } = require("../../lib/build/querier");
 let { middleware, errorHandler } = require("../../framework/express");
@@ -82,9 +86,9 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartyemailpassword/getUsersBy
             return;
         }
 
-        await signUp("john.doe@example.com", "somePass");
-        await signInUp("mock", "thirdPartyJohnDoe", { id: "john.doe@example.com", isVerified: true });
-        await signInUp("mock2", "thirdPartyDaveDoe", { id: "john.doe@example.com", isVerified: false });
+        await emailPasswordSignUp("john.doe@example.com", "somePass");
+        await thirdPartySignInUp("mock", "thirdPartyJohnDoe", { id: "john.doe@example.com", isVerified: true });
+        await thirdPartySignInUp("mock2", "thirdPartyDaveDoe", { id: "john.doe@example.com", isVerified: false });
 
         const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
 

@@ -238,6 +238,7 @@ describe(`Loopback: ${printPath("[test/framework/loopback/loopback.test.js]")}`,
             baseURL: "http://localhost:9876",
             method: "get",
         });
+        await new Promise((r) => setTimeout(r, 1000)); // we delay so that the API call finishes and doesn't shut the core before the test finishes.
         assert(result.status === 203);
         assert(result.data.custom);
     });

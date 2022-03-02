@@ -13,6 +13,7 @@ import {
     APIOptions as EmailPasswordAPIOptionsOriginal,
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
+import { SessionContainerInterface } from "../session/types";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -40,8 +41,8 @@ export declare type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
 };
 export declare type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User) => Promise<string>;
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string) => Promise<void>;
+    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
@@ -147,16 +148,21 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getUserById(input: { userId: string }): Promise<User | undefined>;
-    getUsersByEmail(input: { email: string }): Promise<User[]>;
-    getUserByThirdPartyInfo(input: { thirdPartyId: string; thirdPartyUserId: string }): Promise<User | undefined>;
-    signInUp(input: {
+    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
+    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+    getUserByThirdPartyInfo(input: {
+        thirdPartyId: string;
+        thirdPartyUserId: string;
+        userContext: any;
+    }): Promise<User | undefined>;
+    thirdPartySignInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
         email: {
             id: string;
             isVerified: boolean;
         };
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -168,9 +174,10 @@ export declare type RecipeInterface = {
               error: string;
           }
     >;
-    signUp(input: {
+    emailPasswordSignUp(input: {
         email: string;
         password: string;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -180,9 +187,10 @@ export declare type RecipeInterface = {
               status: "EMAIL_ALREADY_EXISTS_ERROR";
           }
     >;
-    signIn(input: {
+    emailPasswordSignIn(input: {
         email: string;
         password: string;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -194,6 +202,7 @@ export declare type RecipeInterface = {
     >;
     createResetPasswordToken(input: {
         userId: string;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -206,6 +215,7 @@ export declare type RecipeInterface = {
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
+        userContext: any;
     }): Promise<
         | {
               status: "OK";
@@ -223,6 +233,7 @@ export declare type RecipeInterface = {
         userId: string;
         email?: string;
         password?: string;
+        userContext: any;
     }): Promise<{
         status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR";
     }>;
@@ -235,15 +246,17 @@ export declare type APIInterface = {
         | ((input: {
               provider: TypeProvider;
               options: ThirdPartyAPIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
               url: string;
           }>);
-    emailExistsGET:
+    emailPasswordEmailExistsGET:
         | undefined
         | ((input: {
               email: string;
               options: EmailPasswordAPIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
               exists: boolean;
@@ -256,6 +269,7 @@ export declare type APIInterface = {
                   value: string;
               }[];
               options: EmailPasswordAPIOptions;
+              userContext: any;
           }) => Promise<{
               status: "OK";
           }>);
@@ -268,6 +282,7 @@ export declare type APIInterface = {
               }[];
               token: string;
               options: EmailPasswordAPIOptions;
+              userContext: any;
           }) => Promise<
               | {
                     status: "OK";
@@ -286,11 +301,13 @@ export declare type APIInterface = {
               authCodeResponse?: any;
               clientId?: string;
               options: ThirdPartyAPIOptions;
+              userContext: any;
           }) => Promise<
               | {
                     status: "OK";
                     createdNewUser: boolean;
                     user: User;
+                    session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
               | {
@@ -309,10 +326,12 @@ export declare type APIInterface = {
                   value: string;
               }[];
               options: EmailPasswordAPIOptions;
+              userContext: any;
           }) => Promise<
               | {
                     status: "OK";
                     user: User;
+                    session: SessionContainerInterface;
                 }
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
@@ -326,10 +345,12 @@ export declare type APIInterface = {
                   value: string;
               }[];
               options: EmailPasswordAPIOptions;
+              userContext: any;
           }) => Promise<
               | {
                     status: "OK";
                     user: User;
+                    session: SessionContainerInterface;
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
@@ -337,5 +358,5 @@ export declare type APIInterface = {
           >);
     appleRedirectHandlerPOST:
         | undefined
-        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions }) => Promise<void>);
+        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions; userContext: any }) => Promise<void>);
 };

@@ -10,7 +10,7 @@ We're so excited you're interested in helping with SuperTokens! We are happy to 
 ## Where to ask Questions?
 
 1. Check our [Github Issues](https://github.com/supertokens/supertokens-node/issues) to see if someone has already answered your question.
-2. Join our community on [Discord](https://supertokens.io/discord) and feel free to ask us your questions
+2. Join our community on [Discord](https://supertokens.com/discord) and feel free to ask us your questions
 
 ## Development Setup
 
@@ -63,14 +63,14 @@ You will need to setup the `supertokens-core` in order to to run the `supertoken
 SuperTokens is made possible by a passionate team and a strong community of developers. If you have any questions or would like to get more involved in the SuperTokens community you can check out:
 
 -   [Github Issues](https://github.com/supertokens/supertokens-node/issues)
--   [Discord](https://supertokens.io/discord)
+-   [Discord](https://supertokens.com/discord)
 -   [Twitter](https://twitter.com/supertokensio)
--   or [email us](mailto:team@supertokens.io)
+-   or [email us](mailto:team@supertokens.com)
 
 Additional resources you might find useful:
 
--   [SuperTokens Docs](https://supertokens.io/docs/community/getting-started/installation)
--   [Blog Posts](https://supertokens.io/blog/)
+-   [SuperTokens Docs](https://supertokens.com/docs/community/getting-started/installation)
+-   [Blog Posts](https://supertokens.com/blog/)
 
 ## Implementing RecipeInterfaces
 

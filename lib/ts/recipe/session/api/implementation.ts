@@ -6,16 +6,24 @@ import { SessionContainerInterface } from "../types";
 
 export default function getAPIInterface(): APIInterface {
     return {
-        refreshPOST: async function ({ options }: { options: APIOptions }): Promise<void> {
-            await options.recipeImplementation.refreshSession({ req: options.req, res: options.res });
+        refreshPOST: async function ({
+            options,
+            userContext,
+        }: {
+            options: APIOptions;
+            userContext: any;
+        }): Promise<void> {
+            await options.recipeImplementation.refreshSession({ req: options.req, res: options.res, userContext });
         },
 
         verifySession: async function ({
             verifySessionOptions,
             options,
+            userContext,
         }: {
             verifySessionOptions: VerifySessionOptions | undefined;
             options: APIOptions;
+            userContext: any;
         }): Promise<SessionContainerInterface | undefined> {
             let method = normaliseHttpMethod(options.req.getMethod());
             if (method === "options" || method === "trace") {
@@ -30,26 +38,34 @@ export default function getAPIInterface(): APIInterface {
                 return await options.recipeImplementation.refreshSession({
                     req: options.req,
                     res: options.res,
+                    userContext,
                 });
             } else {
                 return await options.recipeImplementation.getSession({
                     req: options.req,
                     res: options.res,
                     options: verifySessionOptions,
+                    userContext,
                 });
             }
         },
 
         signOutPOST: async function ({
             options,
+            userContext,
         }: {
             options: APIOptions;
+            userContext: any;
         }): Promise<{
             status: "OK";
         }> {
             let session;
             try {
-                session = await options.recipeImplementation.getSession({ req: options.req, res: options.res });
+                session = await options.recipeImplementation.getSession({
+                    req: options.req,
+                    res: options.res,
+                    userContext,
+                });
             } catch (err) {
                 if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNAUTHORISED) {
                     // The session is expired / does not exist anyway. So we return OK
@@ -64,7 +80,7 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            await session.revokeSession();
+            await session.revokeSession(userContext);
 
             return {
                 status: "OK",

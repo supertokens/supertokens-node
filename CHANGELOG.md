@@ -5,12 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
-## [8.6.2] - 2022-02-09
+## [9.0.1] - 2022-03-02
 
 -   Fixes #269. The json body parser will additionally be used to parse the request body if the request body is of type `{}`
 -   `init` function will throw error if there are empty items in recipeList when passing the config
 
+## [9.0.0] - 2022-02-20
+
+### Breaking Change
+
+-   Adds user context to all functions exposed to the user, and to API and Recipe interface functions. This is a non breaking change for User exposed function calls, but a breaking change if you are using the Recipe or APIs override feature
+-   Returns session from API interface functions that create a session
+-   Renames functions in ThirdPartyEmailPassword recipe (https://github.com/supertokens/supertokens-node/issues/219):
+    -   Recipe Interface:
+        -   `signInUp` -> `thirdPartySignInUp`
+        -   `signUp` -> `emailPasswordSignUp`
+        -   `signIn` -> `emailPasswordSignIn`
+    -   API Interface:
+        -   `emailExistsGET` -> `emailPasswordEmailExistsGET`
+    -   User exposed functions (in `recipe/thirdpartyemailpassword/index.ts`)
+        -   `signInUp` -> `thirdPartySignInUp`
+        -   `signUp` -> `emailPasswordSignUp`
+        -   `signIn` -> `emailPasswordSignIn`
+
+### Change:
+
+-   Uses recipe interface inside session class so that any modification to those get reflected in the session class functions too.
+
 ## [8.6.1] - 2022-02-09
+
+### Refactor
 
 -   Removes unused property from session recipe
 
@@ -25,6 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   Adds ability to give a path for each of the hostnames in the connectionURI: https://github.com/supertokens/supertokens-node/issues/252
 -   add workflow to verify if pr title follows conventional commits
+-   Added `regenerateAccessToken` as a new recipe function for the session recipe.
+
+### Breaking changes:
+
+-   Allows passing of custom user context everywhere: https://github.com/supertokens/supertokens-node/issues/215
+-   Returns session object from API interface functions which create a new session: https://github.com/supertokens/supertokens-node/issues/215
 
 ## [8.5.0] - 2022-01-14
 

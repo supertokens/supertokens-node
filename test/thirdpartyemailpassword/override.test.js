@@ -54,15 +54,15 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                         functions: (oI) => {
                             return {
                                 ...oI,
-                                signUp: async (input) => {
-                                    let response = await oI.signUp(input);
+                                emailPasswordSignUp: async (input) => {
+                                    let response = await oI.emailPasswordSignUp(input);
                                     if (response.status === "OK") {
                                         user = response.user;
                                     }
                                     return response;
                                 },
-                                signIn: async (input) => {
-                                    let response = await oI.signIn(input);
+                                emailPasswordSignIn: async (input) => {
+                                    let response = await oI.emailPasswordSignIn(input);
                                     if (response.status === "OK") {
                                         user = response.user;
                                     }
@@ -190,8 +190,8 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                                     }
                                     return response;
                                 },
-                                emailExistsGET: async (input) => {
-                                    let response = await oI.emailExistsGET(input);
+                                emailPasswordEmailExistsGET: async (input) => {
+                                    let response = await oI.emailPasswordEmailExistsGET(input);
                                     emailExists = response.exists;
                                     return response;
                                 },
@@ -308,15 +308,15 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                         functions: (oI) => {
                             return {
                                 ...oI,
-                                signUp: async (input) => {
-                                    let response = await oI.signUp(input);
+                                emailPasswordSignUp: async (input) => {
+                                    let response = await oI.emailPasswordSignUp(input);
                                     user = response.user;
                                     throw {
                                         error: "signup error",
                                     };
                                 },
-                                signIn: async (input) => {
-                                    await oI.signIn(input);
+                                emailPasswordSignIn: async (input) => {
+                                    await oI.emailPasswordSignIn(input);
                                     throw {
                                         error: "signin error",
                                     };
@@ -457,8 +457,8 @@ describe(`overrideTest: ${printPath("[test/thirdpartyemailpassword/override.test
                                         error: "signin error",
                                     };
                                 },
-                                emailExistsGET: async (input) => {
-                                    let response = await oI.emailExistsGET(input);
+                                emailPasswordEmailExistsGET: async (input) => {
+                                    let response = await oI.emailPasswordEmailExistsGET(input);
                                     emailExists = response.exists;
                                     throw {
                                         error: "email exists error",

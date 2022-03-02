@@ -90,6 +90,7 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         redirectURI,
         options,
         authCodeResponse,
+        userContext: {},
     });
 
     if (result.status === "OK") {

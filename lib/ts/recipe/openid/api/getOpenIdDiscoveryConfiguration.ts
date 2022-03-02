@@ -24,7 +24,7 @@ export default async function getOpenIdDiscoveryConfiguration(
     }
 
     options.res.setHeader("Access-Control-Allow-Origin", "*", false);
-    let result = await apiImplementation.getOpenIdDiscoveryConfigurationGET({ options });
+    let result = await apiImplementation.getOpenIdDiscoveryConfigurationGET({ options, userContext: {} });
     send200Response(options.res, {
         issuer: result.issuer,
         jwks_uri: result.jwks_uri,

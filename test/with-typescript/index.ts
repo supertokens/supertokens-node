@@ -111,6 +111,7 @@ let sessionConfig: SessionTypeInput = {
                 getAccessTokenLifeTimeMS: originalImpl.getAccessTokenLifeTimeMS,
                 getRefreshTokenLifeTimeMS: originalImpl.getRefreshTokenLifeTimeMS,
                 getSessionInformation: originalImpl.getSessionInformation,
+                regenerateAccessToken: originalImpl.regenerateAccessToken,
             };
         },
     },
@@ -258,7 +259,12 @@ Supertokens.init({
                         signIn: async (input) => {
                             // we check if the email exists in SuperTokens. If not,
                             // then the sign in should be handled by you.
-                            if ((await supertokensImpl.getUserByEmail({ email: input.email })) === undefined) {
+                            if (
+                                (await supertokensImpl.getUserByEmail({
+                                    email: input.email,
+                                    userContext: input.userContext,
+                                })) === undefined
+                            ) {
                                 // TODO: sign in from your db
                                 // example return value if credentials don't match
                                 return {
@@ -374,7 +380,11 @@ EmailPassword.init({
                     let email = formFields.filter((f) => f.id === "email")[0].value;
                     let password = formFields.filter((f) => f.id === "password")[0].value;
 
-                    let response = await options.recipeImplementation.signIn({ email, password });
+                    let response = await options.recipeImplementation.signIn({
+                        email,
+                        password,
+                        userContext: input.userContext,
+                    });
                     if (response.status === "WRONG_CREDENTIALS_ERROR") {
                         return response;
                     }
@@ -386,9 +396,10 @@ EmailPassword.init({
 
                     if (isAllowed) {
                         // import Session from "supertokens-node/recipe/session"
-                        await Session.createNewSession(options.res, user.id);
+                        let session = await Session.createNewSession(options.res, user.id);
                         return {
                             status: "OK",
+                            session,
                             user,
                         };
                     } else {

@@ -785,7 +785,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert((await STExpress.getUserCount(["emailpassword"])) === 1);
         assert((await STExpress.getUserCount(["emailpassword", "thirdparty"])) === 1);
 
-        await ThirdPartyEmailPassword.signInUp("google", "randomUserId", {
+        await ThirdPartyEmailPassword.thirdPartySignInUp("google", "randomUserId", {
             id: "test@example.com",
             isVerified: false,
         });

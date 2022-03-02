@@ -6,6 +6,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         getUserByThirdPartyInfo: async function (input: {
             thirdPartyId: string;
             thirdPartyUserId: string;
+            userContext: any;
         }): Promise<User | undefined> {
             let user = await recipeInterface.getUserByThirdPartyInfo(input);
             if (user === undefined || user.thirdParty === undefined) {
@@ -26,6 +27,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 id: string;
                 isVerified: boolean;
             };
+            userContext: any;
         }): Promise<
             | { status: "OK"; createdNewUser: boolean; user: User }
             | {
@@ -33,7 +35,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                   error: string;
               }
         > {
-            let result = await recipeInterface.signInUp(input);
+            let result = await recipeInterface.thirdPartySignInUp(input);
             if (result.status === "FIELD_ERROR") {
                 return result;
             }
@@ -52,7 +54,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             };
         },
 
-        getUserById: async function (input: { userId: string }): Promise<User | undefined> {
+        getUserById: async function (input: { userId: string; userContext: any }): Promise<User | undefined> {
             let user = await recipeInterface.getUserById(input);
             if (user === undefined || user.thirdParty === undefined) {
                 // either user is undefined or it's an email password user.
@@ -66,8 +68,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             };
         },
 
-        getUsersByEmail: async function ({ email }: { email: string }): Promise<User[]> {
-            let users = await recipeInterface.getUsersByEmail({ email });
+        getUsersByEmail: async function (input: { email: string; userContext: any }): Promise<User[]> {
+            let users = await recipeInterface.getUsersByEmail(input);
 
             // we filter out all non thirdparty users.
             return users.filter((u) => {
