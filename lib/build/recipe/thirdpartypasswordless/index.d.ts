@@ -216,7 +216,7 @@ export default class Wrapper {
           })
         | undefined
     >;
-    static updateUser(input: {
+    static updatePasswordlessUser(input: {
         userId: string;
         email?: string | null;
         phoneNumber?: string | null;
@@ -312,7 +312,7 @@ export declare let listCodesByEmail: typeof Wrapper.listCodesByEmail;
 export declare let listCodesByPhoneNumber: typeof Wrapper.listCodesByPhoneNumber;
 export declare let listCodesByPreAuthSessionId: typeof Wrapper.listCodesByPreAuthSessionId;
 export declare let createNewCodeForDevice: typeof Wrapper.createNewCodeForDevice;
-export declare let updateUser: typeof Wrapper.updateUser;
+export declare let updatePasswordlessUser: typeof Wrapper.updatePasswordlessUser;
 export declare let revokeAllCodes: typeof Wrapper.revokeAllCodes;
 export declare let revokeCode: typeof Wrapper.revokeCode;
 export declare let createMagicLink: typeof Wrapper.createMagicLink;

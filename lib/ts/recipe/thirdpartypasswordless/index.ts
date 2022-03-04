@@ -153,7 +153,7 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserByPhoneNumber({ userContext: {}, ...input });
     }
 
-    static updateUser(input: {
+    static updatePasswordlessUser(input: {
         userId: string;
         email?: string | null;
         phoneNumber?: string | null;
@@ -290,7 +290,7 @@ export let listCodesByPreAuthSessionId = Wrapper.listCodesByPreAuthSessionId;
 
 export let createNewCodeForDevice = Wrapper.createNewCodeForDevice;
 
-export let updateUser = Wrapper.updateUser;
+export let updatePasswordlessUser = Wrapper.updatePasswordlessUser;
 
 export let revokeAllCodes = Wrapper.revokeAllCodes;
 
