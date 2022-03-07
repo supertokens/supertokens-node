@@ -139,7 +139,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
                 /**
                  * the setImmediate here is to counter the next.js issue
                  * where the json parser would not resolve and thus the request
-                 * just hangs forever.
+                 * just hangs forever. Next.JS does json parsing on its own.
                  */
                 setImmediate(() => {
                     if (!resolvedCalled) {
