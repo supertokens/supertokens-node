@@ -17,6 +17,9 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
+import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
+import { TypeEmailDeliveryTypeInput, TypeSMSDeliveryTypeInput } from "./types";
+import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -41,19 +44,66 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
+    let emailService =
+        config === undefined || config.emailDelivery === undefined
+            ? undefined
+            : undefined || config.emailDelivery.service;
+    if (emailService === undefined) {
+        emailService = {
+            sendEmail: async (input: TypeEmailDeliveryTypeInput, userContext: any) => {
+                if (config.contactMethod === "EMAIL" || config.contactMethod === "EMAIL_OR_PHONE") {
+                    let createAndSendCustomEmail = config.createAndSendCustomEmail;
+                    if (createAndSendCustomEmail === undefined) {
+                        createAndSendCustomEmail = defaultCreateAndSendCustomEmail;
+                    }
+                    await createAndSendCustomEmail(
+                        {
+                            email: input.user.email,
+                            userInputCode: input.userInputCode,
+                            urlWithLinkCode: input.urlWithLinkCode,
+                            preAuthSessionId: input.preAuthSessionId,
+                            codeLifetime: input.codeLifetime,
+                        },
+                        userContext
+                    );
+                }
+            },
+        };
+    }
+
+    let emailDelivery = {
+        service: emailService,
+        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
+            originalImplementation,
+        ...config.emailDelivery?.override,
+    };
+
+    let smsDelivery =
+        config === undefined || config.smsDelivery === undefined
+            ? undefined
+            : {
+                  service: config.smsDelivery?.service,
+                  override: (originalImplementation: SmsDelvieryRecipeInterface<TypeSMSDeliveryTypeInput>) =>
+                      originalImplementation,
+                  ...config.smsDelivery?.override,
+              };
+
     if (config.contactMethod === "EMAIL") {
+        // TODO: to remove this
         if (config.createAndSendCustomEmail === undefined) {
             throw new Error("Please provide a callback function (createAndSendCustomEmail) to send emails. ");
         }
         return {
             override,
+            emailDelivery,
+            smsDelivery,
             flowType: config.flowType,
             contactMethod: "EMAIL",
-            createAndSendCustomEmail:
-                // until we add a service to send emails, config.createAndSendCustomEmail will never be undefined
-                config.createAndSendCustomEmail === undefined
-                    ? defaultCreateAndSendCustomEmail
-                    : config.createAndSendCustomEmail,
+            // createAndSendCustomEmail:
+            //     // until we add a service to send emails, config.createAndSendCustomEmail will never be undefined
+            //     config.createAndSendCustomEmail === undefined
+            //         ? defaultCreateAndSendCustomEmail
+            //         : config.createAndSendCustomEmail,
             getLinkDomainAndPath:
                 config.getLinkDomainAndPath === undefined
                     ? getDefaultGetLinkDomainAndPath(appInfo)
@@ -63,6 +113,7 @@ export function validateAndNormaliseUserInput(
             getCustomUserInputCode: config.getCustomUserInputCode,
         };
     } else if (config.contactMethod === "PHONE") {
+        // TODO: to remove this
         if (config.createAndSendCustomTextMessage === undefined) {
             throw new Error(
                 "Please provide a callback function (createAndSendCustomTextMessage) to send text messages. "
@@ -70,6 +121,8 @@ export function validateAndNormaliseUserInput(
         }
         return {
             override,
+            emailDelivery,
+            smsDelivery,
             flowType: config.flowType,
             contactMethod: "PHONE",
             // until we add a service to send sms, config.createAndSendCustomTextMessage will never be undefined
@@ -86,6 +139,7 @@ export function validateAndNormaliseUserInput(
             getCustomUserInputCode: config.getCustomUserInputCode,
         };
     } else {
+        // TODO: to remove this
         if (config.createAndSendCustomEmail === undefined) {
             throw new Error("Please provide a callback function (createAndSendCustomEmail) to send emails. ");
         }
@@ -96,13 +150,15 @@ export function validateAndNormaliseUserInput(
         }
         return {
             override,
+            emailDelivery,
+            smsDelivery,
             flowType: config.flowType,
             contactMethod: "EMAIL_OR_PHONE",
             // until we add a service to send email, config.createAndSendCustomEmail will never be undefined
-            createAndSendCustomEmail:
-                config.createAndSendCustomEmail === undefined
-                    ? defaultCreateAndSendCustomEmail
-                    : config.createAndSendCustomEmail,
+            // createAndSendCustomEmail:
+            //     config.createAndSendCustomEmail === undefined
+            //         ? defaultCreateAndSendCustomEmail
+            //         : config.createAndSendCustomEmail,
             validateEmailAddress:
                 config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
             // until we add a service to send sms, config.createAndSendCustomTextMessage will never be undefined

@@ -11,9 +11,11 @@ import {
     TypeInputFormField,
     TypeInputResetPasswordUsingTokenFeature,
     APIOptions as EmailPasswordAPIOptionsOriginal,
+    TypeEmailDeliveryTypeInput,
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -47,6 +49,7 @@ export declare type TypeInputEmailVerificationFeature = {
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -65,63 +68,6 @@ export declare type TypeInput = {
                 builder?: OverrideableBuilder<EmailVerificationAPIInterface>
             ) => EmailVerificationAPIInterface;
         };
-    };
-};
-export declare const InputSchema: {
-    signUpFeature: {
-        type: string;
-        properties: {
-            formFields: {
-                type: string;
-                items: {
-                    type: string;
-                    properties: {
-                        id: {
-                            type: string;
-                        };
-                        validate: {
-                            type: string;
-                        };
-                        optional: {
-                            type: string;
-                        };
-                    };
-                    required: string[];
-                    additionalProperties: boolean;
-                };
-            };
-        };
-        additionalProperties: boolean;
-    };
-    providers: {
-        type: string;
-    };
-    resetPasswordUsingTokenFeature: {
-        type: string;
-        properties: {
-            getResetPasswordURL: {
-                type: string;
-            };
-            createAndSendCustomEmail: {
-                type: string;
-            };
-        };
-        additionalProperties: boolean;
-    };
-    emailVerificationFeature: {
-        type: string;
-        properties: {
-            getEmailVerificationURL: {
-                type: string;
-            };
-            createAndSendCustomEmail: {
-                type: string;
-            };
-        };
-        additionalProperties: boolean;
-    };
-    override: {
-        type: string;
     };
 };
 export declare type TypeNormalisedInput = {

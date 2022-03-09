@@ -15,7 +15,7 @@
 
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, HTTPMethod, RecipeListFunction } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -38,6 +38,10 @@ import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
+import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import EmailDeliveryRecipeImplementation from "./emaildelivery";
+import { TypeEmailDeliveryTypeInput } from "./types";
+import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -52,6 +56,8 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
 
     isInServerlessEnv: boolean;
+
+    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
 
     constructor(
         recipeId: string,
@@ -71,6 +77,22 @@ export default class Recipe extends RecipeModule {
                 : new EmailVerificationRecipe(recipeId, appInfo, isInServerlessEnv, {
                       ...this.config.emailVerificationFeature,
                   });
+        {
+            let override = (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
+                originalImplementation;
+            if (this.config.emailDelivery !== undefined && this.config.emailDelivery.override !== undefined) {
+                override = this.config.emailDelivery.override;
+            }
+            let builder = new OverrideableBuilder(
+                EmailDeliveryRecipeImplementation(this.emailVerificationRecipe, this.config.emailDelivery.service)
+            );
+            let emailDeliveryRecipeInterfaceImpl = builder.override(override).build();
+            this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, {
+                service: this.config.emailDelivery.service,
+                recipeImpl: emailDeliveryRecipeInterfaceImpl,
+            });
+        }
+
         {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
@@ -161,6 +183,7 @@ export default class Recipe extends RecipeModule {
             emailVerificationRecipeImplementation: this.emailVerificationRecipe.recipeInterfaceImpl,
             req,
             res,
+            emailDelivery: this.emailDelivery,
         };
         if (id === SIGN_UP_API) {
             return await signUpAPI(this.apiImpl, options);

@@ -1,11 +1,13 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
-import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
+import { NormalisedAppinfo, APIHandled, HTTPMethod, RecipeListFunction } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
+import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import { TypeEmailDeliveryTypeInput } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -14,6 +16,7 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,

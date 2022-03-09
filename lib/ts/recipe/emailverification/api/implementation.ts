@@ -75,16 +75,27 @@ export default function getAPIInterface(): APIInterface {
                 "&rid=" +
                 options.recipeId;
 
-            try {
-                if (!options.isInServerlessEnv) {
-                    options.config
-                        .createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext)
-                        .catch((_) => {});
-                } else {
-                    // see https://github.com/supertokens/supertokens-node/pull/135
-                    await options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext);
-                }
-            } catch (_) {}
+            await options.emailDelivery.recipeInterfaceImpl.sendEmail(
+                {
+                    type: "EMAIL_VERIFICATION",
+                    user: {
+                        id: userId,
+                        email: email,
+                    },
+                    emailVerifyLink,
+                },
+                userContext
+            );
+            // try {
+            //     if (!options.isInServerlessEnv) {
+            //         options.config
+            //             .createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext)
+            //             .catch((_) => {});
+            //     } else {
+            //         // see https://github.com/supertokens/supertokens-node/pull/135
+            //         await options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext);
+            //     }
+            // } catch (_) {}
 
             return {
                 status: "OK",

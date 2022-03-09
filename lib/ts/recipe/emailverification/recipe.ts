@@ -27,6 +27,10 @@ import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
+import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import EmailDeliveryRecipeImplementation from "./emaildelivery";
+import { TypeEmailDeliveryTypeInput } from "./types";
+import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -40,10 +44,25 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
+    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
+
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
+        {
+            let override = (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
+                originalImplementation;
+            if (this.config.emailDelivery !== undefined && this.config.emailDelivery.override !== undefined) {
+                override = this.config.emailDelivery.override;
+            }
+            let builder = new OverrideableBuilder(EmailDeliveryRecipeImplementation(this.config.emailDelivery.service));
+            let emailDeliveryRecipeInterfaceImpl = builder.override(override).build();
+            this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, {
+                service: this.config.emailDelivery.service,
+                recipeImpl: emailDeliveryRecipeInterfaceImpl,
+            });
+        }
 
         {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
@@ -121,6 +140,7 @@ export default class Recipe extends RecipeModule {
             recipeImplementation: this.recipeInterfaceImpl,
             req,
             res,
+            emailDelivery: this.emailDelivery,
         };
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
             return await generateEmailVerifyTokenAPI(this.apiImpl, options);

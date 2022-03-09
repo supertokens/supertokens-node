@@ -21,22 +21,14 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-
-const TypeString = {
-    type: "string",
-};
-
-const TypeBoolean = {
-    type: "boolean",
-};
-
-const TypeAny = {
-    type: "any",
-};
+import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import { TypeEmailDeliveryTypeInput as TypeEmailVerificationEmailDeliveryTypeInput } from "../emailverification/types";
+import EmailDeliveryRecipe from "../emaildelivery/recipe";
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
+    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -58,15 +50,6 @@ export type TypeNormalisedInput = {
     };
 };
 
-const InputEmailVerificationFeatureSchema = {
-    type: "object",
-    properties: {
-        getEmailVerificationURL: TypeAny,
-        createAndSendCustomEmail: TypeAny,
-    },
-    additionalProperties: false,
-};
-
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
@@ -82,26 +65,6 @@ export type TypeFormField = { id: string; value: any };
 
 export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
-};
-
-const InputSignUpSchema = {
-    type: "object",
-    properties: {
-        formFields: {
-            type: "array",
-            items: {
-                type: "object",
-                properties: {
-                    id: TypeString,
-                    validate: TypeAny,
-                    optional: TypeBoolean,
-                },
-                required: ["id"],
-                additionalProperties: false,
-            },
-        },
-    },
-    additionalProperties: false,
 };
 
 export type NormalisedFormField = {
@@ -123,18 +86,9 @@ export type TypeInputResetPasswordUsingTokenFeature = {
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
 
-export const InputResetPasswordUsingTokenFeatureSchema = {
-    type: "object",
-    properties: {
-        getResetPasswordURL: TypeAny,
-        createAndSendCustomEmail: TypeAny,
-    },
-    additionalProperties: false,
-};
-
 export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL: (user: User, userContext: any) => Promise<string>;
-    createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
+    // createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>; // TODO: remove
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
@@ -147,6 +101,7 @@ export type User = {
 
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -166,17 +121,6 @@ export type TypeInput = {
             ) => EmailVerificationAPIInterface;
         };
     };
-};
-
-export const InputSchema = {
-    type: "object",
-    properties: {
-        signUpFeature: InputSignUpSchema,
-        resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
-        emailVerificationFeature: InputEmailVerificationFeatureSchema,
-        override: TypeAny,
-    },
-    additionalProperties: false,
 };
 
 export type RecipeInterface = {
@@ -233,6 +177,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
 };
 
 export type APIInterface = {
@@ -320,3 +265,13 @@ export type APIInterface = {
                 }
           >);
 };
+
+export type TypeEmailPasswordPasswordResetEmailDeliveryTypeInput = {
+    type: "PASSWORD_RESET";
+    user: User;
+    passwordResetLink: string;
+};
+
+export type TypeEmailDeliveryTypeInput =
+    | TypeEmailPasswordPasswordResetEmailDeliveryTypeInput
+    | TypeEmailVerificationEmailDeliveryTypeInput;

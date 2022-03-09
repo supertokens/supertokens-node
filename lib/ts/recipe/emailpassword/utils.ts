@@ -23,7 +23,6 @@ import {
     TypeInputResetPasswordUsingTokenFeature,
     TypeNormalisedInputResetPasswordUsingTokenFeature,
     NormalisedFormField,
-    InputSchema,
     TypeInputFormField,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
@@ -33,16 +32,15 @@ import {
     getResetPasswordURL as defaultGetResetPasswordURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomPasswordResetEmail,
 } from "./passwordResetFunctions";
-import { validateTheStructureOfUserInput } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
+import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
+import { TypeEmailDeliveryTypeInput } from "./types";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "emailpassword recipe");
-
     let signUpFeature = validateAndNormaliseSignupConfig(
         recipeInstance,
         appInfo,
@@ -66,12 +64,41 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
+    let emailService =
+        config === undefined || config.emailDelivery === undefined
+            ? undefined
+            : undefined || config.emailDelivery.service;
+    if (emailService === undefined) {
+        emailService = {
+            sendEmail: async (input: TypeEmailDeliveryTypeInput, userContext: any) => {
+                if (input.type === "EMAIL_VERIFICATION") {
+                    return await recipeInstance.emailVerificationRecipe.emailDelivery.recipeInterfaceImpl.sendEmail(
+                        input,
+                        userContext
+                    );
+                }
+                let createAndSendCustomEmail = config?.resetPasswordUsingTokenFeature?.createAndSendCustomEmail;
+                if (createAndSendCustomEmail === undefined) {
+                    createAndSendCustomEmail = defaultCreateAndSendCustomPasswordResetEmail(appInfo);
+                }
+                await createAndSendCustomEmail(input.user, input.passwordResetLink, userContext);
+            },
+        };
+    }
+    let emailDelivery = {
+        service: emailService,
+        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
+            originalImplementation,
+        ...config?.emailDelivery?.override,
+    };
+
     return {
         signUpFeature,
         signInFeature,
         resetPasswordUsingTokenFeature,
         emailVerificationFeature,
         override,
+        emailDelivery,
     };
 }
 
@@ -81,6 +108,7 @@ export function validateAndNormaliseEmailVerificationConfig(
     config?: TypeInput
 ): TypeNormalisedInputEmailVerification {
     return {
+        emailDelivery: config?.emailDelivery as any,
         getEmailForUserId: recipeInstance.getEmailForUserId,
         override: config?.override?.emailVerificationFeature,
         createAndSendCustomEmail:
@@ -153,16 +181,10 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
             ? defaultGetResetPasswordURL(appInfo)
             : config.getResetPasswordURL;
 
-    let createAndSendCustomEmail =
-        config === undefined || config.createAndSendCustomEmail === undefined
-            ? defaultCreateAndSendCustomPasswordResetEmail(appInfo)
-            : config.createAndSendCustomEmail;
-
     return {
         formFieldsForPasswordResetForm,
         formFieldsForGenerateTokenForm,
         getResetPasswordURL,
-        createAndSendCustomEmail,
     };
 }
 

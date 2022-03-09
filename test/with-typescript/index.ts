@@ -9,6 +9,7 @@ import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/sess
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import Passwordless from "../../recipe/passwordless";
+// import SMTPProvider from "../../lib/build/recipe/emaildelivery/services/smtp";
 
 Passwordless.init({
     contactMethod: "PHONE",
@@ -442,3 +443,19 @@ Session.init({
         },
     },
 });
+
+// EmailPassword.init({
+//     emailDelivery: {
+//         service: SMTPProvider({
+//             smtpSettings: {},
+//             override: (oI) => {
+//                 return {
+//                     ...oI,
+//                     getContent: async (input, userContext) => {
+//                         // input.
+//                     }
+//                 }
+//             }
+//         })
+//     }
+// })

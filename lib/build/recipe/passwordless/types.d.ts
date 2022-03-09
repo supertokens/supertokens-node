@@ -2,6 +2,10 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import { TypeConfigInput as SmsDeliveryConfigInput } from "../smsdelivery/types";
+import SmsDeliveryRecipe from "../smsdelivery/recipe";
 export declare type User = {
     id: string;
     email?: string;
@@ -75,6 +79,8 @@ export declare type TypeInput = (
         userContext: any
     ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -101,30 +107,10 @@ export declare type TypeNormalisedInput = (
     | {
           contactMethod: "EMAIL";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomEmail: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomEmail: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
           createAndSendCustomTextMessage: (
               input: {
@@ -150,6 +136,8 @@ export declare type TypeNormalisedInput = (
         userContext: any
     ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -284,6 +272,8 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
+    smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 };
 export declare type APIInterface = {
     createCodePOST?: (
@@ -378,5 +368,25 @@ export declare type APIInterface = {
         status: "OK";
         exists: boolean;
     }>;
+};
+export declare type TypeEmailDeliveryTypeInput = {
+    type: "PASSWORDLESS_LOGIN_CODE";
+    user: {
+        email: string;
+    };
+    userInputCode?: string;
+    urlWithLinkCode?: string;
+    codeLifetime: number;
+    preAuthSessionId: string;
+};
+export declare type TypeSMSDeliveryTypeInput = {
+    type: "PASSWORDLESS_LOGIN_CODE";
+    user: {
+        phoneNumber: string;
+    };
+    userInputCode?: string;
+    urlWithLinkCode?: string;
+    codeLifetime: number;
+    preAuthSessionId: string;
 };
 export {};

@@ -16,6 +16,10 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import { TypeConfigInput as SmsDeliveryConfigInput } from "../smsdelivery/types";
+import SmsDeliveryRecipe from "../smsdelivery/recipe";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 
@@ -125,6 +129,9 @@ export type TypeInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
+
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -159,41 +166,41 @@ export type TypeNormalisedInput = (
           contactMethod: "EMAIL";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
 
-          // Override to use custom template/contact method
-          createAndSendCustomEmail: (
-              input: {
-                  // Where the message should be delivered.
-                  email: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
+          //   // Override to use custom template/contact method
+          //   createAndSendCustomEmail: (
+          //       input: {
+          //           // Where the message should be delivered.
+          //           email: string;
+          //           // This has to be entered on the starting device  to finish sign in/up
+          //           userInputCode?: string;
+          //           // Full url that the end-user can click to finish sign in/up
+          //           urlWithLinkCode?: string;
+          //           codeLifetime: number;
+          //           // Unlikely, but someone could display this (or a derived thing) to identify the device
+          //           preAuthSessionId: string;
+          //       },
+          //       userContext: any
+          //   ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
-          createAndSendCustomEmail: (
-              input: {
-                  // Where the message should be delivered.
-                  email: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
+          //   createAndSendCustomEmail: (
+          //       input: {
+          //           // Where the message should be delivered.
+          //           email: string;
+          //           // This has to be entered on the starting device  to finish sign in/up
+          //           userInputCode?: string;
+          //           // Full url that the end-user can click to finish sign in/up
+          //           urlWithLinkCode?: string;
+          //           codeLifetime: number;
+          //           // Unlikely, but someone could display this (or a derived thing) to identify the device
+          //           preAuthSessionId: string;
+          //       },
+          //       userContext: any
+          //   ) => Promise<void>;
 
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
@@ -233,6 +240,9 @@ export type TypeNormalisedInput = (
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+
+    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
 
     override: {
         functions: (
@@ -375,6 +385,8 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
+    smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 };
 
 export type APIInterface = {
@@ -448,4 +460,26 @@ export type APIInterface = {
         status: "OK";
         exists: boolean;
     }>;
+};
+
+export type TypeEmailDeliveryTypeInput = {
+    type: "PASSWORDLESS_LOGIN_CODE";
+    user: {
+        email: string;
+    };
+    userInputCode?: string;
+    urlWithLinkCode?: string;
+    codeLifetime: number;
+    preAuthSessionId: string;
+};
+
+export type TypeSMSDeliveryTypeInput = {
+    type: "PASSWORDLESS_LOGIN_CODE";
+    user: {
+        phoneNumber: string;
+    };
+    userInputCode?: string;
+    urlWithLinkCode?: string;
+    codeLifetime: number;
+    preAuthSessionId: string;
 };

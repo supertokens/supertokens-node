@@ -20,6 +20,8 @@ import {
     getEmailVerificationURL as defaultGetEmailVerificationURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
 } from "./emailVerificationFunctions";
+import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
+import { TypeEmailDeliveryTypeInput } from "./types";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -31,11 +33,6 @@ export function validateAndNormaliseUserInput(
             ? defaultGetEmailVerificationURL(appInfo)
             : config.getEmailVerificationURL;
 
-    let createAndSendCustomEmail =
-        config.createAndSendCustomEmail === undefined
-            ? defaultCreateAndSendCustomVerificationEmail(appInfo)
-            : config.createAndSendCustomEmail;
-
     let getEmailForUserId = config.getEmailForUserId;
 
     let override = {
@@ -44,10 +41,32 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
+    let emailService =
+        config === undefined || config.emailDelivery === undefined
+            ? undefined
+            : undefined || config.emailDelivery.service;
+    if (emailService === undefined) {
+        emailService = {
+            sendEmail: async (input: TypeEmailDeliveryTypeInput, userContext: any) => {
+                let createAndSendCustomEmail = config.createAndSendCustomEmail;
+                if (createAndSendCustomEmail === undefined) {
+                    createAndSendCustomEmail = defaultCreateAndSendCustomVerificationEmail(appInfo);
+                }
+                await createAndSendCustomEmail(input.user, input.emailVerifyLink, userContext);
+            },
+        };
+    }
+    let emailDelivery = {
+        service: emailService,
+        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
+            originalImplementation,
+        ...config.emailDelivery?.override,
+    };
+
     return {
         getEmailForUserId,
         getEmailVerificationURL,
-        createAndSendCustomEmail,
         override,
+        emailDelivery,
     };
 }

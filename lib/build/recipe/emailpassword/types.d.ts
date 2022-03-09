@@ -7,9 +7,13 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import { TypeEmailDeliveryTypeInput as TypeEmailVerificationEmailDeliveryTypeInput } from "../emailverification/types";
+import EmailDeliveryRecipe from "../emaildelivery/recipe";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
+    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -61,21 +65,8 @@ export declare type TypeInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL?: (user: User, userContext: any) => Promise<string>;
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
-export declare const InputResetPasswordUsingTokenFeatureSchema: {
-    type: string;
-    properties: {
-        getResetPasswordURL: {
-            type: string;
-        };
-        createAndSendCustomEmail: {
-            type: string;
-        };
-    };
-    additionalProperties: boolean;
-};
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL: (user: User, userContext: any) => Promise<string>;
-    createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
@@ -86,6 +77,7 @@ export declare type User = {
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -105,64 +97,6 @@ export declare type TypeInput = {
             ) => EmailVerificationAPIInterface;
         };
     };
-};
-export declare const InputSchema: {
-    type: string;
-    properties: {
-        signUpFeature: {
-            type: string;
-            properties: {
-                formFields: {
-                    type: string;
-                    items: {
-                        type: string;
-                        properties: {
-                            id: {
-                                type: string;
-                            };
-                            validate: {
-                                type: string;
-                            };
-                            optional: {
-                                type: string;
-                            };
-                        };
-                        required: string[];
-                        additionalProperties: boolean;
-                    };
-                };
-            };
-            additionalProperties: boolean;
-        };
-        resetPasswordUsingTokenFeature: {
-            type: string;
-            properties: {
-                getResetPasswordURL: {
-                    type: string;
-                };
-                createAndSendCustomEmail: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
-        emailVerificationFeature: {
-            type: string;
-            properties: {
-                getEmailVerificationURL: {
-                    type: string;
-                };
-                createAndSendCustomEmail: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
-        override: {
-            type: string;
-        };
-    };
-    additionalProperties: boolean;
 };
 export declare type RecipeInterface = {
     signUp(input: {
@@ -239,6 +173,7 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
 };
 export declare type APIInterface = {
     emailExistsGET:
@@ -321,3 +256,11 @@ export declare type APIInterface = {
                 }
           >);
 };
+export declare type TypeEmailPasswordPasswordResetEmailDeliveryTypeInput = {
+    type: "PASSWORD_RESET";
+    user: User;
+    passwordResetLink: string;
+};
+export declare type TypeEmailDeliveryTypeInput =
+    | TypeEmailPasswordPasswordResetEmailDeliveryTypeInput
+    | TypeEmailVerificationEmailDeliveryTypeInput;

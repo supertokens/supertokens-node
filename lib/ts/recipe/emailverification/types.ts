@@ -15,8 +15,11 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
+import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import EmailDeliveryRecipe from "../emaildelivery/recipe";
 
 export type TypeInput = {
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
@@ -30,9 +33,9 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
+    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL: (user: User, userContext: any) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -83,6 +86,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
 };
 
 export type APIInterface = {
@@ -110,4 +114,10 @@ export type APIInterface = {
               options: APIOptions;
               userContext: any;
           }) => Promise<{ status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" }>);
+};
+
+export type TypeEmailDeliveryTypeInput = {
+    type: "EMAIL_VERIFICATION";
+    user: User;
+    emailVerifyLink: string;
 };
