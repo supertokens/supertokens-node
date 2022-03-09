@@ -13,7 +13,17 @@
  * under the License.
  */
 
-const { printPath, setupST, startST, stopST, killAllST, cleanST, resetAll, signUPRequest } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    stopST,
+    killAllST,
+    cleanST,
+    signUPRequestEmptyJSON,
+    signUPRequest,
+    signUPRequestNoBody,
+} = require("../utils");
 let STExpress = require("../../");
 let Session = require("../../recipe/session");
 let assert = require("assert");
@@ -467,6 +477,164 @@ describe(`signinFeature: ${printPath("[test/thirdpartyemailpassword/signinFeatur
         );
         assert(userInfo.id === signUpUserInfo.id);
         assert(userInfo.email === signUpUserInfo.email);
+    });
+
+    it("test singinAPI with empty JSON and user has added JSON middleware", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(express.json());
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequestEmptyJSON(app);
+        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert(response.status === 400);
+    });
+
+    it("test singinAPI with empty JSON and user has added urlencoded middleware", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(express.urlencoded({ extended: true }));
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequestEmptyJSON(app);
+        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert(response.status === 400);
+    });
+
+    it("test singinAPI with empty JSON and user has added both JSON and urlencoded middleware", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(express.json());
+        app.use(express.urlencoded({ extended: true }));
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequestEmptyJSON(app);
+        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert(response.status === 400);
+    });
+
+    it("test singinAPI with empty request body and user has added JSON middleware", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(express.json());
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequestNoBody(app);
+        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert(response.status === 400);
+    });
+
+    it("test singinAPI with empty request body and user has added urlencoded middleware", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(express.urlencoded({ extended: true }));
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequestNoBody(app);
+        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert(response.status === 400);
+    });
+
+    it("test singinAPI with empty request body and user has added both JSON and urlencoded middleware", async function () {
+        await startST();
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+        });
+
+        const app = express();
+
+        app.use(express.json());
+        app.use(express.urlencoded({ extended: true }));
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequestNoBody(app);
+        assert(JSON.parse(response.text).message === "Missing input param: formFields");
+        assert(response.status === 400);
     });
 
     /*
