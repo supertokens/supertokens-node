@@ -65,6 +65,12 @@ export default class SuperTokens {
             throw new Error("Please provide at least one recipe to the supertokens.init function call");
         }
 
+        // @ts-ignore
+        if (config.recipeList.includes(undefined)) {
+            // related to issue #270. If user makes mistake by adding empty items in the recipeList, this will catch the mistake and throw relevant error
+            throw new Error("Please remove empty items from recipeList");
+        }
+
         this.isInServerlessEnv = config.isInServerlessEnv === undefined ? false : config.isInServerlessEnv;
 
         this.recipeModules = config.recipeList.map((func) => {
