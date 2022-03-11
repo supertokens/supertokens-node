@@ -1,9 +1,11 @@
 import type { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
-import { HEADER_RID } from "./constants";
+import { HEADER_RID, ERROR_ID, INFO_ID, SUPERTOKENS_NAMESPACE } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { validate } from "jsonschema";
 import type { BaseRequest, BaseResponse } from "./framework";
+import debug from "debug";
+import { version } from "./version";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -122,3 +124,39 @@ export function validateTheStructureOfUserInput(config: any, inputSchema: any, c
 export function frontendHasInterceptor(req: BaseRequest): boolean {
     return getRIDFromRequest(req) !== undefined;
 }
+
+/*
+ The error logger and info logger defined below use the debug lib to log error and info messages when the DEBUG env is set with the com.supertokens namespace.
+For example:
+    errLoggerWithCode[1]("Test")
+    infoLogger("some info")
+
+Output: (with DEBUG=com.supertokens:*)
+  com.supertokens:error {t: "2022-03-09T10:47:57.379Z", errCode: 1, msg: "Example error with custom str Test", sdkVer: "9.0.0"} +0ms
+  com.supertokens:info {t: "2022-03-09T10:47:57.380Z", msg: "Some info", sdkVer: "9.0.0"} +0ms
+
+*/
+
+const ERROR_CODE_1 = 1;
+const ERROR_CODE_2 = 2;
+
+let errLoggerHelper = (errorCode: number, message: string) => {
+    debug(`${SUPERTOKENS_NAMESPACE}${ERROR_ID}`)(
+        `{t: "${new Date().toISOString()}", errCode: ${errorCode}, msg: "${message}", sdkVer: "${version}"}`
+    );
+};
+
+export function infoLogger(message: string) {
+    debug(`${SUPERTOKENS_NAMESPACE}${INFO_ID}`)(`{t: "${new Date().toISOString()}", msg: "${message}"}`);
+}
+
+export let errorLoggerWithCode = {
+    1: (item: string) => {
+        errLoggerHelper(ERROR_CODE_1, "Example error with param: " + item);
+    },
+    2: () => {
+        errLoggerHelper(ERROR_CODE_2, '"Example error"');
+    },
+};
+
+export { ERROR_CODE_1, ERROR_CODE_2 };

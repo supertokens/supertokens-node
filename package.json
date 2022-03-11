@@ -38,6 +38,7 @@
         "body-parser": "1.19.0",
         "co-body": "6.1.0",
         "cookie": "0.4.0",
+        "debug": "^4.3.3",
         "jsonschema": "1.4.0",
         "jsonwebtoken": "^8.5.1",
         "jwks-rsa": "^2.0.5",

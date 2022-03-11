@@ -15,3 +15,9 @@
 
 export const HEADER_RID = "rid";
 export const HEADER_FDI = "fdi-version";
+
+const SUPERTOKENS_NAMESPACE = "com.supertokens:";
+const ERROR_ID = "error";
+const INFO_ID = "info";
+
+export { SUPERTOKENS_NAMESPACE, ERROR_ID, INFO_ID };
