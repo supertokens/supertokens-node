@@ -18,8 +18,8 @@ import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
-import { TypeConfigInput as SmsDeliveryConfigInput } from "../smsdelivery/types";
-import SmsDeliveryRecipe from "../smsdelivery/recipe";
+// import { TypeConfigInput as SmsDeliveryConfigInput } from "../smsdelivery/types";
+// import SmsDeliveryRecipe from "../smsdelivery/recipe";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 
@@ -130,7 +130,7 @@ export type TypeInput = (
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
     emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
-    smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
+    // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
 
     override?: {
         functions?: (
@@ -242,7 +242,7 @@ export type TypeNormalisedInput = (
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
     emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
-    smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
+    // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
 
     override: {
         functions: (
@@ -386,7 +386,7 @@ export type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
     emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
-    smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
+    // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 };
 
 export type APIInterface = {
@@ -473,13 +473,13 @@ export type TypeEmailDeliveryTypeInput = {
     preAuthSessionId: string;
 };
 
-export type TypeSMSDeliveryTypeInput = {
-    type: "PASSWORDLESS_LOGIN_CODE";
-    user: {
-        phoneNumber: string;
-    };
-    userInputCode?: string;
-    urlWithLinkCode?: string;
-    codeLifetime: number;
-    preAuthSessionId: string;
-};
+// export type TypeSMSDeliveryTypeInput = {
+//     type: "PASSWORDLESS_LOGIN_CODE";
+//     user: {
+//         phoneNumber: string;
+//     };
+//     userInputCode?: string;
+//     urlWithLinkCode?: string;
+//     codeLifetime: number;
+//     preAuthSessionId: string;
+// };

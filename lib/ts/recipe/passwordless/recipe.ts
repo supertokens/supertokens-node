@@ -38,11 +38,10 @@ import {
 } from "./constants";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
 import EmailDeliveryRecipeImplementation from "./emaildelivery";
-import { TypeEmailDeliveryTypeInput, TypeSMSDeliveryTypeInput } from "./types";
-import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
-import SmsDeliveryRecipeImplementation from "./smsDelivery";
-import SmsDeliveryRecipe from "../smsdelivery/recipe";
-import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
+import { TypeEmailDeliveryTypeInput } from "./types";
+// import SmsDeliveryRecipeImplementation from "./smsDelivery";
+// import SmsDeliveryRecipe from "../smsdelivery/recipe";
+// import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -58,57 +57,50 @@ export default class Recipe extends RecipeModule {
 
     emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
 
-    smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
+    // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
         super(recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
-        {
-            let override = (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
-                originalImplementation;
-            if (this.config.emailDelivery !== undefined && this.config.emailDelivery.override !== undefined) {
-                override = this.config.emailDelivery.override;
-            }
-            let builder = new OverrideableBuilder(EmailDeliveryRecipeImplementation(this.config.emailDelivery.service));
-            let emailDeliveryRecipeInterfaceImpl = builder.override(override).build();
-            this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, {
-                service: this.config.emailDelivery.service,
-                recipeImpl: emailDeliveryRecipeInterfaceImpl,
-            });
-        }
-        let smsService = this.config.smsDelivery === undefined ? undefined : this.config.smsDelivery.service;
-        if (smsService === undefined) {
-            smsService = {
-                sendSms: async (input: TypeSMSDeliveryTypeInput, userContext: any) => {
-                    if (this.config.contactMethod === "PHONE" || this.config.contactMethod === "EMAIL_OR_PHONE") {
-                        await this.config.createAndSendCustomTextMessage(
-                            {
-                                phoneNumber: input.user.phoneNumber,
-                                userInputCode: input.userInputCode,
-                                urlWithLinkCode: input.urlWithLinkCode,
-                                preAuthSessionId: input.preAuthSessionId,
-                                codeLifetime: input.codeLifetime,
-                            },
-                            userContext
-                        );
-                    }
-                },
-            };
-        }
-        {
-            let override = (originalImplementation: SmsDelvieryRecipeInterface<TypeSMSDeliveryTypeInput>) =>
-                originalImplementation;
-            if (this.config.smsDelivery !== undefined && this.config.smsDelivery.override !== undefined) {
-                override = this.config.smsDelivery.override;
-            }
-            let builder = new OverrideableBuilder(SmsDeliveryRecipeImplementation(smsService));
-            let smsDeliveryRecipeInterfaceImpl = builder.override(override).build();
-            this.smsDelivery = new SmsDeliveryRecipe(recipeId, appInfo, {
-                service: smsService,
-                recipeImpl: smsDeliveryRecipeInterfaceImpl,
-            });
-        }
+
+        this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, {
+            defaultRecipeImpl: EmailDeliveryRecipeImplementation(this.config.emailDelivery.service),
+            override: this.config.emailDelivery.override,
+        });
+
+        // let smsService = this.config.smsDelivery === undefined ? undefined : this.config.smsDelivery.service;
+        // if (smsService === undefined) {
+        //     smsService = {
+        //         sendSms: async (input: TypeSMSDeliveryTypeInput, userContext: any) => {
+        //             if (this.config.contactMethod === "PHONE" || this.config.contactMethod === "EMAIL_OR_PHONE") {
+        //                 await this.config.createAndSendCustomTextMessage(
+        //                     {
+        //                         phoneNumber: input.user.phoneNumber,
+        //                         userInputCode: input.userInputCode,
+        //                         urlWithLinkCode: input.urlWithLinkCode,
+        //                         preAuthSessionId: input.preAuthSessionId,
+        //                         codeLifetime: input.codeLifetime,
+        //                     },
+        //                     userContext
+        //                 );
+        //             }
+        //         },
+        //     };
+        // }
+        // {
+        //     let override = (originalImplementation: SmsDelvieryRecipeInterface<TypeSMSDeliveryTypeInput>) =>
+        //         originalImplementation;
+        //     if (this.config.smsDelivery !== undefined && this.config.smsDelivery.override !== undefined) {
+        //         override = this.config.smsDelivery.override;
+        //     }
+        //     let builder = new OverrideableBuilder(SmsDeliveryRecipeImplementation(smsService));
+        //     let smsDeliveryRecipeInterfaceImpl = builder.override(override).build();
+        //     this.smsDelivery = new SmsDeliveryRecipe(recipeId, appInfo, {
+        //         service: smsService,
+        //         recipeImpl: smsDeliveryRecipeInterfaceImpl,
+        //     });
+        // }
         {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
@@ -196,7 +188,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
             emailDelivery: this.emailDelivery,
-            smsDelivery: this.smsDelivery,
+            // smsDelivery: this.smsDelivery,
         };
         if (id === CONSUME_CODE_API) {
             return await consumeCodeAPI(this.apiImpl, options);

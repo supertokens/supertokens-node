@@ -33,6 +33,6 @@ export interface TypeConfigInput<T> {
  * config class parameter when parent Recipe create a new EmailDeliveryRecipe object via constructor
  */
 export interface ConfigInput<T> {
-    service: EmailService<T>;
-    recipeImpl: RecipeInterface<T>;
+    defaultRecipeImpl: RecipeInterface<T>;
+    override?: (originalImplementation: RecipeInterface<T>) => RecipeInterface<T>;
 }

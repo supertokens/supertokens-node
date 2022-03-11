@@ -18,8 +18,8 @@ import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from ".
 import { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
 import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
-import { TypeEmailDeliveryTypeInput, TypeSMSDeliveryTypeInput } from "./types";
-import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
+import { TypeEmailDeliveryTypeInput } from "./types";
+// import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -78,15 +78,15 @@ export function validateAndNormaliseUserInput(
         ...config.emailDelivery?.override,
     };
 
-    let smsDelivery =
-        config === undefined || config.smsDelivery === undefined
-            ? undefined
-            : {
-                  service: config.smsDelivery?.service,
-                  override: (originalImplementation: SmsDelvieryRecipeInterface<TypeSMSDeliveryTypeInput>) =>
-                      originalImplementation,
-                  ...config.smsDelivery?.override,
-              };
+    // let smsDelivery =
+    //     config === undefined || config.smsDelivery === undefined
+    //         ? undefined
+    //         : {
+    //             service: config.smsDelivery?.service,
+    //             override: (originalImplementation: SmsDelvieryRecipeInterface<TypeSMSDeliveryTypeInput>) =>
+    //                 originalImplementation,
+    //             ...config.smsDelivery?.override,
+    //         };
 
     if (config.contactMethod === "EMAIL") {
         // TODO: to remove this
@@ -96,7 +96,7 @@ export function validateAndNormaliseUserInput(
         return {
             override,
             emailDelivery,
-            smsDelivery,
+            // smsDelivery,
             flowType: config.flowType,
             contactMethod: "EMAIL",
             // createAndSendCustomEmail:
@@ -122,7 +122,7 @@ export function validateAndNormaliseUserInput(
         return {
             override,
             emailDelivery,
-            smsDelivery,
+            // smsDelivery,
             flowType: config.flowType,
             contactMethod: "PHONE",
             // until we add a service to send sms, config.createAndSendCustomTextMessage will never be undefined
@@ -151,7 +151,7 @@ export function validateAndNormaliseUserInput(
         return {
             override,
             emailDelivery,
-            smsDelivery,
+            // smsDelivery,
             flowType: config.flowType,
             contactMethod: "EMAIL_OR_PHONE",
             // until we add a service to send email, config.createAndSendCustomEmail will never be undefined

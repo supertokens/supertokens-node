@@ -41,7 +41,6 @@ import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
 import EmailDeliveryRecipeImplementation from "./emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
-import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -77,22 +76,14 @@ export default class Recipe extends RecipeModule {
                 : new EmailVerificationRecipe(recipeId, appInfo, isInServerlessEnv, {
                       ...this.config.emailVerificationFeature,
                   });
-        {
-            let override = (
-                originalImplementation: EmailDelvieryRecipeInterface<TypeEmailPasswordEmailDeliveryInput>
-            ) => originalImplementation;
-            if (this.config.emailDelivery !== undefined && this.config.emailDelivery.override !== undefined) {
-                override = this.config.emailDelivery.override;
-            }
-            let builder = new OverrideableBuilder(
-                EmailDeliveryRecipeImplementation(this.emailVerificationRecipe, this.config.emailDelivery.service)
-            );
-            let emailDeliveryRecipeInterfaceImpl = builder.override(override).build();
-            this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, {
-                service: this.config.emailDelivery.service,
-                recipeImpl: emailDeliveryRecipeInterfaceImpl,
-            });
-        }
+
+        this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, {
+            defaultRecipeImpl: EmailDeliveryRecipeImplementation(
+                this.emailVerificationRecipe,
+                this.config.emailDelivery.service
+            ),
+            override: this.config.emailDelivery.override,
+        });
 
         {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
