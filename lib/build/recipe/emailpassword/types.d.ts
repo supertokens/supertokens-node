@@ -8,12 +8,12 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
-import { TypeEmailDeliveryTypeInput as TypeEmailVerificationEmailDeliveryTypeInput } from "../emailverification/types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
-    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -77,7 +77,7 @@ export declare type User = {
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -173,7 +173,7 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailPasswordEmailDeliveryInput>;
 };
 export declare type APIInterface = {
     emailExistsGET:
@@ -256,11 +256,11 @@ export declare type APIInterface = {
                 }
           >);
 };
-export declare type TypeEmailPasswordPasswordResetEmailDeliveryTypeInput = {
+export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: User;
     passwordResetLink: string;
 };
-export declare type TypeEmailDeliveryTypeInput =
-    | TypeEmailPasswordPasswordResetEmailDeliveryTypeInput
-    | TypeEmailVerificationEmailDeliveryTypeInput;
+export declare type TypeEmailPasswordEmailDeliveryInput =
+    | TypeEmailPasswordPasswordResetEmailDeliveryInput
+    | TypeEmailVerificationEmailDeliveryInput;

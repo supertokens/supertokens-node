@@ -40,7 +40,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
 import EmailDeliveryRecipeImplementation from "./emaildelivery";
-import { TypeEmailDeliveryTypeInput } from "./types";
+import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
 
 export default class Recipe extends RecipeModule {
@@ -57,7 +57,7 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailPasswordEmailDeliveryInput>;
 
     constructor(
         recipeId: string,
@@ -78,8 +78,9 @@ export default class Recipe extends RecipeModule {
                       ...this.config.emailVerificationFeature,
                   });
         {
-            let override = (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
-                originalImplementation;
+            let override = (
+                originalImplementation: EmailDelvieryRecipeInterface<TypeEmailPasswordEmailDeliveryInput>
+            ) => originalImplementation;
             if (this.config.emailDelivery !== undefined && this.config.emailDelivery.override !== undefined) {
                 override = this.config.emailDelivery.override;
             }

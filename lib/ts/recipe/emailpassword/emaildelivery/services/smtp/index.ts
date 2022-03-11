@@ -19,11 +19,11 @@ import {
     getSMTPProvider,
 } from "../../../../emaildelivery/services/smtp";
 import { Transporter } from "nodemailer";
-import { TypeEmailDeliveryTypeInput } from "../../../types";
+import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
 import getPasswordResetEmailContent from "./passwordReset";
 import getEmailVerifyEmailContent from "../../../../emailverification/emaildelivery/services/smtp/emailVerify";
 
-export default function getEmailPasswordEmailServiceSMTP(config: SMTPInputConfig<TypeEmailDeliveryTypeInput>) {
+export default function getEmailPasswordEmailServiceSMTP(config: SMTPInputConfig<TypeEmailPasswordEmailDeliveryInput>) {
     return getSMTPProvider(config, getDefaultEmailServiceImplementation);
 }
 
@@ -33,7 +33,7 @@ export function getDefaultEmailServiceImplementation(
         name: string;
         email: string;
     }
-): ServiceInterface<TypeEmailDeliveryTypeInput> {
+): ServiceInterface<TypeEmailPasswordEmailDeliveryInput> {
     return {
         sendRawEmail: async function (input: GetContentResult, _: any) {
             await transporter.sendMail({
@@ -43,7 +43,7 @@ export function getDefaultEmailServiceImplementation(
                 html: input.body,
             });
         },
-        getContent: async function (input: TypeEmailDeliveryTypeInput, _: any): Promise<GetContentResult> {
+        getContent: async function (input: TypeEmailPasswordEmailDeliveryInput, _: any): Promise<GetContentResult> {
             if (input.type === "EMAIL_VERIFICATION") {
                 return getEmailVerifyEmailContent(input, from);
             }

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { RecipeInterface, EmailService } from "../../emaildelivery/types";
-import { TypeEmailDeliveryTypeInput } from "../types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../types";
 export default function getRecipeInterface(
-    service: EmailService<TypeEmailDeliveryTypeInput>
-): RecipeInterface<TypeEmailDeliveryTypeInput>;
+    service: EmailService<TypeEmailVerificationEmailDeliveryInput>
+): RecipeInterface<TypeEmailVerificationEmailDeliveryInput>;

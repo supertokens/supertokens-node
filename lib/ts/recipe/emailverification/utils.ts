@@ -21,7 +21,7 @@ import {
     createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
 } from "./emailVerificationFunctions";
 import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
-import { TypeEmailDeliveryTypeInput } from "./types";
+import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -47,7 +47,7 @@ export function validateAndNormaliseUserInput(
             : undefined || config.emailDelivery.service;
     if (emailService === undefined) {
         emailService = {
-            sendEmail: async (input: TypeEmailDeliveryTypeInput, userContext: any) => {
+            sendEmail: async (input: TypeEmailVerificationEmailDeliveryInput, userContext: any) => {
                 let createAndSendCustomEmail = config.createAndSendCustomEmail;
                 if (createAndSendCustomEmail === undefined) {
                     createAndSendCustomEmail = defaultCreateAndSendCustomVerificationEmail(appInfo);
@@ -58,7 +58,7 @@ export function validateAndNormaliseUserInput(
     }
     let emailDelivery = {
         service: emailService,
-        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
+        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailVerificationEmailDeliveryInput>) =>
             originalImplementation,
         ...config.emailDelivery?.override,
     };

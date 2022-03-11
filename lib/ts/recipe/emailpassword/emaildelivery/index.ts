@@ -14,15 +14,15 @@
  */
 
 import { RecipeInterface, EmailService } from "../../emaildelivery/types";
-import { TypeEmailDeliveryTypeInput } from "../types";
+import { TypeEmailPasswordEmailDeliveryInput } from "../types";
 import EmailVerificationRecipe from "../../emailverification/recipe";
 
 export default function getRecipeInterface(
     emailVerificationRecipe: EmailVerificationRecipe,
-    service: EmailService<TypeEmailDeliveryTypeInput>
-): RecipeInterface<TypeEmailDeliveryTypeInput> {
+    service: EmailService<TypeEmailPasswordEmailDeliveryInput>
+): RecipeInterface<TypeEmailPasswordEmailDeliveryInput> {
     return {
-        sendEmail: async function (input: TypeEmailDeliveryTypeInput, userContext: any) {
+        sendEmail: async function (input: TypeEmailPasswordEmailDeliveryInput, userContext: any) {
             if (input.type === "EMAIL_VERIFICATION") {
                 return await emailVerificationRecipe.emailDelivery.recipeInterfaceImpl.sendEmail(input, userContext);
             }

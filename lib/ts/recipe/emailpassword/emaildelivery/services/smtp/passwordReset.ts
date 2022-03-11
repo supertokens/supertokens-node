@@ -12,11 +12,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailPasswordPasswordResetEmailDeliveryTypeInput } from "../../../types";
+import { TypeEmailPasswordPasswordResetEmailDeliveryInput } from "../../../types";
 import { GetContentResult } from "../../../../emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
 export default function getPasswordResetEmailContent(
-    input: TypeEmailPasswordPasswordResetEmailDeliveryTypeInput,
+    input: TypeEmailPasswordPasswordResetEmailDeliveryInput,
     from: {
         name: string;
         email: string;

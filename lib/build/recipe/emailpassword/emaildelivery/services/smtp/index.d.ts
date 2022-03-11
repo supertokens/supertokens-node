@@ -1,14 +1,14 @@
 // @ts-nocheck
 import { ServiceInterface, SMTPInputConfig } from "../../../../emaildelivery/services/smtp";
 import { Transporter } from "nodemailer";
-import { TypeEmailDeliveryTypeInput } from "../../../types";
+import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
 export default function getEmailPasswordEmailServiceSMTP(
-    config: SMTPInputConfig<TypeEmailDeliveryTypeInput>
-): import("../../../../emaildelivery/types").EmailService<TypeEmailDeliveryTypeInput>;
+    config: SMTPInputConfig<TypeEmailPasswordEmailDeliveryInput>
+): import("../../../../emaildelivery/types").EmailService<TypeEmailPasswordEmailDeliveryInput>;
 export declare function getDefaultEmailServiceImplementation(
     transporter: Transporter,
     from: {
         name: string;
         email: string;
     }
-): ServiceInterface<TypeEmailDeliveryTypeInput>;
+): ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;

@@ -24,7 +24,7 @@ import {
     TypeInputFormField,
     TypeInputResetPasswordUsingTokenFeature,
     APIOptions as EmailPasswordAPIOptionsOriginal,
-    TypeEmailDeliveryTypeInput,
+    TypeEmailPasswordEmailDeliveryInput,
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
@@ -70,7 +70,7 @@ export type TypeInputEmailVerificationFeature = {
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {

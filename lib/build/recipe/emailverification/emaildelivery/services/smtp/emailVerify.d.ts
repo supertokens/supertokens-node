@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { TypeEmailDeliveryTypeInput } from "../../../types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
 import { GetContentResult } from "../../../../emaildelivery/services/smtp";
 export default function getEmailVerifyEmailContent(
-    input: TypeEmailDeliveryTypeInput,
+    input: TypeEmailVerificationEmailDeliveryInput,
     from: {
         name: string;
         email: string;

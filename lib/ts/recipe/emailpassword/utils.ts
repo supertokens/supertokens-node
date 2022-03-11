@@ -34,7 +34,7 @@ import {
 } from "./passwordResetFunctions";
 import { RecipeInterface, APIInterface } from "./types";
 import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
-import { TypeEmailDeliveryTypeInput } from "./types";
+import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -70,7 +70,7 @@ export function validateAndNormaliseUserInput(
             : undefined || config.emailDelivery.service;
     if (emailService === undefined) {
         emailService = {
-            sendEmail: async (input: TypeEmailDeliveryTypeInput, userContext: any) => {
+            sendEmail: async (input: TypeEmailPasswordEmailDeliveryInput, userContext: any) => {
                 if (input.type === "EMAIL_VERIFICATION") {
                     return await recipeInstance.emailVerificationRecipe.emailDelivery.recipeInterfaceImpl.sendEmail(
                         input,
@@ -87,7 +87,7 @@ export function validateAndNormaliseUserInput(
     }
     let emailDelivery = {
         service: emailService,
-        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
+        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailPasswordEmailDeliveryInput>) =>
             originalImplementation,
         ...config?.emailDelivery?.override,
     };
@@ -108,7 +108,14 @@ export function validateAndNormaliseEmailVerificationConfig(
     config?: TypeInput
 ): TypeNormalisedInputEmailVerification {
     return {
-        emailDelivery: config?.emailDelivery as any,
+        emailDelivery:
+            config?.emailDelivery === undefined
+                ? undefined
+                : {
+                      service: config.emailDelivery.service,
+                      // override is undefined here intentionally because the user's override
+                      // for email verification will override the default implementation for emailpassword recipe. So this is not needed.
+                  },
         getEmailForUserId: recipeInstance.getEmailForUserId,
         override: config?.override?.emailVerificationFeature,
         createAndSendCustomEmail:

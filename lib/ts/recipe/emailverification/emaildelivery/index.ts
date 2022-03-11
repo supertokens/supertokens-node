@@ -14,13 +14,13 @@
  */
 
 import { RecipeInterface, EmailService } from "../../emaildelivery/types";
-import { TypeEmailDeliveryTypeInput } from "../types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../types";
 
 export default function getRecipeInterface(
-    service: EmailService<TypeEmailDeliveryTypeInput>
-): RecipeInterface<TypeEmailDeliveryTypeInput> {
+    service: EmailService<TypeEmailVerificationEmailDeliveryInput>
+): RecipeInterface<TypeEmailVerificationEmailDeliveryInput> {
     return {
-        sendEmail: async function (input: TypeEmailDeliveryTypeInput, userContext: any) {
+        sendEmail: async function (input: TypeEmailVerificationEmailDeliveryInput, userContext: any) {
             await service.sendEmail(input, userContext);
         },
     };

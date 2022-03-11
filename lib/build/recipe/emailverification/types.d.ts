@@ -4,7 +4,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
 export declare type TypeInput = {
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
@@ -17,7 +17,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryConfigInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL: (user: User, userContext: any) => Promise<string>;
     override: {
@@ -81,7 +81,7 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailVerificationEmailDeliveryInput>;
 };
 export declare type APIInterface = {
     verifyEmailPOST:
@@ -117,7 +117,7 @@ export declare type APIInterface = {
               status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
           }>);
 };
-export declare type TypeEmailDeliveryTypeInput = {
+export declare type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
     user: User;
     emailVerifyLink: string;

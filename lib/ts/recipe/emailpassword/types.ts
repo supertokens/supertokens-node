@@ -22,13 +22,13 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
-import { TypeEmailDeliveryTypeInput as TypeEmailVerificationEmailDeliveryTypeInput } from "../emailverification/types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
-    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -101,7 +101,7 @@ export type User = {
 
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery?: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -177,7 +177,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryRecipe<TypeEmailPasswordEmailDeliveryInput>;
 };
 
 export type APIInterface = {
@@ -266,12 +266,12 @@ export type APIInterface = {
           >);
 };
 
-export type TypeEmailPasswordPasswordResetEmailDeliveryTypeInput = {
+export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: User;
     passwordResetLink: string;
 };
 
-export type TypeEmailDeliveryTypeInput =
-    | TypeEmailPasswordPasswordResetEmailDeliveryTypeInput
-    | TypeEmailVerificationEmailDeliveryTypeInput;
+export type TypeEmailPasswordEmailDeliveryInput =
+    | TypeEmailPasswordPasswordResetEmailDeliveryInput
+    | TypeEmailVerificationEmailDeliveryInput;
