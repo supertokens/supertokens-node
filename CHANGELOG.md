@@ -5,14 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [9.1.0] - 2022-03-11
+
+-   Adds debug logging functionality
+
 ## [9.0.1] - 2022-03-02
 
 -   Fixes #269. The json body parser will additionally be used to parse the request body if the request body is of type `{}`
 -   `init` function will throw error if there are empty items in recipeList when passing the config
-
-## [9.1.0] - 2022-03-11
-
--   Adds debug logging functionality
 
 ## [9.0.0] - 2022-02-20
 
