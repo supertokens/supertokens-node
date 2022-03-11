@@ -137,6 +137,7 @@ Output: (with DEBUG=com.supertokens:*)
 
 */
 
+// ERROR_CODE values should be the same as the key in the errorLoggerWithCode function
 const ERROR_CODE_1 = 1;
 
 let errLoggerHelper = (errorCode: number, message: string) => {
