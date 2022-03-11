@@ -28,7 +28,7 @@ import {
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
 
 export type User = {
     id: string;

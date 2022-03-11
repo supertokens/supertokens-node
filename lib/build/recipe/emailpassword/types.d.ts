@@ -7,7 +7,7 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
 export declare type TypeNormalisedInput = {

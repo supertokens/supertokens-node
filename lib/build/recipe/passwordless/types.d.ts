@@ -2,7 +2,7 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
 export declare type User = {
     id: string;

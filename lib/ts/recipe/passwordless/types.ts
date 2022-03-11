@@ -16,9 +16,9 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { TypeConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
-// import { TypeConfigInput as SmsDeliveryConfigInput } from "../smsdelivery/types";
+// import { ConfigInput as SmsDeliveryConfigInput } from "../smsdelivery/types";
 // import SmsDeliveryRecipe from "../smsdelivery/recipe";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325

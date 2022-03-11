@@ -8,7 +8,7 @@ export declare type RecipeInterface<TypeInput> = {
 /**
  * input given by the user if SmsDelivery config is passed in parent Recipe
  */
-export interface TypeConfigInput<TypeInput> {
+export interface ConfigInput<TypeInput> {
     service: SmsService<TypeInput>;
     override?: (originalImplementation: RecipeInterface<TypeInput>) => RecipeInterface<TypeInput>;
 }
