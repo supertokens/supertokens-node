@@ -14,7 +14,7 @@
  */
 
 export interface SmsService<TypeInput> {
-    sendSms: (input: TypeInput, userConext: any) => Promise<void>;
+    sendSms: (input: TypeInput, userContext: any) => Promise<void>;
 }
 
 export type RecipeInterface<TypeInput> = {

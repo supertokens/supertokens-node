@@ -37,7 +37,6 @@ import {
     RESEND_CODE_API,
 } from "./constants";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
-import EmailDeliveryRecipeImplementation from "./emaildelivery";
 import { TypeEmailDeliveryTypeInput } from "./types";
 // import SmsDeliveryRecipeImplementation from "./smsDelivery";
 // import SmsDeliveryRecipe from "../smsdelivery/recipe";
@@ -64,10 +63,7 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
-        this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, {
-            defaultRecipeImpl: EmailDeliveryRecipeImplementation(this.config.emailDelivery.service),
-            override: this.config.emailDelivery.override,
-        });
+        this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, this.config.emailDelivery);
 
         // let smsService = this.config.smsDelivery === undefined ? undefined : this.config.smsDelivery.service;
         // if (smsService === undefined) {

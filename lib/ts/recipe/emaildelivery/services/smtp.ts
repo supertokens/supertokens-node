@@ -72,9 +72,9 @@ export function getSMTPProvider<T>(
     let builder = new OverrideableBuilder(getDefaultEmailServiceImplementation(transporter, config.smtpSettings.from));
     let serviceImpl = builder.override(override).build();
     return {
-        sendEmail: async function (input: T, userConext: any) {
-            let content = await serviceImpl.getContent(input, userConext);
-            await serviceImpl.sendRawEmail(content, userConext);
+        sendEmail: async function (input: T, userContext: any) {
+            let content = await serviceImpl.getContent(input, userContext);
+            await serviceImpl.sendRawEmail(content, userContext);
         },
     };
 }

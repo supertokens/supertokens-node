@@ -28,7 +28,6 @@ import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
-import EmailDeliveryRecipeImplementation from "./emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 
 export default class Recipe extends RecipeModule {
@@ -50,10 +49,7 @@ export default class Recipe extends RecipeModule {
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
-        this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, {
-            defaultRecipeImpl: EmailDeliveryRecipeImplementation(this.config.emailDelivery.service),
-            override: this.config.emailDelivery.override,
-        });
+        this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, this.config.emailDelivery);
 
         {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));

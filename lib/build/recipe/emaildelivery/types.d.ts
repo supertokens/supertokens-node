@@ -1,6 +1,6 @@
 // @ts-nocheck
 export interface EmailService<T> {
-    sendEmail: (input: T, userConext: any) => Promise<void>;
+    sendEmail: (input: T, userContext: any) => Promise<void>;
 }
 export declare type RecipeInterface<T> = {
     sendEmail: (input: T, userContext: any) => Promise<void>;
@@ -16,6 +16,6 @@ export interface TypeConfigInput<T> {
  * config class parameter when parent Recipe create a new EmailDeliveryRecipe object via constructor
  */
 export interface ConfigInput<T> {
-    defaultRecipeImpl: RecipeInterface<T>;
+    service: EmailService<T>;
     override?: (originalImplementation: RecipeInterface<T>) => RecipeInterface<T>;
 }

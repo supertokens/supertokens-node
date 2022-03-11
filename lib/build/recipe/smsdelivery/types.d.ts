@@ -1,6 +1,6 @@
 // @ts-nocheck
 export interface SmsService<TypeInput> {
-    sendSms: (input: TypeInput, userConext: any) => Promise<void>;
+    sendSms: (input: TypeInput, userContext: any) => Promise<void>;
 }
 export declare type RecipeInterface<TypeInput> = {
     sendSms: (input: TypeInput, userContext: any) => Promise<void>;

@@ -28,7 +28,12 @@ export default class Recipe<TypeInput> extends RecipeModule {
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: ConfigInput<TypeInput>) {
         super(recipeId, appInfo);
-        let builder = new OverrideableBuilder(config.defaultRecipeImpl);
+        let defaultRecipeImpl: RecipeInterface<TypeInput> = {
+            sendEmail: async function (input, userContext) {
+                return config.service.sendEmail(input, userContext);
+            },
+        };
+        let builder = new OverrideableBuilder(defaultRecipeImpl);
         if (config.override !== undefined) {
             builder.override(config.override);
         }
