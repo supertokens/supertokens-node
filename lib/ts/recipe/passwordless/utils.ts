@@ -17,7 +17,7 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
-import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
+import { RecipeInterface as EmailDeliveryRecipeInterface } from "../emaildelivery/types";
 import { TypeEmailDeliveryTypeInput } from "./types";
 // import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
 
@@ -73,9 +73,9 @@ export function validateAndNormaliseUserInput(
 
     let emailDelivery = {
         service: emailService,
-        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
+        override: (originalImplementation: EmailDeliveryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
             originalImplementation,
-        ...config.emailDelivery?.override,
+        ...config.emailDelivery,
     };
 
     // let smsDelivery =

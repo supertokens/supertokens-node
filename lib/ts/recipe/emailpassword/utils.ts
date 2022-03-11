@@ -33,7 +33,7 @@ import {
     createAndSendCustomEmail as defaultCreateAndSendCustomPasswordResetEmail,
 } from "./passwordResetFunctions";
 import { RecipeInterface, APIInterface } from "./types";
-import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
+import { RecipeInterface as EmailDeliveryRecipeInterface } from "../emaildelivery/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 
 export function validateAndNormaliseUserInput(
@@ -87,9 +87,9 @@ export function validateAndNormaliseUserInput(
     }
     let emailDelivery = {
         service: emailService,
-        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailPasswordEmailDeliveryInput>) =>
+        override: (originalImplementation: EmailDeliveryRecipeInterface<TypeEmailPasswordEmailDeliveryInput>) =>
             originalImplementation,
-        ...config?.emailDelivery?.override,
+        ...config?.emailDelivery,
     };
 
     return {

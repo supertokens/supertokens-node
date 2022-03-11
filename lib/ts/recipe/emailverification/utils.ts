@@ -20,7 +20,7 @@ import {
     getEmailVerificationURL as defaultGetEmailVerificationURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
 } from "./emailVerificationFunctions";
-import { RecipeInterface as EmailDelvieryRecipeInterface } from "../emaildelivery/types";
+import { RecipeInterface as EmailDeliveryRecipeInterface } from "../emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 
 export function validateAndNormaliseUserInput(
@@ -58,9 +58,9 @@ export function validateAndNormaliseUserInput(
     }
     let emailDelivery = {
         service: emailService,
-        override: (originalImplementation: EmailDelvieryRecipeInterface<TypeEmailVerificationEmailDeliveryInput>) =>
+        override: (originalImplementation: EmailDeliveryRecipeInterface<TypeEmailVerificationEmailDeliveryInput>) =>
             originalImplementation,
-        ...config.emailDelivery?.override,
+        ...config.emailDelivery,
     };
 
     return {
