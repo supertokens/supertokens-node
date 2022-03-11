@@ -35,7 +35,7 @@ export default class Recipe<TypeInput> extends RecipeModule {
         };
         let builder = new OverrideableBuilder(defaultRecipeImpl);
         if (config.override !== undefined) {
-            builder.override(config.override);
+            builder = builder.override(config.override);
         }
         this.recipeInterfaceImpl = builder.build();
     }
