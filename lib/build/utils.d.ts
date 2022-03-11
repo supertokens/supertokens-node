@@ -12,10 +12,8 @@ export declare function isAnIpAddress(ipaddress: string): boolean;
 export declare function validateTheStructureOfUserInput(config: any, inputSchema: any, configRoot: string): void;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;
 declare const ERROR_CODE_1 = 1;
-declare const ERROR_CODE_2 = 2;
 export declare function infoLogger(message: string): void;
 export declare let errorLoggerWithCode: {
     1: (item: string) => void;
-    2: () => void;
 };
-export { ERROR_CODE_1, ERROR_CODE_2 };
+export { ERROR_CODE_1 };

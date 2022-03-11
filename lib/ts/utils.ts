@@ -132,13 +132,12 @@ For example:
     infoLogger("some info")
 
 Output: (with DEBUG=com.supertokens:*)
-  com.supertokens:error {t: "2022-03-09T10:47:57.379Z", errCode: 1, msg: "Example error with custom str Test", sdkVer: "9.0.0"} +0ms
+  com.supertokens:error {t: "2022-03-09T10:47:57.379Z", errCode: 1, msg: "Example error with param Test", sdkVer: "9.0.0"} +0ms
   com.supertokens:info {t: "2022-03-09T10:47:57.380Z", msg: "Some info", sdkVer: "9.0.0"} +0ms
 
 */
 
 const ERROR_CODE_1 = 1;
-const ERROR_CODE_2 = 2;
 
 let errLoggerHelper = (errorCode: number, message: string) => {
     debug(`${SUPERTOKENS_NAMESPACE}${ERROR_ID}`)(
@@ -154,9 +153,6 @@ export let errorLoggerWithCode = {
     1: (item: string) => {
         errLoggerHelper(ERROR_CODE_1, "Example error with param: " + item);
     },
-    2: () => {
-        errLoggerHelper(ERROR_CODE_2, '"Example error"');
-    },
 };
 
-export { ERROR_CODE_1, ERROR_CODE_2 };
+export { ERROR_CODE_1 };
