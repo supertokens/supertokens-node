@@ -22,6 +22,7 @@ let ThirPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
 let ThirdPartyEmailPasswordRecipe = require("../lib/build/recipe/thirdpartyemailpassword/recipe").default;
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
+const UserMetadataRecipe = require("../lib/build/recipe/usermetadata/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
@@ -198,6 +199,7 @@ module.exports.resetAll = function () {
     EmailPasswordRecipe.reset();
     ThirPartyRecipe.reset();
     JWTRecipe.reset();
+    UserMetadataRecipe.reset();
     PasswordlessRecipe.reset();
     OpenIDRecipe.reset();
     ProcessState.getInstance().reset();
