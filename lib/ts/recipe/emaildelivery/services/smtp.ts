@@ -47,7 +47,7 @@ export type ServiceInterface<T> = {
 
 export type SMTPInputConfig<T> = {
     smtpSettings: SMTPServiceConfig;
-    override: (oI: ServiceInterface<T>) => ServiceInterface<T>;
+    override?: (oI: ServiceInterface<T>) => ServiceInterface<T>;
 };
 
 export type TypeGetDefaultEmailServiceImplementation<T> = (
@@ -68,13 +68,15 @@ export function getSMTPProvider<T>(
         auth: config.smtpSettings.auth,
         secure: config.smtpSettings.secure,
     });
-    let override = (originalImplementation: ServiceInterface<T>) => originalImplementation;
     let builder = new OverrideableBuilder(getDefaultEmailServiceImplementation(transporter, config.smtpSettings.from));
-    let serviceImpl = builder.override(override).build();
+    if (config.override !== undefined) {
+        builder = builder.override(config.override);
+    }
+    let serviceImpl = builder.build();
     return {
-        sendEmail: async function (input: T, userConext: any) {
-            let content = await serviceImpl.getContent(input, userConext);
-            await serviceImpl.sendRawEmail(content, userConext);
+        sendEmail: async function (input: T, userContext: any) {
+            let content = await serviceImpl.getContent(input, userContext);
+            await serviceImpl.sendRawEmail(content, userContext);
         },
     };
 }

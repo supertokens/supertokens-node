@@ -29,7 +29,7 @@ export declare type ServiceInterface<T> = {
 };
 export declare type SMTPInputConfig<T> = {
     smtpSettings: SMTPServiceConfig;
-    override: (oI: ServiceInterface<T>) => ServiceInterface<T>;
+    override?: (oI: ServiceInterface<T>) => ServiceInterface<T>;
 };
 export declare type TypeGetDefaultEmailServiceImplementation<T> = (
     transporter: Transporter,

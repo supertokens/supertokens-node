@@ -18,18 +18,26 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo } from "../../types";
-import { ConfigInput, EmailService, RecipeInterface } from "./types";
+import { ConfigInput, RecipeInterface } from "./types";
+import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe<TypeInput> extends RecipeModule {
     static RECIPE_ID = "emaildelivery";
 
-    service: EmailService<TypeInput> | undefined;
     recipeInterfaceImpl: RecipeInterface<TypeInput>;
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: ConfigInput<TypeInput>) {
         super(recipeId, appInfo);
-        this.recipeInterfaceImpl = config.recipeImpl;
-        this.service = config.service;
+        let defaultRecipeImpl: RecipeInterface<TypeInput> = {
+            sendEmail: async function (input, userContext) {
+                return config.service.sendEmail(input, userContext);
+            },
+        };
+        let builder = new OverrideableBuilder(defaultRecipeImpl);
+        if (config.override !== undefined) {
+            builder = builder.override(config.override);
+        }
+        this.recipeInterfaceImpl = builder.build();
     }
 
     getAPIsHandled = (): APIHandled[] => {

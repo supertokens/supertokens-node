@@ -4,10 +4,9 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo } from "../../types";
-import { ConfigInput, EmailService, RecipeInterface } from "./types";
+import { ConfigInput, RecipeInterface } from "./types";
 export default class Recipe<TypeInput> extends RecipeModule {
     static RECIPE_ID: string;
-    service: EmailService<TypeInput> | undefined;
     recipeInterfaceImpl: RecipeInterface<TypeInput>;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, config: ConfigInput<TypeInput>);
     getAPIsHandled: () => APIHandled[];

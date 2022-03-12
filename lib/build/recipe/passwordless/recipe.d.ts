@@ -6,8 +6,7 @@ import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryRecipe from "../emaildelivery/recipe";
-import { TypeEmailDeliveryTypeInput, TypeSMSDeliveryTypeInput } from "./types";
-import SmsDeliveryRecipe from "../smsdelivery/recipe";
+import { TypeEmailDeliveryTypeInput } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -16,7 +15,6 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
-    smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput);
     static getInstanceOrThrowError(): Recipe;
     static init(config: TypeInput): RecipeListFunction;
