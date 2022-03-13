@@ -15,7 +15,7 @@
 
 import { NormalisedAppinfo } from "../../types";
 import Recipe from "./recipe";
-import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -24,6 +24,7 @@ export function validateAndNormaliseUserInput(
 ): TypeNormalisedInput {
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
+        apis: (originalImplementation: APIInterface) => originalImplementation,
         ...config?.override,
     };
 
