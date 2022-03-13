@@ -36,7 +36,7 @@ import {
     DOES_PHONE_NUMBER_EXIST_API,
     RESEND_CODE_API,
 } from "./constants";
-import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
 import { TypeEmailDeliveryTypeInput } from "./types";
 // import SmsDeliveryRecipeImplementation from "./smsDelivery";
 // import SmsDeliveryRecipe from "../smsdelivery/recipe";
@@ -63,7 +63,7 @@ export default class Recipe extends RecipeModule {
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
-        this.emailDelivery = new EmailDeliveryRecipe(recipeId, appInfo, this.config.emailDelivery);
+        this.emailDelivery = new EmailDeliveryRecipe(this.config.emailDelivery);
 
         // let smsService = this.config.smsDelivery === undefined ? undefined : this.config.smsDelivery.service;
         // if (smsService === undefined) {

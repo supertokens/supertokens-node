@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { TypeEmailDeliveryTypeInput } from "../../../types";
-import { GetContentResult } from "../../../../emaildelivery/services/smtp";
+import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 export default function getPasswordlessLoginEmailContent(
     input: TypeEmailDeliveryTypeInput,
     from: {

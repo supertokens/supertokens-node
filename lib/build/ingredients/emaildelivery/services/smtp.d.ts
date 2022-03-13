@@ -24,10 +24,18 @@ export interface GetContentResult {
     toEmail: string;
 }
 export declare type ServiceInterface<T> = {
-    sendRawEmail: (input: GetContentResult, userContext: any) => Promise<void>;
-    getContent: (input: T, userContext: any) => Promise<GetContentResult>;
+    sendRawEmail: (
+        input: GetContentResult & {
+            userContext: any;
+        }
+    ) => Promise<void>;
+    getContent: (
+        input: T & {
+            userContext: any;
+        }
+    ) => Promise<GetContentResult>;
 };
-export declare type SMTPInputConfig<T> = {
+export declare type TypeInput<T> = {
     smtpSettings: SMTPServiceConfig;
     override?: (oI: ServiceInterface<T>) => ServiceInterface<T>;
 };
@@ -38,7 +46,7 @@ export declare type TypeGetDefaultEmailServiceImplementation<T> = (
         email: string;
     }
 ) => ServiceInterface<T>;
-export declare function getSMTPProvider<T>(
-    config: SMTPInputConfig<T>,
+export declare function getEmailServiceImplementation<T>(
+    config: TypeInput<T>,
     getDefaultEmailServiceImplementation: TypeGetDefaultEmailServiceImplementation<T>
 ): EmailService<T>;

@@ -33,7 +33,7 @@ import {
     createAndSendCustomEmail as defaultCreateAndSendCustomPasswordResetEmail,
 } from "./passwordResetFunctions";
 import { RecipeInterface, APIInterface } from "./types";
-import { RecipeInterface as EmailDeliveryRecipeInterface } from "../emaildelivery/types";
+import { IngredientInterface as EmailDeliveryIngredientInterface } from "../../ingredients/emaildelivery/types";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 
 export function validateAndNormaliseUserInput(
@@ -64,30 +64,44 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
-    let emailService =
-        config === undefined || config.emailDelivery === undefined
-            ? undefined
-            : undefined || config.emailDelivery.service;
+    let emailService = config?.emailDelivery?.service;
+    /**
+     * following code is for backward compatibility.
+     * if user has not passed emailDelivery config, we
+     * use the createAndSendCustomEmail config. If the user
+     * has not passed even that config, we use the default
+     * createAndSendCustomEmail implementation
+     */
     if (emailService === undefined) {
         emailService = {
-            sendEmail: async (input: TypeEmailPasswordEmailDeliveryInput, userContext: any) => {
+            sendEmail: async (input: TypeEmailPasswordEmailDeliveryInput) => {
                 if (input.type === "EMAIL_VERIFICATION") {
-                    return await recipeInstance.emailVerificationRecipe.emailDelivery.recipeInterfaceImpl.sendEmail(
-                        input,
-                        userContext
+                    return await recipeInstance.emailVerificationRecipe.emailDelivery.ingredientInterfaceImpl.sendEmail(
+                        input
                     );
                 }
                 let createAndSendCustomEmail = config?.resetPasswordUsingTokenFeature?.createAndSendCustomEmail;
                 if (createAndSendCustomEmail === undefined) {
                     createAndSendCustomEmail = defaultCreateAndSendCustomPasswordResetEmail(appInfo);
                 }
-                await createAndSendCustomEmail(input.user, input.passwordResetLink, userContext);
+                try {
+                    if (!recipeInstance.isInServerlessEnv) {
+                        createAndSendCustomEmail(
+                            input.user,
+                            input.passwordResetLink,
+                            input.userContext
+                        ).catch((_) => {});
+                    } else {
+                        // see https://github.com/supertokens/supertokens-node/pull/135
+                        await createAndSendCustomEmail(input.user, input.passwordResetLink, input.userContext);
+                    }
+                } catch (_) {}
             },
         };
     }
     let emailDelivery = {
         service: emailService,
-        override: (originalImplementation: EmailDeliveryRecipeInterface<TypeEmailPasswordEmailDeliveryInput>) =>
+        override: (originalImplementation: EmailDeliveryIngredientInterface<TypeEmailPasswordEmailDeliveryInput>) =>
             originalImplementation,
         ...config?.emailDelivery,
     };

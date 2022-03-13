@@ -12,3 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+
+export interface EmailService<T> {
+    sendEmail: (input: T & { userContext: any }) => Promise<void>;
+}
+
+export type IngredientInterface<T> = {
+    sendEmail: (input: T & { userContext: any }) => Promise<void>;
+};
+
+/**
+ * config class parameter when parent Recipe create a new EmailDeliveryRecipe object via constructor
+ */
+export interface TypeInput<T> {
+    service: EmailService<T>;
+    override?: (originalImplementation: IngredientInterface<T>) => IngredientInterface<T>;
+}

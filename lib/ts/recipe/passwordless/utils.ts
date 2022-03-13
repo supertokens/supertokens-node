@@ -17,7 +17,7 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
-import { RecipeInterface as EmailDeliveryRecipeInterface } from "../emaildelivery/types";
+import { IngredientInterface as EmailDeliveryIngredientInterface } from "../../ingredients/emaildelivery/types";
 import { TypeEmailDeliveryTypeInput } from "./types";
 // import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
 
@@ -48,9 +48,16 @@ export function validateAndNormaliseUserInput(
         config === undefined || config.emailDelivery === undefined
             ? undefined
             : undefined || config.emailDelivery.service;
+    /**
+     * following code is for backward compatibility.
+     * if user has not passed emailDelivery config, we
+     * use the createAndSendCustomEmail config. If the user
+     * has not passed even that config, we use the default
+     * createAndSendCustomEmail implementation
+     */
     if (emailService === undefined) {
         emailService = {
-            sendEmail: async (input: TypeEmailDeliveryTypeInput, userContext: any) => {
+            sendEmail: async (input: TypeEmailDeliveryTypeInput & { userContext: any }) => {
                 if (config.contactMethod === "EMAIL" || config.contactMethod === "EMAIL_OR_PHONE") {
                     let createAndSendCustomEmail = config.createAndSendCustomEmail;
                     if (createAndSendCustomEmail === undefined) {
@@ -64,7 +71,7 @@ export function validateAndNormaliseUserInput(
                             preAuthSessionId: input.preAuthSessionId,
                             codeLifetime: input.codeLifetime,
                         },
-                        userContext
+                        input.userContext
                     );
                 }
             },
@@ -73,7 +80,7 @@ export function validateAndNormaliseUserInput(
 
     let emailDelivery = {
         service: emailService,
-        override: (originalImplementation: EmailDeliveryRecipeInterface<TypeEmailDeliveryTypeInput>) =>
+        override: (originalImplementation: EmailDeliveryIngredientInterface<TypeEmailDeliveryTypeInput>) =>
             originalImplementation,
         ...config.emailDelivery,
     };

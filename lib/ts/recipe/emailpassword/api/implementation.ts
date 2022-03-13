@@ -63,30 +63,12 @@ export default function getAPIImplementation(): APIInterface {
                 "&rid=" +
                 options.recipeId;
 
-            await options.emailDelivery.recipeInterfaceImpl.sendEmail(
-                {
-                    type: "PASSWORD_RESET",
-                    user,
-                    passwordResetLink,
-                },
-                userContext
-            );
-
-            // TODO: put inside default implementation
-            // try {
-            //     if (!options.isInServerlessEnv) {
-            //         options.config.resetPasswordUsingTokenFeature
-            //             .createAndSendCustomEmail(user, passwordResetLink, userContext)
-            //             .catch((_) => {});
-            //     } else {
-            //         // see https://github.com/supertokens/supertokens-node/pull/135
-            //         await options.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
-            //             user,
-            //             passwordResetLink,
-            //             userContext
-            //         );
-            //     }
-            // } catch (_) {}
+            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                type: "PASSWORD_RESET",
+                user,
+                passwordResetLink,
+                userContext,
+            });
 
             return {
                 status: "OK",

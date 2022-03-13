@@ -41,11 +41,11 @@ export interface GetContentResult {
 }
 
 export type ServiceInterface<T> = {
-    sendRawEmail: (input: GetContentResult, userContext: any) => Promise<void>;
-    getContent: (input: T, userContext: any) => Promise<GetContentResult>;
+    sendRawEmail: (input: GetContentResult & { userContext: any }) => Promise<void>;
+    getContent: (input: T & { userContext: any }) => Promise<GetContentResult>;
 };
 
-export type SMTPInputConfig<T> = {
+export type TypeInput<T> = {
     smtpSettings: SMTPServiceConfig;
     override?: (oI: ServiceInterface<T>) => ServiceInterface<T>;
 };
@@ -58,8 +58,8 @@ export type TypeGetDefaultEmailServiceImplementation<T> = (
     }
 ) => ServiceInterface<T>;
 
-export function getSMTPProvider<T>(
-    config: SMTPInputConfig<T>,
+export function getEmailServiceImplementation<T>(
+    config: TypeInput<T>,
     getDefaultEmailServiceImplementation: TypeGetDefaultEmailServiceImplementation<T>
 ): EmailService<T> {
     const transporter = createTransport({
@@ -74,9 +74,12 @@ export function getSMTPProvider<T>(
     }
     let serviceImpl = builder.build();
     return {
-        sendEmail: async function (input: T, userContext: any) {
-            let content = await serviceImpl.getContent(input, userContext);
-            await serviceImpl.sendRawEmail(content, userContext);
+        sendEmail: async function (input: T & { userContext: any }) {
+            let content = await serviceImpl.getContent(input);
+            await serviceImpl.sendRawEmail({
+                ...content,
+                ...input.userContext,
+            });
         },
     };
 }

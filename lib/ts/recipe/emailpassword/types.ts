@@ -21,14 +21,14 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
-import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
-    emailDelivery: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -88,7 +88,6 @@ export type TypeInputResetPasswordUsingTokenFeature = {
 
 export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL: (user: User, userContext: any) => Promise<string>;
-    // createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>; // TODO: remove
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
@@ -101,7 +100,7 @@ export type User = {
 
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -270,6 +269,7 @@ export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: User;
     passwordResetLink: string;
+    userContext: any;
 };
 
 export type TypeEmailPasswordEmailDeliveryInput =

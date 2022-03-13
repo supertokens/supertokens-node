@@ -15,11 +15,11 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
-import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
+import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
 
 export type TypeInput = {
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailVerificationEmailDeliveryInput>;
+    emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
@@ -33,7 +33,7 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    emailDelivery: EmailDeliveryConfigInput<TypeEmailVerificationEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL: (user: User, userContext: any) => Promise<string>;
     override: {
@@ -120,4 +120,5 @@ export type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
     user: User;
     emailVerifyLink: string;
+    userContext: any;
 };

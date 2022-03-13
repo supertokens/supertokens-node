@@ -28,7 +28,7 @@ import {
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
 
 export type User = {
     id: string;
@@ -70,7 +70,7 @@ export type TypeInputEmailVerificationFeature = {
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -95,7 +95,7 @@ export type TypeInput = {
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     providers: TypeProvider[];
-    // emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    // emailDelivery: EmailDeliveryTypeInput<TypeEmailDeliveryTypeInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {

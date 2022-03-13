@@ -15,15 +15,15 @@
 import {
     ServiceInterface,
     GetContentResult,
-    SMTPInputConfig,
-    getSMTPProvider,
-} from "../../../../emaildelivery/services/smtp";
+    TypeInput as SMTPTypeInput,
+    getEmailServiceImplementation,
+} from "../../../../../ingredients/emaildelivery/services/smtp";
 import { Transporter } from "nodemailer";
 import { TypeEmailDeliveryTypeInput } from "../../../types";
 import getPasswordlessLoginEmailContent from "./passwordlessLogin";
 
-export default function getPasswordlessEmailServiceSMTP(config: SMTPInputConfig<TypeEmailDeliveryTypeInput>) {
-    return getSMTPProvider(config, getDefaultEmailServiceImplementation);
+export default function getSMTPService(config: SMTPTypeInput<TypeEmailDeliveryTypeInput>) {
+    return getEmailServiceImplementation(config, getDefaultEmailServiceImplementation);
 }
 
 export function getDefaultEmailServiceImplementation(
@@ -34,7 +34,7 @@ export function getDefaultEmailServiceImplementation(
     }
 ): ServiceInterface<TypeEmailDeliveryTypeInput> {
     return {
-        sendRawEmail: async function (input: GetContentResult, _: any) {
+        sendRawEmail: async function (input: GetContentResult & { userContext: any }) {
             await transporter.sendMail({
                 from: `${input.from.name} <${input.from.email}>`,
                 to: input.toEmail,
@@ -42,7 +42,9 @@ export function getDefaultEmailServiceImplementation(
                 html: input.body,
             });
         },
-        getContent: async function (input: TypeEmailDeliveryTypeInput, _: any): Promise<GetContentResult> {
+        getContent: async function (
+            input: TypeEmailDeliveryTypeInput & { userContext: any }
+        ): Promise<GetContentResult> {
             return getPasswordlessLoginEmailContent(input, from);
         },
     };

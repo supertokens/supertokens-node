@@ -15,16 +15,16 @@
 import {
     ServiceInterface,
     GetContentResult,
-    SMTPInputConfig,
-    getSMTPProvider,
-} from "../../../../emaildelivery/services/smtp";
+    TypeInput as SMTPTypeInput,
+    getEmailServiceImplementation,
+} from "../../../../../ingredients/emaildelivery/services/smtp";
 import { Transporter } from "nodemailer";
 import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
 import getPasswordResetEmailContent from "./passwordReset";
 import getEmailVerifyEmailContent from "../../../../emailverification/emaildelivery/services/smtp/emailVerify";
 
-export default function getEmailPasswordEmailServiceSMTP(config: SMTPInputConfig<TypeEmailPasswordEmailDeliveryInput>) {
-    return getSMTPProvider(config, getDefaultEmailServiceImplementation);
+export default function getSMTPService(config: SMTPTypeInput<TypeEmailPasswordEmailDeliveryInput>) {
+    return getEmailServiceImplementation(config, getDefaultEmailServiceImplementation);
 }
 
 export function getDefaultEmailServiceImplementation(
@@ -35,7 +35,7 @@ export function getDefaultEmailServiceImplementation(
     }
 ): ServiceInterface<TypeEmailPasswordEmailDeliveryInput> {
     return {
-        sendRawEmail: async function (input: GetContentResult, _: any) {
+        sendRawEmail: async function (input: GetContentResult & { userContext: any }) {
             await transporter.sendMail({
                 from: `${input.from.name} <${input.from.email}>`,
                 to: input.toEmail,
@@ -43,7 +43,9 @@ export function getDefaultEmailServiceImplementation(
                 html: input.body,
             });
         },
-        getContent: async function (input: TypeEmailPasswordEmailDeliveryInput, _: any): Promise<GetContentResult> {
+        getContent: async function (
+            input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }
+        ): Promise<GetContentResult> {
             if (input.type === "EMAIL_VERIFICATION") {
                 return getEmailVerifyEmailContent(input, from);
             }

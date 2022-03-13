@@ -2,8 +2,8 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
-import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
+import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
 export declare type User = {
     id: string;
     email?: string;
@@ -77,7 +77,7 @@ export declare type TypeInput = (
         userContext: any
     ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery?: EmailDeliveryTypeInput<TypeEmailDeliveryTypeInput>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -133,7 +133,7 @@ export declare type TypeNormalisedInput = (
         userContext: any
     ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryTypeInput<TypeEmailDeliveryTypeInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -373,5 +373,6 @@ export declare type TypeEmailDeliveryTypeInput = {
     urlWithLinkCode?: string;
     codeLifetime: number;
     preAuthSessionId: string;
+    userContext: any;
 };
 export {};

@@ -100,29 +100,17 @@ export default function getAPIImplementation(): APIInterface {
                         input.userContext
                     );
                 } else {
-                    await input.options.emailDelivery.recipeInterfaceImpl.sendEmail(
-                        {
-                            type: "PASSWORDLESS_LOGIN_CODE",
-                            user: {
-                                email: (input as any).email!,
-                            },
-                            codeLifetime: response.codeLifetime,
-                            preAuthSessionId: response.preAuthSessionId,
-                            urlWithLinkCode: magicLink,
-                            userInputCode,
+                    await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                        type: "PASSWORDLESS_LOGIN_CODE",
+                        user: {
+                            email: (input as any).email!,
                         },
-                        input.userContext
-                    );
-                    // await input.options.config.createAndSendCustomEmail(
-                    //     {
-                    //         codeLifetime: response.codeLifetime,
-                    //         email: (input as any).email!,
-                    //         preAuthSessionId: response.preAuthSessionId,
-                    //         urlWithLinkCode: magicLink,
-                    //         userInputCode,
-                    //     },
-                    //     input.userContext
-                    // );
+                        codeLifetime: response.codeLifetime,
+                        preAuthSessionId: response.preAuthSessionId,
+                        urlWithLinkCode: magicLink,
+                        userInputCode,
+                        userContext: input.userContext,
+                    });
                 }
             } catch (err) {
                 return {
@@ -251,29 +239,17 @@ export default function getAPIImplementation(): APIInterface {
                                 input.userContext
                             );
                         } else {
-                            await input.options.emailDelivery.recipeInterfaceImpl.sendEmail(
-                                {
-                                    type: "PASSWORDLESS_LOGIN_CODE",
-                                    user: {
-                                        email: deviceInfo.email!,
-                                    },
-                                    codeLifetime: response.codeLifetime,
-                                    preAuthSessionId: response.preAuthSessionId,
-                                    urlWithLinkCode: magicLink,
-                                    userInputCode,
+                            await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                                type: "PASSWORDLESS_LOGIN_CODE",
+                                user: {
+                                    email: deviceInfo.email!,
                                 },
-                                input.userContext
-                            );
-                            // await input.options.config.createAndSendCustomEmail(
-                            //     {
-                            //         codeLifetime: response.codeLifetime,
-                            //         email: deviceInfo.email!,
-                            //         preAuthSessionId: response.preAuthSessionId,
-                            //         urlWithLinkCode: magicLink,
-                            //         userInputCode,
-                            //     },
-                            //     input.userContext
-                            // );
+                                codeLifetime: response.codeLifetime,
+                                preAuthSessionId: response.preAuthSessionId,
+                                urlWithLinkCode: magicLink,
+                                userInputCode,
+                                userContext: input.userContext,
+                            });
                         }
                     } catch (err) {
                         return {

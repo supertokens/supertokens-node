@@ -16,8 +16,8 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
-import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
+import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
 // import { ConfigInput as SmsDeliveryConfigInput } from "../smsdelivery/types";
 // import SmsDeliveryRecipe from "../smsdelivery/recipe";
 
@@ -129,7 +129,7 @@ export type TypeInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery?: EmailDeliveryTypeInput<TypeEmailDeliveryTypeInput>;
     // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
 
     override?: {
@@ -241,7 +241,7 @@ export type TypeNormalisedInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
-    emailDelivery: EmailDeliveryConfigInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryTypeInput<TypeEmailDeliveryTypeInput>;
     // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
 
     override: {
@@ -471,6 +471,7 @@ export type TypeEmailDeliveryTypeInput = {
     urlWithLinkCode?: string;
     codeLifetime: number;
     preAuthSessionId: string;
+    userContext: any;
 };
 
 // export type TypeSMSDeliveryTypeInput = {

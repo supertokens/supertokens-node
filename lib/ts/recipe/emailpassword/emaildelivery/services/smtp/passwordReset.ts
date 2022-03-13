@@ -13,7 +13,7 @@
  * under the License.
  */
 import { TypeEmailPasswordPasswordResetEmailDeliveryInput } from "../../../types";
-import { GetContentResult } from "../../../../emaildelivery/services/smtp";
+import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
 export default function getPasswordResetEmailContent(
     input: TypeEmailPasswordPasswordResetEmailDeliveryInput,

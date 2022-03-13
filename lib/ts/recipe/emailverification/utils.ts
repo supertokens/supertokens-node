@@ -20,11 +20,11 @@ import {
     getEmailVerificationURL as defaultGetEmailVerificationURL,
     createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
 } from "./emailVerificationFunctions";
-import { RecipeInterface as EmailDeliveryRecipeInterface } from "../emaildelivery/types";
+import { IngredientInterface as EmailDeliveryIngredientInterface } from "../../ingredients/emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 
 export function validateAndNormaliseUserInput(
-    _: Recipe,
+    recipe: Recipe,
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
@@ -41,24 +41,35 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
-    let emailService =
-        config === undefined || config.emailDelivery === undefined
-            ? undefined
-            : undefined || config.emailDelivery.service;
+    let emailService = config?.emailDelivery?.service;
+    /**
+     * following code is for backward compatibility.
+     * if user has not passed emailDelivery config, we
+     * use the createAndSendCustomEmail config. If the user
+     * has not passed even that config, we use the default
+     * createAndSendCustomEmail implementation
+     */
     if (emailService === undefined) {
         emailService = {
-            sendEmail: async (input: TypeEmailVerificationEmailDeliveryInput, userContext: any) => {
+            sendEmail: async (input: TypeEmailVerificationEmailDeliveryInput) => {
                 let createAndSendCustomEmail = config.createAndSendCustomEmail;
                 if (createAndSendCustomEmail === undefined) {
                     createAndSendCustomEmail = defaultCreateAndSendCustomVerificationEmail(appInfo);
                 }
-                await createAndSendCustomEmail(input.user, input.emailVerifyLink, userContext);
+                try {
+                    if (!recipe.isInServerlessEnv) {
+                        createAndSendCustomEmail(input.user, input.emailVerifyLink, input.userContext).catch((_) => {});
+                    } else {
+                        // see https://github.com/supertokens/supertokens-node/pull/135
+                        await createAndSendCustomEmail(input.user, input.emailVerifyLink, input.userContext);
+                    }
+                } catch (_) {}
             },
         };
     }
     let emailDelivery = {
         service: emailService,
-        override: (originalImplementation: EmailDeliveryRecipeInterface<TypeEmailVerificationEmailDeliveryInput>) =>
+        override: (originalImplementation: EmailDeliveryIngredientInterface<TypeEmailVerificationEmailDeliveryInput>) =>
             originalImplementation,
         ...config.emailDelivery,
     };

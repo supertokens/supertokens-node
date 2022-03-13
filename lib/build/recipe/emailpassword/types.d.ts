@@ -7,13 +7,13 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { ConfigInput as EmailDeliveryConfigInput } from "../emaildelivery/types";
+import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
-import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
-    emailDelivery: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -77,7 +77,7 @@ export declare type User = {
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
-    emailDelivery?: EmailDeliveryConfigInput<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -260,6 +260,7 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: User;
     passwordResetLink: string;
+    userContext: any;
 };
 export declare type TypeEmailPasswordEmailDeliveryInput =
     | TypeEmailPasswordPasswordResetEmailDeliveryInput

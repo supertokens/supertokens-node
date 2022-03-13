@@ -6,7 +6,7 @@ import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import EmailVerificationRecipe from "../emailverification/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
-import EmailDeliveryRecipe from "../emaildelivery/recipe";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
@@ -16,7 +16,7 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    emailDelivery: EmailDeliveryRecipe<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput>;
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
