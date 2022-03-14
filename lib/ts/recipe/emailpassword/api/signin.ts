@@ -16,10 +16,11 @@
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
+import { debugLoggerWithCode, infoLogger } from "../../../logger";
 
 export default async function signInAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
-
+    infoLogger("Calling SignInAPI");
     if (apiImplementation.signInPOST === undefined) {
         return false;
     }
@@ -36,11 +37,13 @@ export default async function signInAPI(apiImplementation: APIInterface, options
     let result = await apiImplementation.signInPOST({ formFields, options, userContext: {} });
 
     if (result.status === "OK") {
+        debugLoggerWithCode[1](result.status);
         send200Response(options.res, {
             status: "OK",
             user: result.user,
         });
     } else {
+        debugLoggerWithCode[1](result.status);
         send200Response(options.res, result);
     }
     return true;

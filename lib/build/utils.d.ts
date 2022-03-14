@@ -11,9 +11,3 @@ export declare function send200Response(res: BaseResponse, responseJson: any): v
 export declare function isAnIpAddress(ipaddress: string): boolean;
 export declare function validateTheStructureOfUserInput(config: any, inputSchema: any, configRoot: string): void;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;
-declare const ERROR_CODE_1 = 1;
-export declare function infoLogger(message: string): void;
-export declare let errorLoggerWithCode: {
-    1: (item: string) => void;
-};
-export { ERROR_CODE_1 };
