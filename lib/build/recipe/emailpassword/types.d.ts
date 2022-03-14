@@ -9,7 +9,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
-import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -173,7 +173,7 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput>;
 };
 export declare type APIInterface = {
     emailExistsGET:
