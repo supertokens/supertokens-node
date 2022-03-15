@@ -1,5 +1,11 @@
 // @ts-nocheck
-export declare function infoLogger(message: string): void;
+export declare let loggerCodes: {
+    API_RESPONSE: number;
+    API_CALLED: number;
+};
+export declare let infoLoggerWithCode: {
+    [x: number]: (apiName: string) => void;
+};
 export declare let debugLoggerWithCode: {
-    1: (item: string) => void;
+    [x: number]: (apiName: string, status: string) => void;
 };
