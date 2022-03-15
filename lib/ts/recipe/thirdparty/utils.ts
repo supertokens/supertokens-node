@@ -14,25 +14,17 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { validateTheStructureOfUserInput } from "../../utils";
 import Recipe from "./recipe";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import { RecipeInterface, APIInterface, TypeProvider } from "./types";
-import {
-    TypeInput,
-    InputSchema,
-    TypeNormalisedInput,
-    TypeInputSignInAndUp,
-    TypeNormalisedInputSignInAndUp,
-} from "./types";
+import { RecipeInterface, APIInterface, TypeProvider, TypeThirdPartyEmailDeliveryInput } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
+import { getNormaliseAndInvokeDefaultCreateAndSendCustomEmail } from "./emaildelivery";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "thirdparty recipe");
-
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
     let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
@@ -43,7 +35,44 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
+    let emailService = config?.emailDelivery?.service;
+    /**
+     * following code is for backward compatibility.
+     * if user has not passed emailDelivery config, we
+     * use the createAndSendCustomEmail config. If the user
+     * has not passed even that config, we use the default
+     * createAndSendCustomEmail implementation
+     */
+    if (emailService === undefined) {
+        emailService = {
+            sendEmail: async (input: TypeThirdPartyEmailDeliveryInput) => {
+                await getNormaliseAndInvokeDefaultCreateAndSendCustomEmail(
+                    recipeInstance,
+                    appInfo,
+                    input,
+                    config?.emailVerificationFeature
+                );
+            },
+        };
+    }
+    let emailDelivery = {
+        ...config?.emailDelivery,
+        /**
+         * if we do
+         * let emailDelivery = {
+         *    service: emailService,
+         *    ...config.emailDelivery,
+         * };
+         *
+         * and if the user has passed service as undefined,
+         * it it again get set to undefined, so we
+         * set service at the end
+         */
+        service: emailService,
+    };
+
     return {
+        emailDelivery,
         emailVerificationFeature,
         signInAndUpFeature,
         override,
@@ -135,6 +164,7 @@ function validateAndNormaliseEmailVerificationConfig(
     config?: TypeInput
 ): TypeNormalisedInputEmailVerification {
     return {
+        emailDelivery: config?.emailDelivery,
         getEmailForUserId: recipeInstance.getEmailForUserId,
         override: config?.override?.emailVerificationFeature,
         createAndSendCustomEmail:

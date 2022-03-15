@@ -24,6 +24,9 @@ export default class Recipe extends RecipeModule {
         config: TypeInput | undefined,
         recipes: {
             emailVerificationInstance: EmailVerificationRecipe | undefined;
+        },
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput> | undefined;
         }
     );
     static getInstanceOrThrowError(): Recipe;

@@ -22,10 +22,8 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-
-const TypeAny = {
-    type: "any",
-};
+import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 
 export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
 
@@ -66,31 +64,14 @@ export type User = {
 
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-};
-
-const InputEmailVerificationFeatureSchema = {
-    type: "object",
-    properties: {
-        getEmailVerificationURL: TypeAny,
-        createAndSendCustomEmail: TypeAny,
-    },
-    additionalProperties: false,
 };
 
 export type TypeInputSignInAndUp = {
     providers: TypeProvider[];
-};
-
-const InputSignInAndUpSchema = {
-    type: "object",
-    properties: {
-        providers: {
-            type: "array",
-        },
-    },
-    required: ["providers"],
-    additionalProperties: false,
 };
 
 export type TypeNormalisedInputSignInAndUp = {
@@ -99,6 +80,7 @@ export type TypeNormalisedInputSignInAndUp = {
 
 export type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
+    emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (
@@ -119,18 +101,8 @@ export type TypeInput = {
     };
 };
 
-export const InputSchema = {
-    type: "object",
-    properties: {
-        signInAndUpFeature: InputSignInAndUpSchema,
-        emailVerificationFeature: InputEmailVerificationFeatureSchema,
-        override: TypeAny,
-    },
-    required: ["signInAndUpFeature"],
-    additionalProperties: false,
-};
-
 export type TypeNormalisedInput = {
+    emailDelivery: EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -233,3 +205,5 @@ export type APIInterface = {
         | undefined
         | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
 };
+
+export type TypeThirdPartyEmailDeliveryInput = TypeEmailVerificationEmailDeliveryInput;

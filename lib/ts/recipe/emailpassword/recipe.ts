@@ -64,19 +64,32 @@ export default class Recipe extends RecipeModule {
         config: TypeInput | undefined,
         recipes: {
             emailVerificationInstance: EmailVerificationRecipe | undefined;
+        },
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput> | undefined;
         }
     ) {
         super(recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
+        this.emailDelivery =
+            ingredients.emailDelivery === undefined
+                ? new EmailDeliveryIngredient(this.config.emailDelivery)
+                : ingredients.emailDelivery;
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined
                 ? recipes.emailVerificationInstance
-                : new EmailVerificationRecipe(recipeId, appInfo, isInServerlessEnv, {
-                      ...this.config.emailVerificationFeature,
-                  });
-
-        this.emailDelivery = new EmailDeliveryIngredient(this.config.emailDelivery);
+                : new EmailVerificationRecipe(
+                      recipeId,
+                      appInfo,
+                      isInServerlessEnv,
+                      {
+                          ...this.config.emailVerificationFeature,
+                      },
+                      {
+                          emailDelivery: this.emailDelivery,
+                      }
+                  );
 
         {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
@@ -98,9 +111,18 @@ export default class Recipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
-                    emailVerificationInstance: undefined,
-                });
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    config,
+                    {
+                        emailVerificationInstance: undefined,
+                    },
+                    {
+                        emailDelivery: undefined,
+                    }
+                );
                 return Recipe.instance;
             } else {
                 throw new Error("Emailpassword recipe has already been initialised. Please check your code for bugs.");

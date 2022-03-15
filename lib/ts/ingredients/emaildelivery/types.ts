@@ -12,6 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import OverrideableBuilder from "supertokens-js-override";
 
 export interface EmailService<T> {
     sendEmail: (input: T & { userContext: any }) => Promise<void>;
@@ -26,5 +27,8 @@ export type IngredientInterface<T> = {
  */
 export interface TypeInput<T> {
     service: EmailService<T>;
-    override?: (originalImplementation: IngredientInterface<T>) => IngredientInterface<T>;
+    override?: (
+        originalImplementation: IngredientInterface<T>,
+        builder: OverrideableBuilder<IngredientInterface<T>>
+    ) => IngredientInterface<T>;
 }

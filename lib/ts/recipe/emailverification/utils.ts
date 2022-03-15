@@ -16,12 +16,9 @@
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
-import {
-    getEmailVerificationURL as defaultGetEmailVerificationURL,
-    createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
-} from "./emailVerificationFunctions";
-import { IngredientInterface as EmailDeliveryIngredientInterface } from "../../ingredients/emaildelivery/types";
+import { getEmailVerificationURL as defaultGetEmailVerificationURL } from "./emailVerificationFunctions";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
+import { normaliseAndInvokeDefaultCreateAndSendCustomEmail } from "./emaildelivery";
 
 export function validateAndNormaliseUserInput(
     recipe: Recipe,
@@ -41,7 +38,7 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
-    let emailService = config?.emailDelivery?.service;
+    let emailService = config.emailDelivery?.service;
     /**
      * following code is for backward compatibility.
      * if user has not passed emailDelivery config, we
@@ -52,26 +49,29 @@ export function validateAndNormaliseUserInput(
     if (emailService === undefined) {
         emailService = {
             sendEmail: async (input: TypeEmailVerificationEmailDeliveryInput) => {
-                let createAndSendCustomEmail = config.createAndSendCustomEmail;
-                if (createAndSendCustomEmail === undefined) {
-                    createAndSendCustomEmail = defaultCreateAndSendCustomVerificationEmail(appInfo);
-                }
-                try {
-                    if (!recipe.isInServerlessEnv) {
-                        createAndSendCustomEmail(input.user, input.emailVerifyLink, input.userContext).catch((_) => {});
-                    } else {
-                        // see https://github.com/supertokens/supertokens-node/pull/135
-                        await createAndSendCustomEmail(input.user, input.emailVerifyLink, input.userContext);
-                    }
-                } catch (_) {}
+                await normaliseAndInvokeDefaultCreateAndSendCustomEmail(
+                    appInfo,
+                    input,
+                    recipe.isInServerlessEnv,
+                    config.createAndSendCustomEmail
+                );
             },
         };
     }
     let emailDelivery = {
-        service: emailService,
-        override: (originalImplementation: EmailDeliveryIngredientInterface<TypeEmailVerificationEmailDeliveryInput>) =>
-            originalImplementation,
         ...config.emailDelivery,
+        /**
+         * if we do
+         * let emailDelivery = {
+         *    service: emailService,
+         *    ...config.emailDelivery,
+         * };
+         *
+         * and if the user has passed service as undefined,
+         * it it again get set to undefined, so we
+         * set service at the end
+         */
+        service: emailService,
     };
 
     return {

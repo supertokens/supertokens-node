@@ -1,4 +1,5 @@
 // @ts-nocheck
+import OverrideableBuilder from "supertokens-js-override";
 export interface EmailService<T> {
     sendEmail: (
         input: T & {
@@ -18,5 +19,8 @@ export declare type IngredientInterface<T> = {
  */
 export interface TypeInput<T> {
     service: EmailService<T>;
-    override?: (originalImplementation: IngredientInterface<T>) => IngredientInterface<T>;
+    override?: (
+        originalImplementation: IngredientInterface<T>,
+        builder: OverrideableBuilder<IngredientInterface<T>>
+    ) => IngredientInterface<T>;
 }

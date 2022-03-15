@@ -19,7 +19,8 @@ import { TypeInput, TypeNormalisedInput, TypeInputSignUp, TypeNormalisedInputSig
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
-import { RecipeInterface, APIInterface } from "./types";
+import { RecipeInterface, APIInterface, TypeThirdPartyEmailPasswordEmailDeliveryInput } from "./types";
+import { getNormaliseAndInvokeDefaultCreateAndSendCustomEmail } from "./emaildelivery";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -44,8 +45,46 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
+    let emailService = config?.emailDelivery?.service;
+    /**
+     * following code is for backward compatibility.
+     * if user has not passed emailDelivery config, we
+     * use the createAndSendCustomEmail config. If the user
+     * has not passed even that config, we use the default
+     * createAndSendCustomEmail implementation
+     */
+    if (emailService === undefined) {
+        emailService = {
+            sendEmail: async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput) => {
+                await getNormaliseAndInvokeDefaultCreateAndSendCustomEmail(
+                    recipeInstance,
+                    appInfo,
+                    input,
+                    config?.resetPasswordUsingTokenFeature,
+                    config?.emailVerificationFeature
+                );
+            },
+        };
+    }
+    let emailDelivery = {
+        ...config?.emailDelivery,
+        /**
+         * if we do
+         * let emailDelivery = {
+         *    service: emailService,
+         *    ...config.emailDelivery,
+         * };
+         *
+         * and if the user has passed service as undefined,
+         * it it again get set to undefined, so we
+         * set service at the end
+         */
+        service: emailService,
+    };
+
     return {
         override,
+        emailDelivery,
         signUpFeature,
         providers,
         resetPasswordUsingTokenFeature,

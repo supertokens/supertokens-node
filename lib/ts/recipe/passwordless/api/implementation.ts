@@ -101,10 +101,8 @@ export default function getAPIImplementation(): APIInterface {
                     );
                 } else {
                     await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                        type: "PASSWORDLESS_LOGIN_CODE",
-                        user: {
-                            email: (input as any).email!,
-                        },
+                        type: "PASSWORDLESS_LOGIN",
+                        email: (input as any).email!,
                         codeLifetime: response.codeLifetime,
                         preAuthSessionId: response.preAuthSessionId,
                         urlWithLinkCode: magicLink,
@@ -240,10 +238,8 @@ export default function getAPIImplementation(): APIInterface {
                             );
                         } else {
                             await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                                type: "PASSWORDLESS_LOGIN_CODE",
-                                user: {
-                                    email: deviceInfo.email!,
-                                },
+                                type: "PASSWORDLESS_LOGIN",
+                                email: (input as any).email!,
                                 codeLifetime: response.codeLifetime,
                                 preAuthSessionId: response.preAuthSessionId,
                                 urlWithLinkCode: magicLink,

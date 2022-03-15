@@ -56,6 +56,9 @@ export type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
+          /**
+           * @deprecated
+           */
           createAndSendCustomEmail: (
               input: {
                   // Where the message should be delivered.
@@ -76,6 +79,9 @@ export type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
+          /**
+           * @deprecated
+           */
           createAndSendCustomEmail: (
               input: {
                   // Where the message should be delivered.
@@ -129,7 +135,7 @@ export type TypeInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
-    emailDelivery?: EmailDeliveryTypeInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
     // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
 
     override?: {
@@ -165,42 +171,10 @@ export type TypeNormalisedInput = (
     | {
           contactMethod: "EMAIL";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
-
-          //   // Override to use custom template/contact method
-          //   createAndSendCustomEmail: (
-          //       input: {
-          //           // Where the message should be delivered.
-          //           email: string;
-          //           // This has to be entered on the starting device  to finish sign in/up
-          //           userInputCode?: string;
-          //           // Full url that the end-user can click to finish sign in/up
-          //           urlWithLinkCode?: string;
-          //           codeLifetime: number;
-          //           // Unlikely, but someone could display this (or a derived thing) to identify the device
-          //           preAuthSessionId: string;
-          //       },
-          //       userContext: any
-          //   ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
-
-          // Override to use custom template/contact method
-          //   createAndSendCustomEmail: (
-          //       input: {
-          //           // Where the message should be delivered.
-          //           email: string;
-          //           // This has to be entered on the starting device  to finish sign in/up
-          //           userInputCode?: string;
-          //           // Full url that the end-user can click to finish sign in/up
-          //           urlWithLinkCode?: string;
-          //           codeLifetime: number;
-          //           // Unlikely, but someone could display this (or a derived thing) to identify the device
-          //           preAuthSessionId: string;
-          //       },
-          //       userContext: any
-          //   ) => Promise<void>;
 
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
@@ -241,7 +215,7 @@ export type TypeNormalisedInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
-    emailDelivery: EmailDeliveryTypeInput<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
     // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
 
     override: {
@@ -385,7 +359,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryTypeInput>;
     // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 };
 
@@ -462,11 +436,9 @@ export type APIInterface = {
     }>;
 };
 
-export type TypeEmailDeliveryTypeInput = {
-    type: "PASSWORDLESS_LOGIN_CODE";
-    user: {
-        email: string;
-    };
+export type TypePasswordlessEmailDeliveryTypeInput = {
+    type: "PASSWORDLESS_LOGIN";
+    email: string;
     userInputCode?: string;
     urlWithLinkCode?: string;
     codeLifetime: number;

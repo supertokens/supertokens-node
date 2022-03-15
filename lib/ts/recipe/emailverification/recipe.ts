@@ -27,7 +27,7 @@ import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 
 export default class Recipe extends RecipeModule {
@@ -42,14 +42,25 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    emailDelivery: EmailDeliveryRecipe<TypeEmailVerificationEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput,
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput> | undefined;
+        }
+    ) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
-        this.emailDelivery = new EmailDeliveryRecipe(this.config.emailDelivery);
+        this.emailDelivery =
+            ingredients.emailDelivery === undefined
+                ? new EmailDeliveryIngredient(this.config.emailDelivery)
+                : ingredients.emailDelivery;
 
         {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
@@ -71,7 +82,9 @@ export default class Recipe extends RecipeModule {
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
+                    emailDelivery: undefined,
+                });
                 return Recipe.instance;
             } else {
                 throw new Error(

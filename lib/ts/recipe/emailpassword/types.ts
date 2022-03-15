@@ -52,6 +52,9 @@ export type TypeNormalisedInput = {
 
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 
@@ -83,6 +86,9 @@ export type TypeNormalisedInputSignIn = {
 
 export type TypeInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated
+     */
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
 

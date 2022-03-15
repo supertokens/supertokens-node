@@ -17,12 +17,12 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
-import { IngredientInterface as EmailDeliveryIngredientInterface } from "../../ingredients/emaildelivery/types";
-import { TypeEmailDeliveryTypeInput } from "./types";
+import { TypePasswordlessEmailDeliveryTypeInput } from "./types";
+import { normaliseAndInvokeDefaultCreateAndSendCustomEmail } from "./emaildelivery";
 // import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
 
 export function validateAndNormaliseUserInput(
-    _: Recipe,
+    recipe: Recipe,
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
@@ -44,10 +44,7 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
-    let emailService =
-        config === undefined || config.emailDelivery === undefined
-            ? undefined
-            : undefined || config.emailDelivery.service;
+    let emailService = config?.emailDelivery?.service;
     /**
      * following code is for backward compatibility.
      * if user has not passed emailDelivery config, we
@@ -57,21 +54,12 @@ export function validateAndNormaliseUserInput(
      */
     if (emailService === undefined) {
         emailService = {
-            sendEmail: async (input: TypeEmailDeliveryTypeInput & { userContext: any }) => {
+            sendEmail: async (input: TypePasswordlessEmailDeliveryTypeInput & { userContext: any }) => {
                 if (config.contactMethod === "EMAIL" || config.contactMethod === "EMAIL_OR_PHONE") {
-                    let createAndSendCustomEmail = config.createAndSendCustomEmail;
-                    if (createAndSendCustomEmail === undefined) {
-                        createAndSendCustomEmail = defaultCreateAndSendCustomEmail;
-                    }
-                    await createAndSendCustomEmail(
-                        {
-                            email: input.user.email,
-                            userInputCode: input.userInputCode,
-                            urlWithLinkCode: input.urlWithLinkCode,
-                            preAuthSessionId: input.preAuthSessionId,
-                            codeLifetime: input.codeLifetime,
-                        },
-                        input.userContext
+                    await normaliseAndInvokeDefaultCreateAndSendCustomEmail(
+                        input,
+                        recipe.isInServerlessEnv,
+                        config.createAndSendCustomEmail
                     );
                 }
             },
@@ -79,10 +67,19 @@ export function validateAndNormaliseUserInput(
     }
 
     let emailDelivery = {
+        ...config?.emailDelivery,
+        /**
+         * if we do
+         * let emailDelivery = {
+         *    service: emailService,
+         *    ...config.emailDelivery,
+         * };
+         *
+         * and if the user has passed service as undefined,
+         * it it again get set to undefined, so we
+         * set service at the end
+         */
         service: emailService,
-        override: (originalImplementation: EmailDeliveryIngredientInterface<TypeEmailDeliveryTypeInput>) =>
-            originalImplementation,
-        ...config.emailDelivery,
     };
 
     // let smsDelivery =
@@ -106,11 +103,6 @@ export function validateAndNormaliseUserInput(
             // smsDelivery,
             flowType: config.flowType,
             contactMethod: "EMAIL",
-            // createAndSendCustomEmail:
-            //     // until we add a service to send emails, config.createAndSendCustomEmail will never be undefined
-            //     config.createAndSendCustomEmail === undefined
-            //         ? defaultCreateAndSendCustomEmail
-            //         : config.createAndSendCustomEmail,
             getLinkDomainAndPath:
                 config.getLinkDomainAndPath === undefined
                     ? getDefaultGetLinkDomainAndPath(appInfo)
@@ -161,11 +153,6 @@ export function validateAndNormaliseUserInput(
             // smsDelivery,
             flowType: config.flowType,
             contactMethod: "EMAIL_OR_PHONE",
-            // until we add a service to send email, config.createAndSendCustomEmail will never be undefined
-            // createAndSendCustomEmail:
-            //     config.createAndSendCustomEmail === undefined
-            //         ? defaultCreateAndSendCustomEmail
-            //         : config.createAndSendCustomEmail,
             validateEmailAddress:
                 config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
             // until we add a service to send sms, config.createAndSendCustomTextMessage will never be undefined
@@ -214,23 +201,6 @@ function defaultValidatePhoneNumber(value: string): Promise<string | undefined> 
     // we can even use Twilio's phone number validity lookup service: https://www.twilio.com/docs/glossary/what-e164.
 
     return undefined;
-}
-
-async function defaultCreateAndSendCustomEmail(
-    _: {
-        // Where the message should be delivered.
-        email: string;
-        // This has to be entered on the starting device  to finish sign in/up
-        userInputCode?: string;
-        // Full url that the end-user can click to finish sign in/up
-        urlWithLinkCode?: string;
-        codeLifetime: number;
-        // Unlikely, but someone could display this (or a derived thing) to identify the device
-        preAuthSessionId: string;
-    },
-    __: any
-): Promise<void> {
-    // TODO:
 }
 
 async function defaultCreateAndSendTextMessage(

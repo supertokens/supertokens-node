@@ -44,12 +44,15 @@ export declare type TypeNormalisedInputSignUp = {
 };
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];
-    emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
+    emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -73,6 +76,7 @@ export declare type TypeInput = {
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     providers: TypeProvider[];
+    emailDelivery: EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -306,3 +310,4 @@ export declare type APIInterface = {
         | undefined
         | ((input: { code: string; state: string; options: ThirdPartyAPIOptions; userContext: any }) => Promise<void>);
 };
+export declare type TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput;

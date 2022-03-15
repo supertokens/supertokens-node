@@ -12,11 +12,11 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeEmailDeliveryTypeInput } from "../../../types";
+import { TypePasswordlessEmailDeliveryTypeInput } from "../../../types";
 import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
 export default function getPasswordlessLoginEmailContent(
-    input: TypeEmailDeliveryTypeInput,
+    input: TypePasswordlessEmailDeliveryTypeInput,
     from: {
         name: string;
         email: string;
@@ -29,11 +29,11 @@ export default function getPasswordlessLoginEmailContent(
         input.codeLifetime,
         input.urlWithLinkCode,
         input.userInputCode,
-        input.user.email
+        input.email
     );
     return {
         body,
-        toEmail: input.user.email,
+        toEmail: input.email,
         from,
         subject: "Reset password instructions",
     };

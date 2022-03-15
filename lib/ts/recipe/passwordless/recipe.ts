@@ -36,8 +36,8 @@ import {
     DOES_PHONE_NUMBER_EXIST_API,
     RESEND_CODE_API,
 } from "./constants";
-import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
-import { TypeEmailDeliveryTypeInput } from "./types";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { TypePasswordlessEmailDeliveryTypeInput } from "./types";
 // import SmsDeliveryRecipeImplementation from "./smsDelivery";
 // import SmsDeliveryRecipe from "../smsdelivery/recipe";
 // import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
@@ -54,16 +54,27 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    emailDelivery: EmailDeliveryRecipe<TypeEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryTypeInput>;
 
     // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput,
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryTypeInput> | undefined;
+        }
+    ) {
         super(recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
-        this.emailDelivery = new EmailDeliveryRecipe(this.config.emailDelivery);
+        this.emailDelivery =
+            ingredients.emailDelivery === undefined
+                ? new EmailDeliveryIngredient(this.config.emailDelivery)
+                : ingredients.emailDelivery;
 
         // let smsService = this.config.smsDelivery === undefined ? undefined : this.config.smsDelivery.service;
         // if (smsService === undefined) {
@@ -117,7 +128,9 @@ export default class Recipe extends RecipeModule {
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
+                    emailDelivery: undefined,
+                });
                 return Recipe.instance;
             } else {
                 throw new Error("Passwordless recipe has already been initialised. Please check your code for bugs.");
