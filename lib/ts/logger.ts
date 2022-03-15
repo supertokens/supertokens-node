@@ -15,16 +15,14 @@ Output: (with DEBUG=com.supertokens:*)
   com.supertokens:info {t: "1647263690053", msg: "Calling SignInAPI", sdkVer: "9.1.0"} +0ms
   com.supertokens:debug {t: "1647263690199", msg: "API replied with status: WRONG_CREDENTIALS_ERROR", debugCode: 1, sdkVer: "9.1.0"} +0ms
 
-
-
 */
 
 let logMessage = (namespaceId: string, message: string) => {
     debug(`com.supertokens:${namespaceId}`)(`{t: "${Date.now()}", msg: ${message}, sdkVer: "${version}"}`);
 };
 
-let debugLoggerHelper = (errorCode: number, message: string) => {
-    logMessage("debug", `"${message}", debugCode: ${errorCode}`);
+let debugLoggerHelper = (debugCode: number, message: string) => {
+    logMessage("debug", `"${message}", debugCode: ${debugCode}`);
 };
 
 export function infoLogger(message: string) {
