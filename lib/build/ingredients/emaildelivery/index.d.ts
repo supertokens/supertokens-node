@@ -1,7 +1,6 @@
 // @ts-nocheck
-import { TypeInput, IngredientInterface } from "./types";
+import { TypeInput, EmailDeliveryInterface } from "./types";
 export default class EmailDelivery<T> {
-    static INGREDIENT_ID: string;
-    ingredientInterfaceImpl: IngredientInterface<T>;
+    ingredientInterfaceImpl: EmailDeliveryInterface<T>;
     constructor(config: TypeInput<T>);
 }

@@ -19,8 +19,8 @@ import { TypeInput, TypeNormalisedInput, TypeInputSignUp, TypeNormalisedInputSig
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
-import { RecipeInterface, APIInterface, TypeThirdPartyEmailPasswordEmailDeliveryInput } from "./types";
-import { getNormaliseAndInvokeDefaultCreateAndSendCustomEmail } from "./emaildelivery";
+import { RecipeInterface, APIInterface } from "./types";
+import { BackwardCompatibilityService } from "./emaildelivery/services";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -54,17 +54,12 @@ export function validateAndNormaliseUserInput(
      * createAndSendCustomEmail implementation
      */
     if (emailService === undefined) {
-        emailService = {
-            sendEmail: async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput) => {
-                await getNormaliseAndInvokeDefaultCreateAndSendCustomEmail(
-                    recipeInstance,
-                    appInfo,
-                    input,
-                    config?.resetPasswordUsingTokenFeature,
-                    config?.emailVerificationFeature
-                );
-            },
-        };
+        emailService = new BackwardCompatibilityService(
+            recipeInstance,
+            appInfo,
+            config?.resetPasswordUsingTokenFeature,
+            config?.emailVerificationFeature
+        );
     }
     let emailDelivery = {
         ...config?.emailDelivery,

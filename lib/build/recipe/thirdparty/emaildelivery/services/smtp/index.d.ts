@@ -4,7 +4,7 @@ import { Transporter } from "nodemailer";
 import { TypeThirdPartyEmailDeliveryInput } from "../../../types";
 export default function getSMTPService(
     config: SMTPTypeInput<TypeThirdPartyEmailDeliveryInput>
-): import("../../../../../ingredients/emaildelivery/types").EmailService<
+): import("../../../../../ingredients/emaildelivery/types").EmailDeliveryInterface<
     import("../../../../emailverification/types").TypeEmailVerificationEmailDeliveryInput
 >;
 export declare function getDefaultEmailServiceImplementation(

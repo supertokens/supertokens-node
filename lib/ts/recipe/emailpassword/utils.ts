@@ -30,8 +30,7 @@ import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import { getResetPasswordURL as defaultGetResetPasswordURL } from "./passwordResetFunctions";
 import { RecipeInterface, APIInterface } from "./types";
-import { TypeEmailPasswordEmailDeliveryInput } from "./types";
-import { getNormaliseAndInvokeDefaultCreateAndSendCustomEmail } from "./emaildelivery";
+import { BackwardCompatibilityService } from "./emaildelivery/services";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -67,20 +66,15 @@ export function validateAndNormaliseUserInput(
      * if user has not passed emailDelivery config, we
      * use the createAndSendCustomEmail config. If the user
      * has not passed even that config, we use the default
-     * createAndSendCustomEmail implementation
+     * createAndSendCustomEmail implementation which calls our supertokens API
      */
     if (emailService === undefined) {
-        emailService = {
-            sendEmail: async (input: TypeEmailPasswordEmailDeliveryInput) => {
-                await getNormaliseAndInvokeDefaultCreateAndSendCustomEmail(
-                    recipeInstance,
-                    appInfo,
-                    input,
-                    config?.resetPasswordUsingTokenFeature,
-                    config?.emailVerificationFeature
-                );
-            },
-        };
+        emailService = new BackwardCompatibilityService(
+            recipeInstance,
+            appInfo,
+            config?.resetPasswordUsingTokenFeature,
+            config?.emailVerificationFeature
+        );
     }
     let emailDelivery = {
         ...config?.emailDelivery,

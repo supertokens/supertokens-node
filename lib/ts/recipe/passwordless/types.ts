@@ -55,11 +55,12 @@ export type TypeInput = (
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
+          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           // Override to use custom template/contact method
           /**
            * @deprecated
            */
-          createAndSendCustomEmail: (
+          createAndSendCustomEmail?: (
               input: {
                   // Where the message should be delivered.
                   email: string;
@@ -78,11 +79,12 @@ export type TypeInput = (
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
+          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           // Override to use custom template/contact method
           /**
            * @deprecated
            */
-          createAndSendCustomEmail: (
+          createAndSendCustomEmail?: (
               input: {
                   // Where the message should be delivered.
                   email: string;
@@ -135,7 +137,6 @@ export type TypeInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
-    emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
     // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
 
     override?: {
@@ -170,6 +171,7 @@ export type TypeNormalisedInput = (
       }
     | {
           contactMethod: "EMAIL";
+          emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
       }
     | {
@@ -178,6 +180,7 @@ export type TypeNormalisedInput = (
 
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
+          emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           // Override to use custom template/contact method
           createAndSendCustomTextMessage: (
               input: {
@@ -215,7 +218,6 @@ export type TypeNormalisedInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
-    emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
     // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
 
     override: {
@@ -359,7 +361,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryTypeInput>;
+    emailDelivery?: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryTypeInput>;
     // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 };
 

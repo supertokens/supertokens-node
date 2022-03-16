@@ -28,10 +28,11 @@ export declare type TypeInput = (
     | {
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
+          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           /**
            * @deprecated
            */
-          createAndSendCustomEmail: (
+          createAndSendCustomEmail?: (
               input: {
                   email: string;
                   userInputCode?: string;
@@ -45,10 +46,11 @@ export declare type TypeInput = (
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
+          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           /**
            * @deprecated
            */
-          createAndSendCustomEmail: (
+          createAndSendCustomEmail?: (
               input: {
                   email: string;
                   userInputCode?: string;
@@ -83,7 +85,6 @@ export declare type TypeInput = (
         userContext: any
     ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-    emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -109,12 +110,14 @@ export declare type TypeNormalisedInput = (
       }
     | {
           contactMethod: "EMAIL";
+          emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           createAndSendCustomTextMessage: (
               input: {
                   phoneNumber: string;
@@ -139,7 +142,6 @@ export declare type TypeNormalisedInput = (
         userContext: any
     ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-    emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -274,7 +276,7 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryTypeInput>;
+    emailDelivery?: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryTypeInput>;
 };
 export declare type APIInterface = {
     createCodePOST?: (

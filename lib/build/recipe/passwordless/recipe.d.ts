@@ -14,7 +14,7 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryTypeInput> | undefined;
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,

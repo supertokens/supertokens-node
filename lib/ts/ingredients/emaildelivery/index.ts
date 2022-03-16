@@ -12,16 +12,14 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeInput, IngredientInterface } from "./types";
+import { TypeInput, EmailDeliveryInterface } from "./types";
 import OverrideableBuilder from "supertokens-js-override";
 
 export default class EmailDelivery<T> {
-    static INGREDIENT_ID = "emaildelivery";
-
-    ingredientInterfaceImpl: IngredientInterface<T>;
+    ingredientInterfaceImpl: EmailDeliveryInterface<T>;
 
     constructor(config: TypeInput<T>) {
-        let defaultIngredientImpl: IngredientInterface<T> = {
+        let defaultIngredientImpl: EmailDeliveryInterface<T> = {
             sendEmail: async function (input) {
                 return config.service.sendEmail(input);
             },

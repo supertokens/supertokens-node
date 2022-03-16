@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { EmailService } from "../types";
+import { EmailDeliveryInterface } from "../types";
 import { createTransport, Transporter } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 
@@ -61,7 +61,7 @@ export type TypeGetDefaultEmailServiceImplementation<T> = (
 export function getEmailServiceImplementation<T>(
     config: TypeInput<T>,
     getDefaultEmailServiceImplementation: TypeGetDefaultEmailServiceImplementation<T>
-): EmailService<T> {
+): EmailDeliveryInterface<T> {
     const transporter = createTransport({
         host: config.smtpSettings.host,
         port: config.smtpSettings.port,

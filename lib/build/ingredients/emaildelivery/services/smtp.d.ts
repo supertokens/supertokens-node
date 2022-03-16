@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { EmailService } from "../types";
+import { EmailDeliveryInterface } from "../types";
 import { Transporter } from "nodemailer";
 export interface SMTPServiceConfig {
     host: string;
@@ -49,4 +49,4 @@ export declare type TypeGetDefaultEmailServiceImplementation<T> = (
 export declare function getEmailServiceImplementation<T>(
     config: TypeInput<T>,
     getDefaultEmailServiceImplementation: TypeGetDefaultEmailServiceImplementation<T>
-): EmailService<T>;
+): EmailDeliveryInterface<T>;

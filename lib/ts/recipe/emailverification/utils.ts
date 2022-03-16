@@ -17,8 +17,7 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { getEmailVerificationURL as defaultGetEmailVerificationURL } from "./emailVerificationFunctions";
-import { TypeEmailVerificationEmailDeliveryInput } from "./types";
-import { normaliseAndInvokeDefaultCreateAndSendCustomEmail } from "./emaildelivery";
+import { BackwardCompatibilityService } from "./emaildelivery/services";
 
 export function validateAndNormaliseUserInput(
     recipe: Recipe,
@@ -44,19 +43,14 @@ export function validateAndNormaliseUserInput(
      * if user has not passed emailDelivery config, we
      * use the createAndSendCustomEmail config. If the user
      * has not passed even that config, we use the default
-     * createAndSendCustomEmail implementation
+     * createAndSendCustomEmail implementation which calls our supertokens API
      */
     if (emailService === undefined) {
-        emailService = {
-            sendEmail: async (input: TypeEmailVerificationEmailDeliveryInput) => {
-                await normaliseAndInvokeDefaultCreateAndSendCustomEmail(
-                    appInfo,
-                    input,
-                    recipe.isInServerlessEnv,
-                    config.createAndSendCustomEmail
-                );
-            },
-        };
+        emailService = new BackwardCompatibilityService(
+            appInfo,
+            recipe.isInServerlessEnv,
+            config.createAndSendCustomEmail
+        );
     }
     let emailDelivery = {
         ...config.emailDelivery,

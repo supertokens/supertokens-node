@@ -1,13 +1,6 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
-export interface EmailService<T> {
-    sendEmail: (
-        input: T & {
-            userContext: any;
-        }
-    ) => Promise<void>;
-}
-export declare type IngredientInterface<T> = {
+export declare type EmailDeliveryInterface<T> = {
     sendEmail: (
         input: T & {
             userContext: any;
@@ -18,9 +11,9 @@ export declare type IngredientInterface<T> = {
  * config class parameter when parent Recipe create a new EmailDeliveryRecipe object via constructor
  */
 export interface TypeInput<T> {
-    service: EmailService<T>;
+    service: EmailDeliveryInterface<T>;
     override?: (
-        originalImplementation: IngredientInterface<T>,
-        builder: OverrideableBuilder<IngredientInterface<T>>
-    ) => IngredientInterface<T>;
+        originalImplementation: EmailDeliveryInterface<T>,
+        builder: OverrideableBuilder<EmailDeliveryInterface<T>>
+    ) => EmailDeliveryInterface<T>;
 }
