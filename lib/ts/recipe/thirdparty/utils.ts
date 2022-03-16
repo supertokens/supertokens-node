@@ -155,7 +155,6 @@ function validateAndNormaliseEmailVerificationConfig(
     config?: TypeInput
 ): TypeNormalisedInputEmailVerification {
     return {
-        emailDelivery: config?.emailDelivery,
         getEmailForUserId: recipeInstance.getEmailForUserId,
         override: config?.override?.emailVerificationFeature,
         createAndSendCustomEmail:

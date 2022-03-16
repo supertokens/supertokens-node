@@ -30,7 +30,7 @@ export declare type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
           emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           /**
-           * @deprecated
+           * @deprecated Please use emailDelivery config instead
            */
           createAndSendCustomEmail?: (
               input: {
@@ -48,7 +48,7 @@ export declare type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
           emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           /**
-           * @deprecated
+           * @deprecated Please use emailDelivery config instead
            */
           createAndSendCustomEmail?: (
               input: {

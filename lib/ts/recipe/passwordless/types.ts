@@ -58,7 +58,7 @@ export type TypeInput = (
           emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           // Override to use custom template/contact method
           /**
-           * @deprecated
+           * @deprecated Please use emailDelivery config instead
            */
           createAndSendCustomEmail?: (
               input: {
@@ -82,7 +82,7 @@ export type TypeInput = (
           emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           // Override to use custom template/contact method
           /**
-           * @deprecated
+           * @deprecated Please use emailDelivery config instead
            */
           createAndSendCustomEmail?: (
               input: {

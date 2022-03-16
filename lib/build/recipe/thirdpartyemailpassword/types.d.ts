@@ -45,7 +45,7 @@ export declare type TypeNormalisedInputSignUp = {
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
     /**
-     * @deprecated
+     * @deprecated Please use emailDelivery config instead
      */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
