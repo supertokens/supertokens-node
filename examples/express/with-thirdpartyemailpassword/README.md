@@ -33,7 +33,7 @@ If you would like to modify the website (http://localhost:3000) or the API serve
 
 ## Author
 
-Created with :heart: by the folks at SuperTokens.io.
+Created with :heart: by the folks at supertokens.com.
 
 ## License
 
