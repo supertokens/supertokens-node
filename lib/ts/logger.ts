@@ -23,7 +23,7 @@ import { version } from "./version";
 
 function logDebugMessage(message: string) {
     debug(`com.supertokens`)(
-        `{t: "${Date.now()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
+        `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
     );
 }
 
