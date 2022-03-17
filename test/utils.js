@@ -353,6 +353,35 @@ module.exports.signUPRequest = async function (app, email, password) {
     });
 };
 
+module.exports.signUPRequestEmptyJSON = async function (app) {
+    return new Promise(function (resolve) {
+        request(app)
+            .post("/auth/signup")
+            .send({})
+            .end((err, res) => {
+                if (err) {
+                    resolve(undefined);
+                } else {
+                    resolve(res);
+                }
+            });
+    });
+};
+
+module.exports.signUPRequestNoBody = async function (app) {
+    return new Promise(function (resolve) {
+        request(app)
+            .post("/auth/signup")
+            .end((err, res) => {
+                if (err) {
+                    resolve(undefined);
+                } else {
+                    resolve(res);
+                }
+            });
+    });
+};
+
 module.exports.signInUPCustomRequest = async function (app, email, id) {
     nock("https://test.com").post("/oauth/token").reply(200, {
         id,

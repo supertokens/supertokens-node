@@ -1621,4 +1621,26 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             resetAll();
         }
     });
+
+    it("checking for empty item in recipeList config", async function () {
+        await startST();
+        let errorCaught = true;
+        try {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init(), , EmailPassword.init()],
+            });
+            errorCaught = false;
+        } catch (err) {
+            assert.strictEqual(err.message, "Please remove empty items from recipeList");
+        }
+        assert(errorCaught);
+    });
 });
