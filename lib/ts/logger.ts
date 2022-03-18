@@ -18,7 +18,7 @@ import { version } from "./version";
 
 /*
  The debug logger below can be used to log debug messages in the following format
-    com.supertokens {t: "1647508320340", message: Your message, file: "/home/supertokens-node/lib/build/supertokens.js:231:18" sdkVer: "9.1.0"} +0m
+    com.supertokens {t: "2022-03-18T11:15:24.608Z", message: Your message, file: "/home/supertokens-node/lib/build/supertokens.js:231:18" sdkVer: "9.1.0"} +0m
 */
 
 function logDebugMessage(message: string) {
