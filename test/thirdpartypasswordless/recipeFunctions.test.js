@@ -581,7 +581,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         });
         {
             // update users email
-            let response = await ThirdPartyPasswordless.updateUser({
+            let response = await ThirdPartyPasswordless.updatePasswordlessUser({
                 userId: userInfo.user.id,
                 email: "test2@example.com",
             });
@@ -593,7 +593,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
         {
             // update user with invalid userId
-            let response = await ThirdPartyPasswordless.updateUser({
+            let response = await ThirdPartyPasswordless.updatePasswordlessUser({
                 userId: "invalidUserId",
                 email: "test2@example.com",
             });
@@ -606,7 +606,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 email: "test3@example.com",
             });
 
-            let result = await ThirdPartyPasswordless.updateUser({
+            let result = await ThirdPartyPasswordless.updatePasswordlessUser({
                 userId: userInfo2.user.id,
                 email: "test2@example.com",
             });
@@ -654,7 +654,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
 
         {
             // update users email
-            let response = await ThirdPartyPasswordless.updateUser({
+            let response = await ThirdPartyPasswordless.updatePasswordlessUser({
                 userId: userInfo.user.id,
                 phoneNumber: phoneNumber_2,
             });
@@ -670,7 +670,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
                 phoneNumber: phoneNumber_3,
             });
 
-            let result = await ThirdPartyPasswordless.updateUser({
+            let result = await ThirdPartyPasswordless.updatePasswordlessUser({
                 userId: userInfo2.user.id,
                 phoneNumber: phoneNumber_2,
             });

@@ -570,7 +570,7 @@ describe(`apisFunctions: ${printPath("[test/thirdpartypasswordless/apis.test.js]
         assert(emailUserInputCodeResponse.status === "OK");
 
         // add users phoneNumber to userInfo
-        await ThirdPartyPasswordless.updateUser({
+        await ThirdPartyPasswordless.updatePasswordlessUser({
             userId: emailUserInputCodeResponse.user.id,
             phoneNumber: "+12345678901",
         });
