@@ -26,6 +26,7 @@ export async function getInfoFromAccessToken(
     refreshTokenHash1: string;
     parentRefreshTokenHash1: string | undefined;
     userData: any;
+    grants: any;
     antiCsrfToken: string | undefined;
     expiryTime: number;
     timeCreated: number;
@@ -38,6 +39,7 @@ export async function getInfoFromAccessToken(
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1);
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
         let userData = payload.userData;
+        let grants = payload.grants;
         let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);
         let expiryTime = sanitizeNumberInput(payload.expiryTime);
         let timeCreated = sanitizeNumberInput(payload.timeCreated);
@@ -47,7 +49,7 @@ export async function getInfoFromAccessToken(
             refreshTokenHash1 === undefined ||
             userData === undefined ||
             (antiCsrfToken === undefined && doAntiCsrfCheck) ||
-            expiryTime === undefined ||
+            expiryTime === undefined || // TODO: maybe add grants here depending on the CDI version?
             timeCreated === undefined
         ) {
             // it would come here if we change the structure of the JWT.
@@ -62,6 +64,7 @@ export async function getInfoFromAccessToken(
             refreshTokenHash1,
             parentRefreshTokenHash1,
             userData,
+            grants,
             antiCsrfToken,
             expiryTime,
             timeCreated,

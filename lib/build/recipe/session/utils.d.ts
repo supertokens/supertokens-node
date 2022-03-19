@@ -15,6 +15,12 @@ export declare function sendUnauthorisedResponse(
     __: BaseRequest,
     response: BaseResponse
 ): Promise<void>;
+export declare function sendMissingGrantResponse(
+    recipeInstance: SessionRecipe,
+    grantId: string,
+    __: BaseRequest,
+    response: BaseResponse
+): Promise<void>;
 export declare function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
     sessionHandle: string,

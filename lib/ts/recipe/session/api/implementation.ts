@@ -34,20 +34,51 @@ export default function getAPIInterface(): APIInterface {
 
             let refreshTokenPath = options.config.refreshTokenPath;
 
-            if (incomingPath.equals(refreshTokenPath) && method === "post") {
-                return await options.recipeImplementation.refreshSession({
-                    req: options.req,
-                    res: options.res,
-                    userContext,
-                });
-            } else {
-                return await options.recipeImplementation.getSession({
-                    req: options.req,
-                    res: options.res,
-                    options: verifySessionOptions,
-                    userContext,
-                });
+            const res =
+                incomingPath.equals(refreshTokenPath) && method === "post"
+                    ? await options.recipeImplementation.refreshSession({
+                          req: options.req,
+                          res: options.res,
+                          userContext,
+                      })
+                    : await options.recipeImplementation.getSession({
+                          req: options.req,
+                          res: options.res,
+                          options: verifySessionOptions,
+                          userContext,
+                      });
+            if (!res) {
+                return undefined;
             }
+
+            const originalPayload = res.getSessionGrants(userContext);
+            let updatedPayload = originalPayload;
+
+            const reqGrants = verifySessionOptions?.requiredGrants ?? options.config.defaultRequiredGrants;
+            for (const grant of reqGrants) {
+                if (await grant.shouldRefetchGrant(updatedPayload, userContext)) {
+                    const value = await grant.fetchGrant(res.getUserId(userContext), userContext);
+                    if (value !== undefined) {
+                        updatedPayload = grant.addToGrantPayload(updatedPayload, value, userContext);
+                    }
+                }
+                if (!(await grant.isGrantValid(updatedPayload, userContext))) {
+                    throw new STError({
+                        message: "Grant validation failed",
+                        payload: {
+                            grantId: grant.id,
+                        },
+                        type: STError.MISSING_GRANT,
+                    });
+                }
+            }
+
+            // TODO(grants): do we need to check if addToGrant updated? (e.g.: adding a return val for that in addToGrantPayload)
+            if (originalPayload !== updatedPayload) {
+                res.updateSessionGrants(updatedPayload, userContext);
+            }
+
+            return res;
         },
 
         signOutPOST: async function ({

@@ -16,9 +16,10 @@ import * as JsonWebToken from "jsonwebtoken";
 import * as assert from "assert";
 
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionContainerInterface } from "../types";
+import { Grant, SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import { addJWTToAccessTokenPayload } from "./utils";
+import { Awaitable } from "../../../types";
 
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private openIdRecipeImplementation: OpenIdRecipeInterface;
@@ -55,6 +56,27 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     getExpiry = (userContext?: any): Promise<number> => {
         return this.originalSessionClass.getExpiry(userContext);
     };
+    getSessionGrants(userContext?: any) {
+        return this.originalSessionClass.getSessionGrants(userContext);
+    }
+    updateSessionGrants(grants: Grant<any>[], userContext?: any): Promise<void> {
+        return this.originalSessionClass.updateSessionGrants(grants, userContext);
+    }
+    shouldRefetchGrant(grant: Grant<any>, userContext?: any): Awaitable<boolean> {
+        return this.originalSessionClass.shouldRefetchGrant(grant, userContext);
+    }
+    fetchGrant(grant: Grant<any>, userContext?: any): Awaitable<void> {
+        return this.originalSessionClass.fetchGrant(grant, userContext);
+    }
+    checkGrantInToken(grant: Grant<any>, userContext?: any): Awaitable<boolean> {
+        return this.originalSessionClass.checkGrantInToken(grant, userContext);
+    }
+    addGrant<T>(grant: Grant<T>, value: T, userContext?: any): Promise<void> {
+        return this.originalSessionClass.addGrant(grant, value, userContext);
+    }
+    removeGrant<T>(grant: Grant<T>, userContext?: any): Promise<void> {
+        return this.originalSessionClass.removeGrant(grant, userContext);
+    }
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any): Promise<void> => {
         newAccessTokenPayload =

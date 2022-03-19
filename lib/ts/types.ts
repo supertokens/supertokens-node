@@ -102,3 +102,5 @@ export type APIHandled = {
 };
 
 export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
+
+export type Awaitable<T> = Promise<T> | T;

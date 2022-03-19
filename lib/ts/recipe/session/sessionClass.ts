@@ -15,13 +15,15 @@
 import { BaseResponse } from "../../framework";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionContainerInterface } from "./types";
+import { Grant, GrantPayloadType, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
+import { Awaitable } from "../../types";
 
 export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
     protected userId: string;
     protected userDataInAccessToken: any;
+    protected grants: GrantPayloadType;
     protected res: BaseResponse;
     protected accessToken: string;
     protected helpers: Helpers;
@@ -32,6 +34,7 @@ export default class Session implements SessionContainerInterface {
         sessionHandle: string,
         userId: string,
         userDataInAccessToken: any,
+        grants: GrantPayloadType,
         res: BaseResponse
     ) {
         this.sessionHandle = sessionHandle;
@@ -39,6 +42,7 @@ export default class Session implements SessionContainerInterface {
         this.userDataInAccessToken = userDataInAccessToken;
         this.res = res;
         this.accessToken = accessToken;
+        this.grants = grants;
         this.helpers = helpers;
     }
 
@@ -100,6 +104,41 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     };
 
+    updateSessionGrants = async (newGrants: GrantPayloadType, userContext?: any) => {
+        try {
+            let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
+                accessToken: this.getAccessToken(),
+                newAccessTokenPayload: this.getAccessTokenPayload(),
+                newGrants,
+                userContext: userContext === undefined ? {} : userContext,
+            });
+            // We update both, because the ones in the response are the latest for both
+            this.userDataInAccessToken = response.session.userDataInJWT;
+            this.grants = response.session.grants;
+            if (response.accessToken !== undefined) {
+                this.accessToken = response.accessToken.token;
+                setFrontTokenInHeaders(
+                    this.res,
+                    response.session.userId,
+                    response.accessToken.expiry,
+                    response.session.userDataInJWT,
+                    response.session.grants
+                );
+                attachAccessTokenToCookie(
+                    this.helpers.config,
+                    this.res,
+                    response.accessToken.token,
+                    response.accessToken.expiry
+                );
+            }
+        } catch (err) {
+            if (err.type === STError.UNAUTHORISED) {
+                clearSessionFromCookie(this.helpers.config, this.res);
+            }
+            throw err;
+        }
+    };
+
     updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any) => {
         try {
             let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
@@ -107,14 +146,17 @@ export default class Session implements SessionContainerInterface {
                 newAccessTokenPayload,
                 userContext: userContext === undefined ? {} : userContext,
             });
+            // We update both, because the ones in the response are the latest for both
             this.userDataInAccessToken = response.session.userDataInJWT;
+            this.grants = response.session.grants;
             if (response.accessToken !== undefined) {
                 this.accessToken = response.accessToken.token;
                 setFrontTokenInHeaders(
                     this.res,
                     response.session.userId,
                     response.accessToken.expiry,
-                    response.session.userDataInJWT
+                    response.session.userDataInJWT,
+                    response.session.grants
                 );
                 attachAccessTokenToCookie(
                     this.helpers.config,
@@ -162,4 +204,32 @@ export default class Session implements SessionContainerInterface {
             throw err;
         }
     };
+
+    getSessionGrants() {
+        return this.grants;
+    }
+    shouldRefetchGrant(grant: Grant<any>, userContext?: any): Awaitable<boolean> {
+        return grant.shouldRefetchGrant(this.getSessionGrants(), userContext);
+    }
+    async fetchGrant(grant: Grant<any>, userContext?: any): Promise<void> {
+        const value = await grant.fetchGrant(this.getUserId(), userContext);
+        if (value !== undefined) {
+            const newGrantPayload = grant.addToGrantPayload(this.getSessionGrants(), value, userContext);
+
+            await this.updateSessionGrants(newGrantPayload, userContext);
+        }
+    }
+    checkGrantInToken(grant: Grant<any>, userContext?: any): Awaitable<boolean> {
+        return grant.isGrantValid(this.getSessionGrants(), userContext);
+    }
+    async addGrant<T>(grant: Grant<T>, value: T, userContext?: any): Promise<void> {
+        const newGrantPayload = grant.addToGrantPayload(this.getSessionGrants(), value, userContext);
+
+        await this.updateSessionGrants(newGrantPayload, userContext);
+    }
+    async removeGrant<T>(grant: Grant<T>, userContext?: any): Promise<void> {
+        const newGrantPayload = grant.removeFromGrantPayload(this.getSessionGrants(), userContext);
+
+        await this.updateSessionGrants(newGrantPayload, userContext);
+    }
 }

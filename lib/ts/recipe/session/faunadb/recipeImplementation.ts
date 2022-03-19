@@ -4,7 +4,7 @@ import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 import type { Session as FaunaDBSessionContainer } from "./types";
 import type { BaseRequest, BaseResponse } from "../../../framework";
-import type { SessionInformation } from "../types";
+import type { GrantPayloadType, SessionInformation } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {
@@ -198,6 +198,9 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.originalImplementation.updateAccessTokenPayload(input);
     };
 
+    updateSessionGrants = function (input: { sessionHandle: string; grants: GrantPayloadType; userContext: any }) {
+        return this.originalImplementation.updateSessionGrants(input);
+    };
     regenerateAccessToken = function (input: { accessToken: string; newAccessTokenPayload?: any; userContext: any }) {
         return this.originalImplementation.regenerateAccessToken(input);
     };

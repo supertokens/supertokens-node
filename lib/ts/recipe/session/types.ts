@@ -17,6 +17,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
+import { Awaitable } from "../../types";
 
 export type KeyInfo = {
     publicKey: string;
@@ -48,6 +49,7 @@ export type CreateOrRefreshAPIResponse = {
         handle: string;
         userId: string;
         userDataInJWT: any;
+        grants: GrantPayloadType;
     };
     accessToken: {
         token: string;
@@ -88,6 +90,7 @@ export const InputSchemaErrorHandlers = {
     properties: {
         onUnauthorised: TypeAny,
         onTokenTheftDetected: TypeAny,
+        onMissingGrant: TypeAny,
     },
     additionalProperties: false,
 };
@@ -95,6 +98,7 @@ export const InputSchemaErrorHandlers = {
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
+    onMissingGrant: ErrorHandlerMiddleware;
 }
 
 export type TypeInput = {
@@ -104,6 +108,9 @@ export type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    // TODO(grants): The docs originally suggested 2 separate grant lists but I don't think it's necessary
+    defaultRequiredGrants?: Grant<any>[];
+    missingGrantStatusCode?: number;
     jwt?:
         | {
               enable: true;
@@ -163,6 +170,8 @@ export type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    defaultRequiredGrants: Grant<any>[];
+    missingGrantStatusCode: number;
     jwt: {
         enable: boolean;
         propertyNameInAccessTokenPayload: string;
@@ -209,15 +218,21 @@ export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 
+export interface MissingGrantErrorHandlerMiddleware {
+    (grantId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
+}
+
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
     onTryRefreshToken: ErrorHandlerMiddleware;
     onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
+    onMissingGrant: MissingGrantErrorHandlerMiddleware;
 }
 
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
+    requiredGrants?: Grant<any>[];
 }
 
 export type RecipeInterface = {
@@ -226,6 +241,7 @@ export type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
+        grantsToCheck?: Grant<any>[];
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
@@ -253,6 +269,7 @@ export type RecipeInterface = {
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
 
     updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<void>;
+    updateSessionGrants(input: { sessionHandle: string; grants: GrantPayloadType; userContext: any }): Promise<void>;
 
     updateAccessTokenPayload(input: {
         sessionHandle: string;
@@ -263,6 +280,7 @@ export type RecipeInterface = {
     regenerateAccessToken(input: {
         accessToken: string;
         newAccessTokenPayload?: any;
+        newGrants?: GrantPayloadType;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -270,6 +288,7 @@ export type RecipeInterface = {
             handle: string;
             userId: string;
             userDataInJWT: any;
+            grants: GrantPayloadType;
         };
         accessToken?: {
             token: string;
@@ -293,6 +312,7 @@ export interface SessionContainerInterface {
     getUserId(userContext?: any): string;
 
     getAccessTokenPayload(userContext?: any): any;
+    getSessionGrants(userContext?: any): any;
 
     getHandle(userContext?: any): string;
 
@@ -300,9 +320,22 @@ export interface SessionContainerInterface {
 
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
 
+    // TODO(grants): I'm not sure if I'd want this to be on the user interface
+    // Ideally this is only used internally and the devs use the fetch/add/removeGrant methods.
+    updateSessionGrants(newAccessTokenPayload: any, userContext?: any): Promise<void>;
+
     getTimeCreated(userContext?: any): Promise<number>;
 
     getExpiry(userContext?: any): Promise<number>;
+
+    // TODO(grants): These 3 could be merged into a single function
+    // e.g.: checkGrant with a param setting if we should refetch the value
+    shouldRefetchGrant(grant: Grant<any>, userContext?: any): Awaitable<boolean>;
+    fetchGrant(grant: Grant<any>, userContext?: any): Awaitable<void>;
+    checkGrantInToken(grant: Grant<any>, userContext?: any): Awaitable<boolean>;
+
+    addGrant<T>(grant: Grant<T>, value: T, userContext?: any): Promise<void>;
+    removeGrant<T>(grant: Grant<T>, userContext?: any): Promise<void>;
 }
 
 export type APIOptions = {
@@ -337,7 +370,47 @@ export type SessionInformation = {
     sessionHandle: string;
     userId: string;
     sessionData: any;
+    grants: GrantPayloadType;
     expiry: number;
     accessTokenPayload: any;
     timeCreated: number;
 };
+
+// TODO: This could use JSONObject instead of any (defined in the usermetadata PR)
+export type GrantPayloadType = Record<string, any>;
+
+export abstract class Grant<T> {
+    constructor(public readonly id: string) {}
+
+    /**
+     * This methods fetches the current value of this grant for an arbitrary session of the user based on a DB or whatever outside source.
+     * The undefined return value signifies that we don't want to update the grant payload. This can happen for example with MFA where
+     * we don't want to add the grant to the session
+     */
+    abstract fetchGrant(userId: string, userContext: any): Awaitable<T | undefined>;
+
+    /**
+     * Decides if we need to refetch the grant value before checking the payload with `isGrantValid`.
+     * E.g.: if the information in the payload is expired, or is not sufficient for this check.
+     */
+    abstract shouldRefetchGrant(grantPayload: any, userContext: any): Awaitable<boolean>;
+
+    /**
+     * Decides if the grant is valid based on the grant payload (and not checking DB or anything else)
+     */
+    abstract isGrantValid(grantPayload: any, userContext: any): Awaitable<boolean>;
+
+    /**
+     * Saves the provided value into the grantPayload, by cloning and updating the payload object.
+     *
+     * @returns The modified payload object
+     */
+    abstract addToGrantPayload(grantPayload: GrantPayloadType, value: T, userContext: any): GrantPayloadType;
+
+    /**
+     * Removes the grant from the grantPayload, by cloning and updating the payload object.
+     *
+     * @returns The modified payload object
+     */
+    abstract removeFromGrantPayload(grantPayload: GrantPayloadType, userContext: any): GrantPayloadType;
+}

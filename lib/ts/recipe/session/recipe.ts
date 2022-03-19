@@ -174,6 +174,8 @@ export default class SessionRecipe extends RecipeModule {
                     request,
                     response
                 );
+            } else if (err.type === STError.MISSING_GRANT) {
+                return await this.config.errorHandlers.onMissingGrant(err.payload.grantId, request, response);
             } else {
                 throw err;
             }

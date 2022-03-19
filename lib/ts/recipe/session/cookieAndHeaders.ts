@@ -13,7 +13,7 @@
  * under the License.
  */
 import { BaseRequest, BaseResponse } from "../../framework";
-import { TypeNormalisedInput } from "./types";
+import { GrantPayloadType, TypeNormalisedInput } from "./types";
 
 const accessTokenCookieKey = "sAccessToken";
 const refreshTokenCookieKey = "sRefreshToken";
@@ -100,11 +100,18 @@ export function setIdRefreshTokenInHeaderAndCookie(
     setCookie(config, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
 }
 
-export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpiry: number, accessTokenPayload: any) {
-    let tokenInfo = {
+export function setFrontTokenInHeaders(
+    res: BaseResponse,
+    userId: string,
+    atExpiry: number,
+    accessTokenPayload: any,
+    grants: GrantPayloadType
+) {
+    const tokenInfo = {
         uid: userId,
         ate: atExpiry,
         up: accessTokenPayload,
+        grants,
     };
     res.setHeader(frontTokenHeaderKey, Buffer.from(JSON.stringify(tokenInfo)).toString("base64"), false);
     res.setHeader("Access-Control-Expose-Headers", frontTokenHeaderKey, true);

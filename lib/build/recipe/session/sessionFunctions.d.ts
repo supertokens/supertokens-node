@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
+import { CreateOrRefreshAPIResponse, GrantPayloadType, SessionInformation } from "./types";
 import { Helpers } from "./recipeImplementation";
 /**
  * @description call this to "login" a user.
@@ -7,6 +7,7 @@ import { Helpers } from "./recipeImplementation";
 export declare function createNewSession(
     helpers: Helpers,
     userId: string,
+    sessionGrants: GrantPayloadType,
     accessTokenPayload?: any,
     sessionData?: any
 ): Promise<CreateOrRefreshAPIResponse>;
@@ -24,6 +25,7 @@ export declare function getSession(
         handle: string;
         userId: string;
         userDataInJWT: any;
+        grants: GrantPayloadType;
     };
     accessToken?: {
         token: string;
@@ -79,3 +81,4 @@ export declare function updateAccessTokenPayload(
     sessionHandle: string,
     newAccessTokenPayload: any
 ): Promise<void>;
+export declare function updateSessionGrants(helpers: Helpers, sessionHandle: string, newGrants: any): Promise<void>;

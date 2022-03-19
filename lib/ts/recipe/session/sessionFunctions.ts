@@ -16,7 +16,7 @@ import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
 import { getPayloadWithoutVerifiying } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
+import { CreateOrRefreshAPIResponse, GrantPayloadType, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
@@ -27,20 +27,24 @@ import { maxVersion } from "../../utils";
 export async function createNewSession(
     helpers: Helpers,
     userId: string,
+    sessionGrants: GrantPayloadType,
     accessTokenPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
+
     let requestBody: {
         userId: string;
         userDataInJWT: any;
         userDataInDatabase: any;
         enableAntiCsrf?: boolean;
+        grants: GrantPayloadType;
     } = {
         userId,
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionData,
+        grants: sessionGrants,
     };
 
     let handShakeInfo = await helpers.getHandshakeInfo();
@@ -73,6 +77,7 @@ export async function getSession(
         handle: string;
         userId: string;
         userDataInJWT: any;
+        grants: GrantPayloadType;
     };
     accessToken?: {
         token: string;
@@ -205,6 +210,7 @@ export async function getSession(
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
                 userDataInJWT: accessTokenInfo.userData,
+                grants: accessTokenInfo.grants,
             },
         };
     }
@@ -434,6 +440,21 @@ export async function updateAccessTokenPayload(helpers: Helpers, sessionHandle: 
         sessionHandle,
         userDataInJWT: newAccessTokenPayload,
     });
+    if (response.status === "UNAUTHORISED") {
+        throw new STError({
+            message: response.message,
+            type: STError.UNAUTHORISED,
+        });
+    }
+}
+
+export async function updateSessionGrants(helpers: Helpers, sessionHandle: string, newGrants: any) {
+    newGrants = newGrants === null || newGrants === undefined ? {} : newGrants;
+    const response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/grants"), {
+        sessionHandle,
+        grants: newGrants,
+    });
+
     if (response.status === "UNAUTHORISED") {
         throw new STError({
             message: response.message,

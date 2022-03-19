@@ -96,3 +96,4 @@ export declare type APIHandled = {
     disabled: boolean;
 };
 export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
+export declare type Awaitable<T> = Promise<T> | T;

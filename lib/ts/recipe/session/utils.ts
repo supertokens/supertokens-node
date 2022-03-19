@@ -57,6 +57,17 @@ export async function sendUnauthorisedResponse(
     sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
 }
 
+export async function sendMissingGrantResponse(
+    recipeInstance: SessionRecipe,
+    grantId: string,
+    __: BaseRequest,
+    response: BaseResponse
+) {
+    // TODO(grants): check header name
+    response.setHeader("missing-grant-id", grantId, false);
+    sendNon200Response(response, "missing grant", recipeInstance.config.missingGrantStatusCode);
+}
+
 export async function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
     sessionHandle: string,
@@ -188,6 +199,9 @@ export function validateAndNormaliseUserInput(
         onUnauthorised: async (message: string, request: BaseRequest, response: BaseResponse) => {
             return await sendUnauthorisedResponse(recipeInstance, message, request, response);
         },
+        onMissingGrant: (grantId: string, request: BaseRequest, response: BaseResponse) => {
+            return sendMissingGrantResponse(recipeInstance, grantId, request, response);
+        },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {
         if (config.errorHandlers.onTokenTheftDetected !== undefined) {
@@ -195,6 +209,9 @@ export function validateAndNormaliseUserInput(
         }
         if (config.errorHandlers.onUnauthorised !== undefined) {
             errorHandlers.onUnauthorised = config.errorHandlers.onUnauthorised;
+        }
+        if (config.errorHandlers.onMissingGrant !== undefined) {
+            errorHandlers.onMissingGrant = config.errorHandlers.onMissingGrant;
         }
     }
 
@@ -242,6 +259,8 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
+        defaultRequiredGrants: config?.defaultRequiredGrants ?? [],
+        missingGrantStatusCode: config?.missingGrantStatusCode ?? 403,
         jwt: {
             enable: enableJWT,
             propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
@@ -267,7 +286,13 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     let accessToken = response.accessToken;
     let refreshToken = response.refreshToken;
     let idRefreshToken = response.idRefreshToken;
-    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
+    setFrontTokenInHeaders(
+        res,
+        response.session.userId,
+        response.accessToken.expiry,
+        response.session.userDataInJWT,
+        response.session.grants
+    );
     attachAccessTokenToCookie(config, res, accessToken.token, accessToken.expiry);
     attachRefreshTokenToCookie(config, res, refreshToken.token, refreshToken.expiry);
     setIdRefreshTokenInHeaderAndCookie(config, res, idRefreshToken.token, idRefreshToken.expiry);
