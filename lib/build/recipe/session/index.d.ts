@@ -42,7 +42,7 @@ export default class SessionWrapper {
             handle: string;
             userId: string;
             userDataInJWT: any;
-            grants: Record<string, any>;
+            grants: Record<string, import("../../types").JSONObject>;
         };
         accessToken?:
             | {

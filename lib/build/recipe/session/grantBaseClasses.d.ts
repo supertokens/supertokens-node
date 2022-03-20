@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { Awaitable } from "../../types";
+import { Awaitable, JSONValue } from "../../types";
 import { Grant, GrantPayloadType } from "./types";
-export declare abstract class PrimitiveGrant<T> implements Grant<T> {
+export declare abstract class PrimitiveGrant<T extends JSONValue> implements Grant<T> {
     readonly id: string;
     constructor(id: string);
     abstract fetchGrant(userId: string, userContext: any): Awaitable<T | undefined>;

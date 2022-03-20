@@ -17,7 +17,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
-import { Awaitable } from "../../types";
+import { Awaitable, JSONObject } from "../../types";
 
 export type KeyInfo = {
     publicKey: string;
@@ -241,7 +241,7 @@ export type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
-        grantsToCheck?: Grant<any>[];
+        grantsToAdd?: Grant<any>[];
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
@@ -376,8 +376,7 @@ export type SessionInformation = {
     timeCreated: number;
 };
 
-// TODO: This could use JSONObject instead of any (defined in the usermetadata PR)
-export type GrantPayloadType = Record<string, any>;
+export type GrantPayloadType = Record<string, JSONObject>;
 
 export abstract class Grant<T> {
     constructor(public readonly id: string) {}
@@ -406,6 +405,13 @@ export abstract class Grant<T> {
      * @returns The modified payload object
      */
     abstract addToGrantPayload(grantPayload: GrantPayloadType, value: T, userContext: any): GrantPayloadType;
+
+    /**
+     * Saves the provided value into the grantPayload, by cloning and updating the payload object.
+     *
+     * @returns The modified payload object
+     */
+    abstract updateAccessTokenPayload?(grantPayload: GrantPayloadType, value: T, userContext: any): GrantPayloadType;
 
     /**
      * Removes the grant from the grantPayload, by cloning and updating the payload object.

@@ -27,11 +27,14 @@ export default class Session implements SessionContainerInterface {
     getAccessTokenPayload: () => any;
     getHandle: () => string;
     getAccessToken: () => string;
-    updateSessionGrants: (newGrants: Record<string, any>, userContext?: any) => Promise<void>;
+    updateSessionGrants: (
+        newGrants: Record<string, import("../../types").JSONObject>,
+        userContext?: any
+    ) => Promise<void>;
     updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    getSessionGrants(): Record<string, any>;
+    getSessionGrants(): Record<string, import("../../types").JSONObject>;
     shouldRefetchGrant(grant: Grant<any>, userContext?: any): Awaitable<boolean>;
     fetchGrant(grant: Grant<any>, userContext?: any): Promise<void>;
     checkGrantInToken(grant: Grant<any>, userContext?: any): Awaitable<boolean>;

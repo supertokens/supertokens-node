@@ -108,23 +108,23 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             userId,
             accessTokenPayload = {},
             sessionData = {},
-            grantsToCheck,
+            grantsToAdd,
         }: {
             res: any;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
-            grantsToCheck?: Grant<any>[];
+            grantsToAdd?: Grant<any>[];
         }): Promise<Session> {
             if (!res.wrapperUsed) {
                 res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
             }
-            if (grantsToCheck === undefined) {
-                grantsToCheck = config.defaultRequiredGrants;
+            if (grantsToAdd === undefined) {
+                grantsToAdd = config.defaultRequiredGrants;
             }
 
             let sessionGrants: GrantPayloadType = {};
-            for (const grant of grantsToCheck) {
+            for (const grant of grantsToAdd) {
                 const value = grant.fetchGrant(userId, {});
                 grant.addToGrantPayload(sessionGrants, value, {});
             }

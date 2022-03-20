@@ -1,7 +1,7 @@
-import { Awaitable } from "../../types";
+import { Awaitable, JSONValue } from "../../types";
 import { Grant, GrantPayloadType } from "./types";
 
-export abstract class PrimitiveGrant<T> implements Grant<T> {
+export abstract class PrimitiveGrant<T extends JSONValue> implements Grant<T> {
     constructor(public readonly id: string) {}
 
     abstract fetchGrant(userId: string, userContext: any): Awaitable<T | undefined>;
@@ -42,7 +42,7 @@ export class BooleanGrant extends PrimitiveGrant<boolean> {
     }
 
     isGrantValid(grantPayload: GrantPayloadType, _userContext: any): Awaitable<boolean> {
-        return grantPayload[this.id] !== undefined && grantPayload[this.id].v;
+        return grantPayload[this.id] !== undefined && grantPayload[this.id].v === true;
     }
 }
 
@@ -63,7 +63,9 @@ export class ManualBooleanGrant extends BooleanGrant {
         return (
             super.isGrantValid(grantPayload, userContext) &&
             this.conf.expirationTimeInSeconds !== undefined &&
-            grantPayload[this.id].t < new Date().getTime() - this.conf.expirationTimeInSeconds * 1000
+            grantPayload[this.id] !== null &&
+            grantPayload[this.id] !== undefined &&
+            grantPayload[this.id].t! < new Date().getTime() - this.conf.expirationTimeInSeconds * 1000
         );
     }
 }
