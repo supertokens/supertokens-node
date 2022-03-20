@@ -2,9 +2,5 @@
 import { TypeEmailPasswordPasswordResetEmailDeliveryInput } from "../../../types";
 import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 export default function getPasswordResetEmailContent(
-    input: TypeEmailPasswordPasswordResetEmailDeliveryInput,
-    from: {
-        name: string;
-        email: string;
-    }
+    input: TypeEmailPasswordPasswordResetEmailDeliveryInput
 ): GetContentResult;

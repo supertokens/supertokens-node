@@ -6,9 +6,5 @@ export default function getSMTPService(
     config: SMTPTypeInput<TypeEmailPasswordEmailDeliveryInput>
 ): import("../../../../../ingredients/emaildelivery/types").EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput>;
 export declare function getDefaultEmailServiceImplementation(
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
+    transporter: Transporter
 ): ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;

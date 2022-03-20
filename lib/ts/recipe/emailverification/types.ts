@@ -121,7 +121,10 @@ export type APIInterface = {
 
 export type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";
-    user: User;
+    user: {
+        id: string;
+        email: string;
+    };
     emailVerifyLink: string;
     userContext: any;
 };

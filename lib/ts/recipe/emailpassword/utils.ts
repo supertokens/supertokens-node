@@ -30,7 +30,7 @@ import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import { getResetPasswordURL as defaultGetResetPasswordURL } from "./passwordResetFunctions";
 import { RecipeInterface, APIInterface } from "./types";
-import { BackwardCompatibilityService } from "./emaildelivery/services";
+import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -70,8 +70,9 @@ export function validateAndNormaliseUserInput(
      */
     if (emailService === undefined) {
         emailService = new BackwardCompatibilityService(
-            recipeInstance,
+            recipeInstance.recipeInterfaceImpl,
             appInfo,
+            recipeInstance.isInServerlessEnv,
             config?.resetPasswordUsingTokenFeature,
             config?.emailVerificationFeature
         );

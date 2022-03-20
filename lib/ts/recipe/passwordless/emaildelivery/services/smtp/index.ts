@@ -15,6 +15,7 @@
 import {
     ServiceInterface,
     GetContentResult,
+    TypeInputSendRawEmail,
     TypeInput as SMTPTypeInput,
     getEmailServiceImplementation,
 } from "../../../../../ingredients/emaildelivery/services/smtp";
@@ -27,14 +28,10 @@ export default function getSMTPService(config: SMTPTypeInput<TypePasswordlessEma
 }
 
 export function getDefaultEmailServiceImplementation(
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
+    transporter: Transporter
 ): ServiceInterface<TypePasswordlessEmailDeliveryTypeInput> {
     return {
-        sendRawEmail: async function (input: GetContentResult & { userContext: any }) {
+        sendRawEmail: async function (input: TypeInputSendRawEmail) {
             await transporter.sendMail({
                 from: `${input.from.name} <${input.from.email}>`,
                 to: input.toEmail,
@@ -45,7 +42,7 @@ export function getDefaultEmailServiceImplementation(
         getContent: async function (
             input: TypePasswordlessEmailDeliveryTypeInput & { userContext: any }
         ): Promise<GetContentResult> {
-            return getPasswordlessLoginEmailContent(input, from);
+            return getPasswordlessLoginEmailContent(input);
         },
     };
 }

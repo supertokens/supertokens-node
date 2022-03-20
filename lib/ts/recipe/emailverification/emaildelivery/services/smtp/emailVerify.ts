@@ -15,20 +15,13 @@
 import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
 import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
-export default function getEmailVerifyEmailContent(
-    input: TypeEmailVerificationEmailDeliveryInput,
-    from: {
-        name: string;
-        email: string;
-    }
-): GetContentResult {
+export default function getEmailVerifyEmailContent(input: TypeEmailVerificationEmailDeliveryInput): GetContentResult {
     let supertokens = Supertokens.getInstanceOrThrowError();
     let appName = supertokens.appInfo.appName;
     let body = getEmailVerifyEmailHTML(appName, input.user.email, input.emailVerifyLink);
     return {
         body,
         toEmail: input.user.email,
-        from,
         subject: "Email verification instructions",
     };
 }

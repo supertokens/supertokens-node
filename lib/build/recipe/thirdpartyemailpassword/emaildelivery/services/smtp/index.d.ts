@@ -8,9 +8,5 @@ export default function getSMTPService(
     import("../../../../emailpassword/types").TypeEmailPasswordEmailDeliveryInput
 >;
 export declare function getDefaultEmailServiceImplementation(
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
+    transporter: Transporter
 ): ServiceInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput>;

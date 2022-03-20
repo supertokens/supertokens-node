@@ -1,17 +1,18 @@
 // @ts-nocheck
-import { TypeEmailPasswordEmailDeliveryInput, User } from "../../../types";
+import { TypeEmailPasswordEmailDeliveryInput, User, RecipeInterface } from "../../../types";
 import { NormalisedAppinfo } from "../../../../../types";
-import Recipe from "../../../recipe";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
-    private recipeInstance;
+    private recipeInterfaceImpl;
+    private isInServerlessEnv;
     private appInfo;
-    private resetPasswordUsingTokenFeature?;
-    private emailVerificationFeature?;
+    private resetPasswordUsingTokenFeature;
+    private emailVerificationBackwardCompatibilityService;
     constructor(
-        recipeInstance: Recipe,
+        recipeInterfaceImpl: RecipeInterface,
         appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
         resetPasswordUsingTokenFeature?: {
             createAndSendCustomEmail?: (
                 user: User,

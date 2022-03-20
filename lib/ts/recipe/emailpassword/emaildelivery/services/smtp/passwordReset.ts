@@ -16,11 +16,7 @@ import { TypeEmailPasswordPasswordResetEmailDeliveryInput } from "../../../types
 import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
 export default function getPasswordResetEmailContent(
-    input: TypeEmailPasswordPasswordResetEmailDeliveryInput,
-    from: {
-        name: string;
-        email: string;
-    }
+    input: TypeEmailPasswordPasswordResetEmailDeliveryInput
 ): GetContentResult {
     let supertokens = Supertokens.getInstanceOrThrowError();
     let appName = supertokens.appInfo.appName;
@@ -28,7 +24,6 @@ export default function getPasswordResetEmailContent(
     return {
         body,
         toEmail: input.user.email,
-        from,
         subject: "Reset password instructions",
     };
 }

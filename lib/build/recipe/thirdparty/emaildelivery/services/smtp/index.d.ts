@@ -8,9 +8,5 @@ export default function getSMTPService(
     import("../../../../emailverification/types").TypeEmailVerificationEmailDeliveryInput
 >;
 export declare function getDefaultEmailServiceImplementation(
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
+    transporter: Transporter
 ): ServiceInterface<TypeThirdPartyEmailDeliveryInput>;

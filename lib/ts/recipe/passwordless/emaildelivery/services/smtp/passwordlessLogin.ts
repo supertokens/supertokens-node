@@ -16,11 +16,7 @@ import { TypePasswordlessEmailDeliveryTypeInput } from "../../../types";
 import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
 export default function getPasswordlessLoginEmailContent(
-    input: TypePasswordlessEmailDeliveryTypeInput,
-    from: {
-        name: string;
-        email: string;
-    }
+    input: TypePasswordlessEmailDeliveryTypeInput
 ): GetContentResult {
     let supertokens = Supertokens.getInstanceOrThrowError();
     let appName = supertokens.appInfo.appName;
@@ -34,7 +30,6 @@ export default function getPasswordlessLoginEmailContent(
     return {
         body,
         toEmail: input.email,
-        from,
         subject: "Reset password instructions",
     };
 }

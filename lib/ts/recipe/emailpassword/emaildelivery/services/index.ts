@@ -13,5 +13,5 @@
  * under the License.
  */
 
-export { default as STMP } from "./smtp";
-export { default as BackwardCompatibilityService } from "./backwardCompatibility";
+import SMTP from "./smtp";
+export let STMPService = SMTP;

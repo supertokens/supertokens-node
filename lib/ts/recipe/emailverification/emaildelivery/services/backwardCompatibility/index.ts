@@ -21,7 +21,7 @@ export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeEmailVerificationEmailDeliveryInput> {
     private appInfo: NormalisedAppinfo;
     private isInServerlessEnv: boolean;
-    private createAndSendCustomEmail?: (
+    private createAndSendCustomEmail: (
         user: User,
         emailVerificationURLWithToken: string,
         userContext: any
@@ -38,13 +38,13 @@ export default class BackwardCompatibilityService
     ) {
         this.appInfo = appInfo;
         this.isInServerlessEnv = isInServerlessEnv;
-        this.createAndSendCustomEmail = createAndSendCustomEmail;
+        this.createAndSendCustomEmail =
+            createAndSendCustomEmail === undefined
+                ? defaultCreateAndSendCustomEmail(this.appInfo)
+                : createAndSendCustomEmail;
     }
 
     sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }) => {
-        if (this.createAndSendCustomEmail === undefined) {
-            this.createAndSendCustomEmail = defaultCreateAndSendCustomEmail(this.appInfo);
-        }
         try {
             if (!this.isInServerlessEnv) {
                 this.createAndSendCustomEmail(input.user, input.emailVerifyLink, input.userContext).catch((_) => {});

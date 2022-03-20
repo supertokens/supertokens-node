@@ -33,15 +33,18 @@ export interface SMTPServiceConfig {
 export interface GetContentResult {
     body: string;
     subject: string;
+    toEmail: string;
+}
+
+export type TypeInputSendRawEmail = GetContentResult & { userContext: any } & {
     from: {
         name: string;
         email: string;
     };
-    toEmail: string;
-}
+};
 
 export type ServiceInterface<T> = {
-    sendRawEmail: (input: GetContentResult & { userContext: any }) => Promise<void>;
+    sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>;
     getContent: (input: T & { userContext: any }) => Promise<GetContentResult>;
 };
 
@@ -79,6 +82,7 @@ export function getEmailServiceImplementation<T>(
             await serviceImpl.sendRawEmail({
                 ...content,
                 ...input.userContext,
+                from: config.smtpSettings.from,
             });
         },
     };

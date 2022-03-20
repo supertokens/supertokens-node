@@ -54,7 +54,7 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryTypeInput> | undefined;
+    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryTypeInput>;
 
     // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 
@@ -73,9 +73,7 @@ export default class Recipe extends RecipeModule {
 
         this.emailDelivery =
             ingredients.emailDelivery === undefined
-                ? this.config.contactMethod === "PHONE"
-                    ? undefined
-                    : new EmailDeliveryIngredient(this.config.emailDelivery)
+                ? new EmailDeliveryIngredient(this.config.emailDelivery)
                 : ingredients.emailDelivery;
 
         {

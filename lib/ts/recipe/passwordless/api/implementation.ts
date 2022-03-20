@@ -100,7 +100,7 @@ export default function getAPIImplementation(): APIInterface {
                         input.userContext
                     );
                 } else {
-                    await input.options.emailDelivery?.ingredientInterfaceImpl.sendEmail({
+                    await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                         type: "PASSWORDLESS_LOGIN",
                         email: (input as any).email!,
                         codeLifetime: response.codeLifetime,
@@ -237,7 +237,7 @@ export default function getAPIImplementation(): APIInterface {
                                 input.userContext
                             );
                         } else {
-                            await input.options.emailDelivery?.ingredientInterfaceImpl.sendEmail({
+                            await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                                 type: "PASSWORDLESS_LOGIN",
                                 email: (input as any).email!,
                                 codeLifetime: response.codeLifetime,

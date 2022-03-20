@@ -12,32 +12,28 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeThirdPartyEmailPasswordEmailDeliveryInput, User } from "../../../types";
+import { TypeThirdPartyEmailPasswordEmailDeliveryInput, User, RecipeInterface } from "../../../types";
+import { RecipeInterface as EmailPasswordRecipeInterface } from "../../../../emailpassword";
 import { User as EmailVerificationUser } from "../../../../emailverification/types";
 import { NormalisedAppinfo } from "../../../../../types";
-import Recipe from "../../../recipe";
-import { BackwardCompatibilityService as EmailVerificationBackwardCompatibilityService } from "../../../../emailverification/emaildelivery/services";
-import { BackwardCompatibilityService as EmailPasswordBackwardCompatibilityService } from "../../../../emailpassword/emaildelivery/services";
+import EmailVerificationBackwardCompatibilityService from "../../../../emailverification/emaildelivery/services/backwardCompatibility";
+import EmailPasswordBackwardCompatibilityService from "../../../../emailpassword/emaildelivery/services/backwardCompatibility";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
-    private recipeInstance: Recipe;
+    private recipeInterfaceImpl: RecipeInterface;
+    private emailPasswordRecipeInterfaceImpl: EmailPasswordRecipeInterface;
+    private isInServerlessEnv: boolean;
     private appInfo: NormalisedAppinfo;
-    private resetPasswordUsingTokenFeature?: {
-        createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
-    };
-    private emailVerificationFeature?: {
-        createAndSendCustomEmail?: (
-            user: User,
-            emailVerificationURLWithToken: string,
-            userContext: any
-        ) => Promise<void>;
-    };
+    private emailPasswordBackwardCompatibilityService: EmailPasswordBackwardCompatibilityService;
+    private emailVerificationBackwardCompatibilityService: EmailVerificationBackwardCompatibilityService;
 
     constructor(
-        recipeInstance: Recipe,
+        recipeInterfaceImpl: RecipeInterface,
+        emailPasswordRecipeInterfaceImpl: EmailPasswordRecipeInterface,
         appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
         resetPasswordUsingTokenFeature?: {
             createAndSendCustomEmail?: (
                 user: User,
@@ -53,46 +49,53 @@ export default class BackwardCompatibilityService
             ) => Promise<void>;
         }
     ) {
-        this.recipeInstance = recipeInstance;
+        this.recipeInterfaceImpl = recipeInterfaceImpl;
+        this.emailPasswordRecipeInterfaceImpl = emailPasswordRecipeInterfaceImpl;
+        this.isInServerlessEnv = isInServerlessEnv;
         this.appInfo = appInfo;
-        this.resetPasswordUsingTokenFeature = resetPasswordUsingTokenFeature;
-        this.emailVerificationFeature = emailVerificationFeature;
+        {
+            const inputCreateAndSendCustomEmail = emailVerificationFeature?.createAndSendCustomEmail;
+            let emailVerificationFeatureNormalisedConfig =
+                inputCreateAndSendCustomEmail !== undefined
+                    ? {
+                          createAndSendCustomEmail: async (
+                              user: EmailVerificationUser,
+                              link: string,
+                              userContext: any
+                          ) => {
+                              let userInfo = await this.recipeInterfaceImpl.getUserById({
+                                  userId: user.id,
+                                  userContext,
+                              });
+                              if (userInfo === undefined) {
+                                  throw new Error("Unknown User ID provided");
+                              }
+                              return await inputCreateAndSendCustomEmail(userInfo, link, userContext);
+                          },
+                      }
+                    : {};
+            this.emailVerificationBackwardCompatibilityService = new EmailVerificationBackwardCompatibilityService(
+                this.appInfo,
+                this.isInServerlessEnv,
+                emailVerificationFeatureNormalisedConfig.createAndSendCustomEmail
+            );
+        }
+        {
+            this.emailPasswordBackwardCompatibilityService = new EmailPasswordBackwardCompatibilityService(
+                this.emailPasswordRecipeInterfaceImpl,
+                this.appInfo,
+                this.isInServerlessEnv,
+                resetPasswordUsingTokenFeature,
+                emailVerificationFeature
+            );
+        }
     }
 
     sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
         if (input.type === "EMAIL_VERIFICATION") {
-            const inputCreateAndSendCustomEmail = this.emailVerificationFeature?.createAndSendCustomEmail;
-            let createAndSendCustomEmail:
-                | ((
-                      user: EmailVerificationUser,
-                      emailVerificationURLWithToken: string,
-                      userContext: any
-                  ) => Promise<void>)
-                | undefined = undefined;
-            if (inputCreateAndSendCustomEmail !== undefined) {
-                createAndSendCustomEmail = async (user: EmailVerificationUser, link: string, userContext: any) => {
-                    let userInfo = await this.recipeInstance.recipeInterfaceImpl.getUserById({
-                        userId: user.id,
-                        userContext,
-                    });
-                    if (userInfo === undefined) {
-                        throw new Error("Unknown User ID provided");
-                    }
-                    return await inputCreateAndSendCustomEmail(userInfo, link, userContext);
-                };
-            }
-            await new EmailVerificationBackwardCompatibilityService(
-                this.appInfo,
-                this.recipeInstance.isInServerlessEnv,
-                createAndSendCustomEmail
-            ).sendEmail(input);
+            await this.emailVerificationBackwardCompatibilityService.sendEmail(input);
         } else {
-            await new EmailPasswordBackwardCompatibilityService(
-                this.recipeInstance.emailPasswordRecipe,
-                this.appInfo,
-                this.resetPasswordUsingTokenFeature,
-                this.emailVerificationFeature
-            ).sendEmail(input);
+            await this.emailPasswordBackwardCompatibilityService.sendEmail(input);
         }
     };
 }

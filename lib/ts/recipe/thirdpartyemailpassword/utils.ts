@@ -20,7 +20,7 @@ import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
 import { RecipeInterface, APIInterface } from "./types";
-import { BackwardCompatibilityService } from "./emaildelivery/services";
+import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -55,8 +55,10 @@ export function validateAndNormaliseUserInput(
      */
     if (emailService === undefined) {
         emailService = new BackwardCompatibilityService(
-            recipeInstance,
+            recipeInstance.recipeInterfaceImpl,
+            recipeInstance.emailPasswordRecipe.recipeInterfaceImpl,
             appInfo,
+            recipeInstance.isInServerlessEnv,
             config?.resetPasswordUsingTokenFeature,
             config?.emailVerificationFeature
         );

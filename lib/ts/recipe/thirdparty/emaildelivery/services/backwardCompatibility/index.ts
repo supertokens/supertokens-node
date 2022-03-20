@@ -12,27 +12,22 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeThirdPartyEmailDeliveryInput, User } from "../../../types";
+import { TypeThirdPartyEmailDeliveryInput, User, RecipeInterface } from "../../../types";
 import { User as EmailVerificationUser } from "../../../../emailverification/types";
 import { NormalisedAppinfo } from "../../../../../types";
-import Recipe from "../../../recipe";
-import { BackwardCompatibilityService as EmailVerificationBackwardCompatibilityService } from "../../../../emailverification/emaildelivery/services";
+import EmailVerificationBackwardCompatibilityService from "../../../../emailverification/emaildelivery/services/backwardCompatibility";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService implements EmailDeliveryInterface<TypeThirdPartyEmailDeliveryInput> {
-    private recipeInstance: Recipe;
+    private recipeInterfaceImpl: RecipeInterface;
     private appInfo: NormalisedAppinfo;
-    private emailVerificationFeature?: {
-        createAndSendCustomEmail?: (
-            user: User,
-            emailVerificationURLWithToken: string,
-            userContext: any
-        ) => Promise<void>;
-    };
+    private isInServerlessEnv: boolean;
+    private emailVerificationBackwardCompatibilityService: EmailVerificationBackwardCompatibilityService;
 
     constructor(
-        recipeInstance: Recipe,
+        recipeInterfaceImpl: RecipeInterface,
         appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
         emailVerificationFeature?: {
             createAndSendCustomEmail?: (
                 user: User,
@@ -41,32 +36,39 @@ export default class BackwardCompatibilityService implements EmailDeliveryInterf
             ) => Promise<void>;
         }
     ) {
-        this.recipeInstance = recipeInstance;
+        this.recipeInterfaceImpl = recipeInterfaceImpl;
+        this.isInServerlessEnv = isInServerlessEnv;
         this.appInfo = appInfo;
-        this.emailVerificationFeature = emailVerificationFeature;
+        {
+            const inputCreateAndSendCustomEmail = emailVerificationFeature?.createAndSendCustomEmail;
+            let emailVerificationFeatureNormalisedConfig =
+                inputCreateAndSendCustomEmail !== undefined
+                    ? {
+                          createAndSendCustomEmail: async (
+                              user: EmailVerificationUser,
+                              link: string,
+                              userContext: any
+                          ) => {
+                              let userInfo = await this.recipeInterfaceImpl.getUserById({
+                                  userId: user.id,
+                                  userContext,
+                              });
+                              if (userInfo === undefined) {
+                                  throw new Error("Unknown User ID provided");
+                              }
+                              return await inputCreateAndSendCustomEmail(userInfo, link, userContext);
+                          },
+                      }
+                    : {};
+            this.emailVerificationBackwardCompatibilityService = new EmailVerificationBackwardCompatibilityService(
+                this.appInfo,
+                this.isInServerlessEnv,
+                emailVerificationFeatureNormalisedConfig.createAndSendCustomEmail
+            );
+        }
     }
 
     sendEmail = async (input: TypeThirdPartyEmailDeliveryInput & { userContext: any }) => {
-        const inputCreateAndSendCustomEmail = this.emailVerificationFeature?.createAndSendCustomEmail;
-        let createAndSendCustomEmail:
-            | ((user: EmailVerificationUser, emailVerificationURLWithToken: string, userContext: any) => Promise<void>)
-            | undefined = undefined;
-        if (inputCreateAndSendCustomEmail !== undefined) {
-            createAndSendCustomEmail = async (user: EmailVerificationUser, link: string, userContext: any) => {
-                let userInfo = await this.recipeInstance.recipeInterfaceImpl.getUserById({
-                    userId: user.id,
-                    userContext,
-                });
-                if (userInfo === undefined) {
-                    throw new Error("Unknown User ID provided");
-                }
-                return await inputCreateAndSendCustomEmail(userInfo, link, userContext);
-            };
-        }
-        await new EmailVerificationBackwardCompatibilityService(
-            this.appInfo,
-            this.recipeInstance.isInServerlessEnv,
-            createAndSendCustomEmail
-        ).sendEmail(input);
+        await this.emailVerificationBackwardCompatibilityService.sendEmail(input);
     };
 }

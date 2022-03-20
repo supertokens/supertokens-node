@@ -14,25 +14,46 @@
  */
 import { TypePasswordlessEmailDeliveryTypeInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import axios from "axios";
+import { NormalisedAppinfo } from "../../../../../types";
 
-async function defaultCreateAndSendCustomEmail(
-    _: {
-        // Where the message should be delivered.
-        email: string;
-        // This has to be entered on the starting device  to finish sign in/up
-        userInputCode?: string;
-        // Full url that the end-user can click to finish sign in/up
-        urlWithLinkCode?: string;
-        codeLifetime: number;
-        // Unlikely, but someone could display this (or a derived thing) to identify the device
-        preAuthSessionId: string;
-    },
-    __: any
-): Promise<void> {}
+function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
+    return async (
+        input: {
+            // Where the message should be delivered.
+            email: string;
+            // This has to be entered on the starting device  to finish sign in/up
+            userInputCode?: string;
+            // Full url that the end-user can click to finish sign in/up
+            urlWithLinkCode?: string;
+            codeLifetime: number;
+        },
+        _: any
+    ): Promise<void> => {
+        if (process.env.TEST_MODE === "testing") {
+            return;
+        }
+        try {
+            await axios({
+                method: "POST",
+                url: "https://api.supertokens.io/0/st/auth/passwordless/login",
+                data: {
+                    email: input.email,
+                    appName: appInfo.appName,
+                    codeLifetime: input.codeLifetime,
+                    urlWithLinkCode: input.urlWithLinkCode,
+                    userInputCode: input.userInputCode,
+                },
+                headers: {
+                    "api-version": 0,
+                },
+            });
+        } catch (ignored) {}
+    };
+}
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryTypeInput> {
-    private isInServerlessEnv: boolean;
     private createAndSendCustomEmail: (
         input: {
             // Where the message should be delivered.
@@ -47,9 +68,10 @@ export default class BackwardCompatibilityService
         },
         userContext: any
     ) => Promise<void>;
+    private appInfo: NormalisedAppinfo;
 
     constructor(
-        isInServerlessEnv: boolean,
+        appInfo: NormalisedAppinfo,
         createAndSendCustomEmail?: (
             input: {
                 // Where the message should be delivered.
@@ -65,36 +87,23 @@ export default class BackwardCompatibilityService
             userContext: any
         ) => Promise<void>
     ) {
-        this.isInServerlessEnv = isInServerlessEnv;
+        this.appInfo = appInfo;
         this.createAndSendCustomEmail =
-            createAndSendCustomEmail === undefined ? defaultCreateAndSendCustomEmail : createAndSendCustomEmail;
+            createAndSendCustomEmail === undefined
+                ? defaultCreateAndSendCustomEmail(this.appInfo)
+                : createAndSendCustomEmail;
     }
 
     sendEmail = async (input: TypePasswordlessEmailDeliveryTypeInput & { userContext: any }) => {
-        try {
-            if (!this.isInServerlessEnv) {
-                this.createAndSendCustomEmail(
-                    {
-                        email: input.email,
-                        userInputCode: input.userInputCode,
-                        urlWithLinkCode: input.urlWithLinkCode,
-                        preAuthSessionId: input.preAuthSessionId,
-                        codeLifetime: input.codeLifetime,
-                    },
-                    input.userContext
-                );
-            } else {
-                await this.createAndSendCustomEmail(
-                    {
-                        email: input.email,
-                        userInputCode: input.userInputCode,
-                        urlWithLinkCode: input.urlWithLinkCode,
-                        preAuthSessionId: input.preAuthSessionId,
-                        codeLifetime: input.codeLifetime,
-                    },
-                    input.userContext
-                );
-            }
-        } catch (_) {}
+        await this.createAndSendCustomEmail(
+            {
+                email: input.email,
+                userInputCode: input.userInputCode,
+                urlWithLinkCode: input.urlWithLinkCode,
+                preAuthSessionId: input.preAuthSessionId,
+                codeLifetime: input.codeLifetime,
+            },
+            input.userContext
+        );
     };
 }

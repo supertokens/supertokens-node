@@ -17,7 +17,7 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { getEmailVerificationURL as defaultGetEmailVerificationURL } from "./emailVerificationFunctions";
-import { BackwardCompatibilityService } from "./emaildelivery/services";
+import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     recipe: Recipe,

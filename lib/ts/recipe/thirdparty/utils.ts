@@ -18,7 +18,7 @@ import Recipe from "./recipe";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import { RecipeInterface, APIInterface, TypeProvider } from "./types";
 import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
-import { BackwardCompatibilityService } from "./emaildelivery/services";
+import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -44,7 +44,12 @@ export function validateAndNormaliseUserInput(
      * createAndSendCustomEmail implementation
      */
     if (emailService === undefined) {
-        emailService = new BackwardCompatibilityService(recipeInstance, appInfo, config?.emailVerificationFeature);
+        emailService = new BackwardCompatibilityService(
+            recipeInstance.recipeInterfaceImpl,
+            appInfo,
+            recipeInstance.isInServerlessEnv,
+            config?.emailVerificationFeature
+        );
     }
     let emailDelivery = {
         ...config?.emailDelivery,

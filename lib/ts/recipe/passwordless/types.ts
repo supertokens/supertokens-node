@@ -171,7 +171,6 @@ export type TypeNormalisedInput = (
       }
     | {
           contactMethod: "EMAIL";
-          emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
       }
     | {
@@ -179,8 +178,6 @@ export type TypeNormalisedInput = (
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
 
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-
-          emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
           // Override to use custom template/contact method
           createAndSendCustomTextMessage: (
               input: {
@@ -219,7 +216,7 @@ export type TypeNormalisedInput = (
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
     // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
-
+    emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -361,7 +358,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery?: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryTypeInput>;
     // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 };
 

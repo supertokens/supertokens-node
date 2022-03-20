@@ -1,3 +1,3 @@
 // @ts-nocheck
-export { default as STMP } from "./smtp";
-export { default as BackwardCompatibilityService } from "./backwardCompatibility";
+import SMTP from "./smtp";
+export declare let STMPService: typeof SMTP;

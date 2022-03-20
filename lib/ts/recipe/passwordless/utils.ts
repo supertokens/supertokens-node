@@ -17,11 +17,11 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
-import { BackwardCompatibilityService } from "./emaildelivery/services";
+import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 // import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
 
 export function validateAndNormaliseUserInput(
-    recipe: Recipe,
+    _: Recipe,
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
@@ -55,32 +55,39 @@ export function validateAndNormaliseUserInput(
     //             ...config.smsDelivery?.override,
     //         };
 
+    let createAndSendCustomEmail = config.contactMethod === "PHONE" ? undefined : config.createAndSendCustomEmail;
+    /**
+     * following code is for backward compatibility.
+     * if user has not passed emailDelivery config, we
+     * use the createAndSendCustomEmail config. If the user
+     * has not passed even that config, we use the default
+     * createAndSendCustomEmail implementation
+     */
+    if (emailService === undefined) {
+        emailService = new BackwardCompatibilityService(appInfo, createAndSendCustomEmail);
+    }
+    let emailDelivery =
+        config.contactMethod === "PHONE"
+            ? {
+                  service: emailService,
+              }
+            : {
+                  ...config.emailDelivery,
+                  /**
+                   * if we do
+                   * let emailDelivery = {
+                   *    service: emailService,
+                   *    ...config.emailDelivery,
+                   * };
+                   *
+                   * and if the user has passed service as undefined,
+                   * it it again get set to undefined, so we
+                   * set service at the end
+                   */
+                  service: emailService,
+              };
+
     if (config.contactMethod === "EMAIL") {
-        /**
-         * following code is for backward compatibility.
-         * if user has not passed emailDelivery config, we
-         * use the createAndSendCustomEmail config. If the user
-         * has not passed even that config, we use the default
-         * createAndSendCustomEmail implementation
-         */
-        if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(recipe.isInServerlessEnv, config.createAndSendCustomEmail);
-        }
-        let emailDelivery = {
-            ...config?.emailDelivery,
-            /**
-             * if we do
-             * let emailDelivery = {
-             *    service: emailService,
-             *    ...config.emailDelivery,
-             * };
-             *
-             * and if the user has passed service as undefined,
-             * it it again get set to undefined, so we
-             * set service at the end
-             */
-            service: emailService,
-        };
         // TODO: to remove this
         if (config.createAndSendCustomEmail === undefined) {
             throw new Error("Please provide a callback function (createAndSendCustomEmail) to send emails. ");
@@ -108,6 +115,7 @@ export function validateAndNormaliseUserInput(
         }
         return {
             override,
+            emailDelivery,
             // smsDelivery,
             flowType: config.flowType,
             contactMethod: "PHONE",
@@ -134,31 +142,6 @@ export function validateAndNormaliseUserInput(
                 "Please provide a callback function (createAndSendCustomTextMessage) to send text messages. "
             );
         }
-        /**
-         * following code is for backward compatibility.
-         * if user has not passed emailDelivery config, we
-         * use the createAndSendCustomEmail config. If the user
-         * has not passed even that config, we use the default
-         * createAndSendCustomEmail implementation
-         */
-        if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(recipe.isInServerlessEnv, config.createAndSendCustomEmail);
-        }
-        let emailDelivery = {
-            ...config?.emailDelivery,
-            /**
-             * if we do
-             * let emailDelivery = {
-             *    service: emailService,
-             *    ...config.emailDelivery,
-             * };
-             *
-             * and if the user has passed service as undefined,
-             * it it again get set to undefined, so we
-             * set service at the end
-             */
-            service: emailService,
-        };
         return {
             override,
             emailDelivery,

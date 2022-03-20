@@ -23,7 +23,7 @@ export default class Recipe extends RecipeModule {
     config: TypeNormalisedInput;
     emailVerificationRecipe: EmailVerificationRecipe;
     emailPasswordRecipe: EmailPasswordRecipe;
-    thirdPartyRecipe: ThirdPartyRecipe | undefined;
+    private thirdPartyRecipe;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;

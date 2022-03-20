@@ -50,7 +50,7 @@ export default class Recipe extends RecipeModule {
 
     emailPasswordRecipe: EmailPasswordRecipe;
 
-    thirdPartyRecipe: ThirdPartyRecipe | undefined;
+    private thirdPartyRecipe: ThirdPartyRecipe | undefined;
 
     recipeInterfaceImpl: RecipeInterface;
 

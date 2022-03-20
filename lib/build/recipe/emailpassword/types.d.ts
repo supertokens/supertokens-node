@@ -264,7 +264,10 @@ export declare type APIInterface = {
 };
 export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
-    user: User;
+    user: {
+        id: string;
+        email: string;
+    };
     passwordResetLink: string;
     userContext: any;
 };

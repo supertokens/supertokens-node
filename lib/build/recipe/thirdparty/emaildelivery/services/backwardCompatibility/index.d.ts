@@ -1,15 +1,16 @@
 // @ts-nocheck
-import { TypeThirdPartyEmailDeliveryInput, User } from "../../../types";
+import { TypeThirdPartyEmailDeliveryInput, User, RecipeInterface } from "../../../types";
 import { NormalisedAppinfo } from "../../../../../types";
-import Recipe from "../../../recipe";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 export default class BackwardCompatibilityService implements EmailDeliveryInterface<TypeThirdPartyEmailDeliveryInput> {
-    private recipeInstance;
+    private recipeInterfaceImpl;
     private appInfo;
-    private emailVerificationFeature?;
+    private isInServerlessEnv;
+    private emailVerificationBackwardCompatibilityService;
     constructor(
-        recipeInstance: Recipe,
+        recipeInterfaceImpl: RecipeInterface,
         appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
         emailVerificationFeature?: {
             createAndSendCustomEmail?: (
                 user: User,

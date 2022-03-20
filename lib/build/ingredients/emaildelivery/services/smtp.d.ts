@@ -17,18 +17,18 @@ export interface SMTPServiceConfig {
 export interface GetContentResult {
     body: string;
     subject: string;
+    toEmail: string;
+}
+export declare type TypeInputSendRawEmail = GetContentResult & {
+    userContext: any;
+} & {
     from: {
         name: string;
         email: string;
     };
-    toEmail: string;
-}
+};
 export declare type ServiceInterface<T> = {
-    sendRawEmail: (
-        input: GetContentResult & {
-            userContext: any;
-        }
-    ) => Promise<void>;
+    sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>;
     getContent: (
         input: T & {
             userContext: any;

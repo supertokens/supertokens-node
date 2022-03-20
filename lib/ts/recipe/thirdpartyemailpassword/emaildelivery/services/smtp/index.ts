@@ -15,6 +15,7 @@
 import {
     ServiceInterface,
     GetContentResult,
+    TypeInputSendRawEmail,
     TypeInput as SMTPTypeInput,
     getEmailServiceImplementation,
 } from "../../../../../ingredients/emaildelivery/services/smtp";
@@ -28,14 +29,10 @@ export default function getSMTPService(config: SMTPTypeInput<TypeThirdPartyEmail
 }
 
 export function getDefaultEmailServiceImplementation(
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
+    transporter: Transporter
 ): ServiceInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
     return {
-        sendRawEmail: async function (input: GetContentResult & { userContext: any }) {
+        sendRawEmail: async function (input: TypeInputSendRawEmail) {
             await transporter.sendMail({
                 from: `${input.from.name} <${input.from.email}>`,
                 to: input.toEmail,
@@ -47,9 +44,9 @@ export function getDefaultEmailServiceImplementation(
             input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }
         ): Promise<GetContentResult> {
             if (input.type === "EMAIL_VERIFICATION") {
-                return getEmailVerifyEmailContent(input, from);
+                return getEmailVerifyEmailContent(input);
             }
-            return getPasswordResetEmailContent(input, from);
+            return getPasswordResetEmailContent(input);
         },
     };
 }
