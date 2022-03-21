@@ -16,18 +16,23 @@
 import debug from "debug";
 import { version } from "./version";
 
+const SUPERTOKENS_DEBUG_NAMESPACE = "com.supertokens";
 /*
  The debug logger below can be used to log debug messages in the following format
     com.supertokens {t: "2022-03-18T11:15:24.608Z", message: Your message, file: "/home/supertokens-node/lib/build/supertokens.js:231:18" sdkVer: "9.2.0"} +0m
 */
 
 function logDebugMessage(message: string) {
-    debug(`com.supertokens`)(
+    debug(SUPERTOKENS_DEBUG_NAMESPACE)(
         `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
     );
 }
 
 let getFileLocation = () => {
+    if (!process.env.DEBUG?.includes(SUPERTOKENS_DEBUG_NAMESPACE)) {
+        return;
+    }
+
     let errorObject = new Error();
     if (errorObject.stack === undefined) {
         // should not come here
