@@ -29,7 +29,7 @@ function logDebugMessage(message: string) {
 }
 
 let getFileLocation = () => {
-    if (!process.env.DEBUG?.includes(SUPERTOKENS_DEBUG_NAMESPACE)) {
+    if (!debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE)) {
         return;
     }
 
