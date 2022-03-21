@@ -30,7 +30,7 @@ function logDebugMessage(message: string) {
 
 let getFileLocation = () => {
     if (!debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE)) {
-        return;
+        return "N/A";
     }
 
     let errorObject = new Error();
