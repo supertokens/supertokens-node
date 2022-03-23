@@ -21,12 +21,12 @@ import {
     GetContentResult,
 } from "../../../../../ingredients/emaildelivery/services/smtp";
 import getPasswordResetEmailContent from "./passwordReset";
-import SMTPService from "../../../../emailverification/emaildelivery/services/smtp";
+import { getServiceImplementation as getEmailVerificationServiceImplementation } from "../../../../emailverification/emaildelivery/services/smtp/serviceImplementation";
 
 export function getServiceImplementation(
-    transporter: Transporter,
-    emailVerificationSMTPEmailService: SMTPService
+    transporter: Transporter
 ): ServiceInterface<TypeEmailPasswordEmailDeliveryInput> {
+    let evSeriveImpl = getEmailVerificationServiceImplementation(transporter);
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
             await transporter.sendMail({
@@ -40,7 +40,7 @@ export function getServiceImplementation(
             input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }
         ): Promise<GetContentResult> {
             if (input.type === "EMAIL_VERIFICATION") {
-                return await emailVerificationSMTPEmailService.serviceImpl.getContent(input);
+                return await evSeriveImpl.getContent(input);
             }
             return getPasswordResetEmailContent(input);
         },
