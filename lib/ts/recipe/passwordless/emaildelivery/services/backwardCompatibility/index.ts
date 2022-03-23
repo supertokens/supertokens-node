@@ -33,22 +33,20 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
         if (process.env.TEST_MODE === "testing") {
             return;
         }
-        try {
-            await axios({
-                method: "POST",
-                url: "https://api.supertokens.io/0/st/auth/passwordless/login",
-                data: {
-                    email: input.email,
-                    appName: appInfo.appName,
-                    codeLifetime: input.codeLifetime,
-                    urlWithLinkCode: input.urlWithLinkCode,
-                    userInputCode: input.userInputCode,
-                },
-                headers: {
-                    "api-version": 0,
-                },
-            });
-        } catch (ignored) {}
+        await axios({
+            method: "POST",
+            url: "https://api.supertokens.io/0/st/auth/passwordless/login",
+            data: {
+                email: input.email,
+                appName: appInfo.appName,
+                codeLifetime: input.codeLifetime,
+                urlWithLinkCode: input.urlWithLinkCode,
+                userInputCode: input.userInputCode,
+            },
+            headers: {
+                "api-version": 0,
+            },
+        });
     };
 }
 

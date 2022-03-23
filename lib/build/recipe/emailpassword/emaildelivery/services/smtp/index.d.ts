@@ -1,10 +1,20 @@
 // @ts-nocheck
-import { ServiceInterface, TypeInput as SMTPTypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
-import { Transporter } from "nodemailer";
+import { ServiceInterface, TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
 import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
-export default function getSMTPService(
-    config: SMTPTypeInput<TypeEmailPasswordEmailDeliveryInput>
-): import("../../../../../ingredients/emaildelivery/types").EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput>;
-export declare function getDefaultEmailServiceImplementation(
-    transporter: Transporter
-): ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;
+import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import EmailVerificationSMTPService from "../../../../emailverification/emaildelivery/services/smtp";
+export default class SMTPService implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
+    serviceImpl: ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;
+    private config;
+    emailVerificationSMTPService: EmailVerificationSMTPService;
+    constructor(config: TypeInput<TypeEmailPasswordEmailDeliveryInput>);
+    sendEmail: (
+        input:
+            | (import("../../../../emailverification/types").TypeEmailVerificationEmailDeliveryInput & {
+                  userContext: any;
+              })
+            | (import("../../../types").TypeEmailPasswordPasswordResetEmailDeliveryInput & {
+                  userContext: any;
+              })
+    ) => Promise<void>;
+}

@@ -12,19 +12,18 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { ServiceInterface, TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
-import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import { ServiceInterface, TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
+import { TypeEmailVerificationEmailDeliveryInput } from "../../../types";
 import { createTransport } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 import { getServiceImplementation } from "./serviceImplementation";
-import EmailVerificationSMTPService from "../../../../emailverification/emaildelivery/services/smtp";
-export default class SMTPService implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
-    serviceImpl: ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;
-    private config: TypeInput<TypeEmailPasswordEmailDeliveryInput>;
-    emailVerificationSMTPService: EmailVerificationSMTPService;
 
-    constructor(config: TypeInput<TypeEmailPasswordEmailDeliveryInput>) {
+export default class SMTPService implements EmailDeliveryInterface<TypeEmailVerificationEmailDeliveryInput> {
+    serviceImpl: ServiceInterface<TypeEmailVerificationEmailDeliveryInput>;
+    private config: TypeInput<TypeEmailVerificationEmailDeliveryInput>;
+
+    constructor(config: TypeInput<TypeEmailVerificationEmailDeliveryInput>) {
         this.config = config;
         const transporter = createTransport({
             host: config.smtpSettings.host,
@@ -32,20 +31,14 @@ export default class SMTPService implements EmailDeliveryInterface<TypeEmailPass
             auth: config.smtpSettings.auth,
             secure: config.smtpSettings.secure,
         });
-        this.emailVerificationSMTPService = new EmailVerificationSMTPService({
-            smtpSettings: this.config.smtpSettings,
-        });
-        let builder = new OverrideableBuilder(getServiceImplementation(transporter, this.emailVerificationSMTPService));
+        let builder = new OverrideableBuilder(getServiceImplementation(transporter));
         if (config.override !== undefined) {
             builder = builder.override(config.override);
         }
         this.serviceImpl = builder.build();
     }
 
-    sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
-        // if (input.type === "EMAIL_VERIFICATION") {
-        //     return await this.emailVerificationSMTPService.sendEmail(input);
-        // }
+    sendEmail = async (input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }) => {
         let content = await this.serviceImpl.getContent(input);
         await this.serviceImpl.sendRawEmail({
             ...content,
