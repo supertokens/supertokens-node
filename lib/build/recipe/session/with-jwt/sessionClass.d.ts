@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { Grant, SessionContainerInterface } from "../types";
+import { SessionClaim, SessionContainerInterface } from "../types";
 import { Awaitable } from "../../../types";
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private openIdRecipeImplementation;
@@ -15,12 +15,12 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     getAccessToken: (userContext?: any) => string;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    getSessionGrants(userContext?: any): any;
-    updateSessionGrants(grants: Grant<any>[], userContext?: any): Promise<void>;
-    shouldRefetchGrant(grant: Grant<any>, userContext?: any): Awaitable<boolean>;
-    fetchGrant(grant: Grant<any>, userContext?: any): Awaitable<void>;
-    checkGrantInToken(grant: Grant<any>, userContext?: any): Awaitable<boolean>;
-    addGrant<T>(grant: Grant<T>, value: T, userContext?: any): Promise<void>;
-    removeGrant<T>(grant: Grant<T>, userContext?: any): Promise<void>;
+    getSessionClaims(userContext?: any): any;
+    updateSessionClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void>;
+    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
+    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void>;
+    checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
+    addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
+    removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
     updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
 }

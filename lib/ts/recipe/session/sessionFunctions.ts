@@ -16,7 +16,7 @@ import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
 import { getPayloadWithoutVerifiying } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { CreateOrRefreshAPIResponse, GrantPayloadType, SessionInformation } from "./types";
+import { CreateOrRefreshAPIResponse, SessionClaimPayloadType, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
@@ -27,7 +27,7 @@ import { maxVersion } from "../../utils";
 export async function createNewSession(
     helpers: Helpers,
     userId: string,
-    sessionGrants: GrantPayloadType,
+    sessionClaims: SessionClaimPayloadType,
     accessTokenPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
@@ -39,12 +39,12 @@ export async function createNewSession(
         userDataInJWT: any;
         userDataInDatabase: any;
         enableAntiCsrf?: boolean;
-        grants: GrantPayloadType;
+        claims: SessionClaimPayloadType;
     } = {
         userId,
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionData,
-        grants: sessionGrants,
+        claims: sessionClaims,
     };
 
     let handShakeInfo = await helpers.getHandshakeInfo();
@@ -77,7 +77,7 @@ export async function getSession(
         handle: string;
         userId: string;
         userDataInJWT: any;
-        grants: GrantPayloadType;
+        claims: SessionClaimPayloadType;
     };
     accessToken?: {
         token: string;
@@ -210,7 +210,7 @@ export async function getSession(
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
                 userDataInJWT: accessTokenInfo.userData,
-                grants: accessTokenInfo.grants,
+                claims: accessTokenInfo.sessionClaims,
             },
         };
     }
@@ -448,11 +448,11 @@ export async function updateAccessTokenPayload(helpers: Helpers, sessionHandle: 
     }
 }
 
-export async function updateSessionGrants(helpers: Helpers, sessionHandle: string, newGrants: any) {
-    newGrants = newGrants === null || newGrants === undefined ? {} : newGrants;
-    const response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/grants"), {
+export async function updateSessionClaims(helpers: Helpers, sessionHandle: string, newClaimPayload: any) {
+    newClaimPayload = newClaimPayload === null || newClaimPayload === undefined ? {} : newClaimPayload;
+    const response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/claims"), {
         sessionHandle,
-        grants: newGrants,
+        claims: newClaimPayload,
     });
 
     if (response.status === "UNAUTHORISED") {

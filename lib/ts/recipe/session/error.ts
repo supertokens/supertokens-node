@@ -19,7 +19,7 @@ export default class SessionError extends STError {
     static UNAUTHORISED: "UNAUTHORISED" = "UNAUTHORISED";
     static TRY_REFRESH_TOKEN: "TRY_REFRESH_TOKEN" = "TRY_REFRESH_TOKEN";
     static TOKEN_THEFT_DETECTED: "TOKEN_THEFT_DETECTED" = "TOKEN_THEFT_DETECTED";
-    static MISSING_GRANT: "MISSING_GRANT" = "MISSING_GRANT";
+    static MISSING_CLAIM: "MISSING_CLAIM" = "MISSING_CLAIM";
 
     constructor(
         options:
@@ -44,9 +44,9 @@ export default class SessionError extends STError {
               }
             | {
                   message: string;
-                  type: "MISSING_GRANT";
+                  type: "MISSING_CLAIM";
                   payload: {
-                      grantId: string;
+                      claimId: string;
                   };
               }
     ) {

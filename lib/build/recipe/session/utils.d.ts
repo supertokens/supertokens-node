@@ -15,9 +15,9 @@ export declare function sendUnauthorisedResponse(
     __: BaseRequest,
     response: BaseResponse
 ): Promise<void>;
-export declare function sendMissingGrantResponse(
+export declare function sendMissingClaimResponse(
     recipeInstance: SessionRecipe,
-    grantId: string,
+    claimId: string,
     __: BaseRequest,
     response: BaseResponse
 ): Promise<void>;

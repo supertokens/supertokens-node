@@ -1,13 +1,13 @@
 // @ts-nocheck
 import { BaseResponse } from "../../framework";
-import { Grant, GrantPayloadType, SessionContainerInterface } from "./types";
+import { SessionClaim, SessionClaimPayloadType, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 import { Awaitable } from "../../types";
 export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
     protected userId: string;
     protected userDataInAccessToken: any;
-    protected grants: GrantPayloadType;
+    protected claims: SessionClaimPayloadType;
     protected res: BaseResponse;
     protected accessToken: string;
     protected helpers: Helpers;
@@ -17,7 +17,7 @@ export default class Session implements SessionContainerInterface {
         sessionHandle: string,
         userId: string,
         userDataInAccessToken: any,
-        grants: GrantPayloadType,
+        claims: SessionClaimPayloadType,
         res: BaseResponse
     );
     revokeSession: (userContext?: any) => Promise<void>;
@@ -27,17 +27,18 @@ export default class Session implements SessionContainerInterface {
     getAccessTokenPayload: () => any;
     getHandle: () => string;
     getAccessToken: () => string;
-    updateSessionGrants: (
-        newGrants: Record<string, import("../../types").JSONObject>,
+    updateSessionClaims: (
+        newClaimPayload: Record<string, import("../../types").JSONObject>,
         userContext?: any
     ) => Promise<void>;
     updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    getSessionGrants(): Record<string, import("../../types").JSONObject>;
-    shouldRefetchGrant(grant: Grant<any>, userContext?: any): Awaitable<boolean>;
-    fetchGrant(grant: Grant<any>, userContext?: any): Promise<void>;
-    checkGrantInToken(grant: Grant<any>, userContext?: any): Awaitable<boolean>;
-    addGrant<T>(grant: Grant<T>, value: T, userContext?: any): Promise<void>;
-    removeGrant<T>(grant: Grant<T>, userContext?: any): Promise<void>;
+    getSessionClaims(): Record<string, import("../../types").JSONObject>;
+    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void>;
+    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
+    updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
+    checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
+    addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
+    removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
 }

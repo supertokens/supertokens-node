@@ -57,15 +57,15 @@ export async function sendUnauthorisedResponse(
     sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
 }
 
-export async function sendMissingGrantResponse(
+export async function sendMissingClaimResponse(
     recipeInstance: SessionRecipe,
-    grantId: string,
+    claimId: string,
     __: BaseRequest,
     response: BaseResponse
 ) {
-    // TODO(grants): check header name
-    response.setHeader("missing-grant-id", grantId, false);
-    sendNon200Response(response, "missing grant", recipeInstance.config.missingGrantStatusCode);
+    // TODO(claims): check header name
+    response.setHeader("missing-claim-id", claimId, false);
+    sendNon200Response(response, "missing claim", recipeInstance.config.missingClaimStatusCode);
 }
 
 export async function sendTokenTheftDetectedResponse(
@@ -199,8 +199,8 @@ export function validateAndNormaliseUserInput(
         onUnauthorised: async (message: string, request: BaseRequest, response: BaseResponse) => {
             return await sendUnauthorisedResponse(recipeInstance, message, request, response);
         },
-        onMissingGrant: (grantId: string, request: BaseRequest, response: BaseResponse) => {
-            return sendMissingGrantResponse(recipeInstance, grantId, request, response);
+        onMissingClaim: (claimId: string, request: BaseRequest, response: BaseResponse) => {
+            return sendMissingClaimResponse(recipeInstance, claimId, request, response);
         },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {
@@ -210,8 +210,8 @@ export function validateAndNormaliseUserInput(
         if (config.errorHandlers.onUnauthorised !== undefined) {
             errorHandlers.onUnauthorised = config.errorHandlers.onUnauthorised;
         }
-        if (config.errorHandlers.onMissingGrant !== undefined) {
-            errorHandlers.onMissingGrant = config.errorHandlers.onMissingGrant;
+        if (config.errorHandlers.onMissingClaim !== undefined) {
+            errorHandlers.onMissingClaim = config.errorHandlers.onMissingClaim;
         }
     }
 
@@ -259,8 +259,8 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
-        defaultRequiredGrants: config?.defaultRequiredGrants ?? [],
-        missingGrantStatusCode: config?.missingGrantStatusCode ?? 403,
+        defaultRequiredClaims: config?.defaultRequiredClaims ?? [],
+        missingClaimStatusCode: config?.missingClaimStatusCode ?? 403,
         jwt: {
             enable: enableJWT,
             propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
@@ -291,7 +291,7 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
         response.session.userId,
         response.accessToken.expiry,
         response.session.userDataInJWT,
-        response.session.grants
+        response.session.claims
     );
     attachAccessTokenToCookie(config, res, accessToken.token, accessToken.expiry);
     attachRefreshTokenToCookie(config, res, refreshToken.token, refreshToken.expiry);

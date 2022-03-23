@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
-import { GrantPayloadType, TypeNormalisedInput } from "./types";
+import { SessionClaimPayloadType, TypeNormalisedInput } from "./types";
 /**
  * @description clears all the auth cookies from the response
  */
@@ -40,7 +40,7 @@ export declare function setFrontTokenInHeaders(
     userId: string,
     atExpiry: number,
     accessTokenPayload: any,
-    grants: GrantPayloadType
+    claims: SessionClaimPayloadType
 ): void;
 export declare function getCORSAllowedHeaders(): string[];
 /**

@@ -5,8 +5,8 @@ import {
     SessionInformation,
     KeyInfo,
     AntiCsrfType,
-    GrantPayloadType,
-    Grant,
+    SessionClaimPayloadType,
+    SessionClaim,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -108,27 +108,43 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             userId,
             accessTokenPayload = {},
             sessionData = {},
-            grantsToAdd,
+            claimsToAdd,
         }: {
             res: any;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
-            grantsToAdd?: Grant<any>[];
+            claimsToAdd?: SessionClaim<any>[];
         }): Promise<Session> {
             if (!res.wrapperUsed) {
                 res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
             }
-            if (grantsToAdd === undefined) {
-                grantsToAdd = config.defaultRequiredGrants;
+            if (claimsToAdd === undefined) {
+                claimsToAdd = config.defaultRequiredClaims;
             }
 
-            let sessionGrants: GrantPayloadType = {};
-            for (const grant of grantsToAdd) {
-                const value = grant.fetchGrant(userId, {});
-                grant.addToGrantPayload(sessionGrants, value, {});
+            let sessionClaims: SessionClaimPayloadType = {};
+            let finalAccessTokenPayload = accessTokenPayload;
+
+            const userContext = {};
+
+            for (const claim of claimsToAdd) {
+                const value = claim.fetch(userId, userContext);
+                claim.addToPayload(sessionClaims, value, userContext);
+                if (claim.updateAccessTokenPayload) {
+                    finalAccessTokenPayload = claim.updateAccessTokenPayload(
+                        finalAccessTokenPayload,
+                        value,
+                        userContext
+                    );
+                }
             }
-            let response = await SessionFunctions.createNewSession(helpers, userId, accessTokenPayload, sessionData);
+            let response = await SessionFunctions.createNewSession(
+                helpers,
+                userId,
+                finalAccessTokenPayload,
+                sessionData
+            );
             attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
             return new Session(
                 helpers,
@@ -136,7 +152,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                response.session.grants,
+                response.session.claims,
                 res
             );
         },
@@ -216,7 +232,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                         response.session.userId,
                         response.accessToken.expiry,
                         response.session.userDataInJWT,
-                        response.session.grants
+                        response.session.claims
                     );
                     attachAccessTokenToCookie(config, res, response.accessToken.token, response.accessToken.expiry);
                     accessToken = response.accessToken.token;
@@ -227,7 +243,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     response.session.handle,
                     response.session.userId,
                     response.session.userDataInJWT,
-                    response.session.grants,
+                    response.session.claims,
                     res
                 );
             } catch (err) {
@@ -287,7 +303,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     response.session.handle,
                     response.session.userId,
                     response.session.userDataInJWT,
-                    response.session.grants,
+                    response.session.claims,
                     res
                 );
             } catch (err) {
@@ -306,7 +322,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             input: {
                 accessToken: string;
                 newAccessTokenPayload?: any;
-                newGrants?: GrantPayloadType;
+                newClaimPayload?: SessionClaimPayloadType;
                 userContext: any;
             }
         ): Promise<{
@@ -315,7 +331,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 handle: string;
                 userId: string;
                 userDataInJWT: any;
-                grants: GrantPayloadType;
+                claims: SessionClaimPayloadType;
             };
             accessToken?: {
                 token: string;
@@ -330,7 +346,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/session/regenerate"), {
                 accessToken: input.accessToken,
                 userDataInJWT: newAccessTokenPayload,
-                grants: input.newGrants ?? {},
+                claims: input.newClaimPayload ?? {},
             });
             if (response.status === "UNAUTHORISED") {
                 throw new STError({
@@ -377,8 +393,14 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
         },
 
-        updateSessionGrants: function ({ sessionHandle, grants }: { sessionHandle: string; grants: GrantPayloadType }) {
-            return SessionFunctions.updateSessionGrants(helpers, sessionHandle, grants);
+        updateSessionClaims: function ({
+            sessionHandle,
+            claims,
+        }: {
+            sessionHandle: string;
+            claims: SessionClaimPayloadType;
+        }) {
+            return SessionFunctions.updateSessionClaims(helpers, sessionHandle, claims);
         },
 
         getAccessTokenLifeTimeMS: async function (): Promise<number> {

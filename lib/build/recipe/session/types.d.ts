@@ -31,7 +31,7 @@ export declare type CreateOrRefreshAPIResponse = {
         handle: string;
         userId: string;
         userDataInJWT: any;
-        grants: GrantPayloadType;
+        claims: SessionClaimPayloadType;
     };
     accessToken: {
         token: string;
@@ -59,7 +59,7 @@ export declare const InputSchemaErrorHandlers: {
         onTokenTheftDetected: {
             type: string;
         };
-        onMissingGrant: {
+        onMissingClaim: {
             type: string;
         };
     };
@@ -68,7 +68,7 @@ export declare const InputSchemaErrorHandlers: {
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
-    onMissingGrant: ErrorHandlerMiddleware;
+    onMissingClaim: ErrorHandlerMiddleware;
 }
 export declare type TypeInput = {
     cookieSecure?: boolean;
@@ -77,8 +77,8 @@ export declare type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    defaultRequiredGrants?: Grant<any>[];
-    missingGrantStatusCode?: number;
+    defaultRequiredClaims?: SessionClaim<any>[];
+    missingClaimStatusCode?: number;
     jwt?:
         | {
               enable: true;
@@ -140,7 +140,7 @@ export declare const InputSchema: {
                 onTokenTheftDetected: {
                     type: string;
                 };
-                onMissingGrant: {
+                onMissingClaim: {
                     type: string;
                 };
             };
@@ -166,8 +166,8 @@ export declare type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    defaultRequiredGrants: Grant<any>[];
-    missingGrantStatusCode: number;
+    defaultRequiredClaims: SessionClaim<any>[];
+    missingClaimStatusCode: number;
     jwt: {
         enable: boolean;
         propertyNameInAccessTokenPayload: string;
@@ -210,19 +210,19 @@ export interface ErrorHandlerMiddleware {
 export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
-export interface MissingGrantErrorHandlerMiddleware {
-    (grantId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
+export interface MissingClaimErrorHandlerMiddleware {
+    (claimId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
     onTryRefreshToken: ErrorHandlerMiddleware;
     onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
-    onMissingGrant: MissingGrantErrorHandlerMiddleware;
+    onMissingClaim: MissingClaimErrorHandlerMiddleware;
 }
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
-    requiredGrants?: Grant<any>[];
+    requiredClaims?: SessionClaim<any>[];
 }
 export declare type RecipeInterface = {
     createNewSession(input: {
@@ -230,7 +230,7 @@ export declare type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
-        grantsToAdd?: Grant<any>[];
+        claimsToAdd?: SessionClaim<any>[];
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getSession(input: {
@@ -251,7 +251,11 @@ export declare type RecipeInterface = {
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
     updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<void>;
-    updateSessionGrants(input: { sessionHandle: string; grants: GrantPayloadType; userContext: any }): Promise<void>;
+    updateSessionClaims(input: {
+        sessionHandle: string;
+        claims: SessionClaimPayloadType;
+        userContext: any;
+    }): Promise<void>;
     updateAccessTokenPayload(input: {
         sessionHandle: string;
         newAccessTokenPayload: any;
@@ -260,7 +264,7 @@ export declare type RecipeInterface = {
     regenerateAccessToken(input: {
         accessToken: string;
         newAccessTokenPayload?: any;
-        newGrants?: GrantPayloadType;
+        newClaimPayload?: SessionClaimPayloadType;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -268,7 +272,7 @@ export declare type RecipeInterface = {
             handle: string;
             userId: string;
             userDataInJWT: any;
-            grants: GrantPayloadType;
+            claims: SessionClaimPayloadType;
         };
         accessToken?: {
             token: string;
@@ -285,18 +289,18 @@ export interface SessionContainerInterface {
     updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
-    getSessionGrants(userContext?: any): any;
+    getSessionClaims(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAccessToken(userContext?: any): string;
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
-    updateSessionGrants(newAccessTokenPayload: any, userContext?: any): Promise<void>;
+    updateSessionClaims(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
-    shouldRefetchGrant(grant: Grant<any>, userContext?: any): Awaitable<boolean>;
-    fetchGrant(grant: Grant<any>, userContext?: any): Awaitable<void>;
-    checkGrantInToken(grant: Grant<any>, userContext?: any): Awaitable<boolean>;
-    addGrant<T>(grant: Grant<T>, value: T, userContext?: any): Promise<void>;
-    removeGrant<T>(grant: Grant<T>, userContext?: any): Promise<void>;
+    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
+    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void>;
+    checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
+    addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
+    removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -326,46 +330,46 @@ export declare type SessionInformation = {
     sessionHandle: string;
     userId: string;
     sessionData: any;
-    grants: GrantPayloadType;
+    claims: SessionClaimPayloadType;
     expiry: number;
     accessTokenPayload: any;
     timeCreated: number;
 };
-export declare type GrantPayloadType = Record<string, JSONObject>;
-export declare abstract class Grant<T> {
+export declare type SessionClaimPayloadType = Record<string, JSONObject>;
+export declare abstract class SessionClaim<T> {
     readonly id: string;
     constructor(id: string);
     /**
-     * This methods fetches the current value of this grant for an arbitrary session of the user based on a DB or whatever outside source.
-     * The undefined return value signifies that we don't want to update the grant payload. This can happen for example with MFA where
-     * we don't want to add the grant to the session
+     * This methods fetches the current value of this claim for the user.
+     * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
+     * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
-    abstract fetchGrant(userId: string, userContext: any): Awaitable<T | undefined>;
+    abstract fetch(userId: string, userContext: any): Awaitable<T | undefined>;
     /**
-     * Decides if we need to refetch the grant value before checking the payload with `isGrantValid`.
+     * Decides if we need to refetch the claim value before checking the payload with `isValid`.
      * E.g.: if the information in the payload is expired, or is not sufficient for this check.
      */
-    abstract shouldRefetchGrant(grantPayload: any, userContext: any): Awaitable<boolean>;
+    abstract shouldRefetch(payload: SessionClaimPayloadType, userContext: any): Awaitable<boolean>;
     /**
-     * Decides if the grant is valid based on the grant payload (and not checking DB or anything else)
+     * Decides if the claim is valid based on the payload (and not checking DB or anything else)
      */
-    abstract isGrantValid(grantPayload: any, userContext: any): Awaitable<boolean>;
+    abstract isValid(payload: SessionClaimPayloadType, userContext: any): Awaitable<boolean>;
     /**
-     * Saves the provided value into the grantPayload, by cloning and updating the payload object.
+     * Saves the provided value into the payload, by cloning and updating the entire object.
      *
      * @returns The modified payload object
      */
-    abstract addToGrantPayload(grantPayload: GrantPayloadType, value: T, userContext: any): GrantPayloadType;
+    abstract addToPayload(payload: SessionClaimPayloadType, value: T, userContext: any): SessionClaimPayloadType;
     /**
-     * Saves the provided value into the grantPayload, by cloning and updating the payload object.
+     * Removes the claim from the payload, by cloning and updating the entire object.
      *
      * @returns The modified payload object
      */
-    abstract updateAccessTokenPayload?(grantPayload: GrantPayloadType, value: T, userContext: any): GrantPayloadType;
+    abstract removeFromPayload(payload: SessionClaimPayloadType, userContext: any): SessionClaimPayloadType;
     /**
-     * Removes the grant from the grantPayload, by cloning and updating the payload object.
+     * Updates the access token with the provided value, by cloning and updating the entire access token payload object.
      *
      * @returns The modified payload object
      */
-    abstract removeFromGrantPayload(grantPayload: GrantPayloadType, userContext: any): GrantPayloadType;
+    abstract updateAccessTokenPayload?(payload: JSONObject, value: T, userContext: any): JSONObject;
 }

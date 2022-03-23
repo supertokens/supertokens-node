@@ -1,27 +1,27 @@
 // @ts-nocheck
 import { Awaitable, JSONValue } from "../../types";
-import { Grant, GrantPayloadType } from "./types";
-export declare abstract class PrimitiveGrant<T extends JSONValue> implements Grant<T> {
+import { SessionClaim, SessionClaimPayloadType } from "./types";
+export declare abstract class PrimitiveClaim<T extends JSONValue> implements SessionClaim<T> {
     readonly id: string;
     constructor(id: string);
-    abstract fetchGrant(userId: string, userContext: any): Awaitable<T | undefined>;
-    abstract shouldRefetchGrant(grantPayload: any, userContext: any): Awaitable<boolean>;
-    abstract isGrantValid(grantPayload: any, userContext: any): Awaitable<boolean>;
-    addToGrantPayload(grantPayload: GrantPayloadType, value: T, _userContext: any): GrantPayloadType;
-    removeFromGrantPayload(grantPayload: GrantPayloadType, _userContext: any): GrantPayloadType;
+    abstract fetch(userId: string, userContext: any): Awaitable<T | undefined>;
+    abstract shouldRefetch(payload: SessionClaimPayloadType, userContext: any): Awaitable<boolean>;
+    abstract isValid(payload: SessionClaimPayloadType, userContext: any): Awaitable<boolean>;
+    addToPayload(payload: SessionClaimPayloadType, value: T, _userContext: any): SessionClaimPayloadType;
+    removeFromPayload(payload: SessionClaimPayloadType, _userContext: any): SessionClaimPayloadType;
 }
-export declare class BooleanGrant extends PrimitiveGrant<boolean> {
-    readonly shouldRefetchGrant: Grant<boolean>["shouldRefetchGrant"];
-    readonly fetchGrant: Grant<boolean>["fetchGrant"];
+export declare class BooleanClaim extends PrimitiveClaim<boolean> {
+    readonly shouldRefetch: SessionClaim<boolean>["shouldRefetch"];
+    readonly fetch: SessionClaim<boolean>["fetch"];
     constructor(conf: {
         id: string;
-        fetchGrant: Grant<boolean>["fetchGrant"];
-        shouldRefetchGrant: Grant<boolean>["shouldRefetchGrant"];
+        fetch: SessionClaim<boolean>["fetch"];
+        shouldRefetch: SessionClaim<boolean>["shouldRefetch"];
     });
-    isGrantValid(grantPayload: GrantPayloadType, _userContext: any): Awaitable<boolean>;
+    isValid(payload: SessionClaimPayloadType, _userContext: any): Awaitable<boolean>;
 }
-export declare class ManualBooleanGrant extends BooleanGrant {
+export declare class ManualBooleanClaim extends BooleanClaim {
     private conf;
     constructor(conf: { id: string; expirationTimeInSeconds?: number });
-    isGrantValid(grantPayload: GrantPayloadType, userContext: any): Awaitable<boolean>;
+    isValid(payload: SessionClaimPayloadType, userContext: any): Awaitable<boolean>;
 }

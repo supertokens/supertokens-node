@@ -15,7 +15,7 @@
 import { BaseResponse } from "../../framework";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
-import { Grant, GrantPayloadType, SessionContainerInterface } from "./types";
+import { SessionClaim, SessionClaimPayloadType, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 import { Awaitable } from "../../types";
 
@@ -23,7 +23,7 @@ export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
     protected userId: string;
     protected userDataInAccessToken: any;
-    protected grants: GrantPayloadType;
+    protected claims: SessionClaimPayloadType;
     protected res: BaseResponse;
     protected accessToken: string;
     protected helpers: Helpers;
@@ -34,7 +34,7 @@ export default class Session implements SessionContainerInterface {
         sessionHandle: string,
         userId: string,
         userDataInAccessToken: any,
-        grants: GrantPayloadType,
+        claims: SessionClaimPayloadType,
         res: BaseResponse
     ) {
         this.sessionHandle = sessionHandle;
@@ -42,7 +42,7 @@ export default class Session implements SessionContainerInterface {
         this.userDataInAccessToken = userDataInAccessToken;
         this.res = res;
         this.accessToken = accessToken;
-        this.grants = grants;
+        this.claims = claims;
         this.helpers = helpers;
     }
 
@@ -104,17 +104,17 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     };
 
-    updateSessionGrants = async (newGrants: GrantPayloadType, userContext?: any) => {
+    updateSessionClaims = async (newClaimPayload: SessionClaimPayloadType, userContext?: any) => {
         try {
             let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
                 accessToken: this.getAccessToken(),
                 newAccessTokenPayload: this.getAccessTokenPayload(),
-                newGrants,
+                newClaimPayload,
                 userContext: userContext === undefined ? {} : userContext,
             });
             // We update both, because the ones in the response are the latest for both
             this.userDataInAccessToken = response.session.userDataInJWT;
-            this.grants = response.session.grants;
+            this.claims = response.session.claims;
             if (response.accessToken !== undefined) {
                 this.accessToken = response.accessToken.token;
                 setFrontTokenInHeaders(
@@ -122,7 +122,7 @@ export default class Session implements SessionContainerInterface {
                     response.session.userId,
                     response.accessToken.expiry,
                     response.session.userDataInJWT,
-                    response.session.grants
+                    response.session.claims
                 );
                 attachAccessTokenToCookie(
                     this.helpers.config,
@@ -148,7 +148,7 @@ export default class Session implements SessionContainerInterface {
             });
             // We update both, because the ones in the response are the latest for both
             this.userDataInAccessToken = response.session.userDataInJWT;
-            this.grants = response.session.grants;
+            this.claims = response.session.claims;
             if (response.accessToken !== undefined) {
                 this.accessToken = response.accessToken.token;
                 setFrontTokenInHeaders(
@@ -156,7 +156,7 @@ export default class Session implements SessionContainerInterface {
                     response.session.userId,
                     response.accessToken.expiry,
                     response.session.userDataInJWT,
-                    response.session.grants
+                    response.session.claims
                 );
                 attachAccessTokenToCookie(
                     this.helpers.config,
@@ -205,31 +205,34 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    getSessionGrants() {
-        return this.grants;
+    getSessionClaims() {
+        return this.claims;
     }
-    shouldRefetchGrant(grant: Grant<any>, userContext?: any): Awaitable<boolean> {
-        return grant.shouldRefetchGrant(this.getSessionGrants(), userContext);
+    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void> {
+        return claim.fetch(this.getUserId(), userContext);
     }
-    async fetchGrant(grant: Grant<any>, userContext?: any): Promise<void> {
-        const value = await grant.fetchGrant(this.getUserId(), userContext);
+    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean> {
+        return claim.shouldRefetch(this.getSessionClaims(), userContext);
+    }
+    async updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
+        const value = await claim.fetch(this.getUserId(), userContext);
         if (value !== undefined) {
-            const newGrantPayload = grant.addToGrantPayload(this.getSessionGrants(), value, userContext);
+            const newSessionClaimPayload = claim.addToPayload(this.getSessionClaims(), value, userContext);
 
-            await this.updateSessionGrants(newGrantPayload, userContext);
+            await this.updateSessionClaims(newSessionClaimPayload, userContext);
         }
     }
-    checkGrantInToken(grant: Grant<any>, userContext?: any): Awaitable<boolean> {
-        return grant.isGrantValid(this.getSessionGrants(), userContext);
+    checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean> {
+        return claim.isValid(this.getSessionClaims(), userContext);
     }
-    async addGrant<T>(grant: Grant<T>, value: T, userContext?: any): Promise<void> {
-        const newGrantPayload = grant.addToGrantPayload(this.getSessionGrants(), value, userContext);
+    async addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> {
+        const newSessionClaimPayload = claim.addToPayload(this.getSessionClaims(), value, userContext);
 
-        await this.updateSessionGrants(newGrantPayload, userContext);
+        await this.updateSessionClaims(newSessionClaimPayload, userContext);
     }
-    async removeGrant<T>(grant: Grant<T>, userContext?: any): Promise<void> {
-        const newGrantPayload = grant.removeFromGrantPayload(this.getSessionGrants(), userContext);
+    async removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
+        const newSessionClaimPayload = claim.removeFromPayload(this.getSessionClaims(), userContext);
 
-        await this.updateSessionGrants(newGrantPayload, userContext);
+        await this.updateSessionClaims(newSessionClaimPayload, userContext);
     }
 }

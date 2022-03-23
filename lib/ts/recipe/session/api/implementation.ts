@@ -51,31 +51,31 @@ export default function getAPIInterface(): APIInterface {
                 return undefined;
             }
 
-            const originalPayload = res.getSessionGrants(userContext);
+            const originalPayload = res.getSessionClaims(userContext);
             let updatedPayload = originalPayload;
 
-            const reqGrants = verifySessionOptions?.requiredGrants ?? options.config.defaultRequiredGrants;
-            for (const grant of reqGrants) {
-                if (await grant.shouldRefetchGrant(updatedPayload, userContext)) {
-                    const value = await grant.fetchGrant(res.getUserId(userContext), userContext);
+            const reqClaims = verifySessionOptions?.requiredClaims ?? options.config.defaultRequiredClaims;
+            for (const claim of reqClaims) {
+                if (await claim.shouldRefetch(updatedPayload, userContext)) {
+                    const value = await claim.fetch(res.getUserId(userContext), userContext);
                     if (value !== undefined) {
-                        updatedPayload = grant.addToGrantPayload(updatedPayload, value, userContext);
+                        updatedPayload = claim.addToPayload(updatedPayload, value, userContext);
                     }
                 }
-                if (!(await grant.isGrantValid(updatedPayload, userContext))) {
+                if (!(await claim.isValid(updatedPayload, userContext))) {
                     throw new STError({
-                        message: "Grant validation failed",
+                        message: "Claim validation failed",
                         payload: {
-                            grantId: grant.id,
+                            claimId: claim.id,
                         },
-                        type: STError.MISSING_GRANT,
+                        type: STError.MISSING_CLAIM,
                     });
                 }
             }
 
-            // TODO(grants): do we need to check if addToGrant updated? (e.g.: adding a return val for that in addToGrantPayload)
+            // TODO(claims): do we need to check if addToPayload updated? (e.g.: adding a return val for that in addToPayload)
             if (originalPayload !== updatedPayload) {
-                res.updateSessionGrants(updatedPayload, userContext);
+                res.updateSessionClaims(updatedPayload, userContext);
             }
 
             return res;
