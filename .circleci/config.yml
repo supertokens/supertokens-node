@@ -35,7 +35,7 @@ jobs:
             - checkout
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: apt-get install lsof
-            - run: npm i -d
+            - run: npm i -d --force
             - run: (cd .circleci/ && ./doUnitTests.sh)
             - slack/status
     test-website:
@@ -49,7 +49,7 @@ jobs:
             - checkout
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: apt-get install lsof
-            - run: npm i -d
+            - run: npm i -d --force
             - run: (cd .circleci/ && ./website.sh)
             - slack/status
     test-authreact:
@@ -63,7 +63,7 @@ jobs:
             - checkout
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: apt-get install lsof
-            - run: npm i -d
+            - run: npm i -d --force
             - run: (cd .circleci/ && ./authReact.sh)
             - slack/status
     test-success:

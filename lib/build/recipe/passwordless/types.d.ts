@@ -257,7 +257,7 @@ export declare type RecipeInterface = {
         userContext: any;
     }) => Promise<DeviceType | undefined>;
 };
-declare type DeviceType = {
+export declare type DeviceType = {
     preAuthSessionId: string;
     failedCodeInputAttemptCount: number;
     email?: string;
@@ -380,4 +380,3 @@ export declare type TypePasswordlessEmailDeliveryTypeInput = {
     preAuthSessionId: string;
     userContext: any;
 };
-export {};

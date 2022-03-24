@@ -336,7 +336,7 @@ export type RecipeInterface = {
     }) => Promise<DeviceType | undefined>;
 };
 
-type DeviceType = {
+export type DeviceType = {
     preAuthSessionId: string;
 
     failedCodeInputAttemptCount: number;
