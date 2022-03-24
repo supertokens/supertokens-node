@@ -104,73 +104,8 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     };
 
-    updateSessionClaims = async (newClaimPayload: SessionClaimPayloadType, userContext?: any) => {
-        try {
-            let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
-                accessToken: this.getAccessToken(),
-                newAccessTokenPayload: this.getAccessTokenPayload(),
-                newClaimPayload,
-                userContext: userContext === undefined ? {} : userContext,
-            });
-            // We update both, because the ones in the response are the latest for both
-            this.userDataInAccessToken = response.session.userDataInJWT;
-            this.claims = response.session.claims;
-            if (response.accessToken !== undefined) {
-                this.accessToken = response.accessToken.token;
-                setFrontTokenInHeaders(
-                    this.res,
-                    response.session.userId,
-                    response.accessToken.expiry,
-                    response.session.userDataInJWT,
-                    response.session.claims
-                );
-                attachAccessTokenToCookie(
-                    this.helpers.config,
-                    this.res,
-                    response.accessToken.token,
-                    response.accessToken.expiry
-                );
-            }
-        } catch (err) {
-            if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.helpers.config, this.res);
-            }
-            throw err;
-        }
-    };
-
     updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any) => {
-        try {
-            let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
-                accessToken: this.getAccessToken(),
-                newAccessTokenPayload,
-                userContext: userContext === undefined ? {} : userContext,
-            });
-            // We update both, because the ones in the response are the latest for both
-            this.userDataInAccessToken = response.session.userDataInJWT;
-            this.claims = response.session.claims;
-            if (response.accessToken !== undefined) {
-                this.accessToken = response.accessToken.token;
-                setFrontTokenInHeaders(
-                    this.res,
-                    response.session.userId,
-                    response.accessToken.expiry,
-                    response.session.userDataInJWT,
-                    response.session.claims
-                );
-                attachAccessTokenToCookie(
-                    this.helpers.config,
-                    this.res,
-                    response.accessToken.token,
-                    response.accessToken.expiry
-                );
-            }
-        } catch (err) {
-            if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.helpers.config, this.res);
-            }
-            throw err;
-        }
+        await this.regenerateToken(newAccessTokenPayload, undefined, userContext);
     };
 
     getTimeCreated = async (userContext?: any): Promise<number> => {
@@ -205,34 +140,92 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    getSessionClaims() {
+    getSessionClaimPayload() {
         return this.claims;
     }
-    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void> {
-        return claim.fetch(this.getUserId(), userContext);
-    }
-    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean> {
-        return claim.shouldRefetch(this.getSessionClaims(), userContext);
-    }
-    async updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
-        const value = await claim.fetch(this.getUserId(), userContext);
-        if (value !== undefined) {
-            const newSessionClaimPayload = claim.addToPayload(this.getSessionClaims(), value, userContext);
 
-            await this.updateSessionClaims(newSessionClaimPayload, userContext);
+    async updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
+        await this.updateClaims([claim], userContext);
+    }
+
+    async updateClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void> {
+        const origSessionClaimPayloadJSON = JSON.stringify(this.getSessionClaimPayload());
+
+        let newSessionClaimPayload = this.getSessionClaimPayload();
+        for (const claim of claims) {
+            const value = await claim.fetch(this.getUserId(), userContext);
+            if (value !== undefined) {
+                newSessionClaimPayload = claim.addToPayload(this.getSessionClaimPayload(), value, userContext);
+            }
+        }
+
+        if (JSON.stringify(newSessionClaimPayload) !== origSessionClaimPayloadJSON) {
+            await this.regenerateToken(undefined, newSessionClaimPayload, userContext);
         }
     }
     checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean> {
-        return claim.isValid(this.getSessionClaims(), userContext);
+        return claim.isValid(this.getSessionClaimPayload(), userContext);
     }
     async addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> {
-        const newSessionClaimPayload = claim.addToPayload(this.getSessionClaims(), value, userContext);
+        const newSessionClaimPayload = claim.addToPayload(this.getSessionClaimPayload(), value, userContext);
 
-        await this.updateSessionClaims(newSessionClaimPayload, userContext);
+        let newAccessTokenPayload;
+        if (this.helpers.config.jwt.enable && claim.updateAccessTokenPayload) {
+            newAccessTokenPayload = claim.updateAccessTokenPayload(this.getAccessTokenPayload(), value, userContext);
+        }
+        await this.regenerateToken(newAccessTokenPayload, newSessionClaimPayload, userContext);
     }
     async removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
-        const newSessionClaimPayload = claim.removeFromPayload(this.getSessionClaims(), userContext);
+        const newSessionClaimPayload = claim.removeFromPayload(this.getSessionClaimPayload(), userContext);
 
-        await this.updateSessionClaims(newSessionClaimPayload, userContext);
+        let newAccessTokenPayload;
+        if (this.helpers.config.jwt.enable && claim.updateAccessTokenPayload) {
+            newAccessTokenPayload = claim.updateAccessTokenPayload(
+                this.getAccessTokenPayload(),
+                undefined,
+                userContext
+            );
+        }
+
+        await this.regenerateToken(newAccessTokenPayload, newSessionClaimPayload, userContext);
+    }
+
+    public async regenerateToken(
+        newAccessTokenPayload: any | undefined,
+        newClaimPayload: SessionClaimPayloadType | undefined,
+        userContext: any
+    ) {
+        try {
+            let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
+                accessToken: this.getAccessToken(),
+                newAccessTokenPayload,
+                newClaimPayload,
+                userContext: userContext === undefined ? {} : userContext,
+            });
+            // We update both, because the ones in the response are the latest for both
+            this.userDataInAccessToken = response.session.userDataInJWT;
+            this.claims = response.session.claims;
+            if (response.accessToken !== undefined) {
+                this.accessToken = response.accessToken.token;
+                setFrontTokenInHeaders(
+                    this.res,
+                    response.session.userId,
+                    response.accessToken.expiry,
+                    response.session.userDataInJWT,
+                    response.session.claims
+                );
+                attachAccessTokenToCookie(
+                    this.helpers.config,
+                    this.res,
+                    response.accessToken.token,
+                    response.accessToken.expiry
+                );
+            }
+        } catch (err) {
+            if (err.type === STError.UNAUTHORISED) {
+                clearSessionFromCookie(this.helpers.config, this.res);
+            }
+            throw err;
+        }
     }
 }

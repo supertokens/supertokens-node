@@ -16,7 +16,7 @@ import * as JsonWebToken from "jsonwebtoken";
 
 import { RecipeInterface } from "../";
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionContainerInterface, TypeNormalisedInput, VerifySessionOptions } from "../types";
+import { SessionClaim, SessionContainerInterface, TypeNormalisedInput, VerifySessionOptions } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import SessionClassWithJWT from "./sessionClass";
 import * as assert from "assert";
@@ -49,17 +49,31 @@ export default function (
             userId,
             accessTokenPayload,
             sessionData,
+            claimsToAdd,
             userContext,
         }: {
             res: any;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
+            claimsToAdd?: SessionClaim<any>[];
             userContext: any;
         }): Promise<SessionContainerInterface> {
+            if (claimsToAdd === undefined) {
+                claimsToAdd = config.defaultRequiredClaims;
+            }
             accessTokenPayload =
                 accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS({ userContext })) / 1000);
+
+            // TODO (sessionclaims): we should be doing this once...
+            for (const claim of claimsToAdd) {
+                const value = claim.fetch(userId, userContext);
+                if (claim.updateAccessTokenPayload) {
+                    accessTokenPayload = claim.updateAccessTokenPayload(accessTokenPayload, value, userContext);
+                }
+            }
+
             accessTokenPayload = await addJWTToAccessTokenPayload({
                 accessTokenPayload,
                 jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),

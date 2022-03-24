@@ -16,7 +16,7 @@ import * as JsonWebToken from "jsonwebtoken";
 import * as assert from "assert";
 
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionClaim, SessionContainerInterface } from "../types";
+import { SessionClaim, SessionClaimPayloadType, SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import { addJWTToAccessTokenPayload } from "./utils";
 import { Awaitable } from "../../../types";
@@ -56,29 +56,78 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     getExpiry = (userContext?: any): Promise<number> => {
         return this.originalSessionClass.getExpiry(userContext);
     };
-    getSessionClaims(userContext?: any) {
-        return this.originalSessionClass.getSessionClaims(userContext);
-    }
-    updateSessionClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void> {
-        return this.originalSessionClass.updateSessionClaims(claims, userContext);
-    }
-    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean> {
-        return this.originalSessionClass.shouldRefetchClaim(claim, userContext);
-    }
-    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void> {
-        return this.originalSessionClass.fetchClaim(claim, userContext);
-    }
-    checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean> {
-        return this.originalSessionClass.checkClaimInToken(claim, userContext);
-    }
-    addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> {
-        return this.originalSessionClass.addClaim(claim, value, userContext);
-    }
-    removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
-        return this.originalSessionClass.removeClaim(claim, userContext);
-    }
+    getSessionClaimPayload = (userContext?: any): SessionClaimPayloadType => {
+        return this.originalSessionClass.getSessionClaimPayload(userContext);
+    };
+
+    // These are re-implemented here, because they can update the access token payload
+    updateClaim = async (claim: SessionClaim<any>, userContext?: any): Promise<void> => {
+        await this.updateClaims([claim], userContext);
+    };
+
+    updateClaims = async (claims: SessionClaim<any>[], userContext?: any): Promise<void> => {
+        const origSessionClaimPayloadJSON = JSON.stringify(this.getSessionClaimPayload());
+        const origAccessTokenPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
+
+        let newSessionClaimPayload = this.getSessionClaimPayload();
+        let newAccessTokenPayload = this.getAccessTokenPayload();
+        for (const claim of claims) {
+            const value = await claim.fetch(this.getUserId(), userContext);
+            if (value !== undefined) {
+                newSessionClaimPayload = claim.addToPayload(this.getSessionClaimPayload(), value, userContext);
+            }
+            if (claim.updateAccessTokenPayload) {
+                newAccessTokenPayload = claim.updateAccessTokenPayload(
+                    this.getAccessTokenPayload(),
+                    value,
+                    userContext
+                );
+            }
+        }
+        const sessionClaimPayloadUpdate =
+            JSON.stringify(newSessionClaimPayload) !== origSessionClaimPayloadJSON ? newSessionClaimPayload : undefined;
+        const accessTokenPayloadUpdate =
+            JSON.stringify(newAccessTokenPayload) !== origAccessTokenPayloadJSON ? newAccessTokenPayload : undefined;
+        if (accessTokenPayloadUpdate !== undefined || sessionClaimPayloadUpdate !== undefined) {
+            await this.regenerateToken(accessTokenPayloadUpdate, sessionClaimPayloadUpdate, userContext);
+        }
+    };
+    checkClaimInToken = (claim: SessionClaim<any>, userContext?: any): Awaitable<boolean> => {
+        return claim.isValid(this.getSessionClaimPayload(), userContext);
+    };
+    addClaim = async <T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> => {
+        const newSessionClaimPayload = claim.addToPayload(this.getSessionClaimPayload(), value, userContext);
+
+        let newAccessTokenPayload;
+        if (claim.updateAccessTokenPayload) {
+            newAccessTokenPayload = claim.updateAccessTokenPayload(this.getAccessTokenPayload(), value, userContext);
+        }
+        await this.regenerateToken(newAccessTokenPayload, newSessionClaimPayload, userContext);
+    };
+    removeClaim = async <T>(claim: SessionClaim<T>, userContext?: any): Promise<void> => {
+        const newSessionClaimPayload = claim.removeFromPayload(this.getSessionClaimPayload(), userContext);
+
+        let newAccessTokenPayload;
+        if (claim.updateAccessTokenPayload) {
+            newAccessTokenPayload = claim.updateAccessTokenPayload(
+                this.getAccessTokenPayload(),
+                undefined,
+                userContext
+            );
+        }
+
+        await this.regenerateToken(newAccessTokenPayload, newSessionClaimPayload, userContext);
+    };
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any): Promise<void> => {
+        await this.originalSessionClass.regenerateToken(newAccessTokenPayload, undefined, userContext);
+    };
+
+    regenerateToken = async (
+        newAccessTokenPayload: any | undefined,
+        newClaimPayload: SessionClaimPayloadType | undefined,
+        userContext: any
+    ): Promise<void> => {
         newAccessTokenPayload =
             newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
         let accessTokenPayload = this.getAccessTokenPayload(userContext);
@@ -118,6 +167,6 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
             userContext,
         });
 
-        return await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload, userContext);
+        await this.originalSessionClass.regenerateToken(newAccessTokenPayload, newClaimPayload, userContext);
     };
 }

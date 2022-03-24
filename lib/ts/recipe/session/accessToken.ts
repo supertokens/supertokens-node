@@ -49,7 +49,7 @@ export async function getInfoFromAccessToken(
             refreshTokenHash1 === undefined ||
             userData === undefined ||
             (antiCsrfToken === undefined && doAntiCsrfCheck) ||
-            expiryTime === undefined || // TODO: maybe add claims here depending on the CDI version?
+            expiryTime === undefined ||
             timeCreated === undefined
         ) {
             // it would come here if we change the structure of the JWT.

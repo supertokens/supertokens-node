@@ -109,12 +109,14 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             accessTokenPayload = {},
             sessionData = {},
             claimsToAdd,
+            userContext,
         }: {
             res: any;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
             claimsToAdd?: SessionClaim<any>[];
+            userContext: any;
         }): Promise<Session> {
             if (!res.wrapperUsed) {
                 res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
@@ -126,11 +128,11 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             let sessionClaims: SessionClaimPayloadType = {};
             let finalAccessTokenPayload = accessTokenPayload;
 
-            const userContext = {};
-
             for (const claim of claimsToAdd) {
                 const value = claim.fetch(userId, userContext);
-                claim.addToPayload(sessionClaims, value, userContext);
+                if (value !== undefined) {
+                    claim.addToPayload(sessionClaims, value, userContext);
+                }
                 if (claim.updateAccessTokenPayload) {
                     finalAccessTokenPayload = claim.updateAccessTokenPayload(
                         finalAccessTokenPayload,

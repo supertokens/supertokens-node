@@ -289,15 +289,19 @@ export interface SessionContainerInterface {
     updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
-    getSessionClaims(userContext?: any): any;
+    getSessionClaimPayload(userContext?: any): SessionClaimPayloadType;
     getHandle(userContext?: any): string;
     getAccessToken(userContext?: any): string;
+    regenerateToken(
+        newAccessTokenPayload: any | undefined,
+        newClaimPayload: SessionClaimPayloadType | undefined,
+        userContext: any
+    ): Promise<void>;
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
-    updateSessionClaims(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
-    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
-    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void>;
+    updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
+    updateClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void>;
     checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
     addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
@@ -371,5 +375,5 @@ export declare abstract class SessionClaim<T> {
      *
      * @returns The modified payload object
      */
-    abstract updateAccessTokenPayload?(payload: JSONObject, value: T, userContext: any): JSONObject;
+    abstract updateAccessTokenPayload?(payload: JSONObject, value: T | undefined, userContext: any): JSONObject;
 }

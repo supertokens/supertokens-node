@@ -27,18 +27,18 @@ export default class Session implements SessionContainerInterface {
     getAccessTokenPayload: () => any;
     getHandle: () => string;
     getAccessToken: () => string;
-    updateSessionClaims: (
-        newClaimPayload: Record<string, import("../../types").JSONObject>,
-        userContext?: any
-    ) => Promise<void>;
     updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    getSessionClaims(): Record<string, import("../../types").JSONObject>;
-    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void>;
-    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
+    getSessionClaimPayload(): Record<string, import("../../types").JSONObject>;
     updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
+    updateClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void>;
     checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
     addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    regenerateToken(
+        newAccessTokenPayload: any | undefined,
+        newClaimPayload: SessionClaimPayloadType | undefined,
+        userContext: any
+    ): Promise<void>;
 }

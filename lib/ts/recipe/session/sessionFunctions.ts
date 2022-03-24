@@ -210,7 +210,7 @@ export async function getSession(
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
                 userDataInJWT: accessTokenInfo.userData,
-                claims: accessTokenInfo.sessionClaims,
+                claims: accessTokenInfo.sessionClaims !== undefined ? accessTokenInfo.sessionClaims : {},
             },
         };
     }
@@ -448,6 +448,7 @@ export async function updateAccessTokenPayload(helpers: Helpers, sessionHandle: 
     }
 }
 
+// TODO: we don't actually need this
 export async function updateSessionClaims(helpers: Helpers, sessionHandle: string, newClaimPayload: any) {
     newClaimPayload = newClaimPayload === null || newClaimPayload === undefined ? {} : newClaimPayload;
     const response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/claims"), {

@@ -26,6 +26,7 @@ import {
     attachRefreshTokenToCookie,
     setIdRefreshTokenInHeaderAndCookie,
     setAntiCsrfTokenInHeaders,
+    setMissingClaimIdHeader,
 } from "./cookieAndHeaders";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
@@ -63,8 +64,7 @@ export async function sendMissingClaimResponse(
     __: BaseRequest,
     response: BaseResponse
 ) {
-    // TODO(claims): check header name
-    response.setHeader("missing-claim-id", claimId, false);
+    setMissingClaimIdHeader(response, claimId);
     sendNon200Response(response, "missing claim", recipeInstance.config.missingClaimStatusCode);
 }
 

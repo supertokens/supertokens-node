@@ -315,26 +315,25 @@ export interface SessionContainerInterface {
     getUserId(userContext?: any): string;
 
     getAccessTokenPayload(userContext?: any): any;
-    getSessionClaims(userContext?: any): any;
+    getSessionClaimPayload(userContext?: any): SessionClaimPayloadType;
 
     getHandle(userContext?: any): string;
 
     getAccessToken(userContext?: any): string;
 
+    regenerateToken(
+        newAccessTokenPayload: any | undefined,
+        newClaimPayload: SessionClaimPayloadType | undefined,
+        userContext: any
+    ): Promise<void>;
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
-
-    // TODO(claims): I'm not sure if I'd want this to be on the user interface
-    // Ideally this is only used internally and the devs use the fetch/add/removeClaim methods.
-    updateSessionClaims(newAccessTokenPayload: any, userContext?: any): Promise<void>;
 
     getTimeCreated(userContext?: any): Promise<number>;
 
     getExpiry(userContext?: any): Promise<number>;
 
-    // TODO(claims): These 3 could be merged into a single function
-    // e.g.: checkClaim with a param setting if we should refetch the value
-    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
-    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void>;
+    updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
+    updateClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void>;
     checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
 
     addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
@@ -421,5 +420,5 @@ export abstract class SessionClaim<T> {
      *
      * @returns The modified payload object
      */
-    abstract updateAccessTokenPayload?(payload: JSONObject, value: T, userContext: any): JSONObject;
+    abstract updateAccessTokenPayload?(payload: JSONObject, value: T | undefined, userContext: any): JSONObject;
 }

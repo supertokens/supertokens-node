@@ -47,36 +47,12 @@ export default function getAPIInterface(): APIInterface {
                           options: verifySessionOptions,
                           userContext,
                       });
-            if (!res) {
+            if (res === undefined) {
                 return undefined;
             }
 
-            const originalPayload = res.getSessionClaims(userContext);
-            let updatedPayload = originalPayload;
-
             const reqClaims = verifySessionOptions?.requiredClaims ?? options.config.defaultRequiredClaims;
-            for (const claim of reqClaims) {
-                if (await claim.shouldRefetch(updatedPayload, userContext)) {
-                    const value = await claim.fetch(res.getUserId(userContext), userContext);
-                    if (value !== undefined) {
-                        updatedPayload = claim.addToPayload(updatedPayload, value, userContext);
-                    }
-                }
-                if (!(await claim.isValid(updatedPayload, userContext))) {
-                    throw new STError({
-                        message: "Claim validation failed",
-                        payload: {
-                            claimId: claim.id,
-                        },
-                        type: STError.MISSING_CLAIM,
-                    });
-                }
-            }
-
-            // TODO(claims): do we need to check if addToPayload updated? (e.g.: adding a return val for that in addToPayload)
-            if (originalPayload !== updatedPayload) {
-                res.updateSessionClaims(updatedPayload, userContext);
-            }
+            await res.updateClaims(reqClaims, userContext);
 
             return res;
         },

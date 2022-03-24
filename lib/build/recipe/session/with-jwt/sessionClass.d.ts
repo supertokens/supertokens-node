@@ -15,12 +15,16 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     getAccessToken: (userContext?: any) => string;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    getSessionClaims(userContext?: any): any;
-    updateSessionClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void>;
-    shouldRefetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
-    fetchClaim(claim: SessionClaim<any>, userContext?: any): Awaitable<void>;
-    checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
-    addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
-    removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    getSessionClaimPayload: (userContext?: any) => Record<string, import("../../../types").JSONObject>;
+    updateClaim: (claim: SessionClaim<any>, userContext?: any) => Promise<void>;
+    updateClaims: (claims: SessionClaim<any>[], userContext?: any) => Promise<void>;
+    checkClaimInToken: (claim: SessionClaim<any>, userContext?: any) => Awaitable<boolean>;
+    addClaim: <T>(claim: SessionClaim<T>, value: T, userContext?: any) => Promise<void>;
+    removeClaim: <T>(claim: SessionClaim<T>, userContext?: any) => Promise<void>;
     updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
+    regenerateToken: (
+        newAccessTokenPayload: any,
+        newClaimPayload: Record<string, import("../../../types").JSONObject> | undefined,
+        userContext: any
+    ) => Promise<void>;
 }

@@ -23,6 +23,7 @@ export declare function attachRefreshTokenToCookie(
     token: string,
     expiry: number
 ): void;
+export declare function setMissingClaimIdHeader(response: BaseResponse, claimId: string): void;
 export declare function getAccessTokenFromCookie(req: BaseRequest): string | undefined;
 export declare function getRefreshTokenFromCookie(req: BaseRequest): string | undefined;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;
