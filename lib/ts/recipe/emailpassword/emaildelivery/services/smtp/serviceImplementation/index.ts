@@ -13,21 +13,21 @@
  * under the License.
  */
 
-import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
+import { TypeEmailPasswordEmailDeliveryInput } from "../../../../types";
 import { Transporter } from "nodemailer";
 import {
     ServiceInterface,
     TypeInputSendRawEmail,
     GetContentResult,
-} from "../../../../../ingredients/emaildelivery/services/smtp";
-import getPasswordResetEmailContent from "./passwordReset";
-import { getServiceImplementation as getEmailVerificationServiceImplementation } from "../../../../emailverification/emaildelivery/services/smtp/serviceImplementation";
-import { getDerivedEV } from "./derivedEmailVerificationServiceImplementation";
+} from "../../../../../../ingredients/emaildelivery/services/smtp";
+import getPasswordResetEmailContent from "../passwordReset";
+import { getServiceImplementation as getEmailVerificationServiceImplementation } from "../../../../../emailverification/emaildelivery/services/smtp/serviceImplementation";
+import DerivedEV from "./emailVerificationServiceImplementation";
 
 export function getServiceImplementation(
     transporter: Transporter
 ): ServiceInterface<TypeEmailPasswordEmailDeliveryInput> {
-    let evSeriveImpl = getEmailVerificationServiceImplementation(transporter);
+    let emailVerificationSeriveImpl = getEmailVerificationServiceImplementation(transporter);
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
             await transporter.sendMail({
@@ -41,7 +41,7 @@ export function getServiceImplementation(
             input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }
         ): Promise<GetContentResult> {
             if (input.type === "EMAIL_VERIFICATION") {
-                return await evSeriveImpl.getContent.bind(getDerivedEV(this))(input);
+                return await emailVerificationSeriveImpl.getContent.bind(DerivedEV(this))(input);
             }
             return getPasswordResetEmailContent(input);
         },

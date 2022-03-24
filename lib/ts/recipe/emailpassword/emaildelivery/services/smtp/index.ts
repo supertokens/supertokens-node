@@ -19,12 +19,12 @@ import { createTransport } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 import { getServiceImplementation } from "./serviceImplementation";
 import EmailVerificationSMTPService from "../../../../emailverification/emaildelivery/services/smtp";
-import { getDerivedEV } from "./derivedEmailVerificationServiceImplementation";
+import getEmailVerificationServiceImplementation from "./serviceImplementation/emailVerificationServiceImplementation";
 
 export default class SMTPService implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;
     private config: TypeInput<TypeEmailPasswordEmailDeliveryInput>;
-    private evSMTPService: EmailVerificationSMTPService;
+    private emailVerificationSMTPService: EmailVerificationSMTPService;
 
     constructor(config: TypeInput<TypeEmailPasswordEmailDeliveryInput>) {
         this.config = config;
@@ -40,17 +40,17 @@ export default class SMTPService implements EmailDeliveryInterface<TypeEmailPass
         }
         this.serviceImpl = builder.build();
 
-        this.evSMTPService = new EmailVerificationSMTPService({
+        this.emailVerificationSMTPService = new EmailVerificationSMTPService({
             smtpSettings: this.config.smtpSettings,
             override: (_) => {
-                return getDerivedEV(this.serviceImpl);
+                return getEmailVerificationServiceImplementation(this.serviceImpl);
             },
         });
     }
 
     sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
         if (input.type === "EMAIL_VERIFICATION") {
-            return this.evSMTPService.sendEmail(input);
+            return this.emailVerificationSMTPService.sendEmail(input);
         }
         let content = await this.serviceImpl.getContent(input);
         await this.serviceImpl.sendRawEmail({

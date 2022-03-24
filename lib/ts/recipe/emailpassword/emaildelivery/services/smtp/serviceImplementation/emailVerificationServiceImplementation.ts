@@ -13,15 +13,15 @@
  * under the License.
  */
 
-import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
+import { TypeEmailPasswordEmailDeliveryInput } from "../../../../types";
 import {
     ServiceInterface,
     TypeInputSendRawEmail,
     GetContentResult,
-} from "../../../../../ingredients/emaildelivery/services/smtp";
-import { TypeEmailVerificationEmailDeliveryInput } from "../../../../emailverification/types";
+} from "../../../../../../ingredients/emaildelivery/services/smtp";
+import { TypeEmailVerificationEmailDeliveryInput } from "../../../../../emailverification/types";
 
-export function getDerivedEV(
+export default function getServiceInterface(
     emailPasswordServiceImplementation: ServiceInterface<TypeEmailPasswordEmailDeliveryInput>
 ): ServiceInterface<TypeEmailVerificationEmailDeliveryInput> {
     return {
