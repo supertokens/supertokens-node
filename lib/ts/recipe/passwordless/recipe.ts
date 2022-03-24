@@ -37,7 +37,7 @@ import {
     RESEND_CODE_API,
 } from "./constants";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { TypePasswordlessEmailDeliveryTypeInput } from "./types";
+import { TypePasswordlessEmailDeliveryInput } from "./types";
 // import SmsDeliveryRecipeImplementation from "./smsDelivery";
 // import SmsDeliveryRecipe from "../smsdelivery/recipe";
 // import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
@@ -54,7 +54,7 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
 
     // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 
@@ -64,7 +64,7 @@ export default class Recipe extends RecipeModule {
         isInServerlessEnv: boolean,
         config: TypeInput,
         ingredients: {
-            emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryTypeInput> | undefined;
+            emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput> | undefined;
         }
     ) {
         super(recipeId, appInfo);

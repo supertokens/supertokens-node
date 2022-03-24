@@ -12,37 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import {
-    ServiceInterface,
-    GetContentResult,
-    TypeInputSendRawEmail,
-    TypeInput as SMTPTypeInput,
-    getEmailServiceImplementation,
-} from "../../../../../ingredients/emaildelivery/services/smtp";
-import { Transporter } from "nodemailer";
+import { TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
+import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 import { TypeThirdPartyEmailDeliveryInput } from "../../../types";
-import getEmailVerifyEmailContent from "../../../../emailverification/emaildelivery/services/smtp/emailVerify";
+import EmailVerificationSMTPService from "../../../../emailverification/emaildelivery/services/smtp";
 
-export default function getSMTPService(config: SMTPTypeInput<TypeThirdPartyEmailDeliveryInput>) {
-    return getEmailServiceImplementation(config, getDefaultEmailServiceImplementation);
-}
+export default class SMTPService implements EmailDeliveryInterface<TypeThirdPartyEmailDeliveryInput> {
+    private emailVerificationSMTPService: EmailVerificationSMTPService;
 
-export function getDefaultEmailServiceImplementation(
-    transporter: Transporter
-): ServiceInterface<TypeThirdPartyEmailDeliveryInput> {
-    return {
-        sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            await transporter.sendMail({
-                from: `${input.from.name} <${input.from.email}>`,
-                to: input.toEmail,
-                subject: input.subject,
-                html: input.body,
-            });
-        },
-        getContent: async function (
-            input: TypeThirdPartyEmailDeliveryInput & { userContext: any }
-        ): Promise<GetContentResult> {
-            return getEmailVerifyEmailContent(input);
-        },
+    constructor(config: TypeInput<TypeThirdPartyEmailDeliveryInput>) {
+        this.emailVerificationSMTPService = new EmailVerificationSMTPService(config);
+    }
+
+    sendEmail = async (input: TypeThirdPartyEmailDeliveryInput & { userContext: any }) => {
+        await this.emailVerificationSMTPService.sendEmail(input);
     };
 }

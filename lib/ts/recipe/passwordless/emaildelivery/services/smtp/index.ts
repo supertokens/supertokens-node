@@ -12,37 +12,38 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import {
-    ServiceInterface,
-    GetContentResult,
-    TypeInputSendRawEmail,
-    TypeInput as SMTPTypeInput,
-    getEmailServiceImplementation,
-} from "../../../../../ingredients/emaildelivery/services/smtp";
-import { Transporter } from "nodemailer";
-import { TypePasswordlessEmailDeliveryTypeInput } from "../../../types";
-import getPasswordlessLoginEmailContent from "./passwordlessLogin";
+import { ServiceInterface, TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
+import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
+import { createTransport } from "nodemailer";
+import OverrideableBuilder from "supertokens-js-override";
+import { TypePasswordlessEmailDeliveryInput } from "../../../types";
+import { getServiceImplementation } from "./serviceImplementation";
 
-export default function getSMTPService(config: SMTPTypeInput<TypePasswordlessEmailDeliveryTypeInput>) {
-    return getEmailServiceImplementation(config, getDefaultEmailServiceImplementation);
-}
+export default class SMTPService implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
+    serviceImpl: ServiceInterface<TypePasswordlessEmailDeliveryInput>;
+    private config: TypeInput<TypePasswordlessEmailDeliveryInput>;
 
-export function getDefaultEmailServiceImplementation(
-    transporter: Transporter
-): ServiceInterface<TypePasswordlessEmailDeliveryTypeInput> {
-    return {
-        sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            await transporter.sendMail({
-                from: `${input.from.name} <${input.from.email}>`,
-                to: input.toEmail,
-                subject: input.subject,
-                html: input.body,
-            });
-        },
-        getContent: async function (
-            input: TypePasswordlessEmailDeliveryTypeInput & { userContext: any }
-        ): Promise<GetContentResult> {
-            return getPasswordlessLoginEmailContent(input);
-        },
+    constructor(config: TypeInput<TypePasswordlessEmailDeliveryInput>) {
+        this.config = config;
+        const transporter = createTransport({
+            host: config.smtpSettings.host,
+            port: config.smtpSettings.port,
+            auth: config.smtpSettings.auth,
+            secure: config.smtpSettings.secure,
+        });
+        let builder = new OverrideableBuilder(getServiceImplementation(transporter));
+        if (config.override !== undefined) {
+            builder = builder.override(config.override);
+        }
+        this.serviceImpl = builder.build();
+    }
+
+    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
+        let content = await this.serviceImpl.getContent(input);
+        await this.serviceImpl.sendRawEmail({
+            ...content,
+            ...input.userContext,
+            from: this.config.smtpSettings.from,
+        });
     };
 }
