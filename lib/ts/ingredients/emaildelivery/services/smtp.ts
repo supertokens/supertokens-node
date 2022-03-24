@@ -50,7 +50,7 @@ export type ServiceInterface<T> = {
 
 export type TypeInput<T> = {
     smtpSettings: SMTPServiceConfig;
-    override?: (oI: ServiceInterface<T>) => ServiceInterface<T>;
+    override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>;
 };
 
 export type TypeGetDefaultEmailServiceImplementation<T> = (
