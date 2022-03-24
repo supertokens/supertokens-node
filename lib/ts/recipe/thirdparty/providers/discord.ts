@@ -75,10 +75,13 @@ export default function Discord(config: TypeThirdPartyProviderDiscordConfig): Ty
             let userInfo = response.data;
             return {
                 id: userInfo.id,
-                email: {
-                    id: userInfo.email,
-                    isVerified: userInfo.verified,
-                },
+                email:
+                    userInfo.email === undefined
+                        ? undefined
+                        : {
+                              id: userInfo.email,
+                              isVerified: userInfo.verified,
+                          },
             };
         }
         return {

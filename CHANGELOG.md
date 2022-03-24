@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [9.1.1] - 2022-03-24
+
+### Fixes:
+
+-   Changes Github and Discord providers to check if email is `undefined` or not before assigning the email object to the profile info.
+
 ## [9.1.0] - 2022-03-17
 
 -   Added `ThirdPartyPasswordless` recipe + tests
