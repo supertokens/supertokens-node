@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypePasswordlessEmailDeliveryTypeInput } from "../../../types";
+import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 import axios from "axios";
 import { NormalisedAppinfo } from "../../../../../types";
@@ -51,7 +51,7 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
 }
 
 export default class BackwardCompatibilityService
-    implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryTypeInput> {
+    implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
     private createAndSendCustomEmail: (
         input: {
             // Where the message should be delivered.
@@ -92,7 +92,7 @@ export default class BackwardCompatibilityService
                 : createAndSendCustomEmail;
     }
 
-    sendEmail = async (input: TypePasswordlessEmailDeliveryTypeInput & { userContext: any }) => {
+    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
         await this.createAndSendCustomEmail(
             {
                 email: input.email,

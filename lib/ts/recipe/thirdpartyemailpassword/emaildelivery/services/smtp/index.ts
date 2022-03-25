@@ -12,41 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import {
-    ServiceInterface,
-    GetContentResult,
-    TypeInputSendRawEmail,
-    TypeInput as SMTPTypeInput,
-    getEmailServiceImplementation,
-} from "../../../../../ingredients/emaildelivery/services/smtp";
-import { Transporter } from "nodemailer";
+import { TypeInput } from "../../../../../ingredients/emaildelivery/services/smtp";
+import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 import { TypeThirdPartyEmailPasswordEmailDeliveryInput } from "../../../types";
-import getPasswordResetEmailContent from "../../../../emailpassword/emaildelivery/services/smtp/passwordReset";
-import getEmailVerifyEmailContent from "../../../../emailverification/emaildelivery/services/smtp/emailVerify";
+import EmailPasswordSMTPService from "../../../../emailpassword/emaildelivery/services/smtp";
 
-export default function getSMTPService(config: SMTPTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>) {
-    return getEmailServiceImplementation(config, getDefaultEmailServiceImplementation);
-}
+export default class SMTPService implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
+    private emailPasswordSMTPService: EmailPasswordSMTPService;
 
-export function getDefaultEmailServiceImplementation(
-    transporter: Transporter
-): ServiceInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
-    return {
-        sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            await transporter.sendMail({
-                from: `${input.from.name} <${input.from.email}>`,
-                to: input.toEmail,
-                subject: input.subject,
-                html: input.body,
-            });
-        },
-        getContent: async function (
-            input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }
-        ): Promise<GetContentResult> {
-            if (input.type === "EMAIL_VERIFICATION") {
-                return getEmailVerifyEmailContent(input);
-            }
-            return getPasswordResetEmailContent(input);
-        },
+    constructor(config: TypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>) {
+        this.emailPasswordSMTPService = new EmailPasswordSMTPService(config);
+    }
+
+    sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
+        await this.emailPasswordSMTPService.sendEmail(input);
     };
 }

@@ -12,12 +12,10 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypePasswordlessEmailDeliveryTypeInput } from "../../../types";
+import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
-export default function getPasswordlessLoginEmailContent(
-    input: TypePasswordlessEmailDeliveryTypeInput
-): GetContentResult {
+export default function getPasswordlessLoginEmailContent(input: TypePasswordlessEmailDeliveryInput): GetContentResult {
     let supertokens = Supertokens.getInstanceOrThrowError();
     let appName = supertokens.appInfo.appName;
     let body = getPasswordlessLoginEmailHTML(

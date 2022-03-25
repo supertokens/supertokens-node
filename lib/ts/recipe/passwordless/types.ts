@@ -55,7 +55,7 @@ export type TypeInput = (
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
-          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
+          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
           // Override to use custom template/contact method
           /**
            * @deprecated Please use emailDelivery config instead
@@ -79,7 +79,7 @@ export type TypeInput = (
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
-          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
+          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
           // Override to use custom template/contact method
           /**
            * @deprecated Please use emailDelivery config instead
@@ -216,7 +216,7 @@ export type TypeNormalisedInput = (
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
     // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
-    emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -358,7 +358,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryInput>;
     // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
 };
 
@@ -435,7 +435,7 @@ export type APIInterface = {
     }>;
 };
 
-export type TypePasswordlessEmailDeliveryTypeInput = {
+export type TypePasswordlessEmailDeliveryInput = {
     type: "PASSWORDLESS_LOGIN";
     email: string;
     userInputCode?: string;

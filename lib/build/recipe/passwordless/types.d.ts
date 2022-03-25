@@ -28,7 +28,7 @@ export declare type TypeInput = (
     | {
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
+          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
           /**
            * @deprecated Please use emailDelivery config instead
            */
@@ -46,7 +46,7 @@ export declare type TypeInput = (
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
+          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
           /**
            * @deprecated Please use emailDelivery config instead
            */
@@ -140,7 +140,7 @@ export declare type TypeNormalisedInput = (
         userContext: any
     ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-    emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -275,7 +275,7 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryTypeInput>;
+    emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryInput>;
 };
 export declare type APIInterface = {
     createCodePOST?: (
@@ -371,7 +371,7 @@ export declare type APIInterface = {
         exists: boolean;
     }>;
 };
-export declare type TypePasswordlessEmailDeliveryTypeInput = {
+export declare type TypePasswordlessEmailDeliveryInput = {
     type: "PASSWORDLESS_LOGIN";
     email: string;
     userInputCode?: string;
