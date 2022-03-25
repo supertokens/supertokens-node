@@ -22,16 +22,16 @@ import {
 import { TypePasswordlessEmailDeliveryInput } from "../../../../../passwordless/types";
 
 export default function getServiceInterface(
-    passwordlessServiceImplementation: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>
+    thirdpartyPasswordlessServiceImplementation: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>
 ): ServiceInterface<TypePasswordlessEmailDeliveryInput> {
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            return passwordlessServiceImplementation.sendRawEmail(input);
+            return thirdpartyPasswordlessServiceImplementation.sendRawEmail(input);
         },
         getContent: async function (
             input: TypePasswordlessEmailDeliveryInput & { userContext: any }
         ): Promise<GetContentResult> {
-            return await passwordlessServiceImplementation.getContent(input);
+            return await thirdpartyPasswordlessServiceImplementation.getContent(input);
         },
     };
 }

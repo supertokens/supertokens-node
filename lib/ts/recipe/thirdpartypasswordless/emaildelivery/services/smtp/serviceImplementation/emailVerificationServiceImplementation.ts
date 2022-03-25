@@ -22,16 +22,16 @@ import {
 import { TypeEmailVerificationEmailDeliveryInput } from "../../../../../emailverification/types";
 
 export default function getServiceInterface(
-    emailPasswordServiceImplementation: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>
+    thirdpartyPasswordlessServiceImplementation: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>
 ): ServiceInterface<TypeEmailVerificationEmailDeliveryInput> {
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            return emailPasswordServiceImplementation.sendRawEmail(input);
+            return thirdpartyPasswordlessServiceImplementation.sendRawEmail(input);
         },
         getContent: async function (
             input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }
         ): Promise<GetContentResult> {
-            return await emailPasswordServiceImplementation.getContent(input);
+            return await thirdpartyPasswordlessServiceImplementation.getContent(input);
         },
     };
 }

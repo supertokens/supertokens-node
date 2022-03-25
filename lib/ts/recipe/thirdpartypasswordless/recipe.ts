@@ -229,7 +229,7 @@ export default class Recipe extends RecipeModule {
                               emailVerificationInstance: this.emailVerificationRecipe,
                           },
                           {
-                              emailDelivery: undefined,
+                              emailDelivery: this.emailDelivery,
                           }
                       );
         }
