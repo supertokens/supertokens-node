@@ -18,6 +18,7 @@ import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverif
 import { TypeInput, TypeNormalisedInput } from "./types";
 import Recipe from "./recipe";
 import { RecipeInterface, APIInterface } from "./types";
+import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -34,11 +35,50 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
+    function getEmailDeliveryConfig() {
+        let emailService = config?.emailDelivery?.service;
+        /**
+         * following code is for backward compatibility.
+         * if user has not passed emailDelivery config, we
+         * use the createAndSendCustomEmail config. If the user
+         * has not passed even that config, we use the default
+         * createAndSendCustomEmail implementation
+         */
+        if (emailService === undefined) {
+            emailService = new BackwardCompatibilityService(
+                recipeInstance.recipeInterfaceImpl,
+                appInfo,
+                recipeInstance.isInServerlessEnv,
+                {
+                    createAndSendCustomEmail:
+                        config?.contactMethod !== "PHONE" ? config?.createAndSendCustomEmail : undefined,
+                },
+                config?.emailVerificationFeature
+            );
+        }
+        return {
+            ...config?.emailDelivery,
+            /**
+             * if we do
+             * let emailDelivery = {
+             *    service: emailService,
+             *    ...config.emailDelivery,
+             * };
+             *
+             * and if the user has passed service as undefined,
+             * it it again get set to undefined, so we
+             * set service at the end
+             */
+            service: emailService,
+        };
+    }
+
     return {
         ...config,
         providers,
         emailVerificationFeature,
         override,
+        getEmailDeliveryConfig,
     };
 }
 

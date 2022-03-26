@@ -12,15 +12,24 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+import {
+    TypeProvider,
+    APIOptions as ThirdPartyAPIOptionsOriginal,
+    TypeThirdPartyEmailDeliveryInput,
+} from "../thirdparty/types";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
-import { DeviceType as DeviceTypeOriginal, APIOptions as PasswordlessAPIOptionsOriginal } from "../passwordless/types";
+import {
+    DeviceType as DeviceTypeOriginal,
+    APIOptions as PasswordlessAPIOptionsOriginal,
+    TypePasswordlessEmailDeliveryInput,
+} from "../passwordless/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
 
 export type DeviceType = DeviceTypeOriginal;
 
@@ -45,6 +54,9 @@ export type User = (
 
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 
@@ -74,6 +86,9 @@ export type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
+          /**
+           * @deprecated Please use emailDelivery config instead
+           */
           createAndSendCustomEmail: (
               input: {
                   // Where the message should be delivered.
@@ -94,6 +109,9 @@ export type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
+          /**
+           * @deprecated Please use emailDelivery config instead
+           */
           createAndSendCustomEmail: (
               input: {
                   // Where the message should be delivered.
@@ -127,6 +145,11 @@ export type TypeInput = (
           ) => Promise<void>;
       }
 ) & {
+    /**
+     * Unlike passwordless recipe, emailDelivery config is outside here because regardless
+     * of `contactMethod` value, the config is required for email verification recipe
+     */
+    emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
     providers?: TypeProvider[];
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
@@ -264,6 +287,7 @@ export type TypeNormalisedInput = (
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     providers: TypeProvider[];
     emailVerificationFeature: TypeInputEmailVerification;
+    getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -546,3 +570,7 @@ export type APIInterface = {
               exists: boolean;
           }>);
 };
+
+export type TypeThirdPartyPasswordlessEmailDeliveryInput =
+    | TypeThirdPartyEmailDeliveryInput
+    | TypePasswordlessEmailDeliveryInput;

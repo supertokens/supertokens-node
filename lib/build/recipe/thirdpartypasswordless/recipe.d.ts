@@ -6,10 +6,17 @@ import PasswordlessRecipe from "../passwordless/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
 import STError from "./error";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import {
+    TypeInput,
+    TypeNormalisedInput,
+    RecipeInterface,
+    APIInterface,
+    TypeThirdPartyPasswordlessEmailDeliveryInput,
+} from "./types";
 import STErrorPasswordless from "../passwordless/error";
 import STErrorThirdParty from "../thirdparty/error";
 import NormalisedURLPath from "../../normalisedURLPath";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -19,6 +26,8 @@ export default class Recipe extends RecipeModule {
     private thirdPartyRecipe;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
+    emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+    isInServerlessEnv: boolean;
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
@@ -28,6 +37,9 @@ export default class Recipe extends RecipeModule {
             emailVerificationInstance: EmailVerificationRecipe | undefined;
             thirdPartyInstance: ThirdPartyRecipe | undefined;
             passwordlessInstance: PasswordlessRecipe | undefined;
+        },
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput> | undefined;
         }
     );
     static init(config: TypeInput): RecipeListFunction;

@@ -20,7 +20,13 @@ import PasswordlessRecipe from "../passwordless/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
 import STError from "./error";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import {
+    TypeInput,
+    TypeNormalisedInput,
+    RecipeInterface,
+    APIInterface,
+    TypeThirdPartyPasswordlessEmailDeliveryInput,
+} from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import STErrorPasswordless from "../passwordless/error";
 import STErrorThirdParty from "../thirdparty/error";
@@ -33,6 +39,7 @@ import getPasswordlessIterfaceImpl from "./api/passwordlessAPIImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import OverrideableBuilder from "supertokens-js-override";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -50,6 +57,10 @@ export default class Recipe extends RecipeModule {
 
     apiImpl: APIInterface;
 
+    emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+
+    isInServerlessEnv: boolean;
+
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
@@ -59,9 +70,13 @@ export default class Recipe extends RecipeModule {
             emailVerificationInstance: EmailVerificationRecipe | undefined;
             thirdPartyInstance: ThirdPartyRecipe | undefined;
             passwordlessInstance: PasswordlessRecipe | undefined;
+        },
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput> | undefined;
         }
     ) {
         super(recipeId, appInfo);
+        this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
 
         {
@@ -80,6 +95,11 @@ export default class Recipe extends RecipeModule {
 
         const recipImplReference = this.recipeInterfaceImpl;
         const emailVerificationConfig = this.config.emailVerificationFeature;
+
+        this.emailDelivery =
+            ingredients.emailDelivery === undefined
+                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig())
+                : ingredients.emailDelivery;
 
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined
@@ -143,10 +163,24 @@ export default class Recipe extends RecipeModule {
                           },
                       },
                       {
-                          emailDelivery: undefined,
+                          emailDelivery: this.emailDelivery,
                       }
                   );
 
+        /**
+         * we don't need to pass the emailDelivery config to the
+         * passwordless recipe as we are passing the emailDelivery
+         * object created by this recipe as an ingredient
+         *
+         * if we simply do `...this.config` while calling the PasswordlessRecipe
+         * constructor, it will throw a typescript error as
+         * Type'EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput>' is not assignable
+         * to type 'EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>'
+         */
+        let passwordlessConfig = {
+            ...this.config,
+            emailDelivery: undefined,
+        };
         this.passwordlessRecipe =
             recipes.passwordlessInstance !== undefined
                 ? recipes.passwordlessInstance
@@ -155,7 +189,7 @@ export default class Recipe extends RecipeModule {
                       appInfo,
                       isInServerlessEnv,
                       {
-                          ...this.config,
+                          ...passwordlessConfig,
                           override: {
                               functions: (_) => {
                                   return PasswordlessRecipeImplementation(this.recipeInterfaceImpl);
@@ -166,7 +200,7 @@ export default class Recipe extends RecipeModule {
                           },
                       },
                       {
-                          emailDelivery: undefined,
+                          emailDelivery: this.emailDelivery,
                       }
                   );
 
@@ -195,7 +229,7 @@ export default class Recipe extends RecipeModule {
                               emailVerificationInstance: this.emailVerificationRecipe,
                           },
                           {
-                              emailDelivery: undefined,
+                              emailDelivery: this.emailDelivery,
                           }
                       );
         }
@@ -204,11 +238,20 @@ export default class Recipe extends RecipeModule {
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
-                    passwordlessInstance: undefined,
-                    emailVerificationInstance: undefined,
-                    thirdPartyInstance: undefined,
-                });
+                Recipe.instance = new Recipe(
+                    Recipe.RECIPE_ID,
+                    appInfo,
+                    isInServerlessEnv,
+                    config,
+                    {
+                        passwordlessInstance: undefined,
+                        emailVerificationInstance: undefined,
+                        thirdPartyInstance: undefined,
+                    },
+                    {
+                        emailDelivery: undefined,
+                    }
+                );
                 return Recipe.instance;
             } else {
                 throw new Error(
