@@ -88,7 +88,7 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    emailDelivery: EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
+    getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {

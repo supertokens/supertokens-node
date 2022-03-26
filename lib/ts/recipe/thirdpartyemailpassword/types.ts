@@ -98,7 +98,7 @@ export type TypeInput = {
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     providers: TypeProvider[];
-    emailDelivery: EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
+    getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {

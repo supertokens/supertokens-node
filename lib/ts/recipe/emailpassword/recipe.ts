@@ -72,9 +72,22 @@ export default class Recipe extends RecipeModule {
         super(recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
+        {
+            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
+            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
+        }
+        {
+            let builder = new OverrideableBuilder(APIImplementation());
+            this.apiImpl = builder.override(this.config.override.apis).build();
+        }
+
+        /**
+         * emailDelivery will always needs to be declared after isInServerlessEnv
+         * and recipeInterfaceImpl values are set
+         */
         this.emailDelivery =
             ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(this.config.emailDelivery)
+                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig())
                 : ingredients.emailDelivery;
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined
@@ -90,15 +103,6 @@ export default class Recipe extends RecipeModule {
                           emailDelivery: this.emailDelivery,
                       }
                   );
-
-        {
-            let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
-            this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
-        }
-        {
-            let builder = new OverrideableBuilder(APIImplementation());
-            this.apiImpl = builder.override(this.config.override.apis).build();
-        }
     }
 
     static getInstanceOrThrowError(): Recipe {

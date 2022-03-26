@@ -28,7 +28,7 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
-    emailDelivery: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
+    getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {

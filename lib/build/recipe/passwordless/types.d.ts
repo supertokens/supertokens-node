@@ -140,7 +140,7 @@ export declare type TypeNormalisedInput = (
         userContext: any
     ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
-    emailDelivery: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
+    getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
