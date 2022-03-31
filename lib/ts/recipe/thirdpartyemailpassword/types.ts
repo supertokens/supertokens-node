@@ -25,6 +25,7 @@ import {
     TypeInputResetPasswordUsingTokenFeature,
     APIOptions as EmailPasswordAPIOptionsOriginal,
     TypeEmailPasswordEmailDeliveryInput,
+    RecipeInterface as EPRecipeInterface,
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
@@ -98,7 +99,11 @@ export type TypeInput = {
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     providers: TypeProvider[];
-    getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        emailPasswordRecipeImpl: EPRecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {

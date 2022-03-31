@@ -72,7 +72,7 @@ export default class Recipe extends RecipeModule {
          */
         this.emailDelivery =
             ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig())
+                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig(this.isInServerlessEnv))
                 : ingredients.emailDelivery;
     }
 

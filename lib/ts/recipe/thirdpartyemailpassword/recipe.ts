@@ -91,13 +91,20 @@ export default class Recipe extends RecipeModule {
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
+        let emailPasswordRecipeImplementation = EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
         /**
          * emailDelivery will always needs to be declared after isInServerlessEnv
          * and recipeInterfaceImpl values are set
          */
         this.emailDelivery =
             ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig())
+                ? new EmailDeliveryIngredient(
+                      this.config.getEmailDeliveryConfig(
+                          this.recipeInterfaceImpl,
+                          emailPasswordRecipeImplementation,
+                          this.isInServerlessEnv
+                      )
+                  )
                 : ingredients.emailDelivery;
 
         this.emailVerificationRecipe =
@@ -125,7 +132,7 @@ export default class Recipe extends RecipeModule {
                       {
                           override: {
                               functions: (_) => {
-                                  return EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
+                                  return emailPasswordRecipeImplementation;
                               },
                               apis: (_) => {
                                   return getEmailPasswordIterfaceImpl(this.apiImpl);

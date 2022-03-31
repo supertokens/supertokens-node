@@ -87,7 +87,9 @@ export default class Recipe extends RecipeModule {
          */
         this.emailDelivery =
             ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig())
+                ? new EmailDeliveryIngredient(
+                      this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv)
+                  )
                 : ingredients.emailDelivery;
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined

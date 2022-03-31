@@ -21,6 +21,7 @@ import Recipe from "./recipe";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
 import { RecipeInterface, APIInterface } from "./types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
+import { RecipeInterface as EPRecipeInterface } from "../emailpassword/types";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -45,7 +46,11 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
-    function getEmailDeliveryConfig() {
+    function getEmailDeliveryConfig(
+        recipeImpl: RecipeInterface,
+        emailPasswordRecipeImpl: EPRecipeInterface,
+        isInServerlessEnv: boolean
+    ) {
         let emailService = config?.emailDelivery?.service;
         /**
          * following code is for backward compatibility.
@@ -56,10 +61,10 @@ export function validateAndNormaliseUserInput(
          */
         if (emailService === undefined) {
             emailService = new BackwardCompatibilityService(
-                recipeInstance.recipeInterfaceImpl,
-                recipeInstance.emailPasswordRecipe.recipeInterfaceImpl,
+                recipeImpl,
+                emailPasswordRecipeImpl,
                 appInfo,
-                recipeInstance.isInServerlessEnv,
+                isInServerlessEnv,
                 config?.resetPasswordUsingTokenFeature,
                 config?.emailVerificationFeature
             );

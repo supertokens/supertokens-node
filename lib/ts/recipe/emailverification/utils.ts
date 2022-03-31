@@ -20,7 +20,7 @@ import { getEmailVerificationURL as defaultGetEmailVerificationURL } from "./ema
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
-    recipe: Recipe,
+    _: Recipe,
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
@@ -37,7 +37,7 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
-    function getEmailDeliveryConfig() {
+    function getEmailDeliveryConfig(isInServerlessEnv: boolean) {
         let emailService = config.emailDelivery?.service;
         /**
          * following code is for backward compatibility.
@@ -49,7 +49,7 @@ export function validateAndNormaliseUserInput(
         if (emailService === undefined) {
             emailService = new BackwardCompatibilityService(
                 appInfo,
-                recipe.isInServerlessEnv,
+                isInServerlessEnv,
                 config.createAndSendCustomEmail
             );
         }

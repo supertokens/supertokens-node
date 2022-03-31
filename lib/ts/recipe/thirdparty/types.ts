@@ -102,7 +102,10 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {

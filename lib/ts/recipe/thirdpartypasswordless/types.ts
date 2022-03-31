@@ -287,7 +287,10 @@ export type TypeNormalisedInput = (
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     providers: TypeProvider[];
     emailVerificationFeature: TypeInputEmailVerification;
-    getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,

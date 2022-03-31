@@ -46,16 +46,6 @@ export function validateAndNormaliseUserInput(
     function getEmailDeliveryConfig() {
         let emailService = config.contactMethod === "PHONE" ? undefined : config.emailDelivery?.service;
 
-        // let smsDelivery =
-        //     config === undefined || config.smsDelivery === undefined
-        //         ? undefined
-        //         : {
-        //             service: config.smsDelivery?.service,
-        //             override: (originalImplementation: SmsDelvieryRecipeInterface<TypeSMSDeliveryTypeInput>) =>
-        //                 originalImplementation,
-        //             ...config.smsDelivery?.override,
-        //         };
-
         let createAndSendCustomEmail = config.contactMethod === "PHONE" ? undefined : config.createAndSendCustomEmail;
         /**
          * following code is for backward compatibility.
