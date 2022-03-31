@@ -230,16 +230,21 @@ export default class SuperTokens {
     };
 
     middleware = async (request: BaseRequest, response: BaseResponse): Promise<boolean> => {
-        logDebugMessage("In SuperTokens Middleware");
+        logDebugMessage("middleware: Started");
         let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
 
         // if the prefix of the URL doesn't match the base path, we skip
         if (!path.startsWith(this.appInfo.apiBasePath)) {
+            logDebugMessage(
+                "middleware: Not handling because request path did not start with config path. Request path: " +
+                    path.getAsStringDangerous()
+            );
             return false;
         }
 
         let requestRID = request.getHeaderValue(HEADER_RID);
+        logDebugMessage("middleware: requestRID is: " + requestRID);
         if (requestRID === "anti-csrf") {
             // see https://github.com/supertokens/supertokens-node/issues/202
             requestRID = undefined;
@@ -249,6 +254,7 @@ export default class SuperTokens {
 
             // we loop through all recipe modules to find the one with the matching rId
             for (let i = 0; i < this.recipeModules.length; i++) {
+                logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
                 if (this.recipeModules[i].getRecipeId() === requestRID) {
                     matchedRecipe = this.recipeModules[i];
                     break;
@@ -256,27 +262,41 @@ export default class SuperTokens {
             }
 
             if (matchedRecipe === undefined) {
+                logDebugMessage("middleware: Not handling because no recipe matched");
                 // we could not find one, so we skip
                 return false;
             }
+            logDebugMessage("middleware: Matched with recipe ID: " + matchedRecipe.getRecipeId());
 
             let id = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method);
             if (id === undefined) {
+                logDebugMessage(
+                    "middleware: Not handling because recipe doesn't handle request path or method. Request path: " +
+                        path.getAsStringDangerous() +
+                        ", request method: " +
+                        method
+                );
                 // the matched recipe doesn't handle this path and http method
                 return false;
             }
 
+            logDebugMessage("middleware: Request being handled by recipe. ID is: " + id);
+
             // give task to the matched recipe
             let requestHandled = await matchedRecipe.handleAPIRequest(id, request, response, path, method);
             if (!requestHandled) {
+                logDebugMessage("middleware: Not handled because API returned requestHandled as false");
                 return false;
             }
+            logDebugMessage("middleware: Ended");
             return true;
         } else {
             // we loop through all recipe modules to find the one with the matching path and method
             for (let i = 0; i < this.recipeModules.length; i++) {
+                logDebugMessage("middleware: Checking recipe ID for match: " + this.recipeModules[i].getRecipeId());
                 let id = this.recipeModules[i].returnAPIIdIfCanHandleRequest(path, method);
                 if (id !== undefined) {
+                    logDebugMessage("middleware: Request being handled by recipe. ID is: " + id);
                     let requestHandled = await this.recipeModules[i].handleAPIRequest(
                         id,
                         request,
@@ -285,23 +305,31 @@ export default class SuperTokens {
                         method
                     );
                     if (!requestHandled) {
+                        logDebugMessage("middleware: Not handled because API returned requestHandled as false");
                         return false;
                     }
+                    logDebugMessage("middleware: Ended");
                     return true;
                 }
             }
+            logDebugMessage("middleware: Not handling because no recipe matched");
             return false;
         }
     };
 
     errorHandler = async (err: any, request: BaseRequest, response: BaseResponse) => {
+        logDebugMessage("errorHandler: Started");
         if (STError.isErrorFromSuperTokens(err)) {
+            logDebugMessage("errorHandler: Error is from SuperTokens recipe. Message: " + err.message);
             if (err.type === STError.BAD_INPUT_ERROR) {
+                logDebugMessage("errorHandler: Sending 400 status code response");
                 return sendNon200Response(response, err.message, 400);
             }
 
             for (let i = 0; i < this.recipeModules.length; i++) {
+                logDebugMessage("errorHandler: Checking recipe for match: " + this.recipeModules[i].getRecipeId());
                 if (this.recipeModules[i].isErrorFromThisRecipe(err)) {
+                    logDebugMessage("errorHandler: Matched with recipeID: " + this.recipeModules[i].getRecipeId());
                     return await this.recipeModules[i].handleError(err, request, response);
                 }
             }
