@@ -30,6 +30,7 @@ import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
 import STError from "./error";
+import { logDebugMessage } from "./logger";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -43,6 +44,8 @@ export default class SuperTokens {
     recipeModules: RecipeModule[];
 
     constructor(config: TypeInput) {
+        logDebugMessage("Started SuperTokens with debug logging");
+        logDebugMessage("appInfo: " + JSON.stringify(config.appInfo));
         validateTheStructureOfUserInput(config, InputSchema, "init function");
 
         this.framework = config.framework !== undefined ? config.framework : "express";
@@ -227,6 +230,7 @@ export default class SuperTokens {
     };
 
     middleware = async (request: BaseRequest, response: BaseResponse): Promise<boolean> => {
+        logDebugMessage("In SuperTokens Middleware");
         let path = this.appInfo.apiGatewayPath.appendPath(new NormalisedURLPath(request.getOriginalURL()));
         let method: HTTPMethod = normaliseHttpMethod(request.getMethod());
 
