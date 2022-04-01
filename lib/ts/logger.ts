@@ -23,16 +23,15 @@ const SUPERTOKENS_DEBUG_NAMESPACE = "com.supertokens";
 */
 
 function logDebugMessage(message: string) {
-    debug(SUPERTOKENS_DEBUG_NAMESPACE)(
-        `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
-    );
+    if (debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE)) {
+        debug(SUPERTOKENS_DEBUG_NAMESPACE)(
+            `{t: "${new Date().toISOString()}", message: \"${message}\", file: \"${getFileLocation()}\" sdkVer: "${version}"}`
+        );
+        console.log();
+    }
 }
 
 let getFileLocation = () => {
-    if (!debug.enabled(SUPERTOKENS_DEBUG_NAMESPACE)) {
-        return "N/A";
-    }
-
     let errorObject = new Error();
     if (errorObject.stack === undefined) {
         // should not come here

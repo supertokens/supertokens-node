@@ -26,6 +26,7 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import SuperTokens from "../../supertokens";
 import frameworks from "../../framework";
+import { logDebugMessage } from "../../logger";
 
 export class HandshakeInfo {
     constructor(
@@ -136,12 +137,15 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             res: any;
             options?: VerifySessionOptions;
         }): Promise<Session | undefined> {
+            logDebugMessage("getSession: Started");
             if (!res.wrapperUsed) {
                 res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
             }
             if (!req.wrapperUsed) {
                 req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
             }
+            logDebugMessage("getSession: rid in header: " + frontendHasInterceptor(req));
+            logDebugMessage("getSession: request method: " + req.getMethod());
             let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
 
             let idRefreshToken = getIdRefreshTokenFromCookie(req);
@@ -150,11 +154,15 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
 
                 if (options !== undefined && typeof options !== "boolean" && options.sessionRequired === false) {
+                    logDebugMessage(
+                        "getSession: returning undefined because idRefreshToken is undefined and sessionRequired is false"
+                    );
                     // there is no session that exists here, and the user wants session verification
                     // to be optional. So we return undefined.
                     return undefined;
                 }
 
+                logDebugMessage("getSession: UNAUTHORISED because idRefreshToken from cookies is undefined");
                 throw new STError({
                     message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
                     type: STError.UNAUTHORISED,
@@ -175,6 +183,9 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     frontendHasInterceptor(req) ||
                     normaliseHttpMethod(req.getMethod()) === "get"
                 ) {
+                    logDebugMessage(
+                        "getSession: Returning try refresh token because access token from cookies is undefined"
+                    );
                     throw new STError({
                         message: "Access token has expired. Please call the refresh API",
                         type: STError.TRY_REFRESH_TOKEN,
@@ -188,6 +199,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 if (doAntiCsrfCheck === undefined) {
                     doAntiCsrfCheck = normaliseHttpMethod(req.getMethod()) !== "get";
                 }
+                logDebugMessage("getSession: Value of doAntiCsrfCheck is: " + doAntiCsrfCheck);
 
                 let response = await SessionFunctions.getSession(
                     helpers,
@@ -206,6 +218,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     attachAccessTokenToCookie(config, res, response.accessToken.token, response.accessToken.expiry);
                     accessToken = response.accessToken.token;
                 }
+                logDebugMessage("getSession: Success!");
                 return new Session(
                     helpers,
                     accessToken,
@@ -216,6 +229,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 );
             } catch (err) {
                 if (err.type === STError.UNAUTHORISED) {
+                    logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response");
                     clearSessionFromCookie(config, res);
                 }
                 throw err;
@@ -231,6 +245,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         },
 
         refreshSession: async function ({ req, res }: { req: any; res: any }): Promise<Session> {
+            logDebugMessage("refreshSession: Started");
             if (!res.wrapperUsed) {
                 res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
             }
@@ -239,6 +254,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             }
             let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
             if (inputIdRefreshToken === undefined) {
+                logDebugMessage("refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined");
                 // we do not clear cookies here because of a
                 // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
 
@@ -251,6 +267,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             try {
                 let inputRefreshToken = getRefreshTokenFromCookie(req);
                 if (inputRefreshToken === undefined) {
+                    logDebugMessage("refreshSession: UNAUTHORISED because refresh token from cookies is undefined");
                     throw new STError({
                         message:
                             "Refresh token not found. Are you sending the refresh token in the request as a cookie?",
@@ -265,6 +282,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     getRidFromHeader(req) !== undefined
                 );
                 attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
+                logDebugMessage("refreshSession: Success!");
                 return new Session(
                     helpers,
                     response.accessToken.token,
@@ -278,6 +296,9 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     (err.type === STError.UNAUTHORISED && err.payload.clearCookies) ||
                     err.type === STError.TOKEN_THEFT_DETECTED
                 ) {
+                    logDebugMessage(
+                        "refreshSession: Clearing cookies because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
+                    );
                     clearSessionFromCookie(config, res);
                 }
                 throw err;

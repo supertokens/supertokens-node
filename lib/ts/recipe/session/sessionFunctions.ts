@@ -20,6 +20,7 @@ import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
+import { logDebugMessage } from "../../logger";
 
 /**
  * @description call this to "login" a user.
@@ -172,12 +173,18 @@ export async function getSession(
             if (accessTokenInfo !== undefined) {
                 if (antiCsrfToken === undefined || antiCsrfToken !== accessTokenInfo.antiCsrfToken) {
                     if (antiCsrfToken === undefined) {
+                        logDebugMessage(
+                            "getSession: Returning TRY_REFRESH_TOKEN because antiCsrfToken is missing from request"
+                        );
                         throw new STError({
                             message:
                                 "Provided antiCsrfToken is undefined. If you do not want anti-csrf check for this API, please set doAntiCsrfCheck to false for this API",
                             type: STError.TRY_REFRESH_TOKEN,
                         });
                     } else {
+                        logDebugMessage(
+                            "getSession: Returning TRY_REFRESH_TOKEN because the passed antiCsrfToken is not the same as in the access token"
+                        );
                         throw new STError({
                             message: "anti-csrf check failed",
                             type: STError.TRY_REFRESH_TOKEN,
@@ -187,6 +194,7 @@ export async function getSession(
             }
         } else if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
             if (!containsCustomHeader) {
+                logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed");
                 throw new STError({
                     message:
                         "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request, or set doAntiCsrfCheck to false for this API",
@@ -236,6 +244,7 @@ export async function getSession(
         delete response.jwtSigningPublicKeyList;
         return response;
     } else if (response.status === "UNAUTHORISED") {
+        logDebugMessage("getSession: Returning UNAUTHORISED because of core response");
         throw new STError({
             message: response.message,
             type: STError.UNAUTHORISED,
@@ -255,6 +264,7 @@ export async function getSession(
             // we force update the signing keys...
             await helpers.getHandshakeInfo(true);
         }
+        logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because of core response");
         throw new STError({
             message: response.message,
             type: STError.TRY_REFRESH_TOKEN,
@@ -318,6 +328,7 @@ export async function refreshSession(
 
     if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
         if (!containsCustomHeader) {
+            logDebugMessage("refreshSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed");
             throw new STError({
                 message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
                 type: STError.UNAUTHORISED,
@@ -333,11 +344,13 @@ export async function refreshSession(
         delete response.status;
         return response;
     } else if (response.status === "UNAUTHORISED") {
+        logDebugMessage("refreshSession: Returning UNAUTHORISED because of core response");
         throw new STError({
             message: response.message,
             type: STError.UNAUTHORISED,
         });
     } else {
+        logDebugMessage("refreshSession: Returning TOKEN_THEFT_DETECTED because of core response");
         throw new STError({
             message: "Token theft detected",
             payload: {

@@ -4,6 +4,7 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import { validate } from "jsonschema";
 import type { BaseRequest, BaseResponse } from "./framework";
+import { logDebugMessage } from "./logger";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -82,11 +83,13 @@ export function sendNon200Response(res: BaseResponse, message: string, statusCod
     if (statusCode < 300) {
         throw new Error("Calling sendNon200Response with status code < 300");
     }
+    logDebugMessage("Sending response to client with status code: " + statusCode);
     res.setStatusCode(statusCode);
     res.sendJSONResponse({ message });
 }
 
 export function send200Response(res: BaseResponse, responseJson: any) {
+    logDebugMessage("Sending response to client with status code: 200");
     res.setStatusCode(200);
     res.sendJSONResponse(responseJson);
 }
