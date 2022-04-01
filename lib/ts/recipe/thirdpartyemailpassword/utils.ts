@@ -14,9 +14,8 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { validateTheStructureOfUserInput } from "../../utils";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import { TypeInput, InputSchema, TypeNormalisedInput, TypeInputSignUp, TypeNormalisedInputSignUp } from "./types";
+import { TypeInput, TypeNormalisedInput, TypeInputSignUp, TypeNormalisedInputSignUp } from "./types";
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
@@ -27,8 +26,6 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "thirdpartyemailpassword recipe");
-
     let signUpFeature = validateAndNormaliseSignUpConfig(
         recipeInstance,
         appInfo,

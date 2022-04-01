@@ -14,25 +14,16 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { validateTheStructureOfUserInput } from "../../utils";
 import Recipe from "./recipe";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import { RecipeInterface, APIInterface, TypeProvider } from "./types";
-import {
-    TypeInput,
-    InputSchema,
-    TypeNormalisedInput,
-    TypeInputSignInAndUp,
-    TypeNormalisedInputSignInAndUp,
-} from "./types";
+import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "thirdparty recipe");
-
     let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
 
     let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
