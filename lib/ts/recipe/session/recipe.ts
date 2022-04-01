@@ -31,6 +31,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";
+import { logDebugMessage } from "../../logger";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -49,6 +50,13 @@ export default class SessionRecipe extends RecipeModule {
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
+        logDebugMessage("session init: antiCsrf: " + this.config.antiCsrf);
+        logDebugMessage("session init: cookieDomain: " + this.config.cookieDomain);
+        logDebugMessage("session init: cookieSameSite: " + this.config.cookieSameSite);
+        logDebugMessage("session init: cookieSecure: " + this.config.cookieSecure);
+        logDebugMessage("session init: refreshTokenPath: " + this.config.refreshTokenPath.getAsStringDangerous());
+        logDebugMessage("session init: sessionExpiredStatusCode: " + this.config.sessionExpiredStatusCode);
+
         this.isInServerlessEnv = isInServerlessEnv;
 
         if (this.config.jwt.enable === true) {
@@ -164,10 +172,13 @@ export default class SessionRecipe extends RecipeModule {
     handleError = async (err: STError, request: BaseRequest, response: BaseResponse) => {
         if (err.fromRecipe === SessionRecipe.RECIPE_ID) {
             if (err.type === STError.UNAUTHORISED) {
+                logDebugMessage("errorHandler: returning UNAUTHORISED");
                 return await this.config.errorHandlers.onUnauthorised(err.message, request, response);
             } else if (err.type === STError.TRY_REFRESH_TOKEN) {
+                logDebugMessage("errorHandler: returning TRY_REFRESH_TOKEN");
                 return await this.config.errorHandlers.onTryRefreshToken(err.message, request, response);
             } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
+                logDebugMessage("errorHandler: returning TOKEN_THEFT_DETECTED");
                 return await this.config.errorHandlers.onTokenTheftDetected(
                     err.payload.sessionHandle,
                     err.payload.userId,
