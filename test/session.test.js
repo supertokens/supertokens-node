@@ -1136,36 +1136,6 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         });
     });
 
-    it("test that additional property throws an error", async function () {
-        await startST();
-
-        try {
-            SuperTokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init({
-                        a: "b",
-                    }),
-                ],
-            });
-            assert(false);
-        } catch (err) {
-            if (
-                err.message !==
-                'Config schema error in session recipe: input config is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
-            ) {
-                throw err;
-            }
-        }
-    });
-
     it("test that anti-csrf disabled and sameSite lax does now throw an error", async function () {
         await startST();
         SuperTokens.init({
