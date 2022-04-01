@@ -44,11 +44,12 @@ export default class SuperTokens {
     recipeModules: RecipeModule[];
 
     constructor(config: TypeInput) {
-        logDebugMessage("Started SuperTokens with debug logging");
+        logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
         logDebugMessage("appInfo: " + JSON.stringify(config.appInfo));
         validateTheStructureOfUserInput(config, InputSchema, "init function");
 
         this.framework = config.framework !== undefined ? config.framework : "express";
+        logDebugMessage("framework: " + this.framework);
         this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
 
         Querier.init(
