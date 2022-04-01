@@ -67,31 +67,6 @@ export type CreateOrRefreshAPIResponse = {
     antiCsrfToken: string | undefined;
 };
 
-const TypeString = {
-    type: "string",
-};
-
-const TypeBoolean = {
-    type: "boolean",
-};
-
-const TypeNumber = {
-    type: "number",
-};
-
-const TypeAny = {
-    type: "any",
-};
-
-export const InputSchemaErrorHandlers = {
-    type: "object",
-    properties: {
-        onUnauthorised: TypeAny,
-        onTokenTheftDetected: TypeAny,
-    },
-    additionalProperties: false,
-};
-
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
@@ -138,21 +113,6 @@ export type TypeInput = {
             };
         };
     };
-};
-
-export const InputSchema = {
-    type: "object",
-    properties: {
-        cookieSecure: TypeBoolean,
-        cookieSameSite: TypeString,
-        sessionExpiredStatusCode: TypeNumber,
-        cookieDomain: TypeString,
-        errorHandlers: InputSchemaErrorHandlers,
-        antiCsrf: TypeString,
-        jwt: TypeAny,
-        override: TypeAny,
-    },
-    additionalProperties: false,
 };
 
 export type TypeNormalisedInput = {

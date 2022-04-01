@@ -48,18 +48,6 @@ export declare type CreateOrRefreshAPIResponse = {
     };
     antiCsrfToken: string | undefined;
 };
-export declare const InputSchemaErrorHandlers: {
-    type: string;
-    properties: {
-        onUnauthorised: {
-            type: string;
-        };
-        onTokenTheftDetected: {
-            type: string;
-        };
-    };
-    additionalProperties: boolean;
-};
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
@@ -107,45 +95,6 @@ export declare type TypeInput = {
             };
         };
     };
-};
-export declare const InputSchema: {
-    type: string;
-    properties: {
-        cookieSecure: {
-            type: string;
-        };
-        cookieSameSite: {
-            type: string;
-        };
-        sessionExpiredStatusCode: {
-            type: string;
-        };
-        cookieDomain: {
-            type: string;
-        };
-        errorHandlers: {
-            type: string;
-            properties: {
-                onUnauthorised: {
-                    type: string;
-                };
-                onTokenTheftDetected: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
-        antiCsrf: {
-            type: string;
-        };
-        jwt: {
-            type: string;
-        };
-        override: {
-            type: string;
-        };
-    };
-    additionalProperties: boolean;
 };
 export declare type TypeNormalisedInput = {
     refreshTokenPath: NormalisedURLPath;

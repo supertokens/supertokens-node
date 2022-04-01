@@ -67,63 +67,6 @@ export declare type TypeInput = {
         };
     };
 };
-export declare const InputSchema: {
-    signUpFeature: {
-        type: string;
-        properties: {
-            formFields: {
-                type: string;
-                items: {
-                    type: string;
-                    properties: {
-                        id: {
-                            type: string;
-                        };
-                        validate: {
-                            type: string;
-                        };
-                        optional: {
-                            type: string;
-                        };
-                    };
-                    required: string[];
-                    additionalProperties: boolean;
-                };
-            };
-        };
-        additionalProperties: boolean;
-    };
-    providers: {
-        type: string;
-    };
-    resetPasswordUsingTokenFeature: {
-        type: string;
-        properties: {
-            getResetPasswordURL: {
-                type: string;
-            };
-            createAndSendCustomEmail: {
-                type: string;
-            };
-        };
-        additionalProperties: boolean;
-    };
-    emailVerificationFeature: {
-        type: string;
-        properties: {
-            getEmailVerificationURL: {
-                type: string;
-            };
-            createAndSendCustomEmail: {
-                type: string;
-            };
-        };
-        additionalProperties: boolean;
-    };
-    override: {
-        type: string;
-    };
-};
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     providers: TypeProvider[];
