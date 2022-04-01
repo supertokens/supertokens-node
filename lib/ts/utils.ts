@@ -2,7 +2,6 @@ import type { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
 import { HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { validate } from "jsonschema";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
 
@@ -98,28 +97,6 @@ export function isAnIpAddress(ipaddress: string) {
     return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
         ipaddress
     );
-}
-
-export function validateTheStructureOfUserInput(config: any, inputSchema: any, configRoot: string) {
-    // the validation package will not throw if the given schema is undefined
-    // as it is requires to validate a json object
-    config = config === undefined || config === null ? {} : config;
-    let inputValidation = validate(config, inputSchema);
-    if (inputValidation.errors.length > 0) {
-        let path = inputValidation.errors[0].path.join(".");
-        if (path !== "") {
-            path += " ";
-        }
-        let errorMessage = `${path}${inputValidation.errors[0].message}`;
-        if (errorMessage.startsWith("requires") || errorMessage.startsWith("is not allowed")) {
-            errorMessage = `input config ${errorMessage}`;
-        }
-        if (errorMessage.includes("is not allowed to have the additional property")) {
-            errorMessage = `${errorMessage}. Did you mean to set this on the frontend side?`;
-        }
-        errorMessage = `Config schema error in ${configRoot}: ${errorMessage}`;
-        throw new Error(errorMessage);
-    }
 }
 
 export function frontendHasInterceptor(req: BaseRequest): boolean {

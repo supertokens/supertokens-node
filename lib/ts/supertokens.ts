@@ -13,15 +13,9 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod, InputSchema } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
 import axios from "axios";
-import {
-    normaliseInputAppInfoOrThrowError,
-    validateTheStructureOfUserInput,
-    maxVersion,
-    normaliseHttpMethod,
-    sendNon200Response,
-} from "./utils";
+import { normaliseInputAppInfoOrThrowError, maxVersion, normaliseHttpMethod, sendNon200Response } from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import { HEADER_RID, HEADER_FDI } from "./constants";
@@ -46,7 +40,6 @@ export default class SuperTokens {
     constructor(config: TypeInput) {
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
         logDebugMessage("appInfo: " + JSON.stringify(config.appInfo));
-        validateTheStructureOfUserInput(config, InputSchema, "init function");
 
         this.framework = config.framework !== undefined ? config.framework : "express";
         logDebugMessage("framework: " + this.framework);

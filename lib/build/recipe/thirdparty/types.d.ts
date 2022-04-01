@@ -81,38 +81,6 @@ export declare type TypeInput = {
         };
     };
 };
-export declare const InputSchema: {
-    type: string;
-    properties: {
-        signInAndUpFeature: {
-            type: string;
-            properties: {
-                providers: {
-                    type: string;
-                };
-            };
-            required: string[];
-            additionalProperties: boolean;
-        };
-        emailVerificationFeature: {
-            type: string;
-            properties: {
-                getEmailVerificationURL: {
-                    type: string;
-                };
-                createAndSendCustomEmail: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
-        override: {
-            type: string;
-        };
-    };
-    required: string[];
-    additionalProperties: boolean;
-};
 export declare type TypeNormalisedInput = {
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;

@@ -23,10 +23,6 @@ import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 
-const TypeAny = {
-    type: "any",
-};
-
 export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
 
 export type TypeProviderGetResponse = {
@@ -69,28 +65,8 @@ export type TypeInputEmailVerificationFeature = {
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 
-const InputEmailVerificationFeatureSchema = {
-    type: "object",
-    properties: {
-        getEmailVerificationURL: TypeAny,
-        createAndSendCustomEmail: TypeAny,
-    },
-    additionalProperties: false,
-};
-
 export type TypeInputSignInAndUp = {
     providers: TypeProvider[];
-};
-
-const InputSignInAndUpSchema = {
-    type: "object",
-    properties: {
-        providers: {
-            type: "array",
-        },
-    },
-    required: ["providers"],
-    additionalProperties: false,
 };
 
 export type TypeNormalisedInputSignInAndUp = {
@@ -117,17 +93,6 @@ export type TypeInput = {
             ) => EmailVerificationAPIInterface;
         };
     };
-};
-
-export const InputSchema = {
-    type: "object",
-    properties: {
-        signInAndUpFeature: InputSignInAndUpSchema,
-        emailVerificationFeature: InputEmailVerificationFeatureSchema,
-        override: TypeAny,
-    },
-    required: ["signInAndUpFeature"],
-    additionalProperties: false,
 };
 
 export type TypeNormalisedInput = {
