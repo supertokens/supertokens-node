@@ -20,7 +20,7 @@ import { getEmailVerificationURL as defaultGetEmailVerificationURL } from "./ema
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
-    recipe: Recipe,
+    _: Recipe,
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
@@ -37,41 +37,42 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
-    let emailService = config.emailDelivery?.service;
-    /**
-     * following code is for backward compatibility.
-     * if user has not passed emailDelivery config, we
-     * use the createAndSendCustomEmail config. If the user
-     * has not passed even that config, we use the default
-     * createAndSendCustomEmail implementation which calls our supertokens API
-     */
-    if (emailService === undefined) {
-        emailService = new BackwardCompatibilityService(
-            appInfo,
-            recipe.isInServerlessEnv,
-            config.createAndSendCustomEmail
-        );
-    }
-    let emailDelivery = {
-        ...config.emailDelivery,
+    function getEmailDeliveryConfig(isInServerlessEnv: boolean) {
+        let emailService = config.emailDelivery?.service;
         /**
-         * if we do
-         * let emailDelivery = {
-         *    service: emailService,
-         *    ...config.emailDelivery,
-         * };
-         *
-         * and if the user has passed service as undefined,
-         * it it again get set to undefined, so we
-         * set service at the end
+         * following code is for backward compatibility.
+         * if user has not passed emailDelivery config, we
+         * use the createAndSendCustomEmail config. If the user
+         * has not passed even that config, we use the default
+         * createAndSendCustomEmail implementation which calls our supertokens API
          */
-        service: emailService,
-    };
-
+        if (emailService === undefined) {
+            emailService = new BackwardCompatibilityService(
+                appInfo,
+                isInServerlessEnv,
+                config.createAndSendCustomEmail
+            );
+        }
+        return {
+            ...config.emailDelivery,
+            /**
+             * if we do
+             * let emailDelivery = {
+             *    service: emailService,
+             *    ...config.emailDelivery,
+             * };
+             *
+             * and if the user has passed service as undefined,
+             * it it again get set to undefined, so we
+             * set service at the end
+             */
+            service: emailService,
+        };
+    }
     return {
         getEmailForUserId,
         getEmailVerificationURL,
         override,
-        emailDelivery,
+        getEmailDeliveryConfig,
     };
 }

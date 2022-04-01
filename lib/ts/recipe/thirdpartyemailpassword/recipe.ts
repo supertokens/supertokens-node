@@ -77,10 +77,6 @@ export default class Recipe extends RecipeModule {
         super(recipeId, appInfo);
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
-        this.emailDelivery =
-            ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(this.config.emailDelivery)
-                : ingredients.emailDelivery;
         {
             let builder = new OverrideableBuilder(
                 RecipeImplementation(
@@ -94,6 +90,22 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(APIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
+
+        let emailPasswordRecipeImplementation = EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
+        /**
+         * emailDelivery will always needs to be declared after isInServerlessEnv
+         * and recipeInterfaceImpl values are set
+         */
+        this.emailDelivery =
+            ingredients.emailDelivery === undefined
+                ? new EmailDeliveryIngredient(
+                      this.config.getEmailDeliveryConfig(
+                          this.recipeInterfaceImpl,
+                          emailPasswordRecipeImplementation,
+                          this.isInServerlessEnv
+                      )
+                  )
+                : ingredients.emailDelivery;
 
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined
@@ -120,7 +132,7 @@ export default class Recipe extends RecipeModule {
                       {
                           override: {
                               functions: (_) => {
-                                  return EmailPasswordRecipeImplementation(this.recipeInterfaceImpl);
+                                  return emailPasswordRecipeImplementation;
                               },
                               apis: (_) => {
                                   return getEmailPasswordIterfaceImpl(this.apiImpl);

@@ -36,7 +36,9 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    emailDelivery: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
+    getEmailDeliveryConfig: (
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL: (user: User, userContext: any) => Promise<string>;
     override: {

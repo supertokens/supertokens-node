@@ -88,7 +88,10 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
-    emailDelivery: EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {

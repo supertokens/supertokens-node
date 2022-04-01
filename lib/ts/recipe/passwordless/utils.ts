@@ -43,50 +43,42 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
-    let emailService = config.contactMethod === "PHONE" ? undefined : config.emailDelivery?.service;
+    function getEmailDeliveryConfig() {
+        let emailService = config.contactMethod === "PHONE" ? undefined : config.emailDelivery?.service;
 
-    // let smsDelivery =
-    //     config === undefined || config.smsDelivery === undefined
-    //         ? undefined
-    //         : {
-    //             service: config.smsDelivery?.service,
-    //             override: (originalImplementation: SmsDelvieryRecipeInterface<TypeSMSDeliveryTypeInput>) =>
-    //                 originalImplementation,
-    //             ...config.smsDelivery?.override,
-    //         };
-
-    let createAndSendCustomEmail = config.contactMethod === "PHONE" ? undefined : config.createAndSendCustomEmail;
-    /**
-     * following code is for backward compatibility.
-     * if user has not passed emailDelivery config, we
-     * use the createAndSendCustomEmail config. If the user
-     * has not passed even that config, we use the default
-     * createAndSendCustomEmail implementation
-     */
-    if (emailService === undefined) {
-        emailService = new BackwardCompatibilityService(appInfo, createAndSendCustomEmail);
+        let createAndSendCustomEmail = config.contactMethod === "PHONE" ? undefined : config.createAndSendCustomEmail;
+        /**
+         * following code is for backward compatibility.
+         * if user has not passed emailDelivery config, we
+         * use the createAndSendCustomEmail config. If the user
+         * has not passed even that config, we use the default
+         * createAndSendCustomEmail implementation
+         */
+        if (emailService === undefined) {
+            emailService = new BackwardCompatibilityService(appInfo, createAndSendCustomEmail);
+        }
+        let emailDelivery =
+            config.contactMethod === "PHONE"
+                ? {
+                      service: emailService,
+                  }
+                : {
+                      ...config.emailDelivery,
+                      /**
+                       * if we do
+                       * let emailDelivery = {
+                       *    service: emailService,
+                       *    ...config.emailDelivery,
+                       * };
+                       *
+                       * and if the user has passed service as undefined,
+                       * it it again get set to undefined, so we
+                       * set service at the end
+                       */
+                      service: emailService,
+                  };
+        return emailDelivery;
     }
-    let emailDelivery =
-        config.contactMethod === "PHONE"
-            ? {
-                  service: emailService,
-              }
-            : {
-                  ...config.emailDelivery,
-                  /**
-                   * if we do
-                   * let emailDelivery = {
-                   *    service: emailService,
-                   *    ...config.emailDelivery,
-                   * };
-                   *
-                   * and if the user has passed service as undefined,
-                   * it it again get set to undefined, so we
-                   * set service at the end
-                   */
-                  service: emailService,
-              };
-
     if (config.contactMethod === "EMAIL") {
         // TODO: to remove this
         if (config.createAndSendCustomEmail === undefined) {
@@ -94,7 +86,7 @@ export function validateAndNormaliseUserInput(
         }
         return {
             override,
-            emailDelivery,
+            getEmailDeliveryConfig,
             // smsDelivery,
             flowType: config.flowType,
             contactMethod: "EMAIL",
@@ -115,7 +107,7 @@ export function validateAndNormaliseUserInput(
         }
         return {
             override,
-            emailDelivery,
+            getEmailDeliveryConfig,
             // smsDelivery,
             flowType: config.flowType,
             contactMethod: "PHONE",
@@ -144,7 +136,7 @@ export function validateAndNormaliseUserInput(
         }
         return {
             override,
-            emailDelivery,
+            getEmailDeliveryConfig,
             // smsDelivery,
             flowType: config.flowType,
             contactMethod: "EMAIL_OR_PHONE",

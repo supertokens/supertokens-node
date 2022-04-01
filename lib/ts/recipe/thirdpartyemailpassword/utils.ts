@@ -21,6 +21,7 @@ import Recipe from "./recipe";
 import { normaliseSignUpFormFields } from "../emailpassword/utils";
 import { RecipeInterface, APIInterface } from "./types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
+import { RecipeInterface as EPRecipeInterface } from "../emailpassword/types";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -45,43 +46,49 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
-    let emailService = config?.emailDelivery?.service;
-    /**
-     * following code is for backward compatibility.
-     * if user has not passed emailDelivery config, we
-     * use the createAndSendCustomEmail config. If the user
-     * has not passed even that config, we use the default
-     * createAndSendCustomEmail implementation
-     */
-    if (emailService === undefined) {
-        emailService = new BackwardCompatibilityService(
-            recipeInstance.recipeInterfaceImpl,
-            recipeInstance.emailPasswordRecipe.recipeInterfaceImpl,
-            appInfo,
-            recipeInstance.isInServerlessEnv,
-            config?.resetPasswordUsingTokenFeature,
-            config?.emailVerificationFeature
-        );
-    }
-    let emailDelivery = {
-        ...config?.emailDelivery,
+    function getEmailDeliveryConfig(
+        recipeImpl: RecipeInterface,
+        emailPasswordRecipeImpl: EPRecipeInterface,
+        isInServerlessEnv: boolean
+    ) {
+        let emailService = config?.emailDelivery?.service;
         /**
-         * if we do
-         * let emailDelivery = {
-         *    service: emailService,
-         *    ...config.emailDelivery,
-         * };
-         *
-         * and if the user has passed service as undefined,
-         * it it again get set to undefined, so we
-         * set service at the end
+         * following code is for backward compatibility.
+         * if user has not passed emailDelivery config, we
+         * use the createAndSendCustomEmail config. If the user
+         * has not passed even that config, we use the default
+         * createAndSendCustomEmail implementation
          */
-        service: emailService,
-    };
+        if (emailService === undefined) {
+            emailService = new BackwardCompatibilityService(
+                recipeImpl,
+                emailPasswordRecipeImpl,
+                appInfo,
+                isInServerlessEnv,
+                config?.resetPasswordUsingTokenFeature,
+                config?.emailVerificationFeature
+            );
+        }
+        return {
+            ...config?.emailDelivery,
+            /**
+             * if we do
+             * let emailDelivery = {
+             *    service: emailService,
+             *    ...config.emailDelivery,
+             * };
+             *
+             * and if the user has passed service as undefined,
+             * it it again get set to undefined, so we
+             * set service at the end
+             */
+            service: emailService,
+        };
+    }
 
     return {
         override,
-        emailDelivery,
+        getEmailDeliveryConfig,
         signUpFeature,
         providers,
         resetPasswordUsingTokenFeature,

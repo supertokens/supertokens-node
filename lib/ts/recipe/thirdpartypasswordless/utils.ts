@@ -35,7 +35,7 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
-    function getEmailDeliveryConfig() {
+    function getEmailDeliveryConfig(recipeImpl: RecipeInterface, isInServerlessEnv: boolean) {
         let emailService = config?.emailDelivery?.service;
         /**
          * following code is for backward compatibility.
@@ -46,9 +46,9 @@ export function validateAndNormaliseUserInput(
          */
         if (emailService === undefined) {
             emailService = new BackwardCompatibilityService(
-                recipeInstance.recipeInterfaceImpl,
+                recipeImpl,
                 appInfo,
-                recipeInstance.isInServerlessEnv,
+                isInServerlessEnv,
                 {
                     createAndSendCustomEmail:
                         config?.contactMethod !== "PHONE" ? config?.createAndSendCustomEmail : undefined,
