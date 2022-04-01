@@ -13,13 +13,7 @@
  * under the License.
  */
 
-import {
-    CreateOrRefreshAPIResponse,
-    TypeInput,
-    TypeNormalisedInput,
-    NormalisedErrorHandlers,
-    InputSchema,
-} from "./types";
+import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput, NormalisedErrorHandlers } from "./types";
 import {
     setFrontTokenInHeaders,
     attachAccessTokenToCookie,
@@ -33,7 +27,7 @@ import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
-import { isAnIpAddress, validateTheStructureOfUserInput } from "../../utils";
+import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200Response } from "../../utils";
@@ -133,7 +127,6 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput {
-    validateTheStructureOfUserInput(config, InputSchema, "session recipe");
     let cookieDomain =
         config === undefined || config.cookieDomain === undefined
             ? undefined

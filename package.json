@@ -1,6 +1,6 @@
 {
     "name": "supertokens-node",
-    "version": "9.1.0",
+    "version": "9.1.1",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
@@ -38,7 +38,6 @@
         "body-parser": "1.19.0",
         "co-body": "6.1.0",
         "cookie": "0.4.0",
-        "jsonschema": "1.4.0",
         "jsonwebtoken": "^8.5.1",
         "jwks-rsa": "^2.0.5",
         "libphonenumber-js": "^1.9.44",
