@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionClaim, SessionContainerInterface } from "../types";
-import { Awaitable } from "../../../types";
+import { SessionClaim, SessionClaimChecker, SessionContainerInterface } from "../types";
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private openIdRecipeImplementation;
     private originalSessionClass;
@@ -15,16 +14,12 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     getAccessToken: (userContext?: any) => string;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    getSessionClaimPayload: (userContext?: any) => Record<string, import("../../../types").JSONObject>;
     updateClaim: (claim: SessionClaim<any>, userContext?: any) => Promise<void>;
     updateClaims: (claims: SessionClaim<any>[], userContext?: any) => Promise<void>;
-    checkClaimInToken: (claim: SessionClaim<any>, userContext?: any) => Awaitable<boolean>;
     addClaim: <T>(claim: SessionClaim<T>, value: T, userContext?: any) => Promise<void>;
     removeClaim: <T>(claim: SessionClaim<T>, userContext?: any) => Promise<void>;
+    checkClaim(claimChecker: SessionClaimChecker, userContext?: any): Promise<boolean>;
+    checkClaims(claimCheckers: SessionClaimChecker[], userContext?: any): Promise<string | undefined>;
     updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
-    regenerateToken: (
-        newAccessTokenPayload: any,
-        newClaimPayload: Record<string, import("../../../types").JSONObject> | undefined,
-        userContext: any
-    ) => Promise<void>;
+    regenerateToken: (newAccessTokenPayload: any, userContext: any) => Promise<void>;
 }

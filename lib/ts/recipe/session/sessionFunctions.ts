@@ -16,7 +16,7 @@ import { getInfoFromAccessToken, sanitizeNumberInput } from "./accessToken";
 import { getPayloadWithoutVerifiying } from "./jwt";
 import STError from "./error";
 import { PROCESS_STATE, ProcessState } from "../../processState";
-import { CreateOrRefreshAPIResponse, SessionClaimPayloadType, SessionInformation } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { maxVersion } from "../../utils";
@@ -27,7 +27,6 @@ import { maxVersion } from "../../utils";
 export async function createNewSession(
     helpers: Helpers,
     userId: string,
-    sessionClaims: SessionClaimPayloadType,
     accessTokenPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
@@ -39,12 +38,10 @@ export async function createNewSession(
         userDataInJWT: any;
         userDataInDatabase: any;
         enableAntiCsrf?: boolean;
-        claims: SessionClaimPayloadType;
     } = {
         userId,
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionData,
-        claims: sessionClaims,
     };
 
     let handShakeInfo = await helpers.getHandshakeInfo();
@@ -77,7 +74,6 @@ export async function getSession(
         handle: string;
         userId: string;
         userDataInJWT: any;
-        claims: SessionClaimPayloadType;
     };
     accessToken?: {
         token: string;
@@ -210,7 +206,6 @@ export async function getSession(
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
                 userDataInJWT: accessTokenInfo.userData,
-                claims: accessTokenInfo.sessionClaims !== undefined ? accessTokenInfo.sessionClaims : {},
             },
         };
     }

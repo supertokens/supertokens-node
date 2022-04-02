@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { CreateOrRefreshAPIResponse, SessionClaimPayloadType, SessionInformation } from "./types";
+import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import { Helpers } from "./recipeImplementation";
 /**
  * @description call this to "login" a user.
@@ -7,7 +7,6 @@ import { Helpers } from "./recipeImplementation";
 export declare function createNewSession(
     helpers: Helpers,
     userId: string,
-    sessionClaims: SessionClaimPayloadType,
     accessTokenPayload?: any,
     sessionData?: any
 ): Promise<CreateOrRefreshAPIResponse>;
@@ -25,7 +24,6 @@ export declare function getSession(
         handle: string;
         userId: string;
         userDataInJWT: any;
-        claims: SessionClaimPayloadType;
     };
     accessToken?: {
         token: string;

@@ -1,12 +1,15 @@
 // @ts-nocheck
 import { Awaitable, JSONValue } from "../../../types";
-import { SessionClaim, SessionClaimPayloadType } from "../types";
+import { SessionClaim, SessionClaimChecker } from "../types";
 export declare abstract class PrimitiveClaim<T extends JSONValue> implements SessionClaim<T> {
     readonly id: string;
     constructor(id: string);
     abstract fetch(userId: string, userContext: any): Awaitable<T | undefined>;
-    abstract shouldRefetch(payload: SessionClaimPayloadType, userContext: any): Awaitable<boolean>;
-    abstract isValid(payload: SessionClaimPayloadType, userContext: any): Awaitable<boolean>;
-    addToPayload(payload: SessionClaimPayloadType, value: T, _userContext: any): SessionClaimPayloadType;
-    removeFromPayload(payload: SessionClaimPayloadType, _userContext: any): SessionClaimPayloadType;
+    addToPayload(payload: any, value: T, _userContext: any): any;
+    removeFromPayload(payload: any, _userContext: any): any;
+    getValueFromPayload(payload: any, _userContext: any): T | undefined;
+    checkers: {
+        hasValue: (val: T) => SessionClaimChecker;
+        hasFreshValue: (val: T, maxAgeInSeconds: number) => SessionClaimChecker;
+    };
 }

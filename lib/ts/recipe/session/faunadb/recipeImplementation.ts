@@ -4,7 +4,7 @@ import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 import type { Session as FaunaDBSessionContainer } from "./types";
 import type { BaseRequest, BaseResponse } from "../../../framework";
-import type { SessionClaimPayloadType, SessionInformation } from "../types";
+import type { SessionInformation } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {
@@ -198,11 +198,7 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.originalImplementation.updateAccessTokenPayload(input);
     };
 
-    updateSessionClaims = function (input: {
-        sessionHandle: string;
-        claims: SessionClaimPayloadType;
-        userContext: any;
-    }) {
+    updateSessionClaims = function (input: { sessionHandle: string; userContext: any }) {
         return this.originalImplementation.updateSessionClaims(input);
     };
     regenerateAccessToken = function (input: { accessToken: string; newAccessTokenPayload?: any; userContext: any }) {

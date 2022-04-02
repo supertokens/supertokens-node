@@ -7,6 +7,7 @@ import {
     SessionInformation,
     APIInterface,
     APIOptions,
+    SessionClaimChecker,
 } from "./types";
 import Recipe from "./recipe";
 export default class SessionWrapper {
@@ -42,7 +43,6 @@ export default class SessionWrapper {
             handle: string;
             userId: string;
             userDataInJWT: any;
-            claims: Record<string, import("../../types").JSONObject>;
         };
         accessToken?:
             | {
@@ -99,4 +99,13 @@ export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;
 export declare let getJWKS: typeof SessionWrapper.getJWKS;
 export declare let getOpenIdDiscoveryConfiguration: typeof SessionWrapper.getOpenIdDiscoveryConfiguration;
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation };
+export { SessionClaim } from "./types";
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    APIInterface,
+    APIOptions,
+    SessionInformation,
+    SessionClaimChecker,
+};

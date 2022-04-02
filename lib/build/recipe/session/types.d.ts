@@ -4,7 +4,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
-import { Awaitable, JSONObject } from "../../types";
+import { Awaitable } from "../../types";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;
@@ -31,7 +31,6 @@ export declare type CreateOrRefreshAPIResponse = {
         handle: string;
         userId: string;
         userDataInJWT: any;
-        claims: SessionClaimPayloadType;
     };
     accessToken: {
         token: string;
@@ -77,7 +76,8 @@ export declare type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    defaultRequiredClaims?: SessionClaim<any>[];
+    defaultClaims?: SessionClaim<any>[];
+    defaultRequiredClaimChecks?: SessionClaimChecker[];
     missingClaimStatusCode?: number;
     jwt?:
         | {
@@ -146,6 +146,12 @@ export declare const InputSchema: {
             };
             additionalProperties: boolean;
         };
+        defaultClaims: {
+            type: string;
+        };
+        defaultRequiredClaimChecks: {
+            type: string;
+        };
         antiCsrf: {
             type: string;
         };
@@ -166,7 +172,8 @@ export declare type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    defaultRequiredClaims: SessionClaim<any>[];
+    defaultClaims: SessionClaim<any>[];
+    defaultRequiredClaimChecks: SessionClaimChecker[];
     missingClaimStatusCode: number;
     jwt: {
         enable: boolean;
@@ -222,7 +229,7 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
-    requiredClaims?: SessionClaim<any>[];
+    requiredClaims?: SessionClaimChecker[];
 }
 export declare type RecipeInterface = {
     createNewSession(input: {
@@ -230,7 +237,7 @@ export declare type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
-        claimsToAdd?: SessionClaim<any>[];
+        claimsToLoad?: SessionClaim<any>[];
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getSession(input: {
@@ -251,11 +258,6 @@ export declare type RecipeInterface = {
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
     updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<void>;
-    updateSessionClaims(input: {
-        sessionHandle: string;
-        claims: SessionClaimPayloadType;
-        userContext: any;
-    }): Promise<void>;
     updateAccessTokenPayload(input: {
         sessionHandle: string;
         newAccessTokenPayload: any;
@@ -264,7 +266,6 @@ export declare type RecipeInterface = {
     regenerateAccessToken(input: {
         accessToken: string;
         newAccessTokenPayload?: any;
-        newClaimPayload?: SessionClaimPayloadType;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -272,7 +273,6 @@ export declare type RecipeInterface = {
             handle: string;
             userId: string;
             userDataInJWT: any;
-            claims: SessionClaimPayloadType;
         };
         accessToken?: {
             token: string;
@@ -289,20 +289,16 @@ export interface SessionContainerInterface {
     updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
-    getSessionClaimPayload(userContext?: any): SessionClaimPayloadType;
     getHandle(userContext?: any): string;
     getAccessToken(userContext?: any): string;
-    regenerateToken(
-        newAccessTokenPayload: any | undefined,
-        newClaimPayload: SessionClaimPayloadType | undefined,
-        userContext: any
-    ): Promise<void>;
+    regenerateToken(newAccessTokenPayload: any | undefined, userContext: any): Promise<void>;
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
     updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
     updateClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void>;
-    checkClaimInToken(claim: SessionClaim<any>, userContext?: any): Awaitable<boolean>;
+    checkClaim(claimChecker: SessionClaimChecker, userContext?: any): Promise<boolean>;
+    checkClaims(claimCheckers: SessionClaimChecker[], userContext?: any): Promise<string | undefined>;
     addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
 }
@@ -334,12 +330,29 @@ export declare type SessionInformation = {
     sessionHandle: string;
     userId: string;
     sessionData: any;
-    claims: SessionClaimPayloadType;
     expiry: number;
     accessTokenPayload: any;
     timeCreated: number;
 };
-export declare type SessionClaimPayloadType = Record<string, JSONObject>;
+export declare type SessionClaimChecker = (
+    | // We split the type like this to express that either both claim and shouldRefetch is defined or neither.
+    {
+          claim: SessionClaim<any>;
+          /**
+           * Decides if we need to refetch the claim value before checking the payload with `isValid`.
+           * E.g.: if the information in the payload is expired, or is not sufficient for this check.
+           */
+          shouldRefetch: (payload: any, userContext: any) => Awaitable<boolean>;
+      }
+    | {
+          claimId: string;
+      }
+) & {
+    /**
+     * Decides if the claim is valid based on the payload (and not checking DB or anything else)
+     */
+    isValid: (payload: any, userContext: any) => Awaitable<boolean>;
+};
 export declare abstract class SessionClaim<T> {
     readonly id: string;
     constructor(id: string);
@@ -350,30 +363,15 @@ export declare abstract class SessionClaim<T> {
      */
     abstract fetch(userId: string, userContext: any): Awaitable<T | undefined>;
     /**
-     * Decides if we need to refetch the claim value before checking the payload with `isValid`.
-     * E.g.: if the information in the payload is expired, or is not sufficient for this check.
-     */
-    abstract shouldRefetch(payload: SessionClaimPayloadType, userContext: any): Awaitable<boolean>;
-    /**
-     * Decides if the claim is valid based on the payload (and not checking DB or anything else)
-     */
-    abstract isValid(payload: SessionClaimPayloadType, userContext: any): Awaitable<boolean>;
-    /**
      * Saves the provided value into the payload, by cloning and updating the entire object.
      *
      * @returns The modified payload object
      */
-    abstract addToPayload(payload: SessionClaimPayloadType, value: T, userContext: any): SessionClaimPayloadType;
+    abstract addToPayload(payload: any, value: T, userContext: any): any;
     /**
      * Removes the claim from the payload, by cloning and updating the entire object.
      *
      * @returns The modified payload object
      */
-    abstract removeFromPayload(payload: SessionClaimPayloadType, userContext: any): SessionClaimPayloadType;
-    /**
-     * Updates the access token with the provided value, by cloning and updating the entire access token payload object.
-     *
-     * @returns The modified payload object
-     */
-    abstract updateAccessTokenPayload?(payload: JSONObject, value: T | undefined, userContext: any): JSONObject;
+    abstract removeFromPayload(payload: any, userContext: any): any;
 }

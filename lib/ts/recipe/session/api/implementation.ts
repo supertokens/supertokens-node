@@ -51,9 +51,16 @@ export default function getAPIInterface(): APIInterface {
                 return undefined;
             }
 
-            const reqClaims = verifySessionOptions?.requiredClaims ?? options.config.defaultRequiredClaims;
-            await res.updateClaims(reqClaims, userContext);
+            const reqClaims = verifySessionOptions?.requiredClaims ?? options.config.defaultRequiredClaimChecks;
+            const missingClaim = await res.checkClaims(reqClaims, userContext);
 
+            if (missingClaim !== undefined) {
+                throw new STError({
+                    type: "MISSING_CLAIM",
+                    message: "MISSING_CLAIM",
+                    payload: { claimId: missingClaim },
+                });
+            }
             return res;
         },
 

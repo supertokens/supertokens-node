@@ -16,10 +16,9 @@ import * as JsonWebToken from "jsonwebtoken";
 import * as assert from "assert";
 
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionClaim, SessionClaimPayloadType, SessionContainerInterface } from "../types";
+import { SessionClaim, SessionClaimChecker, SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import { addJWTToAccessTokenPayload } from "./utils";
-import { Awaitable } from "../../../types";
 
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private openIdRecipeImplementation: OpenIdRecipeInterface;
@@ -56,78 +55,35 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     getExpiry = (userContext?: any): Promise<number> => {
         return this.originalSessionClass.getExpiry(userContext);
     };
-    getSessionClaimPayload = (userContext?: any): SessionClaimPayloadType => {
-        return this.originalSessionClass.getSessionClaimPayload(userContext);
-    };
 
-    // These are re-implemented here, because they can update the access token payload
+    // TODO: check if binding is OK, these all use regenerateToken
     updateClaim = async (claim: SessionClaim<any>, userContext?: any): Promise<void> => {
-        await this.updateClaims([claim], userContext);
+        return this.originalSessionClass.updateClaim.bind(this)(claim, userContext);
     };
-
     updateClaims = async (claims: SessionClaim<any>[], userContext?: any): Promise<void> => {
-        const origSessionClaimPayloadJSON = JSON.stringify(this.getSessionClaimPayload());
-        const origAccessTokenPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
+        return this.originalSessionClass.updateClaims.bind(this)(claims, userContext);
+    };
 
-        let newSessionClaimPayload = this.getSessionClaimPayload();
-        let newAccessTokenPayload = this.getAccessTokenPayload();
-        for (const claim of claims) {
-            const value = await claim.fetch(this.getUserId(), userContext);
-            if (value !== undefined) {
-                newSessionClaimPayload = claim.addToPayload(this.getSessionClaimPayload(), value, userContext);
-            }
-            if (claim.updateAccessTokenPayload) {
-                newAccessTokenPayload = claim.updateAccessTokenPayload(
-                    this.getAccessTokenPayload(),
-                    value,
-                    userContext
-                );
-            }
-        }
-        const sessionClaimPayloadUpdate =
-            JSON.stringify(newSessionClaimPayload) !== origSessionClaimPayloadJSON ? newSessionClaimPayload : undefined;
-        const accessTokenPayloadUpdate =
-            JSON.stringify(newAccessTokenPayload) !== origAccessTokenPayloadJSON ? newAccessTokenPayload : undefined;
-        if (accessTokenPayloadUpdate !== undefined || sessionClaimPayloadUpdate !== undefined) {
-            await this.regenerateToken(accessTokenPayloadUpdate, sessionClaimPayloadUpdate, userContext);
-        }
-    };
-    checkClaimInToken = (claim: SessionClaim<any>, userContext?: any): Awaitable<boolean> => {
-        return claim.isValid(this.getSessionClaimPayload(), userContext);
-    };
     addClaim = async <T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> => {
-        const newSessionClaimPayload = claim.addToPayload(this.getSessionClaimPayload(), value, userContext);
-
-        let newAccessTokenPayload;
-        if (claim.updateAccessTokenPayload) {
-            newAccessTokenPayload = claim.updateAccessTokenPayload(this.getAccessTokenPayload(), value, userContext);
-        }
-        await this.regenerateToken(newAccessTokenPayload, newSessionClaimPayload, userContext);
+        return this.originalSessionClass.addClaim.bind(this)(claim, value, userContext);
     };
     removeClaim = async <T>(claim: SessionClaim<T>, userContext?: any): Promise<void> => {
-        const newSessionClaimPayload = claim.removeFromPayload(this.getSessionClaimPayload(), userContext);
-
-        let newAccessTokenPayload;
-        if (claim.updateAccessTokenPayload) {
-            newAccessTokenPayload = claim.updateAccessTokenPayload(
-                this.getAccessTokenPayload(),
-                undefined,
-                userContext
-            );
-        }
-
-        await this.regenerateToken(newAccessTokenPayload, newSessionClaimPayload, userContext);
+        return this.originalSessionClass.removeClaim.bind(this)(claim, userContext);
     };
 
+    checkClaim(claimChecker: SessionClaimChecker, userContext?: any): Promise<boolean> {
+        return this.originalSessionClass.checkClaim.bind(this)(claimChecker, userContext);
+    }
+    checkClaims(claimCheckers: SessionClaimChecker[], userContext?: any): Promise<string | undefined> {
+        return this.originalSessionClass.checkClaims.bind(this)(claimCheckers, userContext);
+    }
+
+    // TODO: check why this called the original regenerateToken
     updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any): Promise<void> => {
-        await this.originalSessionClass.regenerateToken(newAccessTokenPayload, undefined, userContext);
+        await this.regenerateToken(newAccessTokenPayload, userContext);
     };
 
-    regenerateToken = async (
-        newAccessTokenPayload: any | undefined,
-        newClaimPayload: SessionClaimPayloadType | undefined,
-        userContext: any
-    ): Promise<void> => {
+    regenerateToken = async (newAccessTokenPayload: any | undefined, userContext: any): Promise<void> => {
         newAccessTokenPayload =
             newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
         let accessTokenPayload = this.getAccessTokenPayload(userContext);
@@ -167,6 +123,6 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
             userContext,
         });
 
-        await this.originalSessionClass.regenerateToken(newAccessTokenPayload, newClaimPayload, userContext);
+        await this.originalSessionClass.regenerateToken(newAccessTokenPayload, userContext);
     };
 }

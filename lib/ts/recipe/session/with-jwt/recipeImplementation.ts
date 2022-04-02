@@ -49,31 +49,30 @@ export default function (
             userId,
             accessTokenPayload,
             sessionData,
-            claimsToAdd,
+            claimsToLoad,
             userContext,
         }: {
             res: any;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
-            claimsToAdd?: SessionClaim<any>[];
+            claimsToLoad?: SessionClaim<any>[];
             userContext: any;
         }): Promise<SessionContainerInterface> {
-            if (claimsToAdd === undefined) {
-                claimsToAdd = config.defaultRequiredClaims;
+            if (claimsToLoad === undefined) {
+                claimsToLoad = config.defaultClaims;
             }
             accessTokenPayload =
                 accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS({ userContext })) / 1000);
 
-            // TODO (sessionclaims): we should be doing this once...
-            for (const claim of claimsToAdd) {
-                const value = claim.fetch(userId, userContext);
-                if (claim.updateAccessTokenPayload) {
-                    accessTokenPayload = claim.updateAccessTokenPayload(accessTokenPayload, value, userContext);
+            // This is only done once, since we are not passing claimsToLoad to the original createNewSession
+            for (const claim of claimsToLoad) {
+                const value = await claim.fetch(this.getUserId(), userContext);
+                if (value !== undefined) {
+                    accessTokenPayload = claim.addToPayload(accessTokenPayload, value, userContext);
                 }
             }
-
             accessTokenPayload = await addJWTToAccessTokenPayload({
                 accessTokenPayload,
                 jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),

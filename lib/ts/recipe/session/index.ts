@@ -21,6 +21,7 @@ import {
     SessionInformation,
     APIInterface,
     APIOptions,
+    SessionClaimChecker,
 } from "./types";
 import OpenIdRecipe from "../openid/recipe";
 import Recipe from "./recipe";
@@ -178,4 +179,14 @@ export let getJWKS = SessionWrapper.getJWKS;
 
 export let getOpenIdDiscoveryConfiguration = SessionWrapper.getOpenIdDiscoveryConfiguration;
 
-export type { VerifySessionOptions, RecipeInterface, SessionContainer, APIInterface, APIOptions, SessionInformation };
+export { SessionClaim } from "./types";
+
+export type {
+    VerifySessionOptions,
+    RecipeInterface,
+    SessionContainer,
+    APIInterface,
+    APIOptions,
+    SessionInformation,
+    SessionClaimChecker,
+};

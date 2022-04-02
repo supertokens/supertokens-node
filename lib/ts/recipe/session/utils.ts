@@ -259,7 +259,8 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
-        defaultRequiredClaims: config?.defaultRequiredClaims ?? [],
+        defaultClaims: config?.defaultClaims ?? [],
+        defaultRequiredClaimChecks: config?.defaultRequiredClaimChecks ?? [],
         missingClaimStatusCode: config?.missingClaimStatusCode ?? 403,
         jwt: {
             enable: enableJWT,
@@ -286,13 +287,7 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     let accessToken = response.accessToken;
     let refreshToken = response.refreshToken;
     let idRefreshToken = response.idRefreshToken;
-    setFrontTokenInHeaders(
-        res,
-        response.session.userId,
-        response.accessToken.expiry,
-        response.session.userDataInJWT,
-        response.session.claims
-    );
+    setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
     attachAccessTokenToCookie(config, res, accessToken.token, accessToken.expiry);
     attachRefreshTokenToCookie(config, res, refreshToken.token, refreshToken.expiry);
     setIdRefreshTokenInHeaderAndCookie(config, res, idRefreshToken.token, idRefreshToken.expiry);
