@@ -12,8 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { EmailDeliveryInterface } from "../types";
-import { createTransport, Transporter } from "nodemailer";
+import { Transporter } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 
 export interface SMTPServiceConfig {
@@ -60,30 +59,3 @@ export type TypeGetDefaultEmailServiceImplementation<T> = (
         email: string;
     }
 ) => ServiceInterface<T>;
-
-export function getEmailServiceImplementation<T>(
-    config: TypeInput<T>,
-    getDefaultEmailServiceImplementation: TypeGetDefaultEmailServiceImplementation<T>
-): EmailDeliveryInterface<T> {
-    const transporter = createTransport({
-        host: config.smtpSettings.host,
-        port: config.smtpSettings.port,
-        auth: config.smtpSettings.auth,
-        secure: config.smtpSettings.secure,
-    });
-    let builder = new OverrideableBuilder(getDefaultEmailServiceImplementation(transporter, config.smtpSettings.from));
-    if (config.override !== undefined) {
-        builder = builder.override(config.override);
-    }
-    let serviceImpl = builder.build();
-    return {
-        sendEmail: async function (input: T & { userContext: any }) {
-            let content = await serviceImpl.getContent(input);
-            await serviceImpl.sendRawEmail({
-                ...content,
-                ...input.userContext,
-                from: config.smtpSettings.from,
-            });
-        },
-    };
-}

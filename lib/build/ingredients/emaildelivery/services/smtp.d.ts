@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { EmailDeliveryInterface } from "../types";
 import { Transporter } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 export interface SMTPServiceConfig {
@@ -47,7 +46,3 @@ export declare type TypeGetDefaultEmailServiceImplementation<T> = (
         email: string;
     }
 ) => ServiceInterface<T>;
-export declare function getEmailServiceImplementation<T>(
-    config: TypeInput<T>,
-    getDefaultEmailServiceImplementation: TypeGetDefaultEmailServiceImplementation<T>
-): EmailDeliveryInterface<T>;
