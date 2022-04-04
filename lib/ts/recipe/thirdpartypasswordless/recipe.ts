@@ -169,20 +169,6 @@ export default class Recipe extends RecipeModule {
                       }
                   );
 
-        /**
-         * we don't need to pass the emailDelivery config to the
-         * passwordless recipe as we are passing the emailDelivery
-         * object created by this recipe as an ingredient
-         *
-         * if we simply do `...this.config` while calling the PasswordlessRecipe
-         * constructor, it will throw a typescript error as
-         * Type'EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput>' is not assignable
-         * to type 'EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>'
-         */
-        let passwordlessConfig = {
-            ...this.config,
-            emailDelivery: undefined,
-        };
         this.passwordlessRecipe =
             recipes.passwordlessInstance !== undefined
                 ? recipes.passwordlessInstance
@@ -191,7 +177,7 @@ export default class Recipe extends RecipeModule {
                       appInfo,
                       isInServerlessEnv,
                       {
-                          ...passwordlessConfig,
+                          ...this.config,
                           override: {
                               functions: (_) => {
                                   return PasswordlessRecipeImplementation(this.recipeInterfaceImpl);

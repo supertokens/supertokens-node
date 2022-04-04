@@ -44,7 +44,7 @@ export function validateAndNormaliseUserInput(
     };
 
     function getEmailDeliveryConfig() {
-        let emailService = config.contactMethod === "PHONE" ? undefined : config.emailDelivery?.service;
+        let emailService = config.emailDelivery?.service;
 
         let createAndSendCustomEmail = config.contactMethod === "PHONE" ? undefined : config.createAndSendCustomEmail;
         /**

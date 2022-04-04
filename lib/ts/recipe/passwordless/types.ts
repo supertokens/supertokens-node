@@ -55,7 +55,6 @@ export type TypeInput = (
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
-          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
           // Override to use custom template/contact method
           /**
            * @deprecated Please use emailDelivery config instead
@@ -79,7 +78,6 @@ export type TypeInput = (
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
-          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
           // Override to use custom template/contact method
           /**
            * @deprecated Please use emailDelivery config instead
@@ -119,6 +117,7 @@ export type TypeInput = (
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
 
+    emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     // Customize information in the URL.
     // By default: `${websiteDomain}/auth/verify`
     // `?rid=passwordless&preAuthSessionId=${preAuthSessionId}#${linkCode}` will be added after it.

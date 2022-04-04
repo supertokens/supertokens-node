@@ -28,7 +28,6 @@ export declare type TypeInput = (
     | {
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
           /**
            * @deprecated Please use emailDelivery config instead
            */
@@ -46,7 +45,6 @@ export declare type TypeInput = (
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
           /**
            * @deprecated Please use emailDelivery config instead
            */
@@ -74,6 +72,7 @@ export declare type TypeInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
+    emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     getLinkDomainAndPath?: (
         contactInfo:
             | {
