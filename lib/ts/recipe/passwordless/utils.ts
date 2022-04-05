@@ -17,8 +17,8 @@ import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import parsePhoneNumber from "libphonenumber-js/max";
-import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
-// import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
+import BackwardCompatibilityEmailService from "./emaildelivery/services/backwardCompatibility";
+import BackwardCompatibilitySmsService from "./smsdelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -55,7 +55,7 @@ export function validateAndNormaliseUserInput(
          * createAndSendCustomEmail implementation
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(appInfo, createAndSendCustomEmail);
+            emailService = new BackwardCompatibilityEmailService(appInfo, createAndSendCustomEmail);
         }
         let emailDelivery =
             config.contactMethod === "PHONE"
@@ -79,15 +79,49 @@ export function validateAndNormaliseUserInput(
                   };
         return emailDelivery;
     }
-    if (config.contactMethod === "EMAIL") {
-        // TODO: to remove this
-        if (config.createAndSendCustomEmail === undefined) {
-            throw new Error("Please provide a callback function (createAndSendCustomEmail) to send emails. ");
+
+    function getSmsDeliveryConfig() {
+        let smsService = config.smsDelivery?.service;
+
+        let createAndSendCustomTextMessage =
+            config.contactMethod === "EMAIL" ? undefined : config.createAndSendCustomTextMessage;
+        /**
+         * following code is for backward compatibility.
+         * if user has not passed emailDelivery config, we
+         * use the createAndSendCustomTextMessage config. If the user
+         * has not passed even that config, we use the default
+         * createAndSendCustomTextMessage implementation
+         */
+        if (smsService === undefined) {
+            smsService = new BackwardCompatibilitySmsService(appInfo, createAndSendCustomTextMessage);
         }
+        let smsDelivery =
+            config.contactMethod === "EMAIL"
+                ? {
+                      service: smsService,
+                  }
+                : {
+                      ...config.smsDelivery,
+                      /**
+                       * if we do
+                       * let smsDelivery = {
+                       *    service: smsService,
+                       *    ...config.smsDelivery,
+                       * };
+                       *
+                       * and if the user has passed service as undefined,
+                       * it it again get set to undefined, so we
+                       * set service at the end
+                       */
+                      service: smsService,
+                  };
+        return smsDelivery;
+    }
+    if (config.contactMethod === "EMAIL") {
         return {
             override,
             getEmailDeliveryConfig,
-            // smsDelivery,
+            getSmsDeliveryConfig,
             flowType: config.flowType,
             contactMethod: "EMAIL",
             getLinkDomainAndPath:
@@ -99,23 +133,12 @@ export function validateAndNormaliseUserInput(
             getCustomUserInputCode: config.getCustomUserInputCode,
         };
     } else if (config.contactMethod === "PHONE") {
-        // TODO: to remove this
-        if (config.createAndSendCustomTextMessage === undefined) {
-            throw new Error(
-                "Please provide a callback function (createAndSendCustomTextMessage) to send text messages. "
-            );
-        }
         return {
             override,
             getEmailDeliveryConfig,
-            // smsDelivery,
+            getSmsDeliveryConfig,
             flowType: config.flowType,
             contactMethod: "PHONE",
-            // until we add a service to send sms, config.createAndSendCustomTextMessage will never be undefined
-            createAndSendCustomTextMessage:
-                config.createAndSendCustomTextMessage === undefined
-                    ? defaultCreateAndSendTextMessage
-                    : config.createAndSendCustomTextMessage,
             getLinkDomainAndPath:
                 config.getLinkDomainAndPath === undefined
                     ? getDefaultGetLinkDomainAndPath(appInfo)
@@ -125,28 +148,14 @@ export function validateAndNormaliseUserInput(
             getCustomUserInputCode: config.getCustomUserInputCode,
         };
     } else {
-        // TODO: to remove this
-        if (config.createAndSendCustomEmail === undefined) {
-            throw new Error("Please provide a callback function (createAndSendCustomEmail) to send emails. ");
-        }
-        if (config.createAndSendCustomTextMessage === undefined) {
-            throw new Error(
-                "Please provide a callback function (createAndSendCustomTextMessage) to send text messages. "
-            );
-        }
         return {
             override,
             getEmailDeliveryConfig,
-            // smsDelivery,
+            getSmsDeliveryConfig,
             flowType: config.flowType,
             contactMethod: "EMAIL_OR_PHONE",
             validateEmailAddress:
                 config.validateEmailAddress === undefined ? defaultValidateEmail : config.validateEmailAddress,
-            // until we add a service to send sms, config.createAndSendCustomTextMessage will never be undefined
-            createAndSendCustomTextMessage:
-                config.createAndSendCustomTextMessage === undefined
-                    ? defaultCreateAndSendTextMessage
-                    : config.createAndSendCustomTextMessage,
             getLinkDomainAndPath:
                 config.getLinkDomainAndPath === undefined
                     ? getDefaultGetLinkDomainAndPath(appInfo)
@@ -188,23 +197,6 @@ function defaultValidatePhoneNumber(value: string): Promise<string | undefined> 
     // we can even use Twilio's phone number validity lookup service: https://www.twilio.com/docs/glossary/what-e164.
 
     return undefined;
-}
-
-async function defaultCreateAndSendTextMessage(
-    _: {
-        // Where the message should be delivered.
-        phoneNumber: string;
-        // This has to be entered on the starting device  to finish sign in/up
-        userInputCode?: string;
-        // Full url that the end-user can click to finish sign in/up
-        urlWithLinkCode?: string;
-        codeLifetime: number;
-        // Unlikely, but someone could display this (or a derived thing) to identify the device
-        preAuthSessionId: string;
-    },
-    __: any
-): Promise<void> {
-    // TODO:
 }
 
 function defaultValidateEmail(value: string): Promise<string | undefined> | string | undefined {

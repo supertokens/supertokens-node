@@ -1,4 +1,3 @@
-"use strict";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,4 +12,22 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+import { TypeInput, SmsDeliveryInterface } from "./types";
+import OverrideableBuilder from "supertokens-js-override";
+
+export default class SmsDelivery<T> {
+    ingredientInterfaceImpl: SmsDeliveryInterface<T>;
+
+    constructor(config: TypeInput<T>) {
+        let defaultIngredientImpl: SmsDeliveryInterface<T> = {
+            sendSms: async function (input) {
+                return config.service.sendSms(input);
+            },
+        };
+        let builder = new OverrideableBuilder(defaultIngredientImpl);
+        if (config.override !== undefined) {
+            builder = builder.override(config.override);
+        }
+        this.ingredientInterfaceImpl = builder.build();
+    }
+}

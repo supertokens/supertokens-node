@@ -4,6 +4,8 @@ import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
+import { TypeInput as SmsDeliveryTypeInput } from "../../ingredients/smsdelivery/types";
+import SmsDeliveryRecipe from "../../ingredients/smsdelivery";
 export declare type User = {
     id: string;
     email?: string;
@@ -14,6 +16,9 @@ export declare type TypeInput = (
     | {
           contactMethod: "PHONE";
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          /**
+           * @deprecated Please use smsDelivery config instead
+           */
           createAndSendCustomTextMessage: (
               input: {
                   phoneNumber: string;
@@ -59,6 +64,9 @@ export declare type TypeInput = (
               userContext: any
           ) => Promise<void>;
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
+          /**
+           * @deprecated Please use smsDelivery config instead
+           */
           createAndSendCustomTextMessage: (
               input: {
                   phoneNumber: string;
@@ -73,6 +81,7 @@ export declare type TypeInput = (
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
     emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
+    smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     getLinkDomainAndPath?: (
         contactInfo:
             | {
@@ -96,16 +105,6 @@ export declare type TypeNormalisedInput = (
     | {
           contactMethod: "PHONE";
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomTextMessage: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL";
@@ -115,16 +114,6 @@ export declare type TypeNormalisedInput = (
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomTextMessage: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
@@ -139,6 +128,7 @@ export declare type TypeNormalisedInput = (
         userContext: any
     ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
+    getSmsDeliveryConfig: () => SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     override: {
         functions: (
@@ -275,6 +265,7 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
     emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryInput>;
+    smsDelivery: SmsDeliveryRecipe<TypePasswordlessSmsDeliveryInput>;
 };
 export declare type APIInterface = {
     createCodePOST?: (
@@ -373,6 +364,15 @@ export declare type APIInterface = {
 export declare type TypePasswordlessEmailDeliveryInput = {
     type: "PASSWORDLESS_LOGIN";
     email: string;
+    userInputCode?: string;
+    urlWithLinkCode?: string;
+    codeLifetime: number;
+    preAuthSessionId: string;
+    userContext: any;
+};
+export declare type TypePasswordlessSmsDeliveryInput = {
+    type: "PASSWORDLESS_LOGIN";
+    phoneNumber: string;
     userInputCode?: string;
     urlWithLinkCode?: string;
     codeLifetime: number;

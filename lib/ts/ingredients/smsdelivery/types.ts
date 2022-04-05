@@ -1,4 +1,3 @@
-"use strict";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,4 +12,19 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
+import OverrideableBuilder from "supertokens-js-override";
+
+export type SmsDeliveryInterface<T> = {
+    sendSms: (input: T & { userContext: any }) => Promise<void>;
+};
+
+/**
+ * config class parameter when parent Recipe create a new SmsDeliveryRecipe object via constructor
+ */
+export interface TypeInput<T> {
+    service: SmsDeliveryInterface<T>;
+    override?: (
+        originalImplementation: SmsDeliveryInterface<T>,
+        builder: OverrideableBuilder<SmsDeliveryInterface<T>>
+    ) => SmsDeliveryInterface<T>;
+}
