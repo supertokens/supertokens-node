@@ -22,6 +22,14 @@ export type SmsDeliveryInterface<T> = {
  * config class parameter when parent Recipe create a new SmsDeliveryRecipe object via constructor
  */
 export interface TypeInput<T> {
+    service?: SmsDeliveryInterface<T>;
+    override?: (
+        originalImplementation: SmsDeliveryInterface<T>,
+        builder: OverrideableBuilder<SmsDeliveryInterface<T>>
+    ) => SmsDeliveryInterface<T>;
+}
+
+export interface TypeInputWithService<T> {
     service: SmsDeliveryInterface<T>;
     override?: (
         originalImplementation: SmsDeliveryInterface<T>,

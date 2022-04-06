@@ -4,7 +4,6 @@ import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/typ
 import { NormalisedAppinfo } from "../../../../../types";
 export default class BackwardCompatibilityService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     private createAndSendCustomSms;
-    private appInfo;
     constructor(
         appInfo: NormalisedAppinfo,
         createAndSendCustomSms?: (

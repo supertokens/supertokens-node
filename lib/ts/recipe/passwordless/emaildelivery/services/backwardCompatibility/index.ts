@@ -66,7 +66,6 @@ export default class BackwardCompatibilityService
         },
         userContext: any
     ) => Promise<void>;
-    private appInfo: NormalisedAppinfo;
 
     constructor(
         appInfo: NormalisedAppinfo,
@@ -85,10 +84,9 @@ export default class BackwardCompatibilityService
             userContext: any
         ) => Promise<void>
     ) {
-        this.appInfo = appInfo;
         this.createAndSendCustomEmail =
             createAndSendCustomEmail === undefined
-                ? defaultCreateAndSendCustomEmail(this.appInfo)
+                ? defaultCreateAndSendCustomEmail(appInfo)
                 : createAndSendCustomEmail;
     }
 

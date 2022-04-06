@@ -57,26 +57,21 @@ export function validateAndNormaliseUserInput(
         if (emailService === undefined) {
             emailService = new BackwardCompatibilityEmailService(appInfo, createAndSendCustomEmail);
         }
-        let emailDelivery =
-            config.contactMethod === "PHONE"
-                ? {
-                      service: emailService,
-                  }
-                : {
-                      ...config.emailDelivery,
-                      /**
-                       * if we do
-                       * let emailDelivery = {
-                       *    service: emailService,
-                       *    ...config.emailDelivery,
-                       * };
-                       *
-                       * and if the user has passed service as undefined,
-                       * it it again get set to undefined, so we
-                       * set service at the end
-                       */
-                      service: emailService,
-                  };
+        let emailDelivery = {
+            ...config.emailDelivery,
+            /**
+             * if we do
+             * let emailDelivery = {
+             *    service: emailService,
+             *    ...config.emailDelivery,
+             * };
+             *
+             * and if the user has passed service as undefined,
+             * it it again get set to undefined, so we
+             * set service at the end
+             */
+            service: emailService,
+        };
         return emailDelivery;
     }
 
@@ -95,26 +90,21 @@ export function validateAndNormaliseUserInput(
         if (smsService === undefined) {
             smsService = new BackwardCompatibilitySmsService(appInfo, createAndSendCustomTextMessage);
         }
-        let smsDelivery =
-            config.contactMethod === "EMAIL"
-                ? {
-                      service: smsService,
-                  }
-                : {
-                      ...config.smsDelivery,
-                      /**
-                       * if we do
-                       * let smsDelivery = {
-                       *    service: smsService,
-                       *    ...config.smsDelivery,
-                       * };
-                       *
-                       * and if the user has passed service as undefined,
-                       * it it again get set to undefined, so we
-                       * set service at the end
-                       */
-                      service: smsService,
-                  };
+        let smsDelivery = {
+            ...config.smsDelivery,
+            /**
+             * if we do
+             * let smsDelivery = {
+             *    service: smsService,
+             *    ...config.smsDelivery,
+             * };
+             *
+             * and if the user has passed service as undefined,
+             * it it again get set to undefined, so we
+             * set service at the end
+             */
+            service: smsService,
+        };
         return smsDelivery;
     }
     if (config.contactMethod === "EMAIL") {

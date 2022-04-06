@@ -18,7 +18,10 @@ import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
-import { TypeInput as SmsDeliveryTypeInput } from "../../ingredients/smsdelivery/types";
+import {
+    TypeInput as SmsDeliveryTypeInput,
+    TypeInputWithService as SmsDeliveryTypeInputWithService,
+} from "../../ingredients/smsdelivery/types";
 import SmsDeliveryRecipe from "../../ingredients/smsdelivery";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
@@ -190,7 +193,7 @@ export type TypeNormalisedInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
-    getSmsDeliveryConfig: () => SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
+    getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>;
     getEmailDeliveryConfig: () => EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     override: {
         functions: (

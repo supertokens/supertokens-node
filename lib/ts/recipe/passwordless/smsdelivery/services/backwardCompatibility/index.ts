@@ -32,7 +32,7 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
         if (process.env.TEST_MODE === "testing") {
             return;
         }
-        // TODO
+        // TODO: Skip in this PR
     };
 }
 
@@ -51,7 +51,6 @@ export default class BackwardCompatibilityService implements SmsDeliveryInterfac
         },
         userContext: any
     ) => Promise<void>;
-    private appInfo: NormalisedAppinfo;
 
     constructor(
         appInfo: NormalisedAppinfo,
@@ -70,9 +69,8 @@ export default class BackwardCompatibilityService implements SmsDeliveryInterfac
             userContext: any
         ) => Promise<void>
     ) {
-        this.appInfo = appInfo;
         this.createAndSendCustomSms =
-            createAndSendCustomSms === undefined ? defaultCreateAndSendCustomSms(this.appInfo) : createAndSendCustomSms;
+            createAndSendCustomSms === undefined ? defaultCreateAndSendCustomSms(appInfo) : createAndSendCustomSms;
     }
 
     sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {

@@ -31,7 +31,10 @@ import {
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
-import { TypeInput as SmsDeliveryTypeInput } from "../../ingredients/smsdelivery/types";
+import {
+    TypeInput as SmsDeliveryTypeInput,
+    TypeInputWithService as SmsDeliveryTypeInputWithService,
+} from "../../ingredients/smsdelivery/types";
 
 export type DeviceType = DeviceTypeOriginal;
 
@@ -300,7 +303,7 @@ export type TypeNormalisedInput = (
         recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
-    getSmsDeliveryConfig: () => SmsDeliveryTypeInput<TypeThirdPartyPasswordlessSmsDeliveryInput>;
+    getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypeThirdPartyPasswordlessSmsDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,

@@ -5,7 +5,6 @@ import { NormalisedAppinfo } from "../../../../../types";
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
     private createAndSendCustomEmail;
-    private appInfo;
     constructor(
         appInfo: NormalisedAppinfo,
         createAndSendCustomEmail?: (
