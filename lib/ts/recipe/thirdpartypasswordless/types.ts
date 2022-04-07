@@ -26,10 +26,18 @@ import {
     DeviceType as DeviceTypeOriginal,
     APIOptions as PasswordlessAPIOptionsOriginal,
     TypePasswordlessEmailDeliveryInput,
+    TypePasswordlessSmsDeliveryInput,
 } from "../passwordless/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
+import {
+    TypeInput as SmsDeliveryTypeInput,
+    TypeInputWithService as SmsDeliveryTypeInputWithService,
+} from "../../ingredients/smsdelivery/types";
 
 export type DeviceType = DeviceTypeOriginal;
 
@@ -66,6 +74,9 @@ export type TypeInput = (
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
+          /**
+           * @deprecated Please use smsDelivery config instead
+           */
           createAndSendCustomTextMessage: (
               input: {
                   // Where the message should be delivered.
@@ -129,6 +140,9 @@ export type TypeInput = (
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
+          /**
+           * @deprecated Please use smsDelivery config instead
+           */
           createAndSendCustomTextMessage: (
               input: {
                   // Where the message should be delivered.
@@ -150,6 +164,7 @@ export type TypeInput = (
      * of `contactMethod` value, the config is required for email verification recipe
      */
     emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+    smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     providers?: TypeProvider[];
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
@@ -290,7 +305,8 @@ export type TypeNormalisedInput = (
     getEmailDeliveryConfig: (
         recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
-    ) => EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+    ) => EmailDeliveryTypeInputWithService<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+    getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypeThirdPartyPasswordlessSmsDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -577,3 +593,5 @@ export type APIInterface = {
 export type TypeThirdPartyPasswordlessEmailDeliveryInput =
     | TypeThirdPartyEmailDeliveryInput
     | TypePasswordlessEmailDeliveryInput;
+
+export type TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput;

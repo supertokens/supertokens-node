@@ -12,11 +12,13 @@ import {
     RecipeInterface,
     APIInterface,
     TypeThirdPartyPasswordlessEmailDeliveryInput,
+    TypeThirdPartyPasswordlessSmsDeliveryInput,
 } from "./types";
 import STErrorPasswordless from "../passwordless/error";
 import STErrorThirdParty from "../thirdparty/error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -27,6 +29,7 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+    smsDelivery: SmsDeliveryIngredient<TypeThirdPartyPasswordlessSmsDeliveryInput>;
     isInServerlessEnv: boolean;
     constructor(
         recipeId: string,
@@ -40,6 +43,7 @@ export default class Recipe extends RecipeModule {
         },
         ingredients: {
             emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput> | undefined;
+            smsDelivery: SmsDeliveryIngredient<TypeThirdPartyPasswordlessSmsDeliveryInput> | undefined;
         }
     );
     static init(config: TypeInput): RecipeListFunction;

@@ -44,10 +44,10 @@
         "nodemailer": "^6.7.2",
         "psl": "1.8.0",
         "supertokens-js-override": "^0.0.4",
+        "twilio": "^3.76.0",
         "verify-apple-id-token": "^2.1.0"
     },
     "devDependencies": {
-        "@types/nodemailer": "^6.4.4",
         "@hapi/hapi": "^20.2.0",
         "@koa/router": "^10.1.1",
         "@loopback/core": "2.16.2",
@@ -61,6 +61,7 @@
         "@types/jsonwebtoken": "8.5.0",
         "@types/koa": "^2.13.4",
         "@types/koa-bodyparser": "^4.3.3",
+        "@types/nodemailer": "^6.4.4",
         "@types/psl": "1.1.0",
         "@types/validator": "10.11.0",
         "aws-sdk-mock": "^5.4.0",

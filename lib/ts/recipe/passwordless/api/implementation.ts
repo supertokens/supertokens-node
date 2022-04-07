@@ -89,16 +89,15 @@ export default function getAPIImplementation(): APIInterface {
                     input.options.config.contactMethod === "PHONE" ||
                     (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
                 ) {
-                    await input.options.config.createAndSendCustomTextMessage(
-                        {
-                            codeLifetime: response.codeLifetime,
-                            phoneNumber: (input as any).phoneNumber!,
-                            preAuthSessionId: response.preAuthSessionId,
-                            urlWithLinkCode: magicLink,
-                            userInputCode,
-                        },
-                        input.userContext
-                    );
+                    await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
+                        type: "PASSWORDLESS_LOGIN",
+                        codeLifetime: response.codeLifetime,
+                        phoneNumber: (input as any).phoneNumber!,
+                        preAuthSessionId: response.preAuthSessionId,
+                        urlWithLinkCode: magicLink,
+                        userInputCode,
+                        userContext: input.userContext,
+                    });
                 } else {
                     await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                         type: "PASSWORDLESS_LOGIN",
@@ -226,16 +225,15 @@ export default function getAPIImplementation(): APIInterface {
                             (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
                                 deviceInfo.phoneNumber !== undefined)
                         ) {
-                            await input.options.config.createAndSendCustomTextMessage(
-                                {
-                                    codeLifetime: response.codeLifetime,
-                                    phoneNumber: deviceInfo.phoneNumber!,
-                                    preAuthSessionId: response.preAuthSessionId,
-                                    urlWithLinkCode: magicLink,
-                                    userInputCode,
-                                },
-                                input.userContext
-                            );
+                            await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
+                                type: "PASSWORDLESS_LOGIN",
+                                codeLifetime: response.codeLifetime,
+                                phoneNumber: deviceInfo.phoneNumber!,
+                                preAuthSessionId: response.preAuthSessionId,
+                                urlWithLinkCode: magicLink,
+                                userInputCode,
+                                userContext: input.userContext,
+                            });
                         } else {
                             await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                                 type: "PASSWORDLESS_LOGIN",

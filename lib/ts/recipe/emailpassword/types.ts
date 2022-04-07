@@ -21,7 +21,10 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 
@@ -31,7 +34,7 @@ export type TypeNormalisedInput = {
     getEmailDeliveryConfig: (
         recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
-    ) => EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
+    ) => EmailDeliveryTypeInputWithService<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {

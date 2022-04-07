@@ -22,6 +22,14 @@ export type EmailDeliveryInterface<T> = {
  * config class parameter when parent Recipe create a new EmailDeliveryRecipe object via constructor
  */
 export interface TypeInput<T> {
+    service?: EmailDeliveryInterface<T>;
+    override?: (
+        originalImplementation: EmailDeliveryInterface<T>,
+        builder: OverrideableBuilder<EmailDeliveryInterface<T>>
+    ) => EmailDeliveryInterface<T>;
+}
+
+export interface TypeInputWithService<T> {
     service: EmailDeliveryInterface<T>;
     override?: (
         originalImplementation: EmailDeliveryInterface<T>,

@@ -12,16 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypePasswordlessEmailDeliveryInput } from "../../../types";
-import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import axios from "axios";
+import { TypePasswordlessSmsDeliveryInput } from "../../../types";
+import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { NormalisedAppinfo } from "../../../../../types";
 
-function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
+function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
     return async (
-        input: {
+        __: {
             // Where the message should be delivered.
-            email: string;
+            phoneNumber: string;
             // This has to be entered on the starting device  to finish sign in/up
             userInputCode?: string;
             // Full url that the end-user can click to finish sign in/up
@@ -33,29 +32,15 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
         if (process.env.TEST_MODE === "testing") {
             return;
         }
-        await axios({
-            method: "POST",
-            url: "https://api.supertokens.io/0/st/auth/passwordless/login",
-            data: {
-                email: input.email,
-                appName: appInfo.appName,
-                codeLifetime: input.codeLifetime,
-                urlWithLinkCode: input.urlWithLinkCode,
-                userInputCode: input.userInputCode,
-            },
-            headers: {
-                "api-version": 0,
-            },
-        });
+        // TODO: Skip in this PR
     };
 }
 
-export default class BackwardCompatibilityService
-    implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
-    private createAndSendCustomEmail: (
+export default class BackwardCompatibilityService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
+    private createAndSendCustomSms: (
         input: {
             // Where the message should be delivered.
-            email: string;
+            phoneNumber: string;
             // This has to be entered on the starting device  to finish sign in/up
             userInputCode?: string;
             // Full url that the end-user can click to finish sign in/up
@@ -69,10 +54,10 @@ export default class BackwardCompatibilityService
 
     constructor(
         appInfo: NormalisedAppinfo,
-        createAndSendCustomEmail?: (
+        createAndSendCustomSms?: (
             input: {
                 // Where the message should be delivered.
-                email: string;
+                phoneNumber: string;
                 // This has to be entered on the starting device  to finish sign in/up
                 userInputCode?: string;
                 // Full url that the end-user can click to finish sign in/up
@@ -84,16 +69,14 @@ export default class BackwardCompatibilityService
             userContext: any
         ) => Promise<void>
     ) {
-        this.createAndSendCustomEmail =
-            createAndSendCustomEmail === undefined
-                ? defaultCreateAndSendCustomEmail(appInfo)
-                : createAndSendCustomEmail;
+        this.createAndSendCustomSms =
+            createAndSendCustomSms === undefined ? defaultCreateAndSendCustomSms(appInfo) : createAndSendCustomSms;
     }
 
-    sendEmail = async (input: TypePasswordlessEmailDeliveryInput & { userContext: any }) => {
-        await this.createAndSendCustomEmail(
+    sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {
+        await this.createAndSendCustomSms(
             {
-                email: input.email,
+                phoneNumber: input.phoneNumber,
                 userInputCode: input.userInputCode,
                 urlWithLinkCode: input.urlWithLinkCode,
                 preAuthSessionId: input.preAuthSessionId,

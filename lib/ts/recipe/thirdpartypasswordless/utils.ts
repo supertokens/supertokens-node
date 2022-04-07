@@ -18,7 +18,8 @@ import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverif
 import { TypeInput, TypeNormalisedInput } from "./types";
 import Recipe from "./recipe";
 import { RecipeInterface, APIInterface } from "./types";
-import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
+import BackwardCompatibilityEmailService from "./emaildelivery/services/backwardCompatibility";
+import BackwardCompatibilitySmsService from "./smsdelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -45,7 +46,7 @@ export function validateAndNormaliseUserInput(
          * createAndSendCustomEmail implementation
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
+            emailService = new BackwardCompatibilityEmailService(
                 recipeImpl,
                 appInfo,
                 isInServerlessEnv,
@@ -73,12 +74,45 @@ export function validateAndNormaliseUserInput(
         };
     }
 
+    function getSmsDeliveryConfig() {
+        let smsService = config?.smsDelivery?.service;
+        /**
+         * following code is for backward compatibility.
+         * if user has not passed smsDelivery config, we
+         * use the createAndSendCustomTextMessage config. If the user
+         * has not passed even that config, we use the default
+         * createAndSendCustomTextMessage implementation
+         */
+        if (smsService === undefined) {
+            smsService = new BackwardCompatibilitySmsService(appInfo, {
+                createAndSendCustomTextMessage:
+                    config?.contactMethod !== "EMAIL" ? config?.createAndSendCustomTextMessage : undefined,
+            });
+        }
+        return {
+            ...config?.smsDelivery,
+            /**
+             * if we do
+             * let smsDelivery = {
+             *    service: smsService,
+             *    ...config.smsDelivery,
+             * };
+             *
+             * and if the user has passed service as undefined,
+             * it it again get set to undefined, so we
+             * set service at the end
+             */
+            service: smsService,
+        };
+    }
+
     return {
         ...config,
         providers,
         emailVerificationFeature,
         override,
         getEmailDeliveryConfig,
+        getSmsDeliveryConfig,
     };
 }
 

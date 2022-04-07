@@ -26,6 +26,7 @@ import {
     RecipeInterface,
     APIInterface,
     TypeThirdPartyPasswordlessEmailDeliveryInput,
+    TypeThirdPartyPasswordlessSmsDeliveryInput,
 } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import STErrorPasswordless from "../passwordless/error";
@@ -40,6 +41,7 @@ import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -59,6 +61,8 @@ export default class Recipe extends RecipeModule {
 
     emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput>;
 
+    smsDelivery: SmsDeliveryIngredient<TypeThirdPartyPasswordlessSmsDeliveryInput>;
+
     isInServerlessEnv: boolean;
 
     constructor(
@@ -73,6 +77,7 @@ export default class Recipe extends RecipeModule {
         },
         ingredients: {
             emailDelivery: EmailDeliveryIngredient<TypeThirdPartyPasswordlessEmailDeliveryInput> | undefined;
+            smsDelivery: SmsDeliveryIngredient<TypeThirdPartyPasswordlessSmsDeliveryInput> | undefined;
         }
     ) {
         super(recipeId, appInfo);
@@ -102,6 +107,11 @@ export default class Recipe extends RecipeModule {
                       this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv)
                   )
                 : ingredients.emailDelivery;
+
+        this.smsDelivery =
+            ingredients.smsDelivery === undefined
+                ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
+                : ingredients.smsDelivery;
 
         this.emailVerificationRecipe =
             recipes.emailVerificationInstance !== undefined
@@ -189,6 +199,7 @@ export default class Recipe extends RecipeModule {
                       },
                       {
                           emailDelivery: this.emailDelivery,
+                          smsDelivery: this.smsDelivery,
                       }
                   );
 
@@ -238,6 +249,7 @@ export default class Recipe extends RecipeModule {
                     },
                     {
                         emailDelivery: undefined,
+                        smsDelivery: undefined,
                     }
                 );
                 return Recipe.instance;

@@ -37,10 +37,8 @@ import {
     RESEND_CODE_API,
 } from "./constants";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { TypePasswordlessEmailDeliveryInput } from "./types";
-// import SmsDeliveryRecipeImplementation from "./smsDelivery";
-// import SmsDeliveryRecipe from "../smsdelivery/recipe";
-// import { RecipeInterface as SmsDelvieryRecipeInterface } from "../smsdelivery/types";
+import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
+import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -56,7 +54,7 @@ export default class Recipe extends RecipeModule {
 
     emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
 
-    // smsDelivery: SmsDeliveryRecipe<TypeSMSDeliveryTypeInput>;
+    smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
 
     constructor(
         recipeId: string,
@@ -65,6 +63,7 @@ export default class Recipe extends RecipeModule {
         config: TypeInput,
         ingredients: {
             emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput> | undefined;
+            smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput> | undefined;
         }
     ) {
         super(recipeId, appInfo);
@@ -88,6 +87,11 @@ export default class Recipe extends RecipeModule {
             ingredients.emailDelivery === undefined
                 ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig())
                 : ingredients.emailDelivery;
+
+        this.smsDelivery =
+            ingredients.smsDelivery === undefined
+                ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
+                : ingredients.smsDelivery;
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -102,6 +106,7 @@ export default class Recipe extends RecipeModule {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
                     emailDelivery: undefined,
+                    smsDelivery: undefined,
                 });
                 return Recipe.instance;
             } else {
@@ -169,7 +174,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
             emailDelivery: this.emailDelivery,
-            // smsDelivery: this.smsDelivery,
+            smsDelivery: this.smsDelivery,
         };
         if (id === CONSUME_CODE_API) {
             return await consumeCodeAPI(this.apiImpl, options);

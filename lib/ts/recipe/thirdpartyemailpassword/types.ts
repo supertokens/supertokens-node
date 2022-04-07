@@ -29,7 +29,10 @@ import {
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import { TypeInput as EmailDeliveryTypeInput } from "../../ingredients/emaildelivery/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
 
 export type User = {
     id: string;
@@ -103,7 +106,7 @@ export type TypeNormalisedInput = {
         recipeImpl: RecipeInterface,
         emailPasswordRecipeImpl: EPRecipeInterface,
         isInServerlessEnv: boolean
-    ) => EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
+    ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {

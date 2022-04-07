@@ -12,22 +12,27 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeInputWithService, EmailDeliveryInterface } from "./types";
 import OverrideableBuilder from "supertokens-js-override";
 
-export default class EmailDelivery<T> {
-    ingredientInterfaceImpl: EmailDeliveryInterface<T>;
+export type SmsDeliveryInterface<T> = {
+    sendSms: (input: T & { userContext: any }) => Promise<void>;
+};
 
-    constructor(config: TypeInputWithService<T>) {
-        let defaultIngredientImpl: EmailDeliveryInterface<T> = {
-            sendEmail: async function (input) {
-                return config.service.sendEmail(input);
-            },
-        };
-        let builder = new OverrideableBuilder(defaultIngredientImpl);
-        if (config.override !== undefined) {
-            builder = builder.override(config.override);
-        }
-        this.ingredientInterfaceImpl = builder.build();
-    }
+/**
+ * config class parameter when parent Recipe create a new SmsDeliveryRecipe object via constructor
+ */
+export interface TypeInput<T> {
+    service?: SmsDeliveryInterface<T>;
+    override?: (
+        originalImplementation: SmsDeliveryInterface<T>,
+        builder: OverrideableBuilder<SmsDeliveryInterface<T>>
+    ) => SmsDeliveryInterface<T>;
+}
+
+export interface TypeInputWithService<T> {
+    service: SmsDeliveryInterface<T>;
+    override?: (
+        originalImplementation: SmsDeliveryInterface<T>,
+        builder: OverrideableBuilder<SmsDeliveryInterface<T>>
+    ) => SmsDeliveryInterface<T>;
 }
