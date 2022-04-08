@@ -104,72 +104,19 @@ export default class Wrapper {
     }): Promise<{
         status: "OK";
     }>;
-    static listCodesByEmail(input: {
-        email: string;
-        userContext?: any;
-    }): Promise<
-        {
-            preAuthSessionId: string;
-            failedCodeInputAttemptCount: number;
-            email?: string | undefined;
-            phoneNumber?: string | undefined;
-            codes: {
-                codeId: string;
-                timeCreated: string;
-                codeLifetime: number;
-            }[];
-        }[]
-    >;
+    static listCodesByEmail(input: { email: string; userContext?: any }): Promise<import("./types").DeviceType[]>;
     static listCodesByPhoneNumber(input: {
         phoneNumber: string;
         userContext?: any;
-    }): Promise<
-        {
-            preAuthSessionId: string;
-            failedCodeInputAttemptCount: number;
-            email?: string | undefined;
-            phoneNumber?: string | undefined;
-            codes: {
-                codeId: string;
-                timeCreated: string;
-                codeLifetime: number;
-            }[];
-        }[]
-    >;
+    }): Promise<import("./types").DeviceType[]>;
     static listCodesByDeviceId(input: {
         deviceId: string;
         userContext?: any;
-    }): Promise<
-        | {
-              preAuthSessionId: string;
-              failedCodeInputAttemptCount: number;
-              email?: string | undefined;
-              phoneNumber?: string | undefined;
-              codes: {
-                  codeId: string;
-                  timeCreated: string;
-                  codeLifetime: number;
-              }[];
-          }
-        | undefined
-    >;
+    }): Promise<import("./types").DeviceType | undefined>;
     static listCodesByPreAuthSessionId(input: {
         preAuthSessionId: string;
         userContext?: any;
-    }): Promise<
-        | {
-              preAuthSessionId: string;
-              failedCodeInputAttemptCount: number;
-              email?: string | undefined;
-              phoneNumber?: string | undefined;
-              codes: {
-                  codeId: string;
-                  timeCreated: string;
-                  codeLifetime: number;
-              }[];
-          }
-        | undefined
-    >;
+    }): Promise<import("./types").DeviceType | undefined>;
     static createMagicLink(
         input:
             | {
