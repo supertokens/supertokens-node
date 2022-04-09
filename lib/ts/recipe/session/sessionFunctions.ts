@@ -328,7 +328,7 @@ export async function refreshSession(
 
     if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
         if (!containsCustomHeader) {
-            logDebugMessage("refreshSession: Returning TRY_REFRESH_TOKEN because custom header (rid) was not passed");
+            logDebugMessage("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed");
             throw new STError({
                 message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
                 type: STError.UNAUTHORISED,
