@@ -1,5 +1,4 @@
 // @ts-nocheck
-import { Transporter } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 export interface SMTPServiceConfig {
     host: string;
@@ -39,10 +38,3 @@ export declare type TypeInput<T> = {
     smtpSettings: SMTPServiceConfig;
     override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>;
 };
-export declare type TypeGetDefaultEmailServiceImplementation<T> = (
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
-) => ServiceInterface<T>;
