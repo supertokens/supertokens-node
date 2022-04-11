@@ -18,7 +18,7 @@ import { NormalisedAppinfo } from "../../../../../types";
 
 function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
     return async (
-        __: {
+        input: {
             // Where the message should be delivered.
             phoneNumber: string;
             // This has to be entered on the starting device  to finish sign in/up
@@ -29,10 +29,8 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
         },
         _: any
     ): Promise<void> => {
-        if (process.env.TEST_MODE === "testing") {
-            return;
-        }
-        // TODO: Skip in this PR
+        console.log(`userInputCode: ${input.userInputCode}`);
+        console.log(`urlWithLinkCode: ${input.urlWithLinkCode}`);
     };
 }
 
