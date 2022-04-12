@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [unreleased]
 
 -   removed jsonschema dependency
+-   emailDelivery and smsDelivery Ingredients added
+-   SMTP service added for emailDelivery
+-   Twilio service added for smsDelivery
 
 ## [9.1.1] - 2022-03-24
 
