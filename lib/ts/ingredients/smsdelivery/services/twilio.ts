@@ -15,39 +15,27 @@
 import OverrideableBuilder from "supertokens-js-override";
 import * as Twilio from "twilio";
 
-export interface TwilioServiceConfig {
-    accountSid: string;
-    authToken: string;
-    /**
-     * only one of "from" and "messagingServiceSid" should be passed.
-     * if both are passed, we should throw error to the user
-     * saying that only one of them should be set. this is because
-     * both parameters can't be passed while calling twilio API.
-     * if none of "from" and "messagingServiceSid" is passed, error
-     * should be thrown.
-     */
-    from?: string;
-    messagingServiceSid?: string;
-    opts?: Twilio.Twilio.TwilioClientOptions;
-}
-
-export type TypeNormalisedInput<T> = {
-    twilioSettings: {
-        accountSid: string;
-        authToken: string;
-        opts?: Twilio.Twilio.TwilioClientOptions;
-    } & (
-        | {
-              from: string;
-              messagingServiceSid: undefined;
-          }
-        | {
-              messagingServiceSid: string;
-              from: undefined;
-          }
-    );
-    override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>;
-};
+/**
+ * only one of "from" and "messagingServiceSid" should be passed.
+ * if both are passed, we should throw error to the user
+ * saying that only one of them should be set. this is because
+ * both parameters can't be passed while calling twilio API.
+ * if none of "from" and "messagingServiceSid" is passed, error
+ * should be thrown.
+ */
+export type TwilioServiceConfig =
+    | {
+          accountSid: string;
+          authToken: string;
+          from: string;
+          opts?: Twilio.Twilio.TwilioClientOptions;
+      }
+    | {
+          accountSid: string;
+          authToken: string;
+          messagingServiceSid: string;
+          opts?: Twilio.Twilio.TwilioClientOptions;
+      };
 
 export interface GetContentResult {
     body: string;
@@ -57,11 +45,9 @@ export interface GetContentResult {
 export type TypeInputSendRawSms = GetContentResult & { userContext: any } & (
         | {
               from: string;
-              messagingServiceSid: undefined;
           }
         | {
               messagingServiceSid: string;
-              from: undefined;
           }
     );
 
@@ -75,36 +61,15 @@ export type TypeInput<T> = {
     override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>;
 };
 
-export function normaliseUserInputConfig<T>(input: TypeInput<T>): TypeNormalisedInput<T> {
-    let from = input.twilioSettings.from;
-    let messagingServiceSid = input.twilioSettings.messagingServiceSid;
-    if (from === undefined && messagingServiceSid === undefined) {
-        throw Error(`Please pass either "from" or "messagingServiceSid" config for twilioSettings.`);
+export function normaliseUserInputConfig<T>(input: TypeInput<T>): TypeInput<T> {
+    let from = "from" in input.twilioSettings ? input.twilioSettings.from : undefined;
+    let messagingServiceSid =
+        "messagingServiceSid" in input.twilioSettings ? input.twilioSettings.messagingServiceSid : undefined;
+    if (
+        (from === undefined && messagingServiceSid === undefined) ||
+        (from !== undefined && messagingServiceSid !== undefined)
+    ) {
+        throw Error(`Please pass exactly one of "from" and "messagingServiceSid" config for twilioSettings.`);
     }
-    if (from !== undefined && messagingServiceSid === undefined) {
-        return {
-            ...input,
-            twilioSettings: {
-                ...input.twilioSettings,
-                messagingServiceSid,
-                from,
-            },
-        };
-    } else if (from === undefined && messagingServiceSid !== undefined) {
-        return {
-            ...input,
-            twilioSettings: {
-                ...input.twilioSettings,
-                messagingServiceSid,
-                from,
-            },
-        };
-    }
-    /**
-     * at this point both from and messagingServiceSid are not undefined,
-     * i.e. user has passed both the config parameters
-     */
-    throw Error(
-        `Please pass only one of "from" and "messagingServiceSid" config for twilioSettings. Both config parameters can be passed together.`
-    );
+    return input;
 }

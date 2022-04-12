@@ -16,7 +16,6 @@ import {
     ServiceInterface,
     TypeInput,
     normaliseUserInputConfig,
-    TypeNormalisedInput,
 } from "../../../../../ingredients/smsdelivery/services/twilio";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import * as Twilio from "twilio";
@@ -26,7 +25,7 @@ import { getServiceImplementation } from "./serviceImplementation";
 
 export default class TwilioService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     serviceImpl: ServiceInterface<TypePasswordlessSmsDeliveryInput>;
-    private config: TypeNormalisedInput<TypePasswordlessSmsDeliveryInput>;
+    private config: TypeInput<TypePasswordlessSmsDeliveryInput>;
 
     constructor(config: TypeInput<TypePasswordlessSmsDeliveryInput>) {
         this.config = normaliseUserInputConfig(config);
@@ -44,11 +43,18 @@ export default class TwilioService implements SmsDeliveryInterface<TypePasswordl
 
     sendSms = async (input: TypePasswordlessSmsDeliveryInput & { userContext: any }) => {
         let content = await this.serviceImpl.getContent(input);
-        await this.serviceImpl.sendRawSms({
-            ...content,
-            ...input.userContext,
-            from: this.config.twilioSettings.from,
-            messagingServiceSid: this.config.twilioSettings.messagingServiceSid,
-        });
+        if ("from" in this.config.twilioSettings) {
+            await this.serviceImpl.sendRawSms({
+                ...content,
+                userContext: input.userContext,
+                from: this.config.twilioSettings.from,
+            });
+        } else {
+            await this.serviceImpl.sendRawSms({
+                ...content,
+                userContext: input.userContext,
+                messagingServiceSid: this.config.twilioSettings.messagingServiceSid,
+            });
+        }
     };
 }

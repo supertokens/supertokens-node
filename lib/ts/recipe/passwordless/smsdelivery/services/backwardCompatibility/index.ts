@@ -29,8 +29,12 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
         },
         _: any
     ): Promise<void> => {
-        console.log(`userInputCode: ${input.userInputCode}`);
-        console.log(`urlWithLinkCode: ${input.urlWithLinkCode}`);
+        /**
+         * if we do console.log(`SMS content: ${input}`);
+         * Output would be:
+         * SMS content: [object Object]
+         */
+        console.log(`SMS content: ${JSON.stringify(input, undefined, 2)}`);
     };
 }
 

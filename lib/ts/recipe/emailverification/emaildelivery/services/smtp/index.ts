@@ -42,7 +42,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeEmailVeri
         let content = await this.serviceImpl.getContent(input);
         await this.serviceImpl.sendRawEmail({
             ...content,
-            ...input.userContext,
+            userContext: input.userContext,
             from: this.config.smtpSettings.from,
         });
     };
