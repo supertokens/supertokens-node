@@ -51,16 +51,6 @@ export default function getAPIInterface(): APIInterface {
                 return undefined;
             }
 
-            const reqClaims = verifySessionOptions?.requiredClaims ?? options.config.defaultRequiredClaimChecks;
-            const missingClaim = await res.checkClaims(reqClaims, userContext);
-
-            if (missingClaim !== undefined) {
-                throw new STError({
-                    type: "MISSING_CLAIM",
-                    message: "MISSING_CLAIM",
-                    payload: { claimId: missingClaim },
-                });
-            }
             return res;
         },
 
@@ -78,6 +68,9 @@ export default function getAPIInterface(): APIInterface {
                 session = await options.recipeImplementation.getSession({
                     req: options.req,
                     res: options.res,
+                    options: {
+                        overwriteDefaultValidators: [],
+                    },
                     userContext,
                 });
             } catch (err) {

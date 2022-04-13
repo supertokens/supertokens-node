@@ -15,7 +15,7 @@
 import { BaseResponse } from "../../framework";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionClaim, SessionClaimChecker, SessionContainerInterface } from "./types";
+import { ClaimValidationError, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 
 export default class Session implements SessionContainerInterface {
@@ -104,6 +104,17 @@ export default class Session implements SessionContainerInterface {
         await this.regenerateToken(newAccessTokenPayload, userContext);
     };
 
+    mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any) => {
+        const updatedPayload = { ...this.getAccessTokenPayload(), ...accessTokenPayloadUpdate };
+        for (const key of Object.keys(accessTokenPayloadUpdate)) {
+            if (accessTokenPayloadUpdate[key] === null) {
+                delete updatedPayload[key];
+            }
+        }
+
+        await this.regenerateToken(updatedPayload, userContext);
+    };
+
     getTimeCreated = async (userContext?: any): Promise<number> => {
         try {
             return (
@@ -136,49 +147,31 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    async updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
-        await this.updateClaims([claim], userContext);
-    }
-
-    async updateClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void> {
+    async validateClaims(
+        claimValidators: SessionClaimValidator[],
+        userContext?: any
+    ): Promise<ClaimValidationError | undefined> {
         const origSessionClaimPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
 
         let newAccessTokenPayload = this.getAccessTokenPayload();
-        for (const claim of claims) {
-            const value = await claim.fetch(this.getUserId(), userContext);
-            if (value !== undefined) {
-                newAccessTokenPayload = claim.addToPayload(newAccessTokenPayload, value, userContext);
-            }
-        }
-
-        if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
-            await this.regenerateToken(newAccessTokenPayload, userContext);
-        }
-    }
-
-    async checkClaim(claimChecker: SessionClaimChecker, userContext?: any): Promise<boolean> {
-        return (await this.checkClaims([claimChecker], userContext)) !== undefined;
-    }
-
-    async checkClaims(claimCheckers: SessionClaimChecker[], userContext?: any): Promise<string | undefined> {
-        const origSessionClaimPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
-
-        let newAccessTokenPayload = this.getAccessTokenPayload();
-        let missingClaimId = undefined;
-        for (const checker of claimCheckers) {
-            if ("claim" in checker && (await checker.shouldRefetch(newAccessTokenPayload, userContext))) {
-                const value = await checker.claim.fetch(this.getUserId(), userContext);
+        let validationResult = undefined;
+        for (const validator of claimValidators) {
+            if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
+                const value = await validator.claim.fetch(this.getUserId(), userContext);
                 if (value !== undefined) {
-                    newAccessTokenPayload = checker.claim.addToPayload(newAccessTokenPayload, value, userContext);
+                    newAccessTokenPayload = validator.claim.addToPayload_internal(
+                        newAccessTokenPayload,
+                        value,
+                        userContext
+                    );
                 }
             }
-            console.log(
-                "checking",
-                "claim" in checker ? checker.claim.id : checker.claimId,
-                await checker.isValid(newAccessTokenPayload, userContext)
-            );
-            if (!(await checker.isValid(newAccessTokenPayload, userContext))) {
-                missingClaimId = "claim" in checker ? checker.claim.id : checker.claimId;
+            const claimValidationResult = await validator.validate(newAccessTokenPayload, userContext);
+            if (!claimValidationResult.isValid) {
+                validationResult = {
+                    validatorTypeId: validator.validatorTypeId,
+                    reason: claimValidationResult.reason,
+                };
                 break;
             }
         }
@@ -186,18 +179,7 @@ export default class Session implements SessionContainerInterface {
         if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
             await this.regenerateToken(newAccessTokenPayload, userContext);
         }
-        return missingClaimId;
-    }
-
-    async addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> {
-        const newAccessTokenPayload = claim.addToPayload(this.getAccessTokenPayload(), value, userContext);
-
-        await this.regenerateToken(newAccessTokenPayload, userContext);
-    }
-    async removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
-        const newAccessTokenPayload = claim.removeFromPayload(this.getAccessTokenPayload(), userContext);
-
-        await this.regenerateToken(newAccessTokenPayload, userContext);
+        return validationResult;
     }
 
     public async regenerateToken(newAccessTokenPayload: any | undefined, userContext: any) {

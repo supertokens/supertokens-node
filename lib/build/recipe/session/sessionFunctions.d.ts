@@ -79,8 +79,3 @@ export declare function updateAccessTokenPayload(
     sessionHandle: string,
     newAccessTokenPayload: any
 ): Promise<void>;
-export declare function updateSessionClaims(
-    helpers: Helpers,
-    sessionHandle: string,
-    newClaimPayload: any
-): Promise<void>;

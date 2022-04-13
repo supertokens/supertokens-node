@@ -19,6 +19,7 @@ import {
     TypeNormalisedInput,
     NormalisedErrorHandlers,
     InputSchema,
+    ClaimValidationError,
 } from "./types";
 import {
     setFrontTokenInHeaders,
@@ -26,7 +27,7 @@ import {
     attachRefreshTokenToCookie,
     setIdRefreshTokenInHeaderAndCookie,
     setAntiCsrfTokenInHeaders,
-    setMissingClaimIdHeader,
+    setInvalidClaimHeader,
 } from "./cookieAndHeaders";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
@@ -58,14 +59,14 @@ export async function sendUnauthorisedResponse(
     sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
 }
 
-export async function sendMissingClaimResponse(
+export async function sendInvalidClaimResponse(
     recipeInstance: SessionRecipe,
-    claimId: string,
+    validationError: ClaimValidationError,
     __: BaseRequest,
     response: BaseResponse
 ) {
-    setMissingClaimIdHeader(response, claimId);
-    sendNon200Response(response, "missing claim", recipeInstance.config.missingClaimStatusCode);
+    setInvalidClaimHeader(response, JSON.stringify(validationError));
+    sendNon200Response(response, "invalid claim", recipeInstance.config.missingClaimStatusCode);
 }
 
 export async function sendTokenTheftDetectedResponse(
@@ -199,8 +200,8 @@ export function validateAndNormaliseUserInput(
         onUnauthorised: async (message: string, request: BaseRequest, response: BaseResponse) => {
             return await sendUnauthorisedResponse(recipeInstance, message, request, response);
         },
-        onMissingClaim: (claimId: string, request: BaseRequest, response: BaseResponse) => {
-            return sendMissingClaimResponse(recipeInstance, claimId, request, response);
+        onInvalidClaim: (validationError: ClaimValidationError, request: BaseRequest, response: BaseResponse) => {
+            return sendInvalidClaimResponse(recipeInstance, validationError, request, response);
         },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {
@@ -210,8 +211,8 @@ export function validateAndNormaliseUserInput(
         if (config.errorHandlers.onUnauthorised !== undefined) {
             errorHandlers.onUnauthorised = config.errorHandlers.onUnauthorised;
         }
-        if (config.errorHandlers.onMissingClaim !== undefined) {
-            errorHandlers.onMissingClaim = config.errorHandlers.onMissingClaim;
+        if (config.errorHandlers.onInvalidClaim !== undefined) {
+            errorHandlers.onInvalidClaim = config.errorHandlers.onInvalidClaim;
         }
     }
 
@@ -259,8 +260,8 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
-        defaultClaims: config?.defaultClaims ?? [],
-        defaultRequiredClaimChecks: config?.defaultRequiredClaimChecks ?? [],
+        claimsToAddOnCreation: config?.claimsToAddOnCreation ?? [],
+        defaultValidatorsForVerification: config?.defaultValidatorsForVerification ?? [],
         missingClaimStatusCode: config?.missingClaimStatusCode ?? 403,
         jwt: {
             enable: enableJWT,

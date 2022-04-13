@@ -1,10 +1,11 @@
 // @ts-nocheck
 import STError from "../../error";
+import { ClaimValidationError } from "./types";
 export default class SessionError extends STError {
     static UNAUTHORISED: "UNAUTHORISED";
     static TRY_REFRESH_TOKEN: "TRY_REFRESH_TOKEN";
     static TOKEN_THEFT_DETECTED: "TOKEN_THEFT_DETECTED";
-    static MISSING_CLAIM: "MISSING_CLAIM";
+    static INVALID_CLAIM: "INVALID_CLAIM";
     constructor(
         options:
             | {
@@ -28,10 +29,8 @@ export default class SessionError extends STError {
               }
             | {
                   message: string;
-                  type: "MISSING_CLAIM";
-                  payload: {
-                      claimId: string;
-                  };
+                  type: "INVALID_CLAIM";
+                  payload: ClaimValidationError;
               }
     );
 }

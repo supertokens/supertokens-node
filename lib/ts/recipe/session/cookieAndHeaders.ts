@@ -27,7 +27,7 @@ const antiCsrfHeaderKey = "anti-csrf";
 const ridHeaderKey = "rid";
 
 const frontTokenHeaderKey = "front-token";
-const missingClaimIdHeaderKey = "missing-claim-id";
+const invalidClaimHeaderKey = "invalid-claim";
 
 /**
  * @description clears all the auth cookies from the response
@@ -64,9 +64,9 @@ export function attachRefreshTokenToCookie(
     setCookie(config, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
 }
 
-export function setMissingClaimIdHeader(response: BaseResponse, claimId: string) {
-    response.setHeader(missingClaimIdHeaderKey, claimId, false);
-    response.setHeader("Access-Control-Expose-Headers", missingClaimIdHeaderKey, true);
+export function setInvalidClaimHeader(response: BaseResponse, validatorTypeId: string) {
+    response.setHeader(invalidClaimHeaderKey, validatorTypeId, false);
+    response.setHeader("Access-Control-Expose-Headers", invalidClaimHeaderKey, true);
 }
 
 export function getAccessTokenFromCookie(req: BaseRequest): string | undefined {

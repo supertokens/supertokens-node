@@ -442,19 +442,3 @@ export async function updateAccessTokenPayload(helpers: Helpers, sessionHandle: 
         });
     }
 }
-
-// TODO: we don't actually need this
-export async function updateSessionClaims(helpers: Helpers, sessionHandle: string, newClaimPayload: any) {
-    newClaimPayload = newClaimPayload === null || newClaimPayload === undefined ? {} : newClaimPayload;
-    const response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/claims"), {
-        sessionHandle,
-        claims: newClaimPayload,
-    });
-
-    if (response.status === "UNAUTHORISED") {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
-    }
-}

@@ -16,7 +16,7 @@ import * as JsonWebToken from "jsonwebtoken";
 import * as assert from "assert";
 
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionClaim, SessionClaimChecker, SessionContainerInterface } from "../types";
+import { ClaimValidationError, SessionClaimValidator, SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import { addJWTToAccessTokenPayload } from "./utils";
 
@@ -56,31 +56,27 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         return this.originalSessionClass.getExpiry(userContext);
     };
 
-    // TODO: check if binding is OK, these all use regenerateToken
-    updateClaim = async (claim: SessionClaim<any>, userContext?: any): Promise<void> => {
-        return this.originalSessionClass.updateClaim.bind(this)(claim, userContext);
-    };
-    updateClaims = async (claims: SessionClaim<any>[], userContext?: any): Promise<void> => {
-        return this.originalSessionClass.updateClaims.bind(this)(claims, userContext);
-    };
-
-    addClaim = async <T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> => {
-        return this.originalSessionClass.addClaim.bind(this)(claim, value, userContext);
-    };
-    removeClaim = async <T>(claim: SessionClaim<T>, userContext?: any): Promise<void> => {
-        return this.originalSessionClass.removeClaim.bind(this)(claim, userContext);
-    };
-
-    checkClaim(claimChecker: SessionClaimChecker, userContext?: any): Promise<boolean> {
-        return this.originalSessionClass.checkClaim.bind(this)(claimChecker, userContext);
-    }
-    checkClaims(claimCheckers: SessionClaimChecker[], userContext?: any): Promise<string | undefined> {
-        return this.originalSessionClass.checkClaims.bind(this)(claimCheckers, userContext);
+    validateClaims(
+        claimValidators: SessionClaimValidator[],
+        userContext?: any
+    ): Promise<ClaimValidationError | undefined> {
+        return this.originalSessionClass.validateClaims.bind(this)(claimValidators, userContext);
     }
 
     // TODO: check why this called the original regenerateToken
     updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any): Promise<void> => {
         await this.regenerateToken(newAccessTokenPayload, userContext);
+    };
+
+    mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any): Promise<void> => {
+        const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
+        for (const key of Object.keys(accessTokenPayloadUpdate)) {
+            if (accessTokenPayloadUpdate[key] === null) {
+                delete updatedPayload[key];
+            }
+        }
+
+        await this.regenerateToken(updatedPayload, userContext);
     };
 
     regenerateToken = async (newAccessTokenPayload: any | undefined, userContext: any): Promise<void> => {

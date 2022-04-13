@@ -150,6 +150,7 @@ export default class SessionRecipe extends RecipeModule {
             req,
             res,
         };
+        console.log(id);
         if (id === REFRESH_API_PATH) {
             return await handleRefreshAPI(this.apiImpl, options);
         } else if (id === SIGNOUT_API_PATH) {
@@ -174,8 +175,8 @@ export default class SessionRecipe extends RecipeModule {
                     request,
                     response
                 );
-            } else if (err.type === STError.MISSING_CLAIM) {
-                return await this.config.errorHandlers.onMissingClaim(err.payload.claimId, request, response);
+            } else if (err.type === STError.INVALID_CLAIM) {
+                return await this.config.errorHandlers.onInvalidClaim(err.payload, request, response);
             } else {
                 throw err;
             }

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseResponse } from "../../framework";
-import { SessionClaim, SessionClaimChecker, SessionContainerInterface } from "./types";
+import { ClaimValidationError, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
@@ -25,13 +25,12 @@ export default class Session implements SessionContainerInterface {
     getHandle: () => string;
     getAccessToken: () => string;
     updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
+    mergeIntoAccessTokenPayload: (accessTokenPayloadUpdate: any, userContext?: any) => Promise<void>;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
-    updateClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void>;
-    checkClaim(claimChecker: SessionClaimChecker, userContext?: any): Promise<boolean>;
-    checkClaims(claimCheckers: SessionClaimChecker[], userContext?: any): Promise<string | undefined>;
-    addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
-    removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    validateClaims(
+        claimValidators: SessionClaimValidator[],
+        userContext?: any
+    ): Promise<ClaimValidationError | undefined>;
     regenerateToken(newAccessTokenPayload: any | undefined, userContext: any): Promise<void>;
 }

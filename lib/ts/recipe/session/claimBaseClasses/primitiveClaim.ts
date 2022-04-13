@@ -1,51 +1,77 @@
+import SessionWrapper from "..";
 import { Awaitable, JSONValue } from "../../../types";
-import { SessionClaim, SessionClaimChecker } from "../types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
 
 export abstract class PrimitiveClaim<T extends JSONValue> implements SessionClaim<T> {
-    constructor(public readonly id: string) {}
+    constructor(public readonly key: string) {}
 
     abstract fetch(userId: string, userContext: any): Awaitable<T | undefined>;
 
-    addToPayload(payload: any, value: T, _userContext: any): any {
+    addToPayload_internal(payload: any, value: T, _userContext: any): any {
         return {
             ...payload,
-            [this.id]: {
+            [this.key]: {
                 v: value,
                 t: new Date().getTime(),
             },
         };
     }
-    removeFromPayload(payload: any, _userContext: any): any {
+    removeFromPayload_internal(payload: any, _userContext: any): any {
         const res = {
             ...payload,
         };
-        delete res[this.id];
+        delete res[this.key];
         return res;
     }
 
-    getValueFromPayload(payload: any, _userContext: any): T | undefined {
-        return payload[this.id]?.v;
+    addToSession(session: SessionContainerInterface, value: T, userContext?: any) {
+        return session.mergeIntoAccessTokenPayload(this.addToPayload_internal({}, value, userContext));
     }
 
-    checkers = {
-        hasValue: (val: T): SessionClaimChecker => {
+    addToSessionUsingSessionHandle(sessionHandle: string, value: T, userContext?: any) {
+        return SessionWrapper.mergeIntoAccessTokenPayload(
+            sessionHandle,
+            this.addToPayload_internal({}, value, userContext)
+        );
+    }
+
+    getValueFromPayload(payload: any, _userContext?: any): T | undefined {
+        return payload[this.key]?.v;
+    }
+
+    validators = {
+        hasValue: (val: T, validatorTypeId?: string): SessionClaimValidator => {
             return {
                 claim: this,
+                validatorTypeId: validatorTypeId ?? this.key,
                 shouldRefetch: (grantPayload, ctx) => this.getValueFromPayload(grantPayload, ctx) === undefined,
-                isValid: (grantPayload, ctx) => this.getValueFromPayload(grantPayload, ctx) === val,
+                // TODO: we could add current and expected value into a reason
+                validate: (grantPayload, ctx) => ({ isValid: this.getValueFromPayload(grantPayload, ctx) === val }),
             };
         },
-        hasFreshValue: (val: T, maxAgeInSeconds: number): SessionClaimChecker => {
+        hasFreshValue: (val: T, maxAgeInSeconds: number, validatorTypeId?: string): SessionClaimValidator => {
             return {
                 claim: this,
+                validatorTypeId: validatorTypeId ?? this.key,
                 shouldRefetch: (grantPayload, ctx) =>
                     this.getValueFromPayload(grantPayload, ctx) === undefined ||
                     // We know grantPayload[this.id] is defined since the value is not undefined in this branch
-                    grantPayload[this.id].t < Date.now() - maxAgeInSeconds * 1000,
-                isValid: (grantPayload, ctx) =>
-                    this.getValueFromPayload(grantPayload, ctx) === val &&
-                    // We know grantPayload[this.id] is defined since we already checked the value is as expected
-                    grantPayload[this.id].t > Date.now() - maxAgeInSeconds * 1000,
+                    grantPayload[this.key].t < Date.now() - maxAgeInSeconds * 1000,
+                validate: (grantPayload, ctx) => {
+                    if (this.getValueFromPayload(grantPayload, ctx) !== val) {
+                        return {
+                            isValid: false,
+                            reason: "wrong value",
+                        };
+                    }
+                    if (grantPayload[this.key].t > Date.now() - maxAgeInSeconds * 1000) {
+                        return {
+                            isValid: false,
+                            reason: "expired",
+                        };
+                    }
+                    return { isValid: true };
+                },
             };
         },
     };

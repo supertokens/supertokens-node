@@ -4,7 +4,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
-import { Awaitable } from "../../types";
+import { Awaitable, JSONObject, JSONValue } from "../../types";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;
@@ -58,7 +58,7 @@ export declare const InputSchemaErrorHandlers: {
         onTokenTheftDetected: {
             type: string;
         };
-        onMissingClaim: {
+        onInvalidClaim: {
             type: string;
         };
     };
@@ -67,8 +67,11 @@ export declare const InputSchemaErrorHandlers: {
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
-    onMissingClaim: ErrorHandlerMiddleware;
+    onInvalidClaim: MissingClaimErrorHandlerMiddleware;
 }
+export declare type SessionClaimBuilder =
+    | SessionClaim<any>
+    | ((...args: Parameters<RecipeInterface["createNewSession"]>) => Awaitable<JSONObject>);
 export declare type TypeInput = {
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
@@ -76,8 +79,8 @@ export declare type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    defaultClaims?: SessionClaim<any>[];
-    defaultRequiredClaimChecks?: SessionClaimChecker[];
+    claimsToAddOnCreation?: SessionClaimBuilder[];
+    defaultValidatorsForVerification?: SessionClaimValidator[];
     missingClaimStatusCode?: number;
     jwt?:
         | {
@@ -140,16 +143,16 @@ export declare const InputSchema: {
                 onTokenTheftDetected: {
                     type: string;
                 };
-                onMissingClaim: {
+                onInvalidClaim: {
                     type: string;
                 };
             };
             additionalProperties: boolean;
         };
-        defaultClaims: {
+        claimsToAddOnCreation: {
             type: string;
         };
-        defaultRequiredClaimChecks: {
+        defaultValidatorsForVerification: {
             type: string;
         };
         antiCsrf: {
@@ -172,8 +175,8 @@ export declare type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    defaultClaims: SessionClaim<any>[];
-    defaultRequiredClaimChecks: SessionClaimChecker[];
+    claimsToAddOnCreation: SessionClaimBuilder[];
+    defaultValidatorsForVerification: SessionClaimValidator[];
     missingClaimStatusCode: number;
     jwt: {
         enable: boolean;
@@ -218,18 +221,18 @@ export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 export interface MissingClaimErrorHandlerMiddleware {
-    (claimId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
+    (validatorError: ClaimValidationError, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
     onTryRefreshToken: ErrorHandlerMiddleware;
     onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
-    onMissingClaim: MissingClaimErrorHandlerMiddleware;
+    onInvalidClaim: MissingClaimErrorHandlerMiddleware;
 }
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
-    requiredClaims?: SessionClaimChecker[];
+    overwriteDefaultValidators?: SessionClaimValidator[];
 }
 export declare type RecipeInterface = {
     createNewSession(input: {
@@ -237,7 +240,7 @@ export declare type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
-        claimsToLoad?: SessionClaim<any>[];
+        claimsToAdd?: SessionClaimBuilder[];
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getSession(input: {
@@ -261,6 +264,11 @@ export declare type RecipeInterface = {
     updateAccessTokenPayload(input: {
         sessionHandle: string;
         newAccessTokenPayload: any;
+        userContext: any;
+    }): Promise<void>;
+    mergeIntoAccessTokenPayload(input: {
+        sessionHandle: string;
+        accessTokenPayloadUpdate: JSONObject;
         userContext: any;
     }): Promise<void>;
     regenerateAccessToken(input: {
@@ -293,14 +301,13 @@ export interface SessionContainerInterface {
     getAccessToken(userContext?: any): string;
     regenerateToken(newAccessTokenPayload: any | undefined, userContext: any): Promise<void>;
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
+    mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
-    updateClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
-    updateClaims(claims: SessionClaim<any>[], userContext?: any): Promise<void>;
-    checkClaim(claimChecker: SessionClaimChecker, userContext?: any): Promise<boolean>;
-    checkClaims(claimCheckers: SessionClaimChecker[], userContext?: any): Promise<string | undefined>;
-    addClaim<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
-    removeClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    validateClaims(
+        claimValidators: SessionClaimValidator[],
+        userContext?: any
+    ): Promise<ClaimValidationError | undefined>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -334,7 +341,19 @@ export declare type SessionInformation = {
     accessTokenPayload: any;
     timeCreated: number;
 };
-export declare type SessionClaimChecker = (
+export declare type ClaimValidationResult =
+    | {
+          isValid: true;
+      }
+    | {
+          isValid: false;
+          reason?: JSONValue;
+      };
+export declare type ClaimValidationError = {
+    validatorTypeId: string;
+    reason?: JSONValue;
+};
+export declare type SessionClaimValidator = (
     | // We split the type like this to express that either both claim and shouldRefetch is defined or neither.
     {
           claim: SessionClaim<any>;
@@ -344,18 +363,17 @@ export declare type SessionClaimChecker = (
            */
           shouldRefetch: (payload: any, userContext: any) => Awaitable<boolean>;
       }
-    | {
-          claimId: string;
-      }
+    | {}
 ) & {
+    validatorTypeId: string;
     /**
      * Decides if the claim is valid based on the payload (and not checking DB or anything else)
      */
-    isValid: (payload: any, userContext: any) => Awaitable<boolean>;
+    validate: (payload: any, userContext: any) => Awaitable<ClaimValidationResult>;
 };
 export declare abstract class SessionClaim<T> {
-    readonly id: string;
-    constructor(id: string);
+    readonly key: string;
+    constructor(key: string);
     /**
      * This methods fetches the current value of this claim for the user.
      * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
@@ -367,11 +385,11 @@ export declare abstract class SessionClaim<T> {
      *
      * @returns The modified payload object
      */
-    abstract addToPayload(payload: any, value: T, userContext: any): any;
+    abstract addToPayload_internal(payload: any, value: T, userContext: any): any;
     /**
      * Removes the claim from the payload, by cloning and updating the entire object.
      *
      * @returns The modified payload object
      */
-    abstract removeFromPayload(payload: any, userContext: any): any;
+    abstract removeFromPayload_internal(payload: any, userContext: any): any;
 }

@@ -25,7 +25,12 @@ export default function getAPIInterface(): APIInterface {
             status: "OK";
             isVerified: boolean;
         }> {
-            let session = await Session.getSession(options.req, options.res, userContext);
+            let session = await Session.getSession(
+                options.req,
+                options.res,
+                { overwriteDefaultValidators: [] },
+                userContext
+            );
 
             if (session === undefined) {
                 throw new Error("Session is undefined. Should not come here.");
@@ -48,7 +53,12 @@ export default function getAPIInterface(): APIInterface {
             options: APIOptions;
             userContext: any;
         }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" }> {
-            let session = await Session.getSession(options.req, options.res, userContext);
+            let session = await Session.getSession(
+                options.req,
+                options.res,
+                { overwriteDefaultValidators: [] },
+                userContext
+            );
 
             if (session === undefined) {
                 throw new Error("Session is undefined. Should not come here.");

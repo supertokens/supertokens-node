@@ -133,6 +133,14 @@ export default class RecipeImplementation implements RecipeInterface {
             userContext: any;
         }
     ) => Promise<void>;
+    mergeIntoAccessTokenPayload: (
+        this: RecipeImplementation,
+        input: {
+            sessionHandle: string;
+            accessTokenPayloadUpdate: any;
+            userContext: any;
+        }
+    ) => Promise<void>;
     updateSessionClaims: (input: { sessionHandle: string; userContext: any }) => any;
     regenerateAccessToken: (input: { accessToken: string; newAccessTokenPayload?: any; userContext: any }) => any;
     getAccessTokenLifeTimeMS: (

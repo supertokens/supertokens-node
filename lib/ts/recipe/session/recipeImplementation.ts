@@ -5,7 +5,7 @@ import {
     SessionInformation,
     KeyInfo,
     AntiCsrfType,
-    SessionClaim,
+    SessionClaimBuilder,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -27,6 +27,7 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
 import SuperTokens from "../../supertokens";
 import frameworks from "../../framework";
+import { JSONObject } from "../../types";
 
 export class HandshakeInfo {
     constructor(
@@ -114,22 +115,41 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
-            claimsToAdd?: SessionClaim<any>[];
+            claimsToAdd?: SessionClaimBuilder[];
             userContext: any;
         }): Promise<Session> {
             if (!res.wrapperUsed) {
                 res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
             }
             if (claimsToAdd === undefined) {
-                claimsToAdd = config.defaultClaims;
+                claimsToAdd = config.claimsToAddOnCreation;
             }
 
             let finalAccessTokenPayload = accessTokenPayload;
 
-            for (const claim of claimsToAdd) {
-                const value = await claim.fetch(userId, userContext);
-                if (value !== undefined) {
-                    finalAccessTokenPayload = claim.addToPayload(finalAccessTokenPayload, value, userContext);
+            for (const claimBuilder of claimsToAdd) {
+                if (typeof claimBuilder === "function") {
+                    const update = await claimBuilder({
+                        res,
+                        userId,
+                        accessTokenPayload,
+                        sessionData,
+                        claimsToAdd,
+                        userContext,
+                    });
+                    finalAccessTokenPayload = {
+                        ...finalAccessTokenPayload,
+                        ...update,
+                    };
+                } else {
+                    const value = await claimBuilder.fetch(userId, userContext);
+                    if (value !== undefined) {
+                        finalAccessTokenPayload = claimBuilder.addToPayload_internal(
+                            finalAccessTokenPayload,
+                            value,
+                            userContext
+                        );
+                    }
                 }
             }
             let response = await SessionFunctions.createNewSession(
@@ -153,10 +173,12 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             req,
             res,
             options,
+            userContext,
         }: {
             req: any;
             res: any;
             options?: VerifySessionOptions;
+            userContext: any;
         }): Promise<Session | undefined> {
             if (!res.wrapperUsed) {
                 res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
@@ -228,7 +250,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     attachAccessTokenToCookie(config, res, response.accessToken.token, response.accessToken.expiry);
                     accessToken = response.accessToken.token;
                 }
-                return new Session(
+                const session = new Session(
                     helpers,
                     accessToken,
                     response.session.handle,
@@ -236,6 +258,19 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     response.session.userDataInJWT,
                     res
                 );
+
+                const reqClaims = options?.overwriteDefaultValidators ?? config.defaultValidatorsForVerification;
+                const validationResult = await session.validateClaims(reqClaims, userContext);
+
+                if (validationResult !== undefined) {
+                    throw new STError({
+                        type: "INVALID_CLAIM",
+                        message: "INVALID_CLAIM",
+                        payload: validationResult,
+                    });
+                }
+
+                return session;
             } catch (err) {
                 if (err.type === STError.UNAUTHORISED) {
                     clearSessionFromCookie(config, res);
@@ -377,6 +412,23 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             newAccessTokenPayload: any;
         }) {
             return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
+        },
+
+        mergeIntoAccessTokenPayload: async function ({
+            sessionHandle,
+            accessTokenPayloadUpdate,
+        }: {
+            sessionHandle: string;
+            accessTokenPayloadUpdate: JSONObject;
+        }) {
+            const sessionInfo = await SessionFunctions.getSessionInformation(helpers, sessionHandle);
+            const updatedPayload = { ...sessionInfo.accessTokenPayload, ...accessTokenPayloadUpdate };
+            for (const key of Object.keys(accessTokenPayloadUpdate)) {
+                if (accessTokenPayloadUpdate[key] === null) {
+                    delete updatedPayload[key];
+                }
+            }
+            return this.updateAccessTokenPayload(sessionHandle, updatedPayload);
         },
 
         getAccessTokenLifeTimeMS: async function (): Promise<number> {

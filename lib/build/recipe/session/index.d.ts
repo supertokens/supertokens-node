@@ -7,9 +7,10 @@ import {
     SessionInformation,
     APIInterface,
     APIOptions,
-    SessionClaimChecker,
+    SessionClaimValidator,
 } from "./types";
 import Recipe from "./recipe";
+import { JSONObject } from "../../types";
 export default class SessionWrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -57,6 +58,11 @@ export default class SessionWrapper {
         newAccessTokenPayload: any,
         userContext?: any
     ): Promise<void>;
+    static mergeIntoAccessTokenPayload(
+        sessionHandle: string,
+        accessTokenPayloadUpdate: JSONObject,
+        userContext?: any
+    ): Promise<void>;
     static createJWT(
         payload?: any,
         validitySeconds?: number,
@@ -95,6 +101,7 @@ export declare let revokeSession: typeof SessionWrapper.revokeSession;
 export declare let revokeMultipleSessions: typeof SessionWrapper.revokeMultipleSessions;
 export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
 export declare let updateAccessTokenPayload: typeof SessionWrapper.updateAccessTokenPayload;
+export declare let mergeIntoAccessTokenPayload: typeof SessionWrapper.mergeIntoAccessTokenPayload;
 export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;
 export declare let getJWKS: typeof SessionWrapper.getJWKS;
@@ -107,5 +114,5 @@ export type {
     APIInterface,
     APIOptions,
     SessionInformation,
-    SessionClaimChecker,
+    SessionClaimValidator,
 };

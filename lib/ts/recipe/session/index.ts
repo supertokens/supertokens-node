@@ -21,10 +21,11 @@ import {
     SessionInformation,
     APIInterface,
     APIOptions,
-    SessionClaimChecker,
+    SessionClaimValidator,
 } from "./types";
 import OpenIdRecipe from "../openid/recipe";
 import Recipe from "./recipe";
+import { JSONObject } from "../../types";
 
 // For Express
 export default class SessionWrapper {
@@ -109,6 +110,18 @@ export default class SessionWrapper {
         });
     }
 
+    static mergeIntoAccessTokenPayload(
+        sessionHandle: string,
+        accessTokenPayloadUpdate: JSONObject,
+        userContext: any = {}
+    ) {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.mergeIntoAccessTokenPayload({
+            sessionHandle,
+            accessTokenPayloadUpdate,
+            userContext,
+        });
+    }
+
     static createJWT(payload?: any, validitySeconds?: number, userContext: any = {}) {
         let openIdRecipe: OpenIdRecipe | undefined = Recipe.getInstanceOrThrowError().openIdRecipe;
 
@@ -167,6 +180,7 @@ export let revokeMultipleSessions = SessionWrapper.revokeMultipleSessions;
 export let updateSessionData = SessionWrapper.updateSessionData;
 
 export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
+export let mergeIntoAccessTokenPayload = SessionWrapper.mergeIntoAccessTokenPayload;
 
 export let Error = SessionWrapper.Error;
 
@@ -188,5 +202,5 @@ export type {
     APIInterface,
     APIOptions,
     SessionInformation,
-    SessionClaimChecker,
+    SessionClaimValidator,
 };

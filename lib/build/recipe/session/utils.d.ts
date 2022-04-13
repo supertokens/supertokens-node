@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
+import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput, ClaimValidationError } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -15,9 +15,9 @@ export declare function sendUnauthorisedResponse(
     __: BaseRequest,
     response: BaseResponse
 ): Promise<void>;
-export declare function sendMissingClaimResponse(
+export declare function sendInvalidClaimResponse(
     recipeInstance: SessionRecipe,
-    claimId: string,
+    validationError: ClaimValidationError,
     __: BaseRequest,
     response: BaseResponse
 ): Promise<void>;
