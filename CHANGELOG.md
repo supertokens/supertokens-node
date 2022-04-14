@@ -7,10 +7,123 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
--   removed jsonschema dependency
--   emailDelivery and smsDelivery Ingredients added
--   SMTP service added for emailDelivery
--   Twilio service added for smsDelivery
+### Removed
+
+-   Removed `jsonschema` library dependency. It was used to check user inputs against various JSON schema objects.
+
+### Added
+
+-   `emailDelivery` user config for Emailpassword, Thirdparty, ThirdpartyEmailpassword, Passwordless and ThirdpartyPasswordless recipes.
+-   `smsDelivery` user config for Passwordless and ThirdpartyPasswordless recipes.
+-   `Twilio` service integartion for smsDelivery ingredient.
+-   `SMTP` service integration for emailDelivery ingredient.
+
+### Deprecated
+
+-   For Emailpassword recipe input config, `resetPasswordUsingTokenFeature.createAndSendCustomEmail` and `emailVerificationFeature.createAndSendCustomEmail` have been deprecated.
+-   For Thirdparty recipe input config, `emailVerificationFeature.createAndSendCustomEmail` has been deprecated.
+-   For ThirdpartyEmailpassword recipe input config, `resetPasswordUsingTokenFeature.createAndSendCustomEmail` and `emailVerificationFeature.createAndSendCustomEmail` have been deprecated.
+-   For Passwordless recipe input config, `createAndSendCustomEmail` and `createAndSendCustomTextMessage` have been deprecated.
+-   For ThirdpartyPasswordless recipe input config, `createAndSendCustomEmail`, `createAndSendCustomTextMessage` and `emailVerificationFeature.createAndSendCustomEmail` have been deprecated.
+
+### Migration
+
+Following is an example of ThirdpartyPasswordless recipe migration. If your existing code looks like
+
+```ts
+import SuperTokens from "supertokens-auth-react";
+import ThirdpartyPasswordless from "supertokens-auth-react/recipe/thirdpartypasswordless";
+
+async function sendPasswordlessLoginEmail(input, userContext) {
+    // some custom logic
+}
+
+async function sendPasswordlessLoginSms(input, userContext) {
+    // some custom logic
+}
+
+async function sendEmailVerificationEmail(input, userContext) {
+    // some custom logic
+}
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        ThirdpartyPasswordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            createAndSendCustomEmail: async (input, userContext) => {
+                await sendPasswordlessLoginEmail(input, userContext);
+            },
+            createAndSendCustomTextMessage: async (input, userContext) => {
+                await sendPasswordlessLoginSms(input, userContext);
+            },
+            flowType: "...",
+            emailVerificationFeature: {
+                createAndSendCustomEmail: async (user, emailVerificationURLWithToken, userContext) => {
+                    await sendEmailVerificationEmail(input, userContext);
+                },
+            },
+        }),
+    ],
+});
+```
+
+After migration to using new `emailDelivery` and `smsDelivery` config, your code would look like:
+
+```ts
+import SuperTokens from "supertokens-auth-react";
+import ThirdpartyPasswordless from "supertokens-auth-react/recipe/thirdpartypasswordless";
+
+async function sendPasswordlessLoginEmail(input, userContext) {
+    // some custom logic
+}
+
+async function sendPasswordlessLoginSms(input, userContext) {
+    // some custom logic
+}
+
+async function sendEmailVerificationEmail(input, userContext) {
+    // some custom logic
+}
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "..."
+    },
+    recipeList: [
+        ThirdpartyPasswordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            emailDelivery: {
+                service: {
+                    sendEmail: async (input) => {
+                        let userContext = input.userContext;
+                        if(input.type === "EMAIL_VERIFICATION") {
+                            await sendEmailVerificationEmail(input, userContext);
+                        } else if (input.type === "PASSWORDLESS_LOGIN") {
+                            await sendPasswordlessLoginEmail(input, userContext);
+                        }
+                    }
+                }
+            },
+            smsDelivery: {
+                service: {
+                    sendSms: async (input) => {
+                        let userContext = input.userContext;
+                        await sendPasswordlessLoginSms(input, userContext);
+                    }
+                }
+            }
+            flowType: "..."
+        })
+    ]
+})
+```
 
 ## [9.1.1] - 2022-03-24
 
