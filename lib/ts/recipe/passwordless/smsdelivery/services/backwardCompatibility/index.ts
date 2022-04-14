@@ -18,7 +18,7 @@ import { NormalisedAppinfo } from "../../../../../types";
 
 function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
     return async (
-        __: {
+        input: {
             // Where the message should be delivered.
             phoneNumber: string;
             // This has to be entered on the starting device  to finish sign in/up
@@ -29,10 +29,32 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
         },
         _: any
     ): Promise<void> => {
-        if (process.env.TEST_MODE === "testing") {
-            return;
-        }
-        // TODO: Skip in this PR
+        /**
+         * if we do console.log(`SMS content: ${input}`);
+         * Output would be:
+         * SMS content: [object Object]
+         */
+        /**
+         * JSON.stringify takes 3 inputs
+         *  - value: usually an object or array, to be converted
+         *  - replacer:  An array of strings and numbers that acts
+         *               as an approved list for selecting the object
+         *               properties that will be stringified
+         *  - space: Adds indentation, white space, and line break characters
+         *           to the return-value JSON text to make it easier to read
+         *
+         * console.log(JSON.stringify({"a": 1, "b": 2}))
+         * Output:
+         * {"a":1,"b":2}
+         *
+         * console.log(JSON.stringify({"a": 1, "b": 2}, null, 2))
+         * Output:
+         * {
+         *   "a": 1,
+         *   "b": 2
+         * }
+         */
+        console.log(`SMS content: ${JSON.stringify(input, null, 2)}`);
     };
 }
 

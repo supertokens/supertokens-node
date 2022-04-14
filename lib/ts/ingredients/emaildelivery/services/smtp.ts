@@ -12,7 +12,6 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { Transporter } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 
 export interface SMTPServiceConfig {
@@ -51,11 +50,3 @@ export type TypeInput<T> = {
     smtpSettings: SMTPServiceConfig;
     override?: (oI: ServiceInterface<T>, builder: OverrideableBuilder<ServiceInterface<T>>) => ServiceInterface<T>;
 };
-
-export type TypeGetDefaultEmailServiceImplementation<T> = (
-    transporter: Transporter,
-    from: {
-        name: string;
-        email: string;
-    }
-) => ServiceInterface<T>;
