@@ -7,16 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Removed
-
--   Removed `jsonschema` library dependency. It was used to check user inputs against various JSON schema objects.
-
 ### Added
 
 -   `emailDelivery` user config for Emailpassword, Thirdparty, ThirdpartyEmailpassword, Passwordless and ThirdpartyPasswordless recipes.
 -   `smsDelivery` user config for Passwordless and ThirdpartyPasswordless recipes.
 -   `Twilio` service integartion for smsDelivery ingredient.
 -   `SMTP` service integration for emailDelivery ingredient.
+
+### Breaking Change
+
+-   `user` object passed for password-reset and email-verification send email functions will only have `id` and `email` properties. `timeJoined` property has been removed.
 
 ### Deprecated
 
