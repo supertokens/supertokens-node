@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+# Adds
+
+-   Adds UserMetadata recipe
 -   Fixes debug log statement when custom header is not passed during refresh session
 
 ## [9.1.2] - 2022-04-01
