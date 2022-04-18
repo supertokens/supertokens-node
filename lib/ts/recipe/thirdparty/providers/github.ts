@@ -105,10 +105,13 @@ export default function Github(config: TypeThirdPartyProviderGithubConfig): Type
             let isVerified = emailInfo !== undefined ? emailInfo.verified : false;
             return {
                 id,
-                email: {
-                    id: emailInfo.email,
-                    isVerified,
-                },
+                email:
+                    emailInfo.email === undefined
+                        ? undefined
+                        : {
+                              id: emailInfo.email,
+                              isVerified,
+                          },
             };
         }
         return {

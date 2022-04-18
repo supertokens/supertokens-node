@@ -118,7 +118,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
                 assert(false);
             } catch (err) {
-                if (err.message !== 'Config schema error in init function: appInfo requires property "apiDomain"') {
+                if (
+                    err.message !==
+                    "Please provide your apiDomain inside the appInfo object when calling supertokens.init"
+                ) {
                     throw err;
                 }
             }
@@ -140,7 +143,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
                 assert(false);
             } catch (err) {
-                if (err.message !== 'Config schema error in init function: appInfo requires property "appName"') {
+                if (
+                    err.message !==
+                    "Please provide your appName inside the appInfo object when calling supertokens.init"
+                ) {
                     throw err;
                 }
             }
@@ -162,7 +168,10 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                 });
                 assert(false);
             } catch (err) {
-                if (err.message !== 'Config schema error in init function: appInfo requires property "websiteDomain"') {
+                if (
+                    err.message !==
+                    "Please provide your websiteDomain inside the appInfo object when calling supertokens.init"
+                ) {
                     throw err;
                 }
             }
@@ -1086,182 +1095,6 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
 
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSecure);
             assert(SessionRecipe.getInstanceOrThrowError().config.cookieSameSite === "none");
-
-            resetAll();
-        }
-    });
-
-    it("test config schema", async function () {
-        await startST();
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    aProperty: 3,
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                        apiBasePath: "/custom/a",
-                    },
-                    recipeList: [Session.init()],
-                });
-            } catch (err) {
-                if (
-                    err.message !==
-                    'Config schema error in init function: input config is not allowed to have the additional property "aProperty". Did you mean to set this on the frontend side?'
-                ) {
-                    throw err;
-                }
-            }
-
-            resetAll();
-        }
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {},
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                        apiBasePath: "/custom/a",
-                    },
-                    recipeList: [Session.init()],
-                });
-            } catch (err) {
-                if (
-                    err.message !==
-                    'Config schema error in init function: supertokens requires property "connectionURI"'
-                ) {
-                    throw err;
-                }
-            }
-
-            resetAll();
-        }
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: true,
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                        apiBasePath: "/custom/a",
-                    },
-                    recipeList: [Session.init()],
-                });
-            } catch (err) {
-                if (
-                    err.message !==
-                    "Config schema error in init function: supertokens.connectionURI is not of a type(s) string"
-                ) {
-                    throw err;
-                }
-            }
-
-            resetAll();
-        }
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                        a: "b",
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                        apiBasePath: "/custom/a",
-                    },
-                    recipeList: [Session.init()],
-                });
-            } catch (err) {
-                if (
-                    err.message !==
-                    'Config schema error in init function: supertokens is not allowed to have the additional property "a". Did you mean to set this on the frontend side?'
-                ) {
-                    throw err;
-                }
-            }
-
-            resetAll();
-        }
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    appInfo: {
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                        apiBasePath: "/custom/a",
-                    },
-                    recipeList: [Session.init()],
-                });
-            } catch (err) {
-                if (err.message !== 'Config schema error in init function: appInfo requires property "apiDomain"') {
-                    throw err;
-                }
-            }
-
-            resetAll();
-        }
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        websiteDomain: "supertokens.io",
-                        apiBasePath: "/custom/a",
-                    },
-                    recipeList: [Session.init()],
-                });
-            } catch (err) {
-                if (err.message !== 'Config schema error in init function: appInfo requires property "appName"') {
-                    throw err;
-                }
-            }
-
-            resetAll();
-        }
-
-        {
-            try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "Supertokens",
-                        websiteDomain: "supertokens.io",
-                        apiBasePath: "/custom/a",
-                    },
-                });
-            } catch (err) {
-                if (
-                    err.message !== 'Config schema error in init function: input config requires property "recipeList"'
-                ) {
-                    throw err;
-                }
-            }
 
             resetAll();
         }

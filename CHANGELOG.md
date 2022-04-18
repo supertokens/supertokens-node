@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # Adds
 
 -   Adds UserMetadata recipe
+-   Fixes debug log statement when custom header is not passed during refresh session
+
+## [9.1.2] - 2022-04-01
+
+### Added
+
+-   Adds debug logging functionality
+-   removed jsonschema dependency
+
+## [9.1.1] - 2022-03-24
+
+### Fixes:
+
+-   Changes Github and Discord providers to check if email is `undefined` or not before assigning the email object to the profile info.
 
 ## [9.1.0] - 2022-03-17
 

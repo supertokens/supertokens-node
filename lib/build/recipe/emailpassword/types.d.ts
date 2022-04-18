@@ -61,18 +61,6 @@ export declare type TypeInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL?: (user: User, userContext: any) => Promise<string>;
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
-export declare const InputResetPasswordUsingTokenFeatureSchema: {
-    type: string;
-    properties: {
-        getResetPasswordURL: {
-            type: string;
-        };
-        createAndSendCustomEmail: {
-            type: string;
-        };
-    };
-    additionalProperties: boolean;
-};
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL: (user: User, userContext: any) => Promise<string>;
     createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
@@ -105,64 +93,6 @@ export declare type TypeInput = {
             ) => EmailVerificationAPIInterface;
         };
     };
-};
-export declare const InputSchema: {
-    type: string;
-    properties: {
-        signUpFeature: {
-            type: string;
-            properties: {
-                formFields: {
-                    type: string;
-                    items: {
-                        type: string;
-                        properties: {
-                            id: {
-                                type: string;
-                            };
-                            validate: {
-                                type: string;
-                            };
-                            optional: {
-                                type: string;
-                            };
-                        };
-                        required: string[];
-                        additionalProperties: boolean;
-                    };
-                };
-            };
-            additionalProperties: boolean;
-        };
-        resetPasswordUsingTokenFeature: {
-            type: string;
-            properties: {
-                getResetPasswordURL: {
-                    type: string;
-                };
-                createAndSendCustomEmail: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
-        emailVerificationFeature: {
-            type: string;
-            properties: {
-                getEmailVerificationURL: {
-                    type: string;
-                };
-                createAndSendCustomEmail: {
-                    type: string;
-                };
-            };
-            additionalProperties: boolean;
-        };
-        override: {
-            type: string;
-        };
-    };
-    additionalProperties: boolean;
 };
 export declare type RecipeInterface = {
     signUp(input: {

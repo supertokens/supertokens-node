@@ -9,5 +9,4 @@ export declare function normaliseHttpMethod(method: string): HTTPMethod;
 export declare function sendNon200Response(res: BaseResponse, message: string, statusCode: number): void;
 export declare function send200Response(res: BaseResponse, responseJson: any): void;
 export declare function isAnIpAddress(ipaddress: string): boolean;
-export declare function validateTheStructureOfUserInput(config: any, inputSchema: any, configRoot: string): void;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;
