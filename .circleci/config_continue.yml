@@ -15,6 +15,10 @@ jobs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         resource_class: large
+        parameters:
+            fdi-version:
+                type: string
+        parallelism: 4
         steps:
             - checkout
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
