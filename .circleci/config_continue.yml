@@ -82,7 +82,7 @@ workflows:
                       - slack-notification
                   filters:
                       branches:
-                          ignore: cicd-unit-test-parallel
+                          only: cicd-unit-test-parallel
             - test-authreact:
                   requires:
                       - test-dev-tag-as-not-passed
