@@ -54,8 +54,10 @@ workflows:
                           ignore: /.*/
             - setup:
                   filters:
+                      tags:
+                          only: /v[0-9]+(\.[0-9]+)*/
                       branches:
-                          only: cicd-unit-test-parallel
+                          ignore: /.*/
             - update-docs:
                   context:
                       - slack-notification
