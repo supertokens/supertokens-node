@@ -68,6 +68,9 @@ workflows:
                   filters:
                       branches:
                           only: cicd-unit-test-parallel
+                  matrix:
+                      parameters:
+                          cdi-version: placeholder
             - test-website:
                   requires:
                       - test-dev-tag-as-not-passed
@@ -84,9 +87,6 @@ workflows:
                   filters:
                       branches:
                           only: cicd-unit-test-parallel
-                  matrix:
-                      parameters:
-                          fdi-version: placeholder
             - test-success:
                   requires:
                       - test-unit
