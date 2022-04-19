@@ -63,7 +63,7 @@ workflows:
             - test-dev-tag-as-not-passed:
                   filters:
                       tags:
-                          only: /v[0-9]+(\.[0-9]+)*/
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
                           ignore: /.*/
             - test-unit:
@@ -73,7 +73,7 @@ workflows:
                       - slack-notification
                   filters:
                       tags:
-                          only: /v[0-9]+(\.[0-9]+)*/
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
                           ignore: /.*/
                   matrix:
@@ -86,7 +86,7 @@ workflows:
                       - slack-notification
                   filters:
                       tags:
-                          only: /v[0-9]+(\.[0-9]+)*/
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
                           ignore: /.*/
             - test-authreact:
@@ -96,7 +96,7 @@ workflows:
                       - slack-notification
                   filters:
                       tags:
-                          only: /v[0-9]+(\.[0-9]+)*/
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
                           ignore: /.*/
             - test-success:
@@ -108,6 +108,6 @@ workflows:
                       - slack-notification
                   filters:
                       tags:
-                          only: /v[0-9]+(\.[0-9]+)*/
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
                       branches:
                           ignore: /.*/
