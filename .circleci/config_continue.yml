@@ -24,7 +24,7 @@ jobs:
             - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
             - run: apt-get install lsof
             - run: npm i -d --force
-            - run: (cd .circleci/ && ./doUnitTests.sh)
+            - run: (cd .circleci/ && ./doUnitTests.sh << parameters.cdi-version >>)
             - slack/status
     test-website:
         docker:
