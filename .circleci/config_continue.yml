@@ -1,0 +1,99 @@
+version: 2.1
+
+orbs:
+    continuation: circleci/continuation@0.1.2
+    slack: circleci/slack@3.4.2
+    jq: circleci/jq@2.2.0
+jobs:
+    test-dev-tag-as-not-passed:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        steps:
+            - checkout
+            - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
+    test-unit:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        resource_class: large
+        steps:
+            - checkout
+            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+            - run: apt-get install lsof
+            - run: npm i -d --force
+            - run: (cd .circleci/ && ./doUnitTests.sh)
+            - slack/status
+    test-website:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        resource_class: large
+        steps:
+            - checkout
+            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+            - run: apt-get install lsof
+            - run: npm i -d --force
+            - run: (cd .circleci/ && ./website.sh)
+            - slack/status
+    test-authreact:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        resource_class: large
+        steps:
+            - checkout
+            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
+            - run: apt-get install lsof
+            - run: npm i -d --force
+            - run: (cd .circleci/ && ./authReact.sh)
+            - slack/status
+    test-success:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        steps:
+            - checkout
+            - run: (cd .circleci/ && ./markAsSuccess.sh)
+            - slack/status
+
+workflows:
+    version: 2
+    tagged-build:
+        jobs:
+            - test-dev-tag-as-not-passed:
+                  filters:
+                      branches:
+                          only: cicd-unit-test-parallel
+            - test-unit:
+                  requires:
+                      - test-dev-tag-as-not-passed
+                  context:
+                      - slack-notification
+                  filters:
+                      branches:
+                          only: cicd-unit-test-parallel
+            - test-website:
+                  requires:
+                      - test-dev-tag-as-not-passed
+                  context:
+                      - slack-notification
+                  filters:
+                      branches:
+                          ignore: cicd-unit-test-parallel
+            - test-authreact:
+                  requires:
+                      - test-dev-tag-as-not-passed
+                  context:
+                      - slack-notification
+                  filters:
+                      branches:
+                          only: cicd-unit-test-parallel
+                  matrix:
+                      parameters:
+                          fdi-version: placeholder
+            - test-success:
+                  requires:
+                      - test-unit
+                      - test-website
+                      - test-authreact
+                  context:
+                      - slack-notification
+                  filters:
+                      branches:
+                          only: cicd-unit-test-parallel

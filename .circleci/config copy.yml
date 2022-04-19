@@ -1,0 +1,165 @@
+version: 2.1
+
+# this allows you to use CircleCI's dynamic configuration feature
+setup: true
+
+orbs:
+    continuation: circleci/continuation@0.1.2
+    slack: circleci/slack@3.4.2
+    jq: circleci/jq@2.2.0
+jobs:
+    setup:
+        machine:
+            image: ubuntu-1604:201903-01
+
+        steps:
+            - checkout
+            - run:
+                  name: Generate config
+                  command: |
+                      cd .circleci && ./generateConfig.sh
+            - continuation/continue:
+                  configuration_path: .circleci/config_continue.yml # use newly generated config to continue
+
+    publish:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        steps:
+            - checkout
+            - run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" >> ~/.npmrc
+            - run:
+                  name: Publish
+                  command: |
+                      cd .circleci
+                      ./publish.sh
+            - slack/status
+
+    update-demo-apps:
+        circleci_ip_ranges: true
+        docker:
+            - image: ubuntu:20.04
+        steps:
+            - run:
+                  name: Install SSH and curl
+                  command: |
+                      apt update
+                      apt-get install openssh-client curl -y
+            - run:
+                  name: storing ssh keys
+                  command: |
+                      echo "-----BEGIN RSA PRIVATE KEY-----" > /tmp/dev_ssh
+                      echo $DEV_SERVER_SSH_KEY | sed 's/\s\+/\n/g' >> /tmp/dev_ssh
+                      echo "-----END RSA PRIVATE KEY-----" >> /tmp/dev_ssh
+                      chmod 400 /tmp/dev_ssh
+            - run:
+                  name: updating thirdpartypasswordless
+                  command: |
+                      ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -i /tmp/dev_ssh  ubuntu@ssh.supertokens.com '\
+                          cd supertokens-auth-react/examples/with-thirdpartypasswordless/ && \
+                          git reset --hard && \
+                          git pull && \
+                          (rm -f package-lock.json || true) && \
+                          (rm -rf node_modules || true) && \
+                          npm i && \
+                          REACT_APP_API_PORT=10001 REACT_APP_API_URL=https://api-thirdpartypasswordless.demo.supertokens.com REACT_APP_WEBSITE_PORT=10000 REACT_APP_WEBSITE_URL=https://thirdpartypasswordless.demo.supertokens.com npm run build && \
+                          docker rm demo-app-thirdpartypasswordless -f || true && \
+                          bash /home/ubuntu/supertokens-auth-react/examples/with-thirdpartypasswordless/scripts/start_container.sh'
+            - run:
+                  name: updating emailpassword
+                  command: |
+                      ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -i /tmp/dev_ssh  ubuntu@ssh.supertokens.com '\
+                          cd supertokens-auth-react/examples/with-emailpassword/ && \
+                          git reset --hard && \
+                          git pull && \
+                          (rm -f package-lock.json || true) && \
+                          (rm -rf node_modules || true) && \
+                          npm i && \
+                          REACT_APP_API_PORT=10001 REACT_APP_API_URL=https://api-emailpassword.demo.supertokens.com REACT_APP_WEBSITE_PORT=10000 REACT_APP_WEBSITE_URL=https://emailpassword.demo.supertokens.com npm run build && \
+                          docker rm demo-app -f || true && \
+                          bash /home/ubuntu/supertokens-auth-react/examples/with-emailpassword/scripts/start_container.sh'
+            - run:
+                  name: updating thirdparty
+                  command: |
+                      ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -i /tmp/dev_ssh  ubuntu@ssh.supertokens.com '\
+                          cd supertokens-auth-react/examples/with-thirdparty/ && \
+                          git reset --hard && \
+                          git pull && \
+                          (rm -f package-lock.json || true) && \
+                          (rm -rf node_modules || true) && \
+                          npm i && \
+                          REACT_APP_API_PORT=10001 REACT_APP_API_URL=https://api-thirdparty.demo.supertokens.com REACT_APP_WEBSITE_PORT=10000 REACT_APP_WEBSITE_URL=https://thirdparty.demo.supertokens.com npm run build && \
+                          docker rm demo-app-thirdparty -f || true && \
+                          bash /home/ubuntu/supertokens-auth-react/examples/with-thirdparty/scripts/start_container.sh'
+            - run:
+                  name: updating thirdpartyemailpassword
+                  command: |
+                      ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -i /tmp/dev_ssh  ubuntu@ssh.supertokens.com '\
+                          cd supertokens-auth-react/examples/with-thirdpartyemailpassword/ && \
+                          git reset --hard && \
+                          git pull && \
+                          (rm -f package-lock.json || true) && \
+                          (rm -rf node_modules || true) && \
+                          npm i && \
+                          REACT_APP_API_PORT=10001 REACT_APP_API_URL=https://api-thirdpartyemailpassword.demo.supertokens.com REACT_APP_WEBSITE_PORT=10000 REACT_APP_WEBSITE_URL=https://thirdpartyemailpassword.demo.supertokens.com npm run build && \
+                          docker rm demo-app-thirdpartyemailpassword -f || true && \
+                          bash /home/ubuntu/supertokens-auth-react/examples/with-thirdpartyemailpassword/scripts/start_container.sh'
+            - run:
+                  name: updating passwordless
+                  command: |
+                      ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -i /tmp/dev_ssh  ubuntu@ssh.supertokens.com '\
+                          cd supertokens-auth-react/examples/with-passwordless/ && \
+                          git reset --hard && \
+                          git pull && \
+                          (rm -f package-lock.json || true) && \
+                          (rm -rf node_modules || true) && \
+                          npm i && \
+                          REACT_APP_API_PORT=10001 REACT_APP_API_URL=https://api-passwordless.demo.supertokens.com REACT_APP_WEBSITE_PORT=10000 REACT_APP_WEBSITE_URL=https://passwordless.demo.supertokens.com npm run build && \
+                          docker rm demo-app-passwordless -f || true && \
+                          bash /home/ubuntu/supertokens-auth-react/examples/with-passwordless/scripts/start_container.sh'
+            - slack/status
+
+    update-docs:
+        docker:
+            - image: rishabhpoddar/supertokens_website_sdk_testing
+        steps:
+            - checkout
+            - run: cd ../ && git clone git@github.com:supertokens/supertokens-backend-website.git
+            - run: (cd .circleci && ./updateDocsInWebsite.sh)
+            - slack/status
+
+workflows:
+    version: 2
+    tagged-build:
+        jobs:
+            - setup:
+                  filters:
+                      tags:
+                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/
+
+            - publish:
+                  context:
+                      - slack-notification
+                  filters:
+                      tags:
+                          only: /v[0-9]+(\.[0-9]+)*/
+                      branches:
+                          ignore: /.*/
+
+            - update-demo-apps:
+                  context:
+                      - slack-notification
+                      - saas-backend-production
+                  filters:
+                      branches:
+                          only:
+                              - master
+
+            - update-docs:
+                  context:
+                      - slack-notification
+                  filters:
+                      branches:
+                          only:
+                              - master
