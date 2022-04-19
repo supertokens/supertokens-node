@@ -1,5 +1,10 @@
 version: 2.1
+
+# this allows you to use CircleCI's dynamic configuration feature
+setup: true
+
 orbs:
+    continuation: circleci/continuation@0.1.2
     slack: circleci/slack@3.4.2
     jq: circleci/jq@2.2.0
 jobs:
@@ -15,67 +20,6 @@ jobs:
                       cd .circleci
                       ./publish.sh
             - slack/status
-    test-dev-tag-as-not-passed:
-        docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing
-        steps:
-            - add_ssh_keys:
-                  fingerprints:
-                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
-            - checkout
-            - run: (cd .circleci/ && ./markDevTagAsTestNotPassed.sh)
-    test-unit:
-        docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing
-        resource_class: large
-        steps:
-            - add_ssh_keys:
-                  fingerprints:
-                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
-            - checkout
-            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-            - run: apt-get install lsof
-            - run: npm i -d --force
-            - run: (cd .circleci/ && ./doUnitTests.sh)
-            - slack/status
-    test-website:
-        docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing
-        resource_class: large
-        steps:
-            - add_ssh_keys:
-                  fingerprints:
-                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
-            - checkout
-            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-            - run: apt-get install lsof
-            - run: npm i -d --force
-            - run: (cd .circleci/ && ./website.sh)
-            - slack/status
-    test-authreact:
-        docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing
-        resource_class: large
-        steps:
-            - add_ssh_keys:
-                  fingerprints:
-                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
-            - checkout
-            - run: echo "127.0.0.1 localhost.org" >> /etc/hosts
-            - run: apt-get install lsof
-            - run: npm i -d --force
-            - run: (cd .circleci/ && ./authReact.sh)
-            - slack/status
-    test-success:
-        docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing
-        steps:
-            - add_ssh_keys:
-                  fingerprints:
-                      - "b3:da:ef:15:52:aa:a3:69:c3:6b:14:0c:be:23:b7:c7"
-            - checkout
-            - run: (cd .circleci/ && ./markAsSuccess.sh)
-            - slack/status
     update-docs:
         docker:
             - image: rishabhpoddar/supertokens_website_sdk_testing
@@ -84,6 +28,17 @@ jobs:
             - run: cd ../ && git clone git@github.com:supertokens/supertokens-backend-website.git
             - run: (cd .circleci && ./updateDocsInWebsite.sh)
             - slack/status
+    setup:
+        machine:
+            image: ubuntu-1604:201903-01
+        steps:
+            - checkout
+            - run:
+                  name: Generate config
+                  command: |
+                      cd .circleci && ./generateConfig.sh
+            - continuation/continue:
+                  configuration_path: .circleci/config_continue.yml # use newly generated config to continue
 
 workflows:
     version: 2
@@ -97,52 +52,10 @@ workflows:
                           only: /v[0-9]+(\.[0-9]+)*/
                       branches:
                           ignore: /.*/
-            - test-dev-tag-as-not-passed:
+            - setup:
                   filters:
                       tags:
-                          only: /dev-v[0-9]+(\.[0-9]+)*/
-                      branches:
-                          ignore: /.*/
-            - test-unit:
-                  requires:
-                      - test-dev-tag-as-not-passed
-                  context:
-                      - slack-notification
-                  filters:
-                      tags:
-                          only: /dev-v[0-9]+(\.[0-9]+)*/
-                      branches:
-                          ignore: /.*/
-            - test-website:
-                  requires:
-                      - test-dev-tag-as-not-passed
-                  context:
-                      - slack-notification
-                  filters:
-                      tags:
-                          only: /dev-v[0-9]+(\.[0-9]+)*/
-                      branches:
-                          ignore: /.*/
-            - test-authreact:
-                  requires:
-                      - test-dev-tag-as-not-passed
-                  context:
-                      - slack-notification
-                  filters:
-                      tags:
-                          only: /dev-v[0-9]+(\.[0-9]+)*/
-                      branches:
-                          ignore: /.*/
-            - test-success:
-                  requires:
-                      - test-unit
-                      - test-website
-                      - test-authreact
-                  context:
-                      - slack-notification
-                  filters:
-                      tags:
-                          only: /dev-v[0-9]+(\.[0-9]+)*/
+                          only: /v[0-9]+(\.[0-9]+)*/
                       branches:
                           ignore: /.*/
             - update-docs:
