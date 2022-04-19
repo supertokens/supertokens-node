@@ -16,7 +16,7 @@ jobs:
             - image: rishabhpoddar/supertokens_website_sdk_testing
         resource_class: large
         parameters:
-            fdi-version:
+            cdi-version:
                 type: string
         parallelism: 4
         steps:
