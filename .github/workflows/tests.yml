@@ -1,0 +1,55 @@
+name: "Run tests"
+on:
+    workflow_dispatch:
+        inputs:
+            pluginInterfaceRepoOwnerName:
+                description: "supertokens-plugin-interface repo owner name"
+                default: supertokens
+                required: true
+            pluginInterfaceBranchName:
+                description: "supertokens-plugin-interface repos branch name"
+                default: master
+                required: true
+            coreRepoOwnerName:
+                description: "supertokens-core repo owner name"
+                default: supertokens
+                required: true
+            coreBranchName:
+                description: "supertokens-core repo branch name"
+                default: master
+                required: true
+jobs:
+    test_job:
+        name: Run tests
+        timeout-minutes: 60
+        runs-on: ubuntu-latest
+        container: rishabhpoddar/supertokens_website_sdk_testing
+        steps:
+            - name: Environment variables
+              run: |
+                  echo "Plugin Interface Owner: ${{ github.event.inputs.pluginInterfaceRepoOwnerName }}"
+                  echo "Plugin Interface Branch: ${{ github.event.inputs.pluginInterfaceBranchName }}"
+                  echo "Core Owner: ${{ github.event.inputs.coreRepoOwnerName }}"
+                  echo "Core Branch: ${{ github.event.inputs.coreBranchName }}"
+            - uses: actions/checkout@v2
+              with:
+                  persist-credentials: false
+            - name: Make git use https instead of ssh
+              run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+            - run: npm i
+            - name: Cloning supertokens-root
+              run: cd ../ && git clone https://github.com/supertokens/supertokens-root.git
+            - name: Update Java 1
+              run: update-alternatives --install "/usr/bin/java" "java" "/usr/java/jdk-15.0.1/bin/java" 2
+            - name: Update Java 2
+              run: update-alternatives --install "/usr/bin/javac" "javac" "/usr/java/jdk-15.0.1/bin/javac" 2
+            - name: Modifying modules.txt in supertokens-root
+              run: cd ../supertokens-root && echo "core,${{ github.event.inputs.coreBranchName }},${{ github.event.inputs.coreRepoOwnerName }}\nplugin-interface,${{ github.event.inputs.pluginInterfaceBranchName }},${{ github.event.inputs.pluginInterfaceRepoOwnerName }}" > modules.txt
+            - name: Contents of modules.txt
+              run: cat ../supertokens-root/modules.txt
+            - name: Running loadModules in supertokens-root
+              run: cd ../supertokens-root && ./loadModules
+            - name: Setting up supertokens-root test environment
+              run: cd ../supertokens-root && bash ./utils/setupTestEnvLocal
+            - name: Run tests
+              run: INSTALL_DIR=../supertokens-root npm run test
