@@ -34,6 +34,10 @@ jobs:
             - uses: actions/checkout@v2
               with:
                   persist-credentials: false
+            - name: Set up node
+              uses: actions/setup-node@v1
+              with:
+                  node-version: "16"
             - name: Make git use https instead of ssh
               run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
             - run: npm i
