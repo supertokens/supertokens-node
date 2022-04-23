@@ -53,7 +53,9 @@ jobs:
               run: cat ../supertokens-root/modules.txt
             - name: Running loadModules in supertokens-root
               run: cd ../supertokens-root && ./loadModules
+            - name: Changing permissions of supertokens-root
+              run: chmod -R 777 ../supertokens-root
             - name: Setting up supertokens-root test environment
               run: cd ../supertokens-root && bash ./utils/setupTestEnvLocal
             - name: Run tests
-              run: sudo INSTALL_PATH=../supertokens-root npm run test
+              run: INSTALL_PATH=../supertokens-root npm run test
