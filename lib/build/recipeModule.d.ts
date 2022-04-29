@@ -1,4 +1,3 @@
-// @ts-nocheck
 import STError from "./error";
 import { NormalisedAppinfo, APIHandled, HTTPMethod } from "./types";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -11,13 +10,7 @@ export default abstract class RecipeModule {
     getAppInfo: () => NormalisedAppinfo;
     returnAPIIdIfCanHandleRequest: (path: NormalisedURLPath, method: HTTPMethod) => string | undefined;
     abstract getAPIsHandled(): APIHandled[];
-    abstract handleAPIRequest(
-        id: string,
-        req: BaseRequest,
-        response: BaseResponse,
-        path: NormalisedURLPath,
-        method: HTTPMethod
-    ): Promise<boolean>;
+    abstract handleAPIRequest(id: string, req: BaseRequest, response: BaseResponse, path: NormalisedURLPath, method: HTTPMethod): Promise<boolean>;
     abstract handleError(error: STError, request: BaseRequest, response: BaseResponse): Promise<void>;
     abstract getAllCORSHeaders(): string[];
     abstract isErrorFromThisRecipe(err: any): err is STError;

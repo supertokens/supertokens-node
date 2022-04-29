@@ -21,6 +21,7 @@ import * as hapiFramework from "./hapi";
 import * as loopbackFramework from "./loopback";
 import * as koaFramework from "./koa";
 import * as awsLambdaFramework from "./awsLambda";
+import * as h3Framework from './h3'
 
 export default {
     express: expressFramework,
@@ -29,6 +30,7 @@ export default {
     loopback: loopbackFramework,
     koa: koaFramework,
     awsLambda: awsLambdaFramework,
+    h3: h3Framework
 };
 
 export let express = expressFramework;
@@ -37,3 +39,4 @@ export let hapi = hapiFramework;
 export let loopback = loopbackFramework;
 export let koa = koaFramework;
 export let awsLambda = awsLambdaFramework;
+export let h3 = h3Framework;

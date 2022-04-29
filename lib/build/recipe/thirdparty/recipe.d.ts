@@ -1,4 +1,3 @@
-// @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import { TypeInput, TypeNormalisedInput, TypeProvider, RecipeInterface, APIInterface } from "./types";
@@ -15,26 +14,14 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    constructor(
-        recipeId: string,
-        appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
-        config: TypeInput,
-        recipes: {
-            emailVerificationInstance: EmailVerificationRecipe | undefined;
-        }
-    );
+    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput, recipes: {
+        emailVerificationInstance: EmailVerificationRecipe | undefined;
+    });
     static init(config: TypeInput): RecipeListFunction;
     static getInstanceOrThrowError(): Recipe;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (
-        id: string,
-        req: BaseRequest,
-        res: BaseResponse,
-        path: NormalisedURLPath,
-        method: HTTPMethod
-    ) => Promise<boolean>;
+    handleAPIRequest: (id: string, req: BaseRequest, res: BaseResponse, path: NormalisedURLPath, method: HTTPMethod) => Promise<boolean>;
     handleError: (err: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;

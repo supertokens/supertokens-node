@@ -1,9 +1,4 @@
-// @ts-nocheck
-export declare function getInfoFromAccessToken(
-    token: string,
-    jwtSigningPublicKey: string,
-    doAntiCsrfCheck: boolean
-): Promise<{
+export declare function getInfoFromAccessToken(token: string, jwtSigningPublicKey: string, doAntiCsrfCheck: boolean): Promise<{
     sessionHandle: string;
     userId: string;
     refreshTokenHash1: string;

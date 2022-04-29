@@ -251,24 +251,6 @@ export async function useBody<T=any>(req: IncomingMessage): Promise<T> {
     (req as any)[ParsedBodySymbol] = json;
     return json
 }
-
-export function setH3Header(res: ServerResponse, key: string, value: string, allowDuplicateKey: boolean) {
-    try {
-        let existingHeaders = res.getHeaders();
-        let existingValue = existingHeaders[key.toLowerCase()];
-
-        if (existingValue === undefined) {
-            res.setHeader(key, value);
-        } else if (allowDuplicateKey) {
-            res.setHeader(key, existingValue + ", " + value);
-        } else {
-            res.setHeader(key, value);
-        }
-    } catch (err) {
-        throw new Error("Error while setting header with key: " + key + " and value: " + value);
-    }
-}
-
 /**
  *
  * @param res

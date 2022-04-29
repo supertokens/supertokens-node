@@ -6,7 +6,7 @@
     "scripts": {
         "test": "TEST_MODE=testing npx mocha --timeout 500000",
         "build-check": "cd lib && npx tsc -p tsconfig.json --noEmit && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit",
-        "build": "cd lib && rm -rf build && npx tsc -p tsconfig.json && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit && cd ../.. && npm run post-build",
+        "build": "cd lib && DEL -rf build && npx tsc -p tsconfig.json && cd ../test/with-typescript && npx tsc -p tsconfig.json --noEmit && cd ../.. && npm run post-build",
         "pretty": "npx pretty-quick .",
         "post-build": "node add-ts-no-check.js",
         "build-pretty": "npm run build && npm run pretty && npm run pretty",
@@ -40,6 +40,7 @@
         "cookie": "0.4.0",
         "debug": "^4.3.3",
         "destr": "^1.1.1",
+        "h3": "^0.7.6",
         "jsonwebtoken": "^8.5.1",
         "jwks-rsa": "^2.0.5",
         "libphonenumber-js": "^1.9.44",

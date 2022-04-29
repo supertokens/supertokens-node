@@ -1,4 +1,3 @@
-// @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
@@ -6,83 +5,44 @@ import { TypeProvider } from "../thirdparty/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static thirdPartySignInUp(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        email: {
-            id: string;
-            isVerified: boolean;
-        },
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
-    static getUserByThirdPartyInfo(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        userContext?: any
-    ): Promise<User | undefined>;
-    static emailPasswordSignUp(
-        email: string,
-        password: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-    >;
-    static emailPasswordSignIn(
-        email: string,
-        password: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "WRONG_CREDENTIALS_ERROR";
-          }
-    >;
+    static thirdPartySignInUp(thirdPartyId: string, thirdPartyUserId: string, email: {
+        id: string;
+        isVerified: boolean;
+    }, userContext?: any): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    } | {
+        status: "FIELD_ERROR";
+        error: string;
+    }>;
+    static getUserByThirdPartyInfo(thirdPartyId: string, thirdPartyUserId: string, userContext?: any): Promise<User | undefined>;
+    static emailPasswordSignUp(email: string, password: string, userContext?: any): Promise<{
+        status: "OK";
+        user: User;
+    } | {
+        status: "EMAIL_ALREADY_EXISTS_ERROR";
+    }>;
+    static emailPasswordSignIn(email: string, password: string, userContext?: any): Promise<{
+        status: "OK";
+        user: User;
+    } | {
+        status: "WRONG_CREDENTIALS_ERROR";
+    }>;
     static getUserById(userId: string, userContext?: any): Promise<User | undefined>;
     static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
-    static createResetPasswordToken(
-        userId: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "UNKNOWN_USER_ID_ERROR";
-          }
-    >;
-    static resetPasswordUsingToken(
-        token: string,
-        newPassword: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              userId?: string | undefined;
-          }
-        | {
-              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }
-    >;
+    static createResetPasswordToken(userId: string, userContext?: any): Promise<{
+        status: "OK";
+        token: string;
+    } | {
+        status: "UNKNOWN_USER_ID_ERROR";
+    }>;
+    static resetPasswordUsingToken(token: string, newPassword: string, userContext?: any): Promise<{
+        status: "OK";
+        userId?: string | undefined;
+    } | {
+        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
     static updateEmailOrPassword(input: {
         userId: string;
         email?: string;
@@ -91,39 +51,20 @@ export default class Wrapper {
     }): Promise<{
         status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
     }>;
-    static createEmailVerificationToken(
-        userId: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "EMAIL_ALREADY_VERIFIED_ERROR";
-          }
-    >;
-    static verifyEmailUsingToken(
-        token: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-          }
-        | User
-        | undefined
-    >;
+    static createEmailVerificationToken(userId: string, userContext?: any): Promise<{
+        status: "OK";
+        token: string;
+    } | {
+        status: "EMAIL_ALREADY_VERIFIED_ERROR";
+    }>;
+    static verifyEmailUsingToken(token: string, userContext?: any): Promise<{
+        status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
+    } | User | undefined>;
     static isEmailVerified(userId: string, userContext?: any): Promise<boolean>;
-    static revokeEmailVerificationTokens(
-        userId: string,
-        userContext?: any
-    ): Promise<{
+    static revokeEmailVerificationTokens(userId: string, userContext?: any): Promise<{
         status: "OK";
     }>;
-    static unverifyEmail(
-        userId: string,
-        userContext?: any
-    ): Promise<{
+    static unverifyEmail(userId: string, userContext?: any): Promise<{
         status: "OK";
     }>;
     static Google: typeof import("../thirdparty/providers/google").default;

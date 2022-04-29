@@ -1,17 +1,7 @@
-// @ts-nocheck
 import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
-import {
-    RecipeInterface as EmailVerificationRecipeInterface,
-    APIInterface as EmailVerificationAPIInterface,
-} from "../emailverification";
-import {
-    NormalisedFormField,
-    TypeFormField,
-    TypeInputFormField,
-    TypeInputResetPasswordUsingTokenFeature,
-    APIOptions as EmailPasswordAPIOptionsOriginal,
-} from "../emailpassword/types";
+import { RecipeInterface as EmailVerificationRecipeInterface, APIInterface as EmailVerificationAPIInterface } from "../emailverification";
+import { NormalisedFormField, TypeFormField, TypeInputFormField, TypeInputResetPasswordUsingTokenFeature, APIOptions as EmailPasswordAPIOptionsOriginal } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
 export declare type User = {
@@ -50,20 +40,11 @@ export declare type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
+        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
+            functions?: (originalImplementation: EmailVerificationRecipeInterface, builder?: OverrideableBuilder<EmailVerificationRecipeInterface>) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface, builder?: OverrideableBuilder<EmailVerificationAPIInterface>) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -73,26 +54,23 @@ export declare type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
+        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
+            functions?: (originalImplementation: EmailVerificationRecipeInterface, builder?: OverrideableBuilder<EmailVerificationRecipeInterface>) => EmailVerificationRecipeInterface;
+            apis?: (originalImplementation: EmailVerificationAPIInterface, builder?: OverrideableBuilder<EmailVerificationAPIInterface>) => EmailVerificationAPIInterface;
         };
     };
 };
 export declare type RecipeInterface = {
-    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
-    getUsersByEmail(input: { email: string; userContext: any }): Promise<User[]>;
+    getUserById(input: {
+        userId: string;
+        userContext: any;
+    }): Promise<User | undefined>;
+    getUsersByEmail(input: {
+        email: string;
+        userContext: any;
+    }): Promise<User[]>;
     getUserByThirdPartyInfo(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
@@ -106,72 +84,57 @@ export declare type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    } | {
+        status: "FIELD_ERROR";
+        error: string;
+    }>;
     emailPasswordSignUp(input: {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "EMAIL_ALREADY_EXISTS_ERROR";
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        user: User;
+    } | {
+        status: "EMAIL_ALREADY_EXISTS_ERROR";
+    }>;
     emailPasswordSignIn(input: {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              user: User;
-          }
-        | {
-              status: "WRONG_CREDENTIALS_ERROR";
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        user: User;
+    } | {
+        status: "WRONG_CREDENTIALS_ERROR";
+    }>;
     createResetPasswordToken(input: {
         userId: string;
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "UNKNOWN_USER_ID_ERROR";
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        token: string;
+    } | {
+        status: "UNKNOWN_USER_ID_ERROR";
+    }>;
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              /**
-               * The id of the user whose password was reset.
-               * Defined for Core versions 3.9 or later
-               */
-              userId?: string;
-          }
-        | {
-              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        /**
+         * The id of the user whose password was reset.
+         * Defined for Core versions 3.9 or later
+         */
+        userId?: string;
+    } | {
+        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>;
     updateEmailOrPassword(input: {
         userId: string;
         email?: string;
@@ -184,122 +147,98 @@ export declare type RecipeInterface = {
 export declare type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
 export declare type ThirdPartyAPIOptions = ThirdPartyAPIOptionsOriginal;
 export declare type APIInterface = {
-    authorisationUrlGET:
-        | undefined
-        | ((input: {
-              provider: TypeProvider;
-              options: ThirdPartyAPIOptions;
-              userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
-    emailPasswordEmailExistsGET:
-        | undefined
-        | ((input: {
-              email: string;
-              options: EmailPasswordAPIOptions;
-              userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
-    generatePasswordResetTokenPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              options: EmailPasswordAPIOptions;
-              userContext: any;
-          }) => Promise<{
-              status: "OK";
-          }>);
-    passwordResetPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              token: string;
-              options: EmailPasswordAPIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    userId?: string;
-                }
-              | {
-                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-                }
-          >);
-    thirdPartySignInUpPOST:
-        | undefined
-        | ((input: {
-              provider: TypeProvider;
-              code: string;
-              redirectURI: string;
-              authCodeResponse?: any;
-              clientId?: string;
-              options: ThirdPartyAPIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    createdNewUser: boolean;
-                    user: User;
-                    session: SessionContainerInterface;
-                    authCodeResponse: any;
-                }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
-              | {
-                    status: "NO_EMAIL_GIVEN_BY_PROVIDER";
-                }
-          >);
-    emailPasswordSignInPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              options: EmailPasswordAPIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    user: User;
-                    session: SessionContainerInterface;
-                }
-              | {
-                    status: "WRONG_CREDENTIALS_ERROR";
-                }
-          >);
-    emailPasswordSignUpPOST:
-        | undefined
-        | ((input: {
-              formFields: {
-                  id: string;
-                  value: string;
-              }[];
-              options: EmailPasswordAPIOptions;
-              userContext: any;
-          }) => Promise<
-              | {
-                    status: "OK";
-                    user: User;
-                    session: SessionContainerInterface;
-                }
-              | {
-                    status: "EMAIL_ALREADY_EXISTS_ERROR";
-                }
-          >);
-    appleRedirectHandlerPOST:
-        | undefined
-        | ((input: { code: string; state: string; options: ThirdPartyAPIOptions; userContext: any }) => Promise<void>);
+    authorisationUrlGET: undefined | ((input: {
+        provider: TypeProvider;
+        options: ThirdPartyAPIOptions;
+        userContext: any;
+    }) => Promise<{
+        status: "OK";
+        url: string;
+    }>);
+    emailPasswordEmailExistsGET: undefined | ((input: {
+        email: string;
+        options: EmailPasswordAPIOptions;
+        userContext: any;
+    }) => Promise<{
+        status: "OK";
+        exists: boolean;
+    }>);
+    generatePasswordResetTokenPOST: undefined | ((input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: EmailPasswordAPIOptions;
+        userContext: any;
+    }) => Promise<{
+        status: "OK";
+    }>);
+    passwordResetPOST: undefined | ((input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        token: string;
+        options: EmailPasswordAPIOptions;
+        userContext: any;
+    }) => Promise<{
+        status: "OK";
+        userId?: string;
+    } | {
+        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+    }>);
+    thirdPartySignInUpPOST: undefined | ((input: {
+        provider: TypeProvider;
+        code: string;
+        redirectURI: string;
+        authCodeResponse?: any;
+        clientId?: string;
+        options: ThirdPartyAPIOptions;
+        userContext: any;
+    }) => Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+        session: SessionContainerInterface;
+        authCodeResponse: any;
+    } | {
+        status: "FIELD_ERROR";
+        error: string;
+    } | {
+        status: "NO_EMAIL_GIVEN_BY_PROVIDER";
+    }>);
+    emailPasswordSignInPOST: undefined | ((input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: EmailPasswordAPIOptions;
+        userContext: any;
+    }) => Promise<{
+        status: "OK";
+        user: User;
+        session: SessionContainerInterface;
+    } | {
+        status: "WRONG_CREDENTIALS_ERROR";
+    }>);
+    emailPasswordSignUpPOST: undefined | ((input: {
+        formFields: {
+            id: string;
+            value: string;
+        }[];
+        options: EmailPasswordAPIOptions;
+        userContext: any;
+    }) => Promise<{
+        status: "OK";
+        user: User;
+        session: SessionContainerInterface;
+    } | {
+        status: "EMAIL_ALREADY_EXISTS_ERROR";
+    }>);
+    appleRedirectHandlerPOST: undefined | ((input: {
+        code: string;
+        state: string;
+        options: ThirdPartyAPIOptions;
+        userContext: any;
+    }) => Promise<void>);
 };

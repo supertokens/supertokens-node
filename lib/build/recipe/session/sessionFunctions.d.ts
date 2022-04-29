@@ -1,25 +1,13 @@
-// @ts-nocheck
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import { Helpers } from "./recipeImplementation";
 /**
  * @description call this to "login" a user.
  */
-export declare function createNewSession(
-    helpers: Helpers,
-    userId: string,
-    accessTokenPayload?: any,
-    sessionData?: any
-): Promise<CreateOrRefreshAPIResponse>;
+export declare function createNewSession(helpers: Helpers, userId: string, accessTokenPayload?: any, sessionData?: any): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description authenticates a session. To be used in APIs that require authentication
  */
-export declare function getSession(
-    helpers: Helpers,
-    accessToken: string,
-    antiCsrfToken: string | undefined,
-    doAntiCsrfCheck: boolean,
-    containsCustomHeader: boolean
-): Promise<{
+export declare function getSession(helpers: Helpers, accessToken: string, antiCsrfToken: string | undefined, doAntiCsrfCheck: boolean, containsCustomHeader: boolean): Promise<{
     session: {
         handle: string;
         userId: string;
@@ -40,12 +28,7 @@ export declare function getSessionInformation(helpers: Helpers, sessionHandle: s
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
  */
-export declare function refreshSession(
-    helpers: Helpers,
-    refreshToken: string,
-    antiCsrfToken: string | undefined,
-    containsCustomHeader: boolean
-): Promise<CreateOrRefreshAPIResponse>;
+export declare function refreshSession(helpers: Helpers, refreshToken: string, antiCsrfToken: string | undefined, containsCustomHeader: boolean): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.
  * Access tokens cannot be immediately invalidated. Unless we add a blacklisting method. Or changed the private key to sign them.
@@ -74,8 +57,4 @@ export declare function updateSessionData(helpers: Helpers, sessionHandle: strin
  * @returns access token payload as provided by the user earlier
  */
 export declare function getAccessTokenPayload(helpers: Helpers, sessionHandle: string): Promise<any>;
-export declare function updateAccessTokenPayload(
-    helpers: Helpers,
-    sessionHandle: string,
-    newAccessTokenPayload: any
-): Promise<void>;
+export declare function updateAccessTokenPayload(helpers: Helpers, sessionHandle: string, newAccessTokenPayload: any): Promise<void>;

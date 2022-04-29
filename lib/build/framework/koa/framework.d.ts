@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { Context, Next } from "koa";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
@@ -25,16 +24,7 @@ export declare class KoaResponse extends BaseResponse {
     constructor(ctx: Context);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    setCookie: (
-        key: string,
-        value: string,
-        domain: string | undefined,
-        secure: boolean,
-        httpOnly: boolean,
-        expires: number,
-        path: string,
-        sameSite: "strict" | "lax" | "none"
-    ) => void;
+    setCookie: (key: string, value: string, domain: string | undefined, secure: boolean, httpOnly: boolean, expires: number, path: string, sameSite: "strict" | "lax" | "none") => void;
     /**
      * @param {number} statusCode
      */

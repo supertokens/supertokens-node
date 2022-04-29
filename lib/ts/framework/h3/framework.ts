@@ -6,9 +6,9 @@ import { BaseRequest } from "../request";
 import { BaseResponse } from '../response';
 import { Framework } from '../types';
 import {
-    getHeaderValueFromIncomingMessage, setH3Header, useBody, useRawBody, setCookieForServerResponse
+    getHeaderValueFromIncomingMessage, useBody, useRawBody, setCookieForServerResponse
 } from "../utils";
-
+import {Response, Request} from './types';
 const defer = typeof setImmediate !== 'undefined' ? setImmediate : (fn: Function) => fn()
 
 export class H3Request extends BaseRequest {
@@ -55,9 +55,9 @@ export class H3Request extends BaseRequest {
 }
 
 export class H3ResponseTokens extends BaseResponse {
-    private response: ServerResponse;
+    private response: Response;
     private statusCode: number;
-    constructor(response: ServerResponse) {
+    constructor(response: Response) {
         super();
         this.original = response;
         this.response = response;
@@ -65,19 +65,36 @@ export class H3ResponseTokens extends BaseResponse {
     }
 
     sendHTMLResponse = (html: string) => {
-        if(this.response.writable) {
-            this.response.setHeader('Content-Type', 'text/html')
-            this.response.statusCode = this.statusCode;
+        if(this.response.res.writable) {
+            this.response.res.setHeader('Content-Type', 'text/html')
+            this.response.res.statusCode = this.statusCode;
             new Promise((resolve) => {
                 defer(() => {
-                    this.response.end(html);
+                    this.response.res.end(html);
                     resolve(undefined);
                 })
             })
         }
     };
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
-        setH3Header(this.response, key, value, allowDuplicateKey);
+        try { 
+            console.log(this.response.res.setHeader);
+            const allheaders = this.response.res.getHeaders();
+            let existingValue = allheaders[key];
+
+            // we have the this.response.header for compatibility with nextJS
+            if (existingValue === undefined) {
+                this.response.res.setHeader(key, value);
+            } else if (allowDuplicateKey) {
+                this.response.res.setHeader(key, existingValue + ", " + value);
+            } else {
+                // we overwrite the current one with the new one
+                this.response.res.setHeader(key, value);
+            }
+        } catch (err) {
+            console.log(err);
+            throw new Error("Error while setting header with key: " + key + " and value: " + value);
+        }
     };
     setCookie = (
         key: string,
@@ -89,20 +106,20 @@ export class H3ResponseTokens extends BaseResponse {
         path: string,
         sameSite: "strict" | "lax" | "none"
     ) => {
-        setCookieForServerResponse(this.response, key, value, domain, secure, httpOnly, expires, path, sameSite);
+        setCookieForServerResponse(this.response.res, key, value, domain, secure, httpOnly, expires, path, sameSite);
     };
     setStatusCode = (statusCode: number) => {
-        if(this.response.writable) {
+        if(this.response.res.writable) {
             this.statusCode = statusCode
         }
     };
     sendJSONResponse = (content: any) => {
-        if(this.response.writable) {
-            this.response.setHeader('Content-Type', 'application/json')
-            this.response.statusCode = this.statusCode;
+        if(this.response.res.writable) {
+            this.response.res.setHeader('Content-Type', 'application/json')
+            this.response.res.statusCode = this.statusCode;
             new Promise((resolve) => {
                 defer(() => {
-                    this.response.end(content);
+                    this.response.res.end(content);
                     resolve(undefined);
                 })
             })
@@ -117,7 +134,7 @@ export const middlware = () => {
     return async (req: IncomingMessage, res: ServerResponse, next: (err?: Error) => any) => {
         let supertokens;
         const request = new H3Request(req);
-        const response = new H3ResponseTokens(res);
+        const response = new H3ResponseTokens({res: res});
         try {
             supertokens = SuperTokens.getInstanceOrThrowError();
             const result = await supertokens.middleware(request, response);
@@ -143,7 +160,7 @@ export const errorHandler = () => {
     return async (err: any, req: IncomingMessage, res: ServerResponse, next: (err?: Error) => any) => {
         let supertokens = SuperTokens.getInstanceOrThrowError();
         let request = new H3Request(req);
-        let response = new H3ResponseTokens(res);
+        let response = new H3ResponseTokens({res: res});
         try {
             await supertokens.errorHandler(err, request,response);
         } catch(err: any) {

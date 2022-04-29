@@ -1,5 +1,4 @@
-// @ts-nocheck
-export declare type TypeFramework = "express" | "fastify" | "hapi" | "loopback" | "koa" | "awsLambda" | 'h3';
+export declare type TypeFramework = "express" | "fastify" | "hapi" | "loopback" | "koa" | "awsLambda" | "h3";
 import { BaseRequest, BaseResponse } from ".";
 export declare let SchemaFramework: {
     type: string;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
@@ -15,16 +14,13 @@ export declare type StoredHandshakeInfo = {
     accessTokenBlacklistingEnabled: boolean;
     accessTokenValidity: number;
     refreshTokenValidity: number;
-} & (
-    | {
-          jwtSigningPublicKeyList: KeyInfo[];
-      }
-    | {
-          jwtSigningPublicKeyList: undefined;
-          jwtSigningPublicKey: string;
-          jwtSigningPublicKeyExpiryTime: number;
-      }
-);
+} & ({
+    jwtSigningPublicKeyList: KeyInfo[];
+} | {
+    jwtSigningPublicKeyList: undefined;
+    jwtSigningPublicKey: string;
+    jwtSigningPublicKeyExpiryTime: number;
+});
 export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
@@ -59,39 +55,22 @@ export declare type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    jwt?:
-        | {
-              enable: true;
-              propertyNameInAccessTokenPayload?: string;
-              issuer?: string;
-          }
-        | {
-              enable: false;
-          };
+    jwt?: {
+        enable: true;
+        propertyNameInAccessTokenPayload?: string;
+        issuer?: string;
+    } | {
+        enable: false;
+    };
     override?: {
-        functions?: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
+        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         openIdFeature?: {
-            functions?: (
-                originalImplementation: OpenIdRecipeInterface,
-                builder?: OverrideableBuilder<OpenIdRecipeInterface>
-            ) => OpenIdRecipeInterface;
-            apis?: (
-                originalImplementation: OpenIdAPIInterface,
-                builder?: OverrideableBuilder<OpenIdAPIInterface>
-            ) => OpenIdAPIInterface;
+            functions?: (originalImplementation: OpenIdRecipeInterface, builder?: OverrideableBuilder<OpenIdRecipeInterface>) => OpenIdRecipeInterface;
+            apis?: (originalImplementation: OpenIdAPIInterface, builder?: OverrideableBuilder<OpenIdAPIInterface>) => OpenIdAPIInterface;
             jwtFeature?: {
-                functions?: (
-                    originalImplementation: JWTRecipeInterface,
-                    builder?: OverrideableBuilder<JWTRecipeInterface>
-                ) => JWTRecipeInterface;
-                apis?: (
-                    originalImplementation: JWTAPIInterface,
-                    builder?: OverrideableBuilder<JWTAPIInterface>
-                ) => JWTAPIInterface;
+                functions?: (originalImplementation: JWTRecipeInterface, builder?: OverrideableBuilder<JWTRecipeInterface>) => JWTRecipeInterface;
+                apis?: (originalImplementation: JWTAPIInterface, builder?: OverrideableBuilder<JWTAPIInterface>) => JWTAPIInterface;
             };
         };
     };
@@ -110,29 +89,14 @@ export declare type TypeNormalisedInput = {
         issuer?: string;
     };
     override: {
-        functions: (
-            originalImplementation: RecipeInterface,
-            builder?: OverrideableBuilder<RecipeInterface>
-        ) => RecipeInterface;
+        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         openIdFeature?: {
-            functions?: (
-                originalImplementation: OpenIdRecipeInterface,
-                builder?: OverrideableBuilder<OpenIdRecipeInterface>
-            ) => OpenIdRecipeInterface;
-            apis?: (
-                originalImplementation: OpenIdAPIInterface,
-                builder?: OverrideableBuilder<OpenIdAPIInterface>
-            ) => OpenIdAPIInterface;
+            functions?: (originalImplementation: OpenIdRecipeInterface, builder?: OverrideableBuilder<OpenIdRecipeInterface>) => OpenIdRecipeInterface;
+            apis?: (originalImplementation: OpenIdAPIInterface, builder?: OverrideableBuilder<OpenIdAPIInterface>) => OpenIdAPIInterface;
             jwtFeature?: {
-                functions?: (
-                    originalImplementation: JWTRecipeInterface,
-                    builder?: OverrideableBuilder<JWTRecipeInterface>
-                ) => JWTRecipeInterface;
-                apis?: (
-                    originalImplementation: JWTAPIInterface,
-                    builder?: OverrideableBuilder<JWTAPIInterface>
-                ) => JWTAPIInterface;
+                functions?: (originalImplementation: JWTRecipeInterface, builder?: OverrideableBuilder<JWTRecipeInterface>) => JWTRecipeInterface;
+                apis?: (originalImplementation: JWTAPIInterface, builder?: OverrideableBuilder<JWTAPIInterface>) => JWTAPIInterface;
             };
         };
     };
@@ -169,18 +133,41 @@ export declare type RecipeInterface = {
         options?: VerifySessionOptions;
         userContext: any;
     }): Promise<SessionContainerInterface | undefined>;
-    refreshSession(input: { req: any; res: any; userContext: any }): Promise<SessionContainerInterface>;
+    refreshSession(input: {
+        req: any;
+        res: any;
+        userContext: any;
+    }): Promise<SessionContainerInterface>;
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionData
      * - getAccessTokenPayload
      */
-    getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation>;
-    revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
-    getAllSessionHandlesForUser(input: { userId: string; userContext: any }): Promise<string[]>;
-    revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
-    revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
-    updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<void>;
+    getSessionInformation(input: {
+        sessionHandle: string;
+        userContext: any;
+    }): Promise<SessionInformation>;
+    revokeAllSessionsForUser(input: {
+        userId: string;
+        userContext: any;
+    }): Promise<string[]>;
+    getAllSessionHandlesForUser(input: {
+        userId: string;
+        userContext: any;
+    }): Promise<string[]>;
+    revokeSession(input: {
+        sessionHandle: string;
+        userContext: any;
+    }): Promise<boolean>;
+    revokeMultipleSessions(input: {
+        sessionHandles: string[];
+        userContext: any;
+    }): Promise<string[]>;
+    updateSessionData(input: {
+        sessionHandle: string;
+        newSessionData: any;
+        userContext: any;
+    }): Promise<void>;
     updateAccessTokenPayload(input: {
         sessionHandle: string;
         newAccessTokenPayload: any;
@@ -203,8 +190,12 @@ export declare type RecipeInterface = {
             createdTime: number;
         };
     }>;
-    getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-    getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
+    getAccessTokenLifeTimeMS(input: {
+        userContext: any;
+    }): Promise<number>;
+    getRefreshTokenLifeTimeMS(input: {
+        userContext: any;
+    }): Promise<number>;
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
@@ -227,15 +218,16 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
-    refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<void>);
-    signOutPOST:
-        | undefined
-        | ((input: {
-              options: APIOptions;
-              userContext: any;
-          }) => Promise<{
-              status: "OK";
-          }>);
+    refreshPOST: undefined | ((input: {
+        options: APIOptions;
+        userContext: any;
+    }) => Promise<void>);
+    signOutPOST: undefined | ((input: {
+        options: APIOptions;
+        userContext: any;
+    }) => Promise<{
+        status: "OK";
+    }>);
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;

@@ -1,4 +1,3 @@
-// @ts-nocheck
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
 export default class SuperTokensWrapper {
@@ -28,9 +27,7 @@ export default class SuperTokensWrapper {
         }[];
         nextPaginationToken?: string;
     }>;
-    static deleteUser(
-        userId: string
-    ): Promise<{
+    static deleteUser(userId: string): Promise<{
         status: "OK";
     }>;
 }
