@@ -22,6 +22,7 @@ import STError from "../error";
 import type { HTTPMethod } from "../types";
 import { NextApiRequest } from "next";
 import { COOKIE_HEADER } from "./constants";
+import destr from 'destr';
 
 export function getCookieValueFromHeaders(headers: any, key: string): string | undefined {
     if (headers === undefined || headers === null) {
@@ -211,6 +212,57 @@ export function setHeaderForExpressLikeResponse(res: Response, key: string, valu
             } else {
                 res.setHeader(key, value);
             }
+        }
+    } catch (err) {
+        throw new Error("Error while setting header with key: " + key + " and value: " + value);
+    }
+}
+
+export function useRawBody(req: IncomingMessage): Promise<string> {
+    const RawBodySymbol = Symbol('h3RawBody');
+    if(RawBodySymbol in this.request) {
+        const promise = Promise.resolve((req as any)[RawBodySymbol])
+        return promise.then(buff => buff.toString('utf-8'));
+    }
+    if('body' in req) {
+        return Promise.resolve((this.request as any).body);
+    }
+
+    const promise = (req as any)[RawBodySymbol] = new Promise<Buffer>((resolve, reject) => {
+        const bodyData: any[] = []
+        req
+        .on('error', (err) => reject(err))
+        .on('data', (chunk) => {bodyData.push(chunk)})
+        .on('end', () => {resolve(Buffer.concat(bodyData))})
+    }) 
+
+    return promise.then(buff => buff.toString('utf-8'));
+}
+
+export async function useBody<T=any>(req: IncomingMessage): Promise<T> {
+    const ParsedBodySymbol = Symbol('h3RawBody')
+    if(ParsedBodySymbol in req) {
+        return (req as any)[ParsedBodySymbol]
+    }
+
+    const body = await useRawBody(req) as string;
+
+    const json = destr(body);
+    (req as any)[ParsedBodySymbol] = json;
+    return json
+}
+
+export function setH3Header(res: ServerResponse, key: string, value: string, allowDuplicateKey: boolean) {
+    try {
+        let existingHeaders = res.getHeaders();
+        let existingValue = existingHeaders[key.toLowerCase()];
+
+        if (existingValue === undefined) {
+            res.setHeader(key, value);
+        } else if (allowDuplicateKey) {
+            res.setHeader(key, existingValue + ", " + value);
+        } else {
+            res.setHeader(key, value);
         }
     } catch (err) {
         throw new Error("Error while setting header with key: " + key + " and value: " + value);
