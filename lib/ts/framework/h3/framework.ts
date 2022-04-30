@@ -1,3 +1,4 @@
+import { createError, H3Event, sendError } from 'h3';
 import type {IncomingMessage, ServerResponse} from 'http';
 import { SessionContainerInterface } from '../../recipe/session/types';
 import SuperTokens from '../../supertokens';
@@ -6,10 +7,8 @@ import { BaseRequest } from "../request";
 import { BaseResponse } from '../response';
 import { Framework } from '../types';
 import {
-    getHeaderValueFromIncomingMessage, useBody, useRawBody, setCookieForServerResponse
+    getCookieValueFromIncomingMessage, getHeaderValueFromIncomingMessage, useBody, useRawBody, setCookieForServerResponse
 } from "../utils";
-import {Response, Request} from './types';
-const defer = typeof setImmediate !== 'undefined' ? setImmediate : (fn: Function) => fn()
 
 export class H3Request extends BaseRequest {
     private request: IncomingMessage;
@@ -19,7 +18,7 @@ export class H3Request extends BaseRequest {
         this.request = request;
     };
     getCookieValue = (key: string) => {
-        return getHeaderValueFromIncomingMessage(this.request, key);
+        return getCookieValueFromIncomingMessage(this.request, key);
     };
     getFormData = async (): Promise<any> => {
         return useRawBody(this.request);
@@ -55,9 +54,9 @@ export class H3Request extends BaseRequest {
 }
 
 export class H3ResponseTokens extends BaseResponse {
-    private response: Response;
+    private response: ServerResponse;
     private statusCode: number;
-    constructor(response: Response) {
+    constructor(response: ServerResponse) {
         super();
         this.original = response;
         this.response = response;
@@ -65,34 +64,27 @@ export class H3ResponseTokens extends BaseResponse {
     }
 
     sendHTMLResponse = (html: string) => {
-        if(this.response.res.writable) {
-            this.response.res.setHeader('Content-Type', 'text/html')
-            this.response.res.statusCode = this.statusCode;
-            new Promise((resolve) => {
-                defer(() => {
-                    this.response.res.end(html);
-                    resolve(undefined);
-                })
-            })
+        if(this.response.writable) {
+            this.response.setHeader('Content-Type', 'text/html')
+            this.response.statusCode = this.statusCode;
+            this.response.end(html);
         }
     };
     setHeader = (key: string, value: string, allowDuplicateKey: boolean) => {
         try { 
-            console.log(this.response.res.setHeader);
-            const allheaders = this.response.res.getHeaders();
+            const allheaders = this.response.getHeaders();
             let existingValue = allheaders[key];
 
             // we have the this.response.header for compatibility with nextJS
             if (existingValue === undefined) {
-                this.response.res.setHeader(key, value);
+                this.response.setHeader(key, value);
             } else if (allowDuplicateKey) {
-                this.response.res.setHeader(key, existingValue + ", " + value);
+                this.response.setHeader(key, existingValue + ", " + value);
             } else {
                 // we overwrite the current one with the new one
-                this.response.res.setHeader(key, value);
+                this.response.setHeader(key, value);
             }
         } catch (err) {
-            console.log(err);
             throw new Error("Error while setting header with key: " + key + " and value: " + value);
         }
     };
@@ -106,23 +98,19 @@ export class H3ResponseTokens extends BaseResponse {
         path: string,
         sameSite: "strict" | "lax" | "none"
     ) => {
-        setCookieForServerResponse(this.response.res, key, value, domain, secure, httpOnly, expires, path, sameSite);
+        setCookieForServerResponse(this.response, key, value, domain, secure, httpOnly, expires, path, sameSite);
     };
     setStatusCode = (statusCode: number) => {
-        if(this.response.res.writable) {
-            this.statusCode = statusCode
+        if(this.response.writable) {
+            this.statusCode = statusCode;
         }
     };
     sendJSONResponse = (content: any) => {
-        if(this.response.res.writable) {
-            this.response.res.setHeader('Content-Type', 'application/json')
-            this.response.res.statusCode = this.statusCode;
-            new Promise((resolve) => {
-                defer(() => {
-                    this.response.res.end(content);
-                    resolve(undefined);
-                })
-            })
+        if(this.response.writable) {
+            content = JSON.stringify(content);
+            this.response.setHeader('Content-Type', 'application/json')
+            this.response.statusCode = this.statusCode;
+            this.response.end(content, 'utf-8');
         }
     };
 }
@@ -134,7 +122,7 @@ export const middlware = () => {
     return async (req: IncomingMessage, res: ServerResponse, next: (err?: Error) => any) => {
         let supertokens;
         const request = new H3Request(req);
-        const response = new H3ResponseTokens({res: res});
+        const response = new H3ResponseTokens(res);
         try {
             supertokens = SuperTokens.getInstanceOrThrowError();
             const result = await supertokens.middleware(request, response);
@@ -157,30 +145,26 @@ export const middlware = () => {
 }
 
 export const errorHandler = () => {
-    return async (err: any, req: IncomingMessage, res: ServerResponse, next: (err?: Error) => any) => {
-        let supertokens = SuperTokens.getInstanceOrThrowError();
-        let request = new H3Request(req);
-        let response = new H3ResponseTokens({res: res});
-        try {
-            await supertokens.errorHandler(err, request,response);
-        } catch(err: any) {
-            return next(err);
-        }
+    return async (event: H3Event, errorPlain: Error, statusCode: number) => {
+        const error = createError(errorPlain);
+        error.statusCode = statusCode;
+        sendError(event, error)
     }
-};
+    
+}
 
 export interface H3Framework extends Framework {
     middlware: () => (req: IncomingMessage, res: ServerResponse, next: (err?: Error) => any) => Promise<void>,
-    errorHandler: () => (err: any, req: IncomingMessage, res: ServerResponse, next: (err?: Error) => any) => Promise<void>
+    errorHandler: () => (event: H3Event, errorPlain: Error, statusCode: number) => Promise<void>
 }
 
 export const H3Wrapper: H3Framework = {
     middlware,
     errorHandler,
     wrapRequest: (unwrapped) => {
-        return new H3Request(unwrapped);
+        return new H3Request(unwrapped.req);
     },
     wrapResponse: (unwrapped) => {
-        return new H3ResponseTokens(unwrapped)
+        return new H3ResponseTokens(unwrapped.res)
     } 
 }

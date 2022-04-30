@@ -1,8 +1,6 @@
 /// <reference types="node" />
 import { ServerResponse, IncomingMessage } from 'http';
-export interface Response {
+export interface Event {
     res: ServerResponse;
-}
-export interface Request {
     req: IncomingMessage;
 }
