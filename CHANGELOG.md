@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [9.2.1] - 2022-05-05
+
+# Adds
+
+- Support for h3 freamwork.
+
+
 ## [9.2.0] - 2022-04-18
 
 # Adds
