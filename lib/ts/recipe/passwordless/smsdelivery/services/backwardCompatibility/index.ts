@@ -15,7 +15,8 @@
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { NormalisedAppinfo } from "../../../../../types";
-import PasswordlessSupertokensService from "../supertokens";
+import axios from "axios";
+import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
 
 function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
     return async (
@@ -29,15 +30,25 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
             codeLifetime: number;
             preAuthSessionId: string;
         },
-        userContext: any
+        _: any
     ): Promise<void> => {
-        let supertokensService = new PasswordlessSupertokensService({});
         try {
-            return await supertokensService.sendSms({
-                type: "PASSWORDLESS_LOGIN",
-                userContext,
-                ...input,
+            await axios({
+                method: "post",
+                url: SUPERTOKENS_SMS_SERVICE_URL,
+                data: {
+                    apiKey: this.config.apiKey,
+                    type: "PASSWORDLESS_LOGIN",
+                    phoneNumber: input.phoneNumber,
+                    userInputCode: input.userInputCode,
+                    urlWithLinkCode: input.urlWithLinkCode,
+                    codeLifetime: input.codeLifetime,
+                },
+                headers: {
+                    "api-version": "0",
+                },
             });
+            return;
         } catch (err) {
             if (err.response === undefined || err.response.status !== 429) {
                 throw err;
