@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `smsDelivery` user config for Passwordless and ThirdpartyPasswordless recipes.
 -   `Twilio` service integartion for smsDelivery ingredient.
 -   `SMTP` service integration for emailDelivery ingredient.
+-   `Supertokens` service integration for smsDelivery ingredient.
 
 ### Breaking Change
 

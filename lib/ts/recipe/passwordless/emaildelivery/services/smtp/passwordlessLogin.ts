@@ -20,7 +20,7 @@ export default function getPasswordlessLoginEmailContent(input: TypePasswordless
     let appName = supertokens.appInfo.appName;
     let body = getPasswordlessLoginEmailHTML(
         appName,
-        input.codeLifetime,
+        Math.ceil(input.codeLifetime / 1000), // converting ms to s
         input.urlWithLinkCode,
         input.userInputCode,
         input.email

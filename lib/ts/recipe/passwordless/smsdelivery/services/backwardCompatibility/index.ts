@@ -15,6 +15,7 @@
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { NormalisedAppinfo } from "../../../../../types";
+import PasswordlessSupertokensService from "../supertokens";
 
 function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
     return async (
@@ -26,9 +27,22 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
             // Full url that the end-user can click to finish sign in/up
             urlWithLinkCode?: string;
             codeLifetime: number;
+            preAuthSessionId: string;
         },
-        _: any
+        userContext: any
     ): Promise<void> => {
+        let supertokensService = new PasswordlessSupertokensService({});
+        try {
+            return await supertokensService.sendSms({
+                type: "PASSWORDLESS_LOGIN",
+                userContext,
+                ...input,
+            });
+        } catch (err) {
+            if (err.response === undefined || err.response.status !== 429) {
+                throw err;
+            }
+        }
         /**
          * if we do console.log(`SMS content: ${input}`);
          * Output would be:
