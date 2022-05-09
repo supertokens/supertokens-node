@@ -22,10 +22,7 @@ export interface SMTPServiceConfig {
     };
     port: number;
     secure?: boolean;
-    auth?: {
-        user: string;
-        password: string;
-    };
+    password: string;
 }
 
 export interface GetContentResult {
@@ -34,12 +31,7 @@ export interface GetContentResult {
     toEmail: string;
 }
 
-export type TypeInputSendRawEmail = GetContentResult & { userContext: any } & {
-    from: {
-        name: string;
-        email: string;
-    };
-};
+export type TypeInputSendRawEmail = GetContentResult & { userContext: any };
 
 export type ServiceInterface<T> = {
     sendRawEmail: (input: TypeInputSendRawEmail) => Promise<void>;

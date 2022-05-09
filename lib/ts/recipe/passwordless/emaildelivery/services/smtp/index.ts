@@ -21,17 +21,18 @@ import { getServiceImplementation } from "./serviceImplementation";
 
 export default class SMTPService implements EmailDeliveryInterface<TypePasswordlessEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypePasswordlessEmailDeliveryInput>;
-    private config: TypeInput<TypePasswordlessEmailDeliveryInput>;
 
     constructor(config: TypeInput<TypePasswordlessEmailDeliveryInput>) {
-        this.config = config;
         const transporter = createTransport({
             host: config.smtpSettings.host,
             port: config.smtpSettings.port,
-            auth: config.smtpSettings.auth,
+            auth: {
+                user: config.smtpSettings.from.email,
+                pass: config.smtpSettings.password,
+            },
             secure: config.smtpSettings.secure,
         });
-        let builder = new OverrideableBuilder(getServiceImplementation(transporter));
+        let builder = new OverrideableBuilder(getServiceImplementation(transporter, config.smtpSettings.from));
         if (config.override !== undefined) {
             builder = builder.override(config.override);
         }
@@ -43,7 +44,6 @@ export default class SMTPService implements EmailDeliveryInterface<TypePasswordl
         await this.serviceImpl.sendRawEmail({
             ...content,
             userContext: input.userContext,
-            from: this.config.smtpSettings.from,
         });
     };
 }

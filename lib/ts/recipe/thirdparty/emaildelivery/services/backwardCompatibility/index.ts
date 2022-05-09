@@ -19,9 +19,6 @@ import EmailVerificationBackwardCompatibilityService from "../../../../emailveri
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService implements EmailDeliveryInterface<TypeThirdPartyEmailDeliveryInput> {
-    private recipeInterfaceImpl: RecipeInterface;
-    private appInfo: NormalisedAppinfo;
-    private isInServerlessEnv: boolean;
     private emailVerificationBackwardCompatibilityService: EmailVerificationBackwardCompatibilityService;
 
     constructor(
@@ -36,9 +33,6 @@ export default class BackwardCompatibilityService implements EmailDeliveryInterf
             ) => Promise<void>;
         }
     ) {
-        this.recipeInterfaceImpl = recipeInterfaceImpl;
-        this.isInServerlessEnv = isInServerlessEnv;
-        this.appInfo = appInfo;
         {
             const inputCreateAndSendCustomEmail = emailVerificationFeature?.createAndSendCustomEmail;
             let emailVerificationFeatureNormalisedConfig =
@@ -49,7 +43,7 @@ export default class BackwardCompatibilityService implements EmailDeliveryInterf
                               link: string,
                               userContext: any
                           ) => {
-                              let userInfo = await this.recipeInterfaceImpl.getUserById({
+                              let userInfo = await recipeInterfaceImpl.getUserById({
                                   userId: user.id,
                                   userContext,
                               });
@@ -61,8 +55,8 @@ export default class BackwardCompatibilityService implements EmailDeliveryInterf
                       }
                     : {};
             this.emailVerificationBackwardCompatibilityService = new EmailVerificationBackwardCompatibilityService(
-                this.appInfo,
-                this.isInServerlessEnv,
+                appInfo,
+                isInServerlessEnv,
                 emailVerificationFeatureNormalisedConfig.createAndSendCustomEmail
             );
         }
