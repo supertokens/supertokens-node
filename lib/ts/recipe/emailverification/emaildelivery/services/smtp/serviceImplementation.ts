@@ -23,12 +23,16 @@ import {
 import getEmailVerifyEmailContent from "./emailVerify";
 
 export function getServiceImplementation(
-    transporter: Transporter
+    transporter: Transporter,
+    from: {
+        name: string;
+        email: string;
+    }
 ): ServiceInterface<TypeEmailVerificationEmailDeliveryInput> {
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
             await transporter.sendMail({
-                from: `${input.from.name} <${input.from.email}>`,
+                from: `${from.name} <${from.email}>`,
                 to: input.toEmail,
                 subject: input.subject,
                 html: input.body,

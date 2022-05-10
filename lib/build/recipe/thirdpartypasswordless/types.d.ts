@@ -56,7 +56,7 @@ export declare type TypeInput = (
           /**
            * @deprecated Please use smsDelivery config instead
            */
-          createAndSendCustomTextMessage: (
+          createAndSendCustomTextMessage?: (
               input: {
                   phoneNumber: string;
                   userInputCode?: string;
@@ -73,7 +73,7 @@ export declare type TypeInput = (
           /**
            * @deprecated Please use emailDelivery config instead
            */
-          createAndSendCustomEmail: (
+          createAndSendCustomEmail?: (
               input: {
                   email: string;
                   userInputCode?: string;
@@ -90,7 +90,7 @@ export declare type TypeInput = (
           /**
            * @deprecated Please use emailDelivery config instead
            */
-          createAndSendCustomEmail: (
+          createAndSendCustomEmail?: (
               input: {
                   email: string;
                   userInputCode?: string;
@@ -104,7 +104,7 @@ export declare type TypeInput = (
           /**
            * @deprecated Please use smsDelivery config instead
            */
-          createAndSendCustomTextMessage: (
+          createAndSendCustomTextMessage?: (
               input: {
                   phoneNumber: string;
                   userInputCode?: string;
@@ -158,55 +158,15 @@ export declare type TypeNormalisedInput = (
     | {
           contactMethod: "PHONE";
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomTextMessage: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomEmail: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomEmail: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomTextMessage: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";

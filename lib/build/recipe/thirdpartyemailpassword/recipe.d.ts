@@ -22,7 +22,7 @@ export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     emailVerificationRecipe: EmailVerificationRecipe;
-    emailPasswordRecipe: EmailPasswordRecipe;
+    private emailPasswordRecipe;
     private thirdPartyRecipe;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;

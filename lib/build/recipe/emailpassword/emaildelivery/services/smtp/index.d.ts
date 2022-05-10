@@ -4,7 +4,6 @@ import { TypeEmailPasswordEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 export default class SMTPService implements EmailDeliveryInterface<TypeEmailPasswordEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypeEmailPasswordEmailDeliveryInput>;
-    private config;
     private emailVerificationSMTPService;
     constructor(config: TypeInput<TypeEmailPasswordEmailDeliveryInput>);
     sendEmail: (

@@ -25,7 +25,7 @@ export declare type TypeInput = (
           /**
            * @deprecated Please use smsDelivery config instead
            */
-          createAndSendCustomTextMessage: (
+          createAndSendCustomTextMessage?: (
               input: {
                   phoneNumber: string;
                   userInputCode?: string;
@@ -73,7 +73,7 @@ export declare type TypeInput = (
           /**
            * @deprecated Please use smsDelivery config instead
            */
-          createAndSendCustomTextMessage: (
+          createAndSendCustomTextMessage?: (
               input: {
                   phoneNumber: string;
                   userInputCode?: string;

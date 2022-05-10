@@ -5,10 +5,6 @@ import { NormalisedAppinfo } from "../../../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
-    private recipeInterfaceImpl;
-    private emailPasswordRecipeInterfaceImpl;
-    private isInServerlessEnv;
-    private appInfo;
     private emailPasswordBackwardCompatibilityService;
     private emailVerificationBackwardCompatibilityService;
     constructor(

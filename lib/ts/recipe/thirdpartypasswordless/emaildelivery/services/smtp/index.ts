@@ -25,33 +25,34 @@ import getPasswordlessServiceImplementation from "./serviceImplementation/passwo
 
 export default class SMTPService implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>;
-    private config: TypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
     private emailVerificationSMTPService: EmailVerificationSMTPService;
     private passwordlessSMTPService: PasswordlessSMTPService;
 
     constructor(config: TypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>) {
-        this.config = config;
         const transporter = createTransport({
             host: config.smtpSettings.host,
             port: config.smtpSettings.port,
-            auth: config.smtpSettings.auth,
+            auth: {
+                user: config.smtpSettings.from.email,
+                pass: config.smtpSettings.password,
+            },
             secure: config.smtpSettings.secure,
         });
-        let builder = new OverrideableBuilder(getServiceImplementation(transporter));
+        let builder = new OverrideableBuilder(getServiceImplementation(transporter, config.smtpSettings.from));
         if (config.override !== undefined) {
             builder = builder.override(config.override);
         }
         this.serviceImpl = builder.build();
 
         this.emailVerificationSMTPService = new EmailVerificationSMTPService({
-            smtpSettings: this.config.smtpSettings,
+            smtpSettings: config.smtpSettings,
             override: (_) => {
                 return getEmailVerificationServiceImplementation(this.serviceImpl);
             },
         });
 
         this.passwordlessSMTPService = new PasswordlessSMTPService({
-            smtpSettings: this.config.smtpSettings,
+            smtpSettings: config.smtpSettings,
             override: (_) => {
                 return getPasswordlessServiceImplementation(this.serviceImpl);
             },
