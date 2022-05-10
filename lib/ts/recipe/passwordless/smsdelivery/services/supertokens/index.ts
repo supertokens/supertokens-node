@@ -19,6 +19,7 @@ import {
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import axios from "axios";
+import Supertokens from "../../../../../supertokens";
 
 export default class SupertokensService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
     private config: SupertokensServiceConfig;
@@ -28,16 +29,21 @@ export default class SupertokensService implements SmsDeliveryInterface<TypePass
     }
 
     sendSms = async (input: TypePasswordlessSmsDeliveryInput) => {
+        let supertokens = Supertokens.getInstanceOrThrowError();
+        let appName = supertokens.appInfo.appName;
         await axios({
             method: "post",
             url: SUPERTOKENS_SMS_SERVICE_URL,
             data: {
                 apiKey: this.config.apiKey,
-                type: input.type,
-                phoneNumber: input.phoneNumber,
-                userInputCode: input.userInputCode,
-                urlWithLinkCode: input.urlWithLinkCode,
-                codeLifetime: input.codeLifetime,
+                smsInput: {
+                    type: input.type,
+                    phoneNumber: input.phoneNumber,
+                    userInputCode: input.userInputCode,
+                    urlWithLinkCode: input.urlWithLinkCode,
+                    codeLifetime: input.codeLifetime,
+                    appName,
+                },
             },
             headers: {
                 "api-version": "0",
