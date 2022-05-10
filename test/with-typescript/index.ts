@@ -8,10 +8,16 @@ import NextJS from "../../nextjs";
 import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
+import ThirdParty from "../../recipe/thirdparty";
 import Passwordless from "../../recipe/passwordless";
 import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
-import { STMPService } from "../../recipe/thirdpartypasswordless/emaildelivery";
-import { TwilioService } from "../../recipe/thirdpartypasswordless/smsdelivery";
+import { STMPService as STMPServiceTPP } from "../../recipe/thirdpartypasswordless/emaildelivery";
+import { STMPService as STMPServiceP } from "../../recipe/passwordless/emaildelivery";
+import { STMPService as STMPServiceTP } from "../../recipe/thirdparty/emaildelivery";
+import { STMPService as STMPServiceTPEP } from "../../recipe/thirdpartyemailpassword/emaildelivery";
+import { STMPService as STMPServiceEP } from "../../recipe/emailpassword/emaildelivery";
+import { TwilioService as TwilioServiceTPP } from "../../recipe/thirdpartypasswordless/smsdelivery";
+import { TwilioService as TwilioServiceP } from "../../recipe/thirdpartypasswordless/smsdelivery";
 
 ThirdPartyPasswordless.init({
     providers: [
@@ -221,7 +227,7 @@ ThirdPartyPasswordless.init({
         }),
     ],
     smsDelivery: {
-        service: new TwilioService({
+        service: new TwilioServiceTPP({
             twilioSettings: {
                 accountSid: "",
                 authToken: "",
@@ -271,7 +277,7 @@ ThirdPartyPasswordless.init({
 ThirdPartyPasswordless.init({
     contactMethod: "EMAIL",
     emailDelivery: {
-        service: new STMPService({
+        service: new STMPServiceTPP({
             smtpSettings: {
                 host: "",
                 password: "",
@@ -309,7 +315,7 @@ ThirdPartyPasswordless.init({
 
 ThirdPartyPasswordless.init({
     emailDelivery: {
-        service: new STMPService({
+        service: new STMPServiceTPP({
             smtpSettings: {
                 host: "",
                 password: "",
@@ -335,7 +341,7 @@ ThirdPartyPasswordless.init({
 
 ThirdPartyPasswordless.init({
     smsDelivery: {
-        service: new TwilioService({
+        service: new TwilioServiceTPP({
             twilioSettings: {
                 accountSid: "",
                 authToken: "",
@@ -361,7 +367,7 @@ ThirdPartyPasswordless.init({
 Passwordless.init({
     contactMethod: "PHONE",
     smsDelivery: {
-        service: new TwilioService({
+        service: new TwilioServiceP({
             twilioSettings: {
                 accountSid: "",
                 authToken: "",
@@ -410,7 +416,7 @@ Passwordless.init({
 Passwordless.init({
     contactMethod: "EMAIL",
     emailDelivery: {
-        service: new STMPService({
+        service: new STMPServiceP({
             smtpSettings: {
                 host: "",
                 password: "",
@@ -448,7 +454,7 @@ Passwordless.init({
 
 Passwordless.init({
     emailDelivery: {
-        service: new STMPService({
+        service: new STMPServiceP({
             smtpSettings: {
                 host: "",
                 password: "",
@@ -474,7 +480,7 @@ Passwordless.init({
 
 Passwordless.init({
     smsDelivery: {
-        service: new TwilioService({
+        service: new TwilioServiceP({
             twilioSettings: {
                 accountSid: "",
                 authToken: "",
@@ -496,6 +502,58 @@ Passwordless.init({
     contactMethod: "PHONE",
     flowType: "MAGIC_LINK",
 });
+
+EmailPassword.init({
+    emailDelivery: {
+        service: new STMPServiceEP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+        }),
+    },
+});
+
+ThirdPartyEmailPassword.init({
+    emailDelivery: {
+        service: new STMPServiceTPEP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+        }),
+    },
+});
+
+ThirdParty.init({
+    emailDelivery: {
+        service: new STMPServiceTP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+        }),
+    },
+    signInAndUpFeature: {
+        providers: [],
+    },
+});
+
 import { TypeInput } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";
