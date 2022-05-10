@@ -240,11 +240,23 @@ ThirdPartyPasswordless.init({
                         await oI.sendRawSms(input);
                     },
                     getContent: async (input) => {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        }
                         return await oI.getContent(input);
                     },
                 };
             },
         }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    return await oI.sendSms(input);
+                },
+            };
+        },
     },
     contactMethod: "PHONE",
     flowType: "MAGIC_LINK",
@@ -293,9 +305,26 @@ ThirdPartyPasswordless.init({
                     sendRawEmail: async (input) => {
                         await oI.sendRawEmail(input);
                     },
+                    getContent: async (input) => {
+                        if (input.type === "EMAIL_VERIFICATION") {
+                        } else if (input.type === "PASSWORDLESS_LOGIN") {
+                        }
+                        return await oI.getContent(input);
+                    },
                 };
             },
         }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "EMAIL_VERIFICATION") {
+                    } else if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
     },
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
@@ -380,11 +409,23 @@ Passwordless.init({
                         await oI.sendRawSms(input);
                     },
                     getContent: async (input) => {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        }
                         return await oI.getContent(input);
                     },
                 };
             },
         }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    await oI.sendSms(input);
+                },
+            };
+        },
     },
     flowType: "MAGIC_LINK",
     getCustomUserInputCode: (userCtx) => {
@@ -432,9 +473,24 @@ Passwordless.init({
                     sendRawEmail: async (input) => {
                         await oI.sendRawEmail(input);
                     },
+                    getContent: async (input) => {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        }
+                        return await oI.getContent(input);
+                    },
                 };
             },
         }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
     },
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
@@ -515,7 +571,32 @@ EmailPassword.init({
                     email: "",
                 },
             },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "EMAIL_VERIFICATION") {
+                        } else if (input.type === "PASSWORD_RESET") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
         }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "EMAIL_VERIFICATION") {
+                    } else if (input.type === "PASSWORD_RESET") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
     },
 });
 
@@ -531,7 +612,32 @@ ThirdPartyEmailPassword.init({
                     email: "",
                 },
             },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "EMAIL_VERIFICATION") {
+                        } else if (input.type === "PASSWORD_RESET") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
         }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "EMAIL_VERIFICATION") {
+                    } else if (input.type === "PASSWORD_RESET") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
     },
 });
 
@@ -547,7 +653,30 @@ ThirdParty.init({
                     email: "",
                 },
             },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "EMAIL_VERIFICATION") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
         }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "EMAIL_VERIFICATION") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
     },
     signInAndUpFeature: {
         providers: [],
