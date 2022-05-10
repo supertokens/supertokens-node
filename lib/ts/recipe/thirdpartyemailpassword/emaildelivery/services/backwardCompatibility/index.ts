@@ -22,10 +22,6 @@ import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
-    private recipeInterfaceImpl: RecipeInterface;
-    private emailPasswordRecipeInterfaceImpl: EmailPasswordRecipeInterface;
-    private isInServerlessEnv: boolean;
-    private appInfo: NormalisedAppinfo;
     private emailPasswordBackwardCompatibilityService: EmailPasswordBackwardCompatibilityService;
     private emailVerificationBackwardCompatibilityService: EmailVerificationBackwardCompatibilityService;
 
@@ -49,10 +45,6 @@ export default class BackwardCompatibilityService
             ) => Promise<void>;
         }
     ) {
-        this.recipeInterfaceImpl = recipeInterfaceImpl;
-        this.emailPasswordRecipeInterfaceImpl = emailPasswordRecipeInterfaceImpl;
-        this.isInServerlessEnv = isInServerlessEnv;
-        this.appInfo = appInfo;
         {
             const inputCreateAndSendCustomEmail = emailVerificationFeature?.createAndSendCustomEmail;
             let emailVerificationFeatureNormalisedConfig =
@@ -63,7 +55,7 @@ export default class BackwardCompatibilityService
                               link: string,
                               userContext: any
                           ) => {
-                              let userInfo = await this.recipeInterfaceImpl.getUserById({
+                              let userInfo = await recipeInterfaceImpl.getUserById({
                                   userId: user.id,
                                   userContext,
                               });
@@ -75,16 +67,16 @@ export default class BackwardCompatibilityService
                       }
                     : {};
             this.emailVerificationBackwardCompatibilityService = new EmailVerificationBackwardCompatibilityService(
-                this.appInfo,
-                this.isInServerlessEnv,
+                appInfo,
+                isInServerlessEnv,
                 emailVerificationFeatureNormalisedConfig.createAndSendCustomEmail
             );
         }
         {
             this.emailPasswordBackwardCompatibilityService = new EmailPasswordBackwardCompatibilityService(
-                this.emailPasswordRecipeInterfaceImpl,
-                this.appInfo,
-                this.isInServerlessEnv,
+                emailPasswordRecipeInterfaceImpl,
+                appInfo,
+                isInServerlessEnv,
                 resetPasswordUsingTokenFeature,
                 emailVerificationFeature
             );

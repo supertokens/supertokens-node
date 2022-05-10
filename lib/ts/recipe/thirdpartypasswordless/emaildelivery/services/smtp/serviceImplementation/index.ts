@@ -26,14 +26,18 @@ import DerivedEV from "./emailVerificationServiceImplementation";
 import DerivedPwdless from "./passwordlessServiceImplementation";
 
 export function getServiceImplementation(
-    transporter: Transporter
+    transporter: Transporter,
+    from: {
+        name: string;
+        email: string;
+    }
 ): ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
-    let emailVerificationSeriveImpl = getEmailVerificationServiceImplementation(transporter);
-    let passwordlessSeriveImpl = getPasswordlessServiceImplementation(transporter);
+    let emailVerificationSeriveImpl = getEmailVerificationServiceImplementation(transporter, from);
+    let passwordlessSeriveImpl = getPasswordlessServiceImplementation(transporter, from);
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
             await transporter.sendMail({
-                from: `${input.from.name} <${input.from.email}>`,
+                from: `${from.name} <${from.email}>`,
                 to: input.toEmail,
                 subject: input.subject,
                 html: input.body,

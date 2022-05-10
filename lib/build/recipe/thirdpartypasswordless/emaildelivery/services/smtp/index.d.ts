@@ -4,7 +4,6 @@ import { TypeThirdPartyPasswordlessEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 export default class SMTPService implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>;
-    private config;
     private emailVerificationSMTPService;
     private passwordlessSMTPService;
     constructor(config: TypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>);

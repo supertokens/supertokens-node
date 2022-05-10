@@ -45,7 +45,7 @@ export type TypeInput = (
           /**
            * @deprecated Please use smsDelivery config instead
            */
-          createAndSendCustomTextMessage: (
+          createAndSendCustomTextMessage?: (
               input: {
                   // Where the message should be delivered.
                   phoneNumber: string;
@@ -111,7 +111,7 @@ export type TypeInput = (
           /**
            * @deprecated Please use smsDelivery config instead
            */
-          createAndSendCustomTextMessage: (
+          createAndSendCustomTextMessage?: (
               input: {
                   // Where the message should be delivered.
                   phoneNumber: string;
