@@ -15,6 +15,9 @@
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { NormalisedAppinfo } from "../../../../../types";
+import axios from "axios";
+import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
+import Supertokens from "../../../../../supertokens";
 
 function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
     return async (
@@ -29,6 +32,36 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
         },
         _: any
     ): Promise<void> => {
+        let supertokens = Supertokens.getInstanceOrThrowError();
+        let appName = supertokens.appInfo.appName;
+        try {
+            await axios({
+                method: "post",
+                url: SUPERTOKENS_SMS_SERVICE_URL,
+                data: {
+                    apiKey: this.config.apiKey,
+                    smsInput: {
+                        appName,
+                        type: "PASSWORDLESS_LOGIN",
+                        phoneNumber: input.phoneNumber,
+                        userInputCode: input.userInputCode,
+                        urlWithLinkCode: input.urlWithLinkCode,
+                        codeLifetime: input.codeLifetime,
+                    },
+                },
+                headers: {
+                    "api-version": "0",
+                },
+            });
+            return;
+        } catch (err) {
+            if (err.response === undefined || err.response.status !== 429) {
+                throw err;
+            }
+        }
+        console.log(
+            "Free daily SMS quota reached. If using our managed service, please create a production environment to get dedicated API keys for SMS sending, or define your own method for sending SMS. For now, we are logging it below:"
+        );
         /**
          * if we do console.log(`SMS content: ${input}`);
          * Output would be:

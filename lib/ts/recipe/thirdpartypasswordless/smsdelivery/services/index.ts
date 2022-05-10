@@ -13,4 +13,7 @@
  * under the License.
  */
 import Twilio from "./twilio";
+import Supertokens from "./supertokens";
+
 export let TwilioService = Twilio;
+export let SupertokensService = Supertokens;

@@ -16,8 +16,14 @@ import { STMPService as STMPServiceP } from "../../recipe/passwordless/emaildeli
 import { STMPService as STMPServiceTP } from "../../recipe/thirdparty/emaildelivery";
 import { STMPService as STMPServiceTPEP } from "../../recipe/thirdpartyemailpassword/emaildelivery";
 import { STMPService as STMPServiceEP } from "../../recipe/emailpassword/emaildelivery";
-import { TwilioService as TwilioServiceTPP } from "../../recipe/thirdpartypasswordless/smsdelivery";
-import { TwilioService as TwilioServiceP } from "../../recipe/thirdpartypasswordless/smsdelivery";
+import {
+    TwilioService as TwilioServiceTPP,
+    SupertokensService as SupertokensServiceTPP,
+} from "../../recipe/thirdpartypasswordless/smsdelivery";
+import {
+    TwilioService as TwilioServiceP,
+    SupertokensService as SupertokensServiceP,
+} from "../../recipe/thirdpartypasswordless/smsdelivery";
 
 ThirdPartyPasswordless.init({
     providers: [
@@ -287,6 +293,56 @@ ThirdPartyPasswordless.init({
 });
 
 ThirdPartyPasswordless.init({
+    providers: [
+        ThirdPartyPasswordless.Google({
+            clientId: "",
+            clientSecret: "",
+        }),
+    ],
+    smsDelivery: {
+        service: new SupertokensServiceTPP({
+            apiKey: "",
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    return await oI.sendSms(input);
+                },
+            };
+        },
+    },
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+    getCustomUserInputCode: (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
+            };
+        },
+    },
+});
+
+ThirdPartyPasswordless.init({
     contactMethod: "EMAIL",
     emailDelivery: {
         service: new STMPServiceTPP({
@@ -393,6 +449,16 @@ ThirdPartyPasswordless.init({
     flowType: "MAGIC_LINK",
 });
 
+ThirdPartyPasswordless.init({
+    smsDelivery: {
+        service: new SupertokensServiceTPP({
+            apiKey: "",
+        }),
+    },
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+});
+
 Passwordless.init({
     contactMethod: "PHONE",
     smsDelivery: {
@@ -415,6 +481,50 @@ Passwordless.init({
                     },
                 };
             },
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    await oI.sendSms(input);
+                },
+            };
+        },
+    },
+    flowType: "MAGIC_LINK",
+    getCustomUserInputCode: (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
+            };
+        },
+    },
+});
+
+Passwordless.init({
+    contactMethod: "PHONE",
+    smsDelivery: {
+        service: new SupertokensServiceP({
+            apiKey: "",
         }),
         override: (oI) => {
             return {
@@ -553,6 +663,16 @@ Passwordless.init({
                     },
                 };
             },
+        }),
+    },
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+});
+
+Passwordless.init({
+    smsDelivery: {
+        service: new SupertokensServiceP({
+            apiKey: "",
         }),
     },
     contactMethod: "PHONE",
