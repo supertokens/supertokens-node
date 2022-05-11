@@ -31,7 +31,7 @@ export function getServiceImplementation(
         email: string;
     }
 ): ServiceInterface<TypeEmailPasswordEmailDeliveryInput> {
-    let emailVerificationSeriveImpl = getEmailVerificationServiceImplementation(transporter, from);
+    let emailVerificationServiceImpl = getEmailVerificationServiceImplementation(transporter, from);
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
             await transporter.sendMail({
@@ -45,7 +45,7 @@ export function getServiceImplementation(
             input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }
         ): Promise<GetContentResult> {
             if (input.type === "EMAIL_VERIFICATION") {
-                return await emailVerificationSeriveImpl.getContent.bind(DerivedEV(this))(input);
+                return await emailVerificationServiceImpl.getContent.bind(DerivedEV(this))(input);
             }
             return getPasswordResetEmailContent(input);
         },

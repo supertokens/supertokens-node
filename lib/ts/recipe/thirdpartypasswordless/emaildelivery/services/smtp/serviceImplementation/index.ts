@@ -32,8 +32,8 @@ export function getServiceImplementation(
         email: string;
     }
 ): ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
-    let emailVerificationSeriveImpl = getEmailVerificationServiceImplementation(transporter, from);
-    let passwordlessSeriveImpl = getPasswordlessServiceImplementation(transporter, from);
+    let emailVerificationServiceImpl = getEmailVerificationServiceImplementation(transporter, from);
+    let passwordlessServiceImpl = getPasswordlessServiceImplementation(transporter, from);
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
             await transporter.sendMail({
@@ -47,9 +47,9 @@ export function getServiceImplementation(
             input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }
         ): Promise<GetContentResult> {
             if (input.type === "EMAIL_VERIFICATION") {
-                return await emailVerificationSeriveImpl.getContent.bind(DerivedEV(this))(input);
+                return await emailVerificationServiceImpl.getContent.bind(DerivedEV(this))(input);
             }
-            return await passwordlessSeriveImpl.getContent.bind(DerivedPwdless(this))(input);
+            return await passwordlessServiceImpl.getContent.bind(DerivedPwdless(this))(input);
         },
     };
 }
