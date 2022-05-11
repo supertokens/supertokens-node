@@ -126,6 +126,20 @@ SuperTokens.init({
 })
 ```
 
+## [9.2.0] - 2022-04-18
+
+# Adds
+
+-   Adds UserMetadata recipe
+-   Fixes debug log statement when custom header is not passed during refresh session
+
+## [9.1.2] - 2022-04-01
+
+### Added
+
+-   Adds debug logging functionality
+-   removed jsonschema dependency
+
 ## [9.1.1] - 2022-03-24
 
 ### Fixes:

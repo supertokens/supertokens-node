@@ -19,7 +19,6 @@ import { APIInterface, APIOptions } from "../";
 
 export default async function signInAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
-
     if (apiImplementation.signInPOST === undefined) {
         return false;
     }
