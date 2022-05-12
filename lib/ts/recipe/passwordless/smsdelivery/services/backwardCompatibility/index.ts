@@ -39,7 +39,6 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                 method: "post",
                 url: SUPERTOKENS_SMS_SERVICE_URL,
                 data: {
-                    apiKey: this.config.apiKey,
                     smsInput: {
                         appName,
                         type: "PASSWORDLESS_LOGIN",
