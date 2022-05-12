@@ -29,6 +29,7 @@ export default function getPasswordlessLoginEmailContent(input: TypePasswordless
         body,
         toEmail: input.email,
         subject: "Reset password instructions",
+        isHtml: true,
     };
 }
 

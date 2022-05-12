@@ -25,6 +25,7 @@ export default function getPasswordResetEmailContent(
         body,
         toEmail: input.user.email,
         subject: "Reset password instructions",
+        isHtml: true,
     };
 }
 
