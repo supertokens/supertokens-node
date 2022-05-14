@@ -166,6 +166,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 userContext: any;
             }
         ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            // TODO: need to solve issue of user ID mapping in general, but especially for this function because we are comparing the input userId with the output userId of another recipe function below
             let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
             if (user === undefined) {
                 return {
