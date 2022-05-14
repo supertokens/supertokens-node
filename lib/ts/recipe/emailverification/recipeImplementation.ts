@@ -4,19 +4,36 @@ import NormalisedURLPath from "../../normalisedURLPath";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
-        createEmailVerificationToken: async function ({
-            userId,
-            email,
-        }: {
-            userId: string;
-            email: string;
-        }): Promise<
+        createEmailVerificationToken: async function (
+            this: RecipeInterface,
+            {
+                userId,
+                email,
+                userContext,
+            }: {
+                userId: string;
+                email: string;
+                userContext: any;
+            }
+        ): Promise<
             | {
                   status: "OK";
                   token: string;
               }
             | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
         > {
+            if (
+                await this.isEmailVerified({
+                    userId,
+                    email,
+                    userContext,
+                })
+            ) {
+                return {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                };
+            }
+
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/email/verify/token"), {
                 userId,
                 email,

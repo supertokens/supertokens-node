@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+-   Email verification recipe change:
+    -   `createEmailVerificationToken` calls `isEmailVerified` to exist early
+-   Emailpassword recipe:
+    -   `signUp` calls `getUserByEmail`
+    -   `signIn` calls `getUserByEmail`
+    -   `createResetPasswordToken` calls `getUserById`
+    -   `updateEmailOrPassword` calls `getUserById` and `getUserByEmail`
+
 ## [9.2.0] - 2022-04-18
 
 # Adds

@@ -4,13 +4,29 @@ import NormalisedURLPath from "../../normalisedURLPath";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
-        signUp: async function ({
-            email,
-            password,
-        }: {
-            email: string;
-            password: string;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        signUp: async function (
+            this: RecipeInterface,
+            {
+                email,
+                password,
+                userContext,
+            }: {
+                email: string;
+                password: string;
+                userContext: any;
+            }
+        ): Promise<{ status: "OK"; user: User } | { status: "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            if (
+                (await this.getUserByEmail({
+                    email,
+                    userContext,
+                })) !== undefined
+            ) {
+                return {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR",
+                };
+            }
+
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signup"), {
                 email,
                 password,
@@ -24,13 +40,28 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
         },
 
-        signIn: async function ({
-            email,
-            password,
-        }: {
-            email: string;
-            password: string;
-        }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+        signIn: async function (
+            this: RecipeInterface,
+            {
+                email,
+                password,
+                userContext,
+            }: {
+                email: string;
+                password: string;
+                userContext: any;
+            }
+        ): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
+            if (
+                (await this.getUserByEmail({
+                    email,
+                    userContext,
+                })) === undefined
+            ) {
+                return {
+                    status: "WRONG_CREDENTIALS_ERROR",
+                };
+            }
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
                 email,
                 password,
@@ -70,11 +101,22 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
         },
 
-        createResetPasswordToken: async function ({
-            userId,
-        }: {
-            userId: string;
-        }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+        createResetPasswordToken: async function (
+            this: RecipeInterface,
+            {
+                userId,
+                userContext,
+            }: {
+                userId: string;
+                userContext: any;
+            }
+        ): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+            if ((await this.getUserById({ userId, userContext })) === undefined) {
+                return {
+                    status: "UNKNOWN_USER_ID_ERROR",
+                };
+            }
+
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
                 userId,
             });
@@ -115,11 +157,34 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return response;
         },
 
-        updateEmailOrPassword: async function (input: {
-            userId: string;
-            email?: string;
-            password?: string;
-        }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        updateEmailOrPassword: async function (
+            this: RecipeInterface,
+            input: {
+                userId: string;
+                email?: string;
+                password?: string;
+                userContext: any;
+            }
+        ): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+            let user = await this.getUserById({ userId: input.userId, userContext: input.userContext });
+            if (user === undefined) {
+                return {
+                    status: "UNKNOWN_USER_ID_ERROR",
+                };
+            }
+
+            if (input.email !== undefined) {
+                let userBasedOnEmail = await this.getUserByEmail({
+                    email: input.email,
+                    userContext: input.userContext,
+                });
+                if (userBasedOnEmail !== undefined && userBasedOnEmail.id !== input.userId) {
+                    return {
+                        status: "EMAIL_ALREADY_EXISTS_ERROR",
+                    };
+                }
+            }
+
             let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
                 userId: input.userId,
                 email: input.email,
