@@ -12,6 +12,7 @@ export interface SMTPServiceConfig {
 }
 export interface GetContentResult {
     body: string;
+    isHtml: boolean;
     subject: string;
     toEmail: string;
 }

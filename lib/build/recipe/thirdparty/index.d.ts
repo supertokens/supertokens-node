@@ -2,6 +2,7 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIInterface, APIOptions, TypeProvider } from "./types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -72,6 +73,11 @@ export default class Wrapper {
     static Apple: typeof import("./providers/apple").default;
     static Discord: typeof import("./providers/discord").default;
     static GoogleWorkspaces: typeof import("./providers/googleWorkspaces").default;
+    static sendEmail(
+        input: TypeEmailVerificationEmailDeliveryInput & {
+            userContext: any;
+        }
+    ): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -91,3 +97,4 @@ export declare let Apple: typeof import("./providers/apple").default;
 export declare let Discord: typeof import("./providers/discord").default;
 export declare let GoogleWorkspaces: typeof import("./providers/googleWorkspaces").default;
 export type { RecipeInterface, User, APIInterface, APIOptions, TypeProvider };
+export declare let sendEmail: typeof Wrapper.sendEmail;

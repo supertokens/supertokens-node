@@ -31,12 +31,21 @@ export function getServiceImplementation(
 ): ServiceInterface<TypeEmailVerificationEmailDeliveryInput> {
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
-            await transporter.sendMail({
-                from: `${from.name} <${from.email}>`,
-                to: input.toEmail,
-                subject: input.subject,
-                html: input.body,
-            });
+            if (input.isHtml) {
+                await transporter.sendMail({
+                    from: `${from.name} <${from.email}>`,
+                    to: input.toEmail,
+                    subject: input.subject,
+                    html: input.body,
+                });
+            } else {
+                await transporter.sendMail({
+                    from: `${from.name} <${from.email}>`,
+                    to: input.toEmail,
+                    subject: input.subject,
+                    text: input.body,
+                });
+            }
         },
         getContent: async function (
             input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }

@@ -19,12 +19,7 @@ export default class EmailDelivery<T> {
     ingredientInterfaceImpl: EmailDeliveryInterface<T>;
 
     constructor(config: TypeInputWithService<T>) {
-        let defaultIngredientImpl: EmailDeliveryInterface<T> = {
-            sendEmail: async function (input) {
-                return config.service.sendEmail(input);
-            },
-        };
-        let builder = new OverrideableBuilder(defaultIngredientImpl);
+        let builder = new OverrideableBuilder(config.service);
         if (config.override !== undefined) {
             builder = builder.override(config.override);
         }

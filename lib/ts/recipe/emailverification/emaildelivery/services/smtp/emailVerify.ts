@@ -21,6 +21,7 @@ export default function getEmailVerifyEmailContent(input: TypeEmailVerificationE
         body,
         toEmail: input.user.email,
         subject: "Email verification instructions",
+        isHtml: true,
     };
 }
 
