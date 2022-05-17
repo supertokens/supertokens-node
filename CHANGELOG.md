@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
+## [unreleased]
+
+## [9.2.0] - 2022-04-18
+
+# Adds
+
+-   Adds UserMetadata recipe
+-   Fixes debug log statement when custom header is not passed during refresh session
+
+## [9.1.2] - 2022-04-01
+
+### Added
+
+-   Adds debug logging functionality
+-   removed jsonschema dependency
+
+## [9.1.1] - 2022-03-24
+
+### Fixes:
+
+-   Changes Github and Discord providers to check if email is `undefined` or not before assigning the email object to the profile info.
+
+## [9.1.0] - 2022-03-17
+
+-   Added `ThirdPartyPasswordless` recipe + tests
+
 ## [9.0.1] - 2022-03-02
 
 -   Fixes #269. The json body parser will additionally be used to parse the request body if the request body is of type `{}`

@@ -16,7 +16,7 @@
 import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
-import { TypeFramework, SchemaFramework } from "./framework/types";
+import { TypeFramework } from "./framework/types";
 
 export type AppInfo = {
     appName: string;
@@ -46,50 +46,6 @@ export type TypeInput = {
     recipeList: RecipeListFunction[];
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
-};
-
-const TypeString = {
-    type: "string",
-};
-
-const TypeBoolean = {
-    type: "boolean",
-};
-
-export const InputSchema = {
-    type: "object",
-    properties: {
-        framework: SchemaFramework,
-        supertokens: {
-            type: "object",
-            properties: {
-                connectionURI: TypeString,
-                apiKey: TypeString,
-            },
-            required: ["connectionURI"],
-            additionalProperties: false,
-        },
-        appInfo: {
-            type: "object",
-            properties: {
-                appName: TypeString,
-                websiteDomain: TypeString,
-                apiDomain: TypeString,
-                apiBasePath: TypeString,
-                apiGatewayPath: TypeString,
-                websiteBasePath: TypeString,
-            },
-            required: ["appName", "websiteDomain", "apiDomain"],
-            additionalProperties: false,
-        },
-        recipeList: {
-            type: "array",
-        },
-        telemetry: TypeBoolean,
-        isInServerlessEnv: TypeBoolean,
-    },
-    required: ["appInfo", "recipeList"],
-    additionalProperties: false,
 };
 
 export type RecipeListFunction = (appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) => RecipeModule;

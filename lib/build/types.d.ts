@@ -30,64 +30,6 @@ export declare type TypeInput = {
     telemetry?: boolean;
     isInServerlessEnv?: boolean;
 };
-export declare const InputSchema: {
-    type: string;
-    properties: {
-        framework: {
-            type: string;
-            enum: string[];
-        };
-        supertokens: {
-            type: string;
-            properties: {
-                connectionURI: {
-                    type: string;
-                };
-                apiKey: {
-                    type: string;
-                };
-            };
-            required: string[];
-            additionalProperties: boolean;
-        };
-        appInfo: {
-            type: string;
-            properties: {
-                appName: {
-                    type: string;
-                };
-                websiteDomain: {
-                    type: string;
-                };
-                apiDomain: {
-                    type: string;
-                };
-                apiBasePath: {
-                    type: string;
-                };
-                apiGatewayPath: {
-                    type: string;
-                };
-                websiteBasePath: {
-                    type: string;
-                };
-            };
-            required: string[];
-            additionalProperties: boolean;
-        };
-        recipeList: {
-            type: string;
-        };
-        telemetry: {
-            type: string;
-        };
-        isInServerlessEnv: {
-            type: string;
-        };
-    };
-    required: string[];
-    additionalProperties: boolean;
-};
 export declare type RecipeListFunction = (appInfo: NormalisedAppinfo, isInServerlessEnv: boolean) => RecipeModule;
 export declare type APIHandled = {
     pathWithoutApiBasePath: NormalisedURLPath;

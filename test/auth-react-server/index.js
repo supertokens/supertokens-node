@@ -27,10 +27,13 @@ let http = require("http");
 let cors = require("cors");
 let PasswordlessRaw = require("../../lib/build/recipe/passwordless/recipe").default;
 let Passwordless = require("../../recipe/passwordless");
+let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
 let { default: SuperTokensRaw } = require("../../lib/build/supertokens");
 const { default: EmailPasswordRaw } = require("../../lib/build/recipe/emailpassword/recipe");
 const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/recipe");
 const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
+
+const { default: ThirdPartyPasswordlessRaw } = require("../../lib/build/recipe/thirdpartypasswordless/recipe");
 const { default: SessionRaw } = require("../../lib/build/recipe/session/recipe");
 let { startST, killAllST, setupST, cleanST, customAuth0Provider } = require("./utils");
 
@@ -115,7 +118,7 @@ app.get("/test/getDevice", (req, res) => {
 });
 
 app.get("/test/featureFlags", (req, res) => {
-    const available = ["passwordless"];
+    const available = ["passwordless", "thirdpartypasswordless"];
 
     res.send({
         available,
@@ -209,9 +212,18 @@ function initST({ passwordlessConfig } = {}) {
     EmailPasswordRaw.reset();
     ThirdPartyRaw.reset();
     ThirdPartyEmailPasswordRaw.reset();
+    ThirdPartyPasswordlessRaw.reset();
     SessionRaw.reset();
 
     SuperTokensRaw.reset();
+
+    passwordlessConfig = {
+        contactMethod: "EMAIL_OR_PHONE",
+        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        createAndSendCustomTextMessage: saveCode,
+        createAndSendCustomEmail: saveCode,
+        ...passwordlessConfig,
+    };
     const recipeList = [
         EmailPassword.init({
             signUpFeature: {
@@ -268,13 +280,25 @@ function initST({ passwordlessConfig } = {}) {
             ],
         }),
         Session.init({}),
-        Passwordless.init(
-            passwordlessConfig || {
-                contactMethod: "PHONE",
-                flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
-                createAndSendCustomTextMessage: saveCode,
-            }
-        ),
+        Passwordless.init(passwordlessConfig),
+        ThirdPartyPasswordless.init({
+            ...passwordlessConfig,
+            providers: [
+                ThirdPartyEmailPassword.Google({
+                    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+                    clientId: process.env.GOOGLE_CLIENT_ID,
+                }),
+                ThirdPartyEmailPassword.Github({
+                    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+                    clientId: process.env.GITHUB_CLIENT_ID,
+                }),
+                ThirdPartyEmailPassword.Facebook({
+                    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+                    clientId: process.env.FACEBOOK_CLIENT_ID,
+                }),
+                customAuth0Provider(),
+            ],
+        }),
     ];
 
     SuperTokens.init({

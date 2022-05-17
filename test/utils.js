@@ -19,9 +19,12 @@ let fs = require("fs");
 let SuperTokens = require("../lib/build/supertokens").default;
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let ThirPartyRecipe = require("../lib/build/recipe/thirdparty/recipe").default;
+let ThirPartyPasswordless = require("../lib/build/recipe/thirdpartypasswordless/recipe").default;
 let ThirdPartyEmailPasswordRecipe = require("../lib/build/recipe/thirdpartyemailpassword/recipe").default;
+let ThirdPartyPasswordlessRecipe = require("../lib/build/recipe/thirdpartypasswordless/recipe").default;
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
+const UserMetadataRecipe = require("../lib/build/recipe/usermetadata/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
@@ -194,10 +197,13 @@ module.exports.stopST = async function (pid) {
 module.exports.resetAll = function () {
     SuperTokens.reset();
     SessionRecipe.reset();
+    ThirdPartyPasswordlessRecipe.reset();
     ThirdPartyEmailPasswordRecipe.reset();
+    ThirPartyPasswordless.reset();
     EmailPasswordRecipe.reset();
     ThirPartyRecipe.reset();
     JWTRecipe.reset();
+    UserMetadataRecipe.reset();
     PasswordlessRecipe.reset();
     OpenIDRecipe.reset();
     ProcessState.getInstance().reset();
@@ -285,6 +291,7 @@ async function getListOfPids() {
         try {
             let pid = (await module.exports.executeCommand("cd " + installationPath + " && cat .started/" + item))
                 .stdout;
+            pid = pid.split("\n")[0];
             result.push(pid);
         } catch (err) {}
     }

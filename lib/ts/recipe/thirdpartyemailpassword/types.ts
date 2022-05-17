@@ -23,23 +23,10 @@ import {
     TypeFormField,
     TypeInputFormField,
     TypeInputResetPasswordUsingTokenFeature,
-    InputResetPasswordUsingTokenFeatureSchema,
     APIOptions as EmailPasswordAPIOptionsOriginal,
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-
-const TypeString = {
-    type: "string",
-};
-
-const TypeBoolean = {
-    type: "boolean",
-};
-
-const TypeAny = {
-    type: "any",
-};
 
 export type User = {
     id: string;
@@ -69,26 +56,6 @@ export type TypeInputSignUp = {
     formFields?: TypeInputFormField[];
 };
 
-const InputSignUpSchema = {
-    type: "object",
-    properties: {
-        formFields: {
-            type: "array",
-            items: {
-                type: "object",
-                properties: {
-                    id: TypeString,
-                    validate: TypeAny,
-                    optional: TypeBoolean,
-                },
-                required: ["id"],
-                additionalProperties: false,
-            },
-        },
-    },
-    additionalProperties: false,
-};
-
 export type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
 };
@@ -96,15 +63,6 @@ export type TypeNormalisedInputSignUp = {
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-};
-
-const InputEmailVerificationFeatureSchema = {
-    type: "object",
-    properties: {
-        getEmailVerificationURL: TypeAny,
-        createAndSendCustomEmail: TypeAny,
-    },
-    additionalProperties: false,
 };
 
 export type TypeInput = {
@@ -129,18 +87,6 @@ export type TypeInput = {
             ) => EmailVerificationAPIInterface;
         };
     };
-};
-
-const InputProvidersSchema = {
-    type: "array",
-};
-
-export const InputSchema = {
-    signUpFeature: InputSignUpSchema,
-    providers: InputProvidersSchema,
-    resetPasswordUsingTokenFeature: InputResetPasswordUsingTokenFeatureSchema,
-    emailVerificationFeature: InputEmailVerificationFeatureSchema,
-    override: TypeAny,
 };
 
 export type TypeNormalisedInput = {

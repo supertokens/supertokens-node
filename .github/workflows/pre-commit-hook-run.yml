@@ -1,0 +1,24 @@
+name: "Pre commit hook check"
+
+on:
+    pull_request:
+        types:
+            - opened
+            - reopened
+            - edited
+            - synchronize
+
+jobs:
+    pr-title:
+        name: Pre commit hook check
+        runs-on: ubuntu-latest
+        container: rishabhpoddar/supertokens_website_sdk_testing
+        steps:
+            - uses: actions/checkout@v2
+            - name: Set up node
+              uses: actions/setup-node@v1
+              with:
+                  node-version: "16"
+            - run: git init && git add --all && git -c user.name='test' -c user.email='test@example.com' commit -m 'init for pr action'
+            - run: npm i
+            - run: ./hooks/pre-commit.sh
