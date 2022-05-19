@@ -17,6 +17,7 @@ import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeade
 import STError from "./error";
 import { ClaimValidationError, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
+import { logDebugMessage } from "../../logger";
 
 export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
@@ -156,8 +157,13 @@ export default class Session implements SessionContainerInterface {
         let newAccessTokenPayload = this.getAccessTokenPayload();
         let validationResult = undefined;
         for (const validator of claimValidators) {
+            logDebugMessage("Session.validateClaims checking " + validator.validatorTypeId);
             if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
+                logDebugMessage("Session.validateClaims refetching " + validator.validatorTypeId);
                 const value = await validator.claim.fetch(this.getUserId(), userContext);
+                logDebugMessage(
+                    "Session.validateClaims " + validator.validatorTypeId + " refetch res " + JSON.stringify(value)
+                );
                 if (value !== undefined) {
                     newAccessTokenPayload = validator.claim.addToPayload_internal(
                         newAccessTokenPayload,
@@ -167,6 +173,12 @@ export default class Session implements SessionContainerInterface {
                 }
             }
             const claimValidationResult = await validator.validate(newAccessTokenPayload, userContext);
+            logDebugMessage(
+                "Session.validateClaims " +
+                    validator.validatorTypeId +
+                    " validation res " +
+                    JSON.stringify(claimValidationResult)
+            );
             if (!claimValidationResult.isValid) {
                 validationResult = {
                     validatorTypeId: validator.validatorTypeId,

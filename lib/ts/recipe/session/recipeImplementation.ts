@@ -273,6 +273,9 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 );
 
                 const reqClaims = options?.overwriteDefaultValidators ?? config.defaultValidatorsForVerification;
+                logDebugMessage(
+                    "getSession: required validatorTypeIds " + reqClaims.map((c) => c.validatorTypeId).join(", ")
+                );
                 const validationResult = await session.validateClaims(reqClaims, userContext);
 
                 if (validationResult !== undefined) {

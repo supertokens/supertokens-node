@@ -205,9 +205,6 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.originalImplementation.mergeIntoAccessTokenPayload(input);
     };
 
-    updateSessionClaims = function (input: { sessionHandle: string; userContext: any }) {
-        return this.originalImplementation.updateSessionClaims(input);
-    };
     regenerateAccessToken = function (input: { accessToken: string; newAccessTokenPayload?: any; userContext: any }) {
         return this.originalImplementation.regenerateAccessToken(input);
     };
