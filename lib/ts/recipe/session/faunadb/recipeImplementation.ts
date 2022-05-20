@@ -4,7 +4,7 @@ import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 import type { Session as FaunaDBSessionContainer } from "./types";
 import type { BaseRequest, BaseResponse } from "../../../framework";
-import type { SessionInformation } from "../types";
+import type { SessionClaimBuilder, SessionInformation } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {
@@ -51,6 +51,15 @@ export default class RecipeImplementation implements RecipeInterface {
             })
         );
         return faunaResponse.secret;
+    };
+
+    getClaimsToAddOnSessionCreate = function (
+        this: RecipeImplementation,
+        userId: string,
+        defaultClaimsToAdd: SessionClaimBuilder[],
+        userContext: any
+    ) {
+        return this.originalImplementation.getClaimsToAddOnSessionCreate(userId, defaultClaimsToAdd, userContext);
     };
 
     createNewSession = async function (

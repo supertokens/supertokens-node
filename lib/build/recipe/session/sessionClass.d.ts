@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { BaseResponse } from "../../framework";
-import { ClaimValidationError, SessionClaimValidator, SessionContainerInterface } from "./types";
+import { SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
@@ -24,13 +24,9 @@ export default class Session implements SessionContainerInterface {
     getAccessTokenPayload: () => any;
     getHandle: () => string;
     getAccessToken: () => string;
-    updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
     mergeIntoAccessTokenPayload: (accessTokenPayloadUpdate: any, userContext?: any) => Promise<void>;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    validateClaims(
-        claimValidators: SessionClaimValidator[],
-        userContext?: any
-    ): Promise<ClaimValidationError | undefined>;
-    regenerateToken(newAccessTokenPayload: any | undefined, userContext: any): Promise<void>;
+    validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
+    updateAccessTokenPayload(newAccessTokenPayload: any | undefined, userContext: any): Promise<void>;
 }

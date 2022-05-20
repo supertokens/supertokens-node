@@ -74,8 +74,12 @@ export interface ErrorHandlers {
     onInvalidClaim: MissingClaimErrorHandlerMiddleware;
 }
 
+// During session creation the access token payload param is modified by two things:
 export type SessionClaimBuilder =
+    // A session claim object that modifies the payload object
     | SessionClaim<any>
+    // A (optionally async) function that accepts the same params as createNewSession
+    // and returns a JSONObject that will be merged into the payload
     | ((...args: Parameters<RecipeInterface["createNewSession"]>) => Awaitable<JSONObject>);
 
 export type TypeInput = {
@@ -85,7 +89,6 @@ export type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    claimsToAddOnCreation?: SessionClaimBuilder[];
     defaultValidatorsForVerification?: SessionClaimValidator[];
     missingClaimStatusCode?: number;
     jwt?:
@@ -133,7 +136,6 @@ export type TypeNormalisedInput = {
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 
-    claimsToAddOnCreation: SessionClaimBuilder[];
     defaultValidatorsForVerification: SessionClaimValidator[];
 
     missingClaimStatusCode: number;
@@ -210,6 +212,12 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<SessionContainerInterface>;
 
+    getClaimsToAddOnSessionCreate(
+        userId: string,
+        defaultClaimsToAddOnCreation: SessionClaimBuilder[],
+        userContext: any
+    ): Promise<SessionClaimBuilder[]>;
+
     getSession(input: {
         req: any;
         res: any;
@@ -285,7 +293,6 @@ export interface SessionContainerInterface {
 
     getAccessToken(userContext?: any): string;
 
-    regenerateToken(newAccessTokenPayload: any | undefined, userContext: any): Promise<void>;
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
 
@@ -293,10 +300,7 @@ export interface SessionContainerInterface {
 
     getExpiry(userContext?: any): Promise<number>;
 
-    validateClaims(
-        claimValidators: SessionClaimValidator[],
-        userContext?: any
-    ): Promise<ClaimValidationError | undefined>;
+    validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
 }
 
 export type APIOptions = {

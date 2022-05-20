@@ -16,7 +16,7 @@ import * as JsonWebToken from "jsonwebtoken";
 
 import { RecipeInterface } from "../";
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionClaimBuilder, SessionContainerInterface, TypeNormalisedInput, VerifySessionOptions } from "../types";
+import { SessionContainerInterface, SessionInformation, TypeNormalisedInput, VerifySessionOptions } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import SessionClassWithJWT from "./sessionClass";
 import * as assert from "assert";
@@ -43,6 +43,61 @@ export default function (
         return accessTokenExpiry + EXPIRY_OFFSET_SECONDS;
     }
 
+    async function jwtAwareUpdateAccessTokenPayload(
+        sessionInformation: SessionInformation,
+        newAccessTokenPayload: any,
+        userContext: any
+    ) {
+        let accessTokenPayload = sessionInformation.accessTokenPayload;
+
+        let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+
+        if (existingJwtPropertyName === undefined) {
+            return await originalImplementation.updateAccessTokenPayload({
+                sessionHandle: sessionInformation.sessionHandle,
+                newAccessTokenPayload,
+                userContext,
+            });
+        }
+
+        let existingJwt = accessTokenPayload[existingJwtPropertyName];
+        assert.notStrictEqual(existingJwt, undefined);
+
+        let currentTimeInSeconds = Date.now() / 1000;
+        let decodedPayload = JsonWebToken.decode(existingJwt, { json: true });
+
+        // JsonWebToken.decode possibly returns null
+        if (decodedPayload === null) {
+            throw new Error("Error reading JWT from session");
+        }
+
+        let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
+
+        if (jwtExpiry <= 0) {
+            // it can come here if someone calls this function well after
+            // the access token and the jwt payload have expired. In this case,
+            // we still want the jwt payload to update, but the resulting JWT should
+            // not be alive for too long (since it's expired already). So we set it to
+            // 1 second lifetime.
+            jwtExpiry = 1;
+        }
+
+        newAccessTokenPayload = await addJWTToAccessTokenPayload({
+            accessTokenPayload: newAccessTokenPayload,
+            jwtExpiry,
+            userId: sessionInformation.userId,
+            jwtPropertyName: existingJwtPropertyName,
+            openIdRecipeImplementation,
+            userContext,
+        });
+
+        return await originalImplementation.updateAccessTokenPayload({
+            sessionHandle: sessionInformation.sessionHandle,
+            newAccessTokenPayload,
+            userContext,
+        });
+    }
+
     return {
         ...originalImplementation,
         createNewSession: async function ({
@@ -50,46 +105,18 @@ export default function (
             userId,
             accessTokenPayload,
             sessionData,
-            claimsToAdd,
             userContext,
         }: {
             res: any;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
-            claimsToAdd?: SessionClaimBuilder[];
             userContext: any;
         }): Promise<SessionContainerInterface> {
-            if (claimsToAdd === undefined) {
-                claimsToAdd = config.claimsToAddOnCreation;
-            }
             accessTokenPayload =
                 accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS({ userContext })) / 1000);
 
-            // This is only done once, since we are not passing claimsToLoad to the original createNewSession
-
-            for (const claimBuilder of claimsToAdd) {
-                if (typeof claimBuilder === "function") {
-                    const update = await claimBuilder({
-                        res,
-                        userId,
-                        accessTokenPayload,
-                        sessionData,
-                        claimsToAdd,
-                        userContext,
-                    });
-                    accessTokenPayload = {
-                        ...accessTokenPayload,
-                        ...update,
-                    };
-                } else {
-                    const value = await claimBuilder.fetch(userId, userContext);
-                    if (value !== undefined) {
-                        accessTokenPayload = claimBuilder.addToPayload_internal(accessTokenPayload, value, userContext);
-                    }
-                }
-            }
             accessTokenPayload = await addJWTToAccessTokenPayload({
                 accessTokenPayload,
                 jwtExpiry: getJWTExpiry(accessTokenValidityInSeconds),
@@ -157,7 +184,6 @@ export default function (
             return new SessionClassWithJWT(newSession, openIdRecipeImplementation);
         },
 
-        // TODO: reduce code repetition
         mergeIntoAccessTokenPayload: async function ({
             sessionHandle,
             accessTokenPayloadUpdate,
@@ -168,8 +194,6 @@ export default function (
             userContext: any;
         }) {
             let sessionInformation = await this.getSessionInformation({ sessionHandle, userContext });
-            let existingJwtPropertyName =
-                sessionInformation.accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
             let newAccessTokenPayload = { ...sessionInformation.accessTokenPayload, ...accessTokenPayloadUpdate };
             for (const key of Object.keys(accessTokenPayloadUpdate)) {
                 if (accessTokenPayloadUpdate[key] === null) {
@@ -177,52 +201,12 @@ export default function (
                 }
             }
 
-            if (existingJwtPropertyName === undefined) {
-                return await originalImplementation.updateAccessTokenPayload({
-                    sessionHandle,
-                    newAccessTokenPayload,
-                    userContext,
-                });
-            }
-
-            let existingJwt = newAccessTokenPayload[existingJwtPropertyName];
-            assert.notStrictEqual(existingJwt, undefined);
-
-            let currentTimeInSeconds = Date.now() / 1000;
-            let decodedPayload = JsonWebToken.decode(existingJwt, { json: true });
-
-            // JsonWebToken.decode possibly returns null
-            if (decodedPayload === null) {
-                throw new Error("Error reading JWT from session");
-            }
-
-            let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
-
-            if (jwtExpiry <= 0) {
-                // it can come here if someone calls this function well after
-                // the access token and the jwt payload have expired. In this case,
-                // we still want the jwt payload to update, but the resulting JWT should
-                // not be alive for too long (since it's expired already). So we set it to
-                // 1 second lifetime.
-                jwtExpiry = 1;
-            }
-
-            newAccessTokenPayload = await addJWTToAccessTokenPayload({
-                accessTokenPayload: newAccessTokenPayload,
-                jwtExpiry,
-                userId: sessionInformation.userId,
-                jwtPropertyName: existingJwtPropertyName,
-                openIdRecipeImplementation,
-                userContext,
-            });
-
-            return await originalImplementation.updateAccessTokenPayload({
-                sessionHandle,
-                newAccessTokenPayload,
-                userContext,
-            });
+            return jwtAwareUpdateAccessTokenPayload(sessionInformation, newAccessTokenPayload, userContext);
         },
 
+        /**
+         * @deprecated use mergeIntoAccessTokenPayload instead
+         */
         updateAccessTokenPayload: async function ({
             sessionHandle,
             newAccessTokenPayload,
@@ -234,55 +218,10 @@ export default function (
         }): Promise<void> {
             newAccessTokenPayload =
                 newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
-            let sessionInformation = await this.getSessionInformation({ sessionHandle, userContext });
-            let accessTokenPayload = sessionInformation.accessTokenPayload;
 
-            let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];
+            const sessionInformation = await this.getSessionInformation({ sessionHandle, userContext });
 
-            if (existingJwtPropertyName === undefined) {
-                return await originalImplementation.updateAccessTokenPayload({
-                    sessionHandle,
-                    newAccessTokenPayload,
-                    userContext,
-                });
-            }
-
-            let existingJwt = accessTokenPayload[existingJwtPropertyName];
-            assert.notStrictEqual(existingJwt, undefined);
-
-            let currentTimeInSeconds = Date.now() / 1000;
-            let decodedPayload = JsonWebToken.decode(existingJwt, { json: true });
-
-            // JsonWebToken.decode possibly returns null
-            if (decodedPayload === null) {
-                throw new Error("Error reading JWT from session");
-            }
-
-            let jwtExpiry = decodedPayload.exp - currentTimeInSeconds;
-
-            if (jwtExpiry <= 0) {
-                // it can come here if someone calls this function well after
-                // the access token and the jwt payload have expired. In this case,
-                // we still want the jwt payload to update, but the resulting JWT should
-                // not be alive for too long (since it's expired already). So we set it to
-                // 1 second lifetime.
-                jwtExpiry = 1;
-            }
-
-            newAccessTokenPayload = await addJWTToAccessTokenPayload({
-                accessTokenPayload: newAccessTokenPayload,
-                jwtExpiry,
-                userId: sessionInformation.userId,
-                jwtPropertyName: existingJwtPropertyName,
-                openIdRecipeImplementation,
-                userContext,
-            });
-
-            return await originalImplementation.updateAccessTokenPayload({
-                sessionHandle,
-                newAccessTokenPayload,
-                userContext,
-            });
+            return jwtAwareUpdateAccessTokenPayload(sessionInformation, newAccessTokenPayload, userContext);
         },
     };
 }

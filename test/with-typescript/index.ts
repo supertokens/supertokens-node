@@ -173,7 +173,6 @@ let sessionConfig: SessionTypeInput = {
                         validateClaims: session.validateClaims,
                         getExpiry: session.getExpiry,
                         getTimeCreated: session.getTimeCreated,
-                        regenerateToken: session.regenerateToken,
                     };
                 },
                 getAllSessionHandlesForUser: originalImpl.getAllSessionHandlesForUser,
@@ -188,6 +187,7 @@ let sessionConfig: SessionTypeInput = {
                 getSessionInformation: originalImpl.getSessionInformation,
                 regenerateAccessToken: originalImpl.regenerateAccessToken,
                 mergeIntoAccessTokenPayload: originalImpl.mergeIntoAccessTokenPayload,
+                getClaimsToAddOnSessionCreate: originalImpl.getClaimsToAddOnSessionCreate,
             };
         },
     },

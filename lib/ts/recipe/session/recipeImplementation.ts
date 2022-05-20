@@ -109,56 +109,17 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             userId,
             accessTokenPayload = {},
             sessionData = {},
-            claimsToAdd,
-            userContext,
         }: {
             res: any;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
-            claimsToAdd?: SessionClaimBuilder[];
             userContext: any;
         }): Promise<Session> {
             if (!res.wrapperUsed) {
                 res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
             }
-            if (claimsToAdd === undefined) {
-                claimsToAdd = config.claimsToAddOnCreation;
-            }
-
-            let finalAccessTokenPayload = accessTokenPayload;
-
-            for (const claimBuilder of claimsToAdd) {
-                if (typeof claimBuilder === "function") {
-                    const update = await claimBuilder({
-                        res,
-                        userId,
-                        accessTokenPayload,
-                        sessionData,
-                        claimsToAdd,
-                        userContext,
-                    });
-                    finalAccessTokenPayload = {
-                        ...finalAccessTokenPayload,
-                        ...update,
-                    };
-                } else {
-                    const value = await claimBuilder.fetch(userId, userContext);
-                    if (value !== undefined) {
-                        finalAccessTokenPayload = claimBuilder.addToPayload_internal(
-                            finalAccessTokenPayload,
-                            value,
-                            userContext
-                        );
-                    }
-                }
-            }
-            let response = await SessionFunctions.createNewSession(
-                helpers,
-                userId,
-                finalAccessTokenPayload,
-                sessionData
-            );
+            let response = await SessionFunctions.createNewSession(helpers, userId, accessTokenPayload, sessionData);
             attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
             return new Session(
                 helpers,
@@ -168,6 +129,14 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 response.session.userDataInJWT,
                 res
             );
+        },
+
+        getClaimsToAddOnSessionCreate: async function (
+            _userId: string,
+            defaultClaimsToAddOnCreation: SessionClaimBuilder[],
+            _ctx: any
+        ) {
+            return defaultClaimsToAddOnCreation;
         },
 
         getSession: async function ({
@@ -276,15 +245,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 logDebugMessage(
                     "getSession: required validatorTypeIds " + reqClaims.map((c) => c.validatorTypeId).join(", ")
                 );
-                const validationResult = await session.validateClaims(reqClaims, userContext);
-
-                if (validationResult !== undefined) {
-                    throw new STError({
-                        type: "INVALID_CLAIM",
-                        message: "INVALID_CLAIM",
-                        payload: validationResult,
-                    });
-                }
+                await session.validateClaims(reqClaims, userContext);
 
                 return session;
             } catch (err) {

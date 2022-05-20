@@ -3,7 +3,7 @@ import { VerifySessionOptions, RecipeInterface } from "../";
 import * as faunadb from "faunadb";
 import type { Session as FaunaDBSessionContainer } from "./types";
 import type { BaseRequest, BaseResponse } from "../../../framework";
-import type { SessionInformation } from "../types";
+import type { SessionClaimBuilder, SessionInformation } from "../types";
 export default class RecipeImplementation implements RecipeInterface {
     config: {
         accessFaunadbTokenFromFrontend: boolean;
@@ -21,6 +21,12 @@ export default class RecipeImplementation implements RecipeInterface {
         }
     );
     getFDAT: (userId: string, userContext: any) => Promise<any>;
+    getClaimsToAddOnSessionCreate: (
+        this: RecipeImplementation,
+        userId: string,
+        defaultClaimsToAdd: SessionClaimBuilder[],
+        userContext: any
+    ) => Promise<SessionClaimBuilder[]>;
     createNewSession: (
         this: RecipeImplementation,
         {
@@ -141,7 +147,6 @@ export default class RecipeImplementation implements RecipeInterface {
             userContext: any;
         }
     ) => Promise<void>;
-    updateSessionClaims: (input: { sessionHandle: string; userContext: any }) => any;
     regenerateAccessToken: (input: { accessToken: string; newAccessTokenPayload?: any; userContext: any }) => any;
     getAccessTokenLifeTimeMS: (
         this: RecipeImplementation,

@@ -15,7 +15,7 @@
 import { BaseResponse } from "../../framework";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
-import { ClaimValidationError, SessionClaimValidator, SessionContainerInterface } from "./types";
+import { SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 import { logDebugMessage } from "../../logger";
 
@@ -101,10 +101,6 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     };
 
-    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any) => {
-        await this.regenerateToken(newAccessTokenPayload, userContext);
-    };
-
     mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any) => {
         const updatedPayload = { ...this.getAccessTokenPayload(), ...accessTokenPayloadUpdate };
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
@@ -113,7 +109,7 @@ export default class Session implements SessionContainerInterface {
             }
         }
 
-        await this.regenerateToken(updatedPayload, userContext);
+        await this.updateAccessTokenPayload(updatedPayload, userContext);
     };
 
     getTimeCreated = async (userContext?: any): Promise<number> => {
@@ -148,10 +144,7 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    async validateClaims(
-        claimValidators: SessionClaimValidator[],
-        userContext?: any
-    ): Promise<ClaimValidationError | undefined> {
+    async validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
         const origSessionClaimPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
 
         let newAccessTokenPayload = this.getAccessTokenPayload();
@@ -189,12 +182,18 @@ export default class Session implements SessionContainerInterface {
         }
 
         if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
-            await this.regenerateToken(newAccessTokenPayload, userContext);
+            await this.updateAccessTokenPayload(newAccessTokenPayload, userContext);
         }
-        return validationResult;
+        if (validationResult !== undefined) {
+            throw new STError({
+                type: "INVALID_CLAIM",
+                message: "INVALID_CLAIM",
+                payload: validationResult,
+            });
+        }
     }
 
-    public async regenerateToken(newAccessTokenPayload: any | undefined, userContext: any) {
+    public async updateAccessTokenPayload(newAccessTokenPayload: any | undefined, userContext: any) {
         try {
             let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
                 accessToken: this.getAccessToken(),

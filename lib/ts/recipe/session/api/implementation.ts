@@ -34,24 +34,20 @@ export default function getAPIInterface(): APIInterface {
 
             let refreshTokenPath = options.config.refreshTokenPath;
 
-            const res =
-                incomingPath.equals(refreshTokenPath) && method === "post"
-                    ? await options.recipeImplementation.refreshSession({
-                          req: options.req,
-                          res: options.res,
-                          userContext,
-                      })
-                    : await options.recipeImplementation.getSession({
-                          req: options.req,
-                          res: options.res,
-                          options: verifySessionOptions,
-                          userContext,
-                      });
-            if (res === undefined) {
-                return undefined;
+            if (incomingPath.equals(refreshTokenPath) && method === "post") {
+                return options.recipeImplementation.refreshSession({
+                    req: options.req,
+                    res: options.res,
+                    userContext,
+                });
+            } else {
+                return options.recipeImplementation.getSession({
+                    req: options.req,
+                    res: options.res,
+                    options: verifySessionOptions,
+                    userContext,
+                });
             }
-
-            return res;
         },
 
         signOutPOST: async function ({

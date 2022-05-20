@@ -12,7 +12,7 @@ export abstract class PrimitiveClaim<T extends JSONValue> implements SessionClai
             ...payload,
             [this.key]: {
                 v: value,
-                t: new Date().getTime(),
+                t: Date.now(),
             },
         };
     }
@@ -45,29 +45,40 @@ export abstract class PrimitiveClaim<T extends JSONValue> implements SessionClai
                 claim: this,
                 validatorTypeId: validatorTypeId ?? this.key,
                 shouldRefetch: (grantPayload, ctx) => this.getValueFromPayload(grantPayload, ctx) === undefined,
-                // TODO: we could add current and expected value into a reason
-                validate: (grantPayload, ctx) => ({ isValid: this.getValueFromPayload(grantPayload, ctx) === val }),
+                validate: (grantPayload, ctx) => {
+                    const claimVal = this.getValueFromPayload(grantPayload, ctx);
+                    const isValid = claimVal === val;
+                    return isValid
+                        ? { isValid: isValid }
+                        : { isValid, reason: { expectedValue: val, actualValue: claimVal } };
+                },
             };
         },
         hasFreshValue: (val: T, maxAgeInSeconds: number, validatorTypeId?: string): SessionClaimValidator => {
             return {
                 claim: this,
-                validatorTypeId: validatorTypeId ?? this.key,
+                validatorTypeId: validatorTypeId ?? this.key + "-fresh-val",
                 shouldRefetch: (grantPayload, ctx) =>
                     this.getValueFromPayload(grantPayload, ctx) === undefined ||
                     // We know grantPayload[this.id] is defined since the value is not undefined in this branch
                     grantPayload[this.key].t < Date.now() - maxAgeInSeconds * 1000,
                 validate: (grantPayload, ctx) => {
-                    if (this.getValueFromPayload(grantPayload, ctx) !== val) {
+                    const claimVal = this.getValueFromPayload(grantPayload, ctx);
+                    if (claimVal !== val) {
                         return {
                             isValid: false,
-                            reason: "wrong value",
+                            reason: { message: "wrong value", expectedValue: val, actualValue: claimVal },
                         };
                     }
-                    if (grantPayload[this.key].t > Date.now() - maxAgeInSeconds * 1000) {
+                    const ageInSeconds = (Date.now() - grantPayload[this.key].t) / 1000;
+                    if (ageInSeconds > maxAgeInSeconds) {
                         return {
                             isValid: false,
-                            reason: "expired",
+                            reason: {
+                                message: "expired",
+                                ageInSeconds,
+                                maxAgeInSeconds,
+                            },
                         };
                     }
                     return { isValid: true };

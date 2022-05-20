@@ -33,17 +33,52 @@ export default class SessionWrapper {
 
     static Error = SuperTokensError;
 
-    static createNewSession(
+    static async createNewSession(
         res: any,
         userId: string,
         accessTokenPayload: any = {},
         sessionData: any = {},
         userContext: any = {}
     ) {
+        const defaultClaims = Recipe.getInstanceOrThrowError().getDefaultClaimBuilders();
+        const claimsToAdd = await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getClaimsToAddOnSessionCreate(
+            userId,
+            defaultClaims,
+            userContext
+        );
+
+        let finalAccessTokenPayload = accessTokenPayload;
+
+        for (const claimBuilder of claimsToAdd) {
+            if (typeof claimBuilder === "function") {
+                const update = await claimBuilder({
+                    res,
+                    userId,
+                    accessTokenPayload,
+                    sessionData,
+                    claimsToAdd,
+                    userContext,
+                });
+                finalAccessTokenPayload = {
+                    ...finalAccessTokenPayload,
+                    ...update,
+                };
+            } else {
+                const value = await claimBuilder.fetch(userId, userContext);
+                if (value !== undefined) {
+                    finalAccessTokenPayload = claimBuilder.addToPayload_internal(
+                        finalAccessTokenPayload,
+                        value,
+                        userContext
+                    );
+                }
+            }
+        }
+
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
-            accessTokenPayload,
+            accessTokenPayload: finalAccessTokenPayload,
             sessionData,
             userContext,
         });

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { ClaimValidationError, SessionClaimValidator, SessionContainerInterface } from "../types";
+import { SessionClaimValidator, SessionContainerInterface } from "../types";
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private openIdRecipeImplementation;
     private originalSessionClass;
@@ -14,11 +14,10 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     getAccessToken: (userContext?: any) => string;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    validateClaims(
-        claimValidators: SessionClaimValidator[],
-        userContext?: any
-    ): Promise<ClaimValidationError | undefined>;
-    updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
+    validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload: (accessTokenPayloadUpdate: any, userContext?: any) => Promise<void>;
-    regenerateToken: (newAccessTokenPayload: any, userContext: any) => Promise<void>;
+    /**
+     * @deprecated use mergeIntoAccessTokenPayload instead
+     */
+    updateAccessTokenPayload: (newAccessTokenPayload: any, userContext?: any) => Promise<void>;
 }

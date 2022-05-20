@@ -41,7 +41,7 @@ export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "options" |
 export declare type Awaitable<T> = Promise<T> | T;
 export declare type JSONPrimitive = string | number | boolean | null;
 export declare type JSONArray = Array<JSONPrimitive>;
-export declare type JSONValue = JSONPrimitive | JSONObject | JSONArray;
+export declare type JSONValue = JSONPrimitive | JSONObject | JSONArray | undefined;
 export interface JSONObject {
     [ind: string]: JSONValue;
 }

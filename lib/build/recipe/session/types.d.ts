@@ -64,7 +64,6 @@ export declare type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    claimsToAddOnCreation?: SessionClaimBuilder[];
     defaultValidatorsForVerification?: SessionClaimValidator[];
     missingClaimStatusCode?: number;
     jwt?:
@@ -112,7 +111,6 @@ export declare type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    claimsToAddOnCreation: SessionClaimBuilder[];
     defaultValidatorsForVerification: SessionClaimValidator[];
     missingClaimStatusCode: number;
     jwt: {
@@ -180,6 +178,11 @@ export declare type RecipeInterface = {
         claimsToAdd?: SessionClaimBuilder[];
         userContext: any;
     }): Promise<SessionContainerInterface>;
+    getClaimsToAddOnSessionCreate(
+        userId: string,
+        defaultClaimsToAddOnCreation: SessionClaimBuilder[],
+        userContext: any
+    ): Promise<SessionClaimBuilder[]>;
     getSession(input: {
         req: any;
         res: any;
@@ -236,15 +239,11 @@ export interface SessionContainerInterface {
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAccessToken(userContext?: any): string;
-    regenerateToken(newAccessTokenPayload: any | undefined, userContext: any): Promise<void>;
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
-    validateClaims(
-        claimValidators: SessionClaimValidator[],
-        userContext?: any
-    ): Promise<ClaimValidationError | undefined>;
+    validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

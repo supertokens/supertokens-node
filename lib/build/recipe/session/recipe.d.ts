@@ -1,6 +1,13 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, VerifySessionOptions } from "./types";
+import {
+    TypeInput,
+    TypeNormalisedInput,
+    RecipeInterface,
+    APIInterface,
+    VerifySessionOptions,
+    SessionClaimBuilder,
+} from "./types";
 import STError from "./error";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -14,6 +21,7 @@ export default class SessionRecipe extends RecipeModule {
     openIdRecipe?: OpenIdRecipe;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
+    defaultClaimBuilders: SessionClaimBuilder[];
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config?: TypeInput): RecipeListFunction;
@@ -34,4 +42,6 @@ export default class SessionRecipe extends RecipeModule {
         request: BaseRequest,
         response: BaseResponse
     ) => Promise<import("./types").SessionContainerInterface | undefined>;
+    addClaimBuilderToDefault: (builder: SessionClaimBuilder) => void;
+    getDefaultClaimBuilders: () => SessionClaimBuilder[];
 }

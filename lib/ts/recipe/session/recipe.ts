@@ -14,7 +14,14 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, VerifySessionOptions } from "./types";
+import {
+    TypeInput,
+    TypeNormalisedInput,
+    RecipeInterface,
+    APIInterface,
+    VerifySessionOptions,
+    SessionClaimBuilder,
+} from "./types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
@@ -46,6 +53,7 @@ export default class SessionRecipe extends RecipeModule {
     apiImpl: APIInterface;
 
     isInServerlessEnv: boolean;
+    defaultClaimBuilders: SessionClaimBuilder[] = [];
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
@@ -229,5 +237,13 @@ export default class SessionRecipe extends RecipeModule {
             },
             userContext: {},
         });
+    };
+
+    addClaimBuilderToDefault = (builder: SessionClaimBuilder) => {
+        this.defaultClaimBuilders.push(builder);
+    };
+
+    getDefaultClaimBuilders = (): SessionClaimBuilder[] => {
+        return this.defaultClaimBuilders;
     };
 }
