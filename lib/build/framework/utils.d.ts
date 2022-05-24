@@ -11,7 +11,9 @@ export declare function getHeaderValueFromIncomingMessage(request: IncomingMessa
 export declare function normalizeHeaderValue(value: string | string[] | undefined): string | undefined;
 export declare function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
-    request: Request | NextApiRequest
+    request: (Request | NextApiRequest) & {
+        fromNextJS?: true;
+    }
 ): Promise<void>;
 export declare function assertForDataBodyParserHasBeenUsedForExpressLikeRequest(
     request: Request | NextApiRequest
