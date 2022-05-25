@@ -110,7 +110,7 @@ function JSONCookies(obj: any) {
 
 export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
-    request: (Request | NextApiRequest) & { fromNextJS?: true }
+    request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
 ) {
     // according to https://github.com/supertokens/supertokens-node/issues/33
     if (method === "post" || method === "put") {
@@ -136,7 +136,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
             let jsonParser = json();
             let err = await new Promise((resolve) => {
                 let resolvedCalled = false;
-                if (request.fromNextJS === true) {
+                if (request.__supertokensFromNextJS === true) {
                     /**
                      * the setImmediate here is to counter the next.js issue
                      * where the json parser would not resolve and thus the request

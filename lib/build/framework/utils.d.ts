@@ -12,7 +12,7 @@ export declare function normalizeHeaderValue(value: string | string[] | undefine
 export declare function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
     request: (Request | NextApiRequest) & {
-        fromNextJS?: true;
+        __supertokensFromNextJS?: true;
     }
 ): Promise<void>;
 export declare function assertForDataBodyParserHasBeenUsedForExpressLikeRequest(

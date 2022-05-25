@@ -39,7 +39,7 @@ export default class NextJS {
         response: any
     ): Promise<T> {
         return new Promise<T>(async (resolve: any, reject: any) => {
-            request.fromNextJS = true;
+            request.__supertokensFromNextJS = true;
             try {
                 let callbackCalled = false;
                 const result = await middleware((err) => {

@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixes:
 
--   Calling the setImmediate function inside assertThatBodyParserHasBeenUsedForExpressLikeRequest only if the function is getting executed in NextJS env
+-   Calling the setImmediate function inside assertThatBodyParserHasBeenUsedForExpressLikeRequest only if the function is getting executed in NextJS env. Fixes #313
 
 ## [9.2.1] - 2022-05-19
 
