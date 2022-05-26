@@ -136,6 +136,10 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
             let jsonParser = json();
             let err = await new Promise((resolve) => {
                 let resolvedCalled = false;
+                /**
+                 * Nextjs allow users to disable the default parser.
+                 * To handle that scenario, we are still parsing the request body
+                 */
                 if (request.__supertokensFromNextJS === true) {
                     /**
                      * the setImmediate here is to counter the next.js issue
