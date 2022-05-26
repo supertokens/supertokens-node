@@ -404,6 +404,100 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
         });
     });
 
+    describe("with superTokensNextWrapper (__supertokensFromNextJS flag test)", function () {
+        before(async function () {
+            process.env.user = undefined;
+            await killAllST();
+            await setupST();
+            await startST();
+            ProcessState.getInstance().reset();
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    apiBasePath: "/api/auth",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [
+                    EmailPassword.init({
+                        override: {
+                            apis: (oI) => {
+                                return {
+                                    ...oI,
+                                    passwordResetPOST: async (input) => {
+                                        return {
+                                            status: "CUSTOM_RESPONSE",
+                                            nextJS: input.options.req.original.__supertokensFromNextJS,
+                                        };
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                    Session.init({
+                        override: {
+                            functions: (oI) => {
+                                return {
+                                    ...oI,
+                                    createNewSession: async (input) => {
+                                        let response = await oI.createNewSession(input);
+                                        process.env.user = response.getUserId();
+                                        return response;
+                                    },
+                                };
+                            },
+                        },
+                    }),
+                ],
+            });
+        });
+
+        after(async function () {
+            await killAllST();
+            await cleanST();
+        });
+
+        it("testing __supertokensFromNextJS flag", function (done) {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "emailpassword",
+                },
+                url: "/api/auth/user/password/reset",
+                body: {
+                    token: "hello",
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "NewP@sSW0rd",
+                        },
+                    ],
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                assert.deepStrictEqual(response._getJSONData().status, "CUSTOM_RESPONSE");
+                assert.deepStrictEqual(response._getJSONData().nextJS, true);
+                return done();
+            });
+
+            superTokensNextWrapper(
+                async (next) => {
+                    return middleware()(request, response, next);
+                },
+                request,
+                response
+            );
+        });
+    });
+
     describe("with superTokensNextWrapper, overriding throws error", function () {
         before(async function () {
             process.env.user = undefined;
