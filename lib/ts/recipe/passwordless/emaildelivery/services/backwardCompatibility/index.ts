@@ -77,6 +77,7 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                     2
                 )
             );
+            throw error;
         }
     };
 }

@@ -79,6 +79,7 @@ export default class SupertokensService implements SmsDeliveryInterface<TypePass
                     2
                 )
             );
+            throw error;
         }
     };
 }
