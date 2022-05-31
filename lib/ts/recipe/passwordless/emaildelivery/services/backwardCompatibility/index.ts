@@ -59,7 +59,7 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                     console.log("Error: ", err.message);
                 }
             } else {
-                console.log("Error: ", error.message);
+                console.log("Error: ", error);
             }
             console.log("Logging the input below:");
             console.log(
