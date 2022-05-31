@@ -66,7 +66,7 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
-                logDebugMessage(`Email not sent to ${email} because it is already verified.`);
+                logDebugMessage(`Email verification email not sent to ${email} because it is already verified.`);
                 return response;
             }
 
@@ -77,6 +77,7 @@ export default function getAPIInterface(): APIInterface {
                 "&rid=" +
                 options.recipeId;
 
+            logDebugMessage(`Sending email verification email to ${email}`);
             await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                 type: "EMAIL_VERIFICATION",
                 user: {
