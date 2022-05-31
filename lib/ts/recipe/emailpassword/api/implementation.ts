@@ -52,7 +52,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
             if (response.status === "UNKNOWN_USER_ID_ERROR") {
-                logDebugMessage(`Email not sent, unknown user id: ${user.id}`);
+                logDebugMessage(`Password reset email not sent, unknown user id: ${user.id}`);
                 return {
                     status: "OK",
                 };
