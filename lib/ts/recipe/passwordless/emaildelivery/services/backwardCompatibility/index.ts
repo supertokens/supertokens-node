@@ -14,7 +14,7 @@
  */
 import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { NormalisedAppinfo } from "../../../../../types";
 
 function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
@@ -33,20 +33,49 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
         if (process.env.TEST_MODE === "testing") {
             return;
         }
-        await axios({
-            method: "POST",
-            url: "https://api.supertokens.io/0/st/auth/passwordless/login",
-            data: {
-                email: input.email,
-                appName: appInfo.appName,
-                codeLifetime: input.codeLifetime,
-                urlWithLinkCode: input.urlWithLinkCode,
-                userInputCode: input.userInputCode,
-            },
-            headers: {
-                "api-version": 0,
-            },
-        });
+        try {
+            await axios({
+                method: "POST",
+                url: "https://api.supertokens.io/0/st/auth/passwordless/login",
+                data: {
+                    email: input.email,
+                    appName: appInfo.appName,
+                    codeLifetime: input.codeLifetime,
+                    urlWithLinkCode: input.urlWithLinkCode,
+                    userInputCode: input.userInputCode,
+                },
+                headers: {
+                    "api-version": 0,
+                },
+            });
+        } catch (error) {
+            console.log("Error sending passwordless login email");
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                if (err.response) {
+                    console.log("Error status: ", err.response.status);
+                    console.log("Error response: ", err.response.data);
+                } else {
+                    console.log("Error: ", err.message);
+                }
+            } else {
+                console.log("Error: ", error.message);
+            }
+            console.log("Logging the input below:");
+            console.log(
+                JSON.stringify(
+                    {
+                        email: input.email,
+                        appName: appInfo.appName,
+                        codeLifetime: input.codeLifetime,
+                        urlWithLinkCode: input.urlWithLinkCode,
+                        userInputCode: input.userInputCode,
+                    },
+                    null,
+                    2
+                )
+            );
+        }
     };
 }
 

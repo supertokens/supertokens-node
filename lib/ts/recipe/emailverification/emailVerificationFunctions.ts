@@ -15,7 +15,7 @@
 
 import { User } from "./types";
 import { NormalisedAppinfo } from "../../types";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 export function getEmailVerificationURL(appInfo: NormalisedAppinfo) {
     return async (_: User): Promise<string> => {
@@ -45,6 +45,31 @@ export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                     "api-version": 0,
                 },
             });
-        } catch (ignored) {}
+        } catch (error) {
+            console.log("Error sending verification email");
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                if (err.response) {
+                    console.log("Error status: ", err.response.status);
+                    console.log("Error response: ", err.response.data);
+                } else {
+                    console.log("Error: ", err.message);
+                }
+            } else {
+                console.log("Error: ", error.message);
+            }
+            console.log("Logging the input below:");
+            console.log(
+                JSON.stringify(
+                    {
+                        email: user.email,
+                        appName: appInfo.appName,
+                        emailVerifyURL: emailVerifyURLWithToken,
+                    },
+                    null,
+                    2
+                )
+            );
+        }
     };
 }
