@@ -49,6 +49,7 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                     "api-version": 0,
                 },
             });
+            logDebugMessage(`Email sent to ${input.email}`);
         } catch (error) {
             logDebugMessage("Error sending passwordless login email");
             if (axios.isAxiosError(error)) {

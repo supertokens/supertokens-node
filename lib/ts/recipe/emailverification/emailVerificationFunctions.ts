@@ -46,6 +46,7 @@ export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                     "api-version": 0,
                 },
             });
+            logDebugMessage(`Email sent to ${user.email}`);
         } catch (error) {
             logDebugMessage("Error sending verification email");
             if (axios.isAxiosError(error)) {

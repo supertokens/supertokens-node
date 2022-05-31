@@ -53,6 +53,7 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                     "api-version": "0",
                 },
             });
+            logDebugMessage(`SMS sent to ${input.phoneNumber}`);
             return;
         } catch (error) {
             if (axios.isAxiosError(error)) {
