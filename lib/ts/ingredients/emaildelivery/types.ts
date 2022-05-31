@@ -19,7 +19,7 @@ export type EmailDeliveryInterface<T> = {
 };
 
 /**
- * config class parameter when parent Recipe create a new EmailDeliveryRecipe object via constructor
+ * config class parameter when parent Recipe create a new EmailDeliveryIngredient object via constructor
  */
 export interface TypeInput<T> {
     service?: EmailDeliveryInterface<T>;

@@ -5,7 +5,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 export declare type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
@@ -89,7 +89,7 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypeEmailVerificationEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
 };
 export declare type APIInterface = {
     verifyEmailPOST:

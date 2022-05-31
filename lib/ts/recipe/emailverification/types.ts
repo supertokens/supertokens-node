@@ -19,7 +19,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 
 export type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
@@ -94,7 +94,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypeEmailVerificationEmailDeliveryInput>;
+    emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
 };
 
 export type APIInterface = {
