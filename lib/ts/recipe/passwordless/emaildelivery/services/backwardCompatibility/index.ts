@@ -16,6 +16,7 @@ import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 import axios, { AxiosError } from "axios";
 import { NormalisedAppinfo } from "../../../../../types";
+import { logDebugMessage } from "../../../../../logger";
 
 function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (
@@ -49,20 +50,20 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                 },
             });
         } catch (error) {
-            console.log("Error sending passwordless login email");
+            logDebugMessage("Error sending passwordless login email");
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
                 if (err.response) {
-                    console.log("Error status: ", err.response.status);
-                    console.log("Error response: ", err.response.data);
+                    logDebugMessage(`Error status: ${err.response.status}`);
+                    logDebugMessage(`Error response: ${err.response.data}`);
                 } else {
-                    console.log("Error: ", err.message);
+                    logDebugMessage(`Error: ${err.message}`);
                 }
             } else {
-                console.log("Error: ", error);
+                logDebugMessage(`Error: ${error}`);
             }
-            console.log("Logging the input below:");
-            console.log(
+            logDebugMessage("Logging the input below:");
+            logDebugMessage(
                 JSON.stringify(
                     {
                         email: input.email,

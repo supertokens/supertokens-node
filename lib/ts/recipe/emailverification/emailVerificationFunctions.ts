@@ -16,6 +16,7 @@
 import { User } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import axios, { AxiosError } from "axios";
+import { logDebugMessage } from "../../logger";
 
 export function getEmailVerificationURL(appInfo: NormalisedAppinfo) {
     return async (_: User): Promise<string> => {
@@ -46,20 +47,20 @@ export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                 },
             });
         } catch (error) {
-            console.log("Error sending verification email");
+            logDebugMessage("Error sending verification email");
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
                 if (err.response) {
-                    console.log("Error status: ", err.response.status);
-                    console.log("Error response: ", err.response.data);
+                    logDebugMessage(`Error status: ${err.response.status}`);
+                    logDebugMessage(`Error response: ${err.response.data}`);
                 } else {
-                    console.log("Error: ", err.message);
+                    logDebugMessage(`Error: ${err.message}`);
                 }
             } else {
-                console.log("Error: ", error);
+                logDebugMessage(`Error: ${error}`);
             }
-            console.log("Logging the input below:");
-            console.log(
+            logDebugMessage("Logging the input below:");
+            logDebugMessage(
                 JSON.stringify(
                     {
                         email: user.email,
