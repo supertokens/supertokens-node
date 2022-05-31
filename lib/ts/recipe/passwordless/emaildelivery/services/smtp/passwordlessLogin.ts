@@ -15,6 +15,7 @@
 import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { GetContentResult } from "../../../../../ingredients/emaildelivery/services/smtp";
 import Supertokens from "../../../../../supertokens";
+import { humaniseMilliseconds } from "../../../../../utils";
 export default function getPasswordlessLoginEmailContent(input: TypePasswordlessEmailDeliveryInput): GetContentResult {
     let supertokens = Supertokens.getInstanceOrThrowError();
     let appName = supertokens.appInfo.appName;
@@ -34,6 +35,7 @@ export default function getPasswordlessLoginEmailContent(input: TypePasswordless
 }
 
 function getOTPBody(codeLifetime: number, userInputCode: string) {
+    const humanisedCodeLifetime = humaniseMilliseconds(codeLifetime);
     return `
     <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnCodeBlock">
         <tbody class="mcnTextBlockOuter">
@@ -44,7 +46,7 @@ function getOTPBody(codeLifetime: number, userInputCode: string) {
             <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
             <div style="background-color:#fff; border: 1px solid #ddd; border-radius: 6px">
                 <div style="padding-left: 15%; padding-right: 15%;">
-                <p style="font-family: Rubik; font-size: 16px; line-height: 26px; font-weight:500; text-align: center; padding-top: 24px; padding-bottom: 8px; padding-left: 10%; padding-right: 10%; ">Enter the below OTP in your login screen. Note that the link expires in ${codeLifetime} seconds</p>
+                <p style="font-family: Rubik; font-size: 16px; line-height: 26px; font-weight:500; text-align: center; padding-top: 24px; padding-bottom: 8px; padding-left: 10%; padding-right: 10%; ">Enter the below OTP in your login screen. Note that the link expires in ${humanisedCodeLifetime}</p>
                 </div>
                 <div style="display: flex; flex-direction: row; justify-content: center; margin-bottom: 40px">
                 <div class="mcnTextContent" style="padding: 10px 20px; background-color: #fafafa; border: 1px solid #DDD; color: #222; font-family: Rubik; font-size: 32px; line-height: 40px; font-weight: 500; text-align: center; display: inline-block; border-radius: 6px; margin-top: 8px;">${userInputCode}</div>
@@ -58,6 +60,7 @@ function getOTPBody(codeLifetime: number, userInputCode: string) {
 }
 
 function getURLLinkBody(appName: string, codeLifetime: number, urlWithLinkCode: string) {
+    const humanisedCodeLifetime = humaniseMilliseconds(codeLifetime);
     return `
     <table border="0" cellpadding="0" cellspacing="0" width="100%" class="mcnCodeBlock">
         <tbody class="mcnTextBlockOuter">
@@ -68,7 +71,7 @@ function getURLLinkBody(appName: string, codeLifetime: number, urlWithLinkCode: 
             <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
             <div style="background-color:#fff; border: 1px solid #ddd; border-radius: 6px; ">
                 <div style="padding-left: 15%; padding-right: 15%;">
-                <p style="font-family: Rubik; font-size: 16px; line-height: 26px; font-weight:500; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 10%; padding-right: 10%; ">Please click the button below to sign-in/up to ${appName}. Note that the link expires in ${codeLifetime} seconds</p>
+                <p style="font-family: Rubik; font-size: 16px; line-height: 26px; font-weight:500; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 10%; padding-right: 10%; ">Please click the button below to sign-in/up to ${appName}. Note that the link expires in ${humanisedCodeLifetime}</p>
                 <div class="button-td button-td-primary" style="border-radius: 6px; margin-bottom: 40px; display: flex; flex-direction: row; justify-content: center;">
                     <a class="button-a button-a-primary" href="${urlWithLinkCode}" target="_blank" style="background: #52B56E;font-size: 17px;line-height: 24px;font-weight: 500;font-family: 'Rubik', sans-serif;text-decoration: none;padding: 9px 25px 9px 25px;color: #ffffff;display: block;border-radius: 6px;">Login</a>
                 </div>
