@@ -1,4 +1,5 @@
 import { APIInterface } from "../";
+import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 
 export default function getAPIImplementation(): APIInterface {
@@ -89,6 +90,7 @@ export default function getAPIImplementation(): APIInterface {
                     input.options.config.contactMethod === "PHONE" ||
                     (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
                 ) {
+                    logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
                     await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
                         type: "PASSWORDLESS_LOGIN",
                         codeLifetime: response.codeLifetime,
@@ -99,6 +101,7 @@ export default function getAPIImplementation(): APIInterface {
                         userContext: input.userContext,
                     });
                 } else {
+                    logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                     await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                         type: "PASSWORDLESS_LOGIN",
                         email: (input as any).email!,
@@ -225,6 +228,7 @@ export default function getAPIImplementation(): APIInterface {
                             (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
                                 deviceInfo.phoneNumber !== undefined)
                         ) {
+                            logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
                             await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
                                 type: "PASSWORDLESS_LOGIN",
                                 codeLifetime: response.codeLifetime,
@@ -235,6 +239,7 @@ export default function getAPIImplementation(): APIInterface {
                                 userContext: input.userContext,
                             });
                         } else {
+                            logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                             await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                                 type: "PASSWORDLESS_LOGIN",
                                 email: (input as any).email!,

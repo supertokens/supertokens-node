@@ -53,14 +53,15 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                     "api-version": "0",
                 },
             });
-            logDebugMessage(`SMS sent to ${input.phoneNumber}`);
+            logDebugMessage(`Passwordless login SMS sent to ${input.phoneNumber}`);
             return;
         } catch (error) {
+            logDebugMessage("Error sending passwordless login SMS");
             if (axios.isAxiosError(error)) {
                 const err = error as AxiosError;
                 if (err.response) {
                     logDebugMessage(`Error status: ${err.response.status}`);
-                    logDebugMessage(`Error response: ${err.response.data}`);
+                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
                 } else {
                     logDebugMessage(`Error: ${err.message}`);
                 }
@@ -68,6 +69,7 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                     throw err;
                 }
             } else {
+                logDebugMessage(`Error: ${JSON.stringify(error)}`);
                 throw error;
             }
         }
