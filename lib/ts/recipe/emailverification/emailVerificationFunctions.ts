@@ -53,12 +53,12 @@ export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                 const err = error as AxiosError;
                 if (err.response) {
                     logDebugMessage(`Error status: ${err.response.status}`);
-                    logDebugMessage(`Error response: ${err.response.data}`);
+                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
                 } else {
                     logDebugMessage(`Error: ${err.message}`);
                 }
             } else {
-                logDebugMessage(`Error: ${error}`);
+                logDebugMessage(`Error: ${JSON.stringify(error)}`);
             }
             logDebugMessage("Logging the input below:");
             logDebugMessage(
