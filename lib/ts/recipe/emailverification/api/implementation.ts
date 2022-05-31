@@ -1,4 +1,5 @@
 import { APIInterface, APIOptions, User } from "../";
+import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 
 export default function getAPIInterface(): APIInterface {
@@ -65,6 +66,7 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+                logDebugMessage(`Email not sent to ${email} because it is already verified.`);
                 return response;
             }
 

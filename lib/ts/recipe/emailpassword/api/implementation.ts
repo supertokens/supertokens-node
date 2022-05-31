@@ -1,4 +1,5 @@
 import { APIInterface, APIOptions, User } from "../";
+import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 
@@ -51,6 +52,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
             if (response.status === "UNKNOWN_USER_ID_ERROR") {
+                logDebugMessage(`Email not sent, unknown user id: ${user.id}`);
                 return {
                     status: "OK",
                 };
