@@ -15,9 +15,10 @@
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { NormalisedAppinfo } from "../../../../../types";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
 import Supertokens from "../../../../../supertokens";
+import { logDebugMessage } from "../../../../../logger";
 
 function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
     return async (
@@ -52,10 +53,24 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                     "api-version": "0",
                 },
             });
+            logDebugMessage(`Passwordless login SMS sent to ${input.phoneNumber}`);
             return;
-        } catch (err) {
-            if (err.response === undefined || err.response.status !== 429) {
-                throw err;
+        } catch (error) {
+            logDebugMessage("Error sending passwordless login SMS");
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                if (err.response) {
+                    logDebugMessage(`Error status: ${err.response.status}`);
+                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
+                } else {
+                    logDebugMessage(`Error: ${err.message}`);
+                }
+                if (err.response === undefined || err.response.status !== 429) {
+                    throw err;
+                }
+            } else {
+                logDebugMessage(`Error: ${JSON.stringify(error)}`);
+                throw error;
             }
         }
         console.log(

@@ -14,8 +14,9 @@
  */
 import { TypePasswordlessEmailDeliveryInput } from "../../../types";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { NormalisedAppinfo } from "../../../../../types";
+import { logDebugMessage } from "../../../../../logger";
 
 function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (
@@ -33,20 +34,51 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
         if (process.env.TEST_MODE === "testing") {
             return;
         }
-        await axios({
-            method: "POST",
-            url: "https://api.supertokens.io/0/st/auth/passwordless/login",
-            data: {
-                email: input.email,
-                appName: appInfo.appName,
-                codeLifetime: input.codeLifetime,
-                urlWithLinkCode: input.urlWithLinkCode,
-                userInputCode: input.userInputCode,
-            },
-            headers: {
-                "api-version": 0,
-            },
-        });
+        try {
+            await axios({
+                method: "POST",
+                url: "https://api.supertokens.io/0/st/auth/passwordless/login",
+                data: {
+                    email: input.email,
+                    appName: appInfo.appName,
+                    codeLifetime: input.codeLifetime,
+                    urlWithLinkCode: input.urlWithLinkCode,
+                    userInputCode: input.userInputCode,
+                },
+                headers: {
+                    "api-version": 0,
+                },
+            });
+            logDebugMessage(`Email sent to ${input.email}`);
+        } catch (error) {
+            logDebugMessage("Error sending passwordless login email");
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                if (err.response) {
+                    logDebugMessage(`Error status: ${err.response.status}`);
+                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
+                } else {
+                    logDebugMessage(`Error: ${err.message}`);
+                }
+            } else {
+                logDebugMessage(`Error: ${JSON.stringify(error)}`);
+            }
+            logDebugMessage("Logging the input below:");
+            logDebugMessage(
+                JSON.stringify(
+                    {
+                        email: input.email,
+                        appName: appInfo.appName,
+                        codeLifetime: input.codeLifetime,
+                        urlWithLinkCode: input.urlWithLinkCode,
+                        userInputCode: input.userInputCode,
+                    },
+                    null,
+                    2
+                )
+            );
+            throw error;
+        }
     };
 }
 

@@ -1,4 +1,5 @@
 import { APIInterface, APIOptions, User } from "../";
+import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 
@@ -51,6 +52,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
             if (response.status === "UNKNOWN_USER_ID_ERROR") {
+                logDebugMessage(`Password reset email not sent, unknown user id: ${user.id}`);
                 return {
                     status: "OK",
                 };
@@ -63,6 +65,7 @@ export default function getAPIImplementation(): APIInterface {
                 "&rid=" +
                 options.recipeId;
 
+            logDebugMessage(`Sending password reset email to ${email}`);
             await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                 type: "PASSWORD_RESET",
                 user,
