@@ -19,12 +19,7 @@ export default class SmsDelivery<T> {
     ingredientInterfaceImpl: SmsDeliveryInterface<T>;
 
     constructor(config: TypeInputWithService<T>) {
-        let defaultIngredientImpl: SmsDeliveryInterface<T> = {
-            sendSms: async function (input) {
-                return config.service.sendSms(input);
-            },
-        };
-        let builder = new OverrideableBuilder(defaultIngredientImpl);
+        let builder = new OverrideableBuilder(config.service);
         if (config.override !== undefined) {
             builder = builder.override(config.override);
         }
