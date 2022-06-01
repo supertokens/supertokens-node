@@ -268,6 +268,23 @@ export type RecipeInterface = {
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
+
+    applyClaimBuilder<T>(input: {
+        sessionHandle: string;
+        claimBuilder: SessionClaimBuilder<T>;
+        userContext?: any;
+    }): Promise<void>;
+    setClaimValue<T>(input: {
+        sessionHandle: string;
+        claimBuilder: SessionClaimBuilder<T>;
+        value: T;
+        userContext?: any;
+    }): Promise<void>;
+    removeClaim(input: {
+        sessionHandle: string;
+        claimBuilder: SessionClaimBuilder<any>;
+        userContext?: any;
+    }): Promise<void>;
 };
 
 export interface SessionContainerInterface {
@@ -293,6 +310,9 @@ export interface SessionContainerInterface {
     getExpiry(userContext?: any): Promise<number>;
 
     assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
+    applyClaimBuilder<T>(claimBuilder: SessionClaimBuilder<T>, userContext?: any): Promise<void>;
+    setClaimValue<T>(claimBuilder: SessionClaimBuilder<T>, value: T, userContext?: any): Promise<void>;
+    removeClaim(claimBuilder: SessionClaimBuilder<any>, userContext?: any): Promise<void>;
 }
 
 export type APIOptions = {
@@ -385,7 +405,7 @@ export abstract class SessionClaimBuilder<T> {
         const value = await this.fetch(userId, userContext);
 
         if (value === undefined) {
-            return payload;
+            return this.removeFromPayload(payload, userContext);
         }
 
         return this.addToPayload_internal(payload, value, userContext);

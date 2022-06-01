@@ -228,6 +228,22 @@ export declare type RecipeInterface = {
     }>;
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
+    applyClaimBuilder<T>(input: {
+        sessionHandle: string;
+        claimBuilder: SessionClaimBuilder<T>;
+        userContext?: any;
+    }): Promise<void>;
+    setClaimValue<T>(input: {
+        sessionHandle: string;
+        claimBuilder: SessionClaimBuilder<T>;
+        value: T;
+        userContext?: any;
+    }): Promise<void>;
+    removeClaim(input: {
+        sessionHandle: string;
+        claimBuilder: SessionClaimBuilder<any>;
+        userContext?: any;
+    }): Promise<void>;
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
@@ -242,6 +258,9 @@ export interface SessionContainerInterface {
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
     assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
+    applyClaimBuilder<T>(claimBuilder: SessionClaimBuilder<T>, userContext?: any): Promise<void>;
+    setClaimValue<T>(claimBuilder: SessionClaimBuilder<T>, value: T, userContext?: any): Promise<void>;
+    removeClaim(claimBuilder: SessionClaimBuilder<any>, userContext?: any): Promise<void>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

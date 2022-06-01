@@ -15,7 +15,7 @@
 import { BaseResponse } from "../../framework";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionClaimValidator, SessionContainerInterface } from "./types";
+import { SessionClaimBuilder, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 import { logDebugMessage } from "../../logger";
 
@@ -144,7 +144,7 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
+    assertClaims = async (claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> => {
         const origSessionClaimPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
 
         let newAccessTokenPayload = this.getAccessTokenPayload();
@@ -190,9 +190,24 @@ export default class Session implements SessionContainerInterface {
                 payload: validationErrors,
             });
         }
-    }
+    };
 
-    public async updateAccessTokenPayload(newAccessTokenPayload: any | undefined, userContext: any) {
+    applyClaimBuilder = <T>(claimBuilder: SessionClaimBuilder<T>, userContext?: any) => {
+        const update = claimBuilder.applyToPayload(this.getUserId(), {}, userContext);
+        return this.mergeIntoAccessTokenPayload(update, userContext);
+    };
+
+    setClaimValue = <T>(claimBuilder: SessionClaimBuilder<T>, value: T, userContext?: any) => {
+        const update = claimBuilder.addToPayload_internal({}, value, userContext);
+        return this.mergeIntoAccessTokenPayload(update, userContext);
+    };
+
+    removeClaim = (claimBuilder: SessionClaimBuilder<any>, userContext?: any) => {
+        const update = claimBuilder.removeFromPayload({}, userContext);
+        return this.mergeIntoAccessTokenPayload(update, userContext);
+    };
+
+    updateAccessTokenPayload = async (newAccessTokenPayload: any | undefined, userContext: any) => {
         try {
             let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
                 accessToken: this.getAccessToken(),
@@ -222,5 +237,5 @@ export default class Session implements SessionContainerInterface {
             }
             throw err;
         }
-    }
+    };
 }

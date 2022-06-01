@@ -16,7 +16,7 @@ import * as JsonWebToken from "jsonwebtoken";
 import * as assert from "assert";
 
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionClaimValidator, SessionContainerInterface } from "../types";
+import { SessionClaimBuilder, SessionClaimValidator, SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import { addJWTToAccessTokenPayload } from "./utils";
 
@@ -59,6 +59,18 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
         return this.originalSessionClass.assertClaims.bind(this)(claimValidators, userContext);
     }
+
+    applyClaimBuilder = <T>(claimBuilder: SessionClaimBuilder<T>, userContext?: any) => {
+        return this.originalSessionClass.applyClaimBuilder.bind(this)(claimBuilder, userContext);
+    };
+
+    setClaimValue = <T>(claimBuilder: SessionClaimBuilder<T>, value: T, userContext?: any) => {
+        return this.originalSessionClass.setClaimValue.bind(this)(claimBuilder, value, userContext);
+    };
+
+    removeClaim = (claimBuilder: SessionClaimBuilder<any>, userContext?: any) => {
+        return this.originalSessionClass.removeClaim.bind(this)(claimBuilder, userContext);
+    };
 
     mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any): Promise<void> => {
         const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };

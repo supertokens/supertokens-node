@@ -6,6 +6,7 @@ import {
     KeyInfo,
     AntiCsrfType,
     SessionClaimValidator,
+    SessionClaimBuilder,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -432,6 +433,50 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
 
         getRefreshTokenLifeTimeMS: async function (): Promise<number> {
             return (await getHandshakeInfo()).refreshTokenValidity;
+        },
+
+        applyClaimBuilder: function <T>(input: {
+            sessionHandle: string;
+            claimBuilder: SessionClaimBuilder<T>;
+            userContext?: any;
+        }) {
+            const accessTokenPayloadUpdate = input.claimBuilder.applyToPayload(this.getUserId(), {}, input.userContext);
+            return this.mergeIntoAccessTokenPayload({
+                sessionHandle: input.sessionHandle,
+                accessTokenPayloadUpdate,
+                userContext: input.userContext,
+            });
+        },
+
+        setClaimValue: function <T>(input: {
+            sessionHandle: string;
+            claimBuilder: SessionClaimBuilder<T>;
+            value: T;
+            userContext?: any;
+        }) {
+            const accessTokenPayloadUpdate = input.claimBuilder.addToPayload_internal(
+                {},
+                input.value,
+                input.userContext
+            );
+            return this.mergeIntoAccessTokenPayload({
+                sessionHandle: input.sessionHandle,
+                accessTokenPayloadUpdate,
+                userContext: input.userContext,
+            });
+        },
+
+        removeClaim: function (input: {
+            sessionHandle: string;
+            claimBuilder: SessionClaimBuilder<any>;
+            userContext?: any;
+        }) {
+            const accessTokenPayloadUpdate = input.claimBuilder.removeFromPayload({}, input.userContext);
+            return this.mergeIntoAccessTokenPayload({
+                sessionHandle: input.sessionHandle,
+                accessTokenPayloadUpdate,
+                userContext: input.userContext,
+            });
         },
     };
 

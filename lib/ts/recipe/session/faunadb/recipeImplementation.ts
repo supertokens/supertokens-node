@@ -4,7 +4,7 @@ import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 import type { Session as FaunaDBSessionContainer } from "./types";
 import type { BaseRequest, BaseResponse } from "../../../framework";
-import type { SessionClaimValidator, SessionInformation } from "../types";
+import type { SessionClaimBuilder, SessionClaimValidator, SessionInformation } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {
@@ -228,6 +228,31 @@ export default class RecipeImplementation implements RecipeInterface {
         input: { userContext: any }
     ): Promise<number> {
         return this.originalImplementation.getRefreshTokenLifeTimeMS(input);
+    };
+
+    applyClaimBuilder = function <T>(input: {
+        sessionHandle: string;
+        claimBuilder: SessionClaimBuilder<T>;
+        userContext?: any;
+    }) {
+        return this.originalImplementation.applyClaimBuilder(input);
+    };
+
+    setClaimValue = function <T>(input: {
+        sessionHandle: string;
+        claimBuilder: SessionClaimBuilder<T>;
+        value: T;
+        userContext?: any;
+    }) {
+        return this.originalImplementation.setClaimValue(input);
+    };
+
+    removeClaim = function (input: {
+        sessionHandle: string;
+        claimBuilder: SessionClaimBuilder<any>;
+        userContext?: any;
+    }) {
+        return this.originalImplementation.removeClaim(input);
     };
 }
 

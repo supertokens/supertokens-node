@@ -1,6 +1,5 @@
-import SessionWrapper from "..";
 import { Awaitable, JSONValue } from "../../../types";
-import { SessionClaimBuilder, SessionClaimValidator, SessionContainerInterface } from "../types";
+import { SessionClaimBuilder, SessionClaimValidator } from "../types";
 
 export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaimBuilder<T> {
     constructor(key: string) {
@@ -21,20 +20,10 @@ export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaimBu
     removeFromPayload(payload: any, _userContext: any): any {
         const res = {
             ...payload,
+            [this.key]: null,
         };
-        delete res[this.key];
+
         return res;
-    }
-
-    addToSession(session: SessionContainerInterface, value: T, userContext?: any) {
-        return session.mergeIntoAccessTokenPayload(this.addToPayload_internal({}, value, userContext));
-    }
-
-    addToSessionUsingSessionHandle(sessionHandle: string, value: T, userContext?: any) {
-        return SessionWrapper.mergeIntoAccessTokenPayload(
-            sessionHandle,
-            this.addToPayload_internal({}, value, userContext)
-        );
     }
 
     getValueFromPayload(payload: any, _userContext?: any): T | undefined {
