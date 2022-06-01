@@ -26,7 +26,6 @@ export async function getInfoFromAccessToken(
     refreshTokenHash1: string;
     parentRefreshTokenHash1: string | undefined;
     userData: any;
-    sessionClaims: any;
     antiCsrfToken: string | undefined;
     expiryTime: number;
     timeCreated: number;
@@ -39,7 +38,6 @@ export async function getInfoFromAccessToken(
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1);
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
         let userData = payload.userData;
-        let claims = payload.claims;
         let antiCsrfToken = sanitizeStringInput(payload.antiCsrfToken);
         let expiryTime = sanitizeNumberInput(payload.expiryTime);
         let timeCreated = sanitizeNumberInput(payload.timeCreated);
@@ -64,7 +62,6 @@ export async function getInfoFromAccessToken(
             refreshTokenHash1,
             parentRefreshTokenHash1,
             userData,
-            sessionClaims: claims,
             antiCsrfToken,
             expiryTime,
             timeCreated,

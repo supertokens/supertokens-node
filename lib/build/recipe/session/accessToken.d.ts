@@ -9,7 +9,6 @@ export declare function getInfoFromAccessToken(
     refreshTokenHash1: string;
     parentRefreshTokenHash1: string | undefined;
     userData: any;
-    sessionClaims: any;
     antiCsrfToken: string | undefined;
     expiryTime: number;
     timeCreated: number;
