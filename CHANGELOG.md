@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [9.2.2] - 2022-05-24
+
+### Fixes:
+
+-   Calling the setImmediate function inside assertThatBodyParserHasBeenUsedForExpressLikeRequest only if the function is getting executed in NextJS env. Fixes #313
+
+## [9.2.1] - 2022-05-19
+
+### Fixes:
+
+-   Fixes the routes issue for Hapi framework plugin
+
 ## [9.2.0] - 2022-04-18
 
 # Adds
