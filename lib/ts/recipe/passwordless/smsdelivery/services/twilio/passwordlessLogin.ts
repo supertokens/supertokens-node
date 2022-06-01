@@ -14,6 +14,7 @@
  */
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { GetContentResult } from "../../../../../ingredients/smsdelivery/services/twilio";
+import { humaniseMilliseconds } from "../../../../../utils";
 
 export default function getPasswordlessLoginSmsContent(input: TypePasswordlessSmsDeliveryInput): GetContentResult {
     let body = getPasswordlessLoginSmsBody(input.codeLifetime, input.urlWithLinkCode, input.userInputCode);
@@ -36,6 +37,7 @@ function getPasswordlessLoginSmsBody(
     } else {
         message = `Enter OTP: ${userInputCode} to login.`;
     }
-    message += ` It will expire in ${codeLifetime} seconds.`;
+    const humanisedCodeLifetime = humaniseMilliseconds(codeLifetime);
+    message += ` It will expire in ${humanisedCodeLifetime}.`;
     return message;
 }
