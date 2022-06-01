@@ -20,12 +20,12 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import EmailDeliveryRecipe from "../../ingredients/emaildelivery";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import {
     TypeInput as SmsDeliveryTypeInput,
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
-import SmsDeliveryRecipe from "../../ingredients/smsdelivery";
+import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 
@@ -339,8 +339,8 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
-    emailDelivery: EmailDeliveryRecipe<TypePasswordlessEmailDeliveryInput>;
-    smsDelivery: SmsDeliveryRecipe<TypePasswordlessSmsDeliveryInput>;
+    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
+    smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
 };
 
 export type APIInterface = {
