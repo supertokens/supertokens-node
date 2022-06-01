@@ -17,9 +17,6 @@ let STExpress = require("../..");
 let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let {
-    getExpiryWithUnit,
-} = require("../../lib/build/recipe/passwordless/smsdelivery/services/twilio/passwordlessLogin");
 let Passwordless = require("../../recipe/passwordless");
 let { TwilioService, SupertokensService } = require("../../recipe/passwordless/smsdelivery");
 let nock = require("nock");
