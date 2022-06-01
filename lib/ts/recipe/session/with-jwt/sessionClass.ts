@@ -56,8 +56,8 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         return this.originalSessionClass.getExpiry(userContext);
     };
 
-    validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
-        return this.originalSessionClass.validateClaims.bind(this)(claimValidators, userContext);
+    assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
+        return this.originalSessionClass.assertClaims.bind(this)(claimValidators, userContext);
     }
 
     mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any): Promise<void> => {

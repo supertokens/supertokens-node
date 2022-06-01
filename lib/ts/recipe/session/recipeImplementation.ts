@@ -5,7 +5,7 @@ import {
     SessionInformation,
     KeyInfo,
     AntiCsrfType,
-    SessionClaimBuilder,
+    SessionClaimValidator,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -29,6 +29,7 @@ import SuperTokens from "../../supertokens";
 import frameworks from "../../framework";
 import { JSONObject } from "../../types";
 import { logDebugMessage } from "../../logger";
+import SessionRecipe from "./recipe";
 
 export class HandshakeInfo {
     constructor(
@@ -131,12 +132,8 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             );
         },
 
-        getClaimsToAddOnSessionCreate: async function (
-            _userId: string,
-            defaultClaimsToAddOnCreation: SessionClaimBuilder[],
-            _ctx: any
-        ) {
-            return defaultClaimsToAddOnCreation;
+        getGlobalClaimValidators: async function (input: { defaultClaimValidators: SessionClaimValidator[] }) {
+            return input.defaultClaimValidators;
         },
 
         getSession: async function ({
@@ -241,11 +238,24 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     res
                 );
 
-                const reqClaims = options?.overwriteDefaultValidators ?? config.defaultValidatorsForVerification;
-                logDebugMessage(
-                    "getSession: required validatorTypeIds " + reqClaims.map((c) => c.validatorTypeId).join(", ")
+                const defaultClaimValidators = SessionRecipe.getInstanceOrThrowError().getGlobalClaimValidators();
+                const globalClaimValidators = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
+                    {
+                        userId: response.session.userId,
+                        defaultClaimValidators,
+                        userContext,
+                    }
                 );
-                await session.validateClaims(reqClaims, userContext);
+                const reqClaimsValidators =
+                    options?.overwriteDefaultValidators !== undefined
+                        ? options.overwriteDefaultValidators(session, globalClaimValidators, userContext)
+                        : globalClaimValidators;
+
+                logDebugMessage(
+                    "getSession: required validatorTypeIds " +
+                        reqClaimsValidators.map((c) => c.validatorTypeId).join(", ")
+                );
+                await session.assertClaims(reqClaimsValidators, userContext);
 
                 return session;
             } catch (err) {

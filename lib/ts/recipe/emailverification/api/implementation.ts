@@ -28,7 +28,7 @@ export default function getAPIInterface(): APIInterface {
             let session = await Session.getSession(
                 options.req,
                 options.res,
-                { overwriteDefaultValidators: [] },
+                { overwriteDefaultValidators: () => [] },
                 userContext
             );
 
@@ -56,7 +56,7 @@ export default function getAPIInterface(): APIInterface {
             let session = await Session.getSession(
                 options.req,
                 options.res,
-                { overwriteDefaultValidators: [] },
+                { overwriteDefaultValidators: () => [] },
                 userContext
             );
 

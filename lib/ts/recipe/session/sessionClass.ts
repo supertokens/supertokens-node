@@ -144,11 +144,11 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    async validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
+    async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
         const origSessionClaimPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
 
         let newAccessTokenPayload = this.getAccessTokenPayload();
-        let validationResult = undefined;
+        let validationErrors = [];
         for (const validator of claimValidators) {
             logDebugMessage("Session.validateClaims checking " + validator.validatorTypeId);
             if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
@@ -173,22 +173,21 @@ export default class Session implements SessionContainerInterface {
                     JSON.stringify(claimValidationResult)
             );
             if (!claimValidationResult.isValid) {
-                validationResult = {
+                validationErrors.push({
                     validatorTypeId: validator.validatorTypeId,
                     reason: claimValidationResult.reason,
-                };
-                break;
+                });
             }
         }
 
         if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
             await this.updateAccessTokenPayload(newAccessTokenPayload, userContext);
         }
-        if (validationResult !== undefined) {
+        if (validationErrors.length !== 0) {
             throw new STError({
                 type: "INVALID_CLAIM",
                 message: "INVALID_CLAIM",
-                payload: validationResult,
+                payload: validationErrors,
             });
         }
     }

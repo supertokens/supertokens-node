@@ -106,7 +106,9 @@ export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;
 export declare let getJWKS: typeof SessionWrapper.getJWKS;
 export declare let getOpenIdDiscoveryConfiguration: typeof SessionWrapper.getOpenIdDiscoveryConfiguration;
-export { SessionClaim } from "./types";
+export { SessionClaimBuilder as SessionClaim } from "./types";
+export { PrimitiveClaim } from "./claimBaseClasses/primitiveClaim";
+export { BooleanClaim } from "./claimBaseClasses/booleanClaim";
 export type {
     VerifySessionOptions,
     RecipeInterface,

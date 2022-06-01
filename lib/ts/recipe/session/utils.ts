@@ -258,7 +258,6 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
-        defaultValidatorsForVerification: config?.defaultValidatorsForVerification ?? [],
         missingClaimStatusCode: config?.missingClaimStatusCode ?? 403,
         jwt: {
             enable: enableJWT,

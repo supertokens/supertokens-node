@@ -14,7 +14,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     getAccessToken: (userContext?: any) => string;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
+    assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload: (accessTokenPayloadUpdate: any, userContext?: any) => Promise<void>;
     /**
      * @deprecated use mergeIntoAccessTokenPayload instead

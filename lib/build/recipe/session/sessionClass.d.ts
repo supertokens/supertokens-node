@@ -27,6 +27,6 @@ export default class Session implements SessionContainerInterface {
     mergeIntoAccessTokenPayload: (accessTokenPayloadUpdate: any, userContext?: any) => Promise<void>;
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
-    validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
+    assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
     updateAccessTokenPayload(newAccessTokenPayload: any | undefined, userContext: any): Promise<void>;
 }

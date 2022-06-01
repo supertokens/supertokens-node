@@ -65,7 +65,7 @@ export default function getAPIInterface(): APIInterface {
                     req: options.req,
                     res: options.res,
                     options: {
-                        overwriteDefaultValidators: [],
+                        overwriteDefaultValidators: () => [],
                     },
                     userContext,
                 });

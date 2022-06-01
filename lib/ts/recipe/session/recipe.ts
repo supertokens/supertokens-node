@@ -20,6 +20,7 @@ import {
     RecipeInterface,
     APIInterface,
     VerifySessionOptions,
+    SessionClaimValidator,
     SessionClaimBuilder,
 } from "./types";
 import STError from "./error";
@@ -53,7 +54,8 @@ export default class SessionRecipe extends RecipeModule {
     apiImpl: APIInterface;
 
     isInServerlessEnv: boolean;
-    defaultClaimBuilders: SessionClaimBuilder[] = [];
+    defaultClaimsBuilders: SessionClaimBuilder<any>[] = [];
+    defaultClaimValidators: SessionClaimValidator[] = [];
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
@@ -166,7 +168,6 @@ export default class SessionRecipe extends RecipeModule {
             req,
             res,
         };
-        console.log(id);
         if (id === REFRESH_API_PATH) {
             return await handleRefreshAPI(this.apiImpl, options);
         } else if (id === SIGNOUT_API_PATH) {
@@ -239,11 +240,19 @@ export default class SessionRecipe extends RecipeModule {
         });
     };
 
-    addClaimBuilderToDefault = (builder: SessionClaimBuilder) => {
-        this.defaultClaimBuilders.push(builder);
+    addDefaultClaimBuilder = (builder: SessionClaimBuilder<any>) => {
+        this.defaultClaimsBuilders.push(builder);
     };
 
-    getDefaultClaimBuilders = (): SessionClaimBuilder[] => {
-        return this.defaultClaimBuilders;
+    getDefaultClaimBuilders = (): SessionClaimBuilder<any>[] => {
+        return this.defaultClaimsBuilders;
+    };
+
+    addDefaultClaimValidator = (builder: SessionClaimValidator) => {
+        this.defaultClaimValidators.push(builder);
+    };
+
+    getGlobalClaimValidators = (): SessionClaimValidator[] => {
+        return this.defaultClaimValidators;
     };
 }

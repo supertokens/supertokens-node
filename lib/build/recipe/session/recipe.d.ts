@@ -6,6 +6,7 @@ import {
     RecipeInterface,
     APIInterface,
     VerifySessionOptions,
+    SessionClaimValidator,
     SessionClaimBuilder,
 } from "./types";
 import STError from "./error";
@@ -21,7 +22,8 @@ export default class SessionRecipe extends RecipeModule {
     openIdRecipe?: OpenIdRecipe;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    defaultClaimBuilders: SessionClaimBuilder[];
+    defaultClaimsBuilders: SessionClaimBuilder<any>[];
+    defaultClaimValidators: SessionClaimValidator[];
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config?: TypeInput): RecipeListFunction;
@@ -42,6 +44,8 @@ export default class SessionRecipe extends RecipeModule {
         request: BaseRequest,
         response: BaseResponse
     ) => Promise<import("./types").SessionContainerInterface | undefined>;
-    addClaimBuilderToDefault: (builder: SessionClaimBuilder) => void;
-    getDefaultClaimBuilders: () => SessionClaimBuilder[];
+    addDefaultClaimBuilder: (builder: SessionClaimBuilder<any>) => void;
+    getDefaultClaimBuilders: () => SessionClaimBuilder<any>[];
+    addDefaultClaimValidator: (builder: SessionClaimValidator) => void;
+    getGlobalClaimValidators: () => SessionClaimValidator[];
 }

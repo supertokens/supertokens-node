@@ -30,7 +30,7 @@ export default class SessionError extends STError {
             | {
                   message: string;
                   type: "INVALID_CLAIM";
-                  payload: ClaimValidationError;
+                  payload: ClaimValidationError[];
               }
     );
 }

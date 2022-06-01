@@ -1,9 +1,11 @@
 import SessionWrapper from "..";
 import { Awaitable, JSONValue } from "../../../types";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
+import { SessionClaimBuilder, SessionClaimValidator, SessionContainerInterface } from "../types";
 
-export abstract class PrimitiveClaim<T extends JSONValue> implements SessionClaim<T> {
-    constructor(public readonly key: string) {}
+export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaimBuilder<T> {
+    constructor(key: string) {
+        super(key);
+    }
 
     abstract fetch(userId: string, userContext: any): Awaitable<T | undefined>;
 
@@ -16,7 +18,7 @@ export abstract class PrimitiveClaim<T extends JSONValue> implements SessionClai
             },
         };
     }
-    removeFromPayload_internal(payload: any, _userContext: any): any {
+    removeFromPayload(payload: any, _userContext: any): any {
         const res = {
             ...payload,
         };

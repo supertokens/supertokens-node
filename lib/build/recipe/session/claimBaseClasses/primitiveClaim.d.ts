@@ -1,12 +1,11 @@
 // @ts-nocheck
 import { Awaitable, JSONValue } from "../../../types";
-import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
-export declare abstract class PrimitiveClaim<T extends JSONValue> implements SessionClaim<T> {
-    readonly key: string;
+import { SessionClaimBuilder, SessionClaimValidator, SessionContainerInterface } from "../types";
+export declare abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaimBuilder<T> {
     constructor(key: string);
     abstract fetch(userId: string, userContext: any): Awaitable<T | undefined>;
     addToPayload_internal(payload: any, value: T, _userContext: any): any;
-    removeFromPayload_internal(payload: any, _userContext: any): any;
+    removeFromPayload(payload: any, _userContext: any): any;
     addToSession(session: SessionContainerInterface, value: T, userContext?: any): Promise<void>;
     addToSessionUsingSessionHandle(sessionHandle: string, value: T, userContext?: any): Promise<void>;
     getValueFromPayload(payload: any, _userContext?: any): T | undefined;

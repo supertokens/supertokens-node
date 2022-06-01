@@ -54,9 +54,6 @@ export interface ErrorHandlers {
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
     onInvalidClaim: MissingClaimErrorHandlerMiddleware;
 }
-export declare type SessionClaimBuilder =
-    | SessionClaim<any>
-    | ((...args: Parameters<RecipeInterface["createNewSession"]>) => Awaitable<JSONObject>);
 export declare type TypeInput = {
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
@@ -64,7 +61,6 @@ export declare type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    defaultValidatorsForVerification?: SessionClaimValidator[];
     missingClaimStatusCode?: number;
     jwt?:
         | {
@@ -111,7 +107,6 @@ export declare type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    defaultValidatorsForVerification: SessionClaimValidator[];
     missingClaimStatusCode: number;
     jwt: {
         enable: boolean;
@@ -167,7 +162,11 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
-    overwriteDefaultValidators?: SessionClaimValidator[];
+    overwriteDefaultValidators?: (
+        session: SessionContainerInterface,
+        defaultClaimValidators: SessionClaimValidator[],
+        userContext: any
+    ) => SessionClaimValidator[];
 }
 export declare type RecipeInterface = {
     createNewSession(input: {
@@ -175,14 +174,13 @@ export declare type RecipeInterface = {
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
-        claimsToAdd?: SessionClaimBuilder[];
         userContext: any;
     }): Promise<SessionContainerInterface>;
-    getClaimsToAddOnSessionCreate(
-        userId: string,
-        defaultClaimsToAddOnCreation: SessionClaimBuilder[],
-        userContext: any
-    ): Promise<SessionClaimBuilder[]>;
+    getGlobalClaimValidators(input: {
+        userId: string;
+        defaultClaimValidators: SessionClaimValidator[];
+        userContext: any;
+    }): Awaitable<SessionClaimValidator[]>;
     getSession(input: {
         req: any;
         res: any;
@@ -243,7 +241,7 @@ export interface SessionContainerInterface {
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
-    validateClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
+    assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -292,7 +290,7 @@ export declare type ClaimValidationError = {
 export declare type SessionClaimValidator = (
     | // We split the type like this to express that either both claim and shouldRefetch is defined or neither.
     {
-          claim: SessionClaim<any>;
+          claim: SessionClaimBuilder<any>;
           /**
            * Decides if we need to refetch the claim value before checking the payload with `isValid`.
            * E.g.: if the information in the payload is expired, or is not sufficient for this check.
@@ -307,7 +305,7 @@ export declare type SessionClaimValidator = (
      */
     validate: (payload: any, userContext: any) => Awaitable<ClaimValidationResult>;
 };
-export declare abstract class SessionClaim<T> {
+export declare abstract class SessionClaimBuilder<T> {
     readonly key: string;
     constructor(key: string);
     /**
@@ -321,11 +319,12 @@ export declare abstract class SessionClaim<T> {
      *
      * @returns The modified payload object
      */
-    abstract addToPayload_internal(payload: any, value: T, userContext: any): any;
+    abstract addToPayload_internal(payload: JSONObject, value: T, userContext: any): JSONObject;
     /**
      * Removes the claim from the payload, by cloning and updating the entire object.
      *
      * @returns The modified payload object
      */
-    abstract removeFromPayload_internal(payload: any, userContext: any): any;
+    abstract removeFromPayload(payload: JSONObject, userContext: any): JSONObject;
+    applyToPayload(userId: string, payload: JSONObject, userContext?: any): Promise<JSONObject>;
 }
