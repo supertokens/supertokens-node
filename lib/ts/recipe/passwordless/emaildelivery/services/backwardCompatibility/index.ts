@@ -77,6 +77,17 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                     2
                 )
             );
+            /**
+             * if the error is thrown from API, the response object
+             * will be of type `{err: string}`
+             */
+            if (axios.isAxiosError(error) && error.response !== undefined) {
+                if (error.response.data.err !== undefined) {
+                    throw Error(error.response.data.err);
+                } else if (error.response.data !== undefined) {
+                    throw Error(error.response.data);
+                }
+            }
             throw error;
         }
     };

@@ -65,7 +65,21 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                 } else {
                     logDebugMessage(`Error: ${err.message}`);
                 }
-                if (err.response === undefined || err.response.status !== 429) {
+                if (err.response) {
+                    if (err.response.status !== 429) {
+                        /**
+                         * if the error is thrown from API, the response object
+                         * will be of type `{err: string}`
+                         */
+                        if (err.response.data.err !== undefined) {
+                            throw Error(err.response.data.err);
+                        } else if (err.response.data !== undefined) {
+                            throw Error(err.response.data);
+                        } else {
+                            throw err;
+                        }
+                    }
+                } else {
                     throw err;
                 }
             } else {
