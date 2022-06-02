@@ -19,7 +19,7 @@ let SuperTokens = require("../../");
 let HapiFramework = require("../../framework/hapi");
 const Hapi = require("@hapi/hapi");
 let Session = require("../../recipe/session");
-let EmailPassword = require("../../recipe/emailpassword");
+let ThirdpartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 let { verifySession } = require("../../recipe/session/framework/hapi");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
@@ -1337,17 +1337,17 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
+                ThirdpartyEmailPassword.init({
                     override: {
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                emailExistsGET: async function (input) {
+                                emailPasswordEmailExistsGET: async function (input) {
                                     input.options.res.setStatusCode(203);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
-                                    return oI.emailExistsGET(input);
+                                    return oI.emailPasswordEmailExistsGET(input);
                                 },
                             };
                         },
