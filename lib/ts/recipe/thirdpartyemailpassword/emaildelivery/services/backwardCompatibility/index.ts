@@ -13,8 +13,7 @@
  * under the License.
  */
 import { TypeThirdPartyEmailPasswordEmailDeliveryInput, User, RecipeInterface } from "../../../types";
-import { RecipeInterface as EmailPasswordRecipeInterface } from "../../../../emailpassword";
-import { User as EmailVerificationUser } from "../../../../emailverification/types";
+import { RecipeInterface as EmailPasswordRecipeInterface, User as EmailPasswordUser } from "../../../../emailpassword";
 import { NormalisedAppinfo } from "../../../../../types";
 import EmailPasswordBackwardCompatibilityService from "../../../../emailpassword/emaildelivery/services/backwardCompatibility";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
@@ -47,7 +46,7 @@ export default class BackwardCompatibilityService
         let emailVerificationFeatureNormalisedConfig =
             inputCreateAndSendCustomEmail !== undefined
                 ? {
-                      createAndSendCustomEmail: async (user: EmailVerificationUser, link: string, userContext: any) => {
+                      createAndSendCustomEmail: async (user: EmailPasswordUser, link: string, userContext: any) => {
                           let userInfo = await recipeInterfaceImpl.getUserById({
                               userId: user.id,
                               userContext,
