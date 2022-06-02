@@ -62,6 +62,10 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                 if (err.response) {
                     logDebugMessage(`Error status: ${err.response.status}`);
                     logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
+                } else {
+                    logDebugMessage(`Error: ${err.message}`);
+                }
+                if (err.response) {
                     if (err.response.status !== 429) {
                         /**
                          * if the error is thrown from API, the response object
@@ -76,7 +80,6 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                         }
                     }
                 } else {
-                    logDebugMessage(`Error: ${err.message}`);
                     throw err;
                 }
             } else {

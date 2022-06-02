@@ -57,15 +57,6 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                 if (err.response) {
                     logDebugMessage(`Error status: ${err.response.status}`);
                     logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
-                    /**
-                     * if the error is thrown from API, the response object
-                     * will be of type `{err: string}`
-                     */
-                    if (err.response.data.err !== undefined) {
-                        throw Error(err.response.data.err);
-                    } else if (err.response.data !== undefined) {
-                        throw Error(err.response.data);
-                    }
                 } else {
                     logDebugMessage(`Error: ${err.message}`);
                 }
@@ -86,6 +77,17 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                     2
                 )
             );
+            /**
+             * if the error is thrown from API, the response object
+             * will be of type `{err: string}`
+             */
+            if (axios.isAxiosError(error) && error.response !== undefined) {
+                if (error.response.data.err !== undefined) {
+                    throw Error(error.response.data.err);
+                } else if (error.response.data !== undefined) {
+                    throw Error(error.response.data);
+                }
+            }
             throw error;
         }
     };
