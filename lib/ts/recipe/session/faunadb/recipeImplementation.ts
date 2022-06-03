@@ -4,7 +4,7 @@ import * as faunadb from "faunadb";
 import { FAUNADB_SESSION_KEY, FAUNADB_TOKEN_TIME_LAG_MILLI } from "./constants";
 import type { Session as FaunaDBSessionContainer } from "./types";
 import type { BaseRequest, BaseResponse } from "../../../framework";
-import type { SessionClaimBuilder, SessionClaimValidator, SessionInformation } from "../types";
+import type { SessionClaim, SessionClaimValidator, SessionInformation } from "../types";
 
 export default class RecipeImplementation implements RecipeInterface {
     config: {
@@ -230,28 +230,24 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.originalImplementation.getRefreshTokenLifeTimeMS(input);
     };
 
-    applyClaimBuilder = function <T>(input: {
-        sessionHandle: string;
-        claimBuilder: SessionClaimBuilder<T>;
-        userContext?: any;
-    }) {
-        return this.originalImplementation.applyClaimBuilder(input);
+    applyClaim = function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
+        return this.originalImplementation.applyClaim(input);
     };
 
     setClaimValue = function <T>(input: {
         sessionHandle: string;
-        claimBuilder: SessionClaimBuilder<T>;
+        claim: SessionClaim<T>;
         value: T;
         userContext?: any;
     }) {
         return this.originalImplementation.setClaimValue(input);
     };
 
-    removeClaim = function (input: {
-        sessionHandle: string;
-        claimBuilder: SessionClaimBuilder<any>;
-        userContext?: any;
-    }) {
+    getClaimValue = function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
+        return this.originalImplementation.getClaimValue(input);
+    };
+
+    removeClaim = function (input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }) {
         return this.originalImplementation.removeClaim(input);
     };
 }

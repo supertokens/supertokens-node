@@ -13,13 +13,22 @@ module.exports.UndefinedClaim = new BooleanClaim({
 });
 
 module.exports.StubClaim = class StubClaim extends PrimitiveClaim {
-    constructor({ key, fetch, fetchRes, validatorTypeId, validate, validateRes, shouldRefetch, shouldRefetchRes }) {
+    constructor({
+        key,
+        fetchValue,
+        fetchValueRes,
+        validatorTypeId,
+        validate,
+        validateRes,
+        shouldRefetch,
+        shouldRefetchRes,
+    }) {
         super(key);
-        this.fetch = Sinon.stub();
-        if (fetch) {
-            this.fetch.callsFake(fetch);
+        this.fetchValue = Sinon.stub();
+        if (fetchValue) {
+            this.fetchValue.callsFake(fetchValue);
         } else {
-            this.fetch.resolves(fetchRes);
+            this.fetchValue.resolves(fetchValueRes);
         }
 
         this.validators.stub = {

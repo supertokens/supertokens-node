@@ -15,7 +15,7 @@
 import { BaseResponse } from "../../framework";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionClaimBuilder, SessionClaimValidator, SessionContainerInterface } from "./types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 import { logDebugMessage } from "../../logger";
 
@@ -153,7 +153,7 @@ export default class Session implements SessionContainerInterface {
             logDebugMessage("Session.validateClaims checking " + validator.validatorTypeId);
             if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
                 logDebugMessage("Session.validateClaims refetching " + validator.validatorTypeId);
-                const value = await validator.claim.fetch(this.getUserId(), userContext);
+                const value = await validator.claim.fetchValue(this.getUserId(), userContext);
                 logDebugMessage(
                     "Session.validateClaims " + validator.validatorTypeId + " refetch res " + JSON.stringify(value)
                 );
@@ -192,18 +192,22 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    applyClaimBuilder = async <T>(claimBuilder: SessionClaimBuilder<T>, userContext?: any) => {
-        const update = await claimBuilder.applyToPayload(this.getUserId(), {}, userContext);
+    applyClaim = async <T>(claim: SessionClaim<T>, userContext?: any) => {
+        const update = await claim.applyToPayload(this.getUserId(), {}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 
-    setClaimValue = <T>(claimBuilder: SessionClaimBuilder<T>, value: T, userContext?: any) => {
-        const update = claimBuilder.addToPayload_internal({}, value, userContext);
+    setClaimValue = <T>(claim: SessionClaim<T>, value: T, userContext?: any) => {
+        const update = claim.addToPayload_internal({}, value, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 
-    removeClaim = (claimBuilder: SessionClaimBuilder<any>, userContext?: any) => {
-        const update = claimBuilder.removeFromPayload({}, userContext);
+    getClaimValue = async <T>(claim: SessionClaim<T>, userContext?: any) => {
+        return claim.getValueFromPayload(await this.getAccessTokenPayload(), userContext);
+    };
+
+    removeClaim = (claim: SessionClaim<any>, userContext?: any) => {
+        const update = claim.removeFromPayload({}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 

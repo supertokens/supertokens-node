@@ -3,7 +3,7 @@ import { VerifySessionOptions, RecipeInterface } from "../";
 import * as faunadb from "faunadb";
 import type { Session as FaunaDBSessionContainer } from "./types";
 import type { BaseRequest, BaseResponse } from "../../../framework";
-import type { SessionClaimBuilder, SessionClaimValidator, SessionInformation } from "../types";
+import type { SessionClaim, SessionClaimValidator, SessionInformation } from "../types";
 export default class RecipeImplementation implements RecipeInterface {
     config: {
         accessFaunadbTokenFromFrontend: boolean;
@@ -28,7 +28,7 @@ export default class RecipeImplementation implements RecipeInterface {
             defaultClaimValidators: SessionClaimValidator[];
             userContext: any;
         }
-    ) => import("../../../types").Awaitable<SessionClaimValidator[]>;
+    ) => SessionClaimValidator[] | Promise<SessionClaimValidator[]>;
     createNewSession: (
         this: RecipeImplementation,
         {
@@ -162,16 +162,8 @@ export default class RecipeImplementation implements RecipeInterface {
             userContext: any;
         }
     ) => Promise<number>;
-    applyClaimBuilder: <T>(input: {
-        sessionHandle: string;
-        claimBuilder: SessionClaimBuilder<T>;
-        userContext?: any;
-    }) => any;
-    setClaimValue: <T>(input: {
-        sessionHandle: string;
-        claimBuilder: SessionClaimBuilder<T>;
-        value: T;
-        userContext?: any;
-    }) => any;
-    removeClaim: (input: { sessionHandle: string; claimBuilder: SessionClaimBuilder<any>; userContext?: any }) => any;
+    applyClaim: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) => any;
+    setClaimValue: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; value: T; userContext?: any }) => any;
+    getClaimValue: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) => any;
+    removeClaim: (input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }) => any;
 }

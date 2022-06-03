@@ -40,18 +40,14 @@ export default class SessionWrapper {
         sessionData: any = {},
         userContext: any = {}
     ) {
-        const defaultClaimBuilders = Recipe.getInstanceOrThrowError().getDefaultClaimBuilders();
+        const defaultClaims = Recipe.getInstanceOrThrowError().getDefaultClaims();
 
         let finalAccessTokenPayload = accessTokenPayload;
 
-        for (const claimBuilder of defaultClaimBuilders) {
-            const value = await claimBuilder.fetch(userId, userContext);
+        for (const claim of defaultClaims) {
+            const value = await claim.fetchValue(userId, userContext);
             if (value !== undefined) {
-                finalAccessTokenPayload = claimBuilder.addToPayload_internal(
-                    finalAccessTokenPayload,
-                    value,
-                    userContext
-                );
+                finalAccessTokenPayload = claim.addToPayload_internal(finalAccessTokenPayload, value, userContext);
             }
         }
 
@@ -208,7 +204,7 @@ export let getJWKS = SessionWrapper.getJWKS;
 
 export let getOpenIdDiscoveryConfiguration = SessionWrapper.getOpenIdDiscoveryConfiguration;
 
-export { SessionClaimBuilder as SessionClaim } from "./types";
+export { SessionClaim } from "./types";
 export { PrimitiveClaim } from "./claimBaseClasses/primitiveClaim";
 export { BooleanClaim } from "./claimBaseClasses/booleanClaim";
 

@@ -16,7 +16,7 @@ import * as JsonWebToken from "jsonwebtoken";
 import * as assert from "assert";
 
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionClaimBuilder, SessionClaimValidator, SessionContainerInterface } from "../types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import { addJWTToAccessTokenPayload } from "./utils";
 
@@ -60,16 +60,20 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         return this.originalSessionClass.assertClaims.bind(this)(claimValidators, userContext);
     }
 
-    applyClaimBuilder = <T>(claimBuilder: SessionClaimBuilder<T>, userContext?: any) => {
-        return this.originalSessionClass.applyClaimBuilder.bind(this)(claimBuilder, userContext);
+    applyClaim = <T>(claim: SessionClaim<T>, userContext?: any) => {
+        return this.originalSessionClass.applyClaim.bind(this)(claim, userContext);
     };
 
-    setClaimValue = <T>(claimBuilder: SessionClaimBuilder<T>, value: T, userContext?: any) => {
-        return this.originalSessionClass.setClaimValue.bind(this)(claimBuilder, value, userContext);
+    setClaimValue = <T>(claim: SessionClaim<T>, value: T, userContext?: any) => {
+        return this.originalSessionClass.setClaimValue.bind(this)(claim, value, userContext);
     };
 
-    removeClaim = (claimBuilder: SessionClaimBuilder<any>, userContext?: any) => {
-        return this.originalSessionClass.removeClaim.bind(this)(claimBuilder, userContext);
+    getClaimValue = <T>(claim: SessionClaim<T>, userContext?: any) => {
+        return this.originalSessionClass.getClaimValue(claim, userContext);
+    };
+
+    removeClaim = (claim: SessionClaim<any>, userContext?: any) => {
+        return this.originalSessionClass.removeClaim.bind(this)(claim, userContext);
     };
 
     mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any): Promise<void> => {

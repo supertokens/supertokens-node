@@ -1,12 +1,12 @@
-import { Awaitable, JSONValue } from "../../../types";
-import { SessionClaimBuilder, SessionClaimValidator } from "../types";
+import { JSONValue } from "../../../types";
+import { SessionClaim, SessionClaimValidator } from "../types";
 
-export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaimBuilder<T> {
+export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T> {
     constructor(key: string) {
         super(key);
     }
 
-    abstract fetch(userId: string, userContext: any): Awaitable<T | undefined>;
+    abstract fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
 
     addToPayload_internal(payload: any, value: T, _userContext: any): any {
         return {
@@ -41,7 +41,7 @@ export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaimBu
                     const isValid = claimVal === val;
                     return isValid
                         ? { isValid: isValid }
-                        : { isValid, reason: { expectedValue: val, actualValue: claimVal } };
+                        : { isValid, reason: { message: "wrong value", expectedValue: val, actualValue: claimVal } };
                 },
             };
         },

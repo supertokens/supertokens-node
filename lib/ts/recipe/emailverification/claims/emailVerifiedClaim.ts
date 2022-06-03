@@ -5,7 +5,7 @@ export class EmailVerifiedClaim extends BooleanClaim {
     constructor(recipeInstance: Recipe) {
         super({
             key: "st-ev",
-            fetch: async (userId, userContext) => {
+            fetchValue: async (userId, userContext) => {
                 // TODO: support multiple auth recipes & split out EmailVerified recipe
                 try {
                     const email = await recipeInstance.config.getEmailForUserId(userId, userContext);

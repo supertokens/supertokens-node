@@ -4,7 +4,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
-import { Awaitable, JSONObject, JSONValue } from "../../types";
+import { JSONObject, JSONValue } from "../../types";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;
@@ -162,11 +162,11 @@ export interface NormalisedErrorHandlers {
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
-    overwriteDefaultValidators?: (
+    overrideGlobalClaimValidators?: (
         session: SessionContainerInterface,
         defaultClaimValidators: SessionClaimValidator[],
         userContext: any
-    ) => SessionClaimValidator[];
+    ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 }
 export declare type RecipeInterface = {
     createNewSession(input: {
@@ -180,7 +180,7 @@ export declare type RecipeInterface = {
         userId: string;
         defaultClaimValidators: SessionClaimValidator[];
         userContext: any;
-    }): Awaitable<SessionClaimValidator[]>;
+    }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
     getSession(input: {
         req: any;
         res: any;
@@ -199,6 +199,9 @@ export declare type RecipeInterface = {
     revokeSession(input: { sessionHandle: string; userContext: any }): Promise<boolean>;
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
     updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<void>;
+    /**
+     * @deprecated Use mergeIntoAccessTokenPayload instead
+     */
     updateAccessTokenPayload(input: {
         sessionHandle: string;
         newAccessTokenPayload: any;
@@ -228,22 +231,19 @@ export declare type RecipeInterface = {
     }>;
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-    applyClaimBuilder<T>(input: {
-        sessionHandle: string;
-        claimBuilder: SessionClaimBuilder<T>;
-        userContext?: any;
-    }): Promise<void>;
+    applyClaim<T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }): Promise<void>;
     setClaimValue<T>(input: {
         sessionHandle: string;
-        claimBuilder: SessionClaimBuilder<T>;
+        claim: SessionClaim<T>;
         value: T;
         userContext?: any;
     }): Promise<void>;
-    removeClaim(input: {
+    getClaimValue<T>(input: {
         sessionHandle: string;
-        claimBuilder: SessionClaimBuilder<any>;
+        claim: SessionClaim<T>;
         userContext?: any;
-    }): Promise<void>;
+    }): Promise<T | undefined>;
+    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
@@ -253,14 +253,18 @@ export interface SessionContainerInterface {
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAccessToken(userContext?: any): string;
+    /**
+     * @deprecated Use mergeIntoAccessTokenPayload instead
+     */
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
     mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
     assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
-    applyClaimBuilder<T>(claimBuilder: SessionClaimBuilder<T>, userContext?: any): Promise<void>;
-    setClaimValue<T>(claimBuilder: SessionClaimBuilder<T>, value: T, userContext?: any): Promise<void>;
-    removeClaim(claimBuilder: SessionClaimBuilder<any>, userContext?: any): Promise<void>;
+    applyClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
+    getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
+    removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
 }
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -309,12 +313,12 @@ export declare type ClaimValidationError = {
 export declare type SessionClaimValidator = (
     | // We split the type like this to express that either both claim and shouldRefetch is defined or neither.
     {
-          claim: SessionClaimBuilder<any>;
+          claim: SessionClaim<any>;
           /**
            * Decides if we need to refetch the claim value before checking the payload with `isValid`.
            * E.g.: if the information in the payload is expired, or is not sufficient for this check.
            */
-          shouldRefetch: (payload: any, userContext: any) => Awaitable<boolean>;
+          shouldRefetch: (payload: any, userContext: any) => Promise<boolean> | boolean;
       }
     | {}
 ) & {
@@ -322,9 +326,9 @@ export declare type SessionClaimValidator = (
     /**
      * Decides if the claim is valid based on the payload (and not checking DB or anything else)
      */
-    validate: (payload: any, userContext: any) => Awaitable<ClaimValidationResult>;
+    validate: (payload: any, userContext: any) => Promise<ClaimValidationResult> | ClaimValidationResult;
 };
-export declare abstract class SessionClaimBuilder<T> {
+export declare abstract class SessionClaim<T> {
     readonly key: string;
     constructor(key: string);
     /**
@@ -332,7 +336,7 @@ export declare abstract class SessionClaimBuilder<T> {
      * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
-    abstract fetch(userId: string, userContext: any): Awaitable<T | undefined>;
+    abstract fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
     /**
      * Saves the provided value into the payload, by cloning and updating the entire object.
      *
@@ -345,5 +349,11 @@ export declare abstract class SessionClaimBuilder<T> {
      * @returns The modified payload object
      */
     abstract removeFromPayload(payload: JSONObject, userContext: any): JSONObject;
+    /**
+     * Removes the claim from the payload, by cloning and updating the entire object.
+     *
+     * @returns The modified payload object
+     */
+    abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
     applyToPayload(userId: string, payload: JSONObject, userContext?: any): Promise<JSONObject>;
 }

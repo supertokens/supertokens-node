@@ -89,32 +89,6 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                                         ...defaultClaimValidators,
                                         TrueClaim.validators.hasValue(true),
                                     ],
-                                    // getSession: (input) => {
-                                    //     if (input.options === undefined) {
-                                    //         input.options = {};
-                                    //     }
-                                    //     if (input.options.overwriteDefaultValidators === undefined) {
-                                    //         input.options.overwriteDefaultValidators = (
-                                    //             _session,
-                                    //             defaultClaimValidators
-                                    //         ) => [...defaultClaimValidators, TrueClaim.validators.hasValue(true)];
-                                    //     } else {
-                                    //         input.options.overwriteDefaultValidators = (
-                                    //             session,
-                                    //             defaultClaimValidators,
-                                    //             ctx
-                                    //         ) => [
-                                    //             ...input.options.overwriteDefaultValidators(
-                                    //                 session,
-                                    //                 defaultClaimValidators,
-                                    //                 ctx
-                                    //             ),
-                                    //             TrueClaim.validators.hasValue(true),
-                                    //         ];
-                                    //     }
-
-                                    //     return oI.getSession(input);
-                                    // },
                                 }),
                             },
                             antiCsrf: "VIA_TOKEN",
@@ -362,7 +336,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
             });
         });
 
-        describe("with overwriteDefaultValidators", () => {
+        describe("with overrideGlobalClaimValidators", () => {
             it("should allow with empty list as override", async function () {
                 await startST();
                 SuperTokens.init({
@@ -393,7 +367,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const app = getTestApp([
                     {
                         path: "/no-claims",
-                        overwriteDefaultValidators: () => [],
+                        overrideGlobalClaimValidators: () => [],
                     },
                 ]);
 
@@ -431,7 +405,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const app = getTestApp([
                     {
                         path: "/refetched-claim",
-                        overwriteDefaultValidators: () => [TrueClaim.validators.hasValue(true)],
+                        overrideGlobalClaimValidators: () => [TrueClaim.validators.hasValue(true)],
                     },
                 ]);
 
@@ -469,7 +443,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const app = getTestApp([
                     {
                         path: "/refetched-claim",
-                        overwriteDefaultValidators: () => [TrueClaim.validators.hasValue(false)],
+                        overrideGlobalClaimValidators: () => [TrueClaim.validators.hasValue(false)],
                     },
                 ]);
 
@@ -519,7 +493,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const app = getTestApp([
                     {
                         path: "/refetched-claim",
-                        overwriteDefaultValidators: () => [customValidator],
+                        overrideGlobalClaimValidators: () => [customValidator],
                     },
                 ]);
 
@@ -567,7 +541,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const app = getTestApp([
                     {
                         path: "/refetched-claim",
-                        overwriteDefaultValidators: () => [customValidator],
+                        overrideGlobalClaimValidators: () => [customValidator],
                     },
                 ]);
 
@@ -614,7 +588,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const app = getTestApp([
                     {
                         path: "/refetched-claim",
-                        overwriteDefaultValidators: () => [customValidator],
+                        overrideGlobalClaimValidators: () => [customValidator],
                     },
                 ]);
 
@@ -672,7 +646,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const app = getTestApp([
                     {
                         path: "/refetched-claim",
-                        overwriteDefaultValidators: () => testValidatorArr,
+                        overrideGlobalClaimValidators: () => testValidatorArr,
                     },
                 ]);
 
@@ -718,7 +692,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const app = getTestApp([
                     {
                         path: "/refetched-claim",
-                        overwriteDefaultValidators: () => testValidatorArr,
+                        overrideGlobalClaimValidators: () => testValidatorArr,
                     },
                 ]);
 
@@ -796,8 +770,8 @@ function getTestApp(endpoints) {
     });
 
     if (endpoints !== undefined) {
-        for (const { path, overwriteDefaultValidators } of endpoints) {
-            app.get(path, verifySession({ overwriteDefaultValidators }), async (req, res) => {
+        for (const { path, overrideGlobalClaimValidators } of endpoints) {
+            app.get(path, verifySession({ overrideGlobalClaimValidators }), async (req, res) => {
                 res.status(200).json({ message: req.session.getHandle() });
             });
         }

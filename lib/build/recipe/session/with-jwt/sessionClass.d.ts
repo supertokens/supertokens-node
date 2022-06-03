@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionClaimBuilder, SessionClaimValidator, SessionContainerInterface } from "../types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
 export default class SessionClassWithJWT implements SessionContainerInterface {
     private openIdRecipeImplementation;
     private originalSessionClass;
@@ -15,9 +15,10 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     getTimeCreated: (userContext?: any) => Promise<number>;
     getExpiry: (userContext?: any) => Promise<number>;
     assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
-    applyClaimBuilder: <T>(claimBuilder: SessionClaimBuilder<T>, userContext?: any) => Promise<void>;
-    setClaimValue: <T>(claimBuilder: SessionClaimBuilder<T>, value: T, userContext?: any) => Promise<void>;
-    removeClaim: (claimBuilder: SessionClaimBuilder<any>, userContext?: any) => Promise<void>;
+    applyClaim: <T>(claim: SessionClaim<T>, userContext?: any) => Promise<void>;
+    setClaimValue: <T>(claim: SessionClaim<T>, value: T, userContext?: any) => Promise<void>;
+    getClaimValue: <T>(claim: SessionClaim<T>, userContext?: any) => Promise<T | undefined>;
+    removeClaim: (claim: SessionClaim<any>, userContext?: any) => Promise<void>;
     mergeIntoAccessTokenPayload: (accessTokenPayloadUpdate: any, userContext?: any) => Promise<void>;
     /**
      * @deprecated use mergeIntoAccessTokenPayload instead

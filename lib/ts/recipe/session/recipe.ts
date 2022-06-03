@@ -21,7 +21,7 @@ import {
     APIInterface,
     VerifySessionOptions,
     SessionClaimValidator,
-    SessionClaimBuilder,
+    SessionClaim,
 } from "./types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -54,7 +54,7 @@ export default class SessionRecipe extends RecipeModule {
     apiImpl: APIInterface;
 
     isInServerlessEnv: boolean;
-    defaultClaimsBuilders: SessionClaimBuilder<any>[] = [];
+    defaultClaims: SessionClaim<any>[] = [];
     defaultClaimValidators: SessionClaimValidator[] = [];
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
@@ -240,19 +240,19 @@ export default class SessionRecipe extends RecipeModule {
         });
     };
 
-    addDefaultClaimBuilder = (builder: SessionClaimBuilder<any>) => {
-        this.defaultClaimsBuilders.push(builder);
+    addDefaultClaim = (builder: SessionClaim<any>) => {
+        this.defaultClaims.push(builder);
     };
 
-    getDefaultClaimBuilders = (): SessionClaimBuilder<any>[] => {
-        return this.defaultClaimsBuilders;
+    getDefaultClaims = (): SessionClaim<any>[] => {
+        return this.defaultClaims;
     };
 
     addDefaultClaimValidator = (builder: SessionClaimValidator) => {
         this.defaultClaimValidators.push(builder);
     };
 
-    getGlobalClaimValidators = (): SessionClaimValidator[] => {
+    getDefaultClaimValidators = (): SessionClaimValidator[] => {
         return this.defaultClaimValidators;
     };
 }

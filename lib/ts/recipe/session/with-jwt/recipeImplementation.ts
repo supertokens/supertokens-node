@@ -194,6 +194,7 @@ export default function (
             userContext: any;
         }) {
             let sessionInformation = await this.getSessionInformation({ sessionHandle, userContext });
+
             let newAccessTokenPayload = { ...sessionInformation.accessTokenPayload, ...accessTokenPayloadUpdate };
             for (const key of Object.keys(accessTokenPayloadUpdate)) {
                 if (accessTokenPayloadUpdate[key] === null) {

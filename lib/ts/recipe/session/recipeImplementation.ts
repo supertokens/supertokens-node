@@ -6,7 +6,7 @@ import {
     KeyInfo,
     AntiCsrfType,
     SessionClaimValidator,
-    SessionClaimBuilder,
+    SessionClaim,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -239,17 +239,15 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     res
                 );
 
-                const defaultClaimValidators = SessionRecipe.getInstanceOrThrowError().getGlobalClaimValidators();
-                const globalClaimValidators = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
-                    {
-                        userId: response.session.userId,
-                        defaultClaimValidators,
-                        userContext,
-                    }
-                );
+                const defaultClaimValidators = SessionRecipe.getInstanceOrThrowError().getDefaultClaimValidators();
+                const globalClaimValidators: SessionClaimValidator[] = await this.getGlobalClaimValidators({
+                    userId: response.session.userId,
+                    defaultClaimValidators,
+                    userContext,
+                });
                 const reqClaimsValidators =
-                    options?.overwriteDefaultValidators !== undefined
-                        ? options.overwriteDefaultValidators(session, globalClaimValidators, userContext)
+                    options?.overrideGlobalClaimValidators !== undefined
+                        ? await options.overrideGlobalClaimValidators(session, globalClaimValidators, userContext)
                         : globalClaimValidators;
 
                 logDebugMessage(
@@ -417,7 +415,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             sessionHandle: string;
             accessTokenPayloadUpdate: JSONObject;
         }) {
-            const sessionInfo = await SessionFunctions.getSessionInformation(helpers, sessionHandle);
+            const sessionInfo = await this.getSessionInformation(helpers, sessionHandle);
             const updatedPayload = { ...sessionInfo.accessTokenPayload, ...accessTokenPayloadUpdate };
             for (const key of Object.keys(accessTokenPayloadUpdate)) {
                 if (accessTokenPayloadUpdate[key] === null) {
@@ -435,12 +433,10 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return (await getHandshakeInfo()).refreshTokenValidity;
         },
 
-        applyClaimBuilder: function <T>(input: {
-            sessionHandle: string;
-            claimBuilder: SessionClaimBuilder<T>;
-            userContext?: any;
-        }) {
-            const accessTokenPayloadUpdate = input.claimBuilder.applyToPayload(this.getUserId(), {}, input.userContext);
+        applyClaim: async function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
+            // TODO: maybe get userId from input? we are fetching session info twice :/
+            const sessionInfo = await this.getSessionInformation(helpers, input.sessionHandle);
+            const accessTokenPayloadUpdate = input.claim.applyToPayload(sessionInfo.userId, {}, input.userContext);
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
@@ -450,15 +446,11 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
 
         setClaimValue: function <T>(input: {
             sessionHandle: string;
-            claimBuilder: SessionClaimBuilder<T>;
+            claim: SessionClaim<T>;
             value: T;
             userContext?: any;
         }) {
-            const accessTokenPayloadUpdate = input.claimBuilder.addToPayload_internal(
-                {},
-                input.value,
-                input.userContext
-            );
+            const accessTokenPayloadUpdate = input.claim.addToPayload_internal({}, input.value, input.userContext);
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
@@ -466,12 +458,12 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             });
         },
 
-        removeClaim: function (input: {
-            sessionHandle: string;
-            claimBuilder: SessionClaimBuilder<any>;
-            userContext?: any;
-        }) {
-            const accessTokenPayloadUpdate = input.claimBuilder.removeFromPayload({}, input.userContext);
+        getClaimValue: async function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
+            return input.claim.getValueFromPayload(await this.getAccessTokenPayload(), input.userContext);
+        },
+
+        removeClaim: function (input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }) {
+            const accessTokenPayloadUpdate = input.claim.removeFromPayload({}, input.userContext);
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,

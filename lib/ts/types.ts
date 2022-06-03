@@ -59,8 +59,6 @@ export type APIHandled = {
 
 export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
 
-export type Awaitable<T> = Promise<T> | T;
-
 export type JSONPrimitive = string | number | boolean | null;
 export type JSONArray = Array<JSONPrimitive>;
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray | undefined;
