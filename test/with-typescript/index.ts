@@ -10,6 +10,20 @@ let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import Passwordless from "../../recipe/passwordless";
 import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
+import UserMetadata from "../../recipe/usermetadata";
+
+UserMetadata.updateUserMetadata("...", {
+    firstName: "..",
+    someObj: {
+        someKey: "...",
+        someArr: ["hello"],
+    },
+});
+
+UserMetadata.getUserMetadata("xyz").then((data) => {
+    let firstName: string = data.metadata.firstName;
+    console.log(firstName);
+});
 
 ThirdPartyPasswordless.init({
     providers: [
