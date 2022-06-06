@@ -20,6 +20,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
+import { APIResponseGeneralError } from "../../types";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -215,10 +216,13 @@ export declare type APIInterface = {
               email: string;
               options: EmailPasswordAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | APIResponseGeneralError
+          >);
     generatePasswordResetTokenPOST:
         | undefined
         | ((input: {
@@ -228,9 +232,12 @@ export declare type APIInterface = {
               }[];
               options: EmailPasswordAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | APIResponseGeneralError
+          >);
     passwordResetPOST:
         | undefined
         | ((input: {
@@ -249,6 +256,7 @@ export declare type APIInterface = {
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
+              | APIResponseGeneralError
           >);
     thirdPartySignInUpPOST:
         | undefined
@@ -294,6 +302,7 @@ export declare type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
+              | APIResponseGeneralError
           >);
     emailPasswordSignUpPOST:
         | undefined
@@ -313,6 +322,7 @@ export declare type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
+              | APIResponseGeneralError
           >);
     appleRedirectHandlerPOST:
         | undefined

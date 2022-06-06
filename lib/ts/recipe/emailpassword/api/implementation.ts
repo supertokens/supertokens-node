@@ -2,6 +2,8 @@ import { APIInterface, APIOptions, User } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
+import { APIResponseGeneralError } from "../../../types";
+import { convertToAPIResponseGeneralError } from "../../../utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -13,10 +15,13 @@ export default function getAPIImplementation(): APIInterface {
             email: string;
             options: APIOptions;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-            exists: boolean;
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  exists: boolean;
+              }
+            | APIResponseGeneralError
+        > {
             let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
 
             return {
@@ -35,9 +40,12 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             options: APIOptions;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+              }
+            | APIResponseGeneralError
+        > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
 
             let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
@@ -66,12 +74,16 @@ export default function getAPIImplementation(): APIInterface {
                 options.recipeId;
 
             logDebugMessage(`Sending password reset email to ${email}`);
-            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                type: "PASSWORD_RESET",
-                user,
-                passwordResetLink,
-                userContext,
-            });
+            try {
+                await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                    type: "PASSWORD_RESET",
+                    user,
+                    passwordResetLink,
+                    userContext,
+                });
+            } catch (err) {
+                return convertToAPIResponseGeneralError(err);
+            }
 
             return {
                 status: "OK",
@@ -100,6 +112,7 @@ export default function getAPIImplementation(): APIInterface {
                   userId?: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+            | APIResponseGeneralError
         > {
             let newPassword = formFields.filter((f) => f.id === "password")[0].value;
 
@@ -131,6 +144,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "WRONG_CREDENTIALS_ERROR";
               }
+            | APIResponseGeneralError
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
@@ -168,6 +182,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
+            | APIResponseGeneralError
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;

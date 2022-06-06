@@ -20,6 +20,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { APIResponseGeneralError } from "../../types";
 
 export type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
@@ -107,7 +108,7 @@ export type APIInterface = {
           }) => Promise<
               | { status: "OK"; user: User }
               | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
-              | { status: "GENERAL_ERROR"; message: string }
+              | APIResponseGeneralError
           >);
 
     isEmailVerifiedGET:
@@ -120,7 +121,7 @@ export type APIInterface = {
                     status: "OK";
                     isVerified: boolean;
                 }
-              | { status: "GENERAL_ERROR"; message: string }
+              | APIResponseGeneralError
           >);
 
     generateEmailVerifyTokenPOST:
@@ -128,9 +129,7 @@ export type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<
-              { status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" } | { status: "GENERAL_ERROR"; message: string }
-          >);
+          }) => Promise<{ status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" } | APIResponseGeneralError>);
 };
 
 export type TypeEmailVerificationEmailDeliveryInput = {

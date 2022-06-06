@@ -33,6 +33,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
+import { APIResponseGeneralError } from "../../types";
 
 export type User = {
     id: string;
@@ -217,10 +218,13 @@ export type APIInterface = {
               email: string;
               options: EmailPasswordAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | APIResponseGeneralError
+          >);
 
     generatePasswordResetTokenPOST:
         | undefined
@@ -231,9 +235,12 @@ export type APIInterface = {
               }[];
               options: EmailPasswordAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | APIResponseGeneralError
+          >);
 
     passwordResetPOST:
         | undefined
@@ -253,6 +260,7 @@ export type APIInterface = {
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
+              | APIResponseGeneralError
           >);
 
     thirdPartySignInUpPOST:
@@ -300,6 +308,7 @@ export type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
+              | APIResponseGeneralError
           >);
 
     emailPasswordSignUpPOST:
@@ -320,6 +329,7 @@ export type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
+              | APIResponseGeneralError
           >);
 
     appleRedirectHandlerPOST:

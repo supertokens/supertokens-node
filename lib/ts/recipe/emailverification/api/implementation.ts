@@ -1,6 +1,8 @@
 import { APIInterface, APIOptions, User } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
+import { APIResponseGeneralError } from "../../../types";
+import { convertToAPIResponseGeneralError } from "../../../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -15,7 +17,7 @@ export default function getAPIInterface(): APIInterface {
         }): Promise<
             | { status: "OK"; user: User }
             | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
-            | { status: "GENERAL_ERROR"; message: string }
+            | APIResponseGeneralError
         > {
             return await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
         },
@@ -31,7 +33,7 @@ export default function getAPIInterface(): APIInterface {
                   status: "OK";
                   isVerified: boolean;
               }
-            | { status: "GENERAL_ERROR"; message: string }
+            | APIResponseGeneralError
         > {
             let session = await Session.getSession(options.req, options.res, userContext);
 
@@ -55,7 +57,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | { status: "GENERAL_ERROR"; message: string }> {
+        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | APIResponseGeneralError> {
             let session = await Session.getSession(options.req, options.res, userContext);
 
             if (session === undefined) {
@@ -96,10 +98,7 @@ export default function getAPIInterface(): APIInterface {
                     userContext,
                 });
             } catch (err) {
-                return {
-                    status: "GENERAL_ERROR",
-                    message: (err as any).message,
-                };
+                return convertToAPIResponseGeneralError(err);
             }
 
             return {
