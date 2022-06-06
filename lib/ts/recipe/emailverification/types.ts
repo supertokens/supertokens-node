@@ -104,24 +104,33 @@ export type APIInterface = {
               token: string;
               options: APIOptions;
               userContext: any;
-          }) => Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }>);
+          }) => Promise<
+              | { status: "OK"; user: User }
+              | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
+              | { status: "GENERAL_ERROR"; message: string }
+          >);
 
     isEmailVerifiedGET:
         | undefined
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              isVerified: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    isVerified: boolean;
+                }
+              | { status: "GENERAL_ERROR"; message: string }
+          >);
 
     generateEmailVerifyTokenPOST:
         | undefined
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<{ status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" }>);
+          }) => Promise<
+              { status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" } | { status: "GENERAL_ERROR"; message: string }
+          >);
 };
 
 export type TypeEmailVerificationEmailDeliveryInput = {

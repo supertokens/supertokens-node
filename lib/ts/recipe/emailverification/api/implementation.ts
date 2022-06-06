@@ -12,7 +12,11 @@ export default function getAPIInterface(): APIInterface {
             token: string;
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
+        }): Promise<
+            | { status: "OK"; user: User }
+            | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
+            | { status: "GENERAL_ERROR"; message: string }
+        > {
             return await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
         },
 
@@ -22,10 +26,13 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-            isVerified: boolean;
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  isVerified: boolean;
+              }
+            | { status: "GENERAL_ERROR"; message: string }
+        > {
             let session = await Session.getSession(options.req, options.res, userContext);
 
             if (session === undefined) {
@@ -48,7 +55,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" }> {
+        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | { status: "GENERAL_ERROR"; message: string }> {
             let session = await Session.getSession(options.req, options.res, userContext);
 
             if (session === undefined) {
@@ -78,15 +85,22 @@ export default function getAPIInterface(): APIInterface {
                 options.recipeId;
 
             logDebugMessage(`Sending email verification email to ${email}`);
-            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                type: "EMAIL_VERIFICATION",
-                user: {
-                    id: userId,
-                    email: email,
-                },
-                emailVerifyLink,
-                userContext,
-            });
+            try {
+                await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                    type: "EMAIL_VERIFICATION",
+                    user: {
+                        id: userId,
+                        email: email,
+                    },
+                    emailVerifyLink,
+                    userContext,
+                });
+            } catch (err) {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: (err as any).message,
+                };
+            }
 
             return {
                 status: "OK",
