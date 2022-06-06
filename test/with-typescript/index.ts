@@ -24,6 +24,20 @@ import {
     TwilioService as TwilioServiceP,
     SupertokensService as SupertokensServiceP,
 } from "../../recipe/thirdpartypasswordless/smsdelivery";
+import UserMetadata from "../../recipe/usermetadata";
+
+UserMetadata.updateUserMetadata("...", {
+    firstName: "..",
+    someObj: {
+        someKey: "...",
+        someArr: ["hello"],
+    },
+});
+
+UserMetadata.getUserMetadata("xyz").then((data) => {
+    let firstName: string = data.metadata.firstName;
+    console.log(firstName);
+});
 
 ThirdPartyPasswordless.init({
     providers: [

@@ -8,7 +8,7 @@ export default class Wrapper {
         userContext?: any
     ): Promise<{
         status: "OK";
-        metadata: JSONObject;
+        metadata: any;
     }>;
     static updateUserMetadata(
         userId: string,
