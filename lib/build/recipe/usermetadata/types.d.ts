@@ -31,7 +31,7 @@ export declare type RecipeInterface = {
         userContext: any;
     }) => Promise<{
         status: "OK";
-        metadata: JSONObject;
+        metadata: any;
     }>;
     /**
      * Updates the metadata object of the user by doing a shallow merge of the stored and the update JSONs

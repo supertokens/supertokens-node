@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [9.2.3] - 2022-06-03
+
+-   Changes `getUserMetadata` to return `any` type for metadata so that it's easier to use.
+
 ## [9.2.2] - 2022-05-24
 
 ### Fixes:
