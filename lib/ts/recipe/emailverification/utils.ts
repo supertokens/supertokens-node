@@ -16,10 +16,8 @@
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo } from "../../types";
-import {
-    getEmailVerificationURL as defaultGetEmailVerificationURL,
-    createAndSendCustomEmail as defaultCreateAndSendCustomVerificationEmail,
-} from "./emailVerificationFunctions";
+import { getEmailVerificationURL as defaultGetEmailVerificationURL } from "./emailVerificationFunctions";
+import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     _: Recipe,
@@ -31,11 +29,6 @@ export function validateAndNormaliseUserInput(
             ? defaultGetEmailVerificationURL(appInfo)
             : config.getEmailVerificationURL;
 
-    let createAndSendCustomEmail =
-        config.createAndSendCustomEmail === undefined
-            ? defaultCreateAndSendCustomVerificationEmail(appInfo)
-            : config.createAndSendCustomEmail;
-
     let getEmailForUserId = config.getEmailForUserId;
 
     let override = {
@@ -44,10 +37,42 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
+    function getEmailDeliveryConfig(isInServerlessEnv: boolean) {
+        let emailService = config.emailDelivery?.service;
+        /**
+         * following code is for backward compatibility.
+         * if user has not passed emailDelivery config, we
+         * use the createAndSendCustomEmail config. If the user
+         * has not passed even that config, we use the default
+         * createAndSendCustomEmail implementation which calls our supertokens API
+         */
+        if (emailService === undefined) {
+            emailService = new BackwardCompatibilityService(
+                appInfo,
+                isInServerlessEnv,
+                config.createAndSendCustomEmail
+            );
+        }
+        return {
+            ...config.emailDelivery,
+            /**
+             * if we do
+             * let emailDelivery = {
+             *    service: emailService,
+             *    ...config.emailDelivery,
+             * };
+             *
+             * and if the user has passed service as undefined,
+             * it it again get set to undefined, so we
+             * set service at the end
+             */
+            service: emailService,
+        };
+    }
     return {
         getEmailForUserId,
         getEmailVerificationURL,
-        createAndSendCustomEmail,
         override,
+        getEmailDeliveryConfig,
     };
 }

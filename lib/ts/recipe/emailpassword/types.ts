@@ -21,10 +21,20 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInputWithService<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -48,6 +58,9 @@ export type TypeNormalisedInput = {
 
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 
@@ -79,12 +92,14 @@ export type TypeNormalisedInputSignIn = {
 
 export type TypeInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
 
 export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL: (user: User, userContext: any) => Promise<string>;
-    createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
@@ -97,6 +112,7 @@ export type User = {
 
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
+    emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -172,6 +188,7 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
+    emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput>;
 };
 
 export type APIInterface = {
@@ -259,3 +276,17 @@ export type APIInterface = {
                 }
           >);
 };
+
+export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
+    type: "PASSWORD_RESET";
+    user: {
+        id: string;
+        email: string;
+    };
+    passwordResetLink: string;
+    userContext: any;
+};
+
+export type TypeEmailPasswordEmailDeliveryInput =
+    | TypeEmailPasswordPasswordResetEmailDeliveryInput
+    | TypeEmailVerificationEmailDeliveryInput;

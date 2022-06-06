@@ -6,6 +6,8 @@ import EmailVerificationRecipe from "../emailverification/recipe";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { TypeThirdPartyEmailDeliveryInput } from "./types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -15,6 +17,7 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
+    emailDelivery: EmailDeliveryIngredient<TypeThirdPartyEmailDeliveryInput>;
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
@@ -22,6 +25,9 @@ export default class Recipe extends RecipeModule {
         config: TypeInput,
         recipes: {
             emailVerificationInstance: EmailVerificationRecipe | undefined;
+        },
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypeThirdPartyEmailDeliveryInput> | undefined;
         }
     );
     static init(config: TypeInput): RecipeListFunction;

@@ -1,4 +1,5 @@
 import { APIInterface, APIOptions, User } from "../";
+import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 
 export default function getAPIInterface(): APIInterface {
@@ -65,6 +66,7 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+                logDebugMessage(`Email verification email not sent to ${email} because it is already verified.`);
                 return response;
             }
 
@@ -75,16 +77,16 @@ export default function getAPIInterface(): APIInterface {
                 "&rid=" +
                 options.recipeId;
 
-            try {
-                if (!options.isInServerlessEnv) {
-                    options.config
-                        .createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext)
-                        .catch((_) => {});
-                } else {
-                    // see https://github.com/supertokens/supertokens-node/pull/135
-                    await options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext);
-                }
-            } catch (_) {}
+            logDebugMessage(`Sending email verification email to ${email}`);
+            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                type: "EMAIL_VERIFICATION",
+                user: {
+                    id: userId,
+                    email: email,
+                },
+                emailVerifyLink,
+                userContext,
+            });
 
             return {
                 status: "OK",

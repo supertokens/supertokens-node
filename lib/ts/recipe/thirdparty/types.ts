@@ -22,6 +22,11 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 
 export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
 
@@ -62,6 +67,9 @@ export type User = {
 
 export type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 
@@ -75,6 +83,7 @@ export type TypeNormalisedInputSignInAndUp = {
 
 export type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
+    emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (
@@ -96,6 +105,10 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailDeliveryInput>;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -198,3 +211,5 @@ export type APIInterface = {
         | undefined
         | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
 };
+
+export type TypeThirdPartyEmailDeliveryInput = TypeEmailVerificationEmailDeliveryInput;
