@@ -20,6 +20,7 @@ const {
     killAllST,
     cleanST,
     signUPRequest,
+    signInUPCustomRequest,
     extractInfoFromResponse,
     emailVerifyTokenRequest,
 } = require("../utils");
@@ -33,6 +34,34 @@ const request = require("supertest");
 let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.test.js]")}`, function () {
+    before(function () {
+        this.customProvider1 = {
+            id: "custom",
+            get: (recipe, authCode) => {
+                return {
+                    accessTokenAPI: {
+                        url: "https://test.com/oauth/token",
+                    },
+                    authorisationRedirect: {
+                        url: "https://test.com/oauth/auth",
+                    },
+                    getProfileInfo: async (authCodeResponse) => {
+                        return {
+                            id: authCodeResponse.id,
+                            email: {
+                                id: authCodeResponse.email,
+                                isVerified: false,
+                            },
+                        };
+                    },
+                    getClientId: () => {
+                        return "supertokens";
+                    },
+                };
+            },
+        };
+    });
+
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -215,6 +244,68 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         app.use(errorHandler());
 
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert(JSON.parse(response.text).status === "OK");
+        assert(response.status === 200);
+
+        let userId = JSON.parse(response.text).user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+
+        let response2 = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
+
+        assert(response2.status === 200);
+
+        assert(JSON.parse(response2.text).status === "OK");
+        assert(Object.keys(JSON.parse(response2.text)).length === 1);
+
+        assert(userInfo.id === userId);
+        assert(userInfo.email === "test@gmail.com");
+        assert(emailToken !== null);
+    });
+
+    it("test that providing your own email callback and make sure it is called (thirdparty user)", async function () {
+        await startST();
+
+        let userInfo = null;
+        let emailToken = null;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    providers: [this.customProvider1],
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                            userInfo = user;
+                            emailToken = emailVerificationURLWithToken;
+                        },
+                    },
+                }),
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signInUPCustomRequest(app, "test@gmail.com", "testPass0");
         assert(JSON.parse(response.text).status === "OK");
         assert(response.status === 200);
 
