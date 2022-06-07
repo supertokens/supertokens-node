@@ -26,6 +26,7 @@ import {
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
+import { APIResponseGeneralError } from "../../types";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 
@@ -356,7 +357,7 @@ export type APIInterface = {
               preAuthSessionId: string;
               flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
           }
-        | { status: "GENERAL_ERROR"; message: string }
+        | APIResponseGeneralError
     >;
 
     resendCodePOST?: (
@@ -364,7 +365,7 @@ export type APIInterface = {
             options: APIOptions;
             userContext: any;
         }
-    ) => Promise<{ status: "GENERAL_ERROR"; message: string } | { status: "RESTART_FLOW_ERROR" | "OK" }>;
+    ) => Promise<APIResponseGeneralError | { status: "RESTART_FLOW_ERROR" | "OK" }>;
 
     consumeCodePOST?: (
         input: (
@@ -393,7 +394,7 @@ export type APIInterface = {
               failedCodeInputAttemptCount: number;
               maximumCodeInputAttempts: number;
           }
-        | { status: "GENERAL_ERROR"; message: string }
+        | APIResponseGeneralError
         | { status: "RESTART_FLOW_ERROR" }
     >;
 
@@ -401,19 +402,25 @@ export type APIInterface = {
         email: string;
         options: APIOptions;
         userContext: any;
-    }) => Promise<{
-        status: "OK";
-        exists: boolean;
-    }>;
+    }) => Promise<
+        | {
+              status: "OK";
+              exists: boolean;
+          }
+        | APIResponseGeneralError
+    >;
 
     phoneNumberExistsGET?: (input: {
         phoneNumber: string;
         options: APIOptions;
         userContext: any;
-    }) => Promise<{
-        status: "OK";
-        exists: boolean;
-    }>;
+    }) => Promise<
+        | {
+              status: "OK";
+              exists: boolean;
+          }
+        | APIResponseGeneralError
+    >;
 };
 
 export type TypePasswordlessEmailDeliveryInput = {

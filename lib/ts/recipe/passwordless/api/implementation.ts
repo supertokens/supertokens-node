@@ -1,6 +1,7 @@
 import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
+import { convertToAPIResponseGeneralError } from "../../../utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -113,10 +114,7 @@ export default function getAPIImplementation(): APIInterface {
                     });
                 }
             } catch (err) {
-                return {
-                    status: "GENERAL_ERROR",
-                    message: (err as any).message,
-                };
+                return convertToAPIResponseGeneralError(err);
             }
 
             return {
@@ -184,10 +182,9 @@ export default function getAPIImplementation(): APIInterface {
                 if (response.status === "USER_INPUT_CODE_ALREADY_USED_ERROR") {
                     if (numberOfTriesToCreateNewCode >= 3) {
                         // we retry 3 times.
-                        return {
-                            status: "GENERAL_ERROR",
-                            message: "Failed to generate a one time code. Please try again",
-                        };
+                        return convertToAPIResponseGeneralError(
+                            new Error("Failed to generate a one time code. Please try again")
+                        );
                     }
                     continue;
                 }
@@ -251,10 +248,7 @@ export default function getAPIImplementation(): APIInterface {
                             });
                         }
                     } catch (err) {
-                        return {
-                            status: "GENERAL_ERROR",
-                            message: (err as any).message,
-                        };
+                        return convertToAPIResponseGeneralError(err);
                     }
                 }
 

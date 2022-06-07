@@ -25,6 +25,7 @@ import {
     TypeInput as SmsDeliveryTypeInput,
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
+import { APIResponseGeneralError } from "../../types";
 export declare type DeviceType = DeviceTypeOriginal;
 export declare type User = (
     | {
@@ -401,10 +402,7 @@ export declare type APIInterface = {
                     preAuthSessionId: string;
                     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
                 }
-              | {
-                    status: "GENERAL_ERROR";
-                    message: string;
-                }
+              | APIResponseGeneralError
           >);
     resendCodePOST:
         | undefined
@@ -417,10 +415,7 @@ export declare type APIInterface = {
                   userContext: any;
               }
           ) => Promise<
-              | {
-                    status: "GENERAL_ERROR";
-                    message: string;
-                }
+              | APIResponseGeneralError
               | {
                     status: "RESTART_FLOW_ERROR" | "OK";
                 }
@@ -454,10 +449,7 @@ export declare type APIInterface = {
                     failedCodeInputAttemptCount: number;
                     maximumCodeInputAttempts: number;
                 }
-              | {
-                    status: "GENERAL_ERROR";
-                    message: string;
-                }
+              | APIResponseGeneralError
               | {
                     status: "RESTART_FLOW_ERROR";
                 }
@@ -468,20 +460,26 @@ export declare type APIInterface = {
               email: string;
               options: PasswordlessAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | APIResponseGeneralError
+          >);
     passwordlessUserPhoneNumberExistsGET:
         | undefined
         | ((input: {
               phoneNumber: string;
               options: PasswordlessAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | APIResponseGeneralError
+          >);
 };
 export declare type TypeThirdPartyPasswordlessEmailDeliveryInput =
     | TypeThirdPartyEmailDeliveryInput
