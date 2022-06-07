@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+-   Adds User Roles recipe
+
 ## [9.2.3] - 2022-06-03
 
 -   Changes `getUserMetadata` to return `any` type for metadata so that it's easier to use.
