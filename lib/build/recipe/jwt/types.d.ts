@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
-import { APIResponseGeneralError } from "../../types";
+import { GeneralErrorResponse } from "../../types";
 export declare type JsonWebKey = {
     kty: string;
     kid: string;
@@ -70,6 +70,6 @@ export declare type APIInterface = {
                     status: "OK";
                     keys: JsonWebKey[];
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 };

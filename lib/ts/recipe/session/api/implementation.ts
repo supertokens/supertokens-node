@@ -3,6 +3,7 @@ import STError from "../error";
 import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
+import { GeneralErrorResponse } from "../../../types";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -56,9 +57,12 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+              }
+            | GeneralErrorResponse
+        > {
             let session;
             try {
                 session = await options.recipeImplementation.getSession({

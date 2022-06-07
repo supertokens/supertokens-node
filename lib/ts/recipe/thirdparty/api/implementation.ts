@@ -4,6 +4,8 @@ import { URLSearchParams } from "url";
 import * as axios from "axios";
 import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
+import { GeneralErrorResponse } from "../../../types";
+import { convertToGeneralErrorResponse } from "../../../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -15,10 +17,13 @@ export default function getAPIInterface(): APIInterface {
             provider: TypeProvider;
             options: APIOptions;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-            url: string;
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  url: string;
+              }
+            | GeneralErrorResponse
+        > {
             let providerInfo = provider.get(undefined, undefined, userContext);
 
             let params: { [key: string]: string } = {};
@@ -89,10 +94,7 @@ export default function getAPIInterface(): APIInterface {
                   authCodeResponse: any;
               }
             | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
-            | {
-                  status: "FIELD_ERROR";
-                  error: string;
-              }
+            | GeneralErrorResponse
         > {
             let userInfo;
             let accessTokenAPIResponse: any;
@@ -140,13 +142,7 @@ export default function getAPIInterface(): APIInterface {
             try {
                 userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data, userContext);
             } catch (err) {
-                if ((err as any).message !== undefined) {
-                    return {
-                        status: "FIELD_ERROR",
-                        error: (err as any).message,
-                    };
-                }
-                throw err;
+                return convertToGeneralErrorResponse(err);
             }
 
             let emailInfo = userInfo.email;
@@ -161,10 +157,6 @@ export default function getAPIInterface(): APIInterface {
                 email: emailInfo,
                 userContext,
             });
-
-            if (response.status === "FIELD_ERROR") {
-                return response;
-            }
 
             // we set the email as verified if already verified by the OAuth provider.
             // This block was added because of https://github.com/supertokens/supertokens-core/issues/295

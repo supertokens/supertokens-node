@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   Adds `{status: "GENERAL_ERROR", message: string}` as a possible output to all the APIs.
     -   Catches error from all email and sms sending services in APIs and returns then as a `GENERAL_ERROR` from the API
     -   Changes `FIELD_ERROR` output status in third party recipe API to be `GENERAL_ERROR`.
+    -   Replaced `FIELD_ERROR` status type in third party signinup API with `GENERAL_ERROR`.
+    -   Removed `FIELD_ERROR` status type from third party signinup recipe function.
 
 ## [unreleased 2]
 

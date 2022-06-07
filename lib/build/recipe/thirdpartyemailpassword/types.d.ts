@@ -20,7 +20,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { APIResponseGeneralError } from "../../types";
+import { GeneralErrorResponse } from "../../types";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -122,17 +122,11 @@ export declare type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
     emailPasswordSignUp(input: {
         email: string;
         password: string;
@@ -206,10 +200,13 @@ export declare type APIInterface = {
               provider: TypeProvider;
               options: ThirdPartyAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
     emailPasswordEmailExistsGET:
         | undefined
         | ((input: {
@@ -221,7 +218,7 @@ export declare type APIInterface = {
                     status: "OK";
                     exists: boolean;
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
     generatePasswordResetTokenPOST:
         | undefined
@@ -236,7 +233,7 @@ export declare type APIInterface = {
               | {
                     status: "OK";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
     passwordResetPOST:
         | undefined
@@ -256,7 +253,7 @@ export declare type APIInterface = {
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
     thirdPartySignInUpPOST:
         | undefined
@@ -276,10 +273,7 @@ export declare type APIInterface = {
                     session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
@@ -302,7 +296,7 @@ export declare type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
     emailPasswordSignUpPOST:
         | undefined
@@ -322,7 +316,7 @@ export declare type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
     appleRedirectHandlerPOST:
         | undefined

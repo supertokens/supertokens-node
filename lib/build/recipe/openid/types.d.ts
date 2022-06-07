@@ -4,7 +4,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLDomain from "../../normalisedURLDomain";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface, JsonWebKey } from "../jwt/types";
-import { APIResponseGeneralError } from "../../types";
+import { GeneralErrorResponse } from "../../types";
 export declare type TypeInput = {
     issuer?: string;
     jwtValiditySeconds?: number;
@@ -67,7 +67,7 @@ export declare type APIInterface = {
                     issuer: string;
                     jwks_uri: string;
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 };
 export declare type RecipeInterface = {

@@ -38,7 +38,7 @@ import {
     TypeInput as SmsDeliveryTypeInput,
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
-import { APIResponseGeneralError } from "../../types";
+import { GeneralErrorResponse } from "../../types";
 
 export type DeviceType = DeviceTypeOriginal;
 
@@ -284,13 +284,7 @@ export type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | { status: "OK"; createdNewUser: boolean; user: User }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
 
     createCode: (
         input: (
@@ -409,10 +403,13 @@ export type APIInterface = {
               provider: TypeProvider;
               options: ThirdPartyAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
 
     thirdPartySignInUpPOST:
         | undefined
@@ -432,10 +429,7 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
@@ -459,7 +453,7 @@ export type APIInterface = {
                     preAuthSessionId: string;
                     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     resendCodePOST:
@@ -469,7 +463,7 @@ export type APIInterface = {
                   options: PasswordlessAPIOptions;
                   userContext: any;
               }
-          ) => Promise<APIResponseGeneralError | { status: "RESTART_FLOW_ERROR" | "OK" }>);
+          ) => Promise<GeneralErrorResponse | { status: "RESTART_FLOW_ERROR" | "OK" }>);
 
     consumeCodePOST:
         | undefined
@@ -500,7 +494,7 @@ export type APIInterface = {
                     failedCodeInputAttemptCount: number;
                     maximumCodeInputAttempts: number;
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
               | { status: "RESTART_FLOW_ERROR" }
           >);
 
@@ -515,7 +509,7 @@ export type APIInterface = {
                     status: "OK";
                     exists: boolean;
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     passwordlessUserPhoneNumberExistsGET:
@@ -529,7 +523,7 @@ export type APIInterface = {
                     status: "OK";
                     exists: boolean;
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 };
 

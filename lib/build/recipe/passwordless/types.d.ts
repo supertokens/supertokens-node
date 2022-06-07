@@ -12,7 +12,7 @@ import {
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { APIResponseGeneralError } from "../../types";
+import { GeneralErrorResponse } from "../../types";
 export declare type User = {
     id: string;
     email?: string;
@@ -294,7 +294,7 @@ export declare type APIInterface = {
               preAuthSessionId: string;
               flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
           }
-        | APIResponseGeneralError
+        | GeneralErrorResponse
     >;
     resendCodePOST?: (
         input: {
@@ -305,7 +305,7 @@ export declare type APIInterface = {
             userContext: any;
         }
     ) => Promise<
-        | APIResponseGeneralError
+        | GeneralErrorResponse
         | {
               status: "RESTART_FLOW_ERROR" | "OK";
           }
@@ -337,7 +337,7 @@ export declare type APIInterface = {
               failedCodeInputAttemptCount: number;
               maximumCodeInputAttempts: number;
           }
-        | APIResponseGeneralError
+        | GeneralErrorResponse
         | {
               status: "RESTART_FLOW_ERROR";
           }
@@ -351,7 +351,7 @@ export declare type APIInterface = {
               status: "OK";
               exists: boolean;
           }
-        | APIResponseGeneralError
+        | GeneralErrorResponse
     >;
     phoneNumberExistsGET?: (input: {
         phoneNumber: string;
@@ -362,7 +362,7 @@ export declare type APIInterface = {
               status: "OK";
               exists: boolean;
           }
-        | APIResponseGeneralError
+        | GeneralErrorResponse
     >;
 };
 export declare type TypePasswordlessEmailDeliveryInput = {

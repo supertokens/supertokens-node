@@ -27,6 +27,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
+import { GeneralErrorResponse } from "../../types";
 
 export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
 
@@ -149,13 +150,7 @@ export type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | { status: "OK"; createdNewUser: boolean; user: User }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
 };
 
 export type APIOptions = {
@@ -177,10 +172,13 @@ export type APIInterface = {
               provider: TypeProvider;
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
 
     signInUpPOST:
         | undefined
@@ -201,10 +199,7 @@ export type APIInterface = {
                     authCodeResponse: any;
                 }
               | { status: "NO_EMAIL_GIVEN_BY_PROVIDER" }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
+              | GeneralErrorResponse
           >);
 
     appleRedirectHandlerPOST:

@@ -13,6 +13,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
+import { GeneralErrorResponse } from "../../types";
 export declare type UserInfo = {
     id: string;
     email?: {
@@ -131,17 +132,11 @@ export declare type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -161,10 +156,13 @@ export declare type APIInterface = {
               provider: TypeProvider;
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
     signInUpPOST:
         | undefined
         | ((input: {
@@ -186,10 +184,7 @@ export declare type APIInterface = {
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
+              | GeneralErrorResponse
           >);
     appleRedirectHandlerPOST:
         | undefined

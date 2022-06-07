@@ -33,7 +33,7 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { APIResponseGeneralError } from "../../types";
+import { GeneralErrorResponse } from "../../types";
 
 export type User = {
     id: string;
@@ -148,13 +148,7 @@ export type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | { status: "OK"; createdNewUser: boolean; user: User }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }>;
 
     emailPasswordSignUp(input: {
         email: string;
@@ -207,10 +201,13 @@ export type APIInterface = {
               provider: TypeProvider;
               options: ThirdPartyAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
 
     emailPasswordEmailExistsGET:
         | undefined
@@ -223,7 +220,7 @@ export type APIInterface = {
                     status: "OK";
                     exists: boolean;
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     generatePasswordResetTokenPOST:
@@ -239,7 +236,7 @@ export type APIInterface = {
               | {
                     status: "OK";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     passwordResetPOST:
@@ -260,7 +257,7 @@ export type APIInterface = {
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     thirdPartySignInUpPOST:
@@ -281,10 +278,7 @@ export type APIInterface = {
                     session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
@@ -308,7 +302,7 @@ export type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     emailPasswordSignUpPOST:
@@ -329,7 +323,7 @@ export type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     appleRedirectHandlerPOST:

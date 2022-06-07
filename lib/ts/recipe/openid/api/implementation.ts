@@ -13,7 +13,7 @@
  * under the License.
  */
 import { APIInterface, APIOptions } from "../types";
-import { APIResponseGeneralError } from "../../../types";
+import { GeneralErrorResponse } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -23,7 +23,7 @@ export default function getAPIImplementation(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK"; issuer: string; jwks_uri: string } | APIResponseGeneralError> {
+        }): Promise<{ status: "OK"; issuer: string; jwks_uri: string } | GeneralErrorResponse> {
             return await options.recipeImplementation.getOpenIdDiscoveryConfiguration({ userContext });
         },
     };

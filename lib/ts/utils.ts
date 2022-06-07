@@ -4,7 +4,7 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
-import { APIResponseGeneralError } from "./types";
+import { GeneralErrorResponse } from "./types";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -122,9 +122,12 @@ export function humaniseMilliseconds(ms: number): string {
     }
 }
 
-export function convertToAPIResponseGeneralError(err: any): APIResponseGeneralError {
+export function convertToGeneralErrorResponse(err: any): GeneralErrorResponse {
+    if (err.message === undefined) {
+        throw err;
+    }
     return {
         status: "GENERAL_ERROR",
-        message: err.message !== undefined ? err.message : "Something went wrong",
+        message: err.message,
     };
 }

@@ -1,8 +1,8 @@
 import { APIInterface, APIOptions, User } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
-import { APIResponseGeneralError } from "../../../types";
-import { convertToAPIResponseGeneralError } from "../../../utils";
+import { GeneralErrorResponse } from "../../../types";
+import { convertToGeneralErrorResponse } from "../../../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -15,9 +15,7 @@ export default function getAPIInterface(): APIInterface {
             options: APIOptions;
             userContext: any;
         }): Promise<
-            | { status: "OK"; user: User }
-            | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }
-            | APIResponseGeneralError
+            { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
         > {
             return await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
         },
@@ -33,7 +31,7 @@ export default function getAPIInterface(): APIInterface {
                   status: "OK";
                   isVerified: boolean;
               }
-            | APIResponseGeneralError
+            | GeneralErrorResponse
         > {
             let session = await Session.getSession(options.req, options.res, userContext);
 
@@ -57,7 +55,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | APIResponseGeneralError> {
+        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
             let session = await Session.getSession(options.req, options.res, userContext);
 
             if (session === undefined) {
@@ -98,7 +96,7 @@ export default function getAPIInterface(): APIInterface {
                     userContext,
                 });
             } catch (err) {
-                return convertToAPIResponseGeneralError(err);
+                return convertToGeneralErrorResponse(err);
             }
 
             return {

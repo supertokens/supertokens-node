@@ -27,7 +27,7 @@ import {
 } from "../../ingredients/emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { APIResponseGeneralError } from "../../types";
+import { GeneralErrorResponse } from "../../types";
 
 export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
@@ -204,7 +204,7 @@ export type APIInterface = {
                     status: "OK";
                     exists: boolean;
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     generatePasswordResetTokenPOST:
@@ -220,7 +220,7 @@ export type APIInterface = {
               | {
                     status: "OK";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     passwordResetPOST:
@@ -241,7 +241,7 @@ export type APIInterface = {
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     signInPOST:
@@ -262,7 +262,7 @@ export type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 
     signUpPOST:
@@ -283,7 +283,7 @@ export type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
-              | APIResponseGeneralError
+              | GeneralErrorResponse
           >);
 };
 

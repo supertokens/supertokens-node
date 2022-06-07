@@ -26,7 +26,7 @@ import {
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { APIResponseGeneralError } from "../../types";
+import { GeneralErrorResponse } from "../../types";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 
@@ -357,7 +357,7 @@ export type APIInterface = {
               preAuthSessionId: string;
               flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
           }
-        | APIResponseGeneralError
+        | GeneralErrorResponse
     >;
 
     resendCodePOST?: (
@@ -365,7 +365,7 @@ export type APIInterface = {
             options: APIOptions;
             userContext: any;
         }
-    ) => Promise<APIResponseGeneralError | { status: "RESTART_FLOW_ERROR" | "OK" }>;
+    ) => Promise<GeneralErrorResponse | { status: "RESTART_FLOW_ERROR" | "OK" }>;
 
     consumeCodePOST?: (
         input: (
@@ -394,7 +394,7 @@ export type APIInterface = {
               failedCodeInputAttemptCount: number;
               maximumCodeInputAttempts: number;
           }
-        | APIResponseGeneralError
+        | GeneralErrorResponse
         | { status: "RESTART_FLOW_ERROR" }
     >;
 
@@ -407,7 +407,7 @@ export type APIInterface = {
               status: "OK";
               exists: boolean;
           }
-        | APIResponseGeneralError
+        | GeneralErrorResponse
     >;
 
     phoneNumberExistsGET?: (input: {
@@ -419,7 +419,7 @@ export type APIInterface = {
               status: "OK";
               exists: boolean;
           }
-        | APIResponseGeneralError
+        | GeneralErrorResponse
     >;
 };
 

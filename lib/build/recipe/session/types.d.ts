@@ -4,6 +4,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
+import { GeneralErrorResponse } from "../../types";
 export declare type KeyInfo = {
     publicKey: string;
     expiryTime: number;
@@ -227,15 +228,23 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
+    /**
+     * We do not add a GeneralErrorResponse response to this API
+     * since it's not something that is directly called by the user on the
+     * frontend anyway
+     */
     refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<void>);
     signOutPOST:
         | undefined
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
         options: APIOptions;

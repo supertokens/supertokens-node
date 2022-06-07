@@ -59,7 +59,7 @@ export type APIHandled = {
 
 export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
 
-export type APIResponseGeneralError = {
+export type GeneralErrorResponse = {
     status: "GENERAL_ERROR";
     message: string;
 };

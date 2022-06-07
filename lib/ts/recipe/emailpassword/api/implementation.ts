@@ -2,8 +2,8 @@ import { APIInterface, APIOptions, User } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
-import { APIResponseGeneralError } from "../../../types";
-import { convertToAPIResponseGeneralError } from "../../../utils";
+import { GeneralErrorResponse } from "../../../types";
+import { convertToGeneralErrorResponse } from "../../../utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -20,7 +20,7 @@ export default function getAPIImplementation(): APIInterface {
                   status: "OK";
                   exists: boolean;
               }
-            | APIResponseGeneralError
+            | GeneralErrorResponse
         > {
             let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
 
@@ -44,7 +44,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "OK";
               }
-            | APIResponseGeneralError
+            | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
 
@@ -82,7 +82,7 @@ export default function getAPIImplementation(): APIInterface {
                     userContext,
                 });
             } catch (err) {
-                return convertToAPIResponseGeneralError(err);
+                return convertToGeneralErrorResponse(err);
             }
 
             return {
@@ -112,7 +112,7 @@ export default function getAPIImplementation(): APIInterface {
                   userId?: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
-            | APIResponseGeneralError
+            | GeneralErrorResponse
         > {
             let newPassword = formFields.filter((f) => f.id === "password")[0].value;
 
@@ -144,7 +144,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "WRONG_CREDENTIALS_ERROR";
               }
-            | APIResponseGeneralError
+            | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
@@ -182,7 +182,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
-            | APIResponseGeneralError
+            | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
