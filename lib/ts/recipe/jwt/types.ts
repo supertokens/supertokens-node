@@ -15,6 +15,7 @@
 
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
+import { APIResponseGeneralError } from "../../types";
 
 export type JsonWebKey = {
     kty: string;
@@ -82,5 +83,8 @@ export type RecipeInterface = {
 export type APIInterface = {
     getJWKSGET:
         | undefined
-        | ((input: { options: APIOptions; userContext: any }) => Promise<{ status: "OK"; keys: JsonWebKey[] }>);
+        | ((input: {
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<{ status: "OK"; keys: JsonWebKey[] } | APIResponseGeneralError>);
 };

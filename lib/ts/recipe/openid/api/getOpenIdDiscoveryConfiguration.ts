@@ -23,11 +23,15 @@ export default async function getOpenIdDiscoveryConfiguration(
         return false;
     }
 
-    options.res.setHeader("Access-Control-Allow-Origin", "*", false);
     let result = await apiImplementation.getOpenIdDiscoveryConfigurationGET({ options, userContext: {} });
-    send200Response(options.res, {
-        issuer: result.issuer,
-        jwks_uri: result.jwks_uri,
-    });
+    if (result.status === "OK") {
+        options.res.setHeader("Access-Control-Allow-Origin", "*", false);
+        send200Response(options.res, {
+            issuer: result.issuer,
+            jwks_uri: result.jwks_uri,
+        });
+    } else {
+        send200Response(options.res, result);
+    }
     return true;
 }
