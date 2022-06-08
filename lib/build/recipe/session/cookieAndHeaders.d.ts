@@ -23,7 +23,7 @@ export declare function attachRefreshTokenToCookie(
     token: string,
     expiry: number
 ): void;
-export declare function setInvalidClaimHeader(response: BaseResponse, validatorTypeId: string): void;
+export declare function setInvalidClaimHeader(response: BaseResponse, errorListJSON: string): void;
 export declare function getAccessTokenFromCookie(req: BaseRequest): string | undefined;
 export declare function getRefreshTokenFromCookie(req: BaseRequest): string | undefined;
 export declare function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined;

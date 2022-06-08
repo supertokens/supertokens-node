@@ -134,13 +134,13 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const session = await createSession(app);
                 const resp = await testGet(app, session, "/default-claims", 403);
 
-                validateErrorResp(resp, [{ validatorTypeId: "st-undef", reason: { expectedValue: true } }]);
+                validateErrorResp(resp, [{ id: "st-undef", reason: { message: "wrong value", expectedValue: true } }]);
             });
 
             it("should allow with custom validator returning true", async function () {
                 await startST();
                 const customValidator = {
-                    validatorTypeId: "testValidatorTypeId",
+                    id: "testid",
                     validate: () => ({ isValid: true }),
                 };
                 SuperTokens.init({
@@ -177,7 +177,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
             it("should reject with custom validator returning false", async function () {
                 await startST();
                 const customValidator = {
-                    validatorTypeId: "testValidatorTypeId",
+                    id: "testid",
                     validate: () => ({ isValid: false, reason: "testReason" }),
                 };
                 SuperTokens.init({
@@ -210,12 +210,12 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const session = await createSession(app);
                 const resp = await testGet(app, session, "/default-claims", 403);
 
-                validateErrorResp(resp, [{ validatorTypeId: "testValidatorTypeId", reason: "testReason" }]);
+                validateErrorResp(resp, [{ id: "testid", reason: "testReason" }]);
 
                 it("should reject with validator returning false with reason", async function () {
                     await startST();
                     const customValidator = {
-                        validatorTypeId: "testValidatorTypeId",
+                        id: "testid",
                         validate: () => ({ isValid: false, reason: "testReason" }),
                     };
                     SuperTokens.init({
@@ -248,7 +248,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                     const session = await createSession(app);
                     const resp = await testGet(app, session, "/default-claims", 403);
 
-                    validateErrorResp(resp, [{ validatorTypeId: "testValidatorTypeId", reason: "testReason" }]);
+                    validateErrorResp(resp, [{ id: "testid", reason: "testReason" }]);
                 });
 
                 it("should reject if assertClaims returns an error", async function () {
@@ -264,7 +264,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                                 message: "INVALID_CLAIM",
                                 payload: [
                                     {
-                                        validatorTypeId: "testValidatorTypeId",
+                                        id: "testid",
                                         reason: "testReason",
                                     },
                                 ],
@@ -296,7 +296,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                     const session = await createSession(app);
 
                     const res = await testGet(app, session, "/default-claims", 403);
-                    validateErrorResp(res, [{ validatorTypeId: "testValidatorTypeId", reason: "testReason" }]);
+                    validateErrorResp(res, [{ id: "testid", reason: "testReason" }]);
                     mock.verify();
                 });
 
@@ -450,13 +450,13 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const session = await createSession(app);
                 const res = await testGet(app, session, "/refetched-claim", 403);
                 validateErrorResp(res, [
-                    { validatorTypeId: "st-true", reason: { expectedValue: false, actualValue: true } },
+                    { id: "st-true", reason: { message: "wrong value", expectedValue: false, actualValue: true } },
                 ]);
             });
 
             it("should reject with custom claim returning false", async function () {
                 const customValidator = {
-                    validatorTypeId: "testValidatorTypeId",
+                    id: "testid",
                     validate: () => ({ isValid: false, reason: "testReason" }),
                 };
 
@@ -480,7 +480,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                                     getGlobalClaimValidators: ({ defaultClaimValidators }) => [
                                         ...defaultClaimValidators,
                                         {
-                                            validatorTypeId: "testValidatorTypeId",
+                                            id: "testid",
                                             reason: "testReason",
                                         },
                                     ],
@@ -499,12 +499,12 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
 
                 const session = await createSession(app);
                 const res = await testGet(app, session, "/refetched-claim", 403);
-                validateErrorResp(res, [{ validatorTypeId: "testValidatorTypeId", reason: "testReason" }]);
+                validateErrorResp(res, [{ id: "testid", reason: "testReason" }]);
             });
 
             it("should allow with custom claim returning true", async function () {
                 const customValidator = {
-                    validatorTypeId: "testValidatorTypeId",
+                    id: "testid",
                     validate: () => ({ isValid: true }),
                 };
 
@@ -528,7 +528,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                                     getGlobalClaimValidators: ({ defaultClaimValidators }) => [
                                         ...defaultClaimValidators,
                                         {
-                                            validatorTypeId: "testValidatorTypeId",
+                                            id: "testid",
                                             reason: "testReason",
                                         },
                                     ],
@@ -551,7 +551,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
 
             it("should reject with custom claim returning false", async function () {
                 const customValidator = {
-                    validatorTypeId: "testValidatorTypeId",
+                    id: "testid",
                     validate: () => ({ isValid: false, reason: "testReason" }),
                 };
 
@@ -575,7 +575,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                                     getGlobalClaimValidators: ({ defaultClaimValidators }) => [
                                         ...defaultClaimValidators,
                                         {
-                                            validatorTypeId: "testValidatorTypeId",
+                                            id: "testid",
                                             reason: "testReason",
                                         },
                                     ],
@@ -594,11 +594,11 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
 
                 const session = await createSession(app);
                 const res = await testGet(app, session, "/refetched-claim", 403);
-                validateErrorResp(res, [{ validatorTypeId: "testValidatorTypeId", reason: "testReason" }]);
+                validateErrorResp(res, [{ id: "testid", reason: "testReason" }]);
             });
 
             it("should reject if assertClaims returns an error", async function () {
-                const obj = { validatorTypeId: "ASDFASDF" };
+                const obj = { id: "ASDFASDF" };
                 const testValidatorArr = [obj];
                 const mock = sinon.mock(SessionClass.prototype);
                 mock.expects("assertClaims")
@@ -610,7 +610,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             message: "INVALID_CLAIM",
                             payload: [
                                 {
-                                    validatorTypeId: "testValidatorTypeId",
+                                    id: "testid",
                                     reason: "testReason",
                                 },
                             ],
@@ -653,14 +653,16 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const session = await createSession(app);
 
                 const res = await testGet(app, session, "/refetched-claim", 403);
-                validateErrorResp(res, [{ validatorTypeId: "testValidatorTypeId", reason: "testReason" }]);
+                validateErrorResp(res, [{ id: "testid", reason: "testReason" }]);
                 mock.verify();
             });
 
             it("should allow if assertClaims returns undefined", async function () {
                 const obj = {};
                 const testValidatorArr = [obj];
+
                 const mock = sinon.mock(SessionClass.prototype);
+                console.log(SessionClass);
                 mock.expects("assertClaims").once().withArgs(testValidatorArr).resolves(undefined);
 
                 await startST();

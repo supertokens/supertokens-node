@@ -89,7 +89,7 @@ export default class Session implements SessionContainerInterface {
         return this.userId;
     };
 
-    getAccessTokenPayload = () => {
+    getAccessTokenPayload = (_userContext?: any) => {
         return this.userDataInAccessToken;
     };
 
@@ -102,7 +102,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any) => {
-        const updatedPayload = { ...this.getAccessTokenPayload(), ...accessTokenPayloadUpdate };
+        const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
             if (accessTokenPayloadUpdate[key] === null) {
                 delete updatedPayload[key];
@@ -150,13 +150,11 @@ export default class Session implements SessionContainerInterface {
         let newAccessTokenPayload = this.getAccessTokenPayload();
         let validationErrors = [];
         for (const validator of claimValidators) {
-            logDebugMessage("Session.validateClaims checking " + validator.validatorTypeId);
+            logDebugMessage("Session.validateClaims checking " + validator.id);
             if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
-                logDebugMessage("Session.validateClaims refetching " + validator.validatorTypeId);
+                logDebugMessage("Session.validateClaims refetching " + validator.id);
                 const value = await validator.claim.fetchValue(this.getUserId(), userContext);
-                logDebugMessage(
-                    "Session.validateClaims " + validator.validatorTypeId + " refetch res " + JSON.stringify(value)
-                );
+                logDebugMessage("Session.validateClaims " + validator.id + " refetch res " + JSON.stringify(value));
                 if (value !== undefined) {
                     newAccessTokenPayload = validator.claim.addToPayload_internal(
                         newAccessTokenPayload,
@@ -167,14 +165,11 @@ export default class Session implements SessionContainerInterface {
             }
             const claimValidationResult = await validator.validate(newAccessTokenPayload, userContext);
             logDebugMessage(
-                "Session.validateClaims " +
-                    validator.validatorTypeId +
-                    " validation res " +
-                    JSON.stringify(claimValidationResult)
+                "Session.validateClaims " + validator.id + " validation res " + JSON.stringify(claimValidationResult)
             );
             if (!claimValidationResult.isValid) {
                 validationErrors.push({
-                    validatorTypeId: validator.validatorTypeId,
+                    id: validator.id,
                     reason: claimValidationResult.reason,
                 });
             }
@@ -211,6 +206,9 @@ export default class Session implements SessionContainerInterface {
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 
+    /**
+     * @deprecated
+     */
     updateAccessTokenPayload = async (newAccessTokenPayload: any | undefined, userContext: any) => {
         try {
             let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({

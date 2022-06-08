@@ -4,25 +4,16 @@ const { PrimitiveClaim } = require("../../../lib/build/recipe/session/claimBaseC
 
 module.exports.TrueClaim = new BooleanClaim({
     key: "st-true",
-    fetch: () => true,
+    fetchValue: () => true,
 });
 
 module.exports.UndefinedClaim = new BooleanClaim({
     key: "st-undef",
-    fetch: () => undefined,
+    fetchValue: () => undefined,
 });
 
 module.exports.StubClaim = class StubClaim extends PrimitiveClaim {
-    constructor({
-        key,
-        fetchValue,
-        fetchValueRes,
-        validatorTypeId,
-        validate,
-        validateRes,
-        shouldRefetch,
-        shouldRefetchRes,
-    }) {
+    constructor({ key, fetchValue, fetchValueRes, id, validate, validateRes, shouldRefetch, shouldRefetchRes }) {
         super(key);
         this.fetchValue = Sinon.stub();
         if (fetchValue) {
@@ -32,7 +23,7 @@ module.exports.StubClaim = class StubClaim extends PrimitiveClaim {
         }
 
         this.validators.stub = {
-            validatorTypeId,
+            id,
         };
         if (shouldRefetch !== undefined || shouldRefetchRes !== undefined) {
             this.validators.stub.claim = this;

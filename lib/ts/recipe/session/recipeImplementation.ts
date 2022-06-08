@@ -68,7 +68,11 @@ export type Helpers = {
     sessionRecipeImpl: RecipeInterface;
 };
 
-export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
+export default function getRecipeInterface(
+    querier: Querier,
+    config: TypeNormalisedInput,
+    recipeInstance: SessionRecipe
+): RecipeInterface {
     let handshakeInfo: undefined | HandshakeInfo;
 
     async function getHandshakeInfo(forceRefetch = false): Promise<HandshakeInfo> {
@@ -239,7 +243,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     res
                 );
 
-                const defaultClaimValidators = SessionRecipe.getInstanceOrThrowError().getDefaultClaimValidators();
+                const defaultClaimValidators = recipeInstance.getDefaultClaimValidators();
                 const globalClaimValidators: SessionClaimValidator[] = await this.getGlobalClaimValidators({
                     userId: response.session.userId,
                     defaultClaimValidators,
@@ -251,8 +255,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                         : globalClaimValidators;
 
                 logDebugMessage(
-                    "getSession: required validatorTypeIds " +
-                        reqClaimsValidators.map((c) => c.validatorTypeId).join(", ")
+                    "getSession: required validator ids " + reqClaimsValidators.map((c) => c.id).join(", ")
                 );
                 await session.assertClaims(reqClaimsValidators, userContext);
 
@@ -434,9 +437,9 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         },
 
         applyClaim: async function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
-            // TODO: maybe get userId from input? we are fetching session info twice :/
             const sessionInfo = await this.getSessionInformation(helpers, input.sessionHandle);
             const accessTokenPayloadUpdate = input.claim.applyToPayload(sessionInfo.userId, {}, input.userContext);
+
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,

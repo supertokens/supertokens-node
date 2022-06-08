@@ -76,7 +76,7 @@ export default class SessionRecipe extends RecipeModule {
             });
 
             let builder = new OverrideableBuilder(
-                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, this)
             );
             this.recipeInterfaceImpl = builder
                 .override((oI) => {
@@ -92,7 +92,7 @@ export default class SessionRecipe extends RecipeModule {
         } else {
             {
                 let builder = new OverrideableBuilder(
-                    RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
+                    RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, this)
                 );
                 this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
             }

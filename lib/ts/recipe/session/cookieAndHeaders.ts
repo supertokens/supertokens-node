@@ -64,8 +64,8 @@ export function attachRefreshTokenToCookie(
     setCookie(config, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
 }
 
-export function setInvalidClaimHeader(response: BaseResponse, validatorTypeId: string) {
-    response.setHeader(invalidClaimHeaderKey, validatorTypeId, false);
+export function setInvalidClaimHeader(response: BaseResponse, errorListJSON: string) {
+    response.setHeader(invalidClaimHeaderKey, errorListJSON, false);
     response.setHeader("Access-Control-Expose-Headers", invalidClaimHeaderKey, true);
 }
 

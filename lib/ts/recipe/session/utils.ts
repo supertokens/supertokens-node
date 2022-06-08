@@ -60,12 +60,12 @@ export async function sendUnauthorisedResponse(
 
 export async function sendInvalidClaimResponse(
     recipeInstance: SessionRecipe,
-    validationError: ClaimValidationError,
+    validationErrors: ClaimValidationError[],
     __: BaseRequest,
     response: BaseResponse
 ) {
-    setInvalidClaimHeader(response, JSON.stringify(validationError));
-    sendNon200Response(response, "invalid claim", recipeInstance.config.missingClaimStatusCode);
+    setInvalidClaimHeader(response, JSON.stringify(validationErrors));
+    sendNon200Response(response, "invalid claim", recipeInstance.config.invalidClaimStatusCode);
 }
 
 export async function sendTokenTheftDetectedResponse(
@@ -198,8 +198,8 @@ export function validateAndNormaliseUserInput(
         onUnauthorised: async (message: string, request: BaseRequest, response: BaseResponse) => {
             return await sendUnauthorisedResponse(recipeInstance, message, request, response);
         },
-        onInvalidClaim: (validationError: ClaimValidationError, request: BaseRequest, response: BaseResponse) => {
-            return sendInvalidClaimResponse(recipeInstance, validationError, request, response);
+        onInvalidClaim: (validationErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse) => {
+            return sendInvalidClaimResponse(recipeInstance, validationErrors, request, response);
         },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {
@@ -258,7 +258,7 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
-        missingClaimStatusCode: config?.missingClaimStatusCode ?? 403,
+        invalidClaimStatusCode: config?.invalidClaimStatusCode ?? 403,
         jwt: {
             enable: enableJWT,
             propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,

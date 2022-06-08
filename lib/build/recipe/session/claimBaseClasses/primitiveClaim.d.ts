@@ -8,7 +8,7 @@ export declare abstract class PrimitiveClaim<T extends JSONValue> extends Sessio
     removeFromPayload(payload: any, _userContext: any): any;
     getValueFromPayload(payload: any, _userContext?: any): T | undefined;
     validators: {
-        hasValue: (val: T, validatorTypeId?: string | undefined) => SessionClaimValidator;
-        hasFreshValue: (val: T, maxAgeInSeconds: number, validatorTypeId?: string | undefined) => SessionClaimValidator;
+        hasValue: (val: T, id?: string | undefined) => SessionClaimValidator;
+        hasFreshValue: (val: T, maxAgeInSeconds: number, id?: string | undefined) => SessionClaimValidator;
     };
 }

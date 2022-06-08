@@ -17,7 +17,7 @@ export declare function sendUnauthorisedResponse(
 ): Promise<void>;
 export declare function sendInvalidClaimResponse(
     recipeInstance: SessionRecipe,
-    validationError: ClaimValidationError,
+    validationErrors: ClaimValidationError[],
     __: BaseRequest,
     response: BaseResponse
 ): Promise<void>;

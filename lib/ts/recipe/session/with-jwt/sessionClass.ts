@@ -77,14 +77,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     };
 
     mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any): Promise<void> => {
-        const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
-        for (const key of Object.keys(accessTokenPayloadUpdate)) {
-            if (accessTokenPayloadUpdate[key] === null) {
-                delete updatedPayload[key];
-            }
-        }
-
-        await this.updateAccessTokenPayload(updatedPayload, userContext);
+        return this.originalSessionClass.mergeIntoAccessTokenPayload.bind(this)(accessTokenPayloadUpdate, userContext);
     };
 
     /**

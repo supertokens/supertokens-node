@@ -31,10 +31,10 @@ export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T
     }
 
     validators = {
-        hasValue: (val: T, validatorTypeId?: string): SessionClaimValidator => {
+        hasValue: (val: T, id?: string): SessionClaimValidator => {
             return {
                 claim: this,
-                validatorTypeId: validatorTypeId ?? this.key,
+                id: id ?? this.key,
                 shouldRefetch: (grantPayload, ctx) => this.getValueFromPayload(grantPayload, ctx) === undefined,
                 validate: (grantPayload, ctx) => {
                     const claimVal = this.getValueFromPayload(grantPayload, ctx);
@@ -45,10 +45,10 @@ export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T
                 },
             };
         },
-        hasFreshValue: (val: T, maxAgeInSeconds: number, validatorTypeId?: string): SessionClaimValidator => {
+        hasFreshValue: (val: T, maxAgeInSeconds: number, id?: string): SessionClaimValidator => {
             return {
                 claim: this,
-                validatorTypeId: validatorTypeId ?? this.key + "-fresh-val",
+                id: id ?? this.key + "-fresh-val",
                 shouldRefetch: (grantPayload, ctx) =>
                     this.getValueFromPayload(grantPayload, ctx) === undefined ||
                     // We know grantPayload[this.id] is defined since the value is not undefined in this branch

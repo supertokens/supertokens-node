@@ -71,7 +71,7 @@ export type CreateOrRefreshAPIResponse = {
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
-    onInvalidClaim: MissingClaimErrorHandlerMiddleware;
+    onInvalidClaim: InvalidClaimErrorHandlerMiddleware;
 }
 
 export type TypeInput = {
@@ -81,7 +81,7 @@ export type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    missingClaimStatusCode?: number;
+    invalidClaimStatusCode?: number;
     jwt?:
         | {
               enable: true;
@@ -127,7 +127,7 @@ export type TypeNormalisedInput = {
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 
-    missingClaimStatusCode: number;
+    invalidClaimStatusCode: number;
     jwt: {
         enable: boolean;
         propertyNameInAccessTokenPayload: string;
@@ -174,15 +174,15 @@ export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 
-export interface MissingClaimErrorHandlerMiddleware {
-    (validatorError: ClaimValidationError, request: BaseRequest, response: BaseResponse): Promise<void>;
+export interface InvalidClaimErrorHandlerMiddleware {
+    (validatorErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
     onTryRefreshToken: ErrorHandlerMiddleware;
     onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
-    onInvalidClaim: MissingClaimErrorHandlerMiddleware;
+    onInvalidClaim: InvalidClaimErrorHandlerMiddleware;
 }
 
 export interface VerifySessionOptions {
@@ -360,7 +360,7 @@ export type SessionInformation = {
 
 export type ClaimValidationResult = { isValid: true } | { isValid: false; reason?: JSONValue };
 export type ClaimValidationError = {
-    validatorTypeId: string;
+    id: string;
     reason?: JSONValue;
 };
 
@@ -376,7 +376,7 @@ export type SessionClaimValidator = (
       }
     | {}
 ) & {
-    validatorTypeId: string;
+    id: string;
     /**
      * Decides if the claim is valid based on the payload (and not checking DB or anything else)
      */

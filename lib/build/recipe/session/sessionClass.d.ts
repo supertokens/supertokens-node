@@ -21,7 +21,7 @@ export default class Session implements SessionContainerInterface {
     getSessionData: (userContext?: any) => Promise<any>;
     updateSessionData: (newSessionData: any, userContext?: any) => Promise<void>;
     getUserId: () => string;
-    getAccessTokenPayload: () => any;
+    getAccessTokenPayload: (_userContext?: any) => any;
     getHandle: () => string;
     getAccessToken: () => string;
     mergeIntoAccessTokenPayload: (accessTokenPayloadUpdate: any, userContext?: any) => Promise<void>;
@@ -32,5 +32,8 @@ export default class Session implements SessionContainerInterface {
     setClaimValue: <T>(claim: SessionClaim<T>, value: T, userContext?: any) => Promise<void>;
     getClaimValue: <T>(claim: SessionClaim<T>, userContext?: any) => Promise<T | undefined>;
     removeClaim: (claim: SessionClaim<any>, userContext?: any) => Promise<void>;
+    /**
+     * @deprecated
+     */
     updateAccessTokenPayload: (newAccessTokenPayload: any, userContext: any) => Promise<void>;
 }
