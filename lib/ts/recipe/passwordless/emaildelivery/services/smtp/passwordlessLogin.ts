@@ -29,7 +29,7 @@ export default function getPasswordlessLoginEmailContent(input: TypePasswordless
     return {
         body,
         toEmail: input.email,
-        subject: "Passwordless auth instructions",
+        subject: "Login to your account",
         isHtml: true,
     };
 }

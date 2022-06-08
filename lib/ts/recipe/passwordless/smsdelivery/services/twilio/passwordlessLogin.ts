@@ -15,9 +15,12 @@
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import { GetContentResult } from "../../../../../ingredients/smsdelivery/services/twilio";
 import { humaniseMilliseconds } from "../../../../../utils";
+import Supertokens from "../../../../../supertokens";
 
 export default function getPasswordlessLoginSmsContent(input: TypePasswordlessSmsDeliveryInput): GetContentResult {
-    let body = getPasswordlessLoginSmsBody(input.codeLifetime, input.urlWithLinkCode, input.userInputCode);
+    let supertokens = Supertokens.getInstanceOrThrowError();
+    let appName = supertokens.appInfo.appName;
+    let body = getPasswordlessLoginSmsBody(appName, input.codeLifetime, input.urlWithLinkCode, input.userInputCode);
     return {
         body,
         toPhoneNumber: input.phoneNumber,
@@ -25,19 +28,20 @@ export default function getPasswordlessLoginSmsContent(input: TypePasswordlessSm
 }
 
 function getPasswordlessLoginSmsBody(
+    appName: string,
     codeLifetime: number,
     urlWithLinkCode: string | undefined,
     userInputCode: string | undefined
 ) {
-    let message = "";
+    let message = `${appName} - Login to your account\n\n`;
     if (urlWithLinkCode !== undefined && userInputCode !== undefined) {
-        message = `Enter OTP: ${userInputCode} OR click this link: ${urlWithLinkCode} to login.`;
+        message = `Your OTP to login: ${userInputCode}\n\nOR\n\nClick on this link: ${urlWithLinkCode}\n\n`;
     } else if (urlWithLinkCode !== undefined) {
-        message = `Click this link: ${urlWithLinkCode} to login.`;
+        message = `Click on this link: ${urlWithLinkCode}\n\n`;
     } else {
-        message = `Enter OTP: ${userInputCode} to login.`;
+        message = `Your OTP to login: ${userInputCode}\n\n`;
     }
     const humanisedCodeLifetime = humaniseMilliseconds(codeLifetime);
-    message += ` It will expire in ${humanisedCodeLifetime}.`;
+    message += `This is valid for ${humanisedCodeLifetime}.`;
     return message;
 }

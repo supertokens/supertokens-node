@@ -326,6 +326,9 @@ describe(`emailverify: ${printPath("[test/thirdpartyemailpassword/emailverify.te
         assert(Object.keys(JSON.parse(response2.text)).length === 1);
 
         assert(userInfo.id === userId);
+        assert(userInfo.thirdParty !== undefined);
+        assert(userInfo.thirdParty.userId === "testPass0");
+        assert(userInfo.thirdParty.id === "custom");
         assert(userInfo.email === "test@gmail.com");
         assert(emailToken !== null);
     });
