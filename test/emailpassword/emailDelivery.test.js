@@ -200,6 +200,70 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         assert.notStrictEqual(passwordResetURL, undefined);
     });
 
+    it("test backward compatibility: reset password (non existent user)", async function () {
+        await startST();
+        let functionCalled = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    resetPasswordUsingTokenFeature: {
+                        createAndSendCustomEmail: async (input, passwordResetLink) => {
+                            functionCalled = true;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+            telemetry: false,
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await supertest(app)
+            .post("/auth/user/password/reset/token")
+            .set("rid", "emailpassword")
+            .send({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "test@example.com",
+                    },
+                ],
+            })
+            .expect(200);
+
+        await delay(2);
+        assert.strictEqual(functionCalled, false);
+
+        await EmailPassword.signUp("test@example.com", "1234abcd");
+
+        await supertest(app)
+            .post("/auth/user/password/reset/token")
+            .set("rid", "emailpassword")
+            .send({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "test@example.com",
+                    },
+                ],
+            })
+            .expect(200);
+
+        await delay(2);
+        assert.strictEqual(functionCalled, true);
+    });
+
     it("test custom override: reset password", async function () {
         await startST();
         let email = undefined;

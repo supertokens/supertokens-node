@@ -195,9 +195,10 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         assert.strictEqual(result.body.status, "OK");
     });
 
-    it("test backward compatibility: email verify", async function () {
+    it("test backward compatibility: email verify (thirdparty user)", async function () {
         await startST();
         let email = undefined;
+        let thirdParty = undefined;
         let emailVerifyURL = undefined;
         STExpress.init({
             supertokens: {
@@ -216,6 +217,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     emailVerificationFeature: {
                         createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
                             email = input.email;
+                            thirdParty = input.thirdParty;
                             emailVerifyURL = emailVerificationURLWithToken;
                         },
                     },
@@ -247,7 +249,66 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             .expect(200);
         await delay(2);
         assert.strictEqual(email, "test@example.com");
+        assert.strictEqual(user.user.thirdParty.id, thirdParty.id);
+        assert.strictEqual(user.user.thirdParty.userId, thirdParty.userId);
         assert.notStrictEqual(emailVerifyURL, undefined);
+    });
+
+    it("test backward compatibility: email verify (passwordless user)", async function () {
+        await startST();
+        let functionCalled = false;
+        let email = undefined;
+        let emailVerifyURL = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdpartyPasswordless.init({
+                    providers: [this.customProvider],
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
+                            functionCalled = true;
+                            email = input.email;
+                            emailVerifyURL = emailVerificationURLWithToken;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+            telemetry: false,
+        });
+
+        const app = express();
+        app.use(express.json());
+        app.use(middleware());
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, req.body.id, {}, {});
+            res.status(200).send("");
+        });
+        app.use(errorHandler());
+
+        let user = await ThirdpartyPasswordless.passwordlessSignInUp({
+            email: "test@example.com",
+        });
+        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
+
+        await supertest(app)
+            .post("/auth/user/email/verify/token")
+            .set("rid", "thirdpartypasswordless")
+            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .expect(200);
+        await delay(2);
+        assert.strictEqual(functionCalled, false);
+        assert.strictEqual(email, undefined);
+        assert.strictEqual(emailVerifyURL, undefined);
     });
 
     it("test custom override: email verify", async function () {
