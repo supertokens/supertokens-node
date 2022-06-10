@@ -35,11 +35,11 @@ function getPasswordlessLoginSmsBody(
 ) {
     let message = `${appName} - Login to your account\n\n`;
     if (urlWithLinkCode !== undefined && userInputCode !== undefined) {
-        message = `Your OTP to login: ${userInputCode}\n\nOR\n\nClick on this link: ${urlWithLinkCode}\n\n`;
+        message += `Your OTP to login: ${userInputCode}\n\nOR\n\nClick on this link: ${urlWithLinkCode}\n\n`;
     } else if (urlWithLinkCode !== undefined) {
-        message = `Click on this link: ${urlWithLinkCode}\n\n`;
+        message += `Click on this link: ${urlWithLinkCode}\n\n`;
     } else {
-        message = `Your OTP to login: ${userInputCode}\n\n`;
+        message += `Your OTP to login: ${userInputCode}\n\n`;
     }
     const humanisedCodeLifetime = humaniseMilliseconds(codeLifetime);
     message += `This is valid for ${humanisedCodeLifetime}.`;
