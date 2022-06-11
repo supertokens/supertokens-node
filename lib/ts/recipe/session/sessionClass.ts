@@ -207,7 +207,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     /**
-     * @deprecated
+     * @deprecated Use mergeIntoAccessTokenPayload
      */
     updateAccessTokenPayload = async (newAccessTokenPayload: any | undefined, userContext: any) => {
         try {

@@ -69,7 +69,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
     };
 
     getClaimValue = <T>(claim: SessionClaim<T>, userContext?: any) => {
-        return this.originalSessionClass.getClaimValue(claim, userContext);
+        return this.originalSessionClass.getClaimValue.bind(this)(claim, userContext);
     };
 
     removeClaim = (claim: SessionClaim<any>, userContext?: any) => {

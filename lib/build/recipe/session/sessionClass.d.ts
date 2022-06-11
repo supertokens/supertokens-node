@@ -33,7 +33,7 @@ export default class Session implements SessionContainerInterface {
     getClaimValue: <T>(claim: SessionClaim<T>, userContext?: any) => Promise<T | undefined>;
     removeClaim: (claim: SessionClaim<any>, userContext?: any) => Promise<void>;
     /**
-     * @deprecated
+     * @deprecated Use mergeIntoAccessTokenPayload
      */
     updateAccessTokenPayload: (newAccessTokenPayload: any, userContext: any) => Promise<void>;
 }
