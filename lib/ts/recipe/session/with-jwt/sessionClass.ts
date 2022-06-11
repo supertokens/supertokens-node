@@ -60,8 +60,8 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         return this.originalSessionClass.assertClaims.bind(this)(claimValidators, userContext);
     }
 
-    applyClaim = <T>(claim: SessionClaim<T>, userContext?: any) => {
-        return this.originalSessionClass.applyClaim.bind(this)(claim, userContext);
+    fetchAndSetClaim = <T>(claim: SessionClaim<T>, userContext?: any) => {
+        return this.originalSessionClass.fetchAndSetClaim.bind(this)(claim, userContext);
     };
 
     setClaimValue = <T>(claim: SessionClaim<T>, value: T, userContext?: any) => {

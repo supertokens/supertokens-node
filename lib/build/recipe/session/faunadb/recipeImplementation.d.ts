@@ -25,7 +25,7 @@ export default class RecipeImplementation implements RecipeInterface {
         this: RecipeImplementation,
         input: {
             userId: string;
-            defaultClaimValidators: SessionClaimValidator[];
+            claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
             userContext: any;
         }
     ) => SessionClaimValidator[] | Promise<SessionClaimValidator[]>;
@@ -162,7 +162,7 @@ export default class RecipeImplementation implements RecipeInterface {
             userContext: any;
         }
     ) => Promise<number>;
-    applyClaim: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) => any;
+    fetchAndSetClaim: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) => any;
     setClaimValue: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; value: T; userContext?: any }) => any;
     getClaimValue: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) => any;
     removeClaim: (input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }) => any;

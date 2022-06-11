@@ -190,7 +190,7 @@ export interface VerifySessionOptions {
     sessionRequired?: boolean;
     overrideGlobalClaimValidators?: (
         session: SessionContainerInterface,
-        defaultClaimValidators: SessionClaimValidator[],
+        globalClaimValidators: SessionClaimValidator[],
         userContext: any
     ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 }
@@ -206,7 +206,7 @@ export type RecipeInterface = {
 
     getGlobalClaimValidators(input: {
         userId: string;
-        defaultClaimValidators: SessionClaimValidator[];
+        claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
         userContext: any;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 
@@ -272,7 +272,7 @@ export type RecipeInterface = {
 
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
-    applyClaim<T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }): Promise<void>;
+    fetchAndSetClaim<T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }): Promise<void>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
@@ -315,7 +315,7 @@ export interface SessionContainerInterface {
     getExpiry(userContext?: any): Promise<number>;
 
     assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
-    applyClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
@@ -414,7 +414,7 @@ export abstract class SessionClaim<T> {
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
-    async applyToPayload(userId: string, payload: JSONObject, userContext?: any): Promise<JSONObject> {
+    async fetchAndSetClaim(userId: string, payload: JSONObject, userContext?: any): Promise<JSONObject> {
         const value = await this.fetchValue(userId, userContext);
 
         if (value === undefined) {

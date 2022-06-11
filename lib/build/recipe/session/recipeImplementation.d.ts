@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { RecipeInterface, TypeNormalisedInput, KeyInfo, AntiCsrfType } from "./types";
 import { Querier } from "../../querier";
-import SessionRecipe from "./recipe";
 export declare class HandshakeInfo {
     antiCsrf: AntiCsrfType;
     accessTokenBlacklistingEnabled: boolean;
@@ -26,8 +25,4 @@ export declare type Helpers = {
     config: TypeNormalisedInput;
     sessionRecipeImpl: RecipeInterface;
 };
-export default function getRecipeInterface(
-    querier: Querier,
-    config: TypeNormalisedInput,
-    recipeInstance: SessionRecipe
-): RecipeInterface;
+export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface;

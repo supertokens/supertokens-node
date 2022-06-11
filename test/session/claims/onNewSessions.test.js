@@ -66,7 +66,7 @@ describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`,
                             functions: (oI) => ({
                                 ...oI,
                                 createNewSession: async (input) => {
-                                    input.accessTokenPayload = await TrueClaim.applyToPayload(
+                                    input.accessTokenPayload = await TrueClaim.fetchAndSetClaim(
                                         input.userId,
                                         input.accessTokenPayload,
                                         input.userContext
@@ -112,7 +112,7 @@ describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`,
                             functions: (oI) => ({
                                 ...oI,
                                 createNewSession: async (input) => {
-                                    input.accessTokenPayload = await UndefinedClaim.applyToPayload(
+                                    input.accessTokenPayload = await UndefinedClaim.fetchAndSetClaim(
                                         input.userId,
                                         input.accessTokenPayload,
                                         input.userContext
@@ -161,7 +161,7 @@ describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`,
                             functions: (oI) => ({
                                 ...oI,
                                 createNewSession: async (input) => {
-                                    input.accessTokenPayload = await TrueClaim.applyToPayload(
+                                    input.accessTokenPayload = await TrueClaim.fetchAndSetClaim(
                                         input.userId,
                                         input.accessTokenPayload,
                                         input.userContext

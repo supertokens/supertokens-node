@@ -16,18 +16,22 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OpenIdRecipe from "../openid/recipe";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
+    private static claimsAddedByOtherRecipes;
+    private static claimValidatorsAddedByOtherRecipes;
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     openIdRecipe?: OpenIdRecipe;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    defaultClaims: SessionClaim<any>[];
-    defaultClaimValidators: SessionClaimValidator[];
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput);
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
+    static addClaimFromOtherRecipe: (builder: SessionClaim<any>) => void;
+    static getClaimsAddedByOtherRecipes: () => SessionClaim<any>[];
+    static addClaimValidatorFromOtherRecipe: (builder: SessionClaimValidator) => void;
+    static getClaimValidatorsAddedByOtherRecipes: () => SessionClaimValidator[];
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,
@@ -44,8 +48,4 @@ export default class SessionRecipe extends RecipeModule {
         request: BaseRequest,
         response: BaseResponse
     ) => Promise<import("./types").SessionContainerInterface | undefined>;
-    addDefaultClaim: (builder: SessionClaim<any>) => void;
-    getDefaultClaims: () => SessionClaim<any>[];
-    addDefaultClaimValidator: (builder: SessionClaimValidator) => void;
-    getDefaultClaimValidators: () => SessionClaimValidator[];
 }

@@ -44,6 +44,8 @@ import { logDebugMessage } from "../../logger";
 // For Express
 export default class SessionRecipe extends RecipeModule {
     private static instance: SessionRecipe | undefined = undefined;
+    private static claimsAddedByOtherRecipes: SessionClaim<any>[] = [];
+    private static claimValidatorsAddedByOtherRecipes: SessionClaimValidator[] = [];
     static RECIPE_ID = "session";
 
     config: TypeNormalisedInput;
@@ -54,8 +56,6 @@ export default class SessionRecipe extends RecipeModule {
     apiImpl: APIInterface;
 
     isInServerlessEnv: boolean;
-    defaultClaims: SessionClaim<any>[] = [];
-    defaultClaimValidators: SessionClaimValidator[] = [];
 
     constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config?: TypeInput) {
         super(recipeId, appInfo);
@@ -76,7 +76,7 @@ export default class SessionRecipe extends RecipeModule {
             });
 
             let builder = new OverrideableBuilder(
-                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, this)
+                RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
             );
             this.recipeInterfaceImpl = builder
                 .override((oI) => {
@@ -92,7 +92,7 @@ export default class SessionRecipe extends RecipeModule {
         } else {
             {
                 let builder = new OverrideableBuilder(
-                    RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config, this)
+                    RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId), this.config)
                 );
                 this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
             }
@@ -127,6 +127,22 @@ export default class SessionRecipe extends RecipeModule {
         }
         SessionRecipe.instance = undefined;
     }
+
+    static addClaimFromOtherRecipe = (builder: SessionClaim<any>) => {
+        SessionRecipe.claimsAddedByOtherRecipes.push(builder);
+    };
+
+    static getClaimsAddedByOtherRecipes = (): SessionClaim<any>[] => {
+        return SessionRecipe.claimsAddedByOtherRecipes;
+    };
+
+    static addClaimValidatorFromOtherRecipe = (builder: SessionClaimValidator) => {
+        SessionRecipe.claimValidatorsAddedByOtherRecipes.push(builder);
+    };
+
+    static getClaimValidatorsAddedByOtherRecipes = (): SessionClaimValidator[] => {
+        return SessionRecipe.claimValidatorsAddedByOtherRecipes;
+    };
 
     // abstract instance functions below...............
 
@@ -238,21 +254,5 @@ export default class SessionRecipe extends RecipeModule {
             },
             userContext: {},
         });
-    };
-
-    addDefaultClaim = (builder: SessionClaim<any>) => {
-        this.defaultClaims.push(builder);
-    };
-
-    getDefaultClaims = (): SessionClaim<any>[] => {
-        return this.defaultClaims;
-    };
-
-    addDefaultClaimValidator = (builder: SessionClaimValidator) => {
-        this.defaultClaimValidators.push(builder);
-    };
-
-    getDefaultClaimValidators = (): SessionClaimValidator[] => {
-        return this.defaultClaimValidators;
     };
 }

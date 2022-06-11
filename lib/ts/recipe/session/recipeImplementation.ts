@@ -68,11 +68,7 @@ export type Helpers = {
     sessionRecipeImpl: RecipeInterface;
 };
 
-export default function getRecipeInterface(
-    querier: Querier,
-    config: TypeNormalisedInput,
-    recipeInstance: SessionRecipe
-): RecipeInterface {
+export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
     let handshakeInfo: undefined | HandshakeInfo;
 
     async function getHandshakeInfo(forceRefetch = false): Promise<HandshakeInfo> {
@@ -137,8 +133,10 @@ export default function getRecipeInterface(
             );
         },
 
-        getGlobalClaimValidators: async function (input: { defaultClaimValidators: SessionClaimValidator[] }) {
-            return input.defaultClaimValidators;
+        getGlobalClaimValidators: async function (input: {
+            claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
+        }) {
+            return input.claimValidatorsAddedByOtherRecipes;
         },
 
         getSession: async function ({
@@ -243,10 +241,10 @@ export default function getRecipeInterface(
                     res
                 );
 
-                const defaultClaimValidators = recipeInstance.getDefaultClaimValidators();
+                const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
                 const globalClaimValidators: SessionClaimValidator[] = await this.getGlobalClaimValidators({
                     userId: response.session.userId,
-                    defaultClaimValidators,
+                    claimValidatorsAddedByOtherRecipes,
                     userContext,
                 });
                 const reqClaimsValidators =
@@ -436,9 +434,13 @@ export default function getRecipeInterface(
             return (await getHandshakeInfo()).refreshTokenValidity;
         },
 
-        applyClaim: async function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
+        fetchAndSetClaim: async function <T>(input: {
+            sessionHandle: string;
+            claim: SessionClaim<T>;
+            userContext?: any;
+        }) {
             const sessionInfo = await this.getSessionInformation(helpers, input.sessionHandle);
-            const accessTokenPayloadUpdate = input.claim.applyToPayload(sessionInfo.userId, {}, input.userContext);
+            const accessTokenPayloadUpdate = input.claim.fetchAndSetClaim(sessionInfo.userId, {}, input.userContext);
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,

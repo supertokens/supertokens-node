@@ -1,4 +1,4 @@
-import { BooleanClaim } from "../../session";
+import { BooleanClaim } from "../../session/claims";
 import Recipe from "../recipe";
 
 export class EmailVerifiedClaim extends BooleanClaim {

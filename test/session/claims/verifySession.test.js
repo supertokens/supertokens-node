@@ -85,8 +85,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         TrueClaim.validators.hasValue(true),
                                     ],
                                 }),
@@ -118,8 +118,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         UndefinedClaim.validators.hasValue(true),
                                     ],
                                 }),
@@ -157,8 +157,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         customValidator,
                                     ],
                                 }),
@@ -194,8 +194,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         customValidator,
                                     ],
                                 }),
@@ -232,8 +232,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                                 override: {
                                     functions: (oI) => ({
                                         ...oI,
-                                        getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                            ...defaultClaimValidators,
+                                        getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                            ...claimValidatorsAddedByOtherRecipes,
                                             customValidator,
                                         ],
                                     }),
@@ -354,8 +354,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         UndefinedClaim,
                                     ],
                                 }),
@@ -392,8 +392,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         UndefinedClaim,
                                     ],
                                 }),
@@ -430,8 +430,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         UndefinedClaim,
                                     ],
                                 }),
@@ -477,8 +477,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                                 functions: (oI) => ({
                                     ...oI,
 
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         {
                                             id: "testid",
                                             reason: "testReason",
@@ -525,8 +525,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                                 functions: (oI) => ({
                                     ...oI,
 
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         {
                                             id: "testid",
                                             reason: "testReason",
@@ -572,8 +572,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                                 functions: (oI) => ({
                                     ...oI,
 
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         {
                                             id: "testid",
                                             reason: "testReason",
@@ -633,8 +633,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         TrueClaim.validators.hasValue(true),
                                     ],
                                 }),
@@ -681,8 +681,8 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                             override: {
                                 functions: (oI) => ({
                                     ...oI,
-                                    getGlobalClaimValidators: ({ defaultClaimValidators }) => [
-                                        ...defaultClaimValidators,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
                                         obj,
                                     ],
                                 }),

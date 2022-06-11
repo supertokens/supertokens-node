@@ -55,7 +55,7 @@ export default class RecipeImplementation implements RecipeInterface {
 
     getGlobalClaimValidators = function (
         this: RecipeImplementation,
-        input: { userId: string; defaultClaimValidators: SessionClaimValidator[]; userContext: any }
+        input: { userId: string; claimValidatorsAddedByOtherRecipes: SessionClaimValidator[]; userContext: any }
     ) {
         return this.originalImplementation.getGlobalClaimValidators(input);
     };
@@ -230,8 +230,8 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.originalImplementation.getRefreshTokenLifeTimeMS(input);
     };
 
-    applyClaim = function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
-        return this.originalImplementation.applyClaim(input);
+    fetchAndSetClaim = function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
+        return this.originalImplementation.fetchAndSetClaim(input);
     };
 
     setClaimValue = function <T>(input: {

@@ -40,7 +40,7 @@ export default class SessionWrapper {
         sessionData: any = {},
         userContext: any = {}
     ) {
-        const defaultClaims = Recipe.getInstanceOrThrowError().getDefaultClaims();
+        const defaultClaims = Recipe.getClaimsAddedByOtherRecipes();
 
         let finalAccessTokenPayload = accessTokenPayload;
 
@@ -203,10 +203,6 @@ export let getJWKS = SessionWrapper.getJWKS;
 // Open id functions
 
 export let getOpenIdDiscoveryConfiguration = SessionWrapper.getOpenIdDiscoveryConfiguration;
-
-export { SessionClaim } from "./types";
-export { PrimitiveClaim } from "./claimBaseClasses/primitiveClaim";
-export { BooleanClaim } from "./claimBaseClasses/booleanClaim";
 
 export type {
     VerifySessionOptions,

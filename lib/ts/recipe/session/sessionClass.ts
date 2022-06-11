@@ -187,8 +187,8 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    applyClaim = async <T>(claim: SessionClaim<T>, userContext?: any) => {
-        const update = await claim.applyToPayload(this.getUserId(), {}, userContext);
+    fetchAndSetClaim = async <T>(claim: SessionClaim<T>, userContext?: any) => {
+        const update = await claim.fetchAndSetClaim(this.getUserId(), {}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 
