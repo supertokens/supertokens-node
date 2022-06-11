@@ -3,7 +3,6 @@ import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
-import { convertToGeneralErrorResponse } from "../../../utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -74,16 +73,12 @@ export default function getAPIImplementation(): APIInterface {
                 options.recipeId;
 
             logDebugMessage(`Sending password reset email to ${email}`);
-            try {
-                await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                    type: "PASSWORD_RESET",
-                    user,
-                    passwordResetLink,
-                    userContext,
-                });
-            } catch (err) {
-                return convertToGeneralErrorResponse(err);
-            }
+            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                type: "PASSWORD_RESET",
+                user,
+                passwordResetLink,
+                userContext,
+            });
 
             return {
                 status: "OK",

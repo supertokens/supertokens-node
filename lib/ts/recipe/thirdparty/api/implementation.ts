@@ -5,7 +5,6 @@ import * as axios from "axios";
 import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
-import { convertToGeneralErrorResponse } from "../../../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -139,11 +138,7 @@ export default function getAPIInterface(): APIInterface {
                 });
             }
 
-            try {
-                userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data, userContext);
-            } catch (err) {
-                return convertToGeneralErrorResponse(err);
-            }
+            userInfo = await providerInfo.getProfileInfo(accessTokenAPIResponse.data, userContext);
 
             let emailInfo = userInfo.email;
             if (emailInfo === undefined) {

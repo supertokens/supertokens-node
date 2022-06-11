@@ -1,7 +1,6 @@
 import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
-import { convertToGeneralErrorResponse } from "../../../utils";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -83,38 +82,34 @@ export default function getAPIImplementation(): APIInterface {
                 userInputCode = response.userInputCode;
             }
 
-            try {
-                // we don't do something special for serverless env here
-                // cause we want to wait for service's reply since it can show
-                // a UI error message for if sending an SMS / email failed or not.
-                if (
-                    input.options.config.contactMethod === "PHONE" ||
-                    (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
-                ) {
-                    logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
-                    await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
-                        type: "PASSWORDLESS_LOGIN",
-                        codeLifetime: response.codeLifetime,
-                        phoneNumber: (input as any).phoneNumber!,
-                        preAuthSessionId: response.preAuthSessionId,
-                        urlWithLinkCode: magicLink,
-                        userInputCode,
-                        userContext: input.userContext,
-                    });
-                } else {
-                    logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
-                    await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                        type: "PASSWORDLESS_LOGIN",
-                        email: (input as any).email!,
-                        codeLifetime: response.codeLifetime,
-                        preAuthSessionId: response.preAuthSessionId,
-                        urlWithLinkCode: magicLink,
-                        userInputCode,
-                        userContext: input.userContext,
-                    });
-                }
-            } catch (err) {
-                return convertToGeneralErrorResponse(err);
+            // we don't do something special for serverless env here
+            // cause we want to wait for service's reply since it can show
+            // a UI error message for if sending an SMS / email failed or not.
+            if (
+                input.options.config.contactMethod === "PHONE" ||
+                (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
+            ) {
+                logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
+                await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
+                    type: "PASSWORDLESS_LOGIN",
+                    codeLifetime: response.codeLifetime,
+                    phoneNumber: (input as any).phoneNumber!,
+                    preAuthSessionId: response.preAuthSessionId,
+                    urlWithLinkCode: magicLink,
+                    userInputCode,
+                    userContext: input.userContext,
+                });
+            } else {
+                logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
+                await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                    type: "PASSWORDLESS_LOGIN",
+                    email: (input as any).email!,
+                    codeLifetime: response.codeLifetime,
+                    preAuthSessionId: response.preAuthSessionId,
+                    urlWithLinkCode: magicLink,
+                    userInputCode,
+                    userContext: input.userContext,
+                });
             }
 
             return {
@@ -182,9 +177,10 @@ export default function getAPIImplementation(): APIInterface {
                 if (response.status === "USER_INPUT_CODE_ALREADY_USED_ERROR") {
                     if (numberOfTriesToCreateNewCode >= 3) {
                         // we retry 3 times.
-                        return convertToGeneralErrorResponse(
-                            new Error("Failed to generate a one time code. Please try again")
-                        );
+                        return {
+                            status: "GENERAL_ERROR",
+                            message: "Failed to generate a one time code. Please try again",
+                        };
                     }
                     continue;
                 }
@@ -216,39 +212,35 @@ export default function getAPIImplementation(): APIInterface {
                         userInputCode = response.userInputCode;
                     }
 
-                    try {
-                        // we don't do something special for serverless env here
-                        // cause we want to wait for service's reply since it can show
-                        // a UI error message for if sending an SMS / email failed or not.
-                        if (
-                            input.options.config.contactMethod === "PHONE" ||
-                            (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
-                                deviceInfo.phoneNumber !== undefined)
-                        ) {
-                            logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
-                            await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
-                                type: "PASSWORDLESS_LOGIN",
-                                codeLifetime: response.codeLifetime,
-                                phoneNumber: deviceInfo.phoneNumber!,
-                                preAuthSessionId: response.preAuthSessionId,
-                                urlWithLinkCode: magicLink,
-                                userInputCode,
-                                userContext: input.userContext,
-                            });
-                        } else {
-                            logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
-                            await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                                type: "PASSWORDLESS_LOGIN",
-                                email: (input as any).email!,
-                                codeLifetime: response.codeLifetime,
-                                preAuthSessionId: response.preAuthSessionId,
-                                urlWithLinkCode: magicLink,
-                                userInputCode,
-                                userContext: input.userContext,
-                            });
-                        }
-                    } catch (err) {
-                        return convertToGeneralErrorResponse(err);
+                    // we don't do something special for serverless env here
+                    // cause we want to wait for service's reply since it can show
+                    // a UI error message for if sending an SMS / email failed or not.
+                    if (
+                        input.options.config.contactMethod === "PHONE" ||
+                        (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
+                            deviceInfo.phoneNumber !== undefined)
+                    ) {
+                        logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
+                        await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
+                            type: "PASSWORDLESS_LOGIN",
+                            codeLifetime: response.codeLifetime,
+                            phoneNumber: deviceInfo.phoneNumber!,
+                            preAuthSessionId: response.preAuthSessionId,
+                            urlWithLinkCode: magicLink,
+                            userInputCode,
+                            userContext: input.userContext,
+                        });
+                    } else {
+                        logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
+                        await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                            type: "PASSWORDLESS_LOGIN",
+                            email: (input as any).email!,
+                            codeLifetime: response.codeLifetime,
+                            preAuthSessionId: response.preAuthSessionId,
+                            urlWithLinkCode: magicLink,
+                            userInputCode,
+                            userContext: input.userContext,
+                        });
                     }
                 }
 

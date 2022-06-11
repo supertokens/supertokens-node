@@ -2,7 +2,6 @@ import { APIInterface, APIOptions, User } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { GeneralErrorResponse } from "../../../types";
-import { convertToGeneralErrorResponse } from "../../../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -85,19 +84,15 @@ export default function getAPIInterface(): APIInterface {
                 options.recipeId;
 
             logDebugMessage(`Sending email verification email to ${email}`);
-            try {
-                await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                    type: "EMAIL_VERIFICATION",
-                    user: {
-                        id: userId,
-                        email: email,
-                    },
-                    emailVerifyLink,
-                    userContext,
-                });
-            } catch (err) {
-                return convertToGeneralErrorResponse(err);
-            }
+            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                type: "EMAIL_VERIFICATION",
+                user: {
+                    id: userId,
+                    email: email,
+                },
+                emailVerifyLink,
+                userContext,
+            });
 
             return {
                 status: "OK",
