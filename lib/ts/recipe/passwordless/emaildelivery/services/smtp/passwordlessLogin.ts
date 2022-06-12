@@ -34,7 +34,7 @@ export default function getPasswordlessLoginEmailContent(input: TypePasswordless
     };
 }
 
-function getPasswordlessLoginOTPBody(appName: string, email: string, codeLifetime: number, userInputCode: string) {
+function getPasswordlessLoginOTPBody(appName: string, email: string, codeLifetime: string, userInputCode: string) {
     return `
         <!doctype html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
@@ -874,9 +874,7 @@ function getPasswordlessLoginOTPBody(appName: string, email: string, codeLifetim
                                                                             <p
                                                                                 style="font-family:'Helvetica', sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 8%; padding-right: 8%; ">
                                                                                 Enter the below OTP in your login screen. Note
-                                                                                that the link expires in ${humaniseMilliseconds(
-                                                                                    codeLifetime
-                                                                                )}.</p>
+                                                                                that the link expires in ${codeLifetime}.</p>
         
                                                                             <div
                                                                                 style="display: block; flex-direction: row; justify-content: center; margin-bottom: 40px; text-align: center">
@@ -955,7 +953,7 @@ function getPasswordlessLoginOTPBody(appName: string, email: string, codeLifetim
 function getPasswordlessLoginURLLinkBody(
     appName: string,
     email: string,
-    codeLifetime: number,
+    codeLifetime: string,
     urlWithLinkCode: string
 ) {
     return `
@@ -1797,9 +1795,7 @@ function getPasswordlessLoginURLLinkBody(
                                                                             <p
                                                                                 style="font-family:'Helvetica', sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 8%; padding-right: 8%; ">
                                                                                 Please click the button below to sign in / up.
-                                                                                Note that the link expires in ${humaniseMilliseconds(
-                                                                                    codeLifetime
-                                                                                )}.
+                                                                                Note that the link expires in ${codeLifetime}.
                                                                             </p>
         
                                                                             <div class="button-td button-td-primary"
@@ -1893,7 +1889,7 @@ function getPasswordlessLoginURLLinkBody(
 function getPasswordlessLoginOTPAndURLLinkBody(
     appName: string,
     email: string,
-    codeLifetime: number,
+    codeLifetime: string,
     urlWithLinkCode: string,
     userInputCode: string
 ) {
@@ -2733,9 +2729,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                                                                             <p
                                                                                 style="font-family: 'Helvetica' , sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 8px; padding-left: 10%; padding-right: 10%; ">
                                                                                 Enter the below OTP in your login screen. Note
-                                                                                that the link expires in ${humaniseMilliseconds(
-                                                                                    codeLifetime
-                                                                                )}.</p>
+                                                                                that the link expires in ${codeLifetime}.</p>
                                                                         </div>
         
                                                                         <div
@@ -2803,9 +2797,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                                                                             <p
                                                                                 style="font-family: 'Helvetica' , sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 10%; padding-right: 10%; ">
                                                                                 Please click the button below to sign in / up.
-                                                                                Note that the link expires in ${humaniseMilliseconds(
-                                                                                    codeLifetime
-                                                                                )}.</p>
+                                                                                Note that the link expires in ${codeLifetime}.</p>
         
                                                                             <div class="button-td button-td-primary"
                                                                                 style="border-radius: 6px; margin-bottom: 40px; display: block; flex-direction: row; justify-content: center;">
@@ -2900,13 +2892,19 @@ export function getPasswordlessLoginEmailHTML(
     userInputCode?: string
 ): string {
     if (urlWithLinkCode !== undefined && userInputCode !== undefined) {
-        return getPasswordlessLoginOTPAndURLLinkBody(appName, email, codeLifetime, urlWithLinkCode, userInputCode);
+        return getPasswordlessLoginOTPAndURLLinkBody(
+            appName,
+            email,
+            humaniseMilliseconds(codeLifetime),
+            urlWithLinkCode,
+            userInputCode
+        );
     }
     if (userInputCode !== undefined) {
-        return getPasswordlessLoginOTPBody(appName, email, codeLifetime, userInputCode);
+        return getPasswordlessLoginOTPBody(appName, email, humaniseMilliseconds(codeLifetime), userInputCode);
     }
     if (urlWithLinkCode !== undefined) {
-        return getPasswordlessLoginURLLinkBody(appName, email, codeLifetime, urlWithLinkCode);
+        return getPasswordlessLoginURLLinkBody(appName, email, humaniseMilliseconds(codeLifetime), urlWithLinkCode);
     }
     throw Error("this should never be thrown");
 }
