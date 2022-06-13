@@ -7,9 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-# Adds
+### Adds
 
 -   Support for h3 freamwork.
+
+## [9.2.3] - 2022-06-03
+
+-   Changes `getUserMetadata` to return `any` type for metadata so that it's easier to use.
+
+## [9.2.2] - 2022-05-24
+
+### Fixes:
+
+-   Calling the setImmediate function inside assertThatBodyParserHasBeenUsedForExpressLikeRequest only if the function is getting executed in NextJS env. Fixes #313
+
+## [9.2.1] - 2022-05-19
+
+### Fixes:
+
+-   Fixes the routes issue for Hapi framework plugin
 
 ## [9.2.0] - 2022-04-18
 

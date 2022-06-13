@@ -40,7 +40,7 @@ jobs:
                   node-version: "16"
             - name: Make git use https instead of ssh
               run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
-            - run: npm i
+            - run: npm i --force
             - name: Cloning supertokens-root
               run: cd ../ && git clone https://github.com/supertokens/supertokens-root.git
             - name: Update Java 1

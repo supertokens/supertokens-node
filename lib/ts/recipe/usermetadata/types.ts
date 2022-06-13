@@ -50,7 +50,7 @@ export type RecipeInterface = {
         userContext: any;
     }) => Promise<{
         status: "OK";
-        metadata: JSONObject;
+        metadata: any;
     }>;
 
     /**

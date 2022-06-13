@@ -341,6 +341,15 @@ app.get("/testError", (req, res) => {
     res.status(500).send("test error message");
 });
 
+app.post(
+    "/update-jwt-with-handle",
+    (req, res, next) => verifySession()(req, res, next),
+    async (req, res) => {
+        await Session.updateAccessTokenPayload(req.session.getHandle(), req.body);
+        res.json(req.session.getAccessTokenPayload());
+    }
+);
+
 app.use("*", async (req, res, next) => {
     res.status(404).send();
 });
