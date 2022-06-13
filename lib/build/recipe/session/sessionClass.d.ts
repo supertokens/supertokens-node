@@ -8,7 +8,14 @@ export default class Session implements SessionContainerInterface {
     protected res: BaseResponse;
     protected accessToken: string;
     protected helpers: Helpers;
-    constructor(helpers: Helpers, accessToken: string, sessionHandle: string, userId: string, userDataInAccessToken: any, res: BaseResponse);
+    constructor(
+        helpers: Helpers,
+        accessToken: string,
+        sessionHandle: string,
+        userId: string,
+        userDataInAccessToken: any,
+        res: BaseResponse
+    );
     revokeSession: (userContext?: any) => Promise<void>;
     getSessionData: (userContext?: any) => Promise<any>;
     updateSessionData: (newSessionData: any, userContext?: any) => Promise<void>;

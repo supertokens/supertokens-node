@@ -6,7 +6,7 @@ import * as hapiFramework from "./hapi";
 import * as loopbackFramework from "./loopback";
 import * as koaFramework from "./koa";
 import * as awsLambdaFramework from "./awsLambda";
-import * as h3Framework from './h3';
+import * as h3Framework from "./h3";
 declare const _default: {
     express: typeof expressFramework;
     fastify: typeof fastifyFramework;

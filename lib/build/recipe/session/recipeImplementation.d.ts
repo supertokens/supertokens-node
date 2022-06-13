@@ -6,7 +6,13 @@ export declare class HandshakeInfo {
     accessTokenValidity: number;
     refreshTokenValidity: number;
     private rawJwtSigningPublicKeyList;
-    constructor(antiCsrf: AntiCsrfType, accessTokenBlacklistingEnabled: boolean, accessTokenValidity: number, refreshTokenValidity: number, rawJwtSigningPublicKeyList: KeyInfo[]);
+    constructor(
+        antiCsrf: AntiCsrfType,
+        accessTokenBlacklistingEnabled: boolean,
+        accessTokenValidity: number,
+        refreshTokenValidity: number,
+        rawJwtSigningPublicKeyList: KeyInfo[]
+    );
     setJwtSigningPublicKeyList(updatedList: KeyInfo[]): void;
     getJwtSigningPublicKeyList(): KeyInfo[];
     clone(): HandshakeInfo;

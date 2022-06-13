@@ -18,17 +18,33 @@ export default class Recipe extends RecipeModule {
     private thirdPartyRecipe;
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput, recipes: {
-        emailVerificationInstance: EmailVerificationRecipe | undefined;
-        thirdPartyInstance: ThirdPartyRecipe | undefined;
-        emailPasswordInstance: EmailPasswordRecipe | undefined;
-    });
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput,
+        recipes: {
+            emailVerificationInstance: EmailVerificationRecipe | undefined;
+            thirdPartyInstance: ThirdPartyRecipe | undefined;
+            emailPasswordInstance: EmailPasswordRecipe | undefined;
+        }
+    );
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     static getInstanceOrThrowError(): Recipe;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, req: BaseRequest, res: BaseResponse, path: NormalisedURLPath, method: HTTPMethod) => Promise<boolean>;
-    handleError: (err: STErrorEmailPassword | STErrorThirdParty, request: BaseRequest, response: BaseResponse) => Promise<void>;
+    handleAPIRequest: (
+        id: string,
+        req: BaseRequest,
+        res: BaseResponse,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => Promise<boolean>;
+    handleError: (
+        err: STErrorEmailPassword | STErrorThirdParty,
+        request: BaseRequest,
+        response: BaseResponse
+    ) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;

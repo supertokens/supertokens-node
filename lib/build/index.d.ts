@@ -27,7 +27,9 @@ export default class SuperTokensWrapper {
         }[];
         nextPaginationToken?: string;
     }>;
-    static deleteUser(userId: string): Promise<{
+    static deleteUser(
+        userId: string
+    ): Promise<{
         status: "OK";
     }>;
 }

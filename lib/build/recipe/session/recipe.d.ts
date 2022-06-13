@@ -18,9 +18,19 @@ export default class SessionRecipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, req: BaseRequest, res: BaseResponse, path: NormalisedURLPath, method: HTTPMethod) => Promise<boolean>;
+    handleAPIRequest: (
+        id: string,
+        req: BaseRequest,
+        res: BaseResponse,
+        path: NormalisedURLPath,
+        method: HTTPMethod
+    ) => Promise<boolean>;
     handleError: (err: STError, request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    verifySession: (options: VerifySessionOptions | undefined, request: BaseRequest, response: BaseResponse) => Promise<import("./types").SessionContainerInterface | undefined>;
+    verifySession: (
+        options: VerifySessionOptions | undefined,
+        request: BaseRequest,
+        response: BaseResponse
+    ) => Promise<import("./types").SessionContainerInterface | undefined>;
 }

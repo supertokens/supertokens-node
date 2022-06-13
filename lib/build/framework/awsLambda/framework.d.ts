@@ -1,4 +1,10 @@
-import type { APIGatewayProxyEventV2, APIGatewayProxyEvent, APIGatewayProxyResult, APIGatewayProxyStructuredResultV2, Handler } from "aws-lambda";
+import type {
+    APIGatewayProxyEventV2,
+    APIGatewayProxyEvent,
+    APIGatewayProxyResult,
+    APIGatewayProxyStructuredResultV2,
+    Handler,
+} from "aws-lambda";
 import { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
@@ -50,13 +56,24 @@ export declare class AWSResponse extends BaseResponse {
     constructor(event: SupertokensLambdaEvent | SupertokensLambdaEventV2);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    setCookie: (key: string, value: string, domain: string | undefined, secure: boolean, httpOnly: boolean, expires: number, path: string, sameSite: "strict" | "lax" | "none") => void;
+    setCookie: (
+        key: string,
+        value: string,
+        domain: string | undefined,
+        secure: boolean,
+        httpOnly: boolean,
+        expires: number,
+        path: string,
+        sameSite: "strict" | "lax" | "none"
+    ) => void;
     /**
      * @param {number} statusCode
      */
     setStatusCode: (statusCode: number) => void;
     sendJSONResponse: (content: any) => void;
-    sendResponse: (response?: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2 | undefined) => APIGatewayProxyResult | APIGatewayProxyStructuredResultV2;
+    sendResponse: (
+        response?: APIGatewayProxyResult | APIGatewayProxyStructuredResultV2 | undefined
+    ) => APIGatewayProxyResult | APIGatewayProxyStructuredResultV2;
 }
 export interface SessionEventV2 extends SupertokensLambdaEventV2 {
     session?: SessionContainerInterface;

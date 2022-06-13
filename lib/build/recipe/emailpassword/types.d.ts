@@ -1,4 +1,7 @@
-import { RecipeInterface as EmailVerificationRecipeInterface, APIInterface as EmailVerificationAPIInterface } from "../emailverification";
+import {
+    RecipeInterface as EmailVerificationRecipeInterface,
+    APIInterface as EmailVerificationAPIInterface,
+} from "../emailverification";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
@@ -9,11 +12,20 @@ export declare type TypeNormalisedInput = {
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
-        functions: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface, builder?: OverrideableBuilder<EmailVerificationRecipeInterface>) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface, builder?: OverrideableBuilder<EmailVerificationAPIInterface>) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -64,11 +76,20 @@ export declare type TypeInput = {
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
-        functions?: (originalImplementation: RecipeInterface, builder?: OverrideableBuilder<RecipeInterface>) => RecipeInterface;
+        functions?: (
+            originalImplementation: RecipeInterface,
+            builder?: OverrideableBuilder<RecipeInterface>
+        ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
         emailVerificationFeature?: {
-            functions?: (originalImplementation: EmailVerificationRecipeInterface, builder?: OverrideableBuilder<EmailVerificationRecipeInterface>) => EmailVerificationRecipeInterface;
-            apis?: (originalImplementation: EmailVerificationAPIInterface, builder?: OverrideableBuilder<EmailVerificationAPIInterface>) => EmailVerificationAPIInterface;
+            functions?: (
+                originalImplementation: EmailVerificationRecipeInterface,
+                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
+            ) => EmailVerificationRecipeInterface;
+            apis?: (
+                originalImplementation: EmailVerificationAPIInterface,
+                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
+            ) => EmailVerificationAPIInterface;
         };
     };
 };
@@ -77,53 +98,59 @@ export declare type RecipeInterface = {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        user: User;
-    } | {
-        status: "EMAIL_ALREADY_EXISTS_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "EMAIL_ALREADY_EXISTS_ERROR";
+          }
+    >;
     signIn(input: {
         email: string;
         password: string;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        user: User;
-    } | {
-        status: "WRONG_CREDENTIALS_ERROR";
-    }>;
-    getUserById(input: {
-        userId: string;
-        userContext: any;
-    }): Promise<User | undefined>;
-    getUserByEmail(input: {
-        email: string;
-        userContext: any;
-    }): Promise<User | undefined>;
+    }): Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status: "WRONG_CREDENTIALS_ERROR";
+          }
+    >;
+    getUserById(input: { userId: string; userContext: any }): Promise<User | undefined>;
+    getUserByEmail(input: { email: string; userContext: any }): Promise<User | undefined>;
     createResetPasswordToken(input: {
         userId: string;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        token: string;
-    } | {
-        status: "UNKNOWN_USER_ID_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | {
+              status: "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
     resetPasswordUsingToken(input: {
         token: string;
         newPassword: string;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        /**
-         * The id of the user whose password was reset.
-         * Defined for Core versions 3.9 or later
-         */
-        userId?: string;
-    } | {
-        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              /**
+               * The id of the user whose password was reset.
+               * Defined for Core versions 3.9 or later
+               */
+              userId?: string;
+          }
+        | {
+              status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+          }
+    >;
     updateEmailOrPassword(input: {
         userId: string;
         email?: string;
@@ -143,64 +170,83 @@ export declare type APIOptions = {
     res: BaseResponse;
 };
 export declare type APIInterface = {
-    emailExistsGET: undefined | ((input: {
-        email: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        exists: boolean;
-    }>);
-    generatePasswordResetTokenPOST: undefined | ((input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-    }>);
-    passwordResetPOST: undefined | ((input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        token: string;
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        userId?: string;
-    } | {
-        status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
-    }>);
-    signInPOST: undefined | ((input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        user: User;
-        session: SessionContainerInterface;
-    } | {
-        status: "WRONG_CREDENTIALS_ERROR";
-    }>);
-    signUpPOST: undefined | ((input: {
-        formFields: {
-            id: string;
-            value: string;
-        }[];
-        options: APIOptions;
-        userContext: any;
-    }) => Promise<{
-        status: "OK";
-        user: User;
-        session: SessionContainerInterface;
-    } | {
-        status: "EMAIL_ALREADY_EXISTS_ERROR";
-    }>);
+    emailExistsGET:
+        | undefined
+        | ((input: {
+              email: string;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<{
+              status: "OK";
+              exists: boolean;
+          }>);
+    generatePasswordResetTokenPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<{
+              status: "OK";
+          }>);
+    passwordResetPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              token: string;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    userId?: string;
+                }
+              | {
+                    status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
+                }
+          >);
+    signInPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    session: SessionContainerInterface;
+                }
+              | {
+                    status: "WRONG_CREDENTIALS_ERROR";
+                }
+          >);
+    signUpPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    session: SessionContainerInterface;
+                }
+              | {
+                    status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+          >);
 };

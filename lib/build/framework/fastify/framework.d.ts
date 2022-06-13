@@ -22,7 +22,16 @@ export declare class FastifyResponse extends BaseResponse {
     constructor(response: FastifyReply);
     sendHTMLResponse: (html: string) => void;
     setHeader: (key: string, value: string, allowDuplicateKey: boolean) => void;
-    setCookie: (key: string, value: string, domain: string | undefined, secure: boolean, httpOnly: boolean, expires: number, path: string, sameSite: "strict" | "lax" | "none") => void;
+    setCookie: (
+        key: string,
+        value: string,
+        domain: string | undefined,
+        secure: boolean,
+        httpOnly: boolean,
+        expires: number,
+        path: string,
+        sameSite: "strict" | "lax" | "none"
+    ) => void;
     /**
      * @param {number} statusCode
      */
@@ -39,5 +48,19 @@ export interface FasitfyFramework extends Framework {
     plugin: FastifyPluginCallback;
     errorHandler: () => (err: any, req: OriginalFastifyRequest, res: FastifyReply) => Promise<void>;
 }
-export declare const errorHandler: () => (err: any, req: OriginalFastifyRequest<import("fastify/types/route").RouteGenericInterface, import("http").Server, import("http").IncomingMessage>, res: FastifyReply<import("http").Server, import("http").IncomingMessage, import("http").ServerResponse, import("fastify/types/route").RouteGenericInterface, unknown>) => Promise<void>;
+export declare const errorHandler: () => (
+    err: any,
+    req: OriginalFastifyRequest<
+        import("fastify/types/route").RouteGenericInterface,
+        import("http").Server,
+        import("http").IncomingMessage
+    >,
+    res: FastifyReply<
+        import("http").Server,
+        import("http").IncomingMessage,
+        import("http").ServerResponse,
+        import("fastify/types/route").RouteGenericInterface,
+        unknown
+    >
+) => Promise<void>;
 export declare const FastifyWrapper: FasitfyFramework;

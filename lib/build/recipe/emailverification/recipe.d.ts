@@ -16,7 +16,13 @@ export default class Recipe extends RecipeModule {
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
-    handleAPIRequest: (id: string, req: BaseRequest, res: BaseResponse, _: NormalisedURLPath, __: HTTPMethod) => Promise<boolean>;
+    handleAPIRequest: (
+        id: string,
+        req: BaseRequest,
+        res: BaseResponse,
+        _: NormalisedURLPath,
+        __: HTTPMethod
+    ) => Promise<boolean>;
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
