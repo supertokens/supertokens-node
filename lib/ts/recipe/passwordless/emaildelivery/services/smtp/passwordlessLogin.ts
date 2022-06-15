@@ -874,7 +874,7 @@ function getPasswordlessLoginOTPBody(appName: string, email: string, codeLifetim
                                                                             <p
                                                                                 style="font-family:'Helvetica', sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 8%; padding-right: 8%; ">
                                                                                 Enter the below OTP in your login screen. Note
-                                                                                that the link expires in ${codeLifetime}.</p>
+                                                                                that the OTP expires in ${codeLifetime}.</p>
         
                                                                             <div
                                                                                 style="display: block; flex-direction: row; justify-content: center; margin-bottom: 40px; text-align: center">
@@ -1897,23 +1897,23 @@ function getPasswordlessLoginOTPAndURLLinkBody(
         <!doctype html>
         <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
             xmlns:o="urn:schemas-microsoft-com:office:office">
-        
+
         <head>
             <meta charset="UTF-8">
             <meta http-equiv="X-UA-Compatible" content="IE=edge">
             <meta name="viewport" content="width=device-width, initial-scale=1">
             <title>*|MC:SUBJECT|*</title>
-        
+
             <style type="text/css">
                 p {
                     margin: 10px 0;
                     padding: 0;
                 }
-        
+
                 table {
                     border-collapse: collapse;
                 }
-        
+
                 h1,
                 h2,
                 h3,
@@ -1924,7 +1924,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     margin: 0;
                     padding: 0;
                 }
-        
+
                 img,
                 a img {
                     border: 0;
@@ -1932,7 +1932,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     outline: none;
                     text-decoration: none;
                 }
-        
+
                 body,
                 #bodyTable,
                 #bodyCell {
@@ -1941,32 +1941,32 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     padding: 0;
                     width: 100%;
                 }
-        
+
                 .mcnPreviewText {
                     display: none !important;
                 }
-        
+
                 #outlook a {
                     padding: 0;
                 }
-        
+
                 img {
                     -ms-interpolation-mode: bicubic;
                 }
-        
+
                 table {
                     mso-table-lspace: 0pt;
                     mso-table-rspace: 0pt;
                 }
-        
+
                 .ReadMsgBody {
                     width: 100%;
                 }
-        
+
                 .ExternalClass {
                     width: 100%;
                 }
-        
+
                 p,
                 a,
                 li,
@@ -1974,14 +1974,14 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                 blockquote {
                     mso-line-height-rule: exactly;
                 }
-        
+
                 a[href^=tel],
                 a[href^=sms] {
                     color: inherit;
                     cursor: default;
                     text-decoration: none;
                 }
-        
+
                 p,
                 a,
                 li,
@@ -1992,7 +1992,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     -ms-text-size-adjust: 100%;
                     -webkit-text-size-adjust: 100%;
                 }
-        
+
                 .ExternalClass,
                 .ExternalClass p,
                 .ExternalClass td,
@@ -2001,7 +2001,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                 .ExternalClass font {
                     line-height: 100%;
                 }
-        
+
                 a[x-apple-data-detectors] {
                     color: inherit !important;
                     text-decoration: none !important;
@@ -2010,32 +2010,32 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     font-weight: inherit !important;
                     line-height: inherit !important;
                 }
-        
+
                 .templateContainer {
                     max-width: 600px !important;
                 }
-        
+
                 a.mcnButton {
                     display: block;
                 }
-        
+
                 .mcnImage,
                 .mcnRetinaImage {
                     vertical-align: bottom;
                 }
-        
+
                 .mcnTextContent {
                     word-break: break-word;
                 }
-        
+
                 .mcnTextContent img {
                     height: auto !important;
                 }
-        
+
                 .mcnDividerBlock {
                     table-layout: fixed !important;
                 }
-        
+
                 /*
             @tab Page
             @section Heading 1
@@ -2059,7 +2059,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-align: center;
                 }
-        
+
                 /*
             @tab Page
             @section Heading 2
@@ -2083,7 +2083,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Page
             @section Heading 3
@@ -2107,7 +2107,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Page
             @section Heading 4
@@ -2131,7 +2131,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Header
             @section Header Container Style
@@ -2156,7 +2156,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     padding-bottom: 0px;
                 }
-        
+
                 /*
             @tab Header
             @section Header Interior Style
@@ -2181,7 +2181,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     padding-bottom: 0;
                 }
-        
+
                 /*
             @tab Header
             @section Header Text
@@ -2199,7 +2199,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Header
             @section Header Link
@@ -2213,7 +2213,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-decoration: underline;
                 }
-        
+
                 /*
             @tab Body
             @section Body Container Style
@@ -2238,7 +2238,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     padding-bottom: 20px;
                 }
-        
+
                 /*
             @tab Body
             @section Body Interior Style
@@ -2263,7 +2263,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     padding-bottom: 10px;
                 }
-        
+
                 /*
             @tab Body
             @section Body Text
@@ -2281,7 +2281,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-align: left;
                 }
-        
+
                 /*
             @tab Body
             @section Body Link
@@ -2295,7 +2295,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-decoration: underline;
                 }
-        
+
                 /*
             @tab Footer
             @section Footer Style
@@ -2320,7 +2320,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     padding-bottom: 20px;
                 }
-        
+
                 /*
             @tab Footer
             @section Footer Interior Style
@@ -2345,7 +2345,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     padding-bottom: 0;
                 }
-        
+
                 /*
             @tab Footer
             @section Footer Text
@@ -2363,7 +2363,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-align: center;
                 }
-        
+
                 /*
             @tab Footer
             @section Footer Link
@@ -2377,16 +2377,16 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     /*@editable*/
                     text-decoration: underline;
                 }
-        
+
                 @media only screen and (min-width:768px) {
                     .templateContainer {
                         width: 600px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     body,
                     table,
                     td,
@@ -2396,33 +2396,33 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                     blockquote {
                         -webkit-text-size-adjust: none !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     body {
                         width: 100% !important;
                         min-width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnRetinaImage {
                         max-width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImage {
                         width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnCartContainer,
                     .mcnCaptionTopContent,
                     .mcnRecContentContainer,
@@ -2441,96 +2441,96 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         max-width: 100% !important;
                         width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnBoxedTextContentContainer {
                         min-width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImageGroupContent {
                         padding: 9px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnCaptionLeftContentOuter .mcnTextContent,
                     .mcnCaptionRightContentOuter .mcnTextContent {
                         padding-top: 9px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnImageCardTopImageContent,
                     .mcnCaptionBottomContent:last-child .mcnCaptionBottomImageContent,
                     .mcnCaptionBlockInner .mcnCaptionTopContent:last-child .mcnTextContent {
                         padding-top: 18px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImageCardBottomImageContent {
                         padding-bottom: 9px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImageGroupBlockInner {
                         padding-top: 0 !important;
                         padding-bottom: 0 !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcnImageGroupBlockOuter {
                         padding-top: 9px !important;
                         padding-bottom: 9px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnTextContent,
                     .mcnBoxedTextContentColumn {
                         padding-right: 18px !important;
                         padding-left: 18px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     .mcnImageCardLeftImageContent,
                     .mcnImageCardRightImageContent {
                         padding-right: 18px !important;
                         padding-bottom: 0 !important;
                         padding-left: 18px !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
                     .mcpreview-image-uploader {
                         display: none !important;
                         width: 100% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Heading 1
@@ -2542,11 +2542,11 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         /*@editable*/
                         line-height: 125% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Heading 2
@@ -2558,11 +2558,11 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         /*@editable*/
                         line-height: 125% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Heading 3
@@ -2574,11 +2574,11 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Heading 4
@@ -2590,11 +2590,11 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Boxed Text
@@ -2607,11 +2607,11 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Header Text
@@ -2624,11 +2624,11 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Body Text
@@ -2641,11 +2641,11 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
-        
+
                 @media only screen and (max-width: 480px) {
-        
+
                     /*
             @tab Mobile Styles
             @section Footer Text
@@ -2658,11 +2658,11 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         /*@editable*/
                         line-height: 150% !important;
                     }
-        
+
                 }
             </style>
         </head>
-        
+
         <body>
             <!--*|IF:MC_PREVIEW_TEXT|*-->
             <!--[if !gte mso 9]><!----><span class="mcnPreviewText"
@@ -2724,14 +2724,14 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                                                             <tr>
                                                                 <td valign="top" class="mcnTextBlockInner">
                                                                     <div
-                                                                        style="background-color:#fff; border: 1px solid #ddd; margin-left: 3%; margin-right: 3%; border-radius: 6px">
+                                                                        style="background-color:#fff; margin-left: 3%; margin-right: 3%; border: 1px solid #ddd; border-radius: 6px">
                                                                         <div style="padding-left: 15%; padding-right: 15%;">
                                                                             <p
                                                                                 style="font-family: 'Helvetica' , sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 8px; padding-left: 10%; padding-right: 10%; ">
                                                                                 Enter the below OTP in your login screen. Note
-                                                                                that the link expires in ${codeLifetime}.</p>
+                                                                                that the OTP expires in ${codeLifetime}.</p>
                                                                         </div>
-        
+
                                                                         <div
                                                                             style="display: block; flex-direction: row; justify-content: center; margin-bottom: 40px">
                                                                             <div class="mcnTextContent"
@@ -2753,7 +2753,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                         <table align="left" border="0" cellspacing="0" cellpadding="0" width="100%" style="width:100%;">
                         <tr>
                         <![endif]-->
-        
+
                                                                     <!--[if mso]>
                         <td valign="top" width="600" style="width:600px;">
                         <![endif]-->
@@ -2762,10 +2762,10 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                                                                         width="100%" class="mcnTextContentContainer">
                                                                         <tbody>
                                                                             <tr>
-        
+
                                                                                 <td valign="top" class="mcnTextContent"
                                                                                     style="padding: 0px 18px 9px; text-align: center;">
-        
+
                                                                                     or
                                                                                 </td>
                                                                             </tr>
@@ -2774,7 +2774,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                                                                     <!--[if mso]>
                         </td>
                         <![endif]-->
-        
+
                                                                     <!--[if mso]>
                         </tr>
                         </table>
@@ -2788,17 +2788,17 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                                                         <tbody class="mcnTextBlockOuter">
                                                             <tr>
                                                                 <td valign="top" class="mcnTextBlockInner">
-        
-        
+
+
                                                                     <div
                                                                         style="background-color:#fff; margin-left: 3%; margin-right: 3%; border: 1px solid #ddd; border-radius: 6px; ">
                                                                         <div style="padding-left: 15%; padding-right: 15%;">
-        
+
                                                                             <p
                                                                                 style="font-family: 'Helvetica' , sans-serif; font-size: 16px; line-height: 26px; font-weight:700; text-align: center; padding-top: 24px; padding-bottom: 24px; padding-left: 10%; padding-right: 10%; ">
                                                                                 Please click the button below to sign in / up.
                                                                                 Note that the link expires in ${codeLifetime}.</p>
-        
+
                                                                             <div class="button-td button-td-primary"
                                                                                 style="border-radius: 6px; margin-bottom: 40px; display: block; flex-direction: row; justify-content: center;">
                                                                                 <a class="button-a button-a-primary"
@@ -2806,7 +2806,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                                                                                     style="background: #52B56E;font-size: 17px;line-height: 24px;font-weight: 700;font-family: 'Helvetica' , sans-serif;text-decoration: none;padding: 9px 25px 9px 25px;color: #ffffff;margin: 0 auto;width: fit-content;display: block;border-radius: 6px;">Login</a>
                                                                             </div>
                                                                         </div>
-        
+
                                                                         <div
                                                                             style="background-color:#fafafa; border-top: 1px solid #ddd; padding-left: 15%; padding-right: 15%; padding-bottom: 24px; padding-top: 24px">
                                                                             <p
@@ -2819,8 +2819,8 @@ function getPasswordlessLoginOTPAndURLLinkBody(
                                                                             </p>
                                                                         </div>
                                                                     </div>
-        
-        
+
+
                                                                 </td>
                                                             </tr>
                                                         </tbody>
@@ -2879,7 +2879,7 @@ function getPasswordlessLoginOTPAndURLLinkBody(
             </center>
             <script type="text/javascript" src="/LnB9Yai2/mtp86lj/jSfjLOV/Q1/aruiXJNNYbG7/ADNEAQ/Nw/FyO0NlXD8"></script>
         </body>
-        
+
         </html>
     `;
 }
