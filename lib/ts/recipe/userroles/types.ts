@@ -133,7 +133,9 @@ export type RecipeInterface = {
         didRoleExist: boolean;
     }>;
 
-    getAllRoles: () => Promise<{
+    getAllRoles: (input: {
+        userContext: any;
+    }) => Promise<{
         status: "OK";
         roles: string[];
     }>;
