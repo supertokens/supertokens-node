@@ -1,0 +1,95 @@
+const assert = require("assert");
+
+const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
+const STExpress = require("../..");
+const { ProcessState } = require("../../lib/build/processState");
+const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
+const { Querier } = require("../../lib/build/querier");
+const { maxVersion } = require("../../lib/build/utils");
+
+describe(`getUsersForRole: ${printPath("[test/userroles/getUsersForRole.test.js]")}`, function () {
+    beforeEach(async function () {
+        await killAllST();
+        await setupST();
+        ProcessState.getInstance().reset();
+    });
+
+    after(async function () {
+        await killAllST();
+        await cleanST();
+    });
+
+    describe("getUsersForRole", () => {
+        it("get users for a role", async function () {
+            await startST();
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [UserRolesRecipe.init()],
+            });
+
+            // Only run for version >= 2.14
+            let querier = Querier.getNewInstanceOrThrowError(undefined);
+            let apiVersion = await querier.getAPIVersion();
+            if (maxVersion(apiVersion, "2.13") === "2.13") {
+                return this.skip();
+            }
+
+            const users = ["user1", "user2", "user3"];
+            const role = "role";
+
+            // create role
+            {
+                const result = await UserRolesRecipe.createNewRoleOrAddPermissions(role, []);
+                assert.strictEqual(result.status, "OK");
+                assert(result.createdNewRole);
+            }
+
+            // add them to a user
+            for (let user in users) {
+                const response = await UserRolesRecipe.addRoleToUser(users[user], role);
+                assert.strictEqual(response.status, "OK");
+                assert(!response.didUserAlreadyHaveRole);
+            }
+
+            // retrieve the users for role
+            const result = await UserRolesRecipe.getUsersForRole(role);
+            assert.strictEqual(result.status, "OK");
+            assert(areArraysEqual(users, result.users));
+        });
+
+        it("get users for an unknown role", async function () {
+            await startST();
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [UserRolesRecipe.init()],
+            });
+
+            // Only run for version >= 2.14
+            let querier = Querier.getNewInstanceOrThrowError(undefined);
+            let apiVersion = await querier.getAPIVersion();
+            if (maxVersion(apiVersion, "2.13") === "2.13") {
+                return this.skip();
+            }
+
+            // retrieve the users for role which does not exist
+            const result = await UserRolesRecipe.getUsersForRole("unknownRole");
+            assert.strictEqual(result.status, "UNKNOWN_ROLE_ERROR");
+        });
+    });
+});
