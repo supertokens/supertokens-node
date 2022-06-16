@@ -67,7 +67,7 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
             }
         });
 
-        it("remove permissions for an unknown role", async function () {
+        it("remove permissions from an unknown role", async function () {
             await startST();
 
             STExpress.init({
