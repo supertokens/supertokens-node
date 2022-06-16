@@ -41,91 +41,100 @@ export type RecipeInterface = {
     addRoleToUser: (input: {
         userId: string;
         role: string;
-    }) =>
+        userContext: any;
+    }) => Promise<
         | {
               status: "OK";
               didUserAlreadyHaveRole: boolean;
           }
         | {
               status: "UNKNOWN_ROLE_ERROR";
-          };
+          }
+    >;
 
     removeUserRole: (input: {
         userId: string;
         role: string;
-    }) =>
+        userContext: any;
+    }) => Promise<
         | {
               status: "OK";
               didUserHaveRole: boolean;
           }
         | {
               status: "UNKNOWN_ROLE_ERROR";
-          };
+          }
+    >;
 
     getRolesForUser: (input: {
         userId: string;
-    }) => {
+        userContext: any;
+    }) => Promise<{
         status: "OK";
         roles: string[];
-    };
+    }>;
 
     getUsersForRole: (input: {
         role: string;
-    }) =>
+        userContext: any;
+    }) => Promise<
         | {
               status: "OK";
               users: string[];
           }
         | {
               status: "UNKNOWN_ROLE_ERROR";
-          };
+          }
+    >;
 
     createNewRoleOrAddPermissions: (input: {
         role: string;
         permissions: string[];
-    }) => {
+        userContext: any;
+    }) => Promise<{
         status: "OK";
         createdNewRole: boolean;
-    };
+    }>;
 
     getPermissionsForRole: (input: {
         role: string;
-    }) =>
+        userContext: any;
+    }) => Promise<
         | {
               status: "OK";
               permissions: string[];
           }
         | {
               status: "UNKNOWN_ROLE_ERROR";
-          };
+          }
+    >;
 
     removePermissionsFromRole: (input: {
         role: string;
         permissions: string[];
-    }) =>
-        | {
-              status: "OK";
-          }
-        | {
-              status: "UNKNOWN_ROLE_ERROR";
-          };
+        userContext: any;
+    }) => Promise<{
+        status: "OK" | "UNKNOWN_ROLE_ERROR";
+    }>;
 
-    getRolesWithPermission: (input: {
+    getRolesThatHavePermission: (input: {
         permission: string;
-    }) => {
+        userContext: any;
+    }) => Promise<{
         status: "OK";
         roles: string[];
-    };
+    }>;
 
     deleteRole: (input: {
         role: string;
-    }) => {
+        userContext: any;
+    }) => Promise<{
         status: "OK";
         didRoleExist: boolean;
-    };
+    }>;
 
-    getAllRoles: () => {
+    getAllRoles: () => Promise<{
         status: "OK";
         roles: string[];
-    };
+    }>;
 };
