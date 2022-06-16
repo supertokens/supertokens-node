@@ -8,7 +8,7 @@ const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 
 describe(`createNewRoleOrAddPermissionsTest: ${printPath(
-    "[test/usermetadata/createNewRoleOrAddPermissions.test.js]"
+    "[test/userroles/createNewRoleOrAddPermissions.test.js]"
 )}`, function () {
     beforeEach(async function () {
         await killAllST();
