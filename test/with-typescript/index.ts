@@ -1,6 +1,6 @@
 import * as express from "express";
 import Supertokens from "../..";
-import Session, { RecipeInterface } from "../../recipe/session";
+import Session, { RecipeInterface, SessionClaimValidator } from "../../recipe/session";
 import EmailPassword from "../../recipe/emailpassword";
 import { verifySession } from "../../recipe/session/framework/express";
 import { middleware, errorHandler, SessionRequest } from "../../framework/express";
@@ -11,6 +11,7 @@ import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import Passwordless from "../../recipe/passwordless";
 import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
 import UserMetadata from "../../recipe/usermetadata";
+import { BooleanClaim, PrimitiveClaim, SessionClaim } from "../../recipe/session/claims";
 
 UserMetadata.updateUserMetadata("...", {
     firstName: "..",
@@ -235,6 +236,44 @@ let config: TypeInput = {
     telemetry: true,
 };
 
+class StringClaim extends PrimitiveClaim<string> {
+    constructor(key: string) {
+        super(key);
+
+        this.validators = {
+            ...this.validators,
+            startsWith: (str) => ({
+                claim: this,
+                id: key,
+                shouldRefetch: () => false,
+                validate: (payload) => {
+                    const value = this.getValueFromPayload(payload);
+                    if (!value || !value.startsWith(str)) {
+                        return {
+                            isValid: false,
+                            reason: {
+                                expectedPrefix: str,
+                                value,
+                                message: "wrong prefix",
+                            },
+                        };
+                    }
+                    return { isValid: true };
+                },
+            }),
+        };
+    }
+    fetchValue(userId: string, userContext: any): string | Promise<string | undefined> | undefined {
+        return userId;
+    }
+
+    validators: PrimitiveClaim<string>["validators"] & {
+        startsWith: (prefix: string) => SessionClaimValidator;
+    };
+}
+const stringClaim = new StringClaim("cust-str");
+const boolClaim = new BooleanClaim({ key: "asdf", fetchValue: (userId) => userId.startsWith("5") });
+
 Supertokens.init(config);
 
 app.use(middleware());
@@ -243,11 +282,23 @@ app.use(
     verifySession({
         antiCsrfCheck: true,
         sessionRequired: false,
+        overrideGlobalClaimValidators: (session, globalClaimValidators) => {
+            return [...globalClaimValidators, stringClaim.validators.startsWith("5")];
+        },
     }),
     async (req: SessionRequest, res) => {
         let session = req.session;
         if (session !== undefined) {
             session.getAccessToken();
+            const oldValue = await session.getClaimValue(stringClaim);
+            await session.setClaimValue(stringClaim, oldValue + "!!!!");
+            await session.removeClaim(boolClaim);
+            await session.fetchAndSetClaim(boolClaim);
+
+            await session.assertClaims([
+                stringClaim.validators.startsWith("!!!!"),
+                boolClaim.validators.hasValue(true),
+            ]);
         }
 
         // nextJS types
@@ -259,7 +310,11 @@ app.use(
             res
         );
         if (session2 !== undefined) {
-            session2.getHandle();
+            const handle = session2.getHandle();
+            await Session.fetchAndSetClaim(handle, boolClaim);
+            const oldValue = await Session.getClaimValue(handle, stringClaim);
+            await Session.setClaimValue(handle, stringClaim, oldValue + "!!!");
+            await Session.removeClaim(handle, boolClaim);
         }
 
         await NextJS.superTokensNextWrapper(
@@ -529,11 +584,17 @@ Session.init({
 
                     return session;
                 },
+                getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                    ...claimValidatorsAddedByOtherRecipes,
+                    boolClaim.validators.hasValue(true),
+                ],
                 createNewSession: async function (input) {
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
                         lastTokenRefresh: Date.now(),
                     };
+                    input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
+                    input.accessTokenPayload = boolClaim.fetchAndSetClaim(input.userId, input.accessTokenPayload);
                     return originalImplementation.createNewSession(input);
                 },
             };

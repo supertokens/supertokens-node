@@ -22,6 +22,7 @@ import {
     APIInterface,
     APIOptions,
     SessionClaimValidator,
+    SessionClaim,
 } from "./types";
 import OpenIdRecipe from "../openid/recipe";
 import Recipe from "./recipe";
@@ -40,11 +41,11 @@ export default class SessionWrapper {
         sessionData: any = {},
         userContext: any = {}
     ) {
-        const defaultClaims = Recipe.getClaimsAddedByOtherRecipes();
+        const claimsAddedByOtherRecipes = Recipe.getClaimsAddedByOtherRecipes();
 
         let finalAccessTokenPayload = accessTokenPayload;
 
-        for (const claim of defaultClaims) {
+        for (const claim of claimsAddedByOtherRecipes) {
             const value = await claim.fetchValue(userId, userContext);
             if (value !== undefined) {
                 finalAccessTokenPayload = claim.addToPayload_internal(finalAccessTokenPayload, value, userContext);
@@ -168,6 +169,48 @@ export default class SessionWrapper {
             "getOpenIdDiscoveryConfiguration cannot be used without enabling the JWT feature. Please set 'enableJWT: true' when initialising the Session recipe"
         );
     }
+
+    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<void> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndSetClaim({
+            sessionHandle,
+            claim,
+            userContext,
+        });
+    }
+
+    static setClaimValue<T>(
+        sessionHandle: string,
+        claim: SessionClaim<T>,
+        value: T,
+        userContext: any = {}
+    ): Promise<void> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.setClaimValue({
+            sessionHandle,
+            claim,
+            value,
+            userContext,
+        });
+    }
+
+    static getClaimValue<T>(
+        sessionHandle: string,
+        claim: SessionClaim<T>,
+        userContext: any = {}
+    ): Promise<T | undefined> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getClaimValue({
+            sessionHandle,
+            claim,
+            userContext,
+        });
+    }
+
+    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<void> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeClaim({
+            sessionHandle,
+            claim,
+            userContext,
+        });
+    }
 }
 
 export let init = SessionWrapper.init;
@@ -192,6 +235,11 @@ export let updateSessionData = SessionWrapper.updateSessionData;
 
 export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
 export let mergeIntoAccessTokenPayload = SessionWrapper.mergeIntoAccessTokenPayload;
+
+export let fetchAndSetClaim = SessionWrapper.fetchAndSetClaim;
+export let setClaimValue = SessionWrapper.setClaimValue;
+export let getClaimValue = SessionWrapper.getClaimValue;
+export let removeClaim = SessionWrapper.removeClaim;
 
 export let Error = SessionWrapper.Error;
 

@@ -1,4 +1,4 @@
-export * from "../../lib/build/recipe/session";
+export * from "../../lib/build/recipe/session/claims";
 /**
  * 'export *' does not re-export a default.
  * import NextJS from "supertokens-node/nextjs";

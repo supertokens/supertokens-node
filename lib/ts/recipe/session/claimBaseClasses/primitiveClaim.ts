@@ -17,7 +17,7 @@ export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T
             },
         };
     }
-    removeFromPayload(payload: any, _userContext: any): any {
+    removeFromPayload(payload: any, _userContext?: any): any {
         const res = {
             ...payload,
             [this.key]: null,
@@ -35,9 +35,9 @@ export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T
             return {
                 claim: this,
                 id: id ?? this.key,
-                shouldRefetch: (grantPayload, ctx) => this.getValueFromPayload(grantPayload, ctx) === undefined,
-                validate: (grantPayload, ctx) => {
-                    const claimVal = this.getValueFromPayload(grantPayload, ctx);
+                shouldRefetch: (payload, ctx) => this.getValueFromPayload(payload, ctx) === undefined,
+                validate: (payload, ctx) => {
+                    const claimVal = this.getValueFromPayload(payload, ctx);
                     const isValid = claimVal === val;
                     return isValid
                         ? { isValid: isValid }
@@ -49,19 +49,19 @@ export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T
             return {
                 claim: this,
                 id: id ?? this.key + "-fresh-val",
-                shouldRefetch: (grantPayload, ctx) =>
-                    this.getValueFromPayload(grantPayload, ctx) === undefined ||
-                    // We know grantPayload[this.id] is defined since the value is not undefined in this branch
-                    grantPayload[this.key].t < Date.now() - maxAgeInSeconds * 1000,
-                validate: (grantPayload, ctx) => {
-                    const claimVal = this.getValueFromPayload(grantPayload, ctx);
+                shouldRefetch: (payload, ctx) =>
+                    this.getValueFromPayload(payload, ctx) === undefined ||
+                    // We know payload[this.id] is defined since the value is not undefined in this branch
+                    payload[this.key].t < Date.now() - maxAgeInSeconds * 1000,
+                validate: (payload, ctx) => {
+                    const claimVal = this.getValueFromPayload(payload, ctx);
                     if (claimVal !== val) {
                         return {
                             isValid: false,
                             reason: { message: "wrong value", expectedValue: val, actualValue: claimVal },
                         };
                     }
-                    const ageInSeconds = (Date.now() - grantPayload[this.key].t) / 1000;
+                    const ageInSeconds = (Date.now() - payload[this.key].t) / 1000;
                     if (ageInSeconds > maxAgeInSeconds) {
                         return {
                             isValid: false,

@@ -231,7 +231,7 @@ export declare type RecipeInterface = {
     }>;
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-    fetchAndSetClaim<T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }): Promise<void>;
+    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
@@ -348,7 +348,7 @@ export declare abstract class SessionClaim<T> {
      *
      * @returns The modified payload object
      */
-    abstract removeFromPayload(payload: JSONObject, userContext: any): JSONObject;
+    abstract removeFromPayload(payload: JSONObject, userContext?: any): JSONObject;
     /**
      * Removes the claim from the payload, by cloning and updating the entire object.
      *
