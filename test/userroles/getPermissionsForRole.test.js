@@ -81,7 +81,7 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
                 return this.skip();
             }
 
-            // retrieve the users for role which does not exist
+            // retrieve the users for role that does not exist
             const result = await UserRolesRecipe.getPermissionsForRole("unknownRole");
             assert.strictEqual(result.status, "UNKNOWN_ROLE_ERROR");
         });

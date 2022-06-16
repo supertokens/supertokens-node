@@ -76,7 +76,7 @@ describe(`getPermissionsForRole: ${printPath("[test/userroles/getPermissionsForR
             }
         });
 
-        it("delete a role which does not exist", async function () {
+        it("delete a role that does not exist", async function () {
             await startST();
 
             STExpress.init({
