@@ -15,13 +15,6 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 
-export type JSONPrimitive = string | number | boolean | null;
-export type JSONArray = Array<JSONPrimitive>;
-export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
-export interface JSONObject {
-    [ind: string]: JSONValue;
-}
-
 export type TypeInput = {
     override?: {
         functions?: (
