@@ -176,5 +176,53 @@ describe(`createNewRoleOrAddPermissionsTest: ${printPath(
                 assert(areArraysEqual(finalPermissions, result.permissions));
             }
         });
+
+        it("add duplicate permission", async function () {
+            await startST();
+
+            const role = "role";
+            const permissions = ["permission1"];
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [UserRolesRecipe.init()],
+            });
+
+            // Only run for version >= 2.14
+            let querier = Querier.getNewInstanceOrThrowError(undefined);
+            let apiVersion = await querier.getAPIVersion();
+            if (maxVersion(apiVersion, "2.13") === "2.13") {
+                return this.skip();
+            }
+
+            {
+                const result = await UserRolesRecipe.createNewRoleOrAddPermissions(role, permissions);
+                assert.strictEqual(result.status, "OK");
+                assert(result.createdNewRole);
+            }
+
+            // add duplicate permissions to the role
+
+            {
+                const result = await UserRolesRecipe.createNewRoleOrAddPermissions(role, permissions);
+                assert.strictEqual(result.status, "OK");
+                assert(!result.createdNewRole);
+            }
+
+            // check that no additional permission has been added
+
+            {
+                const result = await UserRolesRecipe.getPermissionsForRole(role);
+                assert.strictEqual(result.status, "OK");
+                assert(areArraysEqual(result.permissions, permissions));
+            }
+        });
     });
 });
