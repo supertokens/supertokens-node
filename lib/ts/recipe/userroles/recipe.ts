@@ -27,7 +27,7 @@ import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 
 export default class Recipe extends RecipeModule {
-    static RECIPE_ID = "usermetadata";
+    static RECIPE_ID = "userroles";
     private static instance: Recipe | undefined = undefined;
 
     config: TypeNormalisedInput;
@@ -52,7 +52,7 @@ export default class Recipe extends RecipeModule {
             return Recipe.instance;
         }
         throw new Error(
-            "Initialisation not done. Did you forget to call the UserMetadata.init or SuperTokens.init function?"
+            "Initialisation not done. Did you forget to call the UserRoles.init or SuperTokens.init functions?"
         );
     }
 
@@ -62,7 +62,7 @@ export default class Recipe extends RecipeModule {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
-                throw new Error("UserMetadata recipe has already been initialised. Please check your code for bugs.");
+                throw new Error("UserRoles recipe has already been initialised. Please check your code for bugs.");
             }
         };
     }
