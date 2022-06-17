@@ -23,6 +23,7 @@ let nock = require("nock");
 let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");
 let express = require("express");
+let { isCDIVersionCompatible } = require("../utils");
 
 describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery.test.js]")}`, function () {
     before(function () {
@@ -86,6 +87,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -151,6 +157,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -230,6 +241,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -289,6 +305,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -352,6 +373,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -462,6 +488,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -511,6 +542,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -585,6 +621,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -645,6 +686,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -753,6 +799,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -795,6 +846,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());

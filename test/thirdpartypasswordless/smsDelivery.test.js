@@ -23,6 +23,7 @@ let nock = require("nock");
 let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");
 let express = require("express");
+let { isCDIVersionCompatible } = require("../utils");
 
 describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.test.js]")}`, function () {
     beforeEach(async function () {
@@ -57,6 +58,11 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -134,6 +140,11 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -194,6 +205,11 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -296,6 +312,11 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -346,6 +367,11 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -431,6 +457,11 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -487,6 +518,11 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
