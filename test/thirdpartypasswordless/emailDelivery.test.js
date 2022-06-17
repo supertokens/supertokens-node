@@ -60,6 +60,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
     });
 
     after(async function () {
+        process.env.TEST_MODE = "testing";
         await killAllST();
         await cleanST();
     });
