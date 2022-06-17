@@ -200,6 +200,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         let email = undefined;
         let thirdParty = undefined;
         let emailVerifyURL = undefined;
+        let tj = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -219,6 +220,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                             email = input.email;
                             thirdParty = input.thirdParty;
                             emailVerifyURL = emailVerificationURLWithToken;
+                            tj = input.timeJoined;
                         },
                     },
                 }),
@@ -252,6 +254,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         assert.strictEqual(user.user.thirdParty.id, thirdParty.id);
         assert.strictEqual(user.user.thirdParty.userId, thirdParty.userId);
         assert.notStrictEqual(emailVerifyURL, undefined);
+        assert.notStrictEqual(tj, undefined);
     });
 
     it("test backward compatibility: email verify (passwordless user)", async function () {

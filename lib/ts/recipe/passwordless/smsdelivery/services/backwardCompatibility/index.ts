@@ -115,7 +115,7 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
          *   "b": 2
          * }
          */
-        console.log(`SMS content: ${JSON.stringify(input, null, 2)}`);
+        console.log(`\nSMS content: ${JSON.stringify(input, null, 2)}`);
     };
 }
 

@@ -153,6 +153,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         await startST();
         let email = undefined;
         let passwordResetURL = undefined;
+        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -168,6 +169,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                         createAndSendCustomEmail: async (input, passwordResetLink) => {
                             email = input.email;
                             passwordResetURL = passwordResetLink;
+                            timeJoined = input.timeJoined;
                         },
                     },
                 }),
@@ -198,6 +200,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         await delay(2);
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(passwordResetURL, undefined);
+        assert.notStrictEqual(timeJoined, undefined);
     });
 
     it("test backward compatibility: reset password (non-existent user)", async function () {
@@ -604,6 +607,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         let email = undefined;
         let thirdParty = undefined;
         let emailVerifyURL = undefined;
+        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -620,6 +624,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                             email = input.email;
                             thirdParty = input.thirdParty;
                             emailVerifyURL = emailVerificationURLWithToken;
+                            timeJoined = input.timeJoined;
                         },
                     },
                 }),
@@ -649,6 +654,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         assert.strictEqual(email, "test@example.com");
         assert.strictEqual(thirdParty, undefined);
         assert.notStrictEqual(emailVerifyURL, undefined);
+        assert.notStrictEqual(timeJoined, undefined);
     });
 
     it("test backward compatibility: email verify (thirdparty user)", async function () {

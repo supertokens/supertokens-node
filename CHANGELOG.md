@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [9.3.0] - 2022-06-17
+
 ### Added
 
 -   `emailDelivery` user config for Emailpassword, Thirdparty, ThirdpartyEmailpassword, Passwordless and ThirdpartyPasswordless recipes.
@@ -14,10 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `Twilio` service integartion for smsDelivery ingredient.
 -   `SMTP` service integration for emailDelivery ingredient.
 -   `Supertokens` service integration for smsDelivery ingredient.
-
-### Breaking Change
-
--   `user` object passed for password-reset and email-verification send email functions will only have `id` and `email` properties. `timeJoined` property has been removed.
 
 ### Deprecated
 

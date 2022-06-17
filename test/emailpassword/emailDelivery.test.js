@@ -153,6 +153,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await startST();
         let email = undefined;
         let passwordResetURL = undefined;
+        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -168,6 +169,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                         createAndSendCustomEmail: async (input, passwordResetLink) => {
                             email = input.email;
                             passwordResetURL = passwordResetLink;
+                            timeJoined = input.timeJoined;
                         },
                     },
                 }),
@@ -198,6 +200,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await delay(2);
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(passwordResetURL, undefined);
+        assert.notStrictEqual(timeJoined, undefined);
     });
 
     it("test backward compatibility: reset password (non existent user)", async function () {
@@ -545,6 +548,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await startST();
         let email = undefined;
         let emailVerifyURL = undefined;
+        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -560,6 +564,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                         createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
                             email = input.email;
                             emailVerifyURL = emailVerificationURLWithToken;
+                            timeJoined = input.timeJoined;
                         },
                     },
                 }),
@@ -588,6 +593,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await delay(2);
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(emailVerifyURL, undefined);
+        assert.notStrictEqual(timeJoined, undefined);
     });
 
     it("test custom override: email verify", async function () {
