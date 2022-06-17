@@ -7,7 +7,7 @@ const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
 const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 
-describe(`getUsersForRole: ${printPath("[test/userroles/getUsersForRole.test.js]")}`, function () {
+describe(`getUsersThatHaveRole: ${printPath("[test/userroles/getUsersThatHaveRole.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -19,7 +19,7 @@ describe(`getUsersForRole: ${printPath("[test/userroles/getUsersForRole.test.js]
         await cleanST();
     });
 
-    describe("getUsersForRole", () => {
+    describe("getUsersThatHaveRole", () => {
         it("get users for a role", async function () {
             await startST();
 
@@ -60,7 +60,7 @@ describe(`getUsersForRole: ${printPath("[test/userroles/getUsersForRole.test.js]
             }
 
             // retrieve the users for role
-            const result = await UserRolesRecipe.getUsersForRole(role);
+            const result = await UserRolesRecipe.getUsersThatHaveRole(role);
             assert.strictEqual(result.status, "OK");
             assert(areArraysEqual(users, result.users));
         });
@@ -88,7 +88,7 @@ describe(`getUsersForRole: ${printPath("[test/userroles/getUsersForRole.test.js]
             }
 
             // retrieve the users for role which that not exist
-            const result = await UserRolesRecipe.getUsersForRole("unknownRole");
+            const result = await UserRolesRecipe.getUsersThatHaveRole("unknownRole");
             assert.strictEqual(result.status, "UNKNOWN_ROLE_ERROR");
         });
     });

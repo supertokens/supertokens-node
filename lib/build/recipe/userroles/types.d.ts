@@ -53,7 +53,7 @@ export declare type RecipeInterface = {
         status: "OK";
         roles: string[];
     }>;
-    getUsersForRole: (input: {
+    getUsersThatHaveRole: (input: {
         role: string;
         userContext: any;
     }) => Promise<

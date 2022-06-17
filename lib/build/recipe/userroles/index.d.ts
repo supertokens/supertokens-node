@@ -36,7 +36,7 @@ export default class Wrapper {
         status: "OK";
         roles: string[];
     }>;
-    static getUsersForRole(
+    static getUsersThatHaveRole(
         role: string,
         userContext?: any
     ): Promise<
@@ -100,7 +100,7 @@ export declare const init: typeof Recipe.init;
 export declare const addRoleToUser: typeof Wrapper.addRoleToUser;
 export declare const removeUserRole: typeof Wrapper.removeUserRole;
 export declare const getRolesForUser: typeof Wrapper.getRolesForUser;
-export declare const getUsersForRole: typeof Wrapper.getUsersForRole;
+export declare const getUsersThatHaveRole: typeof Wrapper.getUsersThatHaveRole;
 export declare const createNewRoleOrAddPermissions: typeof Wrapper.createNewRoleOrAddPermissions;
 export declare const getPermissionsForRole: typeof Wrapper.getPermissionsForRole;
 export declare const removePermissionsFromRole: typeof Wrapper.removePermissionsFromRole;
