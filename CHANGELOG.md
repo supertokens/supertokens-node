@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+-   Adds User Roles recipe and compatibility with CDI 2.14
 -   `emailDelivery` user config for Emailpassword, Thirdparty, ThirdpartyEmailpassword, Passwordless and ThirdpartyPasswordless recipes.
 -   `smsDelivery` user config for Passwordless and ThirdpartyPasswordless recipes.
 -   `Twilio` service integartion for smsDelivery ingredient.
