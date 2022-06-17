@@ -60,6 +60,7 @@ describe(`emailDelivery: ${printPath("[test/thirdparty/emailDelivery.test.js]")}
     });
 
     after(async function () {
+        process.env.TEST_MODE = "testing";
         await killAllST();
         await cleanST();
     });
