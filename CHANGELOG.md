@@ -7,7 +7,98 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [9.3.0] - 2022-06-17
+
+### Added
+
 -   Adds User Roles recipe and compatibility with CDI 2.14
+-   `emailDelivery` user config for Emailpassword, Thirdparty, ThirdpartyEmailpassword, Passwordless and ThirdpartyPasswordless recipes.
+-   `smsDelivery` user config for Passwordless and ThirdpartyPasswordless recipes.
+-   `Twilio` service integartion for smsDelivery ingredient.
+-   `SMTP` service integration for emailDelivery ingredient.
+-   `Supertokens` service integration for smsDelivery ingredient.
+
+### Deprecated
+
+-   For Emailpassword recipe input config, `resetPasswordUsingTokenFeature.createAndSendCustomEmail` and `emailVerificationFeature.createAndSendCustomEmail` have been deprecated.
+-   For Thirdparty recipe input config, `emailVerificationFeature.createAndSendCustomEmail` has been deprecated.
+-   For ThirdpartyEmailpassword recipe input config, `resetPasswordUsingTokenFeature.createAndSendCustomEmail` and `emailVerificationFeature.createAndSendCustomEmail` have been deprecated.
+-   For Passwordless recipe input config, `createAndSendCustomEmail` and `createAndSendCustomTextMessage` have been deprecated.
+-   For ThirdpartyPasswordless recipe input config, `createAndSendCustomEmail`, `createAndSendCustomTextMessage` and `emailVerificationFeature.createAndSendCustomEmail` have been deprecated.
+
+### Migration
+
+Following is an example of ThirdpartyPasswordless recipe migration. If your existing code looks like
+
+```ts
+import SuperTokens from "supertokens-auth-react";
+import ThirdpartyPasswordless from "supertokens-auth-react/recipe/thirdpartypasswordless";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        ThirdpartyPasswordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            createAndSendCustomEmail: async (input, userContext) => {
+                // some custom logic
+            },
+            createAndSendCustomTextMessage: async (input, userContext) => {
+                // some custom logic
+            },
+            flowType: "...",
+            emailVerificationFeature: {
+                createAndSendCustomEmail: async (user, emailVerificationURLWithToken, userContext) => {
+                    // some custom logic
+                },
+            },
+        }),
+    ],
+});
+```
+
+After migration to using new `emailDelivery` and `smsDelivery` config, your code would look like:
+
+```ts
+import SuperTokens from "supertokens-auth-react";
+import ThirdpartyPasswordless from "supertokens-auth-react/recipe/thirdpartypasswordless";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "..."
+    },
+    recipeList: [
+        ThirdpartyPasswordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            emailDelivery: {
+                service: {
+                    sendEmail: async (input) => {
+                        let userContext = input.userContext;
+                        if(input.type === "EMAIL_VERIFICATION") {
+                            // some custom logic
+                        } else if (input.type === "PASSWORDLESS_LOGIN") {
+                            // some custom logic
+                        }
+                    }
+                }
+            },
+            smsDelivery: {
+                service: {
+                    sendSms: async (input) => {
+                        // some custom logic for sending passwordless login SMS
+                    }
+                }
+            }
+            flowType: "..."
+        })
+    ]
+})
+```
 
 ## [9.2.3] - 2022-06-03
 

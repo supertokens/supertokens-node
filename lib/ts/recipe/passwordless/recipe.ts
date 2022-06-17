@@ -36,6 +36,9 @@ import {
     DOES_PHONE_NUMBER_EXIST_API,
     RESEND_CODE_API,
 } from "./constants";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
+import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -49,10 +52,24 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput) {
+    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
+
+    smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
+
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput,
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput> | undefined;
+            smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput> | undefined;
+        }
+    ) {
         super(recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
         this.config = validateAndNormaliseUserInput(this, appInfo, config);
+
         {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
@@ -61,6 +78,20 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(APIImplementation());
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
+
+        /**
+         * emailDelivery will always needs to be declared after isInServerlessEnv
+         * and recipeInterfaceImpl values are set
+         */
+        this.emailDelivery =
+            ingredients.emailDelivery === undefined
+                ? new EmailDeliveryIngredient(this.config.getEmailDeliveryConfig())
+                : ingredients.emailDelivery;
+
+        this.smsDelivery =
+            ingredients.smsDelivery === undefined
+                ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
+                : ingredients.smsDelivery;
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -73,7 +104,10 @@ export default class Recipe extends RecipeModule {
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
+                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
+                    emailDelivery: undefined,
+                    smsDelivery: undefined,
+                });
                 return Recipe.instance;
             } else {
                 throw new Error("Passwordless recipe has already been initialised. Please check your code for bugs.");
@@ -139,6 +173,8 @@ export default class Recipe extends RecipeModule {
             recipeImplementation: this.recipeInterfaceImpl,
             req,
             res,
+            emailDelivery: this.emailDelivery,
+            smsDelivery: this.smsDelivery,
         };
         if (id === CONSUME_CODE_API) {
             return await consumeCodeAPI(this.apiImpl, options);

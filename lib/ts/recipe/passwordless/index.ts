@@ -15,7 +15,14 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, User, APIOptions, APIInterface } from "./types";
+import {
+    RecipeInterface,
+    User,
+    APIOptions,
+    APIInterface,
+    TypePasswordlessEmailDeliveryInput,
+    TypePasswordlessSmsDeliveryInput,
+} from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -150,6 +157,14 @@ export default class Wrapper {
     ) {
         return Recipe.getInstanceOrThrowError().signInUp({ userContext: {}, ...input });
     }
+
+    static async sendEmail(input: TypePasswordlessEmailDeliveryInput & { userContext: any }) {
+        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail(input);
+    }
+
+    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext: any }) {
+        return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms(input);
+    }
 }
 
 export let init = Wrapper.init;
@@ -187,3 +202,7 @@ export let createMagicLink = Wrapper.createMagicLink;
 export let signInUp = Wrapper.signInUp;
 
 export type { RecipeInterface, User, APIOptions, APIInterface };
+
+export let sendEmail = Wrapper.sendEmail;
+
+export let sendSms = Wrapper.sendSms;
