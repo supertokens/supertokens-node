@@ -276,7 +276,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     it("test with core base path", async function () {
         // first we need to know if the core used supports base_path config
-        setKeyValueInConfig("base_path", "/test");
+        await setKeyValueInConfig("base_path", "/test");
         await startST();
 
         try {
@@ -308,7 +308,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     it("test with incorrect core base path should fail", async function () {
         // first we need to know if the core used supports base_path config
-        setKeyValueInConfig("base_path", "/some/path");
+        await setKeyValueInConfig("base_path", "/some/path");
         await startST();
 
         try {
@@ -344,7 +344,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
 
     it("test with multiple core base path", async function () {
         // first we need to know if the core used supports base_path config
-        setKeyValueInConfig("base_path", "/some/path");
+        await setKeyValueInConfig("base_path", "/some/path");
         await startST();
 
         try {
@@ -357,7 +357,7 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             throw error;
         }
 
-        setKeyValueInConfig("base_path", "/test");
+        await setKeyValueInConfig("base_path", "/test");
         await startST("localhost", 8082);
 
         ST.init({
