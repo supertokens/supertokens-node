@@ -347,9 +347,6 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
         setKeyValueInConfig("base_path", "/some/path");
         await startST();
 
-        setKeyValueInConfig("base_path", "/test");
-        await startST("localhost", 8082);
-
         try {
             await axios.get("http://localhost:8080/some/path/hello");
         } catch (error) {
@@ -359,6 +356,9 @@ describe(`Querier: ${printPath("[test/querier.test.js]")}`, function () {
             }
             throw error;
         }
+
+        setKeyValueInConfig("base_path", "/test");
+        await startST("localhost", 8082);
 
         ST.init({
             supertokens: {
