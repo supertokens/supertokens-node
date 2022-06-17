@@ -293,6 +293,7 @@ async function getListOfPids() {
         try {
             let pid = (await module.exports.executeCommand("cd " + installationPath + " && cat .started/" + item))
                 .stdout;
+            console.log("PID IS:", pid);
             pid = pid.split("\n")[0];
             result.push(pid);
         } catch (err) {}
