@@ -489,3 +489,20 @@ module.exports.generateRandomCode = function (size) {
 module.exports.delay = async function (time) {
     await new Promise((r) => setTimeout(r, time * 1000));
 };
+
+module.exports.areArraysEqual = function (arr1, arr2) {
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+
+    arr1.sort();
+    arr2.sort();
+
+    for (let index in arr1) {
+        if (arr1[index] !== arr2[index]) {
+            return false;
+        }
+    }
+
+    return true;
+};

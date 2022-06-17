@@ -42,8 +42,8 @@ export default class Wrapper {
         });
     }
 
-    static async getUsersForRole(role: string, userContext?: any) {
-        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersForRole({
+    static async getUsersThatHaveRole(role: string, userContext?: any) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUsersThatHaveRole({
             role,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -97,7 +97,7 @@ export const init = Wrapper.init;
 export const addRoleToUser = Wrapper.addRoleToUser;
 export const removeUserRole = Wrapper.removeUserRole;
 export const getRolesForUser = Wrapper.getRolesForUser;
-export const getUsersForRole = Wrapper.getUsersForRole;
+export const getUsersThatHaveRole = Wrapper.getUsersThatHaveRole;
 export const createNewRoleOrAddPermissions = Wrapper.createNewRoleOrAddPermissions;
 export const getPermissionsForRole = Wrapper.getPermissionsForRole;
 export const removePermissionsFromRole = Wrapper.removePermissionsFromRole;

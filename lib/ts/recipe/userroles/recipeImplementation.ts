@@ -31,7 +31,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return querier.sendGetRequest(new NormalisedURLPath("/recipe/user/roles"), { userId });
         },
 
-        getUsersForRole: function ({ role }) {
+        getUsersThatHaveRole: function ({ role }) {
             return querier.sendGetRequest(new NormalisedURLPath("/recipe/role/users"), { role });
         },
 
