@@ -11,6 +11,85 @@ import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import Passwordless from "../../recipe/passwordless";
 import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
 import UserMetadata from "../../recipe/usermetadata";
+import UserRoles from "../../recipe/userroles";
+
+UserRoles.init({
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (oI) => {
+            return {
+                ...oI,
+                addRoleToUser: async function (input) {
+                    return oI.addRoleToUser({
+                        role: input.role,
+                        userContext: input.userContext,
+                        userId: input.userId,
+                    });
+                },
+                createNewRoleOrAddPermissions: async function (input) {
+                    return oI.createNewRoleOrAddPermissions({
+                        permissions: input.permissions,
+                        role: input.role,
+                        userContext: input.userContext,
+                    });
+                },
+                deleteRole: async function (input) {
+                    return oI.deleteRole({
+                        role: input.role,
+                        userContext: input.userContext,
+                    });
+                },
+                getAllRoles: async function (input) {
+                    return oI.getAllRoles({
+                        userContext: input.userContext,
+                    });
+                },
+                getPermissionsForRole: async function (input) {
+                    return oI.getPermissionsForRole({
+                        role: input.role,
+                        userContext: input.userContext,
+                    });
+                },
+                getRolesForUser: async function (input) {
+                    return oI.getRolesForUser({
+                        userContext: input.userContext,
+                        userId: input.userId,
+                    });
+                },
+                getRolesThatHavePermission: async function (input) {
+                    return oI.getRolesThatHavePermission({
+                        permission: input.permission,
+                        userContext: input.userContext,
+                    });
+                },
+                getUsersThatHaveRole: async function (input) {
+                    return oI.getUsersThatHaveRole({
+                        role: input.role,
+                        userContext: input.userContext,
+                    });
+                },
+                removePermissionsFromRole: async function (input) {
+                    return oI.removePermissionsFromRole({
+                        permissions: input.permissions,
+                        role: input.role,
+                        userContext: input.userContext,
+                    });
+                },
+                removeUserRole: async function (input) {
+                    return oI.removeUserRole({
+                        role: input.role,
+                        userContext: input.userContext,
+                        userId: input.userId,
+                    });
+                },
+            };
+        },
+    },
+});
 
 UserMetadata.updateUserMetadata("...", {
     firstName: "..",
