@@ -36,7 +36,7 @@ import RecipeImplementation from "./recipeImplementation";
 import PasswordlessRecipeImplementation from "./recipeImplementation/passwordlessRecipeImplementation";
 import ThirdPartyRecipeImplementation from "./recipeImplementation/thirdPartyRecipeImplementation";
 import getThirdPartyIterfaceImpl from "./api/thirdPartyAPIImplementation";
-import getPasswordlessIterfaceImpl from "./api/passwordlessAPIImplementation";
+import getPasswordlessInterfaceImpl from "./api/passwordlessAPIImplementation";
 import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import OverrideableBuilder from "supertokens-js-override";
@@ -98,7 +98,7 @@ export default class Recipe extends RecipeModule {
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
-        const recipImplReference = this.recipeInterfaceImpl;
+        const recipeImplReference = this.recipeInterfaceImpl;
         const emailVerificationConfig = this.config.emailVerificationFeature;
 
         this.emailDelivery =
@@ -131,7 +131,7 @@ export default class Recipe extends RecipeModule {
                                       return {
                                           ...oI,
                                           createEmailVerificationToken: async function (input) {
-                                              let user = await recipImplReference.getUserById({
+                                              let user = await recipeImplReference.getUserById({
                                                   userId: input.userId,
                                                   userContext: input.userContext,
                                               });
@@ -145,7 +145,7 @@ export default class Recipe extends RecipeModule {
                                               }
                                           },
                                           isEmailVerified: async function (input) {
-                                              let user = await recipImplReference.getUserById({
+                                              let user = await recipeImplReference.getUserById({
                                                   userId: input.userId,
                                                   userContext: input.userContext,
                                               });
@@ -193,7 +193,7 @@ export default class Recipe extends RecipeModule {
                                   return PasswordlessRecipeImplementation(this.recipeInterfaceImpl);
                               },
                               apis: (_) => {
-                                  return getPasswordlessIterfaceImpl(this.apiImpl);
+                                  return getPasswordlessInterfaceImpl(this.apiImpl);
                               },
                           },
                       },
@@ -350,11 +350,19 @@ export default class Recipe extends RecipeModule {
         if (userInfo === undefined) {
             throw new Error("Unknown User ID provided");
         } else if (!("thirdParty" in userInfo)) {
-            // this is a passwordless user.. so we always return some random email,
-            // and in the function for isEmailVerified, we will check if the user
-            // is a passwordless user, and if they are, we will return true in there
-            return "_____supertokens_passwordless_user@supertokens.com";
+            // this is a passwordless user
+            if (userInfo.email !== undefined) {
+                return userInfo.email;
+            } else {
+                // this is a passwordless user with only a phone number.
+                // returning an empty string here is not a problem since
+                // we override the email verification functions above to
+                // send that the email is already verified for passwordless users.
+                return "";
+            }
+        } else {
+            // third party user
+            return userInfo.email;
         }
-        return userInfo.email;
     };
 }
