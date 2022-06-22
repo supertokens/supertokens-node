@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+-   Fixes Cookie sameSite config validation.
 -   Adds User Roles recipe and compatibility with CDI 2.14
 
 ## [9.2.3] - 2022-06-03
