@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [10.0.0] - 2022-06-2
+
 ### Breaking change
 
 -   https://github.com/supertokens/supertokens-node/issues/220
