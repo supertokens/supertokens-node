@@ -32,6 +32,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
     });
 
     after(async function () {
+        process.env.TEST_MODE = "testing";
         await killAllST();
         await cleanST();
     });
@@ -149,10 +150,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         assert.strictEqual(result.body.status, "OK");
     });
 
-    it("test backward compatibility: reset password", async function () {
+    it("test backward compatibility: reset password (emailpassword user)", async function () {
         await startST();
         let email = undefined;
         let passwordResetURL = undefined;
+        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -168,6 +170,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                         createAndSendCustomEmail: async (input, passwordResetLink) => {
                             email = input.email;
                             passwordResetURL = passwordResetLink;
+                            timeJoined = input.timeJoined;
                         },
                     },
                 }),
@@ -198,6 +201,129 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         await delay(2);
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(passwordResetURL, undefined);
+        assert.notStrictEqual(timeJoined, undefined);
+    });
+
+    it("test backward compatibility: reset password (non-existent user)", async function () {
+        await startST();
+        let functionCalled = false;
+        let email = undefined;
+        let passwordResetURL = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    resetPasswordUsingTokenFeature: {
+                        createAndSendCustomEmail: async (input, passwordResetLink) => {
+                            functionCalled = true;
+                            email = input.email;
+                            passwordResetURL = passwordResetLink;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+            telemetry: false,
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await supertest(app)
+            .post("/auth/user/password/reset/token")
+            .set("rid", "thirdpartyemailpassword")
+            .send({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "test@example.com",
+                    },
+                ],
+            })
+            .expect(200);
+
+        await delay(2);
+        assert.strictEqual(functionCalled, false);
+        assert.strictEqual(email, undefined);
+        assert.strictEqual(passwordResetURL, undefined);
+
+        await ThirdPartyEmailPassword.emailPasswordSignUp("test@example.com", "1234abcd");
+
+        await supertest(app)
+            .post("/auth/user/password/reset/token")
+            .set("rid", "thirdpartyemailpassword")
+            .send({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "test@example.com",
+                    },
+                ],
+            })
+            .expect(200);
+
+        await delay(2);
+        assert.strictEqual(email, "test@example.com");
+        assert.notStrictEqual(passwordResetURL, undefined);
+    });
+
+    it("test backward compatibility: reset password (thirdparty user)", async function () {
+        await startST();
+        let functionCalled = false;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    resetPasswordUsingTokenFeature: {
+                        createAndSendCustomEmail: async (input, passwordResetLink) => {
+                            functionCalled = true;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+            telemetry: false,
+        });
+
+        const app = express();
+        app.use(middleware());
+        app.use(errorHandler());
+
+        await ThirdPartyEmailPassword.thirdPartySignInUp("custom-provider", "test-user-id", {
+            id: "test@example.com",
+            isVerified: false,
+        });
+
+        await supertest(app)
+            .post("/auth/user/password/reset/token")
+            .set("rid", "thirdpartyemailpassword")
+            .send({
+                formFields: [
+                    {
+                        id: "email",
+                        value: "test@example.com",
+                    },
+                ],
+            })
+            .expect(200);
+
+        await delay(2);
+        assert.strictEqual(functionCalled, false);
     });
 
     it("test custom override: reset password", async function () {
@@ -477,10 +603,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         assert.strictEqual(result.body.status, "OK");
     });
 
-    it("test backward compatibility: email verify", async function () {
+    it("test backward compatibility: email verify (emailpassword user)", async function () {
         await startST();
         let email = undefined;
+        let thirdParty = undefined;
         let emailVerifyURL = undefined;
+        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -495,7 +623,9 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                     emailVerificationFeature: {
                         createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
                             email = input.email;
+                            thirdParty = input.thirdParty;
                             emailVerifyURL = emailVerificationURLWithToken;
+                            timeJoined = input.timeJoined;
                         },
                     },
                 }),
@@ -523,6 +653,64 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
             .expect(200);
         await delay(2);
         assert.strictEqual(email, "test@example.com");
+        assert.strictEqual(thirdParty, undefined);
+        assert.notStrictEqual(emailVerifyURL, undefined);
+        assert.notStrictEqual(timeJoined, undefined);
+    });
+
+    it("test backward compatibility: email verify (thirdparty user)", async function () {
+        await startST();
+        let email = undefined;
+        let thirdParty = undefined;
+        let emailVerifyURL = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdPartyEmailPassword.init({
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
+                            email = input.email;
+                            thirdParty = input.thirdParty;
+                            emailVerifyURL = emailVerificationURLWithToken;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+            telemetry: false,
+        });
+
+        const app = express();
+        app.use(express.json());
+        app.use(middleware());
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, req.body.id, {}, {});
+            res.status(200).send("");
+        });
+        app.use(errorHandler());
+
+        let user = await ThirdPartyEmailPassword.thirdPartySignInUp("custom-provider", "test-user-id", {
+            id: "test@example.com",
+            isVerified: false,
+        });
+        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
+
+        await supertest(app)
+            .post("/auth/user/email/verify/token")
+            .set("rid", "thirdpartyemailpassword")
+            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .expect(200);
+        await delay(2);
+        assert.strictEqual(email, "test@example.com");
+        assert.strictEqual(user.user.thirdParty.id, thirdParty.id);
+        assert.strictEqual(user.user.thirdParty.userId, thirdParty.userId);
         assert.notStrictEqual(emailVerifyURL, undefined);
     });
 

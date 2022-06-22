@@ -60,6 +60,7 @@ describe(`emailDelivery: ${printPath("[test/thirdparty/emailDelivery.test.js]")}
     });
 
     after(async function () {
+        process.env.TEST_MODE = "testing";
         await killAllST();
         await cleanST();
     });
@@ -133,6 +134,7 @@ describe(`emailDelivery: ${printPath("[test/thirdparty/emailDelivery.test.js]")}
         await startST();
         let email = undefined;
         let emailVerifyURL = undefined;
+        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -151,6 +153,7 @@ describe(`emailDelivery: ${printPath("[test/thirdparty/emailDelivery.test.js]")}
                         createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
                             email = input.email;
                             emailVerifyURL = emailVerificationURLWithToken;
+                            timeJoined = input.timeJoined;
                         },
                     },
                 }),
@@ -182,6 +185,7 @@ describe(`emailDelivery: ${printPath("[test/thirdparty/emailDelivery.test.js]")}
         await delay(2);
         assert.strictEqual(email, "test@example.com");
         assert.notStrictEqual(emailVerifyURL, undefined);
+        assert.notStrictEqual(timeJoined, undefined);
     });
 
     it("test custom override: email verify", async function () {

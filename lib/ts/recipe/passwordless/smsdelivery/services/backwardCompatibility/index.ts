@@ -88,7 +88,7 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
             }
         }
         console.log(
-            "Free daily SMS quota reached. If using our managed service, please create a production environment to get dedicated API keys for SMS sending, or define your own method for sending SMS. For now, we are logging it below:"
+            "Free daily SMS quota reached. If you want to use SuperTokens to send SMS, please sign up on supertokens.com to get your SMS API key, else you can also define your own method by overriding the service. For now, we are logging it below:"
         );
         /**
          * if we do console.log(`SMS content: ${input}`);
@@ -115,7 +115,7 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
          *   "b": 2
          * }
          */
-        console.log(`SMS content: ${JSON.stringify(input, null, 2)}`);
+        console.log(`\nSMS content: ${JSON.stringify(input, null, 2)}`);
     };
 }
 

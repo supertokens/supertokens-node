@@ -23,6 +23,7 @@ let nock = require("nock");
 let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");
 let express = require("express");
+let { isCDIVersionCompatible } = require("../utils");
 
 describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery.test.js]")}`, function () {
     before(function () {
@@ -60,6 +61,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
     });
 
     after(async function () {
+        process.env.TEST_MODE = "testing";
         await killAllST();
         await cleanST();
     });
@@ -85,6 +87,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -151,6 +158,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -195,10 +207,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         assert.strictEqual(result.body.status, "OK");
     });
 
-    it("test backward compatibility: email verify", async function () {
+    it("test backward compatibility: email verify (thirdparty user)", async function () {
         await startST();
         let email = undefined;
+        let thirdParty = undefined;
         let emailVerifyURL = undefined;
+        let tj = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -216,7 +230,9 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     emailVerificationFeature: {
                         createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
                             email = input.email;
+                            thirdParty = input.thirdParty;
                             emailVerifyURL = emailVerificationURLWithToken;
+                            tj = input.timeJoined;
                         },
                     },
                 }),
@@ -224,6 +240,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -247,7 +268,72 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             .expect(200);
         await delay(2);
         assert.strictEqual(email, "test@example.com");
+        assert.strictEqual(user.user.thirdParty.id, thirdParty.id);
+        assert.strictEqual(user.user.thirdParty.userId, thirdParty.userId);
         assert.notStrictEqual(emailVerifyURL, undefined);
+        assert.notStrictEqual(tj, undefined);
+    });
+
+    it("test backward compatibility: email verify (passwordless user)", async function () {
+        await startST();
+        let functionCalled = false;
+        let email = undefined;
+        let emailVerifyURL = undefined;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                ThirdpartyPasswordless.init({
+                    providers: [this.customProvider],
+                    contactMethod: "EMAIL",
+                    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    emailVerificationFeature: {
+                        createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
+                            functionCalled = true;
+                            email = input.email;
+                            emailVerifyURL = emailVerificationURLWithToken;
+                        },
+                    },
+                }),
+                Session.init(),
+            ],
+            telemetry: false,
+        });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
+        const app = express();
+        app.use(express.json());
+        app.use(middleware());
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, req.body.id, {}, {});
+            res.status(200).send("");
+        });
+        app.use(errorHandler());
+
+        let user = await ThirdpartyPasswordless.passwordlessSignInUp({
+            email: "test@example.com",
+        });
+        let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
+
+        await supertest(app)
+            .post("/auth/user/email/verify/token")
+            .set("rid", "thirdpartypasswordless")
+            .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+            .expect(200);
+        await delay(2);
+        assert.strictEqual(functionCalled, false);
+        assert.strictEqual(email, undefined);
+        assert.strictEqual(emailVerifyURL, undefined);
     });
 
     it("test custom override: email verify", async function () {
@@ -287,6 +373,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -397,6 +488,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -446,6 +542,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -520,6 +621,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -580,6 +686,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -688,6 +799,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -730,6 +846,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());

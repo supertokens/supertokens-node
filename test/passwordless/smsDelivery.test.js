@@ -23,6 +23,7 @@ let nock = require("nock");
 let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");
 let express = require("express");
+let { isCDIVersionCompatible } = require("../utils");
 
 describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`, function () {
     beforeEach(async function () {
@@ -32,6 +33,7 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
     });
 
     after(async function () {
+        process.env.TEST_MODE = "testing";
         await killAllST();
         await cleanST();
     });
@@ -56,6 +58,11 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -133,6 +140,11 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -193,6 +205,11 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -295,6 +312,11 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -345,6 +367,11 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
@@ -430,6 +457,11 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             telemetry: false,
         });
 
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
+
         const app = express();
         app.use(express.json());
         app.use(middleware());
@@ -486,6 +518,11 @@ describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`,
             ],
             telemetry: false,
         });
+
+        // run test if current CDI version >= 2.11
+        if (!(await isCDIVersionCompatible("2.11"))) {
+            return;
+        }
 
         const app = express();
         app.use(express.json());
