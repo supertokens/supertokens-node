@@ -4,3 +4,4 @@ import { GetContentResult } from "../../../../../ingredients/emaildelivery/servi
 export default function getPasswordResetEmailContent(
     input: TypeEmailPasswordPasswordResetEmailDeliveryInput
 ): GetContentResult;
+export declare function getPasswordResetEmailHTML(appName: string, email: string, resetLink: string): string;

@@ -7,17 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changes
+
+-   Fixes Cookie sameSite config validation.
+-   Fixes a few typos
+-   Changes `getEmailForUserIdForEmailVerification` function inside thirdpartypasswordless to take into account passwordless emails and return an empty string in case a passwordless email doesn't exist. This helps situations where the dev wants to customise the email verification functions in the thirdpartypasswordless recipe.
+
+## [9.3.0] - 2022-06-17
+
 ### Added
 
+-   Adds User Roles recipe and compatibility with CDI 2.14
 -   `emailDelivery` user config for Emailpassword, Thirdparty, ThirdpartyEmailpassword, Passwordless and ThirdpartyPasswordless recipes.
 -   `smsDelivery` user config for Passwordless and ThirdpartyPasswordless recipes.
 -   `Twilio` service integartion for smsDelivery ingredient.
 -   `SMTP` service integration for emailDelivery ingredient.
 -   `Supertokens` service integration for smsDelivery ingredient.
-
-### Breaking Change
-
--   `user` object passed for password-reset and email-verification send email functions will only have `id` and `email` properties. `timeJoined` property has been removed.
 
 ### Deprecated
 
@@ -35,18 +40,6 @@ Following is an example of ThirdpartyPasswordless recipe migration. If your exis
 import SuperTokens from "supertokens-auth-react";
 import ThirdpartyPasswordless from "supertokens-auth-react/recipe/thirdpartypasswordless";
 
-async function sendPasswordlessLoginEmail(input, userContext) {
-    // some custom logic
-}
-
-async function sendPasswordlessLoginSms(input, userContext) {
-    // some custom logic
-}
-
-async function sendEmailVerificationEmail(input, userContext) {
-    // some custom logic
-}
-
 SuperTokens.init({
     appInfo: {
         apiDomain: "...",
@@ -57,15 +50,15 @@ SuperTokens.init({
         ThirdpartyPasswordless.init({
             contactMethod: "EMAIL_OR_PHONE",
             createAndSendCustomEmail: async (input, userContext) => {
-                await sendPasswordlessLoginEmail(input, userContext);
+                // some custom logic
             },
             createAndSendCustomTextMessage: async (input, userContext) => {
-                await sendPasswordlessLoginSms(input, userContext);
+                // some custom logic
             },
             flowType: "...",
             emailVerificationFeature: {
                 createAndSendCustomEmail: async (user, emailVerificationURLWithToken, userContext) => {
-                    await sendEmailVerificationEmail(input, userContext);
+                    // some custom logic
                 },
             },
         }),
@@ -78,18 +71,6 @@ After migration to using new `emailDelivery` and `smsDelivery` config, your code
 ```ts
 import SuperTokens from "supertokens-auth-react";
 import ThirdpartyPasswordless from "supertokens-auth-react/recipe/thirdpartypasswordless";
-
-async function sendPasswordlessLoginEmail(input, userContext) {
-    // some custom logic
-}
-
-async function sendPasswordlessLoginSms(input, userContext) {
-    // some custom logic
-}
-
-async function sendEmailVerificationEmail(input, userContext) {
-    // some custom logic
-}
 
 SuperTokens.init({
     appInfo: {
@@ -105,9 +86,9 @@ SuperTokens.init({
                     sendEmail: async (input) => {
                         let userContext = input.userContext;
                         if(input.type === "EMAIL_VERIFICATION") {
-                            await sendEmailVerificationEmail(input, userContext);
+                            // some custom logic
                         } else if (input.type === "PASSWORDLESS_LOGIN") {
-                            await sendPasswordlessLoginEmail(input, userContext);
+                            // some custom logic
                         }
                     }
                 }
@@ -115,8 +96,7 @@ SuperTokens.init({
             smsDelivery: {
                 service: {
                     sendSms: async (input) => {
-                        let userContext = input.userContext;
-                        await sendPasswordlessLoginSms(input, userContext);
+                        // some custom logic for sending passwordless login SMS
                     }
                 }
             }

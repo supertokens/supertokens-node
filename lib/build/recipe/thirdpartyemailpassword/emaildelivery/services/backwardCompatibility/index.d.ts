@@ -6,6 +6,7 @@ import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
     private emailPasswordBackwardCompatibilityService;
+    private emailVerificationBackwardCompatibilityService;
     constructor(
         recipeInterfaceImpl: RecipeInterface,
         emailPasswordRecipeInterfaceImpl: EmailPasswordRecipeInterface,
