@@ -16,6 +16,16 @@
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import {
+    TypeInput as SmsDeliveryTypeInput,
+    TypeInputWithService as SmsDeliveryTypeInputWithService,
+} from "../../ingredients/smsdelivery/types";
+import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 
@@ -32,7 +42,10 @@ export type TypeInput = (
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
-          createAndSendCustomTextMessage: (
+          /**
+           * @deprecated Please use smsDelivery config instead
+           */
+          createAndSendCustomTextMessage?: (
               input: {
                   // Where the message should be delivered.
                   phoneNumber: string;
@@ -52,7 +65,10 @@ export type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
-          createAndSendCustomEmail: (
+          /**
+           * @deprecated Please use emailDelivery config instead
+           */
+          createAndSendCustomEmail?: (
               input: {
                   // Where the message should be delivered.
                   email: string;
@@ -72,7 +88,10 @@ export type TypeInput = (
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
-          createAndSendCustomEmail: (
+          /**
+           * @deprecated Please use emailDelivery config instead
+           */
+          createAndSendCustomEmail?: (
               input: {
                   // Where the message should be delivered.
                   email: string;
@@ -89,7 +108,10 @@ export type TypeInput = (
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
 
           // Override to use custom template/contact method
-          createAndSendCustomTextMessage: (
+          /**
+           * @deprecated Please use smsDelivery config instead
+           */
+          createAndSendCustomTextMessage?: (
               input: {
                   // Where the message should be delivered.
                   phoneNumber: string;
@@ -107,6 +129,8 @@ export type TypeInput = (
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
 
+    emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
+    smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     // Customize information in the URL.
     // By default: `${websiteDomain}/auth/verify`
     // `?rid=passwordless&preAuthSessionId=${preAuthSessionId}#${linkCode}` will be added after it.
@@ -138,80 +162,16 @@ export type TypeNormalisedInput = (
     | {
           contactMethod: "PHONE";
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-
-          // Override to use custom template/contact method
-          createAndSendCustomTextMessage: (
-              input: {
-                  // Where the message should be delivered.
-                  phoneNumber: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
-
-          // Override to use custom template/contact method
-          createAndSendCustomEmail: (
-              input: {
-                  // Where the message should be delivered.
-                  email: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress: (email: string) => Promise<string | undefined> | string | undefined;
 
-          // Override to use custom template/contact method
-          createAndSendCustomEmail: (
-              input: {
-                  // Where the message should be delivered.
-                  email: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
-
           validatePhoneNumber: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-
-          // Override to use custom template/contact method
-          createAndSendCustomTextMessage: (
-              input: {
-                  // Where the message should be delivered.
-                  phoneNumber: string;
-                  // This has to be entered on the starting device  to finish sign in/up
-                  userInputCode?: string;
-                  // Full url that the end-user can click to finish sign in/up
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  // Unlikely, but someone could display this (or a derived thing) to identify the device
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
@@ -234,6 +194,8 @@ export type TypeNormalisedInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
+    getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>;
+    getEmailDeliveryConfig: () => EmailDeliveryTypeInputWithService<TypePasswordlessEmailDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -375,6 +337,8 @@ export type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
+    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
+    smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
 };
 
 export type APIInterface = {
@@ -448,4 +412,24 @@ export type APIInterface = {
         status: "OK";
         exists: boolean;
     }>;
+};
+
+export type TypePasswordlessEmailDeliveryInput = {
+    type: "PASSWORDLESS_LOGIN";
+    email: string;
+    userInputCode?: string;
+    urlWithLinkCode?: string;
+    codeLifetime: number;
+    preAuthSessionId: string;
+    userContext: any;
+};
+
+export type TypePasswordlessSmsDeliveryInput = {
+    type: "PASSWORDLESS_LOGIN";
+    phoneNumber: string;
+    userInputCode?: string;
+    urlWithLinkCode?: string;
+    codeLifetime: number;
+    preAuthSessionId: string;
+    userContext: any;
 };

@@ -8,8 +8,22 @@ import NextJS from "../../nextjs";
 import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
 let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
+import ThirdParty from "../../recipe/thirdparty";
 import Passwordless from "../../recipe/passwordless";
 import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
+import { STMPService as STMPServiceTPP } from "../../recipe/thirdpartypasswordless/emaildelivery";
+import { STMPService as STMPServiceP } from "../../recipe/passwordless/emaildelivery";
+import { STMPService as STMPServiceTP } from "../../recipe/thirdparty/emaildelivery";
+import { STMPService as STMPServiceTPEP } from "../../recipe/thirdpartyemailpassword/emaildelivery";
+import { STMPService as STMPServiceEP } from "../../recipe/emailpassword/emaildelivery";
+import {
+    TwilioService as TwilioServiceTPP,
+    SupertokensService as SupertokensServiceTPP,
+} from "../../recipe/thirdpartypasswordless/smsdelivery";
+import {
+    TwilioService as TwilioServiceP,
+    SupertokensService as SupertokensServiceP,
+} from "../../recipe/thirdpartypasswordless/smsdelivery";
 import UserMetadata from "../../recipe/usermetadata";
 import UserRoles from "../../recipe/userroles";
 
@@ -111,10 +125,17 @@ ThirdPartyPasswordless.init({
             clientSecret: "",
         }),
     ],
-    contactMethod: "PHONE",
-    createAndSendCustomTextMessage: async (input, userCtx) => {
-        return;
+    smsDelivery: {
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    return;
+                },
+            };
+        },
     },
+    contactMethod: "PHONE",
     flowType: "MAGIC_LINK",
     getCustomUserInputCode: (userCtx) => {
         return "123";
@@ -144,8 +165,15 @@ ThirdPartyPasswordless.init({
 
 ThirdPartyPasswordless.init({
     contactMethod: "EMAIL",
-    createAndSendCustomEmail: async (input, userCtx) => {
-        return;
+    emailDelivery: {
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    return;
+                },
+            };
+        },
     },
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
@@ -164,21 +192,46 @@ ThirdPartyPasswordless.init({
 });
 
 ThirdPartyPasswordless.init({
-    createAndSendCustomEmail: async function (input) {},
+    emailDelivery: {
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    return;
+                },
+            };
+        },
+    },
     contactMethod: "EMAIL",
     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
 });
 
 ThirdPartyPasswordless.init({
-    createAndSendCustomTextMessage: async function (input) {},
+    smsDelivery: {
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    return;
+                },
+            };
+        },
+    },
     contactMethod: "PHONE",
     flowType: "MAGIC_LINK",
 });
 
 Passwordless.init({
     contactMethod: "PHONE",
-    createAndSendCustomTextMessage: async (input, userCtx) => {
-        return;
+    smsDelivery: {
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    return;
+                },
+            };
+        },
     },
     flowType: "MAGIC_LINK",
     getCustomUserInputCode: (userCtx) => {
@@ -209,8 +262,15 @@ Passwordless.init({
 
 Passwordless.init({
     contactMethod: "EMAIL",
-    createAndSendCustomEmail: async (input, userCtx) => {
-        return;
+    emailDelivery: {
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    return;
+                },
+            };
+        },
     },
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
@@ -229,16 +289,613 @@ Passwordless.init({
 });
 
 Passwordless.init({
-    createAndSendCustomEmail: async function (input) {},
+    emailDelivery: {
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    return;
+                },
+            };
+        },
+    },
     contactMethod: "EMAIL",
     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
 });
 
 Passwordless.init({
-    createAndSendCustomTextMessage: async function (input) {},
+    smsDelivery: {
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    return;
+                },
+            };
+        },
+    },
     contactMethod: "PHONE",
     flowType: "MAGIC_LINK",
 });
+
+ThirdPartyPasswordless.init({
+    providers: [
+        ThirdPartyPasswordless.Google({
+            clientId: "",
+            clientSecret: "",
+        }),
+    ],
+    smsDelivery: {
+        service: new TwilioServiceTPP({
+            twilioSettings: {
+                accountSid: "",
+                authToken: "",
+                from: "",
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawSms: async (input) => {
+                        await oI.sendRawSms(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    return await oI.sendSms(input);
+                },
+            };
+        },
+    },
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+    getCustomUserInputCode: (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
+            };
+        },
+    },
+});
+
+ThirdPartyPasswordless.init({
+    providers: [
+        ThirdPartyPasswordless.Google({
+            clientId: "",
+            clientSecret: "",
+        }),
+    ],
+    smsDelivery: {
+        service: new SupertokensServiceTPP({
+            apiKey: "",
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    return await oI.sendSms(input);
+                },
+            };
+        },
+    },
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+    getCustomUserInputCode: (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
+            };
+        },
+    },
+});
+
+ThirdPartyPasswordless.init({
+    contactMethod: "EMAIL",
+    emailDelivery: {
+        service: new STMPServiceTPP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "EMAIL_VERIFICATION") {
+                        } else if (input.type === "PASSWORDLESS_LOGIN") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "EMAIL_VERIFICATION") {
+                    } else if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
+    },
+    flowType: "USER_INPUT_CODE",
+    getCustomUserInputCode: async (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: async (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+    },
+});
+
+ThirdPartyPasswordless.init({
+    emailDelivery: {
+        service: new STMPServiceTPP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                };
+            },
+        }),
+    },
+    contactMethod: "EMAIL",
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+});
+
+ThirdPartyPasswordless.init({
+    smsDelivery: {
+        service: new TwilioServiceTPP({
+            twilioSettings: {
+                accountSid: "",
+                authToken: "",
+                from: "",
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawSms: async (input) => {
+                        await oI.sendRawSms(input);
+                    },
+                    getContent: async (input) => {
+                        return await oI.getContent(input);
+                    },
+                };
+            },
+        }),
+    },
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+});
+
+ThirdPartyPasswordless.init({
+    smsDelivery: {
+        service: new SupertokensServiceTPP({
+            apiKey: "",
+        }),
+    },
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+});
+
+Passwordless.init({
+    contactMethod: "PHONE",
+    smsDelivery: {
+        service: new TwilioServiceP({
+            twilioSettings: {
+                accountSid: "",
+                authToken: "",
+                from: "",
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawSms: async (input) => {
+                        await oI.sendRawSms(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    await oI.sendSms(input);
+                },
+            };
+        },
+    },
+    flowType: "MAGIC_LINK",
+    getCustomUserInputCode: (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
+            };
+        },
+    },
+});
+
+Passwordless.init({
+    contactMethod: "PHONE",
+    smsDelivery: {
+        service: new SupertokensServiceP({
+            apiKey: "",
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendSms: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    await oI.sendSms(input);
+                },
+            };
+        },
+    },
+    flowType: "MAGIC_LINK",
+    getCustomUserInputCode: (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+        functions: (originalImplementation) => {
+            return {
+                ...originalImplementation,
+                consumeCode: async function (input) {
+                    // TODO: some custom logic
+
+                    // or call the default behaviour as show below
+                    return await originalImplementation.consumeCode(input);
+                },
+            };
+        },
+    },
+});
+
+Passwordless.init({
+    contactMethod: "EMAIL",
+    emailDelivery: {
+        service: new STMPServiceP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
+    },
+    flowType: "USER_INPUT_CODE",
+    getCustomUserInputCode: async (userCtx) => {
+        return "123";
+    },
+    getLinkDomainAndPath: async (contactInfo, userCtx) => {
+        return "";
+    },
+    override: {
+        apis: (oI) => {
+            return {
+                ...oI,
+            };
+        },
+    },
+});
+
+Passwordless.init({
+    emailDelivery: {
+        service: new STMPServiceP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                };
+            },
+        }),
+    },
+    contactMethod: "EMAIL",
+    flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+});
+
+Passwordless.init({
+    smsDelivery: {
+        service: new TwilioServiceP({
+            twilioSettings: {
+                accountSid: "",
+                authToken: "",
+                from: "",
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawSms: async (input) => {
+                        await oI.sendRawSms(input);
+                    },
+                    getContent: async (input) => {
+                        return await oI.getContent(input);
+                    },
+                };
+            },
+        }),
+    },
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+});
+
+Passwordless.init({
+    smsDelivery: {
+        service: new SupertokensServiceP({
+            apiKey: "",
+        }),
+    },
+    contactMethod: "PHONE",
+    flowType: "MAGIC_LINK",
+});
+
+EmailPassword.init({
+    emailDelivery: {
+        service: new STMPServiceEP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "EMAIL_VERIFICATION") {
+                        } else if (input.type === "PASSWORD_RESET") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "EMAIL_VERIFICATION") {
+                    } else if (input.type === "PASSWORD_RESET") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
+    },
+});
+
+ThirdPartyEmailPassword.init({
+    emailDelivery: {
+        service: new STMPServiceTPEP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "EMAIL_VERIFICATION") {
+                        } else if (input.type === "PASSWORD_RESET") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "EMAIL_VERIFICATION") {
+                    } else if (input.type === "PASSWORD_RESET") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
+    },
+});
+
+ThirdParty.init({
+    emailDelivery: {
+        service: new STMPServiceTP({
+            smtpSettings: {
+                host: "",
+                password: "",
+                port: 465,
+                from: {
+                    name: "",
+                    email: "",
+                },
+            },
+            override: (oI) => {
+                return {
+                    ...oI,
+                    sendRawEmail: async (input) => {
+                        await oI.sendRawEmail(input);
+                    },
+                    getContent: async (input) => {
+                        if (input.type === "EMAIL_VERIFICATION") {
+                        }
+                        return await oI.getContent(input);
+                    },
+                };
+            },
+        }),
+        override: (oI) => {
+            return {
+                ...oI,
+                sendEmail: async (input) => {
+                    if (input.type === "EMAIL_VERIFICATION") {
+                    }
+                    await oI.sendEmail(input);
+                },
+            };
+        },
+    },
+    signInAndUpFeature: {
+        providers: [],
+    },
+});
+
 import { TypeInput } from "../../types";
 import { TypeInput as SessionTypeInput } from "../../recipe/session/types";
 import { TypeInput as EPTypeInput } from "../../recipe/emailpassword/types";

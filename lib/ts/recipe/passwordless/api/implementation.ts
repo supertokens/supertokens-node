@@ -1,4 +1,5 @@
 import { APIInterface } from "../";
+import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 
 export default function getAPIImplementation(): APIInterface {
@@ -89,27 +90,27 @@ export default function getAPIImplementation(): APIInterface {
                     input.options.config.contactMethod === "PHONE" ||
                     (input.options.config.contactMethod === "EMAIL_OR_PHONE" && "phoneNumber" in input)
                 ) {
-                    await input.options.config.createAndSendCustomTextMessage(
-                        {
-                            codeLifetime: response.codeLifetime,
-                            phoneNumber: (input as any).phoneNumber!,
-                            preAuthSessionId: response.preAuthSessionId,
-                            urlWithLinkCode: magicLink,
-                            userInputCode,
-                        },
-                        input.userContext
-                    );
+                    logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
+                    await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
+                        type: "PASSWORDLESS_LOGIN",
+                        codeLifetime: response.codeLifetime,
+                        phoneNumber: (input as any).phoneNumber!,
+                        preAuthSessionId: response.preAuthSessionId,
+                        urlWithLinkCode: magicLink,
+                        userInputCode,
+                        userContext: input.userContext,
+                    });
                 } else {
-                    await input.options.config.createAndSendCustomEmail(
-                        {
-                            codeLifetime: response.codeLifetime,
-                            email: (input as any).email!,
-                            preAuthSessionId: response.preAuthSessionId,
-                            urlWithLinkCode: magicLink,
-                            userInputCode,
-                        },
-                        input.userContext
-                    );
+                    logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
+                    await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                        type: "PASSWORDLESS_LOGIN",
+                        email: (input as any).email!,
+                        codeLifetime: response.codeLifetime,
+                        preAuthSessionId: response.preAuthSessionId,
+                        urlWithLinkCode: magicLink,
+                        userInputCode,
+                        userContext: input.userContext,
+                    });
                 }
             } catch (err) {
                 return {
@@ -227,27 +228,27 @@ export default function getAPIImplementation(): APIInterface {
                             (input.options.config.contactMethod === "EMAIL_OR_PHONE" &&
                                 deviceInfo.phoneNumber !== undefined)
                         ) {
-                            await input.options.config.createAndSendCustomTextMessage(
-                                {
-                                    codeLifetime: response.codeLifetime,
-                                    phoneNumber: deviceInfo.phoneNumber!,
-                                    preAuthSessionId: response.preAuthSessionId,
-                                    urlWithLinkCode: magicLink,
-                                    userInputCode,
-                                },
-                                input.userContext
-                            );
+                            logDebugMessage(`Sending passwordless login SMS to ${(input as any).phoneNumber}`);
+                            await input.options.smsDelivery.ingredientInterfaceImpl.sendSms({
+                                type: "PASSWORDLESS_LOGIN",
+                                codeLifetime: response.codeLifetime,
+                                phoneNumber: deviceInfo.phoneNumber!,
+                                preAuthSessionId: response.preAuthSessionId,
+                                urlWithLinkCode: magicLink,
+                                userInputCode,
+                                userContext: input.userContext,
+                            });
                         } else {
-                            await input.options.config.createAndSendCustomEmail(
-                                {
-                                    codeLifetime: response.codeLifetime,
-                                    email: deviceInfo.email!,
-                                    preAuthSessionId: response.preAuthSessionId,
-                                    urlWithLinkCode: magicLink,
-                                    userInputCode,
-                                },
-                                input.userContext
-                            );
+                            logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
+                            await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                                type: "PASSWORDLESS_LOGIN",
+                                email: (input as any).email!,
+                                codeLifetime: response.codeLifetime,
+                                preAuthSessionId: response.preAuthSessionId,
+                                urlWithLinkCode: magicLink,
+                                userInputCode,
+                                userContext: input.userContext,
+                            });
                         }
                     } catch (err) {
                         return {

@@ -15,7 +15,8 @@
 
 import { User } from "./types";
 import { NormalisedAppinfo } from "../../types";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import { logDebugMessage } from "../../logger";
 
 export function getEmailVerificationURL(appInfo: NormalisedAppinfo) {
     return async (_: User): Promise<string> => {
@@ -45,6 +46,32 @@ export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
                     "api-version": 0,
                 },
             });
-        } catch (ignored) {}
+            logDebugMessage(`Email sent to ${user.email}`);
+        } catch (error) {
+            logDebugMessage("Error sending verification email");
+            if (axios.isAxiosError(error)) {
+                const err = error as AxiosError;
+                if (err.response) {
+                    logDebugMessage(`Error status: ${err.response.status}`);
+                    logDebugMessage(`Error response: ${JSON.stringify(err.response.data)}`);
+                } else {
+                    logDebugMessage(`Error: ${err.message}`);
+                }
+            } else {
+                logDebugMessage(`Error: ${JSON.stringify(error)}`);
+            }
+            logDebugMessage("Logging the input below:");
+            logDebugMessage(
+                JSON.stringify(
+                    {
+                        email: user.email,
+                        appName: appInfo.appName,
+                        emailVerifyURL: emailVerifyURLWithToken,
+                    },
+                    null,
+                    2
+                )
+            );
+        }
     };
 }
