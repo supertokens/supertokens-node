@@ -15,13 +15,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 id: string;
                 isVerified: boolean;
             };
-        }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
-            | {
-                  status: "FIELD_ERROR";
-                  error: string;
-              }
-        > {
+        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
                 thirdPartyId,
                 thirdPartyUserId,

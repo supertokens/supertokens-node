@@ -68,13 +68,7 @@ export default function getRecipeInterface(passwordlessQuerier: Querier, thirdPa
                 isVerified: boolean;
             };
             userContext: any;
-        }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
-            | {
-                  status: "FIELD_ERROR";
-                  error: string;
-              }
-        > {
+        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             if (originalThirdPartyImplementation === undefined) {
                 throw new Error("No thirdparty provider configured");
             }

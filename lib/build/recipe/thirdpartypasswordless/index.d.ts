@@ -22,17 +22,11 @@ export default class Wrapper {
             isVerified: boolean;
         },
         userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    ): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
     static getUserByThirdPartyInfo(
         thirdPartyId: string,
         thirdPartyUserId: string,

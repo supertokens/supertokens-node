@@ -104,10 +104,7 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
             status: "NO_EMAIL_GIVEN_BY_PROVIDER",
         });
     } else {
-        send200Response(options.res, {
-            status: "FIELD_ERROR",
-            error: result.error,
-        });
+        send200Response(options.res, result);
     }
     return true;
 }

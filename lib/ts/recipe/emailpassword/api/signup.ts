@@ -40,6 +40,8 @@ export default async function signUpAPI(apiImplementation: APIInterface, options
             status: "OK",
             user: result.user,
         });
+    } else if (result.status === "GENERAL_ERROR") {
+        send200Response(options.res, result);
     } else {
         throw new STError({
             type: STError.FIELD_ERROR,
