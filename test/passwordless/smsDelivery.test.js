@@ -27,6 +27,7 @@ let { isCDIVersionCompatible } = require("../utils");
 
 describe(`smsDelivery: ${printPath("[test/passwordless/smsDelivery.test.js]")}`, function () {
     beforeEach(async function () {
+        process.env.TEST_MODE = "testing";
         await killAllST();
         await setupST();
         ProcessState.getInstance().reset();

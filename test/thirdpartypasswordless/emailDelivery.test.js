@@ -856,6 +856,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         app.use(express.json());
         app.use(middleware());
         app.use(errorHandler());
+        let message = "";
+        app.use((err, req, res, next) => {
+            message = err.message;
+            res.status(500).send(message);
+        });
 
         let appName = undefined;
         let email = undefined;
@@ -882,7 +887,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
             .send({
                 email: "test@example.com",
             })
-            .expect(200);
+            .expect(500);
 
         process.env.TEST_MODE = "testing";
 
@@ -892,6 +897,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         assert.notStrictEqual(userInputCode, undefined);
         assert.notStrictEqual(codeLifetime, undefined);
         assert(codeLifetime > 0);
-        assert.strictEqual(result.body.status, "GENERAL_ERROR");
+        assert.strictEqual(result.status, 500);
+        assert(message === "Request failed with status code 500");
     });
 });
