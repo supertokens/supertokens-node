@@ -478,6 +478,78 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         }
     });
 
+    it("sameSite none invalid domain values", async function () {
+        const domainCombinations = [
+            ["http://localhost:3000", "http://supertokensapi.io"],
+            ["http://127.0.0.1:3000", "http://supertokensapi.io"],
+            ["http://supertokens.io", "http://localhost:8000"],
+            ["http://supertokens.io", "http://127.0.0.1:8000"],
+            ["http://supertokens.io", "http://supertokensapi.io"],
+        ];
+
+        for (const domainCombination of domainCombinations) {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        appName: "SuperTokens",
+                        websiteDomain: domainCombination[0],
+                        apiDomain: domainCombination[1],
+                    },
+                    recipeList: [Session.init({ cookieSameSite: "none" })],
+                });
+                assert(false);
+            } catch (e) {
+                assert(
+                    e.message ===
+                        "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
+                );
+            }
+            resetAll();
+        }
+    });
+
+    it("sameSite none valid domain values", async function () {
+        const domainCombinations = [
+            ["http://localhost:3000", "http://localhost:8000"],
+            ["http://127.0.0.1:3000", "http://localhost:8000"],
+            ["http://localhost:3000", "http://127.0.0.1:8000"],
+            ["http://127.0.0.1:3000", "http://127.0.0.1:8000"],
+
+            ["https://localhost:3000", "https://localhost:8000"],
+            ["https://127.0.0.1:3000", "https://localhost:8000"],
+            ["https://localhost:3000", "https://127.0.0.1:8000"],
+            ["https://127.0.0.1:3000", "https://127.0.0.1:8000"],
+
+            ["https://supertokens.io", "https://api.supertokens.io"],
+            ["https://supertokens.io", "https://supertokensapi.io"],
+
+            ["http://localhost:3000", "https://supertokensapi.io"],
+            ["http://127.0.0.1:3000", "https://supertokensapi.io"],
+        ];
+
+        for (const domainCombination of domainCombinations) {
+            try {
+                STExpress.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        appName: "SuperTokens",
+                        websiteDomain: domainCombination[0],
+                        apiDomain: domainCombination[1],
+                    },
+                    recipeList: [Session.init({ cookieSameSite: "none" })],
+                });
+            } catch (e) {
+                assert(false);
+            }
+            resetAll();
+        }
+    });
+
     it("testing sessionScope normalisation", async function () {
         assert(normaliseSessionScopeOrThrowError("api.example.com") === "api.example.com");
         assert(normaliseSessionScopeOrThrowError("http://api.example.com") === "api.example.com");
@@ -978,7 +1050,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     connectionURI: "http://localhost:8080",
                 },
                 appInfo: {
-                    apiDomain: "127.0.0.1:3000",
+                    apiDomain: "https://127.0.0.1:3000",
                     appName: "SuperTokens",
                     websiteDomain: "google.com",
                     apiBasePath: "test/",
