@@ -149,8 +149,6 @@ export type TypeInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
 
-    // smsDelivery?: SmsDeliveryConfigInput<TypeSMSDeliveryTypeInput>;
-
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
