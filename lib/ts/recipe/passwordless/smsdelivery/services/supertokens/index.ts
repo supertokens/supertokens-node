@@ -12,10 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import {
-    SupertokensServiceConfig,
-    SUPERTOKENS_SMS_SERVICE_URL,
-} from "../../../../../ingredients/smsdelivery/services/supertokens";
+import { SUPERTOKENS_SMS_SERVICE_URL } from "../../../../../ingredients/smsdelivery/services/supertokens";
 import { SmsDeliveryInterface } from "../../../../../ingredients/smsdelivery/types";
 import { TypePasswordlessSmsDeliveryInput } from "../../../types";
 import axios, { AxiosError } from "axios";
@@ -23,10 +20,10 @@ import Supertokens from "../../../../../supertokens";
 import { logDebugMessage } from "../../../../../logger";
 
 export default class SupertokensService implements SmsDeliveryInterface<TypePasswordlessSmsDeliveryInput> {
-    private config: SupertokensServiceConfig;
+    private apiKey: string;
 
-    constructor(config: SupertokensServiceConfig) {
-        this.config = config;
+    constructor(apiKey: string) {
+        this.apiKey = apiKey;
     }
 
     sendSms = async (input: TypePasswordlessSmsDeliveryInput) => {
@@ -37,7 +34,7 @@ export default class SupertokensService implements SmsDeliveryInterface<TypePass
                 method: "post",
                 url: SUPERTOKENS_SMS_SERVICE_URL,
                 data: {
-                    apiKey: this.config.apiKey,
+                    apiKey: this.apiKey,
                     smsInput: {
                         type: input.type,
                         phoneNumber: input.phoneNumber,

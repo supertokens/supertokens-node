@@ -393,9 +393,7 @@ ThirdPartyPasswordless.init({
         }),
     ],
     smsDelivery: {
-        service: new SupertokensServiceTPP({
-            apiKey: "",
-        }),
+        service: new SupertokensServiceTPP(""),
         override: (oI) => {
             return {
                 ...oI,
@@ -544,9 +542,7 @@ ThirdPartyPasswordless.init({
 
 ThirdPartyPasswordless.init({
     smsDelivery: {
-        service: new SupertokensServiceTPP({
-            apiKey: "",
-        }),
+        service: new SupertokensServiceTPP(""),
     },
     contactMethod: "PHONE",
     flowType: "MAGIC_LINK",
@@ -616,9 +612,7 @@ Passwordless.init({
 Passwordless.init({
     contactMethod: "PHONE",
     smsDelivery: {
-        service: new SupertokensServiceP({
-            apiKey: "",
-        }),
+        service: new SupertokensServiceP(""),
         override: (oI) => {
             return {
                 ...oI,
@@ -764,9 +758,7 @@ Passwordless.init({
 
 Passwordless.init({
     smsDelivery: {
-        service: new SupertokensServiceP({
-            apiKey: "",
-        }),
+        service: new SupertokensServiceP(""),
     },
     contactMethod: "PHONE",
     flowType: "MAGIC_LINK",

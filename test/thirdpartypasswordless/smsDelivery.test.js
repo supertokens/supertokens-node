@@ -439,9 +439,7 @@ describe(`smsDelivery: ${printPath("[test/thirdpartypasswordless/smsDelivery.tes
                     contactMethod: "PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     smsDelivery: {
-                        service: new SupertokensService({
-                            apiKey: "API_KEY",
-                        }),
+                        service: new SupertokensService("API_KEY"),
                         override: (oI) => {
                             return {
                                 sendSms: async (input) => {
