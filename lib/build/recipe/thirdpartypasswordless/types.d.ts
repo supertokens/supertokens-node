@@ -25,6 +25,7 @@ import {
     TypeInput as SmsDeliveryTypeInput,
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
+import { GeneralErrorResponse } from "../../types";
 export declare type DeviceType = DeviceTypeOriginal;
 export declare type User = (
     | {
@@ -223,17 +224,11 @@ export declare type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
     createCode: (
         input: (
             | {
@@ -347,10 +342,13 @@ export declare type APIInterface = {
               provider: TypeProvider;
               options: ThirdPartyAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
     thirdPartySignInUpPOST:
         | undefined
         | ((input: {
@@ -369,10 +367,7 @@ export declare type APIInterface = {
                     session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
@@ -401,10 +396,7 @@ export declare type APIInterface = {
                     preAuthSessionId: string;
                     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
                 }
-              | {
-                    status: "GENERAL_ERROR";
-                    message: string;
-                }
+              | GeneralErrorResponse
           >);
     resendCodePOST:
         | undefined
@@ -417,10 +409,7 @@ export declare type APIInterface = {
                   userContext: any;
               }
           ) => Promise<
-              | {
-                    status: "GENERAL_ERROR";
-                    message: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "RESTART_FLOW_ERROR" | "OK";
                 }
@@ -454,10 +443,7 @@ export declare type APIInterface = {
                     failedCodeInputAttemptCount: number;
                     maximumCodeInputAttempts: number;
                 }
-              | {
-                    status: "GENERAL_ERROR";
-                    message: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "RESTART_FLOW_ERROR";
                 }
@@ -468,20 +454,26 @@ export declare type APIInterface = {
               email: string;
               options: PasswordlessAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
     passwordlessUserPhoneNumberExistsGET:
         | undefined
         | ((input: {
               phoneNumber: string;
               options: PasswordlessAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
 };
 export declare type TypeThirdPartyPasswordlessEmailDeliveryInput =
     | TypeThirdPartyEmailDeliveryInput

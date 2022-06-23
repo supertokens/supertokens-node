@@ -73,8 +73,6 @@ function defaultCreateAndSendCustomSms(_: NormalisedAppinfo) {
                          */
                         if (err.response.data.err !== undefined) {
                             throw Error(err.response.data.err);
-                        } else if (err.response.data !== undefined) {
-                            throw Error(err.response.data);
                         } else {
                             throw err;
                         }

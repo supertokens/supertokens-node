@@ -28,17 +28,8 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 isVerified: boolean;
             };
             userContext: any;
-        }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
-            | {
-                  status: "FIELD_ERROR";
-                  error: string;
-              }
-        > {
+        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             let result = await recipeInterface.thirdPartySignInUp(input);
-            if (result.status === "FIELD_ERROR") {
-                return result;
-            }
             if (result.user.thirdParty === undefined) {
                 throw new Error("Should never come here");
             }

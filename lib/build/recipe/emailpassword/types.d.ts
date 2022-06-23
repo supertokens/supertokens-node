@@ -13,6 +13,7 @@ import {
 } from "../../ingredients/emaildelivery/types";
 import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { GeneralErrorResponse } from "../../types";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -194,10 +195,13 @@ export declare type APIInterface = {
               email: string;
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
     generatePasswordResetTokenPOST:
         | undefined
         | ((input: {
@@ -207,9 +211,12 @@ export declare type APIInterface = {
               }[];
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
     passwordResetPOST:
         | undefined
         | ((input: {
@@ -228,6 +235,7 @@ export declare type APIInterface = {
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     signInPOST:
         | undefined
@@ -247,6 +255,7 @@ export declare type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     signUpPOST:
         | undefined
@@ -266,6 +275,7 @@ export declare type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
+              | GeneralErrorResponse
           >);
 };
 export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {

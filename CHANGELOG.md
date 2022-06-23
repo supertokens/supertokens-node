@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [10.0.0] - 2022-06-2
+
+### Breaking change
+
+-   https://github.com/supertokens/supertokens-node/issues/220
+    -   Adds `{status: "GENERAL_ERROR", message: string}` as a possible output to all the APIs.
+    -   Changes `FIELD_ERROR` output status in third party recipe API to be `GENERAL_ERROR`.
+    -   Replaced `FIELD_ERROR` status type in third party signinup API with `GENERAL_ERROR`.
+    -   Removed `FIELD_ERROR` status type from third party signinup recipe function.
+-   If sms or email sending failed in passwordless recipe APIs, we now throw a regular JS error from the API as opposed to returning a `GENERAL_ERROR` to the client.
+-   If there is an error whilst getting the profile info about a user from a third party provider (in /signinup POST API), then we throw a regular JS error instead of returning a `GENERAL_ERROR` to the client.
+-   Changes SuperTokensSMS service to take an API key directly as opposed to take an object that takes an API key
+
 ### Changes
 
 -   Fixes Cookie sameSite config validation.

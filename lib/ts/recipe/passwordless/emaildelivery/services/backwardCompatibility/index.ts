@@ -84,8 +84,6 @@ function defaultCreateAndSendCustomEmail(appInfo: NormalisedAppinfo) {
             if (axios.isAxiosError(error) && error.response !== undefined) {
                 if (error.response.data.err !== undefined) {
                     throw Error(error.response.data.err);
-                } else if (error.response.data !== undefined) {
-                    throw Error(error.response.data);
                 }
             }
             throw error;

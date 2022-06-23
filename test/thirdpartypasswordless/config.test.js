@@ -718,6 +718,11 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
         app.use(middleware());
 
         app.use(errorHandler());
+        let message = "";
+        app.use((err, req, res, next) => {
+            message = err.message;
+            res.status(500).send(message);
+        });
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -725,17 +730,17 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                 .send({
                     phoneNumber: "+12345678901",
                 })
-                .expect(200)
+                .expect(500)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(JSON.parse(res.text));
+                        resolve(res);
                     }
                 })
         );
-        assert(response.status === "GENERAL_ERROR");
-        assert(response.message === "test message");
+        assert(response.status === 500);
+        assert(message === "test message");
         assert(isCreateAndSendCustomTextMessageCalled);
     });
 
@@ -1145,6 +1150,11 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
         app.use(middleware());
 
         app.use(errorHandler());
+        let message = "";
+        app.use((err, req, res, next) => {
+            message = err.message;
+            res.status(500).send(message);
+        });
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -1152,18 +1162,18 @@ describe(`config tests: ${printPath("[test/thirdpartypasswordless/config.test.js
                 .send({
                     email: "test@example.com",
                 })
-                .expect(200)
+                .expect(500)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(JSON.parse(res.text));
+                        resolve(res);
                     }
                 })
         );
 
-        assert(response.status === "GENERAL_ERROR");
-        assert(response.message === "test message");
+        assert(response.status === 500);
+        assert(message === "test message");
         assert(isCreateAndSendCustomEmailCalled);
     });
 

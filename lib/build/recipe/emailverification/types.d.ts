@@ -6,6 +6,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { GeneralErrorResponse } from "../../types";
 export declare type TypeInput = {
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
@@ -106,24 +107,31 @@ export declare type APIInterface = {
               | {
                     status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     isEmailVerifiedGET:
         | undefined
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              isVerified: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    isVerified: boolean;
+                }
+              | GeneralErrorResponse
+          >);
     generateEmailVerifyTokenPOST:
         | undefined
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
-          }>);
+          }) => Promise<
+              | {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
+                }
+              | GeneralErrorResponse
+          >);
 };
 export declare type TypeEmailVerificationEmailDeliveryInput = {
     type: "EMAIL_VERIFICATION";

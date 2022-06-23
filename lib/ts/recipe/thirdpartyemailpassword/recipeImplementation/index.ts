@@ -42,13 +42,7 @@ export default function getRecipeInterface(
                 isVerified: boolean;
             };
             userContext: any;
-        }): Promise<
-            | { status: "OK"; createdNewUser: boolean; user: User }
-            | {
-                  status: "FIELD_ERROR";
-                  error: string;
-              }
-        > {
+        }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             if (originalThirdPartyImplementation === undefined) {
                 throw new Error("No thirdparty provider configured");
             }

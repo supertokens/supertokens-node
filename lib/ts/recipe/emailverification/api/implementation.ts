@@ -1,6 +1,7 @@
 import { APIInterface, APIOptions, User } from "../";
 import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
+import { GeneralErrorResponse } from "../../../types";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -12,7 +13,9 @@ export default function getAPIInterface(): APIInterface {
             token: string;
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
+        }): Promise<
+            { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
+        > {
             return await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
         },
 
@@ -22,10 +25,13 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-            isVerified: boolean;
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  isVerified: boolean;
+              }
+            | GeneralErrorResponse
+        > {
             let session = await Session.getSession(options.req, options.res, userContext);
 
             if (session === undefined) {
@@ -48,7 +54,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" }> {
+        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
             let session = await Session.getSession(options.req, options.res, userContext);
 
             if (session === undefined) {
