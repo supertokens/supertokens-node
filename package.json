@@ -69,7 +69,6 @@
         "cookie-parser": "^1.4.5",
         "express": "4.17.1",
         "fastify": "3.18.1",
-        "faunadb": "^3.0.1",
         "glob": "7.1.7",
         "koa": "^2.13.3",
         "lambda-tester": "^4.0.1",

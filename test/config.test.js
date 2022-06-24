@@ -40,10 +40,6 @@ let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").de
 const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/recipe/session/utils");
 let { middleware, errorHandler } = require("../framework/express");
 
-/**
- * TODO: (Later) test config for faunadb session module
- */
-
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();

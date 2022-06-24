@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   If sms or email sending failed in passwordless recipe APIs, we now throw a regular JS error from the API as opposed to returning a `GENERAL_ERROR` to the client.
 -   If there is an error whilst getting the profile info about a user from a third party provider (in /signinup POST API), then we throw a regular JS error instead of returning a `GENERAL_ERROR` to the client.
 -   Changes SuperTokensSMS service to take an API key directly as opposed to take an object that takes an API key
+-   Passes only base request and base response objects to session recipe implementation functions. Normalisation of raw res and raw response is now done in the session's index.ts file
+-   Removes support for faunadb session recipe modifier.
 
 ### Changes
 

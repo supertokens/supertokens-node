@@ -21,6 +21,8 @@ import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import SessionClassWithJWT from "./sessionClass";
 import * as assert from "assert";
 import { addJWTToAccessTokenPayload } from "./utils";
+import { BaseResponse } from "../../../framework/response";
+import { BaseRequest } from "../../../framework/request";
 
 // Time difference between JWT expiry and access token expiry (JWT expiry = access token expiry + EXPIRY_OFFSET_SECONDS)
 let EXPIRY_OFFSET_SECONDS = 30;
@@ -51,7 +53,7 @@ export default function (
             sessionData,
             userContext,
         }: {
-            res: any;
+            res: BaseResponse;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
@@ -85,8 +87,8 @@ export default function (
             options,
             userContext,
         }: {
-            req: any;
-            res: any;
+            req: BaseRequest;
+            res: BaseResponse;
             options?: VerifySessionOptions;
             userContext: any;
         }): Promise<SessionContainerInterface | undefined> {
@@ -103,8 +105,8 @@ export default function (
             res,
             userContext,
         }: {
-            req: any;
-            res: any;
+            req: BaseRequest;
+            res: BaseResponse;
             userContext: any;
         }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS({ userContext })) / 1000);
