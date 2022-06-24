@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Changes SuperTokensSMS service to take an API key directly as opposed to take an object that takes an API key
 -   Passes only base request and base response objects to session recipe implementation functions. Normalisation of raw res and raw response is now done in the session's index.ts file
 -   Removes support for faunadb session recipe modifier.
+-   Removes support for FDI < 1.14
 
 ### Changes
 
