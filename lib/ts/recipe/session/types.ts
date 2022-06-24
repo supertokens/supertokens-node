@@ -183,7 +183,7 @@ export interface VerifySessionOptions {
 
 export type RecipeInterface = {
     createNewSession(input: {
-        res: any;
+        res: BaseResponse;
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
@@ -191,13 +191,17 @@ export type RecipeInterface = {
     }): Promise<SessionContainerInterface>;
 
     getSession(input: {
-        req: any;
-        res: any;
+        req: BaseRequest;
+        res: BaseResponse;
         options?: VerifySessionOptions;
         userContext: any;
     }): Promise<SessionContainerInterface | undefined>;
 
-    refreshSession(input: { req: any; res: any; userContext: any }): Promise<SessionContainerInterface>;
+    refreshSession(input: {
+        req: BaseRequest;
+        res: BaseResponse;
+        userContext: any;
+    }): Promise<SessionContainerInterface>;
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionData

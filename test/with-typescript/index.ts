@@ -5,8 +5,6 @@ import EmailPassword from "../../recipe/emailpassword";
 import { verifySession } from "../../recipe/session/framework/express";
 import { middleware, errorHandler, SessionRequest } from "../../framework/express";
 import NextJS from "../../nextjs";
-import { RecipeImplementation as FaunaDBImplementation } from "../../recipe/session/faunadb";
-let faunadb = require("faunadb");
 import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import ThirdParty from "../../recipe/thirdparty";
 import Passwordless from "../../recipe/passwordless";
@@ -1012,20 +1010,6 @@ Supertokens.init({
         Session.init({
             antiCsrf: "NONE",
             cookieDomain: "",
-            override: {
-                functions: (originalImpl: RecipeInterface) => {
-                    let faunaDBMod = new FaunaDBImplementation(originalImpl, {
-                        faunaDBClient: new faunadb(),
-                        userCollectionName: "users",
-                    });
-                    return {
-                        ...faunaDBMod,
-                        createNewSession: (input) => {
-                            return faunaDBMod.createNewSession(input);
-                        },
-                    };
-                },
-            },
         }),
         EmailPassword.init({
             override: {},
