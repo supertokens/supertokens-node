@@ -242,7 +242,7 @@ export default function getAPIImplementation(): APIInterface {
                             logDebugMessage(`Sending passwordless login email to ${(input as any).email}`);
                             await input.options.emailDelivery.ingredientInterfaceImpl.sendEmail({
                                 type: "PASSWORDLESS_LOGIN",
-                                email: (input as any).email!,
+                                email: deviceInfo.email!,
                                 codeLifetime: response.codeLifetime,
                                 preAuthSessionId: response.preAuthSessionId,
                                 urlWithLinkCode: magicLink,
