@@ -43,7 +43,7 @@ jobs:
             - slack/status
     test-authreact:
         docker:
-            - image: rishabhpoddar/supertokens_website_sdk_testing_node_16
+            - image: rishabhpoddar/supertokens_website_sdk_testing
         resource_class: large
         steps:
             - checkout
