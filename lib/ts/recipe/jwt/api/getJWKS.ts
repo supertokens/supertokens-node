@@ -15,13 +15,17 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function getJWKS(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.getJWKSGET === undefined) {
         return false;
     }
 
-    let result = await apiImplementation.getJWKSGET({ options, userContext: {} });
+    let result = await apiImplementation.getJWKSGET({
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
     if (result.status === "OK") {
         options.res.setHeader("Access-Control-Allow-Origin", "*", false);
         send200Response(options.res, { keys: result.keys });

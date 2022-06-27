@@ -120,3 +120,11 @@ export function humaniseMilliseconds(ms: number): string {
         return `${h} hour${suffix}`;
     }
 }
+
+export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
+    return {
+        _default: {
+            request,
+        },
+    };
+}

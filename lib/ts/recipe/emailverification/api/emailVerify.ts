@@ -16,6 +16,7 @@
 import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function emailVerify(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     let result;
@@ -41,7 +42,11 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
             });
         }
 
-        let response = await apiImplementation.verifyEmailPOST({ token, options, userContext: {} });
+        let response = await apiImplementation.verifyEmailPOST({
+            token,
+            options,
+            userContext: makeDefaultUserContextFromAPI(options.req),
+        });
         if (response.status === "OK") {
             result = { status: "OK" };
         } else {
@@ -52,7 +57,10 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
             return false;
         }
 
-        result = await apiImplementation.isEmailVerifiedGET({ options, userContext: {} });
+        result = await apiImplementation.isEmailVerifiedGET({
+            options,
+            userContext: makeDefaultUserContextFromAPI(options.req),
+        });
     }
     send200Response(options.res, result);
     return true;

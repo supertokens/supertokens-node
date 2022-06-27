@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function generatePasswordResetToken(
     apiImplementation: APIInterface,
@@ -36,7 +37,11 @@ export default async function generatePasswordResetToken(
         (await options.req.getJSONBody()).formFields
     );
 
-    let result = await apiImplementation.generatePasswordResetTokenPOST({ formFields, options, userContext: {} });
+    let result = await apiImplementation.generatePasswordResetTokenPOST({
+        formFields,
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     send200Response(options.res, result);
     return true;
