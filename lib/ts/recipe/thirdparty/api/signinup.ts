@@ -17,6 +17,7 @@ import STError from "../error";
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
 import { findRightProvider } from "../utils";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function signInUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.signInUpPOST === undefined) {
@@ -90,7 +91,7 @@ export default async function signInUpAPI(apiImplementation: APIInterface, optio
         redirectURI,
         options,
         authCodeResponse,
-        userContext: {},
+        userContext: makeDefaultUserContextFromAPI(options.req),
     });
 
     if (result.status === "OK") {
