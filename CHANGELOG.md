@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Breaking change:
+
+-   Changes session function recipe interfaces to not throw an UNAUTHORISED error when the input is a sessionHandle: https://github.com/supertokens/backend/issues/83
+    -   `getSessionInformation` now returns `undefined` is the session does not exist
+    -   `updateSessionData` now returns `false` if the input `sessionHandle` does not exist.
+    -   `updateAccessTokenPayload` now returns `false` if the input `sessionHandle` does not exist.
+    -   `regenerateAccessToken` now returns `undefined` if the input access token's `sessionHandle` does not exist.
+    -   The sessionClass functions have not changed in behaviour and still throw UNAUTHORISED. This works cause the sessionClass works on the current session and not some other session.
+
 ## [10.0.1] - 2022-06-28
 
 ### Fixes

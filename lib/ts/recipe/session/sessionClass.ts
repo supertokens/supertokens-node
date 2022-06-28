@@ -55,12 +55,17 @@ export default class Session implements SessionContainerInterface {
 
     getSessionData = async (userContext?: any): Promise<any> => {
         try {
-            return (
-                await this.helpers.sessionRecipeImpl.getSessionInformation({
-                    sessionHandle: this.sessionHandle,
-                    userContext: userContext === undefined ? {} : userContext,
-                })
-            ).sessionData;
+            let sessionInfo = await this.helpers.sessionRecipeImpl.getSessionInformation({
+                sessionHandle: this.sessionHandle,
+                userContext: userContext === undefined ? {} : userContext,
+            });
+            if (sessionInfo === undefined) {
+                throw new STError({
+                    message: "Session information does not exist.",
+                    type: STError.UNAUTHORISED,
+                });
+            }
+            return sessionInfo.sessionData;
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
                 clearSessionFromCookie(this.helpers.config, this.res);
@@ -71,11 +76,18 @@ export default class Session implements SessionContainerInterface {
 
     updateSessionData = async (newSessionData: any, userContext?: any) => {
         try {
-            await this.helpers.sessionRecipeImpl.updateSessionData({
-                sessionHandle: this.sessionHandle,
-                newSessionData,
-                userContext: userContext === undefined ? {} : userContext,
-            });
+            if (
+                !(await this.helpers.sessionRecipeImpl.updateSessionData({
+                    sessionHandle: this.sessionHandle,
+                    newSessionData,
+                    userContext: userContext === undefined ? {} : userContext,
+                }))
+            ) {
+                throw new STError({
+                    message: "Session does not exist anymore.",
+                    type: STError.UNAUTHORISED,
+                });
+            }
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
                 clearSessionFromCookie(this.helpers.config, this.res);
@@ -107,6 +119,12 @@ export default class Session implements SessionContainerInterface {
                 newAccessTokenPayload,
                 userContext: userContext === undefined ? {} : userContext,
             });
+            if (response === undefined) {
+                throw new STError({
+                    message: "Session information does not exist.",
+                    type: STError.UNAUTHORISED,
+                });
+            }
             this.userDataInAccessToken = response.session.userDataInJWT;
             if (response.accessToken !== undefined) {
                 this.accessToken = response.accessToken.token;
@@ -133,12 +151,17 @@ export default class Session implements SessionContainerInterface {
 
     getTimeCreated = async (userContext?: any): Promise<number> => {
         try {
-            return (
-                await this.helpers.sessionRecipeImpl.getSessionInformation({
-                    sessionHandle: this.sessionHandle,
-                    userContext: userContext === undefined ? {} : userContext,
-                })
-            ).timeCreated;
+            let sessionInfo = await this.helpers.sessionRecipeImpl.getSessionInformation({
+                sessionHandle: this.sessionHandle,
+                userContext: userContext === undefined ? {} : userContext,
+            });
+            if (sessionInfo === undefined) {
+                throw new STError({
+                    message: "Session information does not exist.",
+                    type: STError.UNAUTHORISED,
+                });
+            }
+            return sessionInfo.timeCreated;
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
                 clearSessionFromCookie(this.helpers.config, this.res);
@@ -149,12 +172,17 @@ export default class Session implements SessionContainerInterface {
 
     getExpiry = async (userContext?: any): Promise<number> => {
         try {
-            return (
-                await this.helpers.sessionRecipeImpl.getSessionInformation({
-                    sessionHandle: this.sessionHandle,
-                    userContext: userContext === undefined ? {} : userContext,
-                })
-            ).expiry;
+            let sessionInfo = await this.helpers.sessionRecipeImpl.getSessionInformation({
+                sessionHandle: this.sessionHandle,
+                userContext: userContext === undefined ? {} : userContext,
+            });
+            if (sessionInfo === undefined) {
+                throw new STError({
+                    message: "Session information does not exist.",
+                    type: STError.UNAUTHORISED,
+                });
+            }
+            return sessionInfo.expiry;
         } catch (err) {
             if (err.type === STError.UNAUTHORISED) {
                 clearSessionFromCookie(this.helpers.config, this.res);
