@@ -7,11 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [10.0.1] - 2022-06-28
+
 ### Fixes
 
 -   Fixed handling of unicode characters in usermetadata (and emails, roles, session/access token payload data)
-
-## [10.0.0] - 2022-06-2
 
 ### Adds:
 
@@ -24,6 +24,8 @@ signIn: async function (input) {
     }
 }
 ```
+
+## [10.0.0] - 2022-06-2
 
 ### Breaking change
 
