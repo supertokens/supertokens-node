@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function phoneNumberExists(
     apiImplementation: APIInterface,
@@ -34,7 +35,11 @@ export default async function phoneNumberExists(
         });
     }
 
-    let result = await apiImplementation.phoneNumberExistsGET({ phoneNumber, options, userContext: {} });
+    let result = await apiImplementation.phoneNumberExistsGET({
+        phoneNumber,
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     send200Response(options.res, result);
     return true;

@@ -14,6 +14,7 @@
  */
 
 import { APIInterface, APIOptions } from "../";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function appleRedirectHandler(
     apiImplementation: APIInterface,
@@ -33,7 +34,7 @@ export default async function appleRedirectHandler(
         code,
         state,
         options,
-        userContext: {},
+        userContext: makeDefaultUserContextFromAPI(options.req),
     });
 
     return true;

@@ -13,6 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [10.0.0] - 2022-06-2
 
+### Adds:
+
+-   Adds default userContext for API calls that contains the request object. It can be used in APIs / functions override like so:
+
+```ts
+signIn: async function (input) {
+    if (input.userContext._default && input.userContext._default.request) {
+        // do something here with the request object
+    }
+}
+```
+
 ### Breaking change
 
 -   https://github.com/supertokens/supertokens-node/issues/220
