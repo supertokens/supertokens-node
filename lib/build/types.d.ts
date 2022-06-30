@@ -39,7 +39,7 @@ export declare type APIHandled = {
 };
 export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
 export declare type JSONPrimitive = string | number | boolean | null;
-export declare type JSONArray = Array<JSONPrimitive>;
+export declare type JSONArray = Array<JSONValue>;
 export declare type JSONValue = JSONPrimitive | JSONObject | JSONArray | undefined;
 export interface JSONObject {
     [ind: string]: JSONValue;

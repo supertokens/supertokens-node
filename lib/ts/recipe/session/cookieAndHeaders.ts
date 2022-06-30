@@ -27,7 +27,6 @@ const antiCsrfHeaderKey = "anti-csrf";
 const ridHeaderKey = "rid";
 
 const frontTokenHeaderKey = "front-token";
-const invalidClaimHeaderKey = "invalid-claim";
 
 /**
  * @description clears all the auth cookies from the response
@@ -62,11 +61,6 @@ export function attachRefreshTokenToCookie(
     expiry: number
 ) {
     setCookie(config, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
-}
-
-export function setInvalidClaimHeader(response: BaseResponse, errorListJSON: string) {
-    response.setHeader(invalidClaimHeaderKey, errorListJSON, false);
-    response.setHeader("Access-Control-Expose-Headers", invalidClaimHeaderKey, true);
 }
 
 export function getAccessTokenFromCookie(req: BaseRequest): string | undefined {

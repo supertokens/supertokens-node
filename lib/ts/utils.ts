@@ -1,4 +1,4 @@
-import type { AppInfo, NormalisedAppinfo, HTTPMethod } from "./types";
+import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject } from "./types";
 import { HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -78,13 +78,17 @@ export function normaliseHttpMethod(method: string): HTTPMethod {
     return method.toLowerCase() as HTTPMethod;
 }
 
-export function sendNon200Response(res: BaseResponse, message: string, statusCode: number) {
+export function sendNon200ResponseWithMessage(res: BaseResponse, message: string, statusCode: number) {
+    sendNon200Response(res, statusCode, { message });
+}
+
+export function sendNon200Response(res: BaseResponse, statusCode: number, body: JSONObject) {
     if (statusCode < 300) {
         throw new Error("Calling sendNon200Response with status code < 300");
     }
     logDebugMessage("Sending response to client with status code: " + statusCode);
     res.setStatusCode(statusCode);
-    res.sendJSONResponse({ message });
+    res.sendJSONResponse(body);
 }
 
 export function send200Response(res: BaseResponse, responseJson: any) {

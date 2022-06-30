@@ -26,7 +26,6 @@ import {
     attachRefreshTokenToCookie,
     setIdRefreshTokenInHeaderAndCookie,
     setAntiCsrfTokenInHeaders,
-    setInvalidClaimHeader,
 } from "./cookieAndHeaders";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
@@ -37,7 +36,7 @@ import * as psl from "psl";
 import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
-import { sendNon200Response } from "../../utils";
+import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./with-jwt/constants";
 
 export async function sendTryRefreshTokenResponse(
@@ -46,7 +45,7 @@ export async function sendTryRefreshTokenResponse(
     __: BaseRequest,
     response: BaseResponse
 ) {
-    sendNon200Response(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
+    sendNon200ResponseWithMessage(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
 }
 
 export async function sendUnauthorisedResponse(
@@ -55,17 +54,19 @@ export async function sendUnauthorisedResponse(
     __: BaseRequest,
     response: BaseResponse
 ) {
-    sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
+    sendNon200ResponseWithMessage(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
 }
 
 export async function sendInvalidClaimResponse(
     recipeInstance: SessionRecipe,
-    validationErrors: ClaimValidationError[],
+    claimValidationErrors: ClaimValidationError[],
     __: BaseRequest,
     response: BaseResponse
 ) {
-    setInvalidClaimHeader(response, JSON.stringify(validationErrors));
-    sendNon200Response(response, "invalid claim", recipeInstance.config.invalidClaimStatusCode);
+    sendNon200Response(response, recipeInstance.config.invalidClaimStatusCode, {
+        message: "invalid claim",
+        claimValidationErrors,
+    });
 }
 
 export async function sendTokenTheftDetectedResponse(
@@ -76,7 +77,7 @@ export async function sendTokenTheftDetectedResponse(
     response: BaseResponse
 ) {
     await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext: {} });
-    sendNon200Response(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
+    sendNon200ResponseWithMessage(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
 }
 
 export function normaliseSessionScopeOrThrowError(sessionScope: string): string {

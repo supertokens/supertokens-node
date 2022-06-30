@@ -15,7 +15,12 @@
 
 import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
 import axios from "axios";
-import { normaliseInputAppInfoOrThrowError, maxVersion, normaliseHttpMethod, sendNon200Response } from "./utils";
+import {
+    normaliseInputAppInfoOrThrowError,
+    maxVersion,
+    normaliseHttpMethod,
+    sendNon200ResponseWithMessage,
+} from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import { HEADER_RID, HEADER_FDI } from "./constants";
@@ -317,7 +322,7 @@ export default class SuperTokens {
             logDebugMessage("errorHandler: Error is from SuperTokens recipe. Message: " + err.message);
             if (err.type === STError.BAD_INPUT_ERROR) {
                 logDebugMessage("errorHandler: Sending 400 status code response");
-                return sendNon200Response(response, err.message, 400);
+                return sendNon200ResponseWithMessage(response, err.message, 400);
             }
 
             for (let i = 0; i < this.recipeModules.length; i++) {

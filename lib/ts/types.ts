@@ -60,7 +60,7 @@ export type APIHandled = {
 export type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
 
 export type JSONPrimitive = string | number | boolean | null;
-export type JSONArray = Array<JSONPrimitive>;
+export type JSONArray = Array<JSONValue>;
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray | undefined;
 export interface JSONObject {
     [ind: string]: JSONValue;
