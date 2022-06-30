@@ -231,7 +231,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             sessionHandle,
         }: {
             sessionHandle: string;
-        }): Promise<SessionInformation> {
+        }): Promise<SessionInformation | undefined> {
             return SessionFunctions.getSessionInformation(helpers, sessionHandle);
         },
 
@@ -297,19 +297,22 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 newAccessTokenPayload?: any;
                 userContext: any;
             }
-        ): Promise<{
-            status: "OK";
-            session: {
-                handle: string;
-                userId: string;
-                userDataInJWT: any;
-            };
-            accessToken?: {
-                token: string;
-                expiry: number;
-                createdTime: number;
-            };
-        }> {
+        ): Promise<
+            | {
+                  status: "OK";
+                  session: {
+                      handle: string;
+                      userId: string;
+                      userDataInJWT: any;
+                  };
+                  accessToken?: {
+                      token: string;
+                      expiry: number;
+                      createdTime: number;
+                  };
+              }
+            | undefined
+        > {
             let newAccessTokenPayload =
                 input.newAccessTokenPayload === null || input.newAccessTokenPayload === undefined
                     ? {}
@@ -319,10 +322,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 userDataInJWT: newAccessTokenPayload,
             });
             if (response.status === "UNAUTHORISED") {
-                throw new STError({
-                    message: response.message,
-                    type: STError.UNAUTHORISED,
-                });
+                return undefined;
             }
             return response;
         },
@@ -349,7 +349,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         }: {
             sessionHandle: string;
             newSessionData: any;
-        }) {
+        }): Promise<boolean> {
             return SessionFunctions.updateSessionData(helpers, sessionHandle, newSessionData);
         },
 
@@ -359,7 +359,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         }: {
             sessionHandle: string;
             newAccessTokenPayload: any;
-        }) {
+        }): Promise<boolean> {
             return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
         },
 

@@ -1157,14 +1157,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         app.post("/updateSessionDataInvalidSessionHandle", async (req, res) => {
-            try {
-                await Session.updateSessionData("InvalidHandle", { key: "value3" });
-                res.status(200).json({ success: false });
-            } catch (err) {
-                res.status(200).json({
-                    success: err.type === Session.Error.UNAUTHORISED,
-                });
-            }
+            res.status(200).json({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) });
         });
 
         //create a new session
@@ -1328,13 +1321,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         app.post("/updateAccessTokenPayloadInvalidSessionHandle", async (req, res) => {
-            try {
-                await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" });
-            } catch (err) {
-                res.status(200).json({
-                    success: err.type === Session.Error.UNAUTHORISED,
-                });
-            }
+            res.status(200).json({
+                success: !(await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" })),
+            });
         });
 
         //create a new session
