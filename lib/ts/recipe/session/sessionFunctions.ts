@@ -34,6 +34,12 @@ export async function createNewSession(
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
 
+    for (const k of Object.keys(accessTokenPayload)) {
+        if (accessTokenPayload[k] === null) {
+            delete accessTokenPayload[k];
+        }
+    }
+
     let requestBody: {
         userId: string;
         userDataInJWT: any;

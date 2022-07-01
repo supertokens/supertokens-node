@@ -1,12 +1,13 @@
 import { JSONValue } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 
-export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T> {
-    constructor(key: string) {
-        super(key);
-    }
+export class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T> {
+    public fetchValue: (userId: string, userContext: any) => Promise<T | undefined> | T | undefined;
 
-    abstract fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
+    constructor(conf: { key: string; fetchValue: SessionClaim<T>["fetchValue"] }) {
+        super(conf.key);
+        this.fetchValue = conf.fetchValue;
+    }
 
     addToPayload_internal(payload: any, value: T, _userContext: any): any {
         return {
@@ -28,6 +29,11 @@ export abstract class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T
 
     getValueFromPayload(payload: any, _userContext?: any): T | undefined {
         return payload[this.key]?.v;
+    }
+
+    getLastRefetchTime(payload: any, _userContext?: any): Date | undefined {
+        const timestamp = payload[this.key]?.t;
+        return timestamp !== undefined ? new Date(timestamp) : undefined;
     }
 
     validators = {

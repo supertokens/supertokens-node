@@ -434,13 +434,16 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return (await getHandshakeInfo()).refreshTokenValidity;
         },
 
-        fetchAndSetClaim: async function <T>(input: {
+        fetchAndGetAccessTokenPayloadUpdate: async function <T>(input: {
             sessionHandle: string;
             claim: SessionClaim<T>;
             userContext?: any;
         }) {
             const sessionInfo = await this.getSessionInformation(helpers, input.sessionHandle);
-            const accessTokenPayloadUpdate = input.claim.fetchAndSetClaim(sessionInfo.userId, {}, input.userContext);
+            const accessTokenPayloadUpdate = input.claim.fetchAndGetAccessTokenPayloadUpdate(
+                sessionInfo.userId,
+                input.userContext
+            );
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,

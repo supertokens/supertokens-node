@@ -162,7 +162,11 @@ export default class RecipeImplementation implements RecipeInterface {
             userContext: any;
         }
     ) => Promise<number>;
-    fetchAndSetClaim: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) => any;
+    fetchAndGetAccessTokenPayloadUpdate: <T>(input: {
+        sessionHandle: string;
+        claim: SessionClaim<T>;
+        userContext?: any;
+    }) => any;
     setClaimValue: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; value: T; userContext?: any }) => any;
     getClaimValue: <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) => any;
     removeClaim: (input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }) => any;

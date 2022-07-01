@@ -596,122 +596,14 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
                 const res = await testGet(app, session, "/refetched-claim", 403);
                 validateErrorResp(res, [{ id: "testid", reason: "testReason" }]);
             });
-
-            it("should reject if assertClaims returns an error", async function () {
-                const obj = { id: "ASDFASDF" };
-                const testValidatorArr = [obj];
-                const mock = sinon.mock(SessionClass.prototype);
-                mock.expects("assertClaims")
-                    .once()
-                    .withArgs(testValidatorArr)
-                    .rejects(
-                        new SessionError({
-                            type: "INVALID_CLAIM",
-                            message: "INVALID_CLAIM",
-                            payload: [
-                                {
-                                    id: "testid",
-                                    reason: "testReason",
-                                },
-                            ],
-                        })
-                    );
-
-                await startST();
-                SuperTokens.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                    },
-                    recipeList: [
-                        Session.init({
-                            antiCsrf: "VIA_TOKEN",
-                            override: {
-                                functions: (oI) => ({
-                                    ...oI,
-                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
-                                        ...claimValidatorsAddedByOtherRecipes,
-                                        TrueClaim.validators.hasValue(true),
-                                    ],
-                                }),
-                            },
-                        }),
-                    ],
-                });
-
-                const app = getTestApp([
-                    {
-                        path: "/refetched-claim",
-                        overrideGlobalClaimValidators: () => testValidatorArr,
-                    },
-                ]);
-
-                const session = await createSession(app);
-
-                const res = await testGet(app, session, "/refetched-claim", 403);
-                validateErrorResp(res, [{ id: "testid", reason: "testReason" }]);
-                mock.verify();
-            });
-
-            it("should allow if assertClaims returns undefined", async function () {
-                const obj = {};
-                const testValidatorArr = [obj];
-
-                const mock = sinon.mock(SessionClass.prototype);
-                console.log(SessionClass);
-                mock.expects("assertClaims").once().withArgs(testValidatorArr).resolves(undefined);
-
-                await startST();
-                SuperTokens.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    appInfo: {
-                        apiDomain: "api.supertokens.io",
-                        appName: "SuperTokens",
-                        websiteDomain: "supertokens.io",
-                    },
-                    recipeList: [
-                        Session.init({
-                            antiCsrf: "VIA_TOKEN",
-                            override: {
-                                functions: (oI) => ({
-                                    ...oI,
-                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
-                                        ...claimValidatorsAddedByOtherRecipes,
-                                        obj,
-                                    ],
-                                }),
-                            },
-                        }),
-                    ],
-                });
-
-                const app = getTestApp([
-                    {
-                        path: "/refetched-claim",
-                        overrideGlobalClaimValidators: () => testValidatorArr,
-                    },
-                ]);
-
-                const session = await createSession(app);
-
-                await testGet(app, session, "/refetched-claim", 200);
-                mock.verify();
-            });
         });
     });
 });
 
 function validateErrorResp(resp, errors) {
-    assert.ok(resp.headers["invalid-claim"]);
-    const header = JSON.parse(resp.headers["invalid-claim"]);
-    assert.ok(header);
-    assert.deepEqual(header, errors);
+    assert.ok(resp.body);
+    assert.strictEqual(resp.body.message, "invalid claim");
+    assert.deepEqual(resp.body.claimValidationErrors, errors);
 }
 
 async function createSession(app, body) {

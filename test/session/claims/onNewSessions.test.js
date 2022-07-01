@@ -66,11 +66,13 @@ describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`,
                             functions: (oI) => ({
                                 ...oI,
                                 createNewSession: async (input) => {
-                                    input.accessTokenPayload = await TrueClaim.fetchAndSetClaim(
-                                        input.userId,
-                                        input.accessTokenPayload,
-                                        input.userContext
-                                    );
+                                    input.accessTokenPayload = {
+                                        ...input.accessTokenPayload,
+                                        ...(await TrueClaim.fetchAndGetAccessTokenPayloadUpdate(
+                                            input.userId,
+                                            input.userContext
+                                        )),
+                                    };
                                     return oI.createNewSession(input);
                                 },
                             }),
@@ -112,11 +114,14 @@ describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`,
                             functions: (oI) => ({
                                 ...oI,
                                 createNewSession: async (input) => {
-                                    input.accessTokenPayload = await UndefinedClaim.fetchAndSetClaim(
-                                        input.userId,
-                                        input.accessTokenPayload,
-                                        input.userContext
-                                    );
+                                    input.accessTokenPayload = {
+                                        ...input.accessTokenPayload,
+                                        ...(await UndefinedClaim.fetchAndGetAccessTokenPayloadUpdate(
+                                            input.userId,
+                                            input.accessTokenPayload,
+                                            input.userContext
+                                        )),
+                                    };
                                     return oI.createNewSession(input);
                                 },
                             }),
@@ -161,13 +166,12 @@ describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`,
                             functions: (oI) => ({
                                 ...oI,
                                 createNewSession: async (input) => {
-                                    input.accessTokenPayload = await TrueClaim.fetchAndSetClaim(
-                                        input.userId,
-                                        input.accessTokenPayload,
-                                        input.userContext
-                                    );
                                     input.accessTokenPayload = {
                                         ...input.accessTokenPayload,
+                                        ...(await TrueClaim.fetchAndGetAccessTokenPayloadUpdate(
+                                            input.userId,
+                                            input.userContext
+                                        )),
                                         ...customClaims,
                                     };
                                     return oI.createNewSession(input);

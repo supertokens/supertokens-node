@@ -231,7 +231,11 @@ export declare type RecipeInterface = {
     }>;
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
+    fetchAndGetAccessTokenPayloadUpdate(input: {
+        sessionHandle: string;
+        claim: SessionClaim<any>;
+        userContext?: any;
+    }): Promise<void>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
@@ -261,7 +265,7 @@ export interface SessionContainerInterface {
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
     assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
-    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    fetchAndGetAccessTokenPayloadUpdate<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
@@ -345,15 +349,17 @@ export declare abstract class SessionClaim<T> {
     abstract addToPayload_internal(payload: JSONObject, value: T, userContext: any): JSONObject;
     /**
      * Removes the claim from the payload, by cloning and updating the entire object.
+     * If a root level prop needs to be removed from the payload this should set it to null,
+     * to have mergeIntoAccessTokenPayload remove it during the update.
      *
      * @returns The modified payload object
      */
     abstract removeFromPayload(payload: JSONObject, userContext?: any): JSONObject;
     /**
-     * Removes the claim from the payload, by cloning and updating the entire object.
+     * Gets the value of the claim stored in the payload
      *
-     * @returns The modified payload object
+     * @returns Claim value
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
-    fetchAndSetClaim(userId: string, payload: JSONObject, userContext?: any): Promise<JSONObject>;
+    fetchAndGetAccessTokenPayloadUpdate(userId: string, userContext?: any): Promise<JSONObject>;
 }

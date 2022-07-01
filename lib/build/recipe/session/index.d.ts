@@ -90,7 +90,11 @@ export default class SessionWrapper {
         issuer: string;
         jwks_uri: string;
     }>;
-    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: any): Promise<void>;
+    static fetchAndGetAccessTokenPayloadUpdate(
+        sessionHandle: string,
+        claim: SessionClaim<any>,
+        userContext?: any
+    ): Promise<void>;
     static setClaimValue<T>(sessionHandle: string, claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     static getClaimValue<T>(sessionHandle: string, claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: any): Promise<void>;
@@ -107,7 +111,7 @@ export declare let revokeMultipleSessions: typeof SessionWrapper.revokeMultipleS
 export declare let updateSessionData: typeof SessionWrapper.updateSessionData;
 export declare let updateAccessTokenPayload: typeof SessionWrapper.updateAccessTokenPayload;
 export declare let mergeIntoAccessTokenPayload: typeof SessionWrapper.mergeIntoAccessTokenPayload;
-export declare let fetchAndSetClaim: typeof SessionWrapper.fetchAndSetClaim;
+export declare let fetchAndGetAccessTokenPayloadUpdate: typeof SessionWrapper.fetchAndGetAccessTokenPayloadUpdate;
 export declare let setClaimValue: typeof SessionWrapper.setClaimValue;
 export declare let getClaimValue: typeof SessionWrapper.getClaimValue;
 export declare let removeClaim: typeof SessionWrapper.removeClaim;

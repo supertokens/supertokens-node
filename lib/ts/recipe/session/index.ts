@@ -170,8 +170,12 @@ export default class SessionWrapper {
         );
     }
 
-    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<void> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndSetClaim({
+    static fetchAndGetAccessTokenPayloadUpdate(
+        sessionHandle: string,
+        claim: SessionClaim<any>,
+        userContext: any = {}
+    ): Promise<void> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndGetAccessTokenPayloadUpdate({
             sessionHandle,
             claim,
             userContext,
@@ -236,7 +240,7 @@ export let updateSessionData = SessionWrapper.updateSessionData;
 export let updateAccessTokenPayload = SessionWrapper.updateAccessTokenPayload;
 export let mergeIntoAccessTokenPayload = SessionWrapper.mergeIntoAccessTokenPayload;
 
-export let fetchAndSetClaim = SessionWrapper.fetchAndSetClaim;
+export let fetchAndGetAccessTokenPayloadUpdate = SessionWrapper.fetchAndGetAccessTokenPayloadUpdate;
 export let setClaimValue = SessionWrapper.setClaimValue;
 export let getClaimValue = SessionWrapper.getClaimValue;
 export let removeClaim = SessionWrapper.removeClaim;

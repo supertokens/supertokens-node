@@ -176,7 +176,7 @@ export default class Session implements SessionContainerInterface {
         }
 
         if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
-            await this.updateAccessTokenPayload(newAccessTokenPayload, userContext);
+            await this.mergeIntoAccessTokenPayload(newAccessTokenPayload, userContext);
         }
         if (validationErrors.length !== 0) {
             throw new STError({
@@ -187,8 +187,8 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    fetchAndSetClaim = async <T>(claim: SessionClaim<T>, userContext?: any) => {
-        const update = await claim.fetchAndSetClaim(this.getUserId(), {}, userContext);
+    fetchAndGetAccessTokenPayloadUpdate = async <T>(claim: SessionClaim<T>, userContext?: any) => {
+        const update = await claim.fetchAndGetAccessTokenPayloadUpdate(this.getUserId(), userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 

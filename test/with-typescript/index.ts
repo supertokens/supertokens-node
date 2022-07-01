@@ -186,7 +186,7 @@ let sessionConfig: SessionTypeInput = {
                         updateSessionData: session.updateSessionData,
                         mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
                         assertClaims: session.assertClaims,
-                        fetchAndSetClaim: session.fetchAndSetClaim,
+                        fetchAndGetAccessTokenPayloadUpdate: session.fetchAndGetAccessTokenPayloadUpdate,
                         setClaimValue: session.setClaimValue,
                         getClaimValue: session.getClaimValue,
                         removeClaim: session.removeClaim,
@@ -207,7 +207,7 @@ let sessionConfig: SessionTypeInput = {
                 regenerateAccessToken: originalImpl.regenerateAccessToken,
                 mergeIntoAccessTokenPayload: originalImpl.mergeIntoAccessTokenPayload,
                 getGlobalClaimValidators: originalImpl.getGlobalClaimValidators,
-                fetchAndSetClaim: originalImpl.fetchAndSetClaim,
+                fetchAndGetAccessTokenPayloadUpdate: originalImpl.fetchAndGetAccessTokenPayloadUpdate,
                 setClaimValue: originalImpl.setClaimValue,
                 getClaimValue: originalImpl.getClaimValue,
                 removeClaim: originalImpl.removeClaim,
@@ -238,7 +238,7 @@ let config: TypeInput = {
 
 class StringClaim extends PrimitiveClaim<string> {
     constructor(key: string) {
-        super(key);
+        super({ key, fetchValue: (userId) => userId });
 
         this.validators = {
             ...this.validators,
@@ -262,9 +262,6 @@ class StringClaim extends PrimitiveClaim<string> {
                 },
             }),
         };
-    }
-    fetchValue(userId: string, userContext: any): string | Promise<string | undefined> | undefined {
-        return userId;
     }
 
     validators: PrimitiveClaim<string>["validators"] & {
@@ -293,7 +290,7 @@ app.use(
             const oldValue = await session.getClaimValue(stringClaim);
             await session.setClaimValue(stringClaim, oldValue + "!!!!");
             await session.removeClaim(boolClaim);
-            await session.fetchAndSetClaim(boolClaim);
+            await session.fetchAndGetAccessTokenPayloadUpdate(boolClaim);
 
             await session.assertClaims([
                 stringClaim.validators.startsWith("!!!!"),
@@ -311,7 +308,7 @@ app.use(
         );
         if (session2 !== undefined) {
             const handle = session2.getHandle();
-            await Session.fetchAndSetClaim(handle, boolClaim);
+            await Session.fetchAndGetAccessTokenPayloadUpdate(handle, boolClaim);
             const oldValue = await Session.getClaimValue(handle, stringClaim);
             await Session.setClaimValue(handle, stringClaim, oldValue + "!!!");
             await Session.removeClaim(handle, boolClaim);
@@ -594,7 +591,10 @@ Session.init({
                         lastTokenRefresh: Date.now(),
                     };
                     input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
-                    input.accessTokenPayload = boolClaim.fetchAndSetClaim(input.userId, input.accessTokenPayload);
+                    input.accessTokenPayload = boolClaim.fetchAndGetAccessTokenPayloadUpdate(
+                        input.userId,
+                        input.accessTokenPayload
+                    );
                     return originalImplementation.createNewSession(input);
                 },
             };
