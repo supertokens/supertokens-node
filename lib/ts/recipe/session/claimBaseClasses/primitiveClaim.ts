@@ -31,9 +31,8 @@ export class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T> {
         return payload[this.key]?.v;
     }
 
-    getLastRefetchTime(payload: any, _userContext?: any): Date | undefined {
-        const timestamp = payload[this.key]?.t;
-        return timestamp !== undefined ? new Date(timestamp) : undefined;
+    getLastRefetchTime(payload: any, _userContext?: any): number | undefined {
+        return payload[this.key]?.t;
     }
 
     validators = {

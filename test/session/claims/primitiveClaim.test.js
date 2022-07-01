@@ -170,7 +170,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                 });
                 const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
 
-                assert.strictEqual(claim.getLastRefetchTime(payload).getTime(), now);
+                assert.strictEqual(claim.getLastRefetchTime(payload), now);
             });
         });
 
