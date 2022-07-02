@@ -272,11 +272,7 @@ export type RecipeInterface = {
 
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
-    fetchAndGetAccessTokenPayloadUpdate(input: {
-        sessionHandle: string;
-        claim: SessionClaim<any>;
-        userContext?: any;
-    }): Promise<void>;
+    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
@@ -319,7 +315,7 @@ export interface SessionContainerInterface {
     getExpiry(userContext?: any): Promise<number>;
 
     assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
-    fetchAndGetAccessTokenPayloadUpdate<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
@@ -420,11 +416,11 @@ export abstract class SessionClaim<T> {
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
-    async fetchAndGetAccessTokenPayloadUpdate(userId: string, userContext?: any): Promise<JSONObject> {
+    async build(userId: string, userContext?: any): Promise<JSONObject> {
         const value = await this.fetchValue(userId, userContext);
 
         if (value === undefined) {
-            return this.removeFromPayload({}, userContext);
+            return {};
         }
 
         return this.addToPayload_internal({}, value, userContext);

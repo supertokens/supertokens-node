@@ -231,11 +231,7 @@ export declare type RecipeInterface = {
     }>;
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-    fetchAndGetAccessTokenPayloadUpdate(input: {
-        sessionHandle: string;
-        claim: SessionClaim<any>;
-        userContext?: any;
-    }): Promise<void>;
+    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
@@ -265,7 +261,7 @@ export interface SessionContainerInterface {
     getTimeCreated(userContext?: any): Promise<number>;
     getExpiry(userContext?: any): Promise<number>;
     assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
-    fetchAndGetAccessTokenPayloadUpdate<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
     setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
     getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
     removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
@@ -361,5 +357,5 @@ export declare abstract class SessionClaim<T> {
      * @returns Claim value
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
-    fetchAndGetAccessTokenPayloadUpdate(userId: string, userContext?: any): Promise<JSONObject>;
+    build(userId: string, userContext?: any): Promise<JSONObject>;
 }

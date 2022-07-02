@@ -17,13 +17,13 @@ const assert = require("assert");
 const sinon = require("sinon");
 const { PrimitiveClaim } = require("../../../recipe/session/claims");
 
-describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.test.js]")}`, function () {
+describe(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.test.js]")}`, function () {
     describe("PrimitiveClaim", () => {
         afterEach(() => {
             sinon.restore();
         });
 
-        describe("fetchAndGetAccessTokenPayloadUpdate", () => {
+        describe("fetchAndSetClaim", () => {
             it("should build the right payload", async () => {
                 const val = { a: 1 };
                 const fetchValue = sinon.stub().returns(val);
@@ -34,7 +34,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                     fetchValue,
                 });
                 const ctx = {};
-                const res = await claim.fetchAndGetAccessTokenPayloadUpdate("userId", ctx);
+                const res = await claim.build("userId", ctx);
                 assert.deepStrictEqual(res, {
                     asdf: {
                         t: now,
@@ -53,7 +53,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                     fetchValue,
                 });
                 const ctx = {};
-                const res = await claim.fetchAndGetAccessTokenPayloadUpdate("userId", ctx);
+                const res = await claim.build("userId", ctx);
                 assert.deepStrictEqual(res, {
                     asdf: {
                         t: now,
@@ -72,7 +72,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                     fetchValue,
                 });
                 const ctx = {};
-                const res = await claim.fetchAndGetAccessTokenPayloadUpdate("userId", ctx);
+                const res = await claim.build("userId", ctx);
                 assert.deepStrictEqual(res, claim.addToPayload_internal({}, val));
             });
 
@@ -85,13 +85,13 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                 const userId = "userId";
 
                 const ctx = {};
-                await claim.fetchAndGetAccessTokenPayloadUpdate(userId, ctx);
+                await claim.build(userId, ctx);
                 assert.strictEqual(fetchValue.callCount, 1);
                 assert.strictEqual(fetchValue.firstCall.args[0], userId);
                 assert.strictEqual(fetchValue.firstCall.args[1], ctx);
             });
 
-            it("should remove possible old value from the payload for undefined value", async () => {
+            it("should leave payload empty if fetchValue returns undefined", async () => {
                 const fetchValue = sinon.stub().returns(undefined);
                 const now = Date.now();
                 sinon.useFakeTimers(now);
@@ -102,11 +102,8 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
 
                 const ctx = {};
 
-                const res = await claim.fetchAndGetAccessTokenPayloadUpdate("userId", ctx);
-                assert.deepStrictEqual(res, {
-                    // This is set to null, so that the key is removed by mergeIntoAccessTokenPayload0
-                    asdf: null,
-                });
+                const res = await claim.build("userId", ctx);
+                assert.deepStrictEqual(res, {});
             });
         });
 
@@ -122,14 +119,14 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                 assert.strictEqual(claim.getValueFromPayload({}), undefined);
             });
 
-            it("should return value set by fetchAndGetAccessTokenPayloadUpdate", async () => {
+            it("should return value set by fetchAndSetClaim", async () => {
                 const val = { a: 1 };
                 const fetchValue = sinon.stub().resolves(val);
                 const claim = new PrimitiveClaim({
                     key: "asdf",
                     fetchValue,
                 });
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
 
                 assert.strictEqual(claim.getValueFromPayload(payload), val);
             });
@@ -158,7 +155,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                 assert.strictEqual(claim.getLastRefetchTime({}), undefined);
             });
 
-            it("should return time matching the fetchAndGetAccessTokenPayloadUpdate call", async () => {
+            it("should return time matching the fetchAndSetClaim call", async () => {
                 const now = Date.now();
                 sinon.useFakeTimers(now);
 
@@ -168,7 +165,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                     key: "asdf",
                     fetchValue,
                 });
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
 
                 assert.strictEqual(claim.getLastRefetchTime(payload), now);
             });
@@ -195,7 +192,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
             });
 
             it("should not validate mismatching payload", async () => {
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
                 const res = claim.validators.hasValue(val2).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: false,
@@ -208,7 +205,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
             });
 
             it("should validate matching payload", async () => {
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
                 const res = claim.validators.hasValue(val).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: true,
@@ -219,7 +216,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                 const now = Date.now();
                 const clock = sinon.useFakeTimers(now);
 
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
 
                 // advance clock by one week
                 clock.tick(6.048e8);
@@ -235,7 +232,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
             });
 
             it("should not refetch if value is set", async () => {
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
 
                 assert.equal(claim.validators.hasValue(val2).shouldRefetch(payload), false);
             });
@@ -262,7 +259,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
             });
 
             it("should not validate mismatching payload", async () => {
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
                 const res = claim.validators.hasFreshValue(val2, 600).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: false,
@@ -275,7 +272,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
             });
 
             it("should validate matching payload", async () => {
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
                 const res = claim.validators.hasFreshValue(val, 600).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: true,
@@ -286,7 +283,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                 const now = Date.now();
                 const clock = sinon.useFakeTimers(now);
 
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
 
                 // advance clock by one week
                 clock.tick(6.048e8);
@@ -307,7 +304,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
             });
 
             it("should not refetch if value is set", async () => {
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
 
                 assert.equal(claim.validators.hasFreshValue(val2, 600).shouldRefetch(payload), false);
             });
@@ -316,7 +313,7 @@ describe.only(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.
                 const now = Date.now();
                 const clock = sinon.useFakeTimers(now);
 
-                const payload = await claim.fetchAndGetAccessTokenPayloadUpdate("userId");
+                const payload = await claim.build("userId");
 
                 // advance clock by one week
                 clock.tick(6.048e8);

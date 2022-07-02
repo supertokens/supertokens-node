@@ -4,9 +4,9 @@ import { SessionClaim, SessionClaimValidator } from "../types";
 export class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T> {
     public fetchValue: (userId: string, userContext: any) => Promise<T | undefined> | T | undefined;
 
-    constructor(conf: { key: string; fetchValue: SessionClaim<T>["fetchValue"] }) {
-        super(conf.key);
-        this.fetchValue = conf.fetchValue;
+    constructor(config: { key: string; fetchValue: SessionClaim<T>["fetchValue"] }) {
+        super(config.key);
+        this.fetchValue = config.fetchValue;
     }
 
     addToPayload_internal(payload: any, value: T, _userContext: any): any {

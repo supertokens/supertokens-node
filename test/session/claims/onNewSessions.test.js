@@ -68,10 +68,7 @@ describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`,
                                 createNewSession: async (input) => {
                                     input.accessTokenPayload = {
                                         ...input.accessTokenPayload,
-                                        ...(await TrueClaim.fetchAndGetAccessTokenPayloadUpdate(
-                                            input.userId,
-                                            input.userContext
-                                        )),
+                                        ...(await TrueClaim.build(input.userId, input.userContext)),
                                     };
                                     return oI.createNewSession(input);
                                 },
@@ -116,7 +113,7 @@ describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`,
                                 createNewSession: async (input) => {
                                     input.accessTokenPayload = {
                                         ...input.accessTokenPayload,
-                                        ...(await UndefinedClaim.fetchAndGetAccessTokenPayloadUpdate(
+                                        ...(await UndefinedClaim.build(
                                             input.userId,
                                             input.accessTokenPayload,
                                             input.userContext
@@ -168,10 +165,7 @@ describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`,
                                 createNewSession: async (input) => {
                                     input.accessTokenPayload = {
                                         ...input.accessTokenPayload,
-                                        ...(await TrueClaim.fetchAndGetAccessTokenPayloadUpdate(
-                                            input.userId,
-                                            input.userContext
-                                        )),
+                                        ...(await TrueClaim.build(input.userId, input.userContext)),
                                         ...customClaims,
                                     };
                                     return oI.createNewSession(input);

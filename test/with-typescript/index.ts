@@ -186,7 +186,7 @@ let sessionConfig: SessionTypeInput = {
                         updateSessionData: session.updateSessionData,
                         mergeIntoAccessTokenPayload: session.mergeIntoAccessTokenPayload,
                         assertClaims: session.assertClaims,
-                        fetchAndGetAccessTokenPayloadUpdate: session.fetchAndGetAccessTokenPayloadUpdate,
+                        fetchAndSetClaim: session.fetchAndSetClaim,
                         setClaimValue: session.setClaimValue,
                         getClaimValue: session.getClaimValue,
                         removeClaim: session.removeClaim,
@@ -207,7 +207,7 @@ let sessionConfig: SessionTypeInput = {
                 regenerateAccessToken: originalImpl.regenerateAccessToken,
                 mergeIntoAccessTokenPayload: originalImpl.mergeIntoAccessTokenPayload,
                 getGlobalClaimValidators: originalImpl.getGlobalClaimValidators,
-                fetchAndGetAccessTokenPayloadUpdate: originalImpl.fetchAndGetAccessTokenPayloadUpdate,
+                fetchAndSetClaim: originalImpl.fetchAndSetClaim,
                 setClaimValue: originalImpl.setClaimValue,
                 getClaimValue: originalImpl.getClaimValue,
                 removeClaim: originalImpl.removeClaim,
@@ -290,7 +290,7 @@ app.use(
             const oldValue = await session.getClaimValue(stringClaim);
             await session.setClaimValue(stringClaim, oldValue + "!!!!");
             await session.removeClaim(boolClaim);
-            await session.fetchAndGetAccessTokenPayloadUpdate(boolClaim);
+            await session.fetchAndSetClaim(boolClaim);
 
             await session.assertClaims([
                 stringClaim.validators.startsWith("!!!!"),
@@ -308,7 +308,7 @@ app.use(
         );
         if (session2 !== undefined) {
             const handle = session2.getHandle();
-            await Session.fetchAndGetAccessTokenPayloadUpdate(handle, boolClaim);
+            await Session.fetchAndSetClaim(handle, boolClaim);
             const oldValue = await Session.getClaimValue(handle, stringClaim);
             await Session.setClaimValue(handle, stringClaim, oldValue + "!!!");
             await Session.removeClaim(handle, boolClaim);
@@ -586,15 +586,12 @@ Session.init({
                     boolClaim.validators.hasValue(true),
                 ],
                 createNewSession: async function (input) {
+                    input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
                     input.accessTokenPayload = {
                         ...input.accessTokenPayload,
+                        ...(await boolClaim.build(input.userId, input.userContext)),
                         lastTokenRefresh: Date.now(),
                     };
-                    input.accessTokenPayload = stringClaim.removeFromPayload(input.accessTokenPayload);
-                    input.accessTokenPayload = boolClaim.fetchAndGetAccessTokenPayloadUpdate(
-                        input.userId,
-                        input.accessTokenPayload
-                    );
                     return originalImplementation.createNewSession(input);
                 },
             };

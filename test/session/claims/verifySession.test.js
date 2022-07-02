@@ -44,7 +44,7 @@ describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`,
     });
 
     describe("verifySession", () => {
-        describe("with getSession override", () => {
+        describe("with getGlobalClaimValidators override", () => {
             it("should allow without claims required or present", async function () {
                 await startST();
                 SuperTokens.init({

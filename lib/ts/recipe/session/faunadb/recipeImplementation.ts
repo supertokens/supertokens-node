@@ -230,11 +230,7 @@ export default class RecipeImplementation implements RecipeInterface {
         return this.originalImplementation.getRefreshTokenLifeTimeMS(input);
     };
 
-    fetchAndGetAccessTokenPayloadUpdate = function <T>(input: {
-        sessionHandle: string;
-        claim: SessionClaim<T>;
-        userContext?: any;
-    }) {
+    fetchAndSetClaim = function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
         return this.originalImplementation.fetchAndSetValue(input);
     };
 
