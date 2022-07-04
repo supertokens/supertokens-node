@@ -17,7 +17,7 @@ const assert = require("assert");
 const sinon = require("sinon");
 const { PrimitiveClaim } = require("../../../recipe/session/claims");
 
-describe(`primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.test.js]")}`, function () {
+describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primitiveClaim.test.js]")}`, function () {
     describe("PrimitiveClaim", () => {
         afterEach(() => {
             sinon.restore();

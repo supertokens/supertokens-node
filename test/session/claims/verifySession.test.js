@@ -27,7 +27,7 @@ const { TrueClaim, UndefinedClaim } = require("./testClaims");
 const sinon = require("sinon");
 const { default: SessionError } = require("../../../lib/build/recipe/session/error");
 
-describe(`session: ${printPath("[test/session/claims/verifySession.test.js]")}`, function () {
+describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifySession.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

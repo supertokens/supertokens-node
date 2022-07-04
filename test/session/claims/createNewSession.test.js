@@ -15,12 +15,11 @@
 const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
 const assert = require("assert");
 const { ProcessState } = require("../../../lib/build/processState");
-const SuperTokens = require("../../../");
+const SuperTokens = require("../../..");
 const Session = require("../../../recipe/session");
 const { Querier } = require("../../../lib/build/querier");
 const { maxVersion } = require("../../../lib/build/utils");
 const { TrueClaim, UndefinedClaim } = require("./testClaims");
-const Sinon = require("sinon");
 
 /**
  *
@@ -35,7 +34,8 @@ const mockResponse = () => {
     };
     return res;
 };
-describe(`session: ${printPath("[test/session/claims/onNewSessions.test.js]")}`, function () {
+
+describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/createNewSession.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();

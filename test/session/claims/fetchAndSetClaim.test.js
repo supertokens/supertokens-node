@@ -16,31 +16,37 @@ const { printPath } = require("../../utils");
 const assert = require("assert");
 const { default: SessionClass } = require("../../../lib/build/recipe/session/sessionClass");
 const sinon = require("sinon");
-const { StubClaim } = require("./testClaims");
+const { TrueClaim, UndefinedClaim } = require("./testClaims");
 
-describe(`sessionClaims/validateClaims: ${printPath("[test/session/claims/validateClaims.test.js]")}`, function () {
-    describe("SessionClass.validateClaims", () => {
+describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetchAndSetClaim.test.js]")}`, function () {
+    describe("SessionClass.fetchAndSetClaim", () => {
         afterEach(() => {
             sinon.restore();
         });
-        it("should not throw for empty array", async () => {
-            const session = new SessionClass({}, "testToken", "testHandle", "testUserId", {}, {});
-            const mock = sinon.mock(session).expects("updateAccessTokenPayload").never();
 
-            await session.assertClaims([]);
+        it("should not change if claim fetchValue returns undefined", async () => {
+            const session = new SessionClass({}, "testToken", "testHandle", "testUserId", {}, {});
+
+            const mock = sinon.mock(session).expects("mergeIntoAccessTokenPayload").once().withArgs({});
+            await session.fetchAndSetClaim(UndefinedClaim);
             mock.verify();
         });
 
-        it("should call validate with the same payload object", async () => {
-            const payload = {};
-            const session = new SessionClass({}, "testToken", "testHandle", "testUserId", payload, {});
-            const mock = sinon.mock(session).expects("updateAccessTokenPayload").never();
-            const claim = new StubClaim({ key: "st-c1", validateRes: { isValid: true } });
-
-            await session.assertClaims([claim.validators.stub]);
+        it("should update if claim fetchValue returns undefined", async () => {
+            const session = new SessionClass({}, "testToken", "testHandle", "testUserId", {}, {});
+            sinon.useFakeTimers();
+            const mock = sinon
+                .mock(session)
+                .expects("mergeIntoAccessTokenPayload")
+                .once()
+                .withArgs({
+                    "st-true": {
+                        t: 0,
+                        v: true,
+                    },
+                });
+            await session.fetchAndSetClaim(TrueClaim);
             mock.verify();
-            assert.equal(claim.validators.stub.validate.callCount, 1);
-            assert(claim.validators.stub.validate.calledWith(payload));
         });
     });
 });
