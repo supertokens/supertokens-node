@@ -287,6 +287,19 @@ export type RecipeInterface = {
 
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
+    assertClaims(input: {
+        session: SessionContainerInterface;
+
+        overrideGlobalClaimValidators:
+            | ((
+                  session: SessionContainerInterface,
+                  globalClaimValidators: SessionClaimValidator[],
+                  userContext: any
+              ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[])
+            | undefined;
+        userContext: any;
+    }): Promise<void>;
+
     fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
     setClaimValue<T>(input: {
         sessionHandle: string;

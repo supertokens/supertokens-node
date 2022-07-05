@@ -7,6 +7,7 @@ import {
     AntiCsrfType,
     SessionClaimValidator,
     SessionClaim,
+    SessionContainerInterface,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -140,7 +141,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             req,
             res,
             options,
-            userContext,
         }: {
             req: BaseRequest;
             res: BaseResponse;
@@ -232,23 +232,6 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     res
                 );
 
-                const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
-                const globalClaimValidators: SessionClaimValidator[] = await this.getGlobalClaimValidators({
-                    userId: response.session.userId,
-                    claimValidatorsAddedByOtherRecipes,
-                    userContext,
-                });
-                const reqClaimsValidators =
-                    options?.overrideGlobalClaimValidators !== undefined
-                        ? await options.overrideGlobalClaimValidators(session, globalClaimValidators, userContext)
-                        : globalClaimValidators;
-
-                logDebugMessage(
-                    "getSession: required validator ids " + reqClaimsValidators.map((c) => c.id).join(", ")
-                );
-                await session.assertClaims(reqClaimsValidators, userContext);
-                logDebugMessage("getSession: claim assertion successful");
-
                 return session;
             } catch (err) {
                 if (err.type === STError.UNAUTHORISED) {
@@ -257,6 +240,34 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 }
                 throw err;
             }
+        },
+
+        assertClaims: async function (input: {
+            session: SessionContainerInterface;
+
+            overrideGlobalClaimValidators:
+                | ((
+                      session: SessionContainerInterface,
+                      globalClaimValidators: SessionClaimValidator[],
+                      userContext: any
+                  ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[])
+                | undefined;
+            userContext?: any;
+        }): Promise<void> {
+            const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
+            const globalClaimValidators: SessionClaimValidator[] = await this.getGlobalClaimValidators({
+                userId: input.session.getUserId(),
+                claimValidatorsAddedByOtherRecipes,
+                userContext: input.userContext,
+            });
+            const reqClaimsValidators =
+                input.overrideGlobalClaimValidators !== undefined
+                    ? await input.overrideGlobalClaimValidators(input.session, globalClaimValidators, input.userContext)
+                    : globalClaimValidators;
+
+            logDebugMessage("getSession: required validator ids " + reqClaimsValidators.map((c) => c.id).join(", "));
+            await input.session.assertClaims(reqClaimsValidators, input.userContext);
+            logDebugMessage("getSession: claim assertion successful");
         },
 
         getSessionInformation: async function ({

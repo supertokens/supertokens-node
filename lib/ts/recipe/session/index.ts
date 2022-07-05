@@ -66,14 +66,23 @@ export default class SessionWrapper {
         });
     }
 
-    static getSession(req: any, res: any, options?: VerifySessionOptions, userContext: any = {}) {
+    static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext: any = {}) {
         if (!res.wrapperUsed) {
             res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
         }
         if (!req.wrapperUsed) {
             req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
         }
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession({ req, res, options, userContext });
+        const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+        const session = await recipeInterfaceImpl.getSession({ req, res, options, userContext });
+        if (session) {
+            await recipeInterfaceImpl.assertClaims({
+                session,
+                overrideGlobalClaimValidators: options?.overrideGlobalClaimValidators,
+                userContext: options?.overrideGlobalClaimValidators,
+            });
+        }
+        return session;
     }
 
     static getSessionInformation(sessionHandle: string, userContext: any = {}) {

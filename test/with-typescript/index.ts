@@ -937,6 +937,7 @@ let sessionConfig: SessionTypeInput = {
                 setClaimValue: originalImpl.setClaimValue,
                 getClaimValue: originalImpl.getClaimValue,
                 removeClaim: originalImpl.removeClaim,
+                assertClaims: originalImpl.assertClaims,
             };
         },
     },

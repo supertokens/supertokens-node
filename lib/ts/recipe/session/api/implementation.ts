@@ -42,12 +42,21 @@ export default function getAPIInterface(): APIInterface {
                     userContext,
                 });
             } else {
-                return options.recipeImplementation.getSession({
+                const session = await options.recipeImplementation.getSession({
                     req: options.req,
                     res: options.res,
                     options: verifySessionOptions,
                     userContext,
                 });
+                if (session) {
+                    await options.recipeImplementation.assertClaims({
+                        session,
+                        overrideGlobalClaimValidators: verifySessionOptions?.overrideGlobalClaimValidators,
+                        userContext,
+                    });
+                }
+
+                return session;
             }
         },
 
