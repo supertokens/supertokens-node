@@ -17,6 +17,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import NormalisedURLDomain from "../../normalisedURLDomain";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface, JsonWebKey } from "../jwt/types";
+import { GeneralErrorResponse } from "../../types";
 
 export type TypeInput = {
     issuer?: string;
@@ -77,11 +78,14 @@ export type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              issuer: string;
-              jwks_uri: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    issuer: string;
+                    jwks_uri: string;
+                }
+              | GeneralErrorResponse
+          >);
 };
 
 export type RecipeInterface = {

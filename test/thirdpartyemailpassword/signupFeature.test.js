@@ -631,8 +631,8 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                     }
                 })
         );
-        assert.strictEqual(response1.statusCode, 200);
-        assert.deepStrictEqual(response1.body, { status: "FIELD_ERROR", error: "error from getProfileInfo" });
+        assert.strictEqual(response1.statusCode, 500);
+        assert.deepStrictEqual(response1.body, { message: "error from getProfileInfo" });
     });
 
     it("test getUserById when user does not exist", async function () {

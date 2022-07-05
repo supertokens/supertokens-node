@@ -1,8 +1,16 @@
 // @ts-nocheck
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions } from "./types";
+import {
+    RecipeInterface,
+    User,
+    APIInterface,
+    PasswordlessAPIOptions,
+    ThirdPartyAPIOptions,
+    TypeThirdPartyPasswordlessEmailDeliveryInput,
+} from "./types";
 import { TypeProvider } from "../thirdparty/types";
+import { TypePasswordlessSmsDeliveryInput } from "../passwordless/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -14,17 +22,11 @@ export default class Wrapper {
             isVerified: boolean;
         },
         userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    ): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
     static getUserByThirdPartyInfo(
         thirdPartyId: string,
         thirdPartyUserId: string,
@@ -283,7 +285,7 @@ export default class Wrapper {
     ): Promise<{
         status: string;
         createdNewUser: boolean;
-        user: import("../passwordless").User;
+        user: import("../passwordless/types").User;
     }>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
@@ -291,6 +293,16 @@ export default class Wrapper {
     static Apple: typeof import("../thirdparty/providers/apple").default;
     static Discord: typeof import("../thirdparty/providers/discord").default;
     static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
+    static sendEmail(
+        input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
+            userContext: any;
+        }
+    ): Promise<void>;
+    static sendSms(
+        input: TypePasswordlessSmsDeliveryInput & {
+            userContext: any;
+        }
+    ): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -323,3 +335,5 @@ export declare let Apple: typeof import("../thirdparty/providers/apple").default
 export declare let Discord: typeof import("../thirdparty/providers/discord").default;
 export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
 export type { RecipeInterface, TypeProvider, User, APIInterface, PasswordlessAPIOptions, ThirdPartyAPIOptions };
+export declare let sendEmail: typeof Wrapper.sendEmail;
+export declare let sendSms: typeof Wrapper.sendSms;

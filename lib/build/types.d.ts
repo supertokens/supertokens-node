@@ -44,3 +44,7 @@ export declare type JSONValue = JSONPrimitive | JSONObject | JSONArray | undefin
 export interface JSONObject {
     [ind: string]: JSONValue;
 }
+export declare type GeneralErrorResponse = {
+    status: "GENERAL_ERROR";
+    message: string;
+};

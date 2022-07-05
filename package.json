@@ -1,6 +1,6 @@
 {
     "name": "supertokens-node",
-    "version": "9.2.3",
+    "version": "11.0.0",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
@@ -42,8 +42,10 @@
         "jsonwebtoken": "^8.5.1",
         "jwks-rsa": "^2.0.5",
         "libphonenumber-js": "^1.9.44",
+        "nodemailer": "^6.7.2",
         "psl": "1.8.0",
         "supertokens-js-override": "^0.0.4",
+        "twilio": "^3.76.0",
         "verify-apple-id-token": "^2.1.0"
     },
     "devDependencies": {
@@ -60,13 +62,13 @@
         "@types/jsonwebtoken": "8.5.0",
         "@types/koa": "^2.13.4",
         "@types/koa-bodyparser": "^4.3.3",
+        "@types/nodemailer": "^6.4.4",
         "@types/psl": "1.1.0",
         "@types/validator": "10.11.0",
         "aws-sdk-mock": "^5.4.0",
         "cookie-parser": "^1.4.5",
         "express": "4.17.1",
         "fastify": "3.18.1",
-        "faunadb": "^3.0.1",
         "glob": "7.1.7",
         "koa": "^2.13.3",
         "lambda-tester": "^4.0.1",

@@ -7,9 +7,20 @@ import { TypeInput as TypeInputEmailVerification } from "../emailverification/ty
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { GeneralErrorResponse } from "../../types";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInputWithService<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -32,6 +43,9 @@ export declare type TypeNormalisedInput = {
 };
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeInputFormField = {
@@ -59,11 +73,13 @@ export declare type TypeNormalisedInputSignIn = {
 };
 export declare type TypeInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
     getResetPasswordURL: (user: User, userContext: any) => Promise<string>;
-    createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
@@ -74,6 +90,7 @@ export declare type User = {
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
+    emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -169,6 +186,7 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
+    emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput>;
 };
 export declare type APIInterface = {
     emailExistsGET:
@@ -177,10 +195,13 @@ export declare type APIInterface = {
               email: string;
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
     generatePasswordResetTokenPOST:
         | undefined
         | ((input: {
@@ -190,9 +211,12 @@ export declare type APIInterface = {
               }[];
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
     passwordResetPOST:
         | undefined
         | ((input: {
@@ -211,6 +235,7 @@ export declare type APIInterface = {
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     signInPOST:
         | undefined
@@ -230,6 +255,7 @@ export declare type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     signUpPOST:
         | undefined
@@ -249,5 +275,18 @@ export declare type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
+              | GeneralErrorResponse
           >);
 };
+export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
+    type: "PASSWORD_RESET";
+    user: {
+        id: string;
+        email: string;
+    };
+    passwordResetLink: string;
+    userContext: any;
+};
+export declare type TypeEmailPasswordEmailDeliveryInput =
+    | TypeEmailPasswordPasswordResetEmailDeliveryInput
+    | TypeEmailVerificationEmailDeliveryInput;

@@ -8,6 +8,12 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
+import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
+import { GeneralErrorResponse } from "../../types";
 export declare type UserInfo = {
     id: string;
     email?: {
@@ -52,6 +58,9 @@ export declare type User = {
 };
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeInputSignInAndUp = {
@@ -62,6 +71,7 @@ export declare type TypeNormalisedInputSignInAndUp = {
 };
 export declare type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
+    emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (
@@ -82,6 +92,10 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailDeliveryInput>;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -118,17 +132,11 @@ export declare type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -148,10 +156,13 @@ export declare type APIInterface = {
               provider: TypeProvider;
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
     signInUpPOST:
         | undefined
         | ((input: {
@@ -173,12 +184,10 @@ export declare type APIInterface = {
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
+              | GeneralErrorResponse
           >);
     appleRedirectHandlerPOST:
         | undefined
         | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
 };
+export declare type TypeThirdPartyEmailDeliveryInput = TypeEmailVerificationEmailDeliveryInput;

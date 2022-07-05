@@ -17,6 +17,7 @@ import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 import { findRightProvider } from "../utils";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function authorisationUrlAPI(
     apiImplementation: APIInterface,
@@ -43,7 +44,11 @@ export default async function authorisationUrlAPI(
         });
     }
 
-    let result = await apiImplementation.authorisationUrlGET({ provider, options, userContext: {} });
+    let result = await apiImplementation.authorisationUrlGET({
+        provider,
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     send200Response(options.res, result);
     return true;

@@ -3,6 +3,7 @@ import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
+import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
@@ -14,17 +15,11 @@ export default class Wrapper {
             isVerified: boolean;
         },
         userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    ): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
     static getUserByThirdPartyInfo(
         thirdPartyId: string,
         thirdPartyUserId: string,
@@ -132,6 +127,11 @@ export default class Wrapper {
     static Apple: typeof import("../thirdparty/providers/apple").default;
     static Discord: typeof import("../thirdparty/providers/discord").default;
     static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
+    static sendEmail(
+        input: TypeEmailPasswordEmailDeliveryInput & {
+            userContext: any;
+        }
+    ): Promise<void>;
 }
 export declare let init: typeof Recipe.init;
 export declare let Error: typeof SuperTokensError;
@@ -156,3 +156,4 @@ export declare let Apple: typeof import("../thirdparty/providers/apple").default
 export declare let Discord: typeof import("../thirdparty/providers/discord").default;
 export declare let GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
+export declare let sendEmail: typeof Wrapper.sendEmail;

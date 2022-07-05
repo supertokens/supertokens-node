@@ -22,6 +22,8 @@ import SessionClassWithJWT from "./sessionClass";
 import * as assert from "assert";
 import { addJWTToAccessTokenPayload } from "./utils";
 import { JSONObject } from "../../../types";
+import { BaseResponse } from "../../../framework/response";
+import { BaseRequest } from "../../../framework/request";
 
 // Time difference between JWT expiry and access token expiry (JWT expiry = access token expiry + EXPIRY_OFFSET_SECONDS)
 let EXPIRY_OFFSET_SECONDS = 30;
@@ -100,19 +102,22 @@ export default function (
 
     return {
         ...originalImplementation,
-        createNewSession: async function ({
-            res,
-            userId,
-            accessTokenPayload,
-            sessionData,
-            userContext,
-        }: {
-            res: any;
-            userId: string;
-            accessTokenPayload?: any;
-            sessionData?: any;
-            userContext: any;
-        }): Promise<SessionContainerInterface> {
+        createNewSession: async function (
+            this: RecipeInterface,
+            {
+                res,
+                userId,
+                accessTokenPayload,
+                sessionData,
+                userContext,
+            }: {
+                res: BaseResponse;
+                userId: string;
+                accessTokenPayload?: any;
+                sessionData?: any;
+                userContext: any;
+            }
+        ): Promise<SessionContainerInterface> {
             accessTokenPayload =
                 accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS({ userContext })) / 1000);
@@ -142,8 +147,8 @@ export default function (
             options,
             userContext,
         }: {
-            req: any;
-            res: any;
+            req: BaseRequest;
+            res: BaseResponse;
             options?: VerifySessionOptions;
             userContext: any;
         }): Promise<SessionContainerInterface | undefined> {
@@ -160,8 +165,8 @@ export default function (
             res,
             userContext,
         }: {
-            req: any;
-            res: any;
+            req: BaseRequest;
+            res: BaseResponse;
             userContext: any;
         }): Promise<SessionContainerInterface> {
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS({ userContext })) / 1000);
@@ -192,7 +197,7 @@ export default function (
             sessionHandle: string;
             accessTokenPayloadUpdate: JSONObject;
             userContext: any;
-        }) {
+        }): Promise<boolean> {
             let sessionInformation = await this.getSessionInformation({ sessionHandle, userContext });
 
             let newAccessTokenPayload = { ...sessionInformation.accessTokenPayload, ...accessTokenPayloadUpdate };
@@ -216,7 +221,7 @@ export default function (
             sessionHandle: string;
             newAccessTokenPayload: any;
             userContext: any;
-        }): Promise<void> {
+        }): Promise<boolean> {
             newAccessTokenPayload =
                 newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
 

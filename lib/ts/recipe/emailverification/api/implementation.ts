@@ -1,5 +1,7 @@
 import { APIInterface, APIOptions, User } from "../";
+import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
+import { GeneralErrorResponse } from "../../../types";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -11,7 +13,9 @@ export default function getAPIInterface(): APIInterface {
             token: string;
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" }> {
+        }): Promise<
+            { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
+        > {
             return await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
         },
 
@@ -21,10 +25,13 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-            isVerified: boolean;
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  isVerified: boolean;
+              }
+            | GeneralErrorResponse
+        > {
             let session = await Session.getSession(
                 options.req,
                 options.res,
@@ -52,7 +59,7 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" }> {
+        }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
             let session = await Session.getSession(
                 options.req,
                 options.res,
@@ -75,6 +82,7 @@ export default function getAPIInterface(): APIInterface {
             });
 
             if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+                logDebugMessage(`Email verification email not sent to ${email} because it is already verified.`);
                 return response;
             }
 
@@ -85,16 +93,16 @@ export default function getAPIInterface(): APIInterface {
                 "&rid=" +
                 options.recipeId;
 
-            try {
-                if (!options.isInServerlessEnv) {
-                    options.config
-                        .createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext)
-                        .catch((_) => {});
-                } else {
-                    // see https://github.com/supertokens/supertokens-node/pull/135
-                    await options.config.createAndSendCustomEmail({ id: userId, email }, emailVerifyLink, userContext);
-                }
-            } catch (_) {}
+            logDebugMessage(`Sending email verification email to ${email}`);
+            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                type: "EMAIL_VERIFICATION",
+                user: {
+                    id: userId,
+                    email: email,
+                },
+                emailVerifyLink,
+                userContext,
+            });
 
             return {
                 status: "OK",

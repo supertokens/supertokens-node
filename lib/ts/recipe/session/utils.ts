@@ -218,9 +218,13 @@ export function validateAndNormaliseUserInput(
     if (
         cookieSameSite === "none" &&
         !cookieSecure &&
-        !(topLevelAPIDomain === "localhost" || isAnIpAddress(topLevelAPIDomain)) &&
-        !(topLevelWebsiteDomain === "localhost" || isAnIpAddress(topLevelWebsiteDomain))
+        !(
+            (topLevelAPIDomain === "localhost" || isAnIpAddress(topLevelAPIDomain)) &&
+            (topLevelWebsiteDomain === "localhost" || isAnIpAddress(topLevelWebsiteDomain))
+        )
     ) {
+        // We can allow insecure cookie when both website & API domain are localhost or an IP
+        // When either of them is a different domain, API domain needs to have https and a secure cookie to work
         throw new Error(
             "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
         );

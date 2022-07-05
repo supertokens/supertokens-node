@@ -15,7 +15,7 @@
 
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
-import { RecipeInterface, APIOptions, APIInterface, User } from "./types";
+import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -60,6 +60,11 @@ export default class Wrapper {
             userContext: userContext === undefined ? {} : userContext,
         });
     }
+
+    static async sendEmail(input: TypeEmailVerificationEmailDeliveryInput & { userContext: any }) {
+        let recipeInstance = Recipe.getInstanceOrThrowError();
+        return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail(input);
+    }
 }
 
 export let init = Wrapper.init;
@@ -77,3 +82,5 @@ export let revokeEmailVerificationTokens = Wrapper.revokeEmailVerificationTokens
 export let unverifyEmail = Wrapper.unverifyEmail;
 
 export type { RecipeInterface, APIOptions, APIInterface, User };
+
+export let sendEmail = Wrapper.sendEmail;

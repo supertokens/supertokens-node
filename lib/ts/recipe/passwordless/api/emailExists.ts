@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function emailExists(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.emailExistsGET === undefined) {
@@ -31,7 +32,11 @@ export default async function emailExists(apiImplementation: APIInterface, optio
         });
     }
 
-    let result = await apiImplementation.emailExistsGET({ email, options, userContext: {} });
+    let result = await apiImplementation.emailExistsGET({
+        email,
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     send200Response(options.res, result);
     return true;

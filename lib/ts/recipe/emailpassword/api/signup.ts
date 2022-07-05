@@ -17,6 +17,7 @@ import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
 import STError from "../error";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function signUpAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/21#issuecomment-710423536
@@ -34,12 +35,18 @@ export default async function signUpAPI(apiImplementation: APIInterface, options
         (await options.req.getJSONBody()).formFields
     );
 
-    let result = await apiImplementation.signUpPOST({ formFields, options, userContext: {} });
+    let result = await apiImplementation.signUpPOST({
+        formFields,
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
     if (result.status === "OK") {
         send200Response(options.res, {
             status: "OK",
             user: result.user,
         });
+    } else if (result.status === "GENERAL_ERROR") {
+        send200Response(options.res, result);
     } else {
         throw new STError({
             type: STError.FIELD_ERROR,

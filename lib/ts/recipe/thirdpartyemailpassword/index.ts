@@ -18,6 +18,7 @@ import SuperTokensError from "./error";
 import * as thirdPartyProviders from "../thirdparty/providers";
 import { RecipeInterface, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions } from "./types";
 import { TypeProvider } from "../thirdparty/types";
+import { TypeEmailPasswordEmailDeliveryInput } from "../emailpassword/types";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -159,6 +160,10 @@ export default class Wrapper {
     // static Okta = thirdPartyProviders.Okta;
 
     // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
+
+    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) {
+        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail(input);
+    }
 }
 
 export let init = Wrapper.init;
@@ -210,3 +215,5 @@ export let GoogleWorkspaces = Wrapper.GoogleWorkspaces;
 // export let ActiveDirectory = Wrapper.ActiveDirectory;
 
 export type { RecipeInterface, TypeProvider, User, APIInterface, EmailPasswordAPIOptions, ThirdPartyAPIOptions };
+
+export let sendEmail = Wrapper.sendEmail;

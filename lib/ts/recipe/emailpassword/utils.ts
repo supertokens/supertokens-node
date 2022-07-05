@@ -28,11 +28,9 @@ import {
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
 import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
-import {
-    getResetPasswordURL as defaultGetResetPasswordURL,
-    createAndSendCustomEmail as defaultCreateAndSendCustomPasswordResetEmail,
-} from "./passwordResetFunctions";
+import { getResetPasswordURL as defaultGetResetPasswordURL } from "./passwordResetFunctions";
 import { RecipeInterface, APIInterface } from "./types";
+import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
 export function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
@@ -62,12 +60,47 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
+    function getEmailDeliveryConfig(recipeImpl: RecipeInterface, isInServerlessEnv: boolean) {
+        let emailService = config?.emailDelivery?.service;
+        /**
+         * following code is for backward compatibility.
+         * if user has not passed emailDelivery config, we
+         * use the createAndSendCustomEmail config. If the user
+         * has not passed even that config, we use the default
+         * createAndSendCustomEmail implementation which calls our supertokens API
+         */
+        if (emailService === undefined) {
+            emailService = new BackwardCompatibilityService(
+                recipeImpl,
+                appInfo,
+                isInServerlessEnv,
+                config?.resetPasswordUsingTokenFeature,
+                config?.emailVerificationFeature
+            );
+        }
+        return {
+            ...config?.emailDelivery,
+            /**
+             * if we do
+             * let emailDelivery = {
+             *    service: emailService,
+             *    ...config.emailDelivery,
+             * };
+             *
+             * and if the user has passed service as undefined,
+             * it it again get set to undefined, so we
+             * set service at the end
+             */
+            service: emailService,
+        };
+    }
     return {
         signUpFeature,
         signInFeature,
         resetPasswordUsingTokenFeature,
         emailVerificationFeature,
         override,
+        getEmailDeliveryConfig,
     };
 }
 
@@ -149,16 +182,10 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
             ? defaultGetResetPasswordURL(appInfo)
             : config.getResetPasswordURL;
 
-    let createAndSendCustomEmail =
-        config === undefined || config.createAndSendCustomEmail === undefined
-            ? defaultCreateAndSendCustomPasswordResetEmail(appInfo)
-            : config.createAndSendCustomEmail;
-
     return {
         formFieldsForPasswordResetForm,
         formFieldsForGenerateTokenForm,
         getResetPasswordURL,
-        createAndSendCustomEmail,
     };
 }
 

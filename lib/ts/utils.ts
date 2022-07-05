@@ -106,3 +106,29 @@ export function isAnIpAddress(ipaddress: string) {
 export function frontendHasInterceptor(req: BaseRequest): boolean {
     return getRIDFromRequest(req) !== undefined;
 }
+
+export function humaniseMilliseconds(ms: number): string {
+    let t = Math.floor(ms / 1000);
+    let suffix = "";
+
+    if (t < 60) {
+        if (t > 1) suffix = "s";
+        return `${t} second${suffix}`;
+    } else if (t < 3600) {
+        const m = Math.floor(t / 60);
+        if (m > 1) suffix = "s";
+        return `${m} minute${suffix}`;
+    } else {
+        const h = Math.floor(t / 360) / 10;
+        if (h > 1) suffix = "s";
+        return `${h} hour${suffix}`;
+    }
+}
+
+export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
+    return {
+        _default: {
+            request,
+        },
+    };
+}

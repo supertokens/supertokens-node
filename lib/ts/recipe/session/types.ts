@@ -18,6 +18,7 @@ import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface 
 import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
 import { JSONObject, JSONValue } from "../../types";
+import { GeneralErrorResponse } from "../../types";
 
 export type KeyInfo = {
     publicKey: string;
@@ -197,7 +198,7 @@ export interface VerifySessionOptions {
 
 export type RecipeInterface = {
     createNewSession(input: {
-        res: any;
+        res: BaseResponse;
         userId: string;
         accessTokenPayload?: any;
         sessionData?: any;
@@ -211,19 +212,25 @@ export type RecipeInterface = {
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 
     getSession(input: {
-        req: any;
-        res: any;
+        req: BaseRequest;
+        res: BaseResponse;
         options?: VerifySessionOptions;
         userContext: any;
     }): Promise<SessionContainerInterface | undefined>;
 
-    refreshSession(input: { req: any; res: any; userContext: any }): Promise<SessionContainerInterface>;
+    refreshSession(input: {
+        req: BaseRequest;
+        res: BaseResponse;
+        userContext: any;
+    }): Promise<SessionContainerInterface>;
     /**
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionData
      * - getAccessTokenPayload
+     *
+     * Returns undefined if the sessionHandle does not exist
      */
-    getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation>;
+    getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
 
     revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
 
@@ -233,40 +240,48 @@ export type RecipeInterface = {
 
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
 
-    updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<void>;
+    // Returns false if the sessionHandle does not exist
+    updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<boolean>;
 
     /**
      * @deprecated Use mergeIntoAccessTokenPayload instead
+     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
      */
     updateAccessTokenPayload(input: {
         sessionHandle: string;
         newAccessTokenPayload: any;
         userContext: any;
-    }): Promise<void>;
+    }): Promise<boolean>;
 
     mergeIntoAccessTokenPayload(input: {
         sessionHandle: string;
         accessTokenPayloadUpdate: JSONObject;
         userContext: any;
-    }): Promise<void>;
+    }): Promise<boolean>;
 
+    /**
+     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
+     */
     regenerateAccessToken(input: {
         accessToken: string;
         newAccessTokenPayload?: any;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        session: {
-            handle: string;
-            userId: string;
-            userDataInJWT: any;
-        };
-        accessToken?: {
-            token: string;
-            expiry: number;
-            createdTime: number;
-        };
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              session: {
+                  handle: string;
+                  userId: string;
+                  userDataInJWT: any;
+              };
+              accessToken?: {
+                  token: string;
+                  expiry: number;
+                  createdTime: number;
+              };
+          }
+        | undefined
+    >;
 
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
@@ -331,6 +346,11 @@ export type APIOptions = {
 };
 
 export type APIInterface = {
+    /**
+     * We do not add a GeneralErrorResponse response to this API
+     * since it's not something that is directly called by the user on the
+     * frontend anyway
+     */
     refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<void>);
 
     signOutPOST:
@@ -338,9 +358,12 @@ export type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
 
     verifySession(input: {
         verifySessionOptions: VerifySessionOptions | undefined;
