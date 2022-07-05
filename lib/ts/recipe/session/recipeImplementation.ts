@@ -247,6 +247,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                     "getSession: required validator ids " + reqClaimsValidators.map((c) => c.id).join(", ")
                 );
                 await session.assertClaims(reqClaimsValidators, userContext);
+                logDebugMessage("getSession: claim assertion successful");
 
                 return session;
             } catch (err) {
