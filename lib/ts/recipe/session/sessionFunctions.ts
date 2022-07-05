@@ -274,9 +274,12 @@ export async function getSession(
 
 /**
  * @description Retrieves session information from storage for a given session handle
- * @returns session data stored in the database, including userData and access token payload
+ * @returns session data stored in the database, including userData and access token payload, or undefined if sessionHandle is invalid
  */
-export async function getSessionInformation(helpers: Helpers, sessionHandle: string): Promise<SessionInformation> {
+export async function getSessionInformation(
+    helpers: Helpers,
+    sessionHandle: string
+): Promise<SessionInformation | undefined> {
     let apiVersion = await helpers.querier.getAPIVersion();
 
     if (maxVersion(apiVersion, "2.7") === "2.7") {
@@ -297,10 +300,7 @@ export async function getSessionInformation(helpers: Helpers, sessionHandle: str
 
         return response;
     } else {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
+        return undefined;
     }
 }
 
@@ -408,39 +408,27 @@ export async function revokeMultipleSessions(helpers: Helpers, sessionHandles: s
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
-export async function updateSessionData(helpers: Helpers, sessionHandle: string, newSessionData: any) {
+export async function updateSessionData(
+    helpers: Helpers,
+    sessionHandle: string,
+    newSessionData: any
+): Promise<boolean> {
     newSessionData = newSessionData === null || newSessionData === undefined ? {} : newSessionData;
     let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/session/data"), {
         sessionHandle,
         userDataInDatabase: newSessionData,
     });
     if (response.status === "UNAUTHORISED") {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
+        return false;
     }
+    return true;
 }
 
-/**
- * @deprecated use getSessionInformation() instead
- * @returns access token payload as provided by the user earlier
- */
-export async function getAccessTokenPayload(helpers: Helpers, sessionHandle: string): Promise<any> {
-    let response = await helpers.querier.sendGetRequest(new NormalisedURLPath("/recipe/jwt/data"), {
-        sessionHandle,
-    });
-    if (response.status === "OK") {
-        return response.userDataInJWT;
-    } else {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
-    }
-}
-
-export async function updateAccessTokenPayload(helpers: Helpers, sessionHandle: string, newAccessTokenPayload: any) {
+export async function updateAccessTokenPayload(
+    helpers: Helpers,
+    sessionHandle: string,
+    newAccessTokenPayload: any
+): Promise<boolean> {
     newAccessTokenPayload =
         newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
     let response = await helpers.querier.sendPutRequest(new NormalisedURLPath("/recipe/jwt/data"), {
@@ -448,9 +436,7 @@ export async function updateAccessTokenPayload(helpers: Helpers, sessionHandle: 
         userDataInJWT: newAccessTokenPayload,
     });
     if (response.status === "UNAUTHORISED") {
-        throw new STError({
-            message: response.message,
-            type: STError.UNAUTHORISED,
-        });
+        return false;
     }
+    return true;
 }

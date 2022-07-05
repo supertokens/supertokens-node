@@ -43,44 +43,48 @@ export default class Session implements SessionContainerInterface {
     }
 
     revokeSession = async (userContext?: any) => {
-        if (
-            await this.helpers.sessionRecipeImpl.revokeSession({
-                sessionHandle: this.sessionHandle,
-                userContext: userContext === undefined ? {} : userContext,
-            })
-        ) {
-            clearSessionFromCookie(this.helpers.config, this.res);
-        }
+        await this.helpers.sessionRecipeImpl.revokeSession({
+            sessionHandle: this.sessionHandle,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+
+        // we do not check the output of calling revokeSession
+        // before clearing the cookies because we are revoking the
+        // current API request's session.
+        // If we instead clear the cookies only when revokeSession
+        // returns true, it can cause this kind of a bug:
+        // https://github.com/supertokens/supertokens-node/issues/343
+        clearSessionFromCookie(this.helpers.config, this.res);
     };
 
     getSessionData = async (userContext?: any): Promise<any> => {
-        try {
-            return (
-                await this.helpers.sessionRecipeImpl.getSessionInformation({
-                    sessionHandle: this.sessionHandle,
-                    userContext: userContext === undefined ? {} : userContext,
-                })
-            ).sessionData;
-        } catch (err) {
-            if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.helpers.config, this.res);
-            }
-            throw err;
+        let sessionInfo = await this.helpers.sessionRecipeImpl.getSessionInformation({
+            sessionHandle: this.sessionHandle,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+        if (sessionInfo === undefined) {
+            clearSessionFromCookie(this.helpers.config, this.res);
+            throw new STError({
+                message: "Session does not exist anymore",
+                type: STError.UNAUTHORISED,
+            });
         }
+        return sessionInfo.sessionData;
     };
 
     updateSessionData = async (newSessionData: any, userContext?: any) => {
-        try {
-            await this.helpers.sessionRecipeImpl.updateSessionData({
+        if (
+            !(await this.helpers.sessionRecipeImpl.updateSessionData({
                 sessionHandle: this.sessionHandle,
                 newSessionData,
                 userContext: userContext === undefined ? {} : userContext,
+            }))
+        ) {
+            clearSessionFromCookie(this.helpers.config, this.res);
+            throw new STError({
+                message: "Session does not exist anymore",
+                type: STError.UNAUTHORISED,
             });
-        } catch (err) {
-            if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.helpers.config, this.res);
-            }
-            throw err;
         }
     };
 
@@ -101,65 +105,63 @@ export default class Session implements SessionContainerInterface {
     };
 
     updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any) => {
-        try {
-            let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
-                accessToken: this.getAccessToken(),
-                newAccessTokenPayload,
-                userContext: userContext === undefined ? {} : userContext,
+        let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
+            accessToken: this.getAccessToken(),
+            newAccessTokenPayload,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+        if (response === undefined) {
+            clearSessionFromCookie(this.helpers.config, this.res);
+            throw new STError({
+                message: "Session does not exist anymore",
+                type: STError.UNAUTHORISED,
             });
-            this.userDataInAccessToken = response.session.userDataInJWT;
-            if (response.accessToken !== undefined) {
-                this.accessToken = response.accessToken.token;
-                setFrontTokenInHeaders(
-                    this.res,
-                    response.session.userId,
-                    response.accessToken.expiry,
-                    response.session.userDataInJWT
-                );
-                attachAccessTokenToCookie(
-                    this.helpers.config,
-                    this.res,
-                    response.accessToken.token,
-                    response.accessToken.expiry
-                );
-            }
-        } catch (err) {
-            if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.helpers.config, this.res);
-            }
-            throw err;
+        }
+        this.userDataInAccessToken = response.session.userDataInJWT;
+        if (response.accessToken !== undefined) {
+            this.accessToken = response.accessToken.token;
+            setFrontTokenInHeaders(
+                this.res,
+                response.session.userId,
+                response.accessToken.expiry,
+                response.session.userDataInJWT
+            );
+            attachAccessTokenToCookie(
+                this.helpers.config,
+                this.res,
+                response.accessToken.token,
+                response.accessToken.expiry
+            );
         }
     };
 
     getTimeCreated = async (userContext?: any): Promise<number> => {
-        try {
-            return (
-                await this.helpers.sessionRecipeImpl.getSessionInformation({
-                    sessionHandle: this.sessionHandle,
-                    userContext: userContext === undefined ? {} : userContext,
-                })
-            ).timeCreated;
-        } catch (err) {
-            if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.helpers.config, this.res);
-            }
-            throw err;
+        let sessionInfo = await this.helpers.sessionRecipeImpl.getSessionInformation({
+            sessionHandle: this.sessionHandle,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+        if (sessionInfo === undefined) {
+            clearSessionFromCookie(this.helpers.config, this.res);
+            throw new STError({
+                message: "Session does not exist anymore",
+                type: STError.UNAUTHORISED,
+            });
         }
+        return sessionInfo.timeCreated;
     };
 
     getExpiry = async (userContext?: any): Promise<number> => {
-        try {
-            return (
-                await this.helpers.sessionRecipeImpl.getSessionInformation({
-                    sessionHandle: this.sessionHandle,
-                    userContext: userContext === undefined ? {} : userContext,
-                })
-            ).expiry;
-        } catch (err) {
-            if (err.type === STError.UNAUTHORISED) {
-                clearSessionFromCookie(this.helpers.config, this.res);
-            }
-            throw err;
+        let sessionInfo = await this.helpers.sessionRecipeImpl.getSessionInformation({
+            sessionHandle: this.sessionHandle,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+        if (sessionInfo === undefined) {
+            clearSessionFromCookie(this.helpers.config, this.res);
+            throw new STError({
+                message: "Session does not exist anymore",
+                type: STError.UNAUTHORISED,
+            });
         }
+        return sessionInfo.expiry;
     };
 }

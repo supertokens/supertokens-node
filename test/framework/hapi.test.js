@@ -1050,16 +1050,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateSessionDataInvalidSessionHandle",
             method: "post",
             handler: async (req, res) => {
-                try {
-                    await Session.updateSessionData("InvalidHandle", { key: "value3" });
-                    return res.response({ success: false }).code(200);
-                } catch (err) {
-                    return res
-                        .response({
-                            success: err.type === Session.Error.UNAUTHORISED,
-                        })
-                        .code(200);
-                }
+                return res
+                    .response({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                    .code(200);
             },
         });
 
@@ -1211,16 +1204,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateAccessTokenPayloadInvalidSessionHandle",
             method: "post",
             handler: async (req, res) => {
-                try {
-                    await Session.updateSessionData("InvalidHandle", { key: "value3" });
-                    return res.response({ success: false }).code(200);
-                } catch (err) {
-                    return res
-                        .response({
-                            success: err.type === Session.Error.UNAUTHORISED,
-                        })
-                        .code(200);
-                }
+                return res
+                    .response({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                    .code(200);
             },
         });
 

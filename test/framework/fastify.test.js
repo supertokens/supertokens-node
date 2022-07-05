@@ -1042,16 +1042,9 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         );
 
         this.server.post("/updateSessionDataInvalidSessionHandle", async (req, res) => {
-            try {
-                await Session.updateSessionData("InvalidHandle", { key: "value3" });
-                return res.send({ success: false }).code(200);
-            } catch (err) {
-                return res
-                    .send({
-                        success: err.type === Session.Error.UNAUTHORISED,
-                    })
-                    .code(200);
-            }
+            return res
+                .send({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                .code(200);
         });
 
         await this.server.register(FastifyFramework.plugin);
@@ -1184,16 +1177,9 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         );
 
         this.server.post("/updateAccessTokenPayloadInvalidSessionHandle", async (req, res) => {
-            try {
-                await Session.updateSessionData("InvalidHandle", { key: "value3" });
-                return res.send({ success: false }).code(200);
-            } catch (err) {
-                return res
-                    .send({
-                        success: err.type === Session.Error.UNAUTHORISED,
-                    })
-                    .code(200);
-            }
+            return res
+                .send({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                .code(200);
         });
 
         await this.server.register(FastifyFramework.plugin);

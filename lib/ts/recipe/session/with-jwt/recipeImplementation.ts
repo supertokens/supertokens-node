@@ -46,19 +46,22 @@ export default function (
 
     return {
         ...originalImplementation,
-        createNewSession: async function ({
-            res,
-            userId,
-            accessTokenPayload,
-            sessionData,
-            userContext,
-        }: {
-            res: BaseResponse;
-            userId: string;
-            accessTokenPayload?: any;
-            sessionData?: any;
-            userContext: any;
-        }): Promise<SessionContainerInterface> {
+        createNewSession: async function (
+            this: RecipeInterface,
+            {
+                res,
+                userId,
+                accessTokenPayload,
+                sessionData,
+                userContext,
+            }: {
+                res: BaseResponse;
+                userId: string;
+                accessTokenPayload?: any;
+                sessionData?: any;
+                userContext: any;
+            }
+        ): Promise<SessionContainerInterface> {
             accessTokenPayload =
                 accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
             let accessTokenValidityInSeconds = Math.ceil((await this.getAccessTokenLifeTimeMS({ userContext })) / 1000);
@@ -128,18 +131,24 @@ export default function (
 
             return new SessionClassWithJWT(newSession, openIdRecipeImplementation);
         },
-        updateAccessTokenPayload: async function ({
-            sessionHandle,
-            newAccessTokenPayload,
-            userContext,
-        }: {
-            sessionHandle: string;
-            newAccessTokenPayload: any;
-            userContext: any;
-        }): Promise<void> {
+        updateAccessTokenPayload: async function (
+            this: RecipeInterface,
+            {
+                sessionHandle,
+                newAccessTokenPayload,
+                userContext,
+            }: {
+                sessionHandle: string;
+                newAccessTokenPayload: any;
+                userContext: any;
+            }
+        ): Promise<boolean> {
             newAccessTokenPayload =
                 newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
             let sessionInformation = await this.getSessionInformation({ sessionHandle, userContext });
+            if (sessionInformation === undefined) {
+                return false;
+            }
             let accessTokenPayload = sessionInformation.accessTokenPayload;
 
             let existingJwtPropertyName = accessTokenPayload[ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY];

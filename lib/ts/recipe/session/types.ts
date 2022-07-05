@@ -206,8 +206,10 @@ export type RecipeInterface = {
      * Used to retrieve all session information for a given session handle. Can be used in place of:
      * - getSessionData
      * - getAccessTokenPayload
+     *
+     * Returns undefined if the sessionHandle does not exist
      */
-    getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation>;
+    getSessionInformation(input: { sessionHandle: string; userContext: any }): Promise<SessionInformation | undefined>;
 
     revokeAllSessionsForUser(input: { userId: string; userContext: any }): Promise<string[]>;
 
@@ -217,31 +219,37 @@ export type RecipeInterface = {
 
     revokeMultipleSessions(input: { sessionHandles: string[]; userContext: any }): Promise<string[]>;
 
-    updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<void>;
+    // Returns false if the sessionHandle does not exist
+    updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<boolean>;
 
+    // Returns false if the sessionHandle does not exist
     updateAccessTokenPayload(input: {
         sessionHandle: string;
         newAccessTokenPayload: any;
         userContext: any;
-    }): Promise<void>;
+    }): Promise<boolean>;
 
+    // Returns undefined if the sessionHandle does not exist
     regenerateAccessToken(input: {
         accessToken: string;
         newAccessTokenPayload?: any;
         userContext: any;
-    }): Promise<{
-        status: "OK";
-        session: {
-            handle: string;
-            userId: string;
-            userDataInJWT: any;
-        };
-        accessToken?: {
-            token: string;
-            expiry: number;
-            createdTime: number;
-        };
-    }>;
+    }): Promise<
+        | {
+              status: "OK";
+              session: {
+                  handle: string;
+                  userId: string;
+                  userDataInJWT: any;
+              };
+              accessToken?: {
+                  token: string;
+                  expiry: number;
+                  createdTime: number;
+              };
+          }
+        | undefined
+    >;
 
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
