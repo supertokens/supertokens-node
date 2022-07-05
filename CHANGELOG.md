@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     -   `regenerateAccessToken` now returns `undefined` if the input access token's `sessionHandle` does not exist.
     -   The sessionClass functions have not changed in behaviour and still throw UNAUTHORISED. This works cause the sessionClass works on the current session and not some other session.
 
+### Bug fix:
+
+-   Clears cookies when revokeSession is called using the session container, even if the session did not exist from before: https://github.com/supertokens/supertokens-node/issues/343
+
 ## [10.0.1] - 2022-06-28
 
 ### Fixes

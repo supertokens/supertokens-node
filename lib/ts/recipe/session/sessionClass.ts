@@ -43,14 +43,18 @@ export default class Session implements SessionContainerInterface {
     }
 
     revokeSession = async (userContext?: any) => {
-        if (
-            await this.helpers.sessionRecipeImpl.revokeSession({
-                sessionHandle: this.sessionHandle,
-                userContext: userContext === undefined ? {} : userContext,
-            })
-        ) {
-            clearSessionFromCookie(this.helpers.config, this.res);
-        }
+        await this.helpers.sessionRecipeImpl.revokeSession({
+            sessionHandle: this.sessionHandle,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+
+        // we do not check the output of calling revokeSession
+        // before clearing the cookies because we are revoking the
+        // current API request's session.
+        // If we instead clear the cookies only when revokeSession
+        // returns true, it can cause this kind of a bug:
+        // https://github.com/supertokens/supertokens-node/issues/343
+        clearSessionFromCookie(this.helpers.config, this.res);
     };
 
     getSessionData = async (userContext?: any): Promise<any> => {
