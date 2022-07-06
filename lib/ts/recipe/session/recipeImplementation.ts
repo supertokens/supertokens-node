@@ -242,18 +242,21 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             }
         },
 
-        assertClaims: async function (input: {
-            session: SessionContainerInterface;
+        assertClaims: async function (
+            this: RecipeInterface,
+            input: {
+                session: SessionContainerInterface;
 
-            overrideGlobalClaimValidators:
-                | ((
-                      session: SessionContainerInterface,
-                      globalClaimValidators: SessionClaimValidator[],
-                      userContext: any
-                  ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[])
-                | undefined;
-            userContext?: any;
-        }): Promise<void> {
+                overrideGlobalClaimValidators:
+                    | ((
+                          session: SessionContainerInterface,
+                          globalClaimValidators: SessionClaimValidator[],
+                          userContext: any
+                      ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[])
+                    | undefined;
+                userContext?: any;
+            }
+        ): Promise<void> {
             const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
             const globalClaimValidators: SessionClaimValidator[] = await this.getGlobalClaimValidators({
                 userId: input.session.getUserId(),

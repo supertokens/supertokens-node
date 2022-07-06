@@ -75,7 +75,7 @@ export default class SessionWrapper {
         }
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
         const session = await recipeInterfaceImpl.getSession({ req, res, options, userContext });
-        if (session) {
+        if (session !== undefined) {
             await recipeInterfaceImpl.assertClaims({
                 session,
                 overrideGlobalClaimValidators: options?.overrideGlobalClaimValidators,

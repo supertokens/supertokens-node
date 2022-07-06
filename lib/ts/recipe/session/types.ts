@@ -289,7 +289,6 @@ export type RecipeInterface = {
 
     assertClaims(input: {
         session: SessionContainerInterface;
-
         overrideGlobalClaimValidators:
             | ((
                   session: SessionContainerInterface,

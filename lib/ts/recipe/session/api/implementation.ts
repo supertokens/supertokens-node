@@ -48,7 +48,7 @@ export default function getAPIInterface(): APIInterface {
                     options: verifySessionOptions,
                     userContext,
                 });
-                if (session) {
+                if (session !== undefined) {
                     await options.recipeImplementation.assertClaims({
                         session,
                         overrideGlobalClaimValidators: verifySessionOptions?.overrideGlobalClaimValidators,
