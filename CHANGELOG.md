@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [11.0.1] - 2022-07-06
+
+### Changes:
+
+-   for express framework, while fetching the existing response header, use `get` function instead of `getHeaders`
+
 ## [11.0.0] - 2022-07-05
 
 ### Breaking change:

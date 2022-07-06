@@ -194,8 +194,7 @@ export async function assertForDataBodyParserHasBeenUsedForExpressLikeRequest(re
 
 export function setHeaderForExpressLikeResponse(res: Response, key: string, value: string, allowDuplicateKey: boolean) {
     try {
-        let existingHeaders = res.getHeaders();
-        let existingValue = existingHeaders[key.toLowerCase()];
+        let existingValue = res.get(key);
 
         // we have the res.header for compatibility with nextJS
         if (existingValue === undefined) {
