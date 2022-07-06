@@ -27,7 +27,6 @@ import {
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import { getResetPasswordURL as defaultGetResetPasswordURL } from "./passwordResetFunctions";
 import { RecipeInterface, APIInterface } from "./types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
@@ -52,8 +51,6 @@ export function validateAndNormaliseUserInput(
         config === undefined ? undefined : config.resetPasswordUsingTokenFeature
     );
 
-    let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
-
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -74,8 +71,7 @@ export function validateAndNormaliseUserInput(
                 recipeImpl,
                 appInfo,
                 isInServerlessEnv,
-                config?.resetPasswordUsingTokenFeature,
-                config?.emailVerificationFeature
+                config?.resetPasswordUsingTokenFeature
             );
         }
         return {
@@ -98,56 +94,8 @@ export function validateAndNormaliseUserInput(
         signUpFeature,
         signInFeature,
         resetPasswordUsingTokenFeature,
-        emailVerificationFeature,
         override,
         getEmailDeliveryConfig,
-    };
-}
-
-export function validateAndNormaliseEmailVerificationConfig(
-    recipeInstance: Recipe,
-    _: NormalisedAppinfo,
-    config?: TypeInput
-): TypeNormalisedInputEmailVerification {
-    return {
-        getEmailForUserId: recipeInstance.getEmailForUserId,
-        override: config?.override?.emailVerificationFeature,
-        createAndSendCustomEmail:
-            config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
-                ? undefined
-                : async (user, link, userContext: any) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({
-                          userId: user.id,
-                          userContext,
-                      });
-                      if (
-                          userInfo === undefined ||
-                          config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
-                      ) {
-                          throw new Error("Unknown User ID provided");
-                      }
-                      return await config.emailVerificationFeature.createAndSendCustomEmail(
-                          userInfo,
-                          link,
-                          userContext
-                      );
-                  },
-        getEmailVerificationURL:
-            config?.emailVerificationFeature?.getEmailVerificationURL === undefined
-                ? undefined
-                : async (user, userContext: any) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({
-                          userId: user.id,
-                          userContext,
-                      });
-                      if (
-                          userInfo === undefined ||
-                          config?.emailVerificationFeature?.getEmailVerificationURL === undefined
-                      ) {
-                          throw new Error("Unknown User ID provided");
-                      }
-                      return await config.emailVerificationFeature.getEmailVerificationURL(userInfo, userContext);
-                  },
     };
 }
 

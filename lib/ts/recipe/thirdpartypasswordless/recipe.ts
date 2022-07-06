@@ -15,7 +15,6 @@
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import EmailVerificationRecipe from "../emailverification/recipe";
-import { RecipeInterface as EmailVerificationRecipeInterface } from "../emailverification/types";
 import PasswordlessRecipe from "../passwordless/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -42,14 +41,13 @@ import { Querier } from "../../querier";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
+import { BootstrapService } from "../../bootstrapService";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "thirdpartypasswordless";
 
     config: TypeNormalisedInput;
-
-    emailVerificationRecipe: EmailVerificationRecipe;
 
     passwordlessRecipe: PasswordlessRecipe;
 
@@ -71,7 +69,6 @@ export default class Recipe extends RecipeModule {
         isInServerlessEnv: boolean,
         config: TypeInput,
         recipes: {
-            emailVerificationInstance: EmailVerificationRecipe | undefined;
             thirdPartyInstance: ThirdPartyRecipe | undefined;
             passwordlessInstance: PasswordlessRecipe | undefined;
         },
@@ -82,7 +79,7 @@ export default class Recipe extends RecipeModule {
     ) {
         super(recipeId, appInfo);
         this.isInServerlessEnv = isInServerlessEnv;
-        this.config = validateAndNormaliseUserInput(this, appInfo, config);
+        this.config = validateAndNormaliseUserInput(appInfo, config);
 
         {
             let builder = new OverrideableBuilder(
@@ -98,9 +95,6 @@ export default class Recipe extends RecipeModule {
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
-        const recipeImplReference = this.recipeInterfaceImpl;
-        const emailVerificationConfig = this.config.emailVerificationFeature;
-
         this.emailDelivery =
             ingredients.emailDelivery === undefined
                 ? new EmailDeliveryIngredient(
@@ -112,73 +106,13 @@ export default class Recipe extends RecipeModule {
             ingredients.smsDelivery === undefined
                 ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
                 : ingredients.smsDelivery;
-
-        this.emailVerificationRecipe =
-            recipes.emailVerificationInstance !== undefined
-                ? recipes.emailVerificationInstance
-                : new EmailVerificationRecipe(
-                      recipeId,
-                      appInfo,
-                      isInServerlessEnv,
-                      {
-                          ...this.config.emailVerificationFeature,
-                          override: {
-                              ...this.config.emailVerificationFeature.override,
-                              functions: (oI, builder) => {
-                                  let passwordlessOverride = (
-                                      oI: EmailVerificationRecipeInterface
-                                  ): EmailVerificationRecipeInterface => {
-                                      return {
-                                          ...oI,
-                                          createEmailVerificationToken: async function (input) {
-                                              let user = await recipeImplReference.getUserById({
-                                                  userId: input.userId,
-                                                  userContext: input.userContext,
-                                              });
-
-                                              if (user === undefined || "thirdParty" in user) {
-                                                  return oI.createEmailVerificationToken(input);
-                                              } else {
-                                                  return {
-                                                      status: "EMAIL_ALREADY_VERIFIED_ERROR",
-                                                  };
-                                              }
-                                          },
-                                          isEmailVerified: async function (input) {
-                                              let user = await recipeImplReference.getUserById({
-                                                  userId: input.userId,
-                                                  userContext: input.userContext,
-                                              });
-
-                                              if (user === undefined || "thirdParty" in user) {
-                                                  return oI.isEmailVerified(input);
-                                              } else {
-                                                  // this is a passwordless user, so we always want
-                                                  // to return that their info / email is verified
-                                                  return true;
-                                              }
-                                          },
-                                      };
-                                  };
-                                  if (emailVerificationConfig.override?.functions !== undefined) {
-                                      // First we apply the override from what we have above,
-                                      // and then we apply their override. Notice that we don't
-                                      // pass in oI in here, but that is OK since that's how the
-                                      // override works!
-                                      return builder!
-                                          .override(passwordlessOverride)
-                                          .override(emailVerificationConfig.override.functions)
-                                          .build();
-                                  }
-                                  return passwordlessOverride(oI);
-                              },
-                          },
-                      },
-                      {
-                          emailDelivery: this.emailDelivery,
-                      }
-                  );
-
+        BootstrapService.addBootstrapCallback(() => {
+            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
+            if (emailVerificationRecipe !== undefined) {
+                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserIdForEmailVerification.bind(this));
+            }
+            // TODO: add equivalent of overrides (make passwordless stuff automatically verified)
+        });
         this.passwordlessRecipe =
             recipes.passwordlessInstance !== undefined
                 ? recipes.passwordlessInstance
@@ -224,9 +158,7 @@ export default class Recipe extends RecipeModule {
                                   providers: this.config.providers,
                               },
                           },
-                          {
-                              emailVerificationInstance: this.emailVerificationRecipe,
-                          },
+                          {},
                           {
                               emailDelivery: this.emailDelivery,
                           }
@@ -244,7 +176,6 @@ export default class Recipe extends RecipeModule {
                     config,
                     {
                         passwordlessInstance: undefined,
-                        emailVerificationInstance: undefined,
                         thirdPartyInstance: undefined,
                     },
                     {
@@ -276,10 +207,7 @@ export default class Recipe extends RecipeModule {
     }
 
     getAPIsHandled = (): APIHandled[] => {
-        let apisHandled = [
-            ...this.passwordlessRecipe.getAPIsHandled(),
-            ...this.emailVerificationRecipe.getAPIsHandled(),
-        ];
+        let apisHandled = [...this.passwordlessRecipe.getAPIsHandled()];
         if (this.thirdPartyRecipe !== undefined) {
             apisHandled.push(...this.thirdPartyRecipe.getAPIsHandled());
         }
@@ -302,7 +230,7 @@ export default class Recipe extends RecipeModule {
         ) {
             return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, path, method);
         }
-        return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, path, method);
+        return false;
     };
 
     handleError = async (
@@ -318,15 +246,12 @@ export default class Recipe extends RecipeModule {
             } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
                 return await this.thirdPartyRecipe.handleError(err, request, response);
             }
-            return await this.emailVerificationRecipe.handleError(err, request, response);
+            throw err;
         }
     };
 
     getAllCORSHeaders = (): string[] => {
-        let corsHeaders = [
-            ...this.emailVerificationRecipe.getAllCORSHeaders(),
-            ...this.passwordlessRecipe.getAllCORSHeaders(),
-        ];
+        let corsHeaders = [...this.passwordlessRecipe.getAllCORSHeaders()];
         if (this.thirdPartyRecipe !== undefined) {
             corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
         }
@@ -337,7 +262,6 @@ export default class Recipe extends RecipeModule {
         return (
             STError.isErrorFromSuperTokens(err) &&
             (err.fromRecipe === Recipe.RECIPE_ID ||
-                this.emailVerificationRecipe.isErrorFromThisRecipe(err) ||
                 this.passwordlessRecipe.isErrorFromThisRecipe(err) ||
                 (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
         );

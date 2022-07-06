@@ -12,25 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeThirdPartyPasswordlessEmailDeliveryInput, User, RecipeInterface } from "../../../types";
-import { User as EmailVerificationUser } from "../../../../emailverification/types";
+import { TypeThirdPartyPasswordlessEmailDeliveryInput } from "../../../types";
 import { NormalisedAppinfo } from "../../../../../types";
-import EmailVerificationBackwardCompatibilityService from "../../../../emailverification/emaildelivery/services/backwardCompatibility";
 import PasswordlessBackwardCompatibilityService from "../../../../passwordless/emaildelivery/services/backwardCompatibility";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
-    private recipeInterfaceImpl: RecipeInterface;
-    private isInServerlessEnv: boolean;
-    private appInfo: NormalisedAppinfo;
-    private emailVerificationBackwardCompatibilityService: EmailVerificationBackwardCompatibilityService;
     private passwordlessBackwardCompatibilityService: PasswordlessBackwardCompatibilityService;
 
     constructor(
-        recipeInterfaceImpl: RecipeInterface,
         appInfo: NormalisedAppinfo,
-        isInServerlessEnv: boolean,
         passwordlessFeature?: {
             createAndSendCustomEmail?: (
                 input: {
@@ -46,45 +38,8 @@ export default class BackwardCompatibilityService
                 },
                 userContext: any
             ) => Promise<void>;
-        },
-        emailVerificationFeature?: {
-            createAndSendCustomEmail?: (
-                user: User,
-                emailVerificationURLWithToken: string,
-                userContext: any
-            ) => Promise<void>;
         }
     ) {
-        this.recipeInterfaceImpl = recipeInterfaceImpl;
-        this.isInServerlessEnv = isInServerlessEnv;
-        this.appInfo = appInfo;
-        {
-            const inputCreateAndSendCustomEmail = emailVerificationFeature?.createAndSendCustomEmail;
-            let emailVerificationFeatureNormalisedConfig =
-                inputCreateAndSendCustomEmail !== undefined
-                    ? {
-                          createAndSendCustomEmail: async (
-                              user: EmailVerificationUser,
-                              link: string,
-                              userContext: any
-                          ) => {
-                              let userInfo = await this.recipeInterfaceImpl.getUserById({
-                                  userId: user.id,
-                                  userContext,
-                              });
-                              if (userInfo === undefined) {
-                                  throw new Error("Unknown User ID provided");
-                              }
-                              return await inputCreateAndSendCustomEmail(userInfo, link, userContext);
-                          },
-                      }
-                    : {};
-            this.emailVerificationBackwardCompatibilityService = new EmailVerificationBackwardCompatibilityService(
-                this.appInfo,
-                this.isInServerlessEnv,
-                emailVerificationFeatureNormalisedConfig.createAndSendCustomEmail
-            );
-        }
         {
             this.passwordlessBackwardCompatibilityService = new PasswordlessBackwardCompatibilityService(
                 appInfo,
@@ -94,10 +49,6 @@ export default class BackwardCompatibilityService
     }
 
     sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }) => {
-        if (input.type === "EMAIL_VERIFICATION") {
-            await this.emailVerificationBackwardCompatibilityService.sendEmail(input);
-        } else {
-            await this.passwordlessBackwardCompatibilityService.sendEmail(input);
-        }
+        await this.passwordlessBackwardCompatibilityService.sendEmail(input);
     };
 }

@@ -1,9 +1,4 @@
 // @ts-nocheck
-import {
-    RecipeInterface as EmailVerificationRecipeInterface,
-    APIInterface as EmailVerificationAPIInterface,
-} from "../emailverification";
-import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
@@ -11,7 +6,6 @@ import {
     TypeInput as EmailDeliveryTypeInput,
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
-import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse } from "../../types";
 export declare type TypeNormalisedInput = {
@@ -22,23 +16,12 @@ export declare type TypeNormalisedInput = {
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature: TypeNormalisedInputResetPasswordUsingTokenFeature;
-    emailVerificationFeature: TypeInputEmailVerification;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 export declare type TypeInputEmailVerificationFeature = {
@@ -92,23 +75,12 @@ export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
-    emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 export declare type RecipeInterface = {
@@ -180,7 +152,6 @@ export declare type RecipeInterface = {
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
-    emailVerificationRecipeImplementation: EmailVerificationRecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
@@ -287,6 +258,4 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     passwordResetLink: string;
     userContext: any;
 };
-export declare type TypeEmailPasswordEmailDeliveryInput =
-    | TypeEmailPasswordPasswordResetEmailDeliveryInput
-    | TypeEmailVerificationEmailDeliveryInput;
+export declare type TypeEmailPasswordEmailDeliveryInput = TypeEmailPasswordPasswordResetEmailDeliveryInput;

@@ -23,8 +23,9 @@ import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse } from "../../types";
 
 export type TypeInput = {
+    mode: "REQUIRED" | "OPTIONAL" | "OFF";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
+    getEmailForUserId?: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
     /**
      * @deprecated Please use emailDelivery config instead
@@ -40,10 +41,11 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
+    mode: "REQUIRED" | "OPTIONAL" | "OFF";
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
+    getEmailForUserId?: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL: (user: User, userContext: any) => Promise<string>;
     override: {
         functions: (

@@ -1,4 +1,3 @@
-"use strict";
 /* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,6 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-const smtp_1 = require("./smtp");
-exports.STMPService = smtp_1.default;
+
+export class BootstrapService {
+    static bootstrapCallbacks: (() => void)[];
+
+    static addBootstrapCallback(cb: () => void) {
+        BootstrapService.bootstrapCallbacks.push(cb);
+    }
+
+    static runBootstrapCallbacks() {
+        for (const cb of BootstrapService.bootstrapCallbacks) {
+            cb();
+        }
+    }
+}

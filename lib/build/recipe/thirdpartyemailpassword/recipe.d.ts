@@ -1,7 +1,6 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import EmailVerificationRecipe from "../emailverification/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -21,7 +20,6 @@ export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
     config: TypeNormalisedInput;
-    emailVerificationRecipe: EmailVerificationRecipe;
     private emailPasswordRecipe;
     private thirdPartyRecipe;
     recipeInterfaceImpl: RecipeInterface;
@@ -34,7 +32,6 @@ export default class Recipe extends RecipeModule {
         isInServerlessEnv: boolean,
         config: TypeInput,
         recipes: {
-            emailVerificationInstance: EmailVerificationRecipe | undefined;
             thirdPartyInstance: ThirdPartyRecipe | undefined;
             emailPasswordInstance: EmailPasswordRecipe | undefined;
         },

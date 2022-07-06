@@ -13,20 +13,10 @@
  * under the License.
  */
 
-import {
-    RecipeInterface as EmailVerificationRecipeInterface,
-    APIInterface as EmailVerificationAPIInterface,
-} from "../emailverification";
-import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import {
-    TypeInput as EmailDeliveryTypeInput,
-    TypeInputWithService as EmailDeliveryTypeInputWithService,
-} from "../../ingredients/emaildelivery/types";
-import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 import { GeneralErrorResponse } from "../../types";
 
 export type UserInfo = { id: string; email?: { id: string; isVerified: boolean } };
@@ -84,50 +74,23 @@ export type TypeNormalisedInputSignInAndUp = {
 
 export type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
-    emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
-    emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 
 export type TypeNormalisedInput = {
-    getEmailDeliveryConfig: (
-        recipeImpl: RecipeInterface,
-        isInServerlessEnv: boolean
-    ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailDeliveryInput>;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
-    emailVerificationFeature: TypeInputEmailVerification;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 
@@ -155,7 +118,6 @@ export type RecipeInterface = {
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
-    emailVerificationRecipeImplementation: EmailVerificationRecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
@@ -206,5 +168,3 @@ export type APIInterface = {
         | undefined
         | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
 };
-
-export type TypeThirdPartyEmailDeliveryInput = TypeEmailVerificationEmailDeliveryInput;

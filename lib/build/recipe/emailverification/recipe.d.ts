@@ -7,6 +7,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
+declare type GetEmailForUserIdFunc = (userId: string, userContext: any) => Promise<string>;
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -15,6 +16,7 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
+    getEmailForUserIdFuncsFromOtherRecipes: GetEmailForUserIdFunc[];
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
@@ -25,6 +27,7 @@ export default class Recipe extends RecipeModule {
         }
     );
     static getInstanceOrThrowError(): Recipe;
+    static getInstance(): Recipe | undefined;
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
@@ -38,4 +41,7 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
+    getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
+    addGetEmailForUserIdFunc: (func: GetEmailForUserIdFunc) => void;
 }
+export {};

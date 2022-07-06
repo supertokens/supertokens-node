@@ -13,10 +13,8 @@
  * under the License.
  */
 import { TypeEmailPasswordEmailDeliveryInput, User, RecipeInterface } from "../../../types";
-import { User as EmailVerificationUser } from "../../../../emailverification/types";
 import { createAndSendCustomEmail as defaultCreateAndSendCustomEmail } from "../../../passwordResetFunctions";
 import { NormalisedAppinfo } from "../../../../../types";
-import EmailVerificationBackwardCompatibilityService from "../../../../emailverification/emaildelivery/services/backwardCompatibility";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService
@@ -27,7 +25,6 @@ export default class BackwardCompatibilityService
     private resetPasswordUsingTokenFeature: {
         createAndSendCustomEmail: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
     };
-    private emailVerificationBackwardCompatibilityService: EmailVerificationBackwardCompatibilityService;
 
     constructor(
         recipeInterfaceImpl: RecipeInterface,
@@ -37,13 +34,6 @@ export default class BackwardCompatibilityService
             createAndSendCustomEmail?: (
                 user: User,
                 passwordResetURLWithToken: string,
-                userContext: any
-            ) => Promise<void>;
-        },
-        emailVerificationFeature?: {
-            createAndSendCustomEmail?: (
-                user: User,
-                emailVerificationURLWithToken: string,
                 userContext: any
             ) => Promise<void>;
         }
@@ -62,60 +52,29 @@ export default class BackwardCompatibilityService
                           createAndSendCustomEmail: defaultCreateAndSendCustomEmail(this.appInfo),
                       };
         }
-        {
-            const inputCreateAndSendCustomEmail = emailVerificationFeature?.createAndSendCustomEmail;
-            let emailVerificationFeatureNormalisedConfig =
-                inputCreateAndSendCustomEmail !== undefined
-                    ? {
-                          createAndSendCustomEmail: async (
-                              user: EmailVerificationUser,
-                              link: string,
-                              userContext: any
-                          ) => {
-                              let userInfo = await this.recipeInterfaceImpl.getUserById({
-                                  userId: user.id,
-                                  userContext,
-                              });
-                              if (userInfo === undefined) {
-                                  throw new Error("Unknown User ID provided");
-                              }
-                              return await inputCreateAndSendCustomEmail(userInfo, link, userContext);
-                          },
-                      }
-                    : {};
-            this.emailVerificationBackwardCompatibilityService = new EmailVerificationBackwardCompatibilityService(
-                this.appInfo,
-                this.isInServerlessEnv,
-                emailVerificationFeatureNormalisedConfig.createAndSendCustomEmail
-            );
-        }
     }
 
     sendEmail = async (input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) => {
-        if (input.type === "EMAIL_VERIFICATION") {
-            await this.emailVerificationBackwardCompatibilityService.sendEmail(input);
-        } else {
-            let user = await this.recipeInterfaceImpl.getUserById({
-                userId: input.user.id,
-                userContext: input.userContext,
-            });
-            if (user === undefined) {
-                throw Error("this should never come here");
-            }
-            try {
-                if (!this.isInServerlessEnv) {
-                    this.resetPasswordUsingTokenFeature
-                        .createAndSendCustomEmail(user, input.passwordResetLink, input.userContext)
-                        .catch((_) => {});
-                } else {
-                    // see https://github.com/supertokens/supertokens-node/pull/135
-                    await this.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
-                        user,
-                        input.passwordResetLink,
-                        input.userContext
-                    );
-                }
-            } catch (_) {}
+        let user = await this.recipeInterfaceImpl.getUserById({
+            userId: input.user.id,
+            userContext: input.userContext,
+        });
+        if (user === undefined) {
+            throw Error("this should never come here");
         }
+        try {
+            if (!this.isInServerlessEnv) {
+                this.resetPasswordUsingTokenFeature
+                    .createAndSendCustomEmail(user, input.passwordResetLink, input.userContext)
+                    .catch((_) => {});
+            } else {
+                // see https://github.com/supertokens/supertokens-node/pull/135
+                await this.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
+                    user,
+                    input.passwordResetLink,
+                    input.userContext
+                );
+            }
+        } catch (_) {}
     };
 }

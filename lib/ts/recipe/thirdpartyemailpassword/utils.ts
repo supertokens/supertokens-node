@@ -14,7 +14,6 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import { TypeInput, TypeNormalisedInput, TypeInputSignUp, TypeNormalisedInputSignUp } from "./types";
 import { NormalisedFormField } from "../emailpassword/types";
 import Recipe from "./recipe";
@@ -38,8 +37,6 @@ export function validateAndNormaliseUserInput(
 
     let providers = config === undefined || config.providers === undefined ? [] : config.providers;
 
-    let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
-
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -47,7 +44,7 @@ export function validateAndNormaliseUserInput(
     };
 
     function getEmailDeliveryConfig(
-        recipeImpl: RecipeInterface,
+        _recipeImpl: RecipeInterface,
         emailPasswordRecipeImpl: EPRecipeInterface,
         isInServerlessEnv: boolean
     ) {
@@ -60,14 +57,7 @@ export function validateAndNormaliseUserInput(
          * createAndSendCustomEmail implementation
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
-                recipeImpl,
-                emailPasswordRecipeImpl,
-                appInfo,
-                isInServerlessEnv,
-                config?.resetPasswordUsingTokenFeature,
-                config?.emailVerificationFeature
-            );
+            emailService = new BackwardCompatibilityService(emailPasswordRecipeImpl, appInfo, isInServerlessEnv);
         }
         return {
             ...config?.emailDelivery,
@@ -92,7 +82,6 @@ export function validateAndNormaliseUserInput(
         signUpFeature,
         providers,
         resetPasswordUsingTokenFeature,
-        emailVerificationFeature,
     };
 }
 
@@ -107,52 +96,5 @@ function validateAndNormaliseSignUpConfig(
 
     return {
         formFields,
-    };
-}
-
-function validateAndNormaliseEmailVerificationConfig(
-    recipeInstance: Recipe,
-    _: NormalisedAppinfo,
-    config?: TypeInput
-): TypeNormalisedInputEmailVerification {
-    return {
-        getEmailForUserId: recipeInstance.getEmailForUserId,
-        override: config?.override?.emailVerificationFeature,
-        createAndSendCustomEmail:
-            config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
-                ? undefined
-                : async (user, link, userContext: any) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({
-                          userId: user.id,
-                          userContext,
-                      });
-                      if (
-                          userInfo === undefined ||
-                          config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
-                      ) {
-                          throw new Error("Unknown User ID provided");
-                      }
-                      return await config.emailVerificationFeature.createAndSendCustomEmail(
-                          userInfo,
-                          link,
-                          userContext
-                      );
-                  },
-        getEmailVerificationURL:
-            config?.emailVerificationFeature?.getEmailVerificationURL === undefined
-                ? undefined
-                : async (user, userContext: any) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({
-                          userId: user.id,
-                          userContext,
-                      });
-                      if (
-                          userInfo === undefined ||
-                          config?.emailVerificationFeature?.getEmailVerificationURL === undefined
-                      ) {
-                          throw new Error("Unknown User ID provided");
-                      }
-                      return await config.emailVerificationFeature.getEmailVerificationURL(userInfo, userContext);
-                  },
     };
 }

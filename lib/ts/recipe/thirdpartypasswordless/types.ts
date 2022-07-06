@@ -12,16 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import {
-    TypeProvider,
-    APIOptions as ThirdPartyAPIOptionsOriginal,
-    TypeThirdPartyEmailDeliveryInput,
-} from "../thirdparty/types";
-import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
-import {
-    RecipeInterface as EmailVerificationRecipeInterface,
-    APIInterface as EmailVerificationAPIInterface,
-} from "../emailverification";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import {
     DeviceType as DeviceTypeOriginal,
     APIOptions as PasswordlessAPIOptionsOriginal,
@@ -167,7 +158,6 @@ export type TypeInput = (
     emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     providers?: TypeProvider[];
-    emailVerificationFeature?: TypeInputEmailVerificationFeature;
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
 
     // Customize information in the URL.
@@ -193,16 +183,6 @@ export type TypeInput = (
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 
@@ -238,7 +218,6 @@ export type TypeNormalisedInput = (
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     providers: TypeProvider[];
-    emailVerificationFeature: TypeInputEmailVerification;
     getEmailDeliveryConfig: (
         recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
@@ -250,16 +229,6 @@ export type TypeNormalisedInput = (
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 
@@ -527,8 +496,6 @@ export type APIInterface = {
           >);
 };
 
-export type TypeThirdPartyPasswordlessEmailDeliveryInput =
-    | TypeThirdPartyEmailDeliveryInput
-    | TypePasswordlessEmailDeliveryInput;
+export type TypeThirdPartyPasswordlessEmailDeliveryInput = TypePasswordlessEmailDeliveryInput;
 
 export type TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput;

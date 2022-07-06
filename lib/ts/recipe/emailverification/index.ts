@@ -16,11 +16,14 @@
 import Recipe from "./recipe";
 import SuperTokensError from "./error";
 import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationEmailDeliveryInput } from "./types";
+import { EmailVerifiedClaim } from "./emailVerifiedClaim";
 
 export default class Wrapper {
     static init = Recipe.init;
 
     static Error = SuperTokensError;
+
+    static EmailVerifiedClaim = EmailVerifiedClaim;
 
     static async createEmailVerificationToken(userId: string, email: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken({
@@ -84,3 +87,5 @@ export let unverifyEmail = Wrapper.unverifyEmail;
 export type { RecipeInterface, APIOptions, APIInterface, User };
 
 export let sendEmail = Wrapper.sendEmail;
+
+export { EmailVerifiedClaim } from "./emailVerifiedClaim";

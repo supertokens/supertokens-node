@@ -39,14 +39,13 @@ import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { BootstrapService } from "../../bootstrapService";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "thirdpartyemailpassword";
 
     config: TypeNormalisedInput;
-
-    emailVerificationRecipe: EmailVerificationRecipe;
 
     private emailPasswordRecipe: EmailPasswordRecipe;
 
@@ -66,7 +65,6 @@ export default class Recipe extends RecipeModule {
         isInServerlessEnv: boolean,
         config: TypeInput,
         recipes: {
-            emailVerificationInstance: EmailVerificationRecipe | undefined;
             thirdPartyInstance: ThirdPartyRecipe | undefined;
             emailPasswordInstance: EmailPasswordRecipe | undefined;
         },
@@ -107,21 +105,13 @@ export default class Recipe extends RecipeModule {
                   )
                 : ingredients.emailDelivery;
 
-        this.emailVerificationRecipe =
-            recipes.emailVerificationInstance !== undefined
-                ? recipes.emailVerificationInstance
-                : new EmailVerificationRecipe(
-                      recipeId,
-                      appInfo,
-                      isInServerlessEnv,
-                      {
-                          ...this.config.emailVerificationFeature,
-                      },
-                      {
-                          emailDelivery: this.emailDelivery,
-                      }
-                  );
-
+        BootstrapService.addBootstrapCallback(() => {
+            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
+            if (emailVerificationRecipe !== undefined) {
+                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
+            }
+            // TODO: add equivalent of overrides (make passwordless stuff automatically verified)
+        });
         this.emailPasswordRecipe =
             recipes.emailPasswordInstance !== undefined
                 ? recipes.emailPasswordInstance
@@ -143,7 +133,6 @@ export default class Recipe extends RecipeModule {
                           },
                           resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
                       },
-                      { emailVerificationInstance: this.emailVerificationRecipe },
                       {
                           emailDelivery: this.emailDelivery,
                       }
@@ -170,9 +159,7 @@ export default class Recipe extends RecipeModule {
                                   providers: this.config.providers,
                               },
                           },
-                          {
-                              emailVerificationInstance: this.emailVerificationRecipe,
-                          },
+                          {},
                           {
                               emailDelivery: this.emailDelivery,
                           }
@@ -190,7 +177,6 @@ export default class Recipe extends RecipeModule {
                     config,
                     {
                         emailPasswordInstance: undefined,
-                        emailVerificationInstance: undefined,
                         thirdPartyInstance: undefined,
                     },
                     {
@@ -221,10 +207,7 @@ export default class Recipe extends RecipeModule {
     }
 
     getAPIsHandled = (): APIHandled[] => {
-        let apisHandled = [
-            ...this.emailPasswordRecipe.getAPIsHandled(),
-            ...this.emailVerificationRecipe.getAPIsHandled(),
-        ];
+        let apisHandled = [...this.emailPasswordRecipe.getAPIsHandled()];
         if (this.thirdPartyRecipe !== undefined) {
             apisHandled.push(...this.thirdPartyRecipe.getAPIsHandled());
         }
@@ -247,7 +230,7 @@ export default class Recipe extends RecipeModule {
         ) {
             return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, path, method);
         }
-        return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, path, method);
+        return false;
     };
 
     handleError = async (
@@ -263,15 +246,12 @@ export default class Recipe extends RecipeModule {
             } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
                 return await this.thirdPartyRecipe.handleError(err, request, response);
             }
-            return await this.emailVerificationRecipe.handleError(err, request, response);
+            throw err;
         }
     };
 
     getAllCORSHeaders = (): string[] => {
-        let corsHeaders = [
-            ...this.emailVerificationRecipe.getAllCORSHeaders(),
-            ...this.emailPasswordRecipe.getAllCORSHeaders(),
-        ];
+        let corsHeaders = [...this.emailPasswordRecipe.getAllCORSHeaders()];
         if (this.thirdPartyRecipe !== undefined) {
             corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
         }
@@ -282,7 +262,6 @@ export default class Recipe extends RecipeModule {
         return (
             STError.isErrorFromSuperTokens(err) &&
             (err.fromRecipe === Recipe.RECIPE_ID ||
-                this.emailVerificationRecipe.isErrorFromThisRecipe(err) ||
                 this.emailPasswordRecipe.isErrorFromThisRecipe(err) ||
                 (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
         );

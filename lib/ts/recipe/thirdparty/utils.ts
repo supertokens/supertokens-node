@@ -14,19 +14,10 @@
  */
 
 import { NormalisedAppinfo } from "../../types";
-import Recipe from "./recipe";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 import { RecipeInterface, APIInterface, TypeProvider } from "./types";
 import { TypeInput, TypeNormalisedInput, TypeInputSignInAndUp, TypeNormalisedInputSignInAndUp } from "./types";
-import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
-export function validateAndNormaliseUserInput(
-    recipeInstance: Recipe,
-    appInfo: NormalisedAppinfo,
-    config: TypeInput
-): TypeNormalisedInput {
-    let emailVerificationFeature = validateAndNormaliseEmailVerificationConfig(recipeInstance, appInfo, config);
-
+export function validateAndNormaliseUserInput(appInfo: NormalisedAppinfo, config: TypeInput): TypeNormalisedInput {
     let signInAndUpFeature = validateAndNormaliseSignInAndUpConfig(appInfo, config.signInAndUpFeature);
 
     let override = {
@@ -35,42 +26,7 @@ export function validateAndNormaliseUserInput(
         ...config.override,
     };
 
-    function getEmailDeliveryConfig(recipeImpl: RecipeInterface, isInServerlessEnv: boolean) {
-        let emailService = config?.emailDelivery?.service;
-        /**
-         * following code is for backward compatibility.
-         * if user has not passed emailDelivery config, we
-         * use the createAndSendCustomEmail config. If the user
-         * has not passed even that config, we use the default
-         * createAndSendCustomEmail implementation
-         */
-        if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(
-                recipeImpl,
-                appInfo,
-                isInServerlessEnv,
-                config?.emailVerificationFeature
-            );
-        }
-        return {
-            ...config?.emailDelivery,
-            /**
-             * if we do
-             * let emailDelivery = {
-             *    service: emailService,
-             *    ...config.emailDelivery,
-             * };
-             *
-             * and if the user has passed service as undefined,
-             * it it again get set to undefined, so we
-             * set service at the end
-             */
-            service: emailService,
-        };
-    }
     return {
-        getEmailDeliveryConfig,
-        emailVerificationFeature,
         signInAndUpFeature,
         override,
     };
@@ -152,52 +108,5 @@ function validateAndNormaliseSignInAndUpConfig(
 
     return {
         providers,
-    };
-}
-
-function validateAndNormaliseEmailVerificationConfig(
-    recipeInstance: Recipe,
-    _: NormalisedAppinfo,
-    config?: TypeInput
-): TypeNormalisedInputEmailVerification {
-    return {
-        getEmailForUserId: recipeInstance.getEmailForUserId,
-        override: config?.override?.emailVerificationFeature,
-        createAndSendCustomEmail:
-            config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
-                ? undefined
-                : async (user, link, userContext) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({
-                          userId: user.id,
-                          userContext,
-                      });
-                      if (
-                          userInfo === undefined ||
-                          config?.emailVerificationFeature?.createAndSendCustomEmail === undefined
-                      ) {
-                          throw new Error("Unknown User ID provided");
-                      }
-                      return await config.emailVerificationFeature.createAndSendCustomEmail(
-                          userInfo,
-                          link,
-                          userContext
-                      );
-                  },
-        getEmailVerificationURL:
-            config?.emailVerificationFeature?.getEmailVerificationURL === undefined
-                ? undefined
-                : async (user, userContext) => {
-                      let userInfo = await recipeInstance.recipeInterfaceImpl.getUserById({
-                          userId: user.id,
-                          userContext,
-                      });
-                      if (
-                          userInfo === undefined ||
-                          config?.emailVerificationFeature?.getEmailVerificationURL === undefined
-                      ) {
-                          throw new Error("Unknown User ID provided");
-                      }
-                      return await config.emailVerificationFeature.getEmailVerificationURL(userInfo, userContext);
-                  },
     };
 }

@@ -70,6 +70,7 @@ export function validateAndNormaliseUserInput(
         };
     }
     return {
+        mode: config.mode,
         getEmailForUserId,
         getEmailVerificationURL,
         override,

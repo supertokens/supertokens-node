@@ -40,14 +40,13 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { BootstrapService } from "../../bootstrapService";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "emailpassword";
 
     config: TypeNormalisedInput;
-
-    emailVerificationRecipe: EmailVerificationRecipe;
 
     recipeInterfaceImpl: RecipeInterface;
 
@@ -62,9 +61,6 @@ export default class Recipe extends RecipeModule {
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
         config: TypeInput | undefined,
-        recipes: {
-            emailVerificationInstance: EmailVerificationRecipe | undefined;
-        },
         ingredients: {
             emailDelivery: EmailDeliveryIngredient<TypeEmailPasswordEmailDeliveryInput> | undefined;
         }
@@ -91,20 +87,14 @@ export default class Recipe extends RecipeModule {
                       this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv)
                   )
                 : ingredients.emailDelivery;
-        this.emailVerificationRecipe =
-            recipes.emailVerificationInstance !== undefined
-                ? recipes.emailVerificationInstance
-                : new EmailVerificationRecipe(
-                      recipeId,
-                      appInfo,
-                      isInServerlessEnv,
-                      {
-                          ...this.config.emailVerificationFeature,
-                      },
-                      {
-                          emailDelivery: this.emailDelivery,
-                      }
-                  );
+
+        BootstrapService.addBootstrapCallback(() => {
+            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
+            if (emailVerificationRecipe !== undefined) {
+                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
+            }
+            // TODO: add equivalent of overrides (make passwordless stuff automatically verified)
+        });
     }
 
     static getInstanceOrThrowError(): Recipe {
@@ -117,18 +107,9 @@ export default class Recipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
-                Recipe.instance = new Recipe(
-                    Recipe.RECIPE_ID,
-                    appInfo,
-                    isInServerlessEnv,
-                    config,
-                    {
-                        emailVerificationInstance: undefined,
-                    },
-                    {
-                        emailDelivery: undefined,
-                    }
-                );
+                Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
+                    emailDelivery: undefined,
+                });
                 return Recipe.instance;
             } else {
                 throw new Error("Emailpassword recipe has already been initialised. Please check your code for bugs.");
@@ -177,7 +158,6 @@ export default class Recipe extends RecipeModule {
                 id: SIGNUP_EMAIL_EXISTS_API,
                 disabled: this.apiImpl.emailExistsGET === undefined,
             },
-            ...this.emailVerificationRecipe.getAPIsHandled(),
         ];
     };
 
@@ -185,15 +165,14 @@ export default class Recipe extends RecipeModule {
         id: string,
         req: BaseRequest,
         res: BaseResponse,
-        path: NormalisedURLPath,
-        method: HTTPMethod
+        _path: NormalisedURLPath,
+        _method: HTTPMethod
     ): Promise<boolean> => {
         let options = {
             config: this.config,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
-            emailVerificationRecipeImplementation: this.emailVerificationRecipe.recipeInterfaceImpl,
             req,
             res,
             emailDelivery: this.emailDelivery,
@@ -208,12 +187,11 @@ export default class Recipe extends RecipeModule {
             return await passwordResetAPI(this.apiImpl, options);
         } else if (id === SIGNUP_EMAIL_EXISTS_API) {
             return await emailExistsAPI(this.apiImpl, options);
-        } else {
-            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, path, method);
         }
+        return false;
     };
 
-    handleError = async (err: STError, request: BaseRequest, response: BaseResponse): Promise<void> => {
+    handleError = async (err: STError, _request: BaseRequest, response: BaseResponse): Promise<void> => {
         if (err.fromRecipe === Recipe.RECIPE_ID) {
             if (err.type === STError.FIELD_ERROR) {
                 return send200Response(response, {
@@ -224,19 +202,16 @@ export default class Recipe extends RecipeModule {
                 throw err;
             }
         } else {
-            return await this.emailVerificationRecipe.handleError(err, request, response);
+            throw err;
         }
     };
 
     getAllCORSHeaders = (): string[] => {
-        return [...this.emailVerificationRecipe.getAllCORSHeaders()];
+        return [];
     };
 
     isErrorFromThisRecipe = (err: any): err is STError => {
-        return (
-            STError.isErrorFromSuperTokens(err) &&
-            (err.fromRecipe === Recipe.RECIPE_ID || this.emailVerificationRecipe.isErrorFromThisRecipe(err))
-        );
+        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
     // extra instance functions below...............
