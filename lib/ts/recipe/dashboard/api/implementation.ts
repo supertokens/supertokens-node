@@ -17,11 +17,19 @@ import { APIInterface } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        dashboardGET: async function () {
+        dashboardGET: async function (input) {
+            const bundleUrl = await input.options.recipeImplementation.getDashboardBundleURL({
+                userContext: input.userContext,
+            });
+
             return `
             <html>
+                <head>
+                    <script defer src="${bundleUrl}"></script></head>
+                </head>
                 <body>
-                    TESTING
+                    <noscript>You need to enable JavaScript to run this app.</noscript>
+                    <div id="root"></div>
                 </body>
             </html>
             `;
