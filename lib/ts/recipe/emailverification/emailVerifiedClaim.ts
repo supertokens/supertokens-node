@@ -15,7 +15,7 @@ export class EmailVerifiedClaimClass extends BooleanClaim {
 
         this.validators = {
             ...this.validators,
-            isValidated: (recheckDelayInSeconds: number = 10) => ({
+            isValidated: (minRefetchDelayInSeconds: number = 10) => ({
                 claim: this,
                 id: "st-ev-isValidated",
                 shouldRefetch: (payload, userContext) => {
@@ -23,7 +23,8 @@ export class EmailVerifiedClaimClass extends BooleanClaim {
                     return (
                         value === undefined ||
                         (value === false &&
-                            this.getLastRefetchTime(payload, userContext)! < Date.now() - recheckDelayInSeconds * 1000)
+                            this.getLastRefetchTime(payload, userContext)! <
+                                Date.now() - minRefetchDelayInSeconds * 1000)
                     );
                 },
                 validate: (payload, userContext) => {
@@ -40,7 +41,7 @@ export class EmailVerifiedClaimClass extends BooleanClaim {
     }
 
     validators!: BooleanClaim["validators"] & {
-        isValidated: (recheckDelayInSeconds?: number) => SessionClaimValidator;
+        isValidated: (minRefetchDelayInSeconds?: number) => SessionClaimValidator;
     };
 }
 
