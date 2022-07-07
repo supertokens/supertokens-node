@@ -37,7 +37,7 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getDashboardBundleURL(input: { userContext: any }): Promise<string>;
+    getDashboardBundleDomain(input: { userContext: any }): Promise<string>;
 };
 
 export type APIOptions = {

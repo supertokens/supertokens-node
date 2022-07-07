@@ -20,7 +20,7 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getDashboardBundleURL(input: { userContext: any }): Promise<string>;
+    getDashboardBundleDomain(input: { userContext: any }): Promise<string>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;

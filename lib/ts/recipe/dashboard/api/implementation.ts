@@ -18,14 +18,17 @@ import { APIInterface } from "../types";
 export default function getAPIImplementation(): APIInterface {
     return {
         dashboardGET: async function (input) {
-            const bundleUrl = await input.options.recipeImplementation.getDashboardBundleURL({
+            const bundleDomain = await input.options.recipeImplementation.getDashboardBundleDomain({
                 userContext: input.userContext,
             });
 
             return `
             <html>
                 <head>
-                    <script defer src="${bundleUrl}"></script></head>
+                    <script>
+                        window.staticBasePath = "${bundleDomain}/static/"
+                    </script>
+                    <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                 </head>
                 <body>
                     <noscript>You need to enable JavaScript to run this app.</noscript>

@@ -124,4 +124,20 @@ export default class Recipe extends RecipeModule {
     isErrorFromThisRecipe = (err: any): err is error => {
         return error.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
+
+    returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
+        const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
+        const dashboardAPIPath = dashboardBundlePath.appendPath(new NormalisedURLPath("/api"));
+
+        if (path.startsWith(dashboardAPIPath)) {
+            // TODO NEMI: Handle api routing
+            return undefined;
+        }
+
+        if (path.startsWith(dashboardBundlePath)) {
+            return DASHBOARD_API;
+        }
+
+        return super.returnAPIIdIfCanHandleRequest(path, method);
+    };
 }
