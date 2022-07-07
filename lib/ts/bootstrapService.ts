@@ -14,7 +14,7 @@
  */
 
 export class BootstrapService {
-    static bootstrapCallbacks: (() => void)[];
+    static bootstrapCallbacks: (() => void)[] = [];
 
     static addBootstrapCallback(cb: () => void) {
         BootstrapService.bootstrapCallbacks.push(cb);
