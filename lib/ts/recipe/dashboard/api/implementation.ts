@@ -13,20 +13,23 @@
  * under the License.
  */
 
+import NormalisedURLDomain from "../../../normalisedURLDomain";
 import { APIInterface } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
         dashboardGET: async function (input) {
-            const bundleDomain = await input.options.recipeImplementation.getDashboardBundleDomain({
-                userContext: input.userContext,
-            });
+            const bundleDomain = new NormalisedURLDomain(
+                await input.options.recipeImplementation.getDashboardBundleDomain({
+                    userContext: input.userContext,
+                })
+            ).getAsStringDangerous();
 
             return `
             <html>
                 <head>
                     <script>
-                        window.staticBasePath = "${bundleDomain}/static/"
+                        window.staticBasePath = "${bundleDomain}/static"
                     </script>
                     <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet">
