@@ -1,4 +1,3 @@
-import { isEmailVerified } from ".";
 import EmailVerificationRecipe from "./recipe";
 import { BooleanClaim } from "../session/claims";
 import { SessionClaimValidator } from "../session";
@@ -8,11 +7,9 @@ export class EmailVerifiedClaimClass extends BooleanClaim {
         super({
             key: "st-ev",
             async fetchValue(userId, userContext) {
-                let email = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
-                    userId,
-                    userContext
-                );
-                return isEmailVerified(userId, email, userContext);
+                const recipe = EmailVerificationRecipe.getInstanceOrThrowError();
+                let email = await recipe.getEmailForUserId(userId, userContext);
+                return recipe.recipeInterfaceImpl.isEmailVerified({ userId, email, userContext });
             },
         });
 
