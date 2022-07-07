@@ -127,7 +127,7 @@ export default class Recipe extends RecipeModule {
 
     returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
         const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
-        const dashboardAPIPath = dashboardBundlePath.appendPath(new NormalisedURLPath("/api"));
+        const dashboardAPIPath = dashboardBundlePath.appendPath(new NormalisedURLPath("/api/"));
 
         if (path.startsWith(dashboardAPIPath)) {
             // TODO NEMI: Handle api routing
