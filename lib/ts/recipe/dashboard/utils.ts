@@ -13,6 +13,9 @@
  * under the License.
  */
 
+import NormalisedURLPath from "../../normalisedURLPath";
+import { NormalisedAppinfo } from "../../types";
+import { DASHBOARD_API } from "./constants";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
@@ -25,4 +28,23 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
     return {
         override,
     };
+}
+
+export function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAppinfo): boolean {
+    const dashboardBundlePath = appInfo.apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
+    if (!path.startsWith(dashboardBundlePath)) {
+        return false;
+    }
+
+    let pathWithoutDashboardPath = path.getAsStringDangerous().split(DASHBOARD_API)[1];
+
+    if (pathWithoutDashboardPath.charAt(0) === "/") {
+        pathWithoutDashboardPath = pathWithoutDashboardPath.substring(1, pathWithoutDashboardPath.length);
+    }
+
+    if (pathWithoutDashboardPath.split("/")[0] === "api") {
+        return true;
+    }
+
+    return false;
 }

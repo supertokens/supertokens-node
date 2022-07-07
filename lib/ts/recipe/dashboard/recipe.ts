@@ -19,7 +19,7 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from ".
 import { APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { validateAndNormaliseUserInput } from "./utils";
+import { isApiPath, validateAndNormaliseUserInput } from "./utils";
 import { DASHBOARD_API } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -127,9 +127,8 @@ export default class Recipe extends RecipeModule {
 
     returnAPIIdIfCanHandleRequest = (path: NormalisedURLPath, method: HTTPMethod): string | undefined => {
         const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
-        const dashboardAPIPath = dashboardBundlePath.appendPath(new NormalisedURLPath("/api/"));
 
-        if (path.startsWith(dashboardAPIPath)) {
+        if (isApiPath(path, this.getAppInfo())) {
             // TODO NEMI: Handle api routing
             return undefined;
         }
