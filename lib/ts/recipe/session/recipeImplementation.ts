@@ -106,7 +106,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         }
     }
 
-    let obj = {
+    let obj: RecipeInterface = {
         createNewSession: async function ({
             res,
             userId,
@@ -281,7 +281,10 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return SessionFunctions.getSessionInformation(helpers, sessionHandle);
         },
 
-        refreshSession: async function ({ req, res }: { req: BaseRequest; res: BaseResponse }): Promise<Session> {
+        refreshSession: async function (
+            this: RecipeInterface,
+            { req, res }: { req: BaseRequest; res: BaseResponse }
+        ): Promise<Session> {
             logDebugMessage("refreshSession: Started");
             let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
             if (inputIdRefreshToken === undefined) {
@@ -409,21 +412,29 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
         },
 
-        mergeIntoAccessTokenPayload: async function ({
-            sessionHandle,
-            accessTokenPayloadUpdate,
-        }: {
-            sessionHandle: string;
-            accessTokenPayloadUpdate: JSONObject;
-        }) {
-            const sessionInfo = await this.getSessionInformation(helpers, sessionHandle);
-            const updatedPayload = { ...sessionInfo.accessTokenPayload, ...accessTokenPayloadUpdate };
+        mergeIntoAccessTokenPayload: async function (
+            this: RecipeInterface,
+            {
+                sessionHandle,
+                accessTokenPayloadUpdate,
+                userContext,
+            }: {
+                sessionHandle: string;
+                accessTokenPayloadUpdate: JSONObject;
+                userContext: any;
+            }
+        ) {
+            const sessionInfo = await this.getSessionInformation({ sessionHandle, userContext });
+            if (sessionInfo === undefined) {
+                return false;
+            }
+            const newAccessTokenPayload = { ...sessionInfo.accessTokenPayload, ...accessTokenPayloadUpdate };
             for (const key of Object.keys(accessTokenPayloadUpdate)) {
                 if (accessTokenPayloadUpdate[key] === null) {
-                    delete updatedPayload[key];
+                    delete newAccessTokenPayload[key];
                 }
             }
-            return this.updateAccessTokenPayload(sessionHandle, updatedPayload);
+            return this.updateAccessTokenPayload({ sessionHandle, newAccessTokenPayload, userContext });
         },
 
         getAccessTokenLifeTimeMS: async function (): Promise<number> {
@@ -434,13 +445,22 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             return (await getHandshakeInfo()).refreshTokenValidity;
         },
 
-        fetchAndSetClaim: async function <T>(input: {
-            sessionHandle: string;
-            claim: SessionClaim<T>;
-            userContext?: any;
-        }) {
-            const sessionInfo = await this.getSessionInformation(helpers, input.sessionHandle);
-            const accessTokenPayloadUpdate = input.claim.build(sessionInfo.userId, input.userContext);
+        fetchAndSetClaim: async function <T>(
+            this: RecipeInterface,
+            input: {
+                sessionHandle: string;
+                claim: SessionClaim<T>;
+                userContext?: any;
+            }
+        ) {
+            const sessionInfo = await this.getSessionInformation({
+                sessionHandle: input.sessionHandle,
+                userContext: input.userContext,
+            });
+            if (sessionInfo === undefined) {
+                return false;
+            }
+            const accessTokenPayloadUpdate = await input.claim.build(sessionInfo.userId, input.userContext);
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
@@ -449,12 +469,15 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             });
         },
 
-        setClaimValue: function <T>(input: {
-            sessionHandle: string;
-            claim: SessionClaim<T>;
-            value: T;
-            userContext?: any;
-        }) {
+        setClaimValue: function <T>(
+            this: RecipeInterface,
+            input: {
+                sessionHandle: string;
+                claim: SessionClaim<T>;
+                value: T;
+                userContext?: any;
+            }
+        ) {
             const accessTokenPayloadUpdate = input.claim.addToPayload_internal({}, input.value, input.userContext);
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
@@ -463,11 +486,26 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             });
         },
 
-        getClaimValue: async function <T>(input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }) {
-            return input.claim.getValueFromPayload(await this.getAccessTokenPayload(), input.userContext);
+        getClaimValue: async function <T>(
+            this: RecipeInterface,
+            input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }
+        ) {
+            const sessionInfo = await this.getSessionInformation({
+                sessionHandle: input.sessionHandle,
+                userContext: input.userContext,
+            });
+
+            if (sessionInfo === undefined) {
+                throw new Error("Session does not exist");
+            }
+
+            return input.claim.getValueFromPayload(sessionInfo.accessTokenPayload, input.userContext);
         },
 
-        removeClaim: function (input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }) {
+        removeClaim: function (
+            this: RecipeInterface,
+            input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }
+        ) {
             const accessTokenPayloadUpdate = input.claim.removeFromPayload({}, input.userContext);
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,

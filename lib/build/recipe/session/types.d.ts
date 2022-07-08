@@ -256,19 +256,19 @@ export declare type RecipeInterface = {
             | undefined;
         userContext: any;
     }): Promise<void>;
-    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
+    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
         value: T;
         userContext?: any;
-    }): Promise<void>;
+    }): Promise<boolean>;
     getClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
         userContext?: any;
     }): Promise<T | undefined>;
-    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
+    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
