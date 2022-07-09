@@ -204,7 +204,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     removeClaim = (claim: SessionClaim<any>, userContext?: any) => {
-        const update = claim.removeFromPayload({}, userContext);
+        const update = claim.removeFromPayloadByMerge_internal({}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 

@@ -506,7 +506,8 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             this: RecipeInterface,
             input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }
         ) {
-            const accessTokenPayloadUpdate = input.claim.removeFromPayload({}, input.userContext);
+            const accessTokenPayloadUpdate = input.claim.removeFromPayloadByMerge_internal({}, input.userContext);
+
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,
                 accessTokenPayloadUpdate,
