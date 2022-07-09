@@ -48,10 +48,11 @@ export default class SessionWrapper {
         let finalAccessTokenPayload = accessTokenPayload;
 
         for (const claim of claimsAddedByOtherRecipes) {
-            const value = await claim.fetchValue(userId, userContext);
-            if (value !== undefined) {
-                finalAccessTokenPayload = claim.addToPayload_internal(finalAccessTokenPayload, value, userContext);
-            }
+            const update = await claim.build(userId, userContext);
+            finalAccessTokenPayload = {
+                ...finalAccessTokenPayload,
+                ...update,
+            };
         }
 
         if (!res.wrapperUsed) {
@@ -196,7 +197,7 @@ export default class SessionWrapper {
         );
     }
 
-    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<void> {
+    static fetchAndSetClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.fetchAndSetClaim({
             sessionHandle,
             claim,
@@ -209,7 +210,7 @@ export default class SessionWrapper {
         claim: SessionClaim<T>,
         value: T,
         userContext: any = {}
-    ): Promise<void> {
+    ): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.setClaimValue({
             sessionHandle,
             claim,
@@ -230,7 +231,7 @@ export default class SessionWrapper {
         });
     }
 
-    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<void> {
+    static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext: any = {}): Promise<boolean> {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.removeClaim({
             sessionHandle,
             claim,

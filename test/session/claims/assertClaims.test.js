@@ -18,8 +18,8 @@ const { default: SessionClass } = require("../../../lib/build/recipe/session/ses
 const sinon = require("sinon");
 const { StubClaim } = require("./testClaims");
 
-describe(`sessionClaims/validateClaims: ${printPath("[test/session/claims/validateClaims.test.js]")}`, function () {
-    describe("SessionClass.validateClaims", () => {
+describe(`sessionClaims/assertClaims: ${printPath("[test/session/claims/assertClaims.test.js]")}`, function () {
+    describe("SessionClass.assertClaims", () => {
         afterEach(() => {
             sinon.restore();
         });

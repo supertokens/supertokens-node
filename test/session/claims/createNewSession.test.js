@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
+const { printPath, setupST, startST, killAllST, cleanST, mockResponse } = require("../../utils");
 const assert = require("assert");
 const { ProcessState } = require("../../../lib/build/processState");
 const SuperTokens = require("../../..");
@@ -20,20 +20,6 @@ const Session = require("../../../recipe/session");
 const { Querier } = require("../../../lib/build/querier");
 const { maxVersion } = require("../../../lib/build/utils");
 const { TrueClaim, UndefinedClaim } = require("./testClaims");
-
-/**
- *
- * @returns {import("express").Response}
- */
-const mockResponse = () => {
-    const headers = {};
-    const res = {
-        getHeaders: () => headers,
-        getHeader: (key) => headers[key],
-        setHeader: (key, val) => (headers[key] = val),
-    };
-    return res;
-};
 
 describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/createNewSession.test.js]")}`, function () {
     beforeEach(async function () {

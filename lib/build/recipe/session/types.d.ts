@@ -256,19 +256,19 @@ export declare type RecipeInterface = {
             | undefined;
         userContext: any;
     }): Promise<void>;
-    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
+    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
         value: T;
         userContext?: any;
-    }): Promise<void>;
+    }): Promise<boolean>;
     getClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
         userContext?: any;
     }): Promise<T | undefined>;
-    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<void>;
+    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
@@ -377,9 +377,13 @@ export declare abstract class SessionClaim<T> {
      */
     abstract addToPayload_internal(payload: JSONObject, value: T, userContext: any): JSONObject;
     /**
+     * Removes the claim from the payload by setting it to null, so mergeIntoAccessTokenPayload clears it
+     *
+     * @returns The modified payload object
+     */
+    abstract removeFromPayloadByMerge_internal(payload: JSONObject, userContext?: any): JSONObject;
+    /**
      * Removes the claim from the payload, by cloning and updating the entire object.
-     * If a root level prop needs to be removed from the payload this should set it to null,
-     * to have mergeIntoAccessTokenPayload remove it during the update.
      *
      * @returns The modified payload object
      */

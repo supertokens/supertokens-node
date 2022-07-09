@@ -12,13 +12,27 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath } = require("../../utils");
+const { printPath, startST, killAllST, setupST, cleanST, mockResponse } = require("../../utils");
 const assert = require("assert");
 const { default: SessionClass } = require("../../../lib/build/recipe/session/sessionClass");
 const sinon = require("sinon");
 const { TrueClaim, UndefinedClaim } = require("./testClaims");
+const SuperTokens = require("../../..");
+const Session = require("../../../recipe/session");
+const { ProcessState } = require("../../../lib/build/processState");
 
 describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetchAndSetClaim.test.js]")}`, function () {
+    beforeEach(async function () {
+        await killAllST();
+        await setupST();
+        ProcessState.getInstance().reset();
+    });
+
+    after(async function () {
+        await killAllST();
+        await cleanST();
+    });
+
     describe("SessionClass.fetchAndSetClaim", () => {
         afterEach(() => {
             sinon.restore();
@@ -32,7 +46,7 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
             mock.verify();
         });
 
-        it("should update if claim fetchValue returns undefined", async () => {
+        it("should update if claim fetchValue returns value", async () => {
             const session = new SessionClass({}, "testToken", "testHandle", "testUserId", {}, {});
             sinon.useFakeTimers();
             const mock = sinon
@@ -47,6 +61,33 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
                 });
             await session.fetchAndSetClaim(TrueClaim);
             mock.verify();
+        });
+
+        it("should update using a handle if claim fetchValue returns a value", async () => {
+            await startST();
+
+            SuperTokens.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [Session.init()],
+            });
+
+            const response = mockResponse();
+            const res = await Session.createNewSession(response, "someId");
+
+            await Session.fetchAndSetClaim(res.getHandle(), TrueClaim);
+
+            const payload = (await Session.getSessionInformation(res.getHandle())).accessTokenPayload;
+            assert.equal(Object.keys(payload).length, 1);
+            assert.ok(payload["st-true"]);
+            assert.equal(payload["st-true"].v, true);
+            assert(payload["st-true"].t > Date.now() - 1000);
         });
     });
 });

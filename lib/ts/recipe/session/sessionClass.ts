@@ -182,8 +182,8 @@ export default class Session implements SessionContainerInterface {
         }
         if (validationErrors.length !== 0) {
             throw new STError({
-                type: "INVALID_CLAIM",
-                message: "INVALID_CLAIM",
+                type: "INVALID_CLAIMS",
+                message: "INVALID_CLAIMS",
                 payload: validationErrors,
             });
         }
@@ -204,7 +204,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     removeClaim = (claim: SessionClaim<any>, userContext?: any) => {
-        const update = claim.removeFromPayload({}, userContext);
+        const update = claim.removeFromPayloadByMerge_internal({}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 
