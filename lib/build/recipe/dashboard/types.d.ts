@@ -1,6 +1,7 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
+import { NormalisedAppinfo } from "../../types";
 export declare type TypeInput = {
     override?: {
         functions?: (
@@ -29,6 +30,7 @@ export declare type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
     isInServerlessEnv: boolean;
+    appInfo: NormalisedAppinfo;
 };
 export declare type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);

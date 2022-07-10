@@ -108,6 +108,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
             isInServerlessEnv: this.isInServerlessEnv,
+            appInfo: this.getAppInfo(),
         };
 
         return await dashboard(this.apiImpl, options);

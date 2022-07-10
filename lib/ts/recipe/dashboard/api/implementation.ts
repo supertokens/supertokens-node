@@ -14,6 +14,8 @@
  */
 
 import NormalisedURLDomain from "../../../normalisedURLDomain";
+import NormalisedURLPath from "../../../normalisedURLPath";
+import { DASHBOARD_API } from "../constants";
 import { APIInterface } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
@@ -30,6 +32,9 @@ export default function getAPIImplementation(): APIInterface {
                 <head>
                     <script>
                         window.staticBasePath = "${bundleDomain}/static"
+                        window.dashboardAppPath = "${input.options.appInfo.apiBasePath
+                            .appendPath(new NormalisedURLPath(DASHBOARD_API))
+                            .getAsStringDangerous()}"
                     </script>
                     <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet">

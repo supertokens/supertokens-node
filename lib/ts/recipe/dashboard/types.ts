@@ -15,6 +15,7 @@
 
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
+import { NormalisedAppinfo } from "../../types";
 
 export type TypeInput = {
     override?: {
@@ -47,6 +48,7 @@ export type APIOptions = {
     req: BaseRequest;
     res: BaseResponse;
     isInServerlessEnv: boolean;
+    appInfo: NormalisedAppinfo;
 };
 
 export type APIInterface = {
