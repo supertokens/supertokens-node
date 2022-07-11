@@ -24,6 +24,8 @@ export declare function setHeaderForExpressLikeResponse(
     value: string,
     allowDuplicateKey: boolean
 ): void;
+export declare function useRawBody(req: IncomingMessage): Promise<string>;
+export declare function useBody<T = any>(req: IncomingMessage): Promise<T>;
 /**
  *
  * @param res

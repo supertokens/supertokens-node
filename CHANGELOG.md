@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+# Adds
+
+-   Support for h3 framework.
+
 ## [11.0.0] - 2022-07-05
 
 ### Breaking change:
@@ -158,6 +162,10 @@ SuperTokens.init({
     ]
 })
 ```
+
+### Adds
+
+-   Support for h3 freamwork.
 
 ## [9.2.3] - 2022-06-03
 
