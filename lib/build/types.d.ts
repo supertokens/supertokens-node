@@ -1,3 +1,4 @@
+// @ts-nocheck
 import RecipeModule from "./recipeModule";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -37,3 +38,7 @@ export declare type APIHandled = {
     disabled: boolean;
 };
 export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
+export declare type GeneralErrorResponse = {
+    status: "GENERAL_ERROR";
+    message: string;
+};

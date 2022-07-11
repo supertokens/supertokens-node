@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NormalisedFormField } from "../types";
 export declare function validateFormFieldsOrThrowError(
     configFormFields: NormalisedFormField[],

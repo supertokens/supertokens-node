@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import { Helpers } from "./recipeImplementation";
 /**
@@ -32,9 +33,12 @@ export declare function getSession(
 }>;
 /**
  * @description Retrieves session information from storage for a given session handle
- * @returns session data stored in the database, including userData and access token payload
+ * @returns session data stored in the database, including userData and access token payload, or undefined if sessionHandle is invalid
  */
-export declare function getSessionInformation(helpers: Helpers, sessionHandle: string): Promise<SessionInformation>;
+export declare function getSessionInformation(
+    helpers: Helpers,
+    sessionHandle: string
+): Promise<SessionInformation | undefined>;
 /**
  * @description generates new access and refresh tokens for a given refresh token. Called when client's access token has expired.
  * @sideEffects calls onTokenTheftDetection if token theft is detected.
@@ -67,14 +71,13 @@ export declare function revokeMultipleSessions(helpers: Helpers, sessionHandles:
 /**
  * @description: It provides no locking mechanism in case other processes are updating session data for this session as well.
  */
-export declare function updateSessionData(helpers: Helpers, sessionHandle: string, newSessionData: any): Promise<void>;
-/**
- * @deprecated use getSessionInformation() instead
- * @returns access token payload as provided by the user earlier
- */
-export declare function getAccessTokenPayload(helpers: Helpers, sessionHandle: string): Promise<any>;
+export declare function updateSessionData(
+    helpers: Helpers,
+    sessionHandle: string,
+    newSessionData: any
+): Promise<boolean>;
 export declare function updateAccessTokenPayload(
     helpers: Helpers,
     sessionHandle: string,
     newAccessTokenPayload: any
-): Promise<void>;
+): Promise<boolean>;

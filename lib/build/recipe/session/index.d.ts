@@ -1,3 +1,4 @@
+// @ts-nocheck
 import SuperTokensError from "./error";
 import {
     VerifySessionOptions,
@@ -24,37 +25,40 @@ export default class SessionWrapper {
         options?: VerifySessionOptions,
         userContext?: any
     ): Promise<SessionContainer | undefined>;
-    static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation>;
+    static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;
     static refreshSession(req: any, res: any, userContext?: any): Promise<SessionContainer>;
     static revokeAllSessionsForUser(userId: string, userContext?: any): Promise<string[]>;
     static getAllSessionHandlesForUser(userId: string, userContext?: any): Promise<string[]>;
     static revokeSession(sessionHandle: string, userContext?: any): Promise<boolean>;
     static revokeMultipleSessions(sessionHandles: string[], userContext?: any): Promise<string[]>;
-    static updateSessionData(sessionHandle: string, newSessionData: any, userContext?: any): Promise<void>;
+    static updateSessionData(sessionHandle: string, newSessionData: any, userContext?: any): Promise<boolean>;
     static regenerateAccessToken(
         accessToken: string,
         newAccessTokenPayload?: any,
         userContext?: any
-    ): Promise<{
-        status: "OK";
-        session: {
-            handle: string;
-            userId: string;
-            userDataInJWT: any;
-        };
-        accessToken?:
-            | {
-                  token: string;
-                  expiry: number;
-                  createdTime: number;
-              }
-            | undefined;
-    }>;
+    ): Promise<
+        | {
+              status: "OK";
+              session: {
+                  handle: string;
+                  userId: string;
+                  userDataInJWT: any;
+              };
+              accessToken?:
+                  | {
+                        token: string;
+                        expiry: number;
+                        createdTime: number;
+                    }
+                  | undefined;
+          }
+        | undefined
+    >;
     static updateAccessTokenPayload(
         sessionHandle: string,
         newAccessTokenPayload: any,
         userContext?: any
-    ): Promise<void>;
+    ): Promise<boolean>;
     static createJWT(
         payload?: any,
         validitySeconds?: number,

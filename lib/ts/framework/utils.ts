@@ -124,7 +124,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
                 } else {
                     throw new STError({
                         type: STError.BAD_INPUT_ERROR,
-                        message: "API input error: Please make sure to pass a valid JSON input in thr request body",
+                        message: "API input error: Please make sure to pass a valid JSON input in the request body",
                     });
                 }
             }
@@ -164,7 +164,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
             if (err !== undefined) {
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
-                    message: "API input error: Please make sure to pass a valid JSON input in thr request body",
+                    message: "API input error: Please make sure to pass a valid JSON input in the request body",
                 });
             }
         }

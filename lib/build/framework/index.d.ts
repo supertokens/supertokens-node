@@ -1,3 +1,4 @@
+// @ts-nocheck
 export { BaseRequest } from "./request";
 export { BaseResponse } from "./response";
 import * as expressFramework from "./express";

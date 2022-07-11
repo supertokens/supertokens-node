@@ -1,9 +1,13 @@
+// @ts-nocheck
 import RecipeModule from "../../recipeModule";
 import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { TypePasswordlessEmailDeliveryInput, TypePasswordlessSmsDeliveryInput } from "./types";
+import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -11,7 +15,18 @@ export default class Recipe extends RecipeModule {
     recipeInterfaceImpl: RecipeInterface;
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
-    constructor(recipeId: string, appInfo: NormalisedAppinfo, isInServerlessEnv: boolean, config: TypeInput);
+    emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput>;
+    smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput>;
+    constructor(
+        recipeId: string,
+        appInfo: NormalisedAppinfo,
+        isInServerlessEnv: boolean,
+        config: TypeInput,
+        ingredients: {
+            emailDelivery: EmailDeliveryIngredient<TypePasswordlessEmailDeliveryInput> | undefined;
+            smsDelivery: SmsDeliveryIngredient<TypePasswordlessSmsDeliveryInput> | undefined;
+        }
+    );
     static getInstanceOrThrowError(): Recipe;
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;

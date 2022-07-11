@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import {
@@ -10,9 +11,16 @@ import {
     TypeInputFormField,
     TypeInputResetPasswordUsingTokenFeature,
     APIOptions as EmailPasswordAPIOptionsOriginal,
+    TypeEmailPasswordEmailDeliveryInput,
+    RecipeInterface as EPRecipeInterface,
 } from "../emailpassword/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
+import { GeneralErrorResponse } from "../../types";
 export declare type User = {
     id: string;
     timeJoined: number;
@@ -41,11 +49,15 @@ export declare type TypeNormalisedInputSignUp = {
 };
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];
+    emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
@@ -69,6 +81,11 @@ export declare type TypeInput = {
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     providers: TypeProvider[];
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        emailPasswordRecipeImpl: EPRecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailPasswordEmailDeliveryInput>;
     resetPasswordUsingTokenFeature?: TypeInputResetPasswordUsingTokenFeature;
     emailVerificationFeature: TypeInputEmailVerification;
     override: {
@@ -105,17 +122,11 @@ export declare type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
     emailPasswordSignUp(input: {
         email: string;
         password: string;
@@ -189,20 +200,26 @@ export declare type APIInterface = {
               provider: TypeProvider;
               options: ThirdPartyAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
     emailPasswordEmailExistsGET:
         | undefined
         | ((input: {
               email: string;
               options: EmailPasswordAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
     generatePasswordResetTokenPOST:
         | undefined
         | ((input: {
@@ -212,9 +229,12 @@ export declare type APIInterface = {
               }[];
               options: EmailPasswordAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                }
+              | GeneralErrorResponse
+          >);
     passwordResetPOST:
         | undefined
         | ((input: {
@@ -233,6 +253,7 @@ export declare type APIInterface = {
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     thirdPartySignInUpPOST:
         | undefined
@@ -252,10 +273,7 @@ export declare type APIInterface = {
                     session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
@@ -278,6 +296,7 @@ export declare type APIInterface = {
               | {
                     status: "WRONG_CREDENTIALS_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     emailPasswordSignUpPOST:
         | undefined
@@ -297,8 +316,10 @@ export declare type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     appleRedirectHandlerPOST:
         | undefined
         | ((input: { code: string; state: string; options: ThirdPartyAPIOptions; userContext: any }) => Promise<void>);
 };
+export declare type TypeThirdPartyEmailPasswordEmailDeliveryInput = TypeEmailPasswordEmailDeliveryInput;

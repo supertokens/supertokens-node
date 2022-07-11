@@ -1,3 +1,4 @@
+// @ts-nocheck
 /// <reference types="node" />
 import { H3Event } from "h3";
 import type { IncomingMessage, ServerResponse } from "http";

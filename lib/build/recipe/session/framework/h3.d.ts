@@ -1,3 +1,4 @@
+// @ts-nocheck
 /// <reference types="node" />
 import type { VerifySessionOptions } from "../types";
 import type { SessionRequest } from "../../../framework/h3";

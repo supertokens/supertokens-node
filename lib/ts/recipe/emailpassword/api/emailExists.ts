@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function emailExists(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/47#issue-751571692
@@ -33,7 +34,11 @@ export default async function emailExists(apiImplementation: APIInterface, optio
         });
     }
 
-    let result = await apiImplementation.emailExistsGET({ email, options, userContext: {} });
+    let result = await apiImplementation.emailExistsGET({
+        email,
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     send200Response(options.res, result);
     return true;

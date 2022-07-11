@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import { validateFormFieldsOrThrowError } from "./utils";
 import { APIInterface, APIOptions } from "../";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function signInAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/20#issuecomment-710346362
@@ -32,7 +33,11 @@ export default async function signInAPI(apiImplementation: APIInterface, options
         (await options.req.getJSONBody()).formFields
     );
 
-    let result = await apiImplementation.signInPOST({ formFields, options, userContext: {} });
+    let result = await apiImplementation.signInPOST({
+        formFields,
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     if (result.status === "OK") {
         send200Response(options.res, {

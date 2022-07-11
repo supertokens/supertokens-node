@@ -181,4 +181,104 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(response.status === 200);
         assert(works && signUpContextWorks);
     });
+
+    it("testing default context across interface and recipe function", async function () {
+        await startST();
+        let signInContextWorks = false;
+        let signInAPIContextWorks = false;
+        let createNewSessionContextWorks = false;
+
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                signIn: async function (input) {
+                                    if (input.userContext._default && input.userContext._default.request) {
+                                        signInContextWorks = true;
+                                    }
+
+                                    return await oI.signIn(input);
+                                },
+                            };
+                        },
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                signInPOST: async function (input) {
+                                    if (input.userContext._default && input.userContext._default.request) {
+                                        signInAPIContextWorks = true;
+                                    }
+
+                                    return await oI.signInPOST(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+                Session.init({
+                    override: {
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                createNewSession: async function (input) {
+                                    if (input.userContext._default && input.userContext._default.request) {
+                                        createNewSessionContextWorks = true;
+                                    }
+
+                                    return await oI.createNewSession(input);
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        await EmailPassword.signUp("random@gmail.com", "validpass123", {
+            manualCall: true,
+        });
+
+        let response = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signin")
+                .send({
+                    formFields: [
+                        {
+                            id: "password",
+                            value: "validpass123",
+                        },
+                        {
+                            id: "email",
+                            value: "random@gmail.com",
+                        },
+                    ],
+                })
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        assert(response.status === 200);
+        assert(signInContextWorks && signInAPIContextWorks && createNewSessionContextWorks);
+    });
 });

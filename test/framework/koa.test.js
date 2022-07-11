@@ -1214,14 +1214,7 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         });
 
         router.post("/updateSessionDataInvalidSessionHandle", async (ctx, _) => {
-            try {
-                await Session.updateSessionData("InvalidHandle", { key: "value3" });
-                ctx.body = { success: false };
-            } catch (err) {
-                ctx.body = {
-                    success: err.type === Session.Error.UNAUTHORISED,
-                };
-            }
+            ctx.body = { success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) };
         });
 
         app.use(router.routes());
@@ -1388,13 +1381,9 @@ describe(`Koa: ${printPath("[test/framework/koa.test.js]")}`, function () {
         });
 
         router.post("/updateAccessTokenPayloadInvalidSessionHandle", async (ctx, _) => {
-            try {
-                await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" });
-            } catch (err) {
-                ctx.body = {
-                    success: err.type === Session.Error.UNAUTHORISED,
-                };
-            }
+            ctx.body = {
+                success: !(await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" })),
+            };
         });
 
         app.use(router.routes());

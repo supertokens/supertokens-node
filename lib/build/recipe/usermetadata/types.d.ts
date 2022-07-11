@@ -1,3 +1,4 @@
+// @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 export declare type JSONPrimitive = string | number | boolean | null;
 export declare type JSONArray = Array<JSONPrimitive>;

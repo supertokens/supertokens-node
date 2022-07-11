@@ -1,12 +1,31 @@
-import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
+// @ts-nocheck
+import {
+    TypeProvider,
+    APIOptions as ThirdPartyAPIOptionsOriginal,
+    TypeThirdPartyEmailDeliveryInput,
+} from "../thirdparty/types";
 import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import {
     RecipeInterface as EmailVerificationRecipeInterface,
     APIInterface as EmailVerificationAPIInterface,
 } from "../emailverification";
-import { DeviceType as DeviceTypeOriginal, APIOptions as PasswordlessAPIOptionsOriginal } from "../passwordless/types";
+import {
+    DeviceType as DeviceTypeOriginal,
+    APIOptions as PasswordlessAPIOptionsOriginal,
+    TypePasswordlessEmailDeliveryInput,
+    TypePasswordlessSmsDeliveryInput,
+} from "../passwordless/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
+import {
+    TypeInput as SmsDeliveryTypeInput,
+    TypeInputWithService as SmsDeliveryTypeInputWithService,
+} from "../../ingredients/smsdelivery/types";
+import { GeneralErrorResponse } from "../../types";
 export declare type DeviceType = DeviceTypeOriginal;
 export declare type User = (
     | {
@@ -26,13 +45,19 @@ export declare type User = (
 };
 export declare type TypeInputEmailVerificationFeature = {
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeInput = (
     | {
           contactMethod: "PHONE";
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomTextMessage: (
+          /**
+           * @deprecated Please use smsDelivery config instead
+           */
+          createAndSendCustomTextMessage?: (
               input: {
                   phoneNumber: string;
                   userInputCode?: string;
@@ -46,7 +71,10 @@ export declare type TypeInput = (
     | {
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomEmail: (
+          /**
+           * @deprecated Please use emailDelivery config instead
+           */
+          createAndSendCustomEmail?: (
               input: {
                   email: string;
                   userInputCode?: string;
@@ -60,7 +88,10 @@ export declare type TypeInput = (
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomEmail: (
+          /**
+           * @deprecated Please use emailDelivery config instead
+           */
+          createAndSendCustomEmail?: (
               input: {
                   email: string;
                   userInputCode?: string;
@@ -71,7 +102,10 @@ export declare type TypeInput = (
               userContext: any
           ) => Promise<void>;
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomTextMessage: (
+          /**
+           * @deprecated Please use smsDelivery config instead
+           */
+          createAndSendCustomTextMessage?: (
               input: {
                   phoneNumber: string;
                   userInputCode?: string;
@@ -83,6 +117,12 @@ export declare type TypeInput = (
           ) => Promise<void>;
       }
 ) & {
+    /**
+     * Unlike passwordless recipe, emailDelivery config is outside here because regardless
+     * of `contactMethod` value, the config is required for email verification recipe
+     */
+    emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+    smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     providers?: TypeProvider[];
     emailVerificationFeature?: TypeInputEmailVerificationFeature;
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
@@ -119,55 +159,15 @@ export declare type TypeNormalisedInput = (
     | {
           contactMethod: "PHONE";
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomTextMessage: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomEmail: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
     | {
           contactMethod: "EMAIL_OR_PHONE";
           validateEmailAddress?: (email: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomEmail: (
-              input: {
-                  email: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
           validatePhoneNumber?: (phoneNumber: string) => Promise<string | undefined> | string | undefined;
-          createAndSendCustomTextMessage: (
-              input: {
-                  phoneNumber: string;
-                  userInputCode?: string;
-                  urlWithLinkCode?: string;
-                  codeLifetime: number;
-                  preAuthSessionId: string;
-              },
-              userContext: any
-          ) => Promise<void>;
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
@@ -184,6 +184,11 @@ export declare type TypeNormalisedInput = (
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     providers: TypeProvider[];
     emailVerificationFeature: TypeInputEmailVerification;
+    getEmailDeliveryConfig: (
+        recipeImpl: RecipeInterface,
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInputWithService<TypeThirdPartyPasswordlessEmailDeliveryInput>;
+    getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypeThirdPartyPasswordlessSmsDeliveryInput>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -219,17 +224,11 @@ export declare type RecipeInterface = {
             isVerified: boolean;
         };
         userContext: any;
-    }): Promise<
-        | {
-              status: "OK";
-              createdNewUser: boolean;
-              user: User;
-          }
-        | {
-              status: "FIELD_ERROR";
-              error: string;
-          }
-    >;
+    }): Promise<{
+        status: "OK";
+        createdNewUser: boolean;
+        user: User;
+    }>;
     createCode: (
         input: (
             | {
@@ -343,10 +342,13 @@ export declare type APIInterface = {
               provider: TypeProvider;
               options: ThirdPartyAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              url: string;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    url: string;
+                }
+              | GeneralErrorResponse
+          >);
     thirdPartySignInUpPOST:
         | undefined
         | ((input: {
@@ -365,10 +367,7 @@ export declare type APIInterface = {
                     session: SessionContainerInterface;
                     authCodeResponse: any;
                 }
-              | {
-                    status: "FIELD_ERROR";
-                    error: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "NO_EMAIL_GIVEN_BY_PROVIDER";
                 }
@@ -397,10 +396,7 @@ export declare type APIInterface = {
                     preAuthSessionId: string;
                     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
                 }
-              | {
-                    status: "GENERAL_ERROR";
-                    message: string;
-                }
+              | GeneralErrorResponse
           >);
     resendCodePOST:
         | undefined
@@ -413,10 +409,7 @@ export declare type APIInterface = {
                   userContext: any;
               }
           ) => Promise<
-              | {
-                    status: "GENERAL_ERROR";
-                    message: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "RESTART_FLOW_ERROR" | "OK";
                 }
@@ -450,10 +443,7 @@ export declare type APIInterface = {
                     failedCodeInputAttemptCount: number;
                     maximumCodeInputAttempts: number;
                 }
-              | {
-                    status: "GENERAL_ERROR";
-                    message: string;
-                }
+              | GeneralErrorResponse
               | {
                     status: "RESTART_FLOW_ERROR";
                 }
@@ -464,18 +454,28 @@ export declare type APIInterface = {
               email: string;
               options: PasswordlessAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
     passwordlessUserPhoneNumberExistsGET:
         | undefined
         | ((input: {
               phoneNumber: string;
               options: PasswordlessAPIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              exists: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    exists: boolean;
+                }
+              | GeneralErrorResponse
+          >);
 };
+export declare type TypeThirdPartyPasswordlessEmailDeliveryInput =
+    | TypeThirdPartyEmailDeliveryInput
+    | TypePasswordlessEmailDeliveryInput;
+export declare type TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput;

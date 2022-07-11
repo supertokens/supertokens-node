@@ -1,8 +1,19 @@
+// @ts-nocheck
 import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
+import {
+    TypeInput as EmailDeliveryTypeInput,
+    TypeInputWithService as EmailDeliveryTypeInputWithService,
+} from "../../ingredients/emaildelivery/types";
+import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
+import { GeneralErrorResponse } from "../../types";
 export declare type TypeInput = {
+    emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
     override?: {
         functions?: (
@@ -13,9 +24,11 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
+    getEmailDeliveryConfig: (
+        isInServerlessEnv: boolean
+    ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL: (user: User, userContext: any) => Promise<string>;
-    createAndSendCustomEmail: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -77,6 +90,7 @@ export declare type APIOptions = {
     isInServerlessEnv: boolean;
     req: BaseRequest;
     res: BaseResponse;
+    emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
 };
 export declare type APIInterface = {
     verifyEmailPOST:
@@ -93,22 +107,38 @@ export declare type APIInterface = {
               | {
                     status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
                 }
+              | GeneralErrorResponse
           >);
     isEmailVerifiedGET:
         | undefined
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "OK";
-              isVerified: boolean;
-          }>);
+          }) => Promise<
+              | {
+                    status: "OK";
+                    isVerified: boolean;
+                }
+              | GeneralErrorResponse
+          >);
     generateEmailVerifyTokenPOST:
         | undefined
         | ((input: {
               options: APIOptions;
               userContext: any;
-          }) => Promise<{
-              status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
-          }>);
+          }) => Promise<
+              | {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
+                }
+              | GeneralErrorResponse
+          >);
+};
+export declare type TypeEmailVerificationEmailDeliveryInput = {
+    type: "EMAIL_VERIFICATION";
+    user: {
+        id: string;
+        email: string;
+    };
+    emailVerifyLink: string;
+    userContext: any;
 };

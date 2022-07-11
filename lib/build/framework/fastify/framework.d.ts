@@ -1,3 +1,4 @@
+// @ts-nocheck
 /// <reference types="node" />
 import type { FastifyRequest as OriginalFastifyRequest, FastifyReply, FastifyPluginCallback } from "fastify";
 import type { HTTPMethod } from "../../types";

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /// <reference types="node" />
 export type { SessionRequest } from "./framework";
 export declare const middleware: () => (

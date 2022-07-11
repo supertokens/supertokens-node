@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as expressFramework from "./express";
 import * as fastifyFramework from "./fastify";
 import * as hapiFramework from "./hapi";

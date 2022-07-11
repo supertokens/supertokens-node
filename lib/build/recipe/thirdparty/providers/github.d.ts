@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TypeProvider } from "../types";
 declare type TypeThirdPartyProviderGithubConfig = {
     clientId: string;
