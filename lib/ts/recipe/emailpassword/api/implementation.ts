@@ -1,6 +1,8 @@
 import { APIInterface, APIOptions, User } from "../";
+import { logDebugMessage } from "../../../logger";
 import Session from "../../session";
 import { SessionContainerInterface } from "../../session/types";
+import { GeneralErrorResponse } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
@@ -12,10 +14,13 @@ export default function getAPIImplementation(): APIInterface {
             email: string;
             options: APIOptions;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-            exists: boolean;
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+                  exists: boolean;
+              }
+            | GeneralErrorResponse
+        > {
             let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
 
             return {
@@ -34,9 +39,12 @@ export default function getAPIImplementation(): APIInterface {
             }[];
             options: APIOptions;
             userContext: any;
-        }): Promise<{
-            status: "OK";
-        }> {
+        }): Promise<
+            | {
+                  status: "OK";
+              }
+            | GeneralErrorResponse
+        > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
 
             let user = await options.recipeImplementation.getUserByEmail({ email, userContext });
@@ -51,6 +59,7 @@ export default function getAPIImplementation(): APIInterface {
                 userContext,
             });
             if (response.status === "UNKNOWN_USER_ID_ERROR") {
+                logDebugMessage(`Password reset email not sent, unknown user id: ${user.id}`);
                 return {
                     status: "OK",
                 };
@@ -63,20 +72,13 @@ export default function getAPIImplementation(): APIInterface {
                 "&rid=" +
                 options.recipeId;
 
-            try {
-                if (!options.isInServerlessEnv) {
-                    options.config.resetPasswordUsingTokenFeature
-                        .createAndSendCustomEmail(user, passwordResetLink, userContext)
-                        .catch((_) => {});
-                } else {
-                    // see https://github.com/supertokens/supertokens-node/pull/135
-                    await options.config.resetPasswordUsingTokenFeature.createAndSendCustomEmail(
-                        user,
-                        passwordResetLink,
-                        userContext
-                    );
-                }
-            } catch (_) {}
+            logDebugMessage(`Sending password reset email to ${email}`);
+            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                type: "PASSWORD_RESET",
+                user,
+                passwordResetLink,
+                userContext,
+            });
 
             return {
                 status: "OK",
@@ -105,6 +107,7 @@ export default function getAPIImplementation(): APIInterface {
                   userId?: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
+            | GeneralErrorResponse
         > {
             let newPassword = formFields.filter((f) => f.id === "password")[0].value;
 
@@ -136,6 +139,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "WRONG_CREDENTIALS_ERROR";
               }
+            | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;
@@ -173,6 +177,7 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
               }
+            | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
             let password = formFields.filter((f) => f.id === "password")[0].value;

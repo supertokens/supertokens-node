@@ -57,6 +57,43 @@ describe(`updateUserMetadataTest: ${printPath("[test/usermetadata/updateUserMeta
             assert.deepStrictEqual(getResult.metadata, testMetadata);
         });
 
+        it("should create metadata with utf8 encoding", async function () {
+            await startST();
+
+            const testUserId = "userId";
+            const testMetadata = {
+                role: "\uFDFD   Æää",
+            };
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [UserMetadataRecipe.init()],
+            });
+
+            // Only run for version >= 2.13
+            let querier = Querier.getNewInstanceOrThrowError(undefined);
+            let apiVersion = await querier.getAPIVersion();
+            if (maxVersion(apiVersion, "2.12") === "2.12") {
+                return this.skip();
+            }
+
+            const updateResult = await UserMetadataRecipe.updateUserMetadata(testUserId, testMetadata);
+
+            const getResult = await UserMetadataRecipe.getUserMetadata(testUserId);
+
+            assert.strictEqual(updateResult.status, "OK");
+            assert.deepStrictEqual(updateResult.metadata, testMetadata);
+            assert.strictEqual(getResult.status, "OK");
+            assert.deepStrictEqual(getResult.metadata, testMetadata);
+        });
+
         it("should create metadata for cleared user id", async function () {
             await startST();
 

@@ -24,9 +24,9 @@ import { normaliseHttpMethod, frontendHasInterceptor } from "../../utils";
 import { Querier } from "../../querier";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
-import SuperTokens from "../../supertokens";
-import frameworks from "../../framework";
 import { logDebugMessage } from "../../logger";
+import { BaseResponse } from "../../framework/response";
+import { BaseRequest } from "../../framework/request";
 
 export class HandshakeInfo {
     constructor(
@@ -108,14 +108,11 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             accessTokenPayload = {},
             sessionData = {},
         }: {
-            res: any;
+            res: BaseResponse;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
         }): Promise<Session> {
-            if (!res.wrapperUsed) {
-                res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-            }
             let response = await SessionFunctions.createNewSession(helpers, userId, accessTokenPayload, sessionData);
             attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
             return new Session(
@@ -133,17 +130,11 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             res,
             options,
         }: {
-            req: any;
-            res: any;
+            req: BaseRequest;
+            res: BaseResponse;
             options?: VerifySessionOptions;
         }): Promise<Session | undefined> {
             logDebugMessage("getSession: Started");
-            if (!res.wrapperUsed) {
-                res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-            }
-            if (!req.wrapperUsed) {
-                req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
-            }
             logDebugMessage("getSession: rid in header: " + frontendHasInterceptor(req));
             logDebugMessage("getSession: request method: " + req.getMethod());
             let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
@@ -240,18 +231,12 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             sessionHandle,
         }: {
             sessionHandle: string;
-        }): Promise<SessionInformation> {
+        }): Promise<SessionInformation | undefined> {
             return SessionFunctions.getSessionInformation(helpers, sessionHandle);
         },
 
-        refreshSession: async function ({ req, res }: { req: any; res: any }): Promise<Session> {
+        refreshSession: async function ({ req, res }: { req: BaseRequest; res: BaseResponse }): Promise<Session> {
             logDebugMessage("refreshSession: Started");
-            if (!res.wrapperUsed) {
-                res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
-            }
-            if (!req.wrapperUsed) {
-                req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
-            }
             let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
             if (inputIdRefreshToken === undefined) {
                 logDebugMessage("refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined");
@@ -312,19 +297,22 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 newAccessTokenPayload?: any;
                 userContext: any;
             }
-        ): Promise<{
-            status: "OK";
-            session: {
-                handle: string;
-                userId: string;
-                userDataInJWT: any;
-            };
-            accessToken?: {
-                token: string;
-                expiry: number;
-                createdTime: number;
-            };
-        }> {
+        ): Promise<
+            | {
+                  status: "OK";
+                  session: {
+                      handle: string;
+                      userId: string;
+                      userDataInJWT: any;
+                  };
+                  accessToken?: {
+                      token: string;
+                      expiry: number;
+                      createdTime: number;
+                  };
+              }
+            | undefined
+        > {
             let newAccessTokenPayload =
                 input.newAccessTokenPayload === null || input.newAccessTokenPayload === undefined
                     ? {}
@@ -334,10 +322,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 userDataInJWT: newAccessTokenPayload,
             });
             if (response.status === "UNAUTHORISED") {
-                throw new STError({
-                    message: response.message,
-                    type: STError.UNAUTHORISED,
-                });
+                return undefined;
             }
             return response;
         },
@@ -364,7 +349,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         }: {
             sessionHandle: string;
             newSessionData: any;
-        }) {
+        }): Promise<boolean> {
             return SessionFunctions.updateSessionData(helpers, sessionHandle, newSessionData);
         },
 
@@ -374,7 +359,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         }: {
             sessionHandle: string;
             newAccessTokenPayload: any;
-        }) {
+        }): Promise<boolean> {
             return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
         },
 

@@ -16,6 +16,7 @@
 import { send200Response } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "..";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function resendCode(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.resendCodePOST === undefined) {
@@ -40,7 +41,12 @@ export default async function resendCode(apiImplementation: APIInterface, option
         });
     }
 
-    let result = await apiImplementation.resendCodePOST({ deviceId, preAuthSessionId, options, userContext: {} });
+    let result = await apiImplementation.resendCodePOST({
+        deviceId,
+        preAuthSessionId,
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     send200Response(options.res, result);
     return true;

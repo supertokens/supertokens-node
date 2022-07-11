@@ -15,6 +15,7 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function generateEmailVerifyToken(
     apiImplementation: APIInterface,
@@ -26,7 +27,10 @@ export default async function generateEmailVerifyToken(
         return false;
     }
 
-    let result = await apiImplementation.generateEmailVerifyTokenPOST({ options, userContext: {} });
+    let result = await apiImplementation.generateEmailVerifyTokenPOST({
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     send200Response(options.res, result);
     return true;

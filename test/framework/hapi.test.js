@@ -19,7 +19,7 @@ let SuperTokens = require("../../");
 let HapiFramework = require("../../framework/hapi");
 const Hapi = require("@hapi/hapi");
 let Session = require("../../recipe/session");
-let EmailPassword = require("../../recipe/emailpassword");
+let ThirdpartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 let { verifySession } = require("../../recipe/session/framework/hapi");
 
 describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
@@ -1050,16 +1050,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateSessionDataInvalidSessionHandle",
             method: "post",
             handler: async (req, res) => {
-                try {
-                    await Session.updateSessionData("InvalidHandle", { key: "value3" });
-                    return res.response({ success: false }).code(200);
-                } catch (err) {
-                    return res
-                        .response({
-                            success: err.type === Session.Error.UNAUTHORISED,
-                        })
-                        .code(200);
-                }
+                return res
+                    .response({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                    .code(200);
             },
         });
 
@@ -1211,16 +1204,9 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/updateAccessTokenPayloadInvalidSessionHandle",
             method: "post",
             handler: async (req, res) => {
-                try {
-                    await Session.updateSessionData("InvalidHandle", { key: "value3" });
-                    return res.response({ success: false }).code(200);
-                } catch (err) {
-                    return res
-                        .response({
-                            success: err.type === Session.Error.UNAUTHORISED,
-                        })
-                        .code(200);
-                }
+                return res
+                    .response({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) })
+                    .code(200);
             },
         });
 
@@ -1337,17 +1323,17 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
+                ThirdpartyEmailPassword.init({
                     override: {
                         apis: (oI) => {
                             return {
                                 ...oI,
-                                emailExistsGET: async function (input) {
+                                emailPasswordEmailExistsGET: async function (input) {
                                     input.options.res.setStatusCode(203);
                                     input.options.res.sendJSONResponse({
                                         custom: true,
                                     });
-                                    return oI.emailExistsGET(input);
+                                    return oI.emailPasswordEmailExistsGET(input);
                                 },
                             };
                         },

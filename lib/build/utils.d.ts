@@ -10,3 +10,5 @@ export declare function sendNon200Response(res: BaseResponse, message: string, s
 export declare function send200Response(res: BaseResponse, responseJson: any): void;
 export declare function isAnIpAddress(ipaddress: string): boolean;
 export declare function frontendHasInterceptor(req: BaseRequest): boolean;
+export declare function humaniseMilliseconds(ms: number): string;
+export declare function makeDefaultUserContextFromAPI(request: BaseRequest): any;

@@ -15,6 +15,7 @@
 
 import { send200Response } from "../../../utils";
 import { APIInterface, APIOptions } from "../";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 
 export default async function signOutAPI(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     // Logic as per https://github.com/supertokens/supertokens-node/issues/34#issuecomment-717958537
@@ -23,7 +24,10 @@ export default async function signOutAPI(apiImplementation: APIInterface, option
         return false;
     }
 
-    let result = await apiImplementation.signOutPOST({ options, userContext: {} });
+    let result = await apiImplementation.signOutPOST({
+        options,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
     send200Response(options.res, result);
     return true;

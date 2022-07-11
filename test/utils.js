@@ -26,6 +26,7 @@ let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").de
 let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 const UserMetadataRecipe = require("../lib/build/recipe/usermetadata/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
+const UserRolesRecipe = require("../lib/build/recipe/userroles/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
 let { maxVersion } = require("../lib/build/utils");
@@ -204,6 +205,7 @@ module.exports.resetAll = function () {
     ThirPartyRecipe.reset();
     JWTRecipe.reset();
     UserMetadataRecipe.reset();
+    UserRolesRecipe.reset();
     PasswordlessRecipe.reset();
     OpenIDRecipe.reset();
     ProcessState.getInstance().reset();
@@ -291,6 +293,7 @@ async function getListOfPids() {
         try {
             let pid = (await module.exports.executeCommand("cd " + installationPath + " && cat .started/" + item))
                 .stdout;
+            pid = pid.split("\n")[0];
             result.push(pid);
         } catch (err) {}
     }
@@ -485,4 +488,21 @@ module.exports.generateRandomCode = function (size) {
 };
 module.exports.delay = async function (time) {
     await new Promise((r) => setTimeout(r, time * 1000));
+};
+
+module.exports.areArraysEqual = function (arr1, arr2) {
+    if (arr1.length !== arr2.length) {
+        return false;
+    }
+
+    arr1.sort();
+    arr2.sort();
+
+    for (let index in arr1) {
+        if (arr1[index] !== arr2[index]) {
+            return false;
+        }
+    }
+
+    return true;
 };

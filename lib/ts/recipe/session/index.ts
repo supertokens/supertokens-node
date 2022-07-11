@@ -24,6 +24,8 @@ import {
 } from "./types";
 import OpenIdRecipe from "../openid/recipe";
 import Recipe from "./recipe";
+import frameworks from "../../framework";
+import SuperTokens from "../../supertokens";
 
 // For Express
 export default class SessionWrapper {
@@ -38,6 +40,9 @@ export default class SessionWrapper {
         sessionData: any = {},
         userContext: any = {}
     ) {
+        if (!res.wrapperUsed) {
+            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
+        }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
@@ -48,6 +53,12 @@ export default class SessionWrapper {
     }
 
     static getSession(req: any, res: any, options?: VerifySessionOptions, userContext: any = {}) {
+        if (!res.wrapperUsed) {
+            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
+        }
+        if (!req.wrapperUsed) {
+            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+        }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getSession({ req, res, options, userContext });
     }
 
@@ -59,6 +70,12 @@ export default class SessionWrapper {
     }
 
     static refreshSession(req: any, res: any, userContext: any = {}) {
+        if (!res.wrapperUsed) {
+            res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
+        }
+        if (!req.wrapperUsed) {
+            req = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapRequest(req);
+        }
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.refreshSession({ req, res, userContext });
     }
 

@@ -718,6 +718,11 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
         app.use(middleware());
 
         app.use(errorHandler());
+        let message = "";
+        app.use((err, req, res, next) => {
+            message = err.message;
+            res.status(500).send(message);
+        });
 
         let response = await new Promise((resolve) =>
             request(app)
@@ -725,17 +730,16 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
                 .send({
                     phoneNumber: "+12345678901",
                 })
-                .expect(200)
+                .expect(500)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(JSON.parse(res.text));
+                        resolve(res);
                     }
                 })
         );
-        assert(response.status === "GENERAL_ERROR");
-        assert(response.message === "test message");
+        assert(message === "test message");
         assert(isCreateAndSendCustomTextMessageCalled);
     });
 
@@ -1146,24 +1150,29 @@ describe(`config tests: ${printPath("[test/passwordless/apis.test.js]")}`, funct
 
         app.use(errorHandler());
 
+        let message = "";
+        app.use((err, req, res, next) => {
+            message = err.message;
+            res.status(500).send(message);
+        });
+
         let response = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signinup/code")
                 .send({
                     email: "test@example.com",
                 })
-                .expect(200)
+                .expect(500)
                 .end((err, res) => {
                     if (err) {
                         resolve(undefined);
                     } else {
-                        resolve(JSON.parse(res.text));
+                        resolve(res);
                     }
                 })
         );
 
-        assert(response.status === "GENERAL_ERROR");
-        assert(response.message === "test message");
+        assert(message === "test message");
         assert(isCreateAndSendCustomEmailCalled);
     });
 

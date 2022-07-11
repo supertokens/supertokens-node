@@ -6,12 +6,176 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [unreleased]
-
-## [9.2.1] - 2022-05-05
-
 # Adds
 
-- Support for h3 freamwork.
+- Support for h3 framework.
+## [11.0.0] - 2022-07-05
+
+### Breaking change:
+
+-   Changes session function recipe interfaces to not throw an UNAUTHORISED error when the input is a sessionHandle: https://github.com/supertokens/backend/issues/83
+    -   `getSessionInformation` now returns `undefined` is the session does not exist
+    -   `updateSessionData` now returns `false` if the input `sessionHandle` does not exist.
+    -   `updateAccessTokenPayload` now returns `false` if the input `sessionHandle` does not exist.
+    -   `regenerateAccessToken` now returns `undefined` if the input access token's `sessionHandle` does not exist.
+    -   The sessionClass functions have not changed in behaviour and still throw UNAUTHORISED. This works cause the sessionClass works on the current session and not some other session.
+
+### Bug fix:
+
+-   Clears cookies when revokeSession is called using the session container, even if the session did not exist from before: https://github.com/supertokens/supertokens-node/issues/343
+
+## [10.0.1] - 2022-06-28
+
+### Fixes
+
+-   Fixed handling of unicode characters in usermetadata (and emails, roles, session/access token payload data)
+
+### Adds:
+
+-   Adds default userContext for API calls that contains the request object. It can be used in APIs / functions override like so:
+
+```ts
+signIn: async function (input) {
+    if (input.userContext._default && input.userContext._default.request) {
+        // do something here with the request object
+    }
+}
+```
+
+## [10.0.0] - 2022-06-2
+
+### Breaking change
+
+-   https://github.com/supertokens/supertokens-node/issues/220
+    -   Adds `{status: "GENERAL_ERROR", message: string}` as a possible output to all the APIs.
+    -   Changes `FIELD_ERROR` output status in third party recipe API to be `GENERAL_ERROR`.
+    -   Replaced `FIELD_ERROR` status type in third party signinup API with `GENERAL_ERROR`.
+    -   Removed `FIELD_ERROR` status type from third party signinup recipe function.
+-   If sms or email sending failed in passwordless recipe APIs, we now throw a regular JS error from the API as opposed to returning a `GENERAL_ERROR` to the client.
+-   If there is an error whilst getting the profile info about a user from a third party provider (in /signinup POST API), then we throw a regular JS error instead of returning a `GENERAL_ERROR` to the client.
+-   Changes SuperTokensSMS service to take an API key directly as opposed to take an object that takes an API key
+-   Passes only base request and base response objects to session recipe implementation functions. Normalisation of raw res and raw response is now done in the session's index.ts file
+-   Removes support for faunadb session recipe modifier.
+-   Removes support for FDI < 1.14
+
+### Changes
+
+-   Fixes Cookie sameSite config validation.
+-   Fixes a few typos
+-   Changes `getEmailForUserIdForEmailVerification` function inside thirdpartypasswordless to take into account passwordless emails and return an empty string in case a passwordless email doesn't exist. This helps situations where the dev wants to customise the email verification functions in the thirdpartypasswordless recipe.
+
+### Fixes
+
+-   Fixes email undefined error when resending the passwordless login email.
+
+## [9.3.0] - 2022-06-17
+
+### Added
+
+-   Adds User Roles recipe and compatibility with CDI 2.14
+-   `emailDelivery` user config for Emailpassword, Thirdparty, ThirdpartyEmailpassword, Passwordless and ThirdpartyPasswordless recipes.
+-   `smsDelivery` user config for Passwordless and ThirdpartyPasswordless recipes.
+-   `Twilio` service integartion for smsDelivery ingredient.
+-   `SMTP` service integration for emailDelivery ingredient.
+-   `Supertokens` service integration for smsDelivery ingredient.
+
+### Deprecated
+
+-   For Emailpassword recipe input config, `resetPasswordUsingTokenFeature.createAndSendCustomEmail` and `emailVerificationFeature.createAndSendCustomEmail` have been deprecated.
+-   For Thirdparty recipe input config, `emailVerificationFeature.createAndSendCustomEmail` has been deprecated.
+-   For ThirdpartyEmailpassword recipe input config, `resetPasswordUsingTokenFeature.createAndSendCustomEmail` and `emailVerificationFeature.createAndSendCustomEmail` have been deprecated.
+-   For Passwordless recipe input config, `createAndSendCustomEmail` and `createAndSendCustomTextMessage` have been deprecated.
+-   For ThirdpartyPasswordless recipe input config, `createAndSendCustomEmail`, `createAndSendCustomTextMessage` and `emailVerificationFeature.createAndSendCustomEmail` have been deprecated.
+
+### Migration
+
+Following is an example of ThirdpartyPasswordless recipe migration. If your existing code looks like
+
+```ts
+import SuperTokens from "supertokens-auth-react";
+import ThirdpartyPasswordless from "supertokens-auth-react/recipe/thirdpartypasswordless";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        ThirdpartyPasswordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            createAndSendCustomEmail: async (input, userContext) => {
+                // some custom logic
+            },
+            createAndSendCustomTextMessage: async (input, userContext) => {
+                // some custom logic
+            },
+            flowType: "...",
+            emailVerificationFeature: {
+                createAndSendCustomEmail: async (user, emailVerificationURLWithToken, userContext) => {
+                    // some custom logic
+                },
+            },
+        }),
+    ],
+});
+```
+
+After migration to using new `emailDelivery` and `smsDelivery` config, your code would look like:
+
+```ts
+import SuperTokens from "supertokens-auth-react";
+import ThirdpartyPasswordless from "supertokens-auth-react/recipe/thirdpartypasswordless";
+
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "..."
+    },
+    recipeList: [
+        ThirdpartyPasswordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            emailDelivery: {
+                service: {
+                    sendEmail: async (input) => {
+                        let userContext = input.userContext;
+                        if(input.type === "EMAIL_VERIFICATION") {
+                            // some custom logic
+                        } else if (input.type === "PASSWORDLESS_LOGIN") {
+                            // some custom logic
+                        }
+                    }
+                }
+            },
+            smsDelivery: {
+                service: {
+                    sendSms: async (input) => {
+                        // some custom logic for sending passwordless login SMS
+                    }
+                }
+            }
+            flowType: "..."
+        })
+    ]
+})
+```
+
+## [9.2.3] - 2022-06-03
+
+-   Changes `getUserMetadata` to return `any` type for metadata so that it's easier to use.
+
+## [9.2.2] - 2022-05-24
+
+### Fixes:
+
+-   Calling the setImmediate function inside assertThatBodyParserHasBeenUsedForExpressLikeRequest only if the function is getting executed in NextJS env. Fixes #313
+
+## [9.2.1] - 2022-05-19
+
+### Fixes:
+
+-   Fixes the routes issue for Hapi framework plugin
 
 ## [9.2.0] - 2022-04-18
 

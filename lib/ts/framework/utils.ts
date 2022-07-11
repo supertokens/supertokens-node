@@ -110,7 +110,7 @@ function JSONCookies(obj: any) {
 
 export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     method: HTTPMethod,
-    request: Request | NextApiRequest
+    request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
 ) {
     // according to https://github.com/supertokens/supertokens-node/issues/33
     if (method === "post" || method === "put") {
@@ -123,7 +123,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
                 } else {
                     throw new STError({
                         type: STError.BAD_INPUT_ERROR,
-                        message: "API input error: Please make sure to pass a valid JSON input in thr request body",
+                        message: "API input error: Please make sure to pass a valid JSON input in the request body",
                     });
                 }
             }
@@ -137,16 +137,22 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
             let err = await new Promise((resolve) => {
                 let resolvedCalled = false;
                 /**
-                 * the setImmediate here is to counter the next.js issue
-                 * where the json parser would not resolve and thus the request
-                 * just hangs forever. Next.JS does json parsing on its own.
+                 * Nextjs allow users to disable the default parser.
+                 * To handle that scenario, we are still parsing the request body
                  */
-                setImmediate(() => {
-                    if (!resolvedCalled) {
-                        resolvedCalled = true;
-                        resolve(undefined);
-                    }
-                });
+                if (request.__supertokensFromNextJS === true) {
+                    /**
+                     * the setImmediate here is to counter the next.js issue
+                     * where the json parser would not resolve and thus the request
+                     * just hangs forever. Next.JS does json parsing on its own.
+                     */
+                    setImmediate(() => {
+                        if (!resolvedCalled) {
+                            resolvedCalled = true;
+                            resolve(undefined);
+                        }
+                    });
+                }
                 jsonParser(request, new ServerResponse(request), (e) => {
                     if (!resolvedCalled) {
                         resolvedCalled = true;
@@ -157,7 +163,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
             if (err !== undefined) {
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
-                    message: "API input error: Please make sure to pass a valid JSON input in thr request body",
+                    message: "API input error: Please make sure to pass a valid JSON input in the request body",
                 });
             }
         }

@@ -631,6 +631,75 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
+    it("test signout API works if even session is deleted on the backend after creation", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+        const app = express();
+        app.use(middleware());
+
+        let sessionHandle = "";
+
+        app.post("/create", async (req, res) => {
+            let session = await Session.createNewSession(res, "", {}, {});
+            sessionHandle = session.getHandle();
+            res.status(200).send("");
+        });
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        await Session.revokeSession(sessionHandle);
+
+        let sessionRevokedResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/auth/signout")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
+        assert(sessionRevokedResponseExtracted.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(sessionRevokedResponseExtracted.accessToken === "");
+        assert(sessionRevokedResponseExtracted.refreshToken === "");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenFromCookie === "");
+        assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
+    });
+
     //check basic usage of session
     it("test basic usage of express sessions with auto refresh", async function () {
         await startST();
@@ -1157,14 +1226,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         app.post("/updateSessionDataInvalidSessionHandle", async (req, res) => {
-            try {
-                await Session.updateSessionData("InvalidHandle", { key: "value3" });
-                res.status(200).json({ success: false });
-            } catch (err) {
-                res.status(200).json({
-                    success: err.type === Session.Error.UNAUTHORISED,
-                });
-            }
+            res.status(200).json({ success: !(await Session.updateSessionData("InvalidHandle", { key: "value3" })) });
         });
 
         //create a new session
@@ -1328,13 +1390,9 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
 
         app.post("/updateAccessTokenPayloadInvalidSessionHandle", async (req, res) => {
-            try {
-                await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" });
-            } catch (err) {
-                res.status(200).json({
-                    success: err.type === Session.Error.UNAUTHORISED,
-                });
-            }
+            res.status(200).json({
+                success: !(await Session.updateAccessTokenPayload("InvalidHandle", { key: "value3" })),
+            });
         });
 
         //create a new session
