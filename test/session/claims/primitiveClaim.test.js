@@ -193,7 +193,7 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
 
             it("should not validate mismatching payload", async () => {
                 const payload = await claim.build("userId");
-                const res = claim.validators.hasValue(val2).validate(payload, {});
+                const res = await claim.validators.hasValue(val2).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: false,
                     reason: {
@@ -206,7 +206,7 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
 
             it("should validate matching payload", async () => {
                 const payload = await claim.build("userId");
-                const res = claim.validators.hasValue(val).validate(payload, {});
+                const res = await claim.validators.hasValue(val).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: true,
                 });
@@ -221,20 +221,20 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
                 // advance clock by one week
                 clock.tick(6.048e8);
 
-                const res = claim.validators.hasValue(val).validate(payload, {});
+                const res = await claim.validators.hasValue(val).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: true,
                 });
             });
 
-            it("should refetch if value is not set", () => {
-                assert.equal(claim.validators.hasValue(val2).shouldRefetch({}), true);
+            it("should refetch if value is not set", async () => {
+                assert.equal(await claim.validators.hasValue(val2).shouldRefetch({}), true);
             });
 
             it("should not refetch if value is set", async () => {
                 const payload = await claim.build("userId");
 
-                assert.equal(claim.validators.hasValue(val2).shouldRefetch(payload), false);
+                assert.equal(await claim.validators.hasValue(val2).shouldRefetch(payload), false);
             });
         });
 
@@ -260,7 +260,7 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
 
             it("should not validate mismatching payload", async () => {
                 const payload = await claim.build("userId");
-                const res = claim.validators.hasFreshValue(val2, 600).validate(payload, {});
+                const res = await claim.validators.hasFreshValue(val2, 600).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: false,
                     reason: {
@@ -273,7 +273,7 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
 
             it("should validate matching payload", async () => {
                 const payload = await claim.build("userId");
-                const res = claim.validators.hasFreshValue(val, 600).validate(payload, {});
+                const res = await claim.validators.hasFreshValue(val, 600).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: true,
                 });
@@ -288,7 +288,7 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
                 // advance clock by one week
                 clock.tick(6.048e8);
 
-                const res = claim.validators.hasFreshValue(val, 600).validate(payload, {});
+                const res = await claim.validators.hasFreshValue(val, 600).validate(payload, {});
                 assert.deepStrictEqual(res, {
                     isValid: false,
                     reason: {
