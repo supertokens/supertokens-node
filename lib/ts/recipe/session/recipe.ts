@@ -128,8 +128,11 @@ export default class SessionRecipe extends RecipeModule {
         SessionRecipe.instance = undefined;
     }
 
-    static addClaimFromOtherRecipe = (builder: SessionClaim<any>) => {
-        SessionRecipe.claimsAddedByOtherRecipes.push(builder);
+    static addClaimFromOtherRecipe = (claim: SessionClaim<any>) => {
+        if (SessionRecipe.claimsAddedByOtherRecipes.some((c) => c.key === claim.key)) {
+            throw new Error("Claim added by multiple recipes");
+        }
+        SessionRecipe.claimsAddedByOtherRecipes.push(claim);
     };
 
     static getClaimsAddedByOtherRecipes = (): SessionClaim<any>[] => {
