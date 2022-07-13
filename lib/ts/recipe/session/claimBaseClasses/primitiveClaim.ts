@@ -69,13 +69,13 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
                     payload[this.key].t < Date.now() - maxAgeInSeconds * 1000,
                 validate: async (payload, ctx) => {
                     const claimVal = this.getValueFromPayload(payload, ctx);
-                    if (claimVal !== val) {
+                    if (claimVal === undefined) {
                         return {
                             isValid: false,
                             reason: { message: "wrong value", expectedValue: val, actualValue: claimVal },
                         };
                     }
-                    const ageInSeconds = (Date.now() - payload[this.key].t) / 1000;
+                    const ageInSeconds = (Date.now() - this.getLastRefetchTime(payload, ctx)!) / 1000;
                     if (ageInSeconds > maxAgeInSeconds) {
                         return {
                             isValid: false,
@@ -84,6 +84,12 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
                                 ageInSeconds,
                                 maxAgeInSeconds,
                             },
+                        };
+                    }
+                    if (claimVal !== val) {
+                        return {
+                            isValid: false,
+                            reason: { message: "wrong value", expectedValue: val, actualValue: claimVal },
                         };
                     }
                     return { isValid: true };
