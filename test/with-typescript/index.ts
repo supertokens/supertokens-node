@@ -973,7 +973,7 @@ class StringClaim extends PrimitiveClaim<string> {
                 claim: this,
                 id: key,
                 shouldRefetch: () => false,
-                validate: (payload) => {
+                validate: async (payload) => {
                     const value = this.getValueFromPayload(payload);
                     if (!value || !value.startsWith(str)) {
                         return {

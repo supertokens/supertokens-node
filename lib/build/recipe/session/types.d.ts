@@ -359,7 +359,7 @@ export declare type SessionClaimValidator = (
     /**
      * Decides if the claim is valid based on the payload (and not checking DB or anything else)
      */
-    validate: (payload: any, userContext: any) => Promise<ClaimValidationResult> | ClaimValidationResult;
+    validate: (payload: any, userContext: any) => Promise<ClaimValidationResult>;
 };
 export declare abstract class SessionClaim<T> {
     readonly key: string;

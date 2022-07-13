@@ -50,7 +50,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
                 claim: this,
                 id: id ?? this.key,
                 shouldRefetch: (payload, ctx) => this.getValueFromPayload(payload, ctx) === undefined,
-                validate: (payload, ctx) => {
+                validate: async (payload, ctx) => {
                     const claimVal = this.getValueFromPayload(payload, ctx);
                     const isValid = claimVal === val;
                     return isValid
@@ -67,7 +67,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
                     this.getValueFromPayload(payload, ctx) === undefined ||
                     // We know payload[this.id] is defined since the value is not undefined in this branch
                     payload[this.key].t < Date.now() - maxAgeInSeconds * 1000,
-                validate: (payload, ctx) => {
+                validate: async (payload, ctx) => {
                     const claimVal = this.getValueFromPayload(payload, ctx);
                     if (claimVal !== val) {
                         return {
