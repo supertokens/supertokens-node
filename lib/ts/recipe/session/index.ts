@@ -223,7 +223,15 @@ export default class SessionWrapper {
         sessionHandle: string,
         claim: SessionClaim<T>,
         userContext: any = {}
-    ): Promise<T | undefined> {
+    ): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              value: T | undefined;
+          }
+    > {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getClaimValue({
             sessionHandle,
             claim,

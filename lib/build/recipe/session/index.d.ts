@@ -100,7 +100,19 @@ export default class SessionWrapper {
         value: T,
         userContext?: any
     ): Promise<boolean>;
-    static getClaimValue<T>(sessionHandle: string, claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
+    static getClaimValue<T>(
+        sessionHandle: string,
+        claim: SessionClaim<T>,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              value: T | undefined;
+          }
+    >;
     static removeClaim(sessionHandle: string, claim: SessionClaim<any>, userContext?: any): Promise<boolean>;
 }
 export declare let init: typeof Recipe.init;

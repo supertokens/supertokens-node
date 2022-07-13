@@ -108,10 +108,13 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
             const session = await Session.createNewSession(response, "someId");
 
             const res = await Session.getClaimValue(session.getHandle(), TrueClaim);
-            assert.equal(res, true);
+            assert.deepStrictEqual(res, {
+                status: "OK",
+                value: true,
+            });
         });
 
-        it("should throw for not existing handle", async function () {
+        it("should work for not existing handle", async function () {
             await startST();
 
             SuperTokens.init({
@@ -126,7 +129,9 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
                 recipeList: [Session.init()],
             });
 
-            await assert.rejects(Session.getClaimValue("asfd", TrueClaim), /Session does not exist/);
+            assert.deepStrictEqual(await Session.getClaimValue("asfd", TrueClaim), {
+                status: "SESSION_DOES_NOT_EXIST_ERROR",
+            });
         });
     });
 });

@@ -496,10 +496,15 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             });
 
             if (sessionInfo === undefined) {
-                throw new Error("Session does not exist");
+                return {
+                    status: "SESSION_DOES_NOT_EXIST_ERROR",
+                };
             }
 
-            return input.claim.getValueFromPayload(sessionInfo.accessTokenPayload, input.userContext);
+            return {
+                status: "OK",
+                value: input.claim.getValueFromPayload(sessionInfo.accessTokenPayload, input.userContext),
+            };
         },
 
         removeClaim: function (

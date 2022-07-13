@@ -311,7 +311,15 @@ export type RecipeInterface = {
         sessionHandle: string;
         claim: SessionClaim<T>;
         userContext?: any;
-    }): Promise<T | undefined>;
+    }): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              value: T | undefined;
+          }
+    >;
 
     removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
 };
