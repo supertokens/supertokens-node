@@ -938,6 +938,8 @@ let sessionConfig: SessionTypeInput = {
                 getClaimValue: originalImpl.getClaimValue,
                 removeClaim: originalImpl.removeClaim,
                 assertClaims: originalImpl.assertClaims,
+                validateClaimsForSessionHandle: originalImpl.validateClaimsForSessionHandle,
+                validateClaimsInJWTPayload: originalImpl.validateClaimsInJWTPayload,
             };
         },
     },

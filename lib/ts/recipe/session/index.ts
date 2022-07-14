@@ -23,6 +23,7 @@ import {
     APIOptions,
     SessionClaimValidator,
     SessionClaim,
+    ClaimValidationError,
 } from "./types";
 import OpenIdRecipe from "../openid/recipe";
 import Recipe from "./recipe";
@@ -63,6 +64,51 @@ export default class SessionWrapper {
             userId,
             accessTokenPayload: finalAccessTokenPayload,
             sessionData,
+            userContext,
+        });
+    }
+
+    static async validateClaimsForSessionHandle(
+        sessionHandle: string,
+        overrideGlobalClaimValidators?: (
+            sessionInfo: SessionInformation,
+            globalClaimValidators: SessionClaimValidator[],
+            userContext: any
+        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
+        userContext: any = {}
+    ): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              invalidClaims: ClaimValidationError[];
+          }
+    > {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.validateClaimsForSessionHandle({
+            sessionHandle,
+            overrideGlobalClaimValidators,
+            userContext,
+        });
+    }
+
+    static async validateClaimsInJWTPayload(
+        userId: string,
+        jwtPayload: JSONObject,
+        overrideGlobalClaimValidators?: (
+            userId: string,
+            globalClaimValidators: SessionClaimValidator[],
+            userContext: any
+        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
+        userContext: any = {}
+    ): Promise<{
+        status: "OK";
+        invalidClaims: ClaimValidationError[];
+    }> {
+        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.validateClaimsInJWTPayload({
+            userId,
+            jwtPayload,
+            overrideGlobalClaimValidators,
             userContext,
         });
     }
@@ -275,6 +321,8 @@ export let fetchAndSetClaim = SessionWrapper.fetchAndSetClaim;
 export let setClaimValue = SessionWrapper.setClaimValue;
 export let getClaimValue = SessionWrapper.getClaimValue;
 export let removeClaim = SessionWrapper.removeClaim;
+export let validateClaimsInJWTPayload = SessionWrapper.validateClaimsInJWTPayload;
+export let validateClaimsForSessionHandle = SessionWrapper.validateClaimsForSessionHandle;
 
 export let Error = SessionWrapper.Error;
 

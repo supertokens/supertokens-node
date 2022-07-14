@@ -8,6 +8,7 @@ import {
     SessionClaimValidator,
     SessionClaim,
     SessionContainerInterface,
+    ClaimValidationError,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -271,6 +272,156 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             logDebugMessage("getSession: required validator ids " + reqClaimsValidators.map((c) => c.id).join(", "));
             await input.session.assertClaims(reqClaimsValidators, input.userContext);
             logDebugMessage("getSession: claim assertion successful");
+        },
+
+        validateClaimsForSessionHandle: async function (
+            this: RecipeInterface,
+            input: {
+                sessionHandle: string;
+                overrideGlobalClaimValidators?: (
+                    sessionInfo: SessionInformation,
+                    globalClaimValidators: SessionClaimValidator[],
+                    userContext: any
+                ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
+                userContext: any;
+            }
+        ): Promise<
+            | {
+                  status: "SESSION_DOES_NOT_EXIST_ERROR";
+              }
+            | {
+                  status: "OK";
+                  invalidClaims: ClaimValidationError[];
+              }
+        > {
+            const userContext = input.userContext;
+            const sessionInfo = await this.getSessionInformation({
+                sessionHandle: input.sessionHandle,
+                userContext,
+            });
+            if (sessionInfo === undefined) {
+                return {
+                    status: "SESSION_DOES_NOT_EXIST_ERROR",
+                };
+            }
+
+            const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
+            const globalClaimValidators: SessionClaimValidator[] = await this.getGlobalClaimValidators({
+                userId: sessionInfo?.userId,
+                claimValidatorsAddedByOtherRecipes,
+                userContext,
+            });
+            const reqClaimsValidators =
+                input.overrideGlobalClaimValidators !== undefined
+                    ? await input.overrideGlobalClaimValidators(sessionInfo, globalClaimValidators, userContext)
+                    : globalClaimValidators;
+
+            const origSessionClaimPayloadJSON = JSON.stringify(sessionInfo.accessTokenPayload);
+
+            let newAccessTokenPayload = sessionInfo.accessTokenPayload;
+            let validationErrors = [];
+            for (const validator of reqClaimsValidators) {
+                logDebugMessage("Session.validateClaimsForSessionHandle checking " + validator.id);
+                if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
+                    logDebugMessage("Session.validateClaimsForSessionHandle refetching " + validator.id);
+                    const value = await validator.claim.fetchValue(sessionInfo.userId, userContext);
+                    logDebugMessage(
+                        "Session.validateClaimsForSessionHandle " +
+                            validator.id +
+                            " refetch res " +
+                            JSON.stringify(value)
+                    );
+                    if (value !== undefined) {
+                        newAccessTokenPayload = validator.claim.addToPayload_internal(
+                            newAccessTokenPayload,
+                            value,
+                            userContext
+                        );
+                    }
+                }
+            }
+
+            for (const validator of reqClaimsValidators) {
+                logDebugMessage("Session.validateClaimsForSessionHandle " + " validating " + validator.id);
+                const claimValidationResult = await validator.validate(newAccessTokenPayload, userContext);
+                logDebugMessage(
+                    "Session.validateClaimsForSessionHandle " +
+                        validator.id +
+                        " validation res " +
+                        JSON.stringify(claimValidationResult)
+                );
+                if (!claimValidationResult.isValid) {
+                    validationErrors.push({
+                        id: validator.id,
+                        reason: claimValidationResult.reason,
+                    });
+                }
+            }
+
+            if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
+                await this.mergeIntoAccessTokenPayload({
+                    accessTokenPayloadUpdate: newAccessTokenPayload,
+                    sessionHandle: input.sessionHandle,
+                    userContext,
+                });
+            }
+
+            return {
+                status: "OK",
+                invalidClaims: validationErrors,
+            };
+        },
+
+        validateClaimsInJWTPayload: async function (
+            this: RecipeInterface,
+            input: {
+                userId: string;
+                jwtPayload: JSONObject;
+                overrideGlobalClaimValidators?: (
+                    userId: string,
+                    globalClaimValidators: SessionClaimValidator[],
+                    userContext: any
+                ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
+                userContext: any;
+            }
+        ): Promise<{
+            status: "OK";
+            invalidClaims: ClaimValidationError[];
+        }> {
+            const userContext = input.userContext;
+            const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
+            const globalClaimValidators: SessionClaimValidator[] = await this.getGlobalClaimValidators({
+                userId: input.userId,
+                claimValidatorsAddedByOtherRecipes,
+                userContext: userContext,
+            });
+            const reqClaimsValidators =
+                input.overrideGlobalClaimValidators !== undefined
+                    ? await input.overrideGlobalClaimValidators(input.userId, globalClaimValidators, userContext)
+                    : globalClaimValidators;
+
+            const validationErrors = [];
+            for (const validator of reqClaimsValidators) {
+                logDebugMessage("Session.validateClaimsInJWTPayload " + " validating " + validator.id);
+                const claimValidationResult = await validator.validate(input.jwtPayload, userContext);
+                logDebugMessage(
+                    "Session.validateClaimsInJWTPayload " +
+                        validator.id +
+                        " validation res " +
+                        JSON.stringify(claimValidationResult)
+                );
+                if (!claimValidationResult.isValid) {
+                    validationErrors.push({
+                        id: validator.id,
+                        reason: claimValidationResult.reason,
+                    });
+                }
+            }
+
+            return {
+                status: "OK",
+                invalidClaims: validationErrors,
+            };
         },
 
         getSessionInformation: async function ({

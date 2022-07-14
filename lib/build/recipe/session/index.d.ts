@@ -9,6 +9,7 @@ import {
     APIOptions,
     SessionClaimValidator,
     SessionClaim,
+    ClaimValidationError,
 } from "./types";
 import Recipe from "./recipe";
 import { JSONObject } from "../../types";
@@ -22,6 +23,36 @@ export default class SessionWrapper {
         sessionData?: any,
         userContext?: any
     ): Promise<SessionContainer>;
+    static validateClaimsForSessionHandle(
+        sessionHandle: string,
+        overrideGlobalClaimValidators?: (
+            sessionInfo: SessionInformation,
+            globalClaimValidators: SessionClaimValidator[],
+            userContext: any
+        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
+        userContext?: any
+    ): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              invalidClaims: ClaimValidationError[];
+          }
+    >;
+    static validateClaimsInJWTPayload(
+        userId: string,
+        jwtPayload: JSONObject,
+        overrideGlobalClaimValidators?: (
+            userId: string,
+            globalClaimValidators: SessionClaimValidator[],
+            userContext: any
+        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+        invalidClaims: ClaimValidationError[];
+    }>;
     static getSession(
         req: any,
         res: any,
@@ -131,6 +162,8 @@ export declare let fetchAndSetClaim: typeof SessionWrapper.fetchAndSetClaim;
 export declare let setClaimValue: typeof SessionWrapper.setClaimValue;
 export declare let getClaimValue: typeof SessionWrapper.getClaimValue;
 export declare let removeClaim: typeof SessionWrapper.removeClaim;
+export declare let validateClaimsInJWTPayload: typeof SessionWrapper.validateClaimsInJWTPayload;
+export declare let validateClaimsForSessionHandle: typeof SessionWrapper.validateClaimsForSessionHandle;
 export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;
 export declare let getJWKS: typeof SessionWrapper.getJWKS;

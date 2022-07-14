@@ -299,6 +299,38 @@ export type RecipeInterface = {
         userContext: any;
     }): Promise<void>;
 
+    validateClaimsForSessionHandle(input: {
+        sessionHandle: string;
+        overrideGlobalClaimValidators?: (
+            sessionInfo: SessionInformation,
+            globalClaimValidators: SessionClaimValidator[],
+            userContext: any
+        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
+        userContext: any;
+    }): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              invalidClaims: ClaimValidationError[];
+          }
+    >;
+
+    validateClaimsInJWTPayload(input: {
+        userId: string;
+        jwtPayload: JSONObject;
+        overrideGlobalClaimValidators?: (
+            userId: string,
+            globalClaimValidators: SessionClaimValidator[],
+            userContext: any
+        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
+        userContext: any;
+    }): Promise<{
+        status: "OK";
+        invalidClaims: ClaimValidationError[];
+    }>;
+
     fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
