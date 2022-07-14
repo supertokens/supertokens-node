@@ -71,8 +71,8 @@ export default class SessionWrapper {
     static async validateClaimsForSessionHandle(
         sessionHandle: string,
         overrideGlobalClaimValidators?: (
-            sessionInfo: SessionInformation,
             globalClaimValidators: SessionClaimValidator[],
+            sessionInfo: SessionInformation,
             userContext: any
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
         userContext: any = {}
@@ -96,8 +96,8 @@ export default class SessionWrapper {
         userId: string,
         jwtPayload: JSONObject,
         overrideGlobalClaimValidators?: (
-            userId: string,
             globalClaimValidators: SessionClaimValidator[],
+            userId: string,
             userContext: any
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
         userContext: any = {}

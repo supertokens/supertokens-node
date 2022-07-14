@@ -72,7 +72,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
                     if (claimVal === undefined) {
                         return {
                             isValid: false,
-                            reason: { message: "wrong value", expectedValue: val, actualValue: claimVal },
+                            reason: { message: "value does not exist", expectedValue: val, actualValue: claimVal },
                         };
                     }
                     const ageInSeconds = (Date.now() - this.getLastRefetchTime(payload, ctx)!) / 1000;

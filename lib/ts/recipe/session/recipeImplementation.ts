@@ -21,7 +21,11 @@ import {
     setFrontTokenInHeaders,
     getRidFromHeader,
 } from "./cookieAndHeaders";
-import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
+import {
+    attachCreateOrRefreshSessionResponseToExpressRes,
+    updateClaimsInPayloadIfNeeded,
+    validateClaimsInPayload,
+} from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod, frontendHasInterceptor } from "../../utils";
@@ -250,8 +254,8 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
 
                 overrideGlobalClaimValidators:
                     | ((
-                          session: SessionContainerInterface,
                           globalClaimValidators: SessionClaimValidator[],
+                          session: SessionContainerInterface,
                           userContext: any
                       ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[])
                     | undefined;
@@ -266,7 +270,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             });
             const reqClaimsValidators =
                 input.overrideGlobalClaimValidators !== undefined
-                    ? await input.overrideGlobalClaimValidators(input.session, globalClaimValidators, input.userContext)
+                    ? await input.overrideGlobalClaimValidators(globalClaimValidators, input.session, input.userContext)
                     : globalClaimValidators;
 
             logDebugMessage("getSession: required validator ids " + reqClaimsValidators.map((c) => c.id).join(", "));
@@ -279,8 +283,8 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             input: {
                 sessionHandle: string;
                 overrideGlobalClaimValidators?: (
-                    sessionInfo: SessionInformation,
                     globalClaimValidators: SessionClaimValidator[],
+                    sessionInfo: SessionInformation,
                     userContext: any
                 ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
                 userContext: any;
@@ -313,50 +317,16 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             });
             const reqClaimsValidators =
                 input.overrideGlobalClaimValidators !== undefined
-                    ? await input.overrideGlobalClaimValidators(sessionInfo, globalClaimValidators, userContext)
+                    ? await input.overrideGlobalClaimValidators(globalClaimValidators, sessionInfo, userContext)
                     : globalClaimValidators;
 
             const origSessionClaimPayloadJSON = JSON.stringify(sessionInfo.accessTokenPayload);
 
-            let newAccessTokenPayload = sessionInfo.accessTokenPayload;
-            let validationErrors = [];
-            for (const validator of reqClaimsValidators) {
-                logDebugMessage("Session.validateClaimsForSessionHandle checking " + validator.id);
-                if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
-                    logDebugMessage("Session.validateClaimsForSessionHandle refetching " + validator.id);
-                    const value = await validator.claim.fetchValue(sessionInfo.userId, userContext);
-                    logDebugMessage(
-                        "Session.validateClaimsForSessionHandle " +
-                            validator.id +
-                            " refetch res " +
-                            JSON.stringify(value)
-                    );
-                    if (value !== undefined) {
-                        newAccessTokenPayload = validator.claim.addToPayload_internal(
-                            newAccessTokenPayload,
-                            value,
-                            userContext
-                        );
-                    }
-                }
-            }
-
-            for (const validator of reqClaimsValidators) {
-                logDebugMessage("Session.validateClaimsForSessionHandle " + " validating " + validator.id);
-                const claimValidationResult = await validator.validate(newAccessTokenPayload, userContext);
-                logDebugMessage(
-                    "Session.validateClaimsForSessionHandle " +
-                        validator.id +
-                        " validation res " +
-                        JSON.stringify(claimValidationResult)
-                );
-                if (!claimValidationResult.isValid) {
-                    validationErrors.push({
-                        id: validator.id,
-                        reason: claimValidationResult.reason,
-                    });
-                }
-            }
+            let newAccessTokenPayload = await updateClaimsInPayloadIfNeeded(
+                reqClaimsValidators,
+                sessionInfo.accessTokenPayload,
+                userContext
+            );
 
             if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
                 await this.mergeIntoAccessTokenPayload({
@@ -366,9 +336,15 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 });
             }
 
+            const invalidClaims = await validateClaimsInPayload(
+                reqClaimsValidators,
+                newAccessTokenPayload,
+                userContext
+            );
+
             return {
                 status: "OK",
-                invalidClaims: validationErrors,
+                invalidClaims,
             };
         },
 
@@ -378,8 +354,8 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 userId: string;
                 jwtPayload: JSONObject;
                 overrideGlobalClaimValidators?: (
-                    userId: string,
                     globalClaimValidators: SessionClaimValidator[],
+                    userId: string,
                     userContext: any
                 ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
                 userContext: any;
@@ -397,30 +373,16 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             });
             const reqClaimsValidators =
                 input.overrideGlobalClaimValidators !== undefined
-                    ? await input.overrideGlobalClaimValidators(input.userId, globalClaimValidators, userContext)
+                    ? await input.overrideGlobalClaimValidators(globalClaimValidators, input.userId, userContext)
                     : globalClaimValidators;
 
-            const validationErrors = [];
-            for (const validator of reqClaimsValidators) {
-                logDebugMessage("Session.validateClaimsInJWTPayload " + " validating " + validator.id);
-                const claimValidationResult = await validator.validate(input.jwtPayload, userContext);
-                logDebugMessage(
-                    "Session.validateClaimsInJWTPayload " +
-                        validator.id +
-                        " validation res " +
-                        JSON.stringify(claimValidationResult)
-                );
-                if (!claimValidationResult.isValid) {
-                    validationErrors.push({
-                        id: validator.id,
-                        reason: claimValidationResult.reason,
-                    });
-                }
-            }
+            // We skip refetching here, because we have no way of updating the JWT payload here
+            // if we have access to the entire session other methods can be used to do validation while updating
+            const invalidClaims = await validateClaimsInPayload(reqClaimsValidators, input.jwtPayload, userContext);
 
             return {
                 status: "OK",
-                invalidClaims: validationErrors,
+                invalidClaims,
             };
         },
 

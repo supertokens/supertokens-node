@@ -129,6 +129,9 @@ export default class SessionRecipe extends RecipeModule {
     }
 
     static addClaimFromOtherRecipe = (claim: SessionClaim<any>) => {
+        // We are throwing here (and not in addClaimValidatorFromOtherRecipe) because if multiple
+        // claims are added with the same key they will overwrite each other. Validators will all run
+        // and work as expected even if they are added multiple times.
         if (SessionRecipe.claimsAddedByOtherRecipes.some((c) => c.key === claim.key)) {
             throw new Error("Claim added by multiple recipes");
         }

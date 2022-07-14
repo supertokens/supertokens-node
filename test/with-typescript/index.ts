@@ -1008,7 +1008,7 @@ app.use(
     verifySession({
         antiCsrfCheck: true,
         sessionRequired: false,
-        overrideGlobalClaimValidators: (session, globalClaimValidators) => {
+        overrideGlobalClaimValidators: (globalClaimValidators) => {
             return [...globalClaimValidators, stringClaim.validators.startsWith("5")];
         },
     }),
@@ -1313,3 +1313,26 @@ Session.init({
         },
     },
 });
+
+Session.validateClaimsForSessionHandle("asdf");
+Session.validateClaimsForSessionHandle("asdf", (globalClaimValidators) => [
+    ...globalClaimValidators,
+    boolClaim.validators.isTrue(),
+]);
+Session.validateClaimsForSessionHandle(
+    "asdf",
+    (globalClaimValidators, info) => [...globalClaimValidators, boolClaim.validators.isTrue(info.expiry)],
+    { test: 1 }
+);
+
+Session.validateClaimsInJWTPayload("userId", {});
+Session.validateClaimsInJWTPayload("userId", {}, (globalClaimValidators) => [
+    ...globalClaimValidators,
+    boolClaim.validators.isTrue(),
+]);
+Session.validateClaimsInJWTPayload(
+    "userId",
+    {},
+    (globalClaimValidators, userId) => [...globalClaimValidators, stringClaim.validators.startsWith(userId)],
+    { test: 1 }
+);

@@ -164,8 +164,8 @@ export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
     overrideGlobalClaimValidators?: (
-        session: SessionContainerInterface,
         globalClaimValidators: SessionClaimValidator[],
+        session: SessionContainerInterface,
         userContext: any
     ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 }
@@ -249,8 +249,8 @@ export declare type RecipeInterface = {
         session: SessionContainerInterface;
         overrideGlobalClaimValidators:
             | ((
-                  session: SessionContainerInterface,
                   globalClaimValidators: SessionClaimValidator[],
+                  session: SessionContainerInterface,
                   userContext: any
               ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[])
             | undefined;
@@ -259,8 +259,8 @@ export declare type RecipeInterface = {
     validateClaimsForSessionHandle(input: {
         sessionHandle: string;
         overrideGlobalClaimValidators?: (
-            sessionInfo: SessionInformation,
             globalClaimValidators: SessionClaimValidator[],
+            sessionInfo: SessionInformation,
             userContext: any
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
         userContext: any;
@@ -277,8 +277,8 @@ export declare type RecipeInterface = {
         userId: string;
         jwtPayload: JSONObject;
         overrideGlobalClaimValidators?: (
-            userId: string,
             globalClaimValidators: SessionClaimValidator[],
+            userId: string,
             userContext: any
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
         userContext: any;
