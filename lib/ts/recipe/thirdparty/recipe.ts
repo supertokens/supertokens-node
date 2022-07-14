@@ -30,7 +30,7 @@ import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
 import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
-import { BootstrapService } from "../../bootstrapService";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -69,12 +69,11 @@ export default class Recipe extends RecipeModule {
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
-        BootstrapService.addBootstrapCallback(() => {
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
             if (emailVerificationRecipe !== undefined) {
                 emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
             }
-            // TODO: add equivalent of overrides (make passwordless stuff automatically verified)
         });
     }
 

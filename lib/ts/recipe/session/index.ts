@@ -43,7 +43,7 @@ export default class SessionWrapper {
         sessionData: any = {},
         userContext: any = {}
     ) {
-        const claimsAddedByOtherRecipes = Recipe.getClaimsAddedByOtherRecipes();
+        const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes();
 
         let finalAccessTokenPayload = accessTokenPayload;
 

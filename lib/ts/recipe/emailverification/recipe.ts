@@ -29,9 +29,9 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
-import { BootstrapService } from "../../bootstrapService";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import SessionRecipe from "../session/recipe";
-import { EmailVerifiedClaim } from "./emailVerifiedClaim";
+import { EmailVerificationClaim } from "./emailVerificationClaim";
 
 type GetEmailForUserIdFunc = (userId: string, userContext: any) => Promise<string>;
 
@@ -101,13 +101,13 @@ export default class Recipe extends RecipeModule {
                     emailDelivery: undefined,
                 });
 
-                BootstrapService.addBootstrapCallback(() => {
-                    if (config.mode !== "OFF") {
-                        SessionRecipe.addClaimFromOtherRecipe(EmailVerifiedClaim);
-                    }
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(EmailVerificationClaim);
 
                     if (config.mode === "REQUIRED") {
-                        SessionRecipe.addClaimValidatorFromOtherRecipe(EmailVerifiedClaim.validators.isValidated());
+                        SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
+                            EmailVerificationClaim.validators.isVerified()
+                        );
                     }
                 });
 

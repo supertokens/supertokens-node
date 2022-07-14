@@ -40,7 +40,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
-import { BootstrapService } from "../../bootstrapService";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -88,12 +88,11 @@ export default class Recipe extends RecipeModule {
                   )
                 : ingredients.emailDelivery;
 
-        BootstrapService.addBootstrapCallback(() => {
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
             if (emailVerificationRecipe !== undefined) {
                 emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
             }
-            // TODO: add equivalent of overrides (make passwordless stuff automatically verified)
         });
     }
 

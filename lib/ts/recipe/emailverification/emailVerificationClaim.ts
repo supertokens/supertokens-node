@@ -2,7 +2,10 @@ import EmailVerificationRecipe from "./recipe";
 import { BooleanClaim } from "../session/claims";
 import { SessionClaimValidator } from "../session";
 
-export class EmailVerifiedClaimClass extends BooleanClaim {
+/**
+ * We include "Class" in the class name, because it makes it easier to import the right thing (the instance) instead of this.
+ * */
+export class EmailVerificationClaimClass extends BooleanClaim {
     constructor() {
         super({
             key: "st-ev",
@@ -15,34 +18,24 @@ export class EmailVerifiedClaimClass extends BooleanClaim {
 
         this.validators = {
             ...this.validators,
-            isValidated: (minRefetchDelayInSeconds: number = 10) => ({
-                claim: this,
-                id: "st-ev-isValidated",
+            isVerified: (refetchTimeOnFalseInSeconds: number = 10) => ({
+                ...this.validators.hasValue(true, "st-ev-isVerified"),
                 shouldRefetch: (payload, userContext) => {
                     const value = this.getValueFromPayload(payload, userContext);
                     return (
                         value === undefined ||
                         (value === false &&
                             this.getLastRefetchTime(payload, userContext)! <
-                                Date.now() - minRefetchDelayInSeconds * 1000)
+                                Date.now() - refetchTimeOnFalseInSeconds * 1000)
                     );
-                },
-                validate: (payload, userContext) => {
-                    const value = this.getValueFromPayload(payload, userContext);
-                    return value === true
-                        ? { isValid: true }
-                        : {
-                              isValid: false,
-                              reason: { message: "wrong value", expectedValue: true, actualValue: value },
-                          };
                 },
             }),
         };
     }
 
     validators!: BooleanClaim["validators"] & {
-        isValidated: (minRefetchDelayInSeconds?: number) => SessionClaimValidator;
+        isVerified: (refetchTimeOnFalseInSeconds?: number) => SessionClaimValidator;
     };
 }
 
-export const EmailVerifiedClaim = new EmailVerifiedClaimClass();
+export const EmailVerificationClaim = new EmailVerificationClaimClass();

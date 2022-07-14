@@ -88,7 +88,6 @@ export type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     providers: TypeProvider[];
     getEmailDeliveryConfig: (
-        recipeImpl: RecipeInterface,
         emailPasswordRecipeImpl: EPRecipeInterface,
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailPasswordEmailDeliveryInput>;

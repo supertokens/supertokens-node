@@ -44,9 +44,10 @@ import { logDebugMessage } from "../../logger";
 // For Express
 export default class SessionRecipe extends RecipeModule {
     private static instance: SessionRecipe | undefined = undefined;
-    private static claimsAddedByOtherRecipes: SessionClaim<any>[] = [];
-    private static claimValidatorsAddedByOtherRecipes: SessionClaimValidator[] = [];
     static RECIPE_ID = "session";
+
+    private claimsAddedByOtherRecipes: SessionClaim<any>[] = [];
+    private claimValidatorsAddedByOtherRecipes: SessionClaimValidator[] = [];
 
     config: TypeNormalisedInput;
 
@@ -128,20 +129,20 @@ export default class SessionRecipe extends RecipeModule {
         SessionRecipe.instance = undefined;
     }
 
-    static addClaimFromOtherRecipe = (builder: SessionClaim<any>) => {
-        SessionRecipe.claimsAddedByOtherRecipes.push(builder);
+    addClaimFromOtherRecipe = (builder: SessionClaim<any>) => {
+        this.claimsAddedByOtherRecipes.push(builder);
     };
 
-    static getClaimsAddedByOtherRecipes = (): SessionClaim<any>[] => {
-        return SessionRecipe.claimsAddedByOtherRecipes;
+    getClaimsAddedByOtherRecipes = (): SessionClaim<any>[] => {
+        return this.claimsAddedByOtherRecipes;
     };
 
-    static addClaimValidatorFromOtherRecipe = (builder: SessionClaimValidator) => {
-        SessionRecipe.claimValidatorsAddedByOtherRecipes.push(builder);
+    addClaimValidatorFromOtherRecipe = (builder: SessionClaimValidator) => {
+        this.claimValidatorsAddedByOtherRecipes.push(builder);
     };
 
-    static getClaimValidatorsAddedByOtherRecipes = (): SessionClaimValidator[] => {
-        return SessionRecipe.claimValidatorsAddedByOtherRecipes;
+    getClaimValidatorsAddedByOtherRecipes = (): SessionClaimValidator[] => {
+        return this.claimValidatorsAddedByOtherRecipes;
     };
 
     // abstract instance functions below...............

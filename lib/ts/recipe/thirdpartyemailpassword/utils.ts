@@ -43,11 +43,7 @@ export function validateAndNormaliseUserInput(
         ...config?.override,
     };
 
-    function getEmailDeliveryConfig(
-        _recipeImpl: RecipeInterface,
-        emailPasswordRecipeImpl: EPRecipeInterface,
-        isInServerlessEnv: boolean
-    ) {
+    function getEmailDeliveryConfig(emailPasswordRecipeImpl: EPRecipeInterface, isInServerlessEnv: boolean) {
         let emailService = config?.emailDelivery?.service;
         /**
          * following code is for backward compatibility.
@@ -57,7 +53,12 @@ export function validateAndNormaliseUserInput(
          * createAndSendCustomEmail implementation
          */
         if (emailService === undefined) {
-            emailService = new BackwardCompatibilityService(emailPasswordRecipeImpl, appInfo, isInServerlessEnv);
+            emailService = new BackwardCompatibilityService(
+                emailPasswordRecipeImpl,
+                appInfo,
+                isInServerlessEnv,
+                config?.resetPasswordUsingTokenFeature
+            );
         }
         return {
             ...config?.emailDelivery,

@@ -21,9 +21,10 @@ import {
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { GeneralErrorResponse } from "../../types";
+import { SessionContainerInterface } from "../session/types";
 
 export type TypeInput = {
-    mode: "REQUIRED" | "OPTIONAL" | "OFF";
+    mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
     getEmailForUserId?: (userId: string, userContext: any) => Promise<string>;
     getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
@@ -41,11 +42,11 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    mode: "REQUIRED" | "OPTIONAL" | "OFF";
+    mode: "REQUIRED" | "OPTIONAL";
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (userId: string, userContext: any) => Promise<string>;
+    getEmailForUserId?: (userId: string, userContext: any) => Promise<string | undefined>;
     getEmailVerificationURL: (user: User, userContext: any) => Promise<string>;
     override: {
         functions: (
@@ -107,6 +108,7 @@ export type APIInterface = {
               token: string;
               options: APIOptions;
               userContext: any;
+              session?: SessionContainerInterface;
           }) => Promise<
               { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
           >);
@@ -116,6 +118,7 @@ export type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: any;
+              session?: SessionContainerInterface;
           }) => Promise<
               | {
                     status: "OK";
@@ -129,6 +132,7 @@ export type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: any;
+              session?: SessionContainerInterface;
           }) => Promise<{ status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" } | GeneralErrorResponse>);
 };
 

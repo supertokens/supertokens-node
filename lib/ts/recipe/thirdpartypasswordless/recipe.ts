@@ -41,7 +41,7 @@ import { Querier } from "../../querier";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { BootstrapService } from "../../bootstrapService";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -106,7 +106,7 @@ export default class Recipe extends RecipeModule {
             ingredients.smsDelivery === undefined
                 ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
                 : ingredients.smsDelivery;
-        BootstrapService.addBootstrapCallback(() => {
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
             if (emailVerificationRecipe !== undefined) {
                 emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserIdForEmailVerification.bind(this));

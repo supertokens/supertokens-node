@@ -39,7 +39,7 @@ import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { BootstrapService } from "../../bootstrapService";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -97,20 +97,15 @@ export default class Recipe extends RecipeModule {
         this.emailDelivery =
             ingredients.emailDelivery === undefined
                 ? new EmailDeliveryIngredient(
-                      this.config.getEmailDeliveryConfig(
-                          this.recipeInterfaceImpl,
-                          emailPasswordRecipeImplementation,
-                          this.isInServerlessEnv
-                      )
+                      this.config.getEmailDeliveryConfig(emailPasswordRecipeImplementation, this.isInServerlessEnv)
                   )
                 : ingredients.emailDelivery;
 
-        BootstrapService.addBootstrapCallback(() => {
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
             const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
             if (emailVerificationRecipe !== undefined) {
                 emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
             }
-            // TODO: add equivalent of overrides (make passwordless stuff automatically verified)
         });
         this.emailPasswordRecipe =
             recipes.emailPasswordInstance !== undefined

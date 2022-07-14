@@ -257,7 +257,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
                 userContext?: any;
             }
         ): Promise<void> {
-            const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
+            const claimValidatorsAddedByOtherRecipes = SessionRecipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
             const globalClaimValidators: SessionClaimValidator[] = await this.getGlobalClaimValidators({
                 userId: input.session.getUserId(),
                 claimValidatorsAddedByOtherRecipes,

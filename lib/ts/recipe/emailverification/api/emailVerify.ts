@@ -17,9 +17,12 @@ import { send200Response, normaliseHttpMethod } from "../../../utils";
 import STError from "../error";
 import { APIInterface, APIOptions } from "../";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
+import Session from "../../session";
 
 export default async function emailVerify(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     let result;
+
+    const userContext = makeDefaultUserContextFromAPI(options.req);
 
     if (normaliseHttpMethod(options.req.getMethod()) === "post") {
         // Logic according to Logic as per https://github.com/supertokens/supertokens-node/issues/62#issuecomment-751616106
@@ -42,10 +45,18 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
             });
         }
 
+        const session = await Session.getSession(
+            options.req,
+            options.res,
+            { overrideGlobalClaimValidators: () => [] },
+            userContext
+        );
+
         let response = await apiImplementation.verifyEmailPOST({
             token,
             options,
-            userContext: makeDefaultUserContextFromAPI(options.req),
+            session,
+            userContext,
         });
         if (response.status === "OK") {
             result = { status: "OK" };
@@ -57,9 +68,16 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
             return false;
         }
 
+        const session = await Session.getSession(
+            options.req,
+            options.res,
+            { overrideGlobalClaimValidators: () => [] },
+            userContext
+        );
         result = await apiImplementation.isEmailVerifiedGET({
             options,
-            userContext: makeDefaultUserContextFromAPI(options.req),
+            session,
+            userContext,
         });
     }
     send200Response(options.res, result);

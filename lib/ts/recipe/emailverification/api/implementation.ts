@@ -1,34 +1,30 @@
-import { APIInterface, APIOptions, User } from "../";
+import { APIInterface, User } from "../";
 import { logDebugMessage } from "../../../logger";
-import Session from "../../session";
 import EmailVerificationRecipe from "../recipe";
 import { GeneralErrorResponse } from "../../../types";
-import { EmailVerifiedClaim } from "../emailVerifiedClaim";
+import { EmailVerificationClaim } from "../emailVerificationClaim";
 
 export default function getAPIInterface(): APIInterface {
     return {
         verifyEmailPOST: async function ({
             token,
             options,
+            session,
             userContext,
-        }: {
-            token: string;
-            options: APIOptions;
-            userContext: any;
         }): Promise<
             { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
         > {
-            // TODO: we could set isEmailVerified here if we have a session with the right user
+            const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
 
-            return await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
+            if (res.status === "OK" && session !== undefined) {
+                session.fetchAndSetClaim(EmailVerificationClaim);
+            }
+            return res;
         },
 
         isEmailVerifiedGET: async function ({
-            options,
             userContext,
-        }: {
-            options: APIOptions;
-            userContext: any;
+            session,
         }): Promise<
             | {
                   status: "OK";
@@ -36,19 +32,12 @@ export default function getAPIInterface(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            let session = await Session.getSession(
-                options.req,
-                options.res,
-                { overrideGlobalClaimValidators: () => [] },
-                userContext
-            );
-
             if (session === undefined) {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            await session.fetchAndSetClaim(EmailVerifiedClaim, userContext);
-            const isVerified = await session.getClaimValue(EmailVerifiedClaim, userContext);
+            await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+            const isVerified = await session.getClaimValue(EmailVerificationClaim, userContext);
 
             return {
                 status: "OK",
@@ -59,17 +48,8 @@ export default function getAPIInterface(): APIInterface {
         generateEmailVerifyTokenPOST: async function ({
             options,
             userContext,
-        }: {
-            options: APIOptions;
-            userContext: any;
+            session,
         }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
-            let session = await Session.getSession(
-                options.req,
-                options.res,
-                { overrideGlobalClaimValidators: () => [] },
-                userContext
-            );
-
             if (session === undefined) {
                 throw new Error("Session is undefined. Should not come here.");
             }

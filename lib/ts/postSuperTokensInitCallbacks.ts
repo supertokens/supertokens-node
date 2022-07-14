@@ -13,15 +13,15 @@
  * under the License.
  */
 
-export class BootstrapService {
+export class PostSuperTokensInitCallbacks {
     static bootstrapCallbacks: (() => void)[] = [];
 
-    static addBootstrapCallback(cb: () => void) {
-        BootstrapService.bootstrapCallbacks.push(cb);
+    static addPostInitCallback(cb: () => void) {
+        PostSuperTokensInitCallbacks.bootstrapCallbacks.push(cb);
     }
 
-    static runBootstrapCallbacks() {
-        for (const cb of BootstrapService.bootstrapCallbacks) {
+    static runPostInitCallbacks() {
+        for (const cb of PostSuperTokensInitCallbacks.bootstrapCallbacks) {
             cb();
         }
     }
