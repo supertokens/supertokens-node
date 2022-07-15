@@ -5,7 +5,7 @@ import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationE
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
-    static EmailVerifiedClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
+    static EmailVerificationClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
     static createEmailVerificationToken(
         userId: string,
         email: string,
@@ -61,4 +61,4 @@ export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVeri
 export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
 export type { RecipeInterface, APIOptions, APIInterface, User };
 export declare let sendEmail: typeof Wrapper.sendEmail;
-export { EmailVerificationClaim as EmailVerifiedClaim } from "./emailVerificationClaim";
+export { EmailVerificationClaim } from "./emailVerificationClaim";

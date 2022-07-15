@@ -23,7 +23,7 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static EmailVerifiedClaim = EmailVerificationClaim;
+    static EmailVerificationClaim = EmailVerificationClaim;
 
     static async createEmailVerificationToken(userId: string, email: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createEmailVerificationToken({
@@ -88,4 +88,4 @@ export type { RecipeInterface, APIOptions, APIInterface, User };
 
 export let sendEmail = Wrapper.sendEmail;
 
-export { EmailVerificationClaim as EmailVerifiedClaim } from "./emailVerificationClaim";
+export { EmailVerificationClaim } from "./emailVerificationClaim";
