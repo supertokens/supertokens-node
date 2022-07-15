@@ -34,13 +34,6 @@ export declare type User = (
     id: string;
     timeJoined: number;
 };
-export declare type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-};
 export declare type TypeInput = (
     | {
           contactMethod: "PHONE";
@@ -116,16 +109,6 @@ export declare type TypeInput = (
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     providers?: TypeProvider[];
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getLinkDomainAndPath?: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     override?: {
         functions?: (
@@ -151,16 +134,6 @@ export declare type TypeNormalisedInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getLinkDomainAndPath?: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     providers: TypeProvider[];
     getEmailDeliveryConfig: (

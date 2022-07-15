@@ -62,14 +62,6 @@ export type TypeNormalisedInputSignUp = {
     formFields: NormalisedFormField[];
 };
 
-export type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-};
-
 export type TypeInput = {
     signUpFeature?: TypeInputSignUp;
     providers?: TypeProvider[];

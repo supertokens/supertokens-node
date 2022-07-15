@@ -14,7 +14,6 @@
  */
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import EmailVerificationRecipe from "../emailverification/recipe";
 import PasswordlessRecipe from "../passwordless/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -41,7 +40,6 @@ import { Querier } from "../../querier";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -106,13 +104,9 @@ export default class Recipe extends RecipeModule {
             ingredients.smsDelivery === undefined
                 ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
                 : ingredients.smsDelivery;
-        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
-            if (emailVerificationRecipe !== undefined) {
-                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserIdForEmailVerification.bind(this));
-            }
-            // TODO: add equivalent of overrides (make passwordless stuff automatically verified)
-        });
+
+        // TODO: add equivalent of email verification overrides (make passwordless stuff automatically verified)
+
         this.passwordlessRecipe =
             recipes.passwordlessInstance !== undefined
                 ? recipes.passwordlessInstance

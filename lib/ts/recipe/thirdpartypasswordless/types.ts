@@ -52,14 +52,6 @@ export type User = (
     timeJoined: number;
 };
 
-export type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-};
-
 export type TypeInput = (
     | {
           contactMethod: "PHONE";
@@ -160,20 +152,6 @@ export type TypeInput = (
     providers?: TypeProvider[];
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
 
-    // Customize information in the URL.
-    // By default: `${websiteDomain}/auth/verify`
-    // `?rid=passwordless&preAuthSessionId=${preAuthSessionId}#${linkCode}` will be added after it.
-    getLinkDomainAndPath?: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
-
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
@@ -202,17 +180,6 @@ export type TypeNormalisedInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-
-    getLinkDomainAndPath?: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core

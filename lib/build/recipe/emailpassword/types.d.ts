@@ -7,7 +7,7 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
 export declare type TypeNormalisedInput = {
     signUpFeature: TypeNormalisedInputSignUp;
     signInFeature: TypeNormalisedInputSignIn;
@@ -25,7 +25,6 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
     /**
      * @deprecated Please use emailDelivery config instead
      */
@@ -55,14 +54,9 @@ export declare type TypeNormalisedInputSignIn = {
     formFields: NormalisedFormField[];
 };
 export declare type TypeInputResetPasswordUsingTokenFeature = {
-    getResetPasswordURL?: (user: User, userContext: any) => Promise<string>;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
-    getResetPasswordURL: (user: User, userContext: any) => Promise<string>;
     formFieldsForGenerateTokenForm: NormalisedFormField[];
     formFieldsForPasswordResetForm: NormalisedFormField[];
 };
@@ -152,6 +146,7 @@ export declare type RecipeInterface = {
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
+    appInfo: NormalisedAppinfo;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;

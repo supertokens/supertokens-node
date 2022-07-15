@@ -34,7 +34,6 @@ let { maxVersion } = require("../../lib/build/utils");
 
 /**
  * TODO: (later) in passwordResetFunctions.ts:
- *        - (later) check that getResetPasswordURL works fine
  *        - (later) check that createAndSendCustomEmail works fine
  * TODO: generate token API:
  *        - (later) Call the createResetPasswordToken function with valid input

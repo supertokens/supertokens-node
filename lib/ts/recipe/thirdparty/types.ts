@@ -56,14 +56,6 @@ export type User = {
     };
 };
 
-export type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-};
-
 export type TypeInputSignInAndUp = {
     providers: TypeProvider[];
 };

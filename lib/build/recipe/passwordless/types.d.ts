@@ -12,7 +12,7 @@ import {
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
 export declare type User = {
     id: string;
     email?: string;
@@ -89,16 +89,6 @@ export declare type TypeInput = (
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
     emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
-    getLinkDomainAndPath?: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     override?: {
         functions?: (
@@ -124,16 +114,6 @@ export declare type TypeNormalisedInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getLinkDomainAndPath: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     getSmsDeliveryConfig: () => SmsDeliveryTypeInputWithService<TypePasswordlessSmsDeliveryInput>;
     getEmailDeliveryConfig: () => EmailDeliveryTypeInputWithService<TypePasswordlessEmailDeliveryInput>;
@@ -266,6 +246,7 @@ export declare type DeviceType = {
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
+    appInfo: NormalisedAppinfo;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;

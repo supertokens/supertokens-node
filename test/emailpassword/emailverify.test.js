@@ -39,7 +39,6 @@ let { middleware, errorHandler } = require("../../framework/express");
 
 /**
  * TODO: (later) in emailVerificationFunctions.ts:
- *        - (later) check that getEmailVerificationURL works fine
  *        - (later) check that createAndSendCustomEmail works fine
  */
 

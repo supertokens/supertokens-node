@@ -14,7 +14,6 @@
  */
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import EmailVerificationRecipe from "../emailverification/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -39,7 +38,6 @@ import APIImplementation from "./api/implementation";
 import { Querier } from "../../querier";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -101,12 +99,6 @@ export default class Recipe extends RecipeModule {
                   )
                 : ingredients.emailDelivery;
 
-        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
-            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
-            if (emailVerificationRecipe !== undefined) {
-                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
-            }
-        });
         this.emailPasswordRecipe =
             recipes.emailPasswordInstance !== undefined
                 ? recipes.emailPasswordInstance

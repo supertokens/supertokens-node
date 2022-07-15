@@ -175,6 +175,7 @@ export default class Recipe extends RecipeModule {
             res,
             emailDelivery: this.emailDelivery,
             smsDelivery: this.smsDelivery,
+            appInfo: this.getAppInfo(),
         };
         if (id === CONSUME_CODE_API) {
             return await consumeCodeAPI(this.apiImpl, options);
@@ -233,17 +234,12 @@ export default class Recipe extends RecipeModule {
                   }
         );
 
+        const appInfo = this.getAppInfo();
+
         let magicLink =
-            (await this.config.getLinkDomainAndPath(
-                "phoneNumber" in input
-                    ? {
-                          phoneNumber: input.phoneNumber!,
-                      }
-                    : {
-                          email: input.email,
-                      },
-                input.userContext
-            )) +
+            appInfo.websiteDomain.getAsStringDangerous() +
+            appInfo.websiteBasePath.getAsStringDangerous() +
+            "/verify" +
             "?rid=" +
             this.getRecipeId() +
             "&preAuthSessionId=" +

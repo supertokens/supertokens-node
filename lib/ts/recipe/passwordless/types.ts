@@ -26,7 +26,7 @@ import {
     TypeInputWithService as SmsDeliveryTypeInputWithService,
 } from "../../ingredients/smsdelivery/types";
 import SmsDeliveryIngredient from "../../ingredients/smsdelivery";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
 
 // As per https://github.com/supertokens/supertokens-core/issues/325
 
@@ -132,19 +132,6 @@ export type TypeInput = (
 
     emailDelivery?: EmailDeliveryTypeInput<TypePasswordlessEmailDeliveryInput>;
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
-    // Customize information in the URL.
-    // By default: `${websiteDomain}/auth/verify`
-    // `?rid=passwordless&preAuthSessionId=${preAuthSessionId}#${linkCode}` will be added after it.
-    getLinkDomainAndPath?: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
@@ -176,20 +163,6 @@ export type TypeNormalisedInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-
-    // Customize information in the URL.
-    // By default: `${websiteDomain}/auth/verify`
-    // `?rid=passwordless&preAuthSessionId=${preAuthSessionId}#${linkCode}` will be added after it.
-    getLinkDomainAndPath: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
 
     // Override this to override how user input codes are generated
     // By default (=undefined) it is done in the Core
@@ -333,6 +306,7 @@ export type DeviceType = {
 
 export type APIOptions = {
     recipeImplementation: RecipeInterface;
+    appInfo: NormalisedAppinfo;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;

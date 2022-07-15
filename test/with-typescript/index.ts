@@ -138,9 +138,6 @@ ThirdPartyPasswordless.init({
     getCustomUserInputCode: (userCtx) => {
         return "123";
     },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
-    },
     override: {
         apis: (oI) => {
             return {
@@ -176,9 +173,6 @@ ThirdPartyPasswordless.init({
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: async (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -235,9 +229,6 @@ Passwordless.init({
     getCustomUserInputCode: (userCtx) => {
         return "123";
     },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
-    },
     override: {
         apis: (oI) => {
             return {
@@ -273,9 +264,6 @@ Passwordless.init({
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: async (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -360,9 +348,6 @@ ThirdPartyPasswordless.init({
     getCustomUserInputCode: (userCtx) => {
         return "123";
     },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
-    },
     override: {
         apis: (oI) => {
             return {
@@ -407,9 +392,6 @@ ThirdPartyPasswordless.init({
     flowType: "MAGIC_LINK",
     getCustomUserInputCode: (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -472,9 +454,6 @@ ThirdPartyPasswordless.init({
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: async (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -582,9 +561,6 @@ Passwordless.init({
     getCustomUserInputCode: (userCtx) => {
         return "123";
     },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
-    },
     override: {
         apis: (oI) => {
             return {
@@ -623,9 +599,6 @@ Passwordless.init({
     flowType: "MAGIC_LINK",
     getCustomUserInputCode: (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -688,9 +661,6 @@ Passwordless.init({
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: async (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {

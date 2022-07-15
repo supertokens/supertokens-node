@@ -167,6 +167,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
             emailDelivery: this.emailDelivery,
+            appInfo: this.getAppInfo(),
         };
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
             return await generateEmailVerifyTokenAPI(this.apiImpl, options);

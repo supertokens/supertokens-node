@@ -70,7 +70,9 @@ export default function getAPIInterface(): APIInterface {
             }
 
             let emailVerifyLink =
-                (await options.config.getEmailVerificationURL({ id: userId, email }, userContext)) +
+                options.appInfo.websiteDomain.getAsStringDangerous() +
+                options.appInfo.websiteBasePath.getAsStringDangerous() +
+                "/verify-email" +
                 "?token=" +
                 response.token +
                 "&rid=" +

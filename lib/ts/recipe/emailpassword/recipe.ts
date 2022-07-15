@@ -175,6 +175,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
             emailDelivery: this.emailDelivery,
+            appInfo: this.getAppInfo(),
         };
         if (id === SIGN_UP_API) {
             return await signUpAPI(this.apiImpl, options);

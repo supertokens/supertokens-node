@@ -20,14 +20,12 @@ import {
     TypeInputSignUp,
     TypeNormalisedInputSignUp,
     TypeNormalisedInputSignIn,
-    TypeInputResetPasswordUsingTokenFeature,
     TypeNormalisedInputResetPasswordUsingTokenFeature,
     NormalisedFormField,
     TypeInputFormField,
 } from "./types";
 import { NormalisedAppinfo } from "../../types";
 import { FORM_FIELD_EMAIL_ID, FORM_FIELD_PASSWORD_ID } from "./constants";
-import { getResetPasswordURL as defaultGetResetPasswordURL } from "./passwordResetFunctions";
 import { RecipeInterface, APIInterface } from "./types";
 import BackwardCompatibilityService from "./emaildelivery/services/backwardCompatibility";
 
@@ -44,12 +42,7 @@ export function validateAndNormaliseUserInput(
 
     let signInFeature = validateAndNormaliseSignInConfig(recipeInstance, appInfo, signUpFeature);
 
-    let resetPasswordUsingTokenFeature = validateAndNormaliseResetPasswordUsingTokenConfig(
-        recipeInstance,
-        appInfo,
-        signUpFeature,
-        config === undefined ? undefined : config.resetPasswordUsingTokenFeature
-    );
+    let resetPasswordUsingTokenFeature = validateAndNormaliseResetPasswordUsingTokenConfig(signUpFeature);
 
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
@@ -100,10 +93,7 @@ export function validateAndNormaliseUserInput(
 }
 
 function validateAndNormaliseResetPasswordUsingTokenConfig(
-    _: Recipe,
-    appInfo: NormalisedAppinfo,
-    signUpConfig: TypeNormalisedInputSignUp,
-    config?: TypeInputResetPasswordUsingTokenFeature
+    signUpConfig: TypeNormalisedInputSignUp
 ): TypeNormalisedInputResetPasswordUsingTokenFeature {
     let formFieldsForPasswordResetForm: NormalisedFormField[] = signUpConfig.formFields
         .filter((filter) => filter.id === FORM_FIELD_PASSWORD_ID)
@@ -125,15 +115,9 @@ function validateAndNormaliseResetPasswordUsingTokenConfig(
             };
         });
 
-    let getResetPasswordURL =
-        config === undefined || config.getResetPasswordURL === undefined
-            ? defaultGetResetPasswordURL(appInfo)
-            : config.getResetPasswordURL;
-
     return {
         formFieldsForPasswordResetForm,
         formFieldsForGenerateTokenForm,
-        getResetPasswordURL,
     };
 }
 

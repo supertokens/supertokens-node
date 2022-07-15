@@ -61,16 +61,9 @@ export default function getAPIImplementation(): APIInterface {
             const flowType = input.options.config.flowType;
             if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                 magicLink =
-                    (await input.options.config.getLinkDomainAndPath(
-                        "phoneNumber" in input
-                            ? {
-                                  phoneNumber: input.phoneNumber!,
-                              }
-                            : {
-                                  email: input.email,
-                              },
-                        input.userContext
-                    )) +
+                    input.options.appInfo.websiteDomain.getAsStringDangerous() +
+                    input.options.appInfo.websiteBasePath.getAsStringDangerous() +
+                    "/verify" +
                     "?rid=" +
                     input.options.recipeId +
                     "&preAuthSessionId=" +
@@ -191,16 +184,9 @@ export default function getAPIImplementation(): APIInterface {
                     const flowType = input.options.config.flowType;
                     if (flowType === "MAGIC_LINK" || flowType === "USER_INPUT_CODE_AND_MAGIC_LINK") {
                         magicLink =
-                            (await input.options.config.getLinkDomainAndPath(
-                                deviceInfo.email === undefined
-                                    ? {
-                                          phoneNumber: deviceInfo.phoneNumber!,
-                                      }
-                                    : {
-                                          email: deviceInfo.email,
-                                      },
-                                input.userContext
-                            )) +
+                            input.options.appInfo.websiteDomain.getAsStringDangerous() +
+                            input.options.appInfo.websiteBasePath.getAsStringDangerous() +
+                            "/verify" +
                             "?rid=" +
                             input.options.recipeId +
                             "&preAuthSessionId=" +
