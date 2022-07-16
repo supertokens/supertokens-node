@@ -105,8 +105,6 @@ export default class Recipe extends RecipeModule {
                 ? new SmsDeliveryIngredient(this.config.getSmsDeliveryConfig())
                 : ingredients.smsDelivery;
 
-        // TODO: add equivalent of email verification overrides (make passwordless stuff automatically verified)
-
         this.passwordlessRecipe =
             recipes.passwordlessInstance !== undefined
                 ? recipes.passwordlessInstance

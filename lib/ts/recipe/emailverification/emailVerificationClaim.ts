@@ -11,8 +11,16 @@ export class EmailVerificationClaimClass extends BooleanClaim {
             key: "st-ev",
             async fetchValue(userId, userContext) {
                 const recipe = EmailVerificationRecipe.getInstanceOrThrowError();
-                let email = await recipe.getEmailForUserId(userId, userContext);
-                return recipe.recipeInterfaceImpl.isEmailVerified({ userId, email, userContext });
+                let emailInfo = await recipe.getEmailForUserId(userId, userContext);
+
+                if (emailInfo.status === "OK") {
+                    return recipe.recipeInterfaceImpl.isEmailVerified({ userId, email: emailInfo.email, userContext });
+                } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
+                    // We consider people without email addresses as validated
+                    return true;
+                } else {
+                    throw new Error("Should never come here: UNKNOWN_USER_ID or invalid result from getEmailForUserId");
+                }
             },
         });
 

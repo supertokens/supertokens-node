@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForUserIdFunc } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -32,8 +32,6 @@ import { TypeEmailVerificationEmailDeliveryInput } from "./types";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
 import SessionRecipe from "../session/recipe";
 import { EmailVerificationClaim } from "./emailVerificationClaim";
-
-type GetEmailForUserIdFunc = (userId: string, userContext: any) => Promise<string>;
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -188,21 +186,20 @@ export default class Recipe extends RecipeModule {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
-    getEmailForUserId = async (userId: string, userContext: any): Promise<string> => {
+    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
         if (this.config.getEmailForUserId !== undefined) {
-            const email = await this.config.getEmailForUserId(userId, userContext);
-            if (email !== undefined) {
-                return email;
+            const userRes = await this.config.getEmailForUserId(userId, userContext);
+            if (userRes.status !== "EMAIL_DOES_NOT_EXIST_ERROR") {
+                return userRes;
             }
         }
 
         for (const getEmailForUserId of this.getEmailForUserIdFuncsFromOtherRecipes) {
-            try {
-                const email = await getEmailForUserId(userId, userContext);
-                return email;
-            } catch {
-                // We ignore these, they should all be: Unknown User ID provided
+            const res = await getEmailForUserId(userId, userContext);
+            if (res.status !== "EMAIL_DOES_NOT_EXIST_ERROR") {
+                return res;
             }
+            return res;
         }
 
         throw new Error("Unknown User ID provided");

@@ -11,7 +11,18 @@ import { SessionContainerInterface } from "../session/types";
 export declare type TypeInput = {
     mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (userId: string, userContext: any) => Promise<string | undefined>;
+    getEmailForUserId?: (
+        userId: string,
+        userContext: any
+    ) => Promise<
+        | {
+              status: "OK";
+              email: string;
+          }
+        | {
+              status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
     /**
      * @deprecated Please use emailDelivery config instead
      */
@@ -29,7 +40,18 @@ export declare type TypeNormalisedInput = {
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId?: (userId: string, userContext: any) => Promise<string | undefined>;
+    getEmailForUserId?: (
+        userId: string,
+        userContext: any
+    ) => Promise<
+        | {
+              status: "OK";
+              email: string;
+          }
+        | {
+              status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -147,3 +169,15 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
     emailVerifyLink: string;
     userContext: any;
 };
+export declare type GetEmailForUserIdFunc = (
+    userId: string,
+    userContext: any
+) => Promise<
+    | {
+          status: "OK";
+          email: string;
+      }
+    | {
+          status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+      }
+>;

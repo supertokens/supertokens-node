@@ -15,6 +15,7 @@
 
 import { send200Response } from "../../../utils";
 import STError from "../error";
+import EmailVerification from "../../emailverification/recipe";
 import { APIInterface, APIOptions } from "..";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 
@@ -56,6 +57,7 @@ export default async function consumeCode(apiImplementation: APIInterface, optio
         });
     }
 
+    const userContext = makeDefaultUserContextFromAPI(options.req);
     let result = await apiImplementation.consumeCodePOST(
         deviceId !== undefined
             ? {
@@ -63,17 +65,35 @@ export default async function consumeCode(apiImplementation: APIInterface, optio
                   userInputCode,
                   preAuthSessionId,
                   options,
-                  userContext: makeDefaultUserContextFromAPI(options.req),
+                  userContext,
               }
             : {
                   linkCode,
                   options,
                   preAuthSessionId,
-                  userContext: makeDefaultUserContextFromAPI(options.req),
+                  userContext,
               }
     );
 
     if (result.status === "OK") {
+        if (result.user.email !== undefined) {
+            const emailVerificationInstance = EmailVerification.getInstance();
+            if (emailVerificationInstance) {
+                const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken({
+                    userId: result.user.id,
+                    email: result.user.email,
+                    userContext,
+                });
+
+                if (tokenResponse.status === "OK") {
+                    await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                        token: tokenResponse.token,
+                        userContext,
+                    });
+                }
+            }
+        }
+
         delete (result as any).session;
     }
 

@@ -54,44 +54,65 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            let userId = session.getUserId();
+            const userId = session.getUserId();
 
-            let email = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(userId, userContext);
-
-            let response = await options.recipeImplementation.createEmailVerificationToken({
+            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
                 userId,
-                email,
-                userContext,
-            });
+                userContext
+            );
 
-            if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
-                logDebugMessage(`Email verification email not sent to ${email} because it is already verified.`);
-                return response;
+            if (emailInfo.status === "UNKNOWN_USER_ID_ERROR") {
+                return {
+                    status: "GENERAL_ERROR",
+                    message: "UNKNOWN_USER_ID_ERROR",
+                };
+            } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
+                logDebugMessage(
+                    `Email verification email not sent to user ${userId} because it doesn't have an email address.`
+                );
+                return {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                };
+            } else if (emailInfo.status === "OK") {
+                let response = await options.recipeImplementation.createEmailVerificationToken({
+                    userId,
+                    email: emailInfo.email,
+                    userContext,
+                });
+
+                if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+                    logDebugMessage(
+                        `Email verification email not sent to ${emailInfo.email} because it is already verified.`
+                    );
+                    return response;
+                }
+
+                let emailVerifyLink =
+                    options.appInfo.websiteDomain.getAsStringDangerous() +
+                    options.appInfo.websiteBasePath.getAsStringDangerous() +
+                    "/verify-email" +
+                    "?token=" +
+                    response.token +
+                    "&rid=" +
+                    options.recipeId;
+
+                logDebugMessage(`Sending email verification email to ${emailInfo}`);
+                await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                    type: "EMAIL_VERIFICATION",
+                    user: {
+                        id: userId,
+                        email: emailInfo.email,
+                    },
+                    emailVerifyLink,
+                    userContext,
+                });
+
+                return {
+                    status: "OK",
+                };
+            } else {
+                throw new Error("Should never come here: Invalid result from getEmailForUserId");
             }
-
-            let emailVerifyLink =
-                options.appInfo.websiteDomain.getAsStringDangerous() +
-                options.appInfo.websiteBasePath.getAsStringDangerous() +
-                "/verify-email" +
-                "?token=" +
-                response.token +
-                "&rid=" +
-                options.recipeId;
-
-            logDebugMessage(`Sending email verification email to ${email}`);
-            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                type: "EMAIL_VERIFICATION",
-                user: {
-                    id: userId,
-                    email: email,
-                },
-                emailVerifyLink,
-                userContext,
-            });
-
-            return {
-                status: "OK",
-            };
         },
     };
 }

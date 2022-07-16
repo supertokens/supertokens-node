@@ -7,6 +7,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailPasswordEmailDeliveryInput } from "./types";
+import { GetEmailForUserIdFunc } from "../emailverification/types";
 export default class Recipe extends RecipeModule {
     private static instance;
     static RECIPE_ID: string;
@@ -38,5 +39,5 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _request: BaseRequest, response: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
-    getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
+    getEmailForUserId: GetEmailForUserIdFunc;
 }

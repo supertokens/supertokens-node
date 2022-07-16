@@ -31,6 +31,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
 import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import { GetEmailForUserIdFunc } from "../emailverification/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -174,12 +175,16 @@ export default class Recipe extends RecipeModule {
     };
 
     // helper functions...
-
-    getEmailForUserId = async (userId: string, userContext: any) => {
+    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
         let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo === undefined) {
-            throw Error("Unknown User ID provided");
+        if (userInfo !== undefined) {
+            return {
+                status: "OK",
+                email: userInfo.email,
+            };
         }
-        return userInfo.email;
+        return {
+            status: "UNKNOWN_USER_ID_ERROR",
+        };
     };
 }
