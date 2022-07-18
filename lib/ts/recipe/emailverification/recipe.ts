@@ -189,17 +189,16 @@ export default class Recipe extends RecipeModule {
     getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
         if (this.config.getEmailForUserId !== undefined) {
             const userRes = await this.config.getEmailForUserId(userId, userContext);
-            if (userRes.status !== "EMAIL_DOES_NOT_EXIST_ERROR") {
+            if (userRes.status !== "UNKNOWN_USER_ID_ERROR") {
                 return userRes;
             }
         }
 
         for (const getEmailForUserId of this.getEmailForUserIdFuncsFromOtherRecipes) {
             const res = await getEmailForUserId(userId, userContext);
-            if (res.status !== "EMAIL_DOES_NOT_EXIST_ERROR") {
+            if (res.status !== "UNKNOWN_USER_ID_ERROR") {
                 return res;
             }
-            return res;
         }
 
         throw new Error("Unknown User ID provided");

@@ -48,7 +48,7 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
         const session = await Session.getSession(
             options.req,
             options.res,
-            { overrideGlobalClaimValidators: () => [] },
+            { overrideGlobalClaimValidators: () => [], sessionRequired: false },
             userContext
         );
 
