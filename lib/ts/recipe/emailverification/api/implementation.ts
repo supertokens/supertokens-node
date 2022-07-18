@@ -17,7 +17,7 @@ export default function getAPIInterface(): APIInterface {
             const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
 
             if (res.status === "OK" && session !== undefined) {
-                session.fetchAndSetClaim(EmailVerificationClaim);
+                await session.fetchAndSetClaim(EmailVerificationClaim);
             }
             return res;
         },

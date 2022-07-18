@@ -23,8 +23,6 @@ export function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput {
-    let getEmailForUserId = config.getEmailForUserId;
-
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
@@ -65,7 +63,7 @@ export function validateAndNormaliseUserInput(
     }
     return {
         mode: config.mode,
-        getEmailForUserId,
+        getEmailForUserId: config.getEmailForUserId,
         override,
         getEmailDeliveryConfig,
     };
