@@ -653,12 +653,6 @@ function getTestApp(endpoints) {
         res.status(200).json({ message: true });
     });
 
-    app.post("/create-with-claim", async (req, res) => {
-        const session = await Session.createNewSession(res, "testing-userId");
-        new PrimitiveClaim(req.body.key).addToSession(session, req.body.value);
-        res.status(200).json({ message: true });
-    });
-
     app.get("/default-claims", verifySession(), async (req, res) => {
         res.status(200).json({ message: req.session.getHandle() });
     });
