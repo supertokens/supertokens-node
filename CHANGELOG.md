@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [11.0.1] - 2022-07-18
+
+### Fixes
+
+-   Fixed fastify issue where same cookie was getting set multiple times on the response object
+
 ## [11.0.0] - 2022-07-05
 
 ### Breaking change:
