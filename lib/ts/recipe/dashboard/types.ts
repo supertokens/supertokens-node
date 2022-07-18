@@ -18,6 +18,7 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 
 export type TypeInput = {
+    apiKey: string;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -28,6 +29,7 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
+    apiKey: string;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -39,6 +41,7 @@ export type TypeNormalisedInput = {
 
 export type RecipeInterface = {
     getDashboardBundleDomain(input: { userContext: any }): Promise<string>;
+    isValidAuth(input: { key: string; configKey: string; userContext: any }): Promise<boolean>;
 };
 
 export type APIOptions = {
@@ -53,4 +56,15 @@ export type APIOptions = {
 
 export type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
+    validateKeyPOST:
+        | undefined
+        | ((input: {
+              key: string;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<{
+              status: "OK" | "INVALID_KEY";
+          }>);
 };
+
+export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<boolean>;

@@ -21,5 +21,8 @@ export default function getRecipeImplementation(): RecipeInterface {
             // TODO NEMI: Add default bundle URL here
             return "";
         },
+        isValidAuth: async function (input) {
+            return input.configKey === input.key;
+        },
     };
 }

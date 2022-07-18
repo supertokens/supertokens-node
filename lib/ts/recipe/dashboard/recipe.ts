@@ -16,15 +16,18 @@
 import OverrideableBuilder from "supertokens-js-override";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
-import { APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { isApiPath, validateAndNormaliseUserInput } from "./utils";
-import { DASHBOARD_API } from "./constants";
+import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
+import { DASHBOARD_API, USERS_LIST_GET_API, VALIDATE_KEY_API } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import dashboard from "./api/dashboard";
 import error from "../../error";
+import validateKey from "./api/validateKey";
+import apiKeyProtector from "./api/apiKeyProtector";
+import usersGet from "./api/usersGet";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -95,7 +98,7 @@ export default class Recipe extends RecipeModule {
     };
 
     handleAPIRequest = async (
-        _: string,
+        id: string,
         req: BaseRequest,
         res: BaseResponse,
         __: NormalisedURLPath,
@@ -111,7 +114,28 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
 
-        return await dashboard(this.apiImpl, options);
+        // For these APIs we dont need API key validation
+        if (id === DASHBOARD_API) {
+            return await dashboard(this.apiImpl, options);
+        }
+
+        if (id === VALIDATE_KEY_API) {
+            return await validateKey(this.apiImpl, options);
+        }
+
+        // Do API key validation for the remaining APIs
+        let apiFunction: APIFunction | undefined;
+
+        if (id === USERS_LIST_GET_API) {
+            apiFunction = usersGet;
+        }
+
+        // If the id doesnt match any APIs return false
+        if (apiFunction === undefined) {
+            return false;
+        }
+
+        return await apiKeyProtector(this.apiImpl, options, apiFunction);
     };
 
     handleError = async (err: error, _: BaseRequest, __: BaseResponse): Promise<void> => {
@@ -130,14 +154,14 @@ export default class Recipe extends RecipeModule {
         const dashboardBundlePath = this.getAppInfo().apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
 
         if (isApiPath(path, this.getAppInfo())) {
-            // TODO NEMI: Handle api routing
-            return undefined;
+            return getApiIdIfMatched(path, method);
         }
 
         if (path.startsWith(dashboardBundlePath)) {
             return DASHBOARD_API;
         }
 
-        return super.returnAPIIdIfCanHandleRequest(path, method);
+        // TODO NEMI: Find a way to use the parent function here
+        return undefined;
     };
 }

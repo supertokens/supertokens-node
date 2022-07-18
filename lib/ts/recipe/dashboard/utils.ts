@@ -14,8 +14,8 @@
  */
 
 import NormalisedURLPath from "../../normalisedURLPath";
-import { NormalisedAppinfo } from "../../types";
-import { DASHBOARD_API } from "./constants";
+import { HTTPMethod, NormalisedAppinfo } from "../../types";
+import { DASHBOARD_API, VALIDATE_KEY_API } from "./constants";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
@@ -26,6 +26,7 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
     };
 
     return {
+        apiKey: config.apiKey,
         override,
     };
 }
@@ -47,4 +48,16 @@ export function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAppinfo): 
     }
 
     return false;
+}
+
+export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): string | undefined {
+    if (path.getAsStringDangerous().endsWith(VALIDATE_KEY_API) && method === "post") {
+        return VALIDATE_KEY_API;
+    }
+
+    return undefined;
+}
+
+export function isValidApiKey(key: string, config: TypeNormalisedInput) {
+    return key === config.apiKey;
 }
