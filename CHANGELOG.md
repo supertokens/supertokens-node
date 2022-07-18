@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Adds:
+
+-   Improved type definitions for `SessionWrapper.getSession`.
+
 ## [11.0.0] - 2022-07-05
 
 ### Breaking change:
