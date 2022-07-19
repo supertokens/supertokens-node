@@ -12,24 +12,23 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { sendNon200Response } from "../../../utils";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIFunction, APIInterface, APIOptions } from "../types";
-import { isValidApiKey } from "../utils";
+import { sendUnauthorisedAccess } from "../utils";
 
 export default async function apiKeyProtector(
     apiImplementation: APIInterface,
     options: APIOptions,
     apiFunction: APIFunction
 ): Promise<boolean> {
-    const apiKeyFromHeaders = options.req.getHeaderValue("api-key");
+    const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
+        req: options.req,
+        config: options.config,
+        userContext: makeDefaultUserContextFromAPI(options.req),
+    });
 
-    if (apiKeyFromHeaders === undefined) {
-        sendNon200Response(options.res, "Unauthorised Access", 401);
-        return true;
-    }
-
-    if (!isValidApiKey(apiKeyFromHeaders, options.config)) {
-        sendNon200Response(options.res, "Unauthorised Access", 401);
+    if (!shouldAllowAccess) {
+        sendUnauthorisedAccess(options.res);
         return true;
     }
 

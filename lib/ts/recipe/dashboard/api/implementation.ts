@@ -20,7 +20,6 @@ import { APIInterface } from "../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
-        // TODO NEMI: There should be a recipe function that returns the full HTML string
         dashboardGET: async function (input) {
             const bundleDomain = new NormalisedURLDomain(
                 await input.options.recipeImplementation.getDashboardBundleDomain({
@@ -46,23 +45,6 @@ export default function getAPIImplementation(): APIInterface {
                 </body>
             </html>
             `;
-        },
-        validateKeyPOST: async function (input) {
-            const isValidKey = await input.options.recipeImplementation.isValidAuth({
-                key: input.key,
-                configKey: input.options.config.apiKey,
-                userContext: input.userContext,
-            });
-
-            if (isValidKey !== true) {
-                return {
-                    status: "INVALID_KEY",
-                };
-            }
-
-            return {
-                status: "OK",
-            };
         },
     };
 }

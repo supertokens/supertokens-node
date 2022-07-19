@@ -24,7 +24,7 @@ export declare type TypeNormalisedInput = {
 };
 export declare type RecipeInterface = {
     getDashboardBundleDomain(input: { userContext: any }): Promise<string>;
-    isValidAuth(input: { key: string; configKey: string; userContext: any }): Promise<boolean>;
+    shouldAllowAccess(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }): Promise<boolean>;
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
@@ -37,14 +37,5 @@ export declare type APIOptions = {
 };
 export declare type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
-    validateKeyPOST:
-        | undefined
-        | ((input: {
-              key: string;
-              options: APIOptions;
-              userContext: any;
-          }) => Promise<{
-              status: "OK" | "INVALID_KEY";
-          }>);
 };
 export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<boolean>;

@@ -14,27 +14,23 @@
  */
 
 import { APIInterface, APIOptions } from "../types";
-import { makeDefaultUserContextFromAPI, sendNon200Response } from "../../../utils";
+import { makeDefaultUserContextFromAPI } from "../../../utils";
+import { sendUnauthorisedAccess } from "../utils";
 
-export default async function validateKey(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
-    if (apiImplementation.validateKeyPOST === undefined) {
-        return false;
-    }
-
-    const key = (await options.req.getJSONBody()).key;
-
-    if (key === undefined) {
-        sendNon200Response(options.res, "Unauthorised Access", 401);
-        return true;
-    }
-
-    const validateResponse = await apiImplementation.validateKeyPOST({
-        key,
-        options,
+export default async function validateKey(_: APIInterface, options: APIOptions): Promise<boolean> {
+    const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
+        req: options.req,
+        config: options.config,
         userContext: makeDefaultUserContextFromAPI(options.req),
     });
 
-    options.res.sendJSONResponse(validateResponse);
+    if (!shouldAllowAccess) {
+        sendUnauthorisedAccess(options.res);
+    } else {
+        options.res.sendJSONResponse({
+            status: "OK",
+        });
+    }
 
     return true;
 }

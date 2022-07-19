@@ -87,14 +87,15 @@ export default class Recipe extends RecipeModule {
     // abstract instance functions below...............
 
     getAPIsHandled = (): APIHandled[] => {
-        return [
-            {
-                method: "get",
-                pathWithoutApiBasePath: new NormalisedURLPath(DASHBOARD_API),
-                id: DASHBOARD_API,
-                disabled: this.apiImpl.dashboardGET === undefined,
-            },
-        ];
+        /**
+         * Normally this array is used by the SDK to decide whether or not the recipe
+         * handles a specific API path and method and then returns the ID.
+         *
+         * For the dashboard recipe this logic is fully custom and handled inside the
+         * `returnAPIIdIfCanHandleRequest` method of this class. Since this array is never
+         * used for this recipe, we simply return an empty array.
+         */
+        return [];
     };
 
     handleAPIRequest = async (

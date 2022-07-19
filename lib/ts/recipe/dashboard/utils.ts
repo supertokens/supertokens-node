@@ -13,8 +13,10 @@
  * under the License.
  */
 
+import { BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
+import { sendNon200Response } from "../../utils";
 import { DASHBOARD_API, VALIDATE_KEY_API } from "./constants";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
@@ -32,8 +34,8 @@ export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalised
 }
 
 export function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAppinfo): boolean {
-    const dashboardBundlePath = appInfo.apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
-    if (!path.startsWith(dashboardBundlePath)) {
+    const dashboardRecipeBasePath = appInfo.apiBasePath.appendPath(new NormalisedURLPath(DASHBOARD_API));
+    if (!path.startsWith(dashboardRecipeBasePath)) {
         return false;
     }
 
@@ -58,6 +60,6 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
     return undefined;
 }
 
-export function isValidApiKey(key: string, config: TypeNormalisedInput) {
-    return key === config.apiKey;
+export function sendUnauthorisedAccess(res: BaseResponse) {
+    sendNon200Response(res, "Unauthorised access", 401);
 }

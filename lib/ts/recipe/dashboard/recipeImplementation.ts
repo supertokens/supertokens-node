@@ -21,8 +21,17 @@ export default function getRecipeImplementation(): RecipeInterface {
             // TODO NEMI: Add default bundle URL here
             return "";
         },
-        isValidAuth: async function (input) {
-            return input.configKey === input.key;
+        shouldAllowAccess: async function (input) {
+            let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
+
+            // We receieve the api key as `Bearer API_KEY`, this retrieves just the key
+            apiKeyHeaderValue = apiKeyHeaderValue?.split(" ")[1];
+
+            if (apiKeyHeaderValue === undefined) {
+                return false;
+            }
+
+            return apiKeyHeaderValue === input.config.apiKey;
         },
     };
 }
