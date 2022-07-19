@@ -30,6 +30,7 @@ import Recipe from "./recipe";
 import { JSONObject } from "../../types";
 import frameworks from "../../framework";
 import SuperTokens from "../../supertokens";
+import { getRequiredClaimValidators } from "./utils";
 
 // For Express
 export default class SessionWrapper {
@@ -85,9 +86,33 @@ export default class SessionWrapper {
               invalidClaims: ClaimValidationError[];
           }
     > {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.validateClaimsForSessionHandle({
+        const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+
+        const sessionInfo = await recipeImpl.getSessionInformation({
             sessionHandle,
-            overrideGlobalClaimValidators,
+            userContext,
+        });
+        if (sessionInfo === undefined) {
+            return {
+                status: "SESSION_DOES_NOT_EXIST_ERROR",
+            };
+        }
+
+        const claimValidatorsAddedByOtherRecipes = Recipe.getClaimValidatorsAddedByOtherRecipes();
+        const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
+            userId: sessionInfo?.userId,
+            claimValidatorsAddedByOtherRecipes,
+            userContext,
+        });
+
+        const claimValidators =
+            overrideGlobalClaimValidators !== undefined
+                ? await overrideGlobalClaimValidators(globalClaimValidators, sessionInfo, userContext)
+                : globalClaimValidators;
+
+        return recipeImpl.validateClaimsForSessionHandle({
+            sessionInfo,
+            claimValidators,
             userContext,
         });
     }
@@ -105,10 +130,23 @@ export default class SessionWrapper {
         status: "OK";
         invalidClaims: ClaimValidationError[];
     }> {
-        return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.validateClaimsInJWTPayload({
+        const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
+
+        const claimValidatorsAddedByOtherRecipes = Recipe.getClaimValidatorsAddedByOtherRecipes();
+        const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
+            userId,
+            claimValidatorsAddedByOtherRecipes,
+            userContext,
+        });
+
+        const claimValidators =
+            overrideGlobalClaimValidators !== undefined
+                ? await overrideGlobalClaimValidators(globalClaimValidators, userId, userContext)
+                : globalClaimValidators;
+        return recipeImpl.validateClaimsInJWTPayload({
             userId,
             jwtPayload,
-            overrideGlobalClaimValidators,
+            claimValidators,
             userContext,
         });
     }
@@ -122,11 +160,17 @@ export default class SessionWrapper {
         }
         const recipeInterfaceImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
         const session = await recipeInterfaceImpl.getSession({ req, res, options, userContext });
+
         if (session !== undefined) {
+            const claimValidators = await getRequiredClaimValidators(
+                session,
+                options?.overrideGlobalClaimValidators,
+                userContext
+            );
             await recipeInterfaceImpl.assertClaims({
                 session,
-                overrideGlobalClaimValidators: options?.overrideGlobalClaimValidators,
-                userContext: options?.overrideGlobalClaimValidators,
+                claimValidators,
+                userContext,
             });
         }
         return session;

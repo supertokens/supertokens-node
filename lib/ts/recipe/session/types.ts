@@ -289,23 +289,13 @@ export type RecipeInterface = {
 
     assertClaims(input: {
         session: SessionContainerInterface;
-        overrideGlobalClaimValidators:
-            | ((
-                  globalClaimValidators: SessionClaimValidator[],
-                  session: SessionContainerInterface,
-                  userContext: any
-              ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[])
-            | undefined;
+        claimValidators: SessionClaimValidator[];
         userContext: any;
     }): Promise<void>;
 
     validateClaimsForSessionHandle(input: {
-        sessionHandle: string;
-        overrideGlobalClaimValidators?: (
-            globalClaimValidators: SessionClaimValidator[],
-            sessionInfo: SessionInformation,
-            userContext: any
-        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
+        sessionInfo: SessionInformation;
+        claimValidators: SessionClaimValidator[];
         userContext: any;
     }): Promise<
         | {
@@ -320,11 +310,7 @@ export type RecipeInterface = {
     validateClaimsInJWTPayload(input: {
         userId: string;
         jwtPayload: JSONObject;
-        overrideGlobalClaimValidators?: (
-            globalClaimValidators: SessionClaimValidator[],
-            userId: string,
-            userContext: any
-        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
+        claimValidators: SessionClaimValidator[];
         userContext: any;
     }): Promise<{
         status: "OK";

@@ -20,6 +20,8 @@ import {
     NormalisedErrorHandlers,
     ClaimValidationError,
     SessionClaimValidator,
+    SessionContainerInterface,
+    VerifySessionOptions,
 } from "./types";
 import {
     setFrontTokenInHeaders,
@@ -298,6 +300,25 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
+}
+
+export async function getRequiredClaimValidators(
+    session: SessionContainerInterface,
+    overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
+    userContext: any
+) {
+    const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
+    const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
+        {
+            userId: session.getUserId(),
+            claimValidatorsAddedByOtherRecipes,
+            userContext,
+        }
+    );
+
+    return overrideGlobalClaimValidators !== undefined
+        ? await overrideGlobalClaimValidators(globalClaimValidators, session, userContext)
+        : globalClaimValidators;
 }
 
 export async function updateClaimsInPayloadIfNeeded(

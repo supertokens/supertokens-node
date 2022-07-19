@@ -5,6 +5,8 @@ import {
     TypeNormalisedInput,
     ClaimValidationError,
     SessionClaimValidator,
+    SessionContainerInterface,
+    VerifySessionOptions,
 } from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
@@ -48,6 +50,11 @@ export declare function attachCreateOrRefreshSessionResponseToExpressRes(
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse
 ): void;
+export declare function getRequiredClaimValidators(
+    session: SessionContainerInterface,
+    overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
+    userContext: any
+): Promise<SessionClaimValidator[]>;
 export declare function updateClaimsInPayloadIfNeeded(
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,

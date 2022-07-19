@@ -4,6 +4,7 @@ import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
 import { GeneralErrorResponse } from "../../../types";
+import { getRequiredClaimValidators } from "../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -49,9 +50,15 @@ export default function getAPIInterface(): APIInterface {
                     userContext,
                 });
                 if (session !== undefined) {
+                    const claimValidators = await getRequiredClaimValidators(
+                        session,
+                        verifySessionOptions?.overrideGlobalClaimValidators,
+                        userContext
+                    );
+
                     await options.recipeImplementation.assertClaims({
                         session,
-                        overrideGlobalClaimValidators: verifySessionOptions?.overrideGlobalClaimValidators,
+                        claimValidators,
                         userContext,
                     });
                 }
