@@ -253,14 +253,4 @@ export default class Recipe extends RecipeModule {
                 (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
         );
     };
-
-    // helper functions...
-
-    getEmailForUserId = async (userId: string, userContext: any) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo === undefined) {
-            throw new Error("Unknown User ID provided");
-        }
-        return userInfo.email;
-    };
 }

@@ -135,7 +135,7 @@ export type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: any;
-              session?: SessionContainerInterface;
+              session: SessionContainerInterface;
           }) => Promise<
               | {
                     status: "OK";
@@ -149,7 +149,7 @@ export type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: any;
-              session?: SessionContainerInterface;
+              session: SessionContainerInterface;
           }) => Promise<{ status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK" } | GeneralErrorResponse>);
 };
 

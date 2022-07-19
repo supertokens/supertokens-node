@@ -1,5 +1,6 @@
 import { APIInterface } from "../";
 import { logDebugMessage } from "../../../logger";
+import EmailVerification from "../../emailverification/recipe";
 import Session from "../../session";
 
 export default function getAPIImplementation(): APIInterface {
@@ -26,7 +27,28 @@ export default function getAPIImplementation(): APIInterface {
 
             let user = response.user;
 
+            if (user.email !== undefined) {
+                const emailVerificationInstance = EmailVerification.getInstance();
+                if (emailVerificationInstance) {
+                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                        {
+                            userId: user.id,
+                            email: user.email,
+                            userContext: input.userContext,
+                        }
+                    );
+
+                    if (tokenResponse.status === "OK") {
+                        await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                            token: tokenResponse.token,
+                            userContext: input.userContext,
+                        });
+                    }
+                }
+            }
+
             const session = await Session.createNewSession(input.options.res, user.id, {}, {}, input.userContext);
+
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,

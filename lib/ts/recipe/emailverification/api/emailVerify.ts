@@ -76,7 +76,7 @@ export default async function emailVerify(apiImplementation: APIInterface, optio
         );
         result = await apiImplementation.isEmailVerifiedGET({
             options,
-            session,
+            session: session!,
             userContext,
         });
     }

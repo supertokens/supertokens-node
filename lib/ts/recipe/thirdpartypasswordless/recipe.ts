@@ -258,27 +258,4 @@ export default class Recipe extends RecipeModule {
                 (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
         );
     };
-
-    // helper functions...
-
-    getEmailForUserIdForEmailVerification = async (userId: string, userContext: any): Promise<string> => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo === undefined) {
-            throw new Error("Unknown User ID provided");
-        } else if (!("thirdParty" in userInfo)) {
-            // this is a passwordless user
-            if (userInfo.email !== undefined) {
-                return userInfo.email;
-            } else {
-                // this is a passwordless user with only a phone number.
-                // returning an empty string here is not a problem since
-                // we override the email verification functions above to
-                // send that the email is already verified for passwordless users.
-                return "";
-            }
-        } else {
-            // third party user
-            return userInfo.email;
-        }
-    };
 }

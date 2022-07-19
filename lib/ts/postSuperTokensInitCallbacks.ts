@@ -14,14 +14,14 @@
  */
 
 export class PostSuperTokensInitCallbacks {
-    static bootstrapCallbacks: (() => void)[] = [];
+    static postInitCallbacks: (() => void)[] = [];
 
     static addPostInitCallback(cb: () => void) {
-        PostSuperTokensInitCallbacks.bootstrapCallbacks.push(cb);
+        PostSuperTokensInitCallbacks.postInitCallbacks.push(cb);
     }
 
     static runPostInitCallbacks() {
-        for (const cb of PostSuperTokensInitCallbacks.bootstrapCallbacks) {
+        for (const cb of PostSuperTokensInitCallbacks.postInitCallbacks) {
             cb();
         }
     }

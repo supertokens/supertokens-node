@@ -40,13 +40,6 @@ export type TypeNormalisedInput = {
     };
 };
 
-export type TypeInputEmailVerificationFeature = {
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-};
-
 export type TypeInputFormField = {
     id: string;
     validate?: (value: any) => Promise<string | undefined>;
@@ -74,6 +67,9 @@ export type TypeNormalisedInputSignIn = {
 };
 
 export type TypeInputResetPasswordUsingTokenFeature = {
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
 

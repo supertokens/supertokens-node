@@ -201,7 +201,9 @@ export default class Recipe extends RecipeModule {
             }
         }
 
-        throw new Error("Unknown User ID provided");
+        return {
+            status: "UNKNOWN_USER_ID_ERROR",
+        };
     };
 
     addGetEmailForUserIdFunc = (func: GetEmailForUserIdFunc): void => {

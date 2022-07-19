@@ -24,12 +24,6 @@ export declare type TypeNormalisedInput = {
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
     };
 };
-export declare type TypeInputEmailVerificationFeature = {
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-};
 export declare type TypeInputFormField = {
     id: string;
     validate?: (value: any) => Promise<string | undefined>;
@@ -54,6 +48,9 @@ export declare type TypeNormalisedInputSignIn = {
     formFields: NormalisedFormField[];
 };
 export declare type TypeInputResetPasswordUsingTokenFeature = {
+    /**
+     * @deprecated Please use emailDelivery config instead
+     */
     createAndSendCustomEmail?: (user: User, passwordResetURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {

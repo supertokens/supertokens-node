@@ -39,9 +39,13 @@ export default function getAPIInterface(): APIInterface {
             await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
             const isVerified = await session.getClaimValue(EmailVerificationClaim, userContext);
 
+            if (isVerified === undefined) {
+                throw new Error("Should never come here: EmailVerificationClaim failed to set value");
+            }
+
             return {
                 status: "OK",
-                isVerified: isVerified === true,
+                isVerified,
             };
         },
 
@@ -61,12 +65,7 @@ export default function getAPIInterface(): APIInterface {
                 userContext
             );
 
-            if (emailInfo.status === "UNKNOWN_USER_ID_ERROR") {
-                return {
-                    status: "GENERAL_ERROR",
-                    message: "UNKNOWN_USER_ID_ERROR",
-                };
-            } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
+            if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
                 logDebugMessage(
                     `Email verification email not sent to user ${userId} because it doesn't have an email address.`
                 );
@@ -111,7 +110,7 @@ export default function getAPIInterface(): APIInterface {
                     status: "OK",
                 };
             } else {
-                throw new Error("Should never come here: Invalid result from getEmailForUserId");
+                throw new Error("Should never come here: UNKNOWN_USER_ID or invalid result from getEmailForUserId");
             }
         },
     };
