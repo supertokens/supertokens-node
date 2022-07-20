@@ -1,7 +1,7 @@
-import { JSONValue } from "../../../types";
+import { JSONPrimitive } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 
-export class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T> {
+export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
     public fetchValue: (userId: string, userContext: any) => Promise<T | undefined> | T | undefined;
 
     constructor(config: { key: string; fetchValue: SessionClaim<T>["fetchValue"] }) {
@@ -18,11 +18,20 @@ export class PrimitiveClaim<T extends JSONValue> extends SessionClaim<T> {
             },
         };
     }
-    removeFromPayload(payload: any, _userContext?: any): any {
+    removeFromPayloadByMerge_internal(payload: any, _userContext?: any): any {
         const res = {
             ...payload,
             [this.key]: null,
         };
+
+        return res;
+    }
+
+    removeFromPayload(payload: any, _userContext?: any): any {
+        const res = {
+            ...payload,
+        };
+        delete res[this.key];
 
         return res;
     }

@@ -212,7 +212,7 @@ export default class SessionRecipe extends RecipeModule {
                     request,
                     response
                 );
-            } else if (err.type === STError.INVALID_CLAIM) {
+            } else if (err.type === STError.INVALID_CLAIMS) {
                 return await this.config.errorHandlers.onInvalidClaim(err.payload, request, response);
             } else {
                 throw err;

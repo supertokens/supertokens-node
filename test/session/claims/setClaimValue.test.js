@@ -21,7 +21,7 @@ const sinon = require("sinon");
 const { TrueClaim } = require("./testClaims");
 const { ProcessState } = require("../../../lib/build/processState");
 
-describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeClaim.test.js]")}`, function () {
+describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClaimValue.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -33,22 +33,29 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
         await cleanST();
     });
 
-    describe("SessionClass.removeClaim", () => {
+    describe("SessionClass.setClaimValue", () => {
         afterEach(() => {
             sinon.restore();
         });
 
-        it("should attempt to set claim to null", async () => {
+        it("should merge the right value", async () => {
             const session = new SessionClass({}, "testToken", "testHandle", "testUserId", {}, {});
             sinon.useFakeTimers();
-            const mock = sinon.mock(session).expects("mergeIntoAccessTokenPayload").once().withArgs({
-                "st-true": null,
-            });
-            await session.removeClaim(TrueClaim);
+            const mock = sinon
+                .mock(session)
+                .expects("mergeIntoAccessTokenPayload")
+                .once()
+                .withArgs({
+                    "st-true": {
+                        t: 0,
+                        v: true,
+                    },
+                });
+            await session.setClaimValue(TrueClaim, true);
             mock.verify();
         });
 
-        it("should clear previously set claim", async function () {
+        it("should overwrite claim value", async function () {
             await startST();
 
             SuperTokens.init({
@@ -87,13 +94,16 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
             assert.equal(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 1000);
 
-            await res.removeClaim(TrueClaim);
+            await res.setClaimValue(TrueClaim, false);
 
             const payloadAfter = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payloadAfter).length, 0);
+            assert.equal(Object.keys(payloadAfter).length, 1);
+            assert.ok(payloadAfter["st-true"]);
+            assert.equal(payloadAfter["st-true"].v, false);
+            assert(payloadAfter["st-true"].t > payload["st-true"].t);
         });
 
-        it("should clear previously set claim using a handle", async function () {
+        it("should overwrite claim value using session handle", async function () {
             await startST();
 
             SuperTokens.init({
@@ -124,19 +134,21 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(response, "someId");
+            const res = await Session.createNewSession(response, "someId");
 
-            const payload = session.getAccessTokenPayload();
+            const payload = res.getAccessTokenPayload();
             assert.equal(Object.keys(payload).length, 1);
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 1000);
 
-            const res = await Session.removeClaim(session.getHandle(), TrueClaim);
-            assert.equal(res, true);
+            await Session.setClaimValue(res.getHandle(), TrueClaim, false);
 
-            const payloadAfter = (await Session.getSessionInformation(session.getHandle())).accessTokenPayload;
-            assert.equal(Object.keys(payloadAfter).length, 0);
+            const payloadAfter = (await Session.getSessionInformation(res.getHandle())).accessTokenPayload;
+            assert.equal(Object.keys(payloadAfter).length, 1);
+            assert.ok(payloadAfter["st-true"]);
+            assert.equal(payloadAfter["st-true"].v, false);
+            assert(payloadAfter["st-true"].t > payload["st-true"].t);
         });
 
         it("should work ok for not existing handle", async function () {
@@ -151,25 +163,10 @@ describe(`sessionClaims/removeClaim: ${printPath("[test/session/claims/removeCla
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [
-                    Session.init({
-                        override: {
-                            functions: (oI) => ({
-                                ...oI,
-                                createNewSession: async (input) => {
-                                    input.accessTokenPayload = {
-                                        ...input.accessTokenPayload,
-                                        ...(await TrueClaim.build(input.userId, input.userContext)),
-                                    };
-                                    return oI.createNewSession(input);
-                                },
-                            }),
-                        },
-                    }),
-                ],
+                recipeList: [Session.init()],
             });
 
-            const res = await Session.removeClaim("asfd", TrueClaim);
+            const res = await Session.setClaimValue("asfd", TrueClaim, false);
             assert.equal(res, false);
         });
     });
