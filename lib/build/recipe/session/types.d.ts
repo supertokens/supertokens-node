@@ -164,8 +164,8 @@ export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
     overrideGlobalClaimValidators?: (
-        session: SessionContainerInterface,
         globalClaimValidators: SessionClaimValidator[],
+        session: SessionContainerInterface,
         userContext: any
     ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 }
@@ -247,15 +247,31 @@ export declare type RecipeInterface = {
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     assertClaims(input: {
         session: SessionContainerInterface;
-        overrideGlobalClaimValidators:
-            | ((
-                  session: SessionContainerInterface,
-                  globalClaimValidators: SessionClaimValidator[],
-                  userContext: any
-              ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[])
-            | undefined;
+        claimValidators: SessionClaimValidator[];
         userContext: any;
     }): Promise<void>;
+    validateClaimsForSessionHandle(input: {
+        sessionInfo: SessionInformation;
+        claimValidators: SessionClaimValidator[];
+        userContext: any;
+    }): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              invalidClaims: ClaimValidationError[];
+          }
+    >;
+    validateClaimsInJWTPayload(input: {
+        userId: string;
+        jwtPayload: JSONObject;
+        claimValidators: SessionClaimValidator[];
+        userContext: any;
+    }): Promise<{
+        status: "OK";
+        invalidClaims: ClaimValidationError[];
+    }>;
     fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
@@ -267,7 +283,15 @@ export declare type RecipeInterface = {
         sessionHandle: string;
         claim: SessionClaim<T>;
         userContext?: any;
-    }): Promise<T | undefined>;
+    }): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              value: T | undefined;
+          }
+    >;
     removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
 };
 export interface SessionContainerInterface {
@@ -359,7 +383,7 @@ export declare type SessionClaimValidator = (
     /**
      * Decides if the claim is valid based on the payload (and not checking DB or anything else)
      */
-    validate: (payload: any, userContext: any) => Promise<ClaimValidationResult> | ClaimValidationResult;
+    validate: (payload: any, userContext: any) => Promise<ClaimValidationResult>;
 };
 export declare abstract class SessionClaim<T> {
     readonly key: string;

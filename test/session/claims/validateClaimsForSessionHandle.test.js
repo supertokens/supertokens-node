@@ -17,10 +17,12 @@ const assert = require("assert");
 const SuperTokens = require("../../..");
 const Session = require("../../../recipe/session");
 const sinon = require("sinon");
-const { TrueClaim } = require("./testClaims");
+const { TrueClaim, UndefinedClaim } = require("./testClaims");
 const { ProcessState } = require("../../../lib/build/processState");
 
-describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClaimValue.test.js]")}`, function () {
+describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
+    "[test/session/claims/validateClaimsForSessionHandle.test.js]"
+)}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
@@ -32,12 +34,12 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
         await cleanST();
     });
 
-    describe("SessionClass.getClaimValue", () => {
+    describe("Session.validateClaimsForSessionHandle", () => {
         afterEach(() => {
             sinon.restore();
         });
 
-        it("should get the right value", async function () {
+        it("should return the right validation errors", async function () {
             await startST();
 
             SuperTokens.init({
@@ -70,48 +72,26 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
             const response = mockResponse();
             const session = await Session.createNewSession(response, "someId");
 
-            const res = await session.getClaimValue(TrueClaim);
-            assert.equal(res, true);
-        });
-
-        it("should get the right value using session handle", async function () {
-            await startST();
-
-            SuperTokens.init({
-                supertokens: {
-                    connectionURI: "http://localhost:8080",
-                },
-                appInfo: {
-                    apiDomain: "api.supertokens.io",
-                    appName: "SuperTokens",
-                    websiteDomain: "supertokens.io",
-                },
-                recipeList: [
-                    Session.init({
-                        override: {
-                            functions: (oI) => ({
-                                ...oI,
-                                createNewSession: async (input) => {
-                                    input.accessTokenPayload = {
-                                        ...input.accessTokenPayload,
-                                        ...(await TrueClaim.build(input.userId, input.userContext)),
-                                    };
-                                    return oI.createNewSession(input);
-                                },
-                            }),
+            const failingValidator = UndefinedClaim.validators.hasValue(true);
+            assert.deepStrictEqual(
+                await Session.validateClaimsForSessionHandle(session.getHandle(), () => [
+                    TrueClaim.validators.hasValue(true),
+                    failingValidator,
+                ]),
+                {
+                    status: "OK",
+                    invalidClaims: [
+                        {
+                            id: failingValidator.id,
+                            reason: {
+                                actualValue: undefined,
+                                expectedValue: true,
+                                message: "wrong value",
+                            },
                         },
-                    }),
-                ],
-            });
-
-            const response = mockResponse();
-            const session = await Session.createNewSession(response, "someId");
-
-            const res = await Session.getClaimValue(session.getHandle(), TrueClaim);
-            assert.deepStrictEqual(res, {
-                status: "OK",
-                value: true,
-            });
+                    ],
+                }
+            );
         });
 
         it("should work for not existing handle", async function () {
@@ -129,7 +109,7 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
                 recipeList: [Session.init()],
             });
 
-            assert.deepStrictEqual(await Session.getClaimValue("asfd", TrueClaim), {
+            assert.deepStrictEqual(await Session.validateClaimsForSessionHandle("asfd"), {
                 status: "SESSION_DOES_NOT_EXIST_ERROR",
             });
         });
