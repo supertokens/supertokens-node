@@ -19,6 +19,9 @@ import {
     TypeNormalisedInput,
     NormalisedErrorHandlers,
     ClaimValidationError,
+    SessionClaimValidator,
+    SessionContainerInterface,
+    VerifySessionOptions,
 } from "./types";
 import {
     setFrontTokenInHeaders,
@@ -38,6 +41,7 @@ import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./with-jwt/constants";
+import { logDebugMessage } from "../../logger";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -296,4 +300,69 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
+}
+
+export async function getRequiredClaimValidators(
+    session: SessionContainerInterface,
+    overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
+    userContext: any
+) {
+    const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
+    const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
+        {
+            userId: session.getUserId(),
+            claimValidatorsAddedByOtherRecipes,
+            userContext,
+        }
+    );
+
+    return overrideGlobalClaimValidators !== undefined
+        ? await overrideGlobalClaimValidators(globalClaimValidators, session, userContext)
+        : globalClaimValidators;
+}
+
+export async function updateClaimsInPayloadIfNeeded(
+    claimValidators: SessionClaimValidator[],
+    newAccessTokenPayload: any,
+    userContext: any
+) {
+    for (const validator of claimValidators) {
+        logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
+        if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
+            logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
+            const value = await validator.claim.fetchValue(this.getUserId(), userContext);
+            logDebugMessage(
+                "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
+            );
+            if (value !== undefined) {
+                newAccessTokenPayload = validator.claim.addToPayload_internal(
+                    newAccessTokenPayload,
+                    value,
+                    userContext
+                );
+            }
+        }
+    }
+    return newAccessTokenPayload;
+}
+
+export async function validateClaimsInPayload(
+    claimValidators: SessionClaimValidator[],
+    newAccessTokenPayload: any,
+    userContext: any
+) {
+    const validationErrors = [];
+    for (const validator of claimValidators) {
+        const claimValidationResult = await validator.validate(newAccessTokenPayload, userContext);
+        logDebugMessage(
+            "validateClaimsInPayload " + validator.id + " validation res " + JSON.stringify(claimValidationResult)
+        );
+        if (!claimValidationResult.isValid) {
+            validationErrors.push({
+                id: validator.id,
+                reason: claimValidationResult.reason,
+            });
+        }
+    }
+    return validationErrors;
 }

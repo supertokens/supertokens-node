@@ -28,7 +28,7 @@ export default class SessionRecipe extends RecipeModule {
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
-    static addClaimFromOtherRecipe: (builder: SessionClaim<any>) => void;
+    static addClaimFromOtherRecipe: (claim: SessionClaim<any>) => void;
     static getClaimsAddedByOtherRecipes: () => SessionClaim<any>[];
     static addClaimValidatorFromOtherRecipe: (builder: SessionClaimValidator) => void;
     static getClaimValidatorsAddedByOtherRecipes: () => SessionClaimValidator[];

@@ -17,7 +17,7 @@ import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeade
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
-import { logDebugMessage } from "../../logger";
+import { updateClaimsInPayloadIfNeeded, validateClaimsInPayload } from "./utils";
 
 export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
@@ -149,37 +149,18 @@ export default class Session implements SessionContainerInterface {
     assertClaims = async (claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> => {
         const origSessionClaimPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
 
-        let newAccessTokenPayload = this.getAccessTokenPayload();
-        let validationErrors = [];
-        for (const validator of claimValidators) {
-            logDebugMessage("Session.validateClaims checking " + validator.id);
-            if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
-                logDebugMessage("Session.validateClaims refetching " + validator.id);
-                const value = await validator.claim.fetchValue(this.getUserId(), userContext);
-                logDebugMessage("Session.validateClaims " + validator.id + " refetch res " + JSON.stringify(value));
-                if (value !== undefined) {
-                    newAccessTokenPayload = validator.claim.addToPayload_internal(
-                        newAccessTokenPayload,
-                        value,
-                        userContext
-                    );
-                }
-            }
-            const claimValidationResult = await validator.validate(newAccessTokenPayload, userContext);
-            logDebugMessage(
-                "Session.validateClaims " + validator.id + " validation res " + JSON.stringify(claimValidationResult)
-            );
-            if (!claimValidationResult.isValid) {
-                validationErrors.push({
-                    id: validator.id,
-                    reason: claimValidationResult.reason,
-                });
-            }
-        }
+        let newAccessTokenPayload = await updateClaimsInPayloadIfNeeded(
+            claimValidators,
+            this.getAccessTokenPayload(),
+            userContext
+        );
 
         if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
             await this.mergeIntoAccessTokenPayload(newAccessTokenPayload, userContext);
         }
+
+        let validationErrors = await validateClaimsInPayload(claimValidators, newAccessTokenPayload, userContext);
+
         if (validationErrors.length !== 0) {
             throw new STError({
                 type: "INVALID_CLAIMS",
