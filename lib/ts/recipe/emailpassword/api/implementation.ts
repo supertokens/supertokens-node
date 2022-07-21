@@ -66,8 +66,9 @@ export default function getAPIImplementation(): APIInterface {
             }
 
             let passwordResetLink =
-                (await options.config.resetPasswordUsingTokenFeature.getResetPasswordURL(user, userContext)) +
-                "?token=" +
+                options.appInfo.websiteDomain.getAsStringDangerous() +
+                options.appInfo.websiteBasePath.getAsStringDangerous() +
+                "/reset-password?token=" +
                 response.token +
                 "&rid=" +
                 options.recipeId;

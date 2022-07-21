@@ -18,14 +18,11 @@ import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery
 import { createTransport } from "nodemailer";
 import OverrideableBuilder from "supertokens-js-override";
 import { getServiceImplementation } from "./serviceImplementation";
-import EmailVerificationSMTPService from "../../../../emailverification/emaildelivery/services/smtp";
 import PasswordlessSMTPService from "../../../../passwordless/emaildelivery/services/smtp";
-import getEmailVerificationServiceImplementation from "./serviceImplementation/emailVerificationServiceImplementation";
 import getPasswordlessServiceImplementation from "./serviceImplementation/passwordlessServiceImplementation";
 
 export default class SMTPService implements EmailDeliveryInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
     serviceImpl: ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput>;
-    private emailVerificationSMTPService: EmailVerificationSMTPService;
     private passwordlessSMTPService: PasswordlessSMTPService;
 
     constructor(config: TypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>) {
@@ -44,13 +41,6 @@ export default class SMTPService implements EmailDeliveryInterface<TypeThirdPart
         }
         this.serviceImpl = builder.build();
 
-        this.emailVerificationSMTPService = new EmailVerificationSMTPService({
-            smtpSettings: config.smtpSettings,
-            override: (_) => {
-                return getEmailVerificationServiceImplementation(this.serviceImpl);
-            },
-        });
-
         this.passwordlessSMTPService = new PasswordlessSMTPService({
             smtpSettings: config.smtpSettings,
             override: (_) => {
@@ -60,9 +50,6 @@ export default class SMTPService implements EmailDeliveryInterface<TypeThirdPart
     }
 
     sendEmail = async (input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }) => {
-        if (input.type === "EMAIL_VERIFICATION") {
-            return await this.emailVerificationSMTPService.sendEmail(input);
-        }
         return await this.passwordlessSMTPService.sendEmail(input);
     };
 }

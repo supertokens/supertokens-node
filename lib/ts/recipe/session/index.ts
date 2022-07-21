@@ -45,7 +45,7 @@ export default class SessionWrapper {
         sessionData: any = {},
         userContext: any = {}
     ) {
-        const claimsAddedByOtherRecipes = Recipe.getClaimsAddedByOtherRecipes();
+        const claimsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimsAddedByOtherRecipes();
 
         let finalAccessTokenPayload = accessTokenPayload;
 
@@ -98,7 +98,7 @@ export default class SessionWrapper {
             };
         }
 
-        const claimValidatorsAddedByOtherRecipes = Recipe.getClaimValidatorsAddedByOtherRecipes();
+        const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
             userId: sessionInfo?.userId,
             claimValidatorsAddedByOtherRecipes,
@@ -132,7 +132,7 @@ export default class SessionWrapper {
     }> {
         const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
 
-        const claimValidatorsAddedByOtherRecipes = Recipe.getClaimValidatorsAddedByOtherRecipes();
+        const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
             userId,
             claimValidatorsAddedByOtherRecipes,

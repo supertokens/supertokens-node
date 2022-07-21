@@ -1,14 +1,5 @@
 // @ts-nocheck
-import {
-    TypeProvider,
-    APIOptions as ThirdPartyAPIOptionsOriginal,
-    TypeThirdPartyEmailDeliveryInput,
-} from "../thirdparty/types";
-import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
-import {
-    RecipeInterface as EmailVerificationRecipeInterface,
-    APIInterface as EmailVerificationAPIInterface,
-} from "../emailverification";
+import { TypeProvider, APIOptions as ThirdPartyAPIOptionsOriginal } from "../thirdparty/types";
 import {
     DeviceType as DeviceTypeOriginal,
     APIOptions as PasswordlessAPIOptionsOriginal,
@@ -42,13 +33,6 @@ export declare type User = (
 ) & {
     id: string;
     timeJoined: number;
-};
-export declare type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
 };
 export declare type TypeInput = (
     | {
@@ -124,18 +108,7 @@ export declare type TypeInput = (
     emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyPasswordlessEmailDeliveryInput>;
     smsDelivery?: SmsDeliveryTypeInput<TypePasswordlessSmsDeliveryInput>;
     providers?: TypeProvider[];
-    emailVerificationFeature?: TypeInputEmailVerificationFeature;
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getLinkDomainAndPath?: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     override?: {
         functions?: (
@@ -143,16 +116,6 @@ export declare type TypeInput = (
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 export declare type TypeNormalisedInput = (
@@ -171,19 +134,8 @@ export declare type TypeNormalisedInput = (
       }
 ) & {
     flowType: "USER_INPUT_CODE" | "MAGIC_LINK" | "USER_INPUT_CODE_AND_MAGIC_LINK";
-    getLinkDomainAndPath?: (
-        contactInfo:
-            | {
-                  email: string;
-              }
-            | {
-                  phoneNumber: string;
-              },
-        userContext: any
-    ) => Promise<string> | string;
     getCustomUserInputCode?: (userContext: any) => Promise<string> | string;
     providers: TypeProvider[];
-    emailVerificationFeature: TypeInputEmailVerification;
     getEmailDeliveryConfig: (
         recipeImpl: RecipeInterface,
         isInServerlessEnv: boolean
@@ -195,16 +147,6 @@ export declare type TypeNormalisedInput = (
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 export declare type RecipeInterface = {
@@ -475,7 +417,5 @@ export declare type APIInterface = {
               | GeneralErrorResponse
           >);
 };
-export declare type TypeThirdPartyPasswordlessEmailDeliveryInput =
-    | TypeThirdPartyEmailDeliveryInput
-    | TypePasswordlessEmailDeliveryInput;
+export declare type TypeThirdPartyPasswordlessEmailDeliveryInput = TypePasswordlessEmailDeliveryInput;
 export declare type TypeThirdPartyPasswordlessSmsDeliveryInput = TypePasswordlessSmsDeliveryInput;

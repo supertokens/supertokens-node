@@ -11,7 +11,6 @@ import Passwordless from "../../recipe/passwordless";
 import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
 import { STMPService as STMPServiceTPP } from "../../recipe/thirdpartypasswordless/emaildelivery";
 import { STMPService as STMPServiceP } from "../../recipe/passwordless/emaildelivery";
-import { STMPService as STMPServiceTP } from "../../recipe/thirdparty/emaildelivery";
 import { STMPService as STMPServiceTPEP } from "../../recipe/thirdpartyemailpassword/emaildelivery";
 import { STMPService as STMPServiceEP } from "../../recipe/emailpassword/emaildelivery";
 import {
@@ -139,9 +138,6 @@ ThirdPartyPasswordless.init({
     getCustomUserInputCode: (userCtx) => {
         return "123";
     },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
-    },
     override: {
         apis: (oI) => {
             return {
@@ -177,9 +173,6 @@ ThirdPartyPasswordless.init({
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: async (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -236,9 +229,6 @@ Passwordless.init({
     getCustomUserInputCode: (userCtx) => {
         return "123";
     },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
-    },
     override: {
         apis: (oI) => {
             return {
@@ -274,9 +264,6 @@ Passwordless.init({
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: async (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -361,9 +348,6 @@ ThirdPartyPasswordless.init({
     getCustomUserInputCode: (userCtx) => {
         return "123";
     },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
-    },
     override: {
         apis: (oI) => {
             return {
@@ -409,9 +393,6 @@ ThirdPartyPasswordless.init({
     getCustomUserInputCode: (userCtx) => {
         return "123";
     },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
-    },
     override: {
         apis: (oI) => {
             return {
@@ -452,8 +433,7 @@ ThirdPartyPasswordless.init({
                         await oI.sendRawEmail(input);
                     },
                     getContent: async (input) => {
-                        if (input.type === "EMAIL_VERIFICATION") {
-                        } else if (input.type === "PASSWORDLESS_LOGIN") {
+                        if (input.type === "PASSWORDLESS_LOGIN") {
                         }
                         return await oI.getContent(input);
                     },
@@ -464,8 +444,7 @@ ThirdPartyPasswordless.init({
             return {
                 ...oI,
                 sendEmail: async (input) => {
-                    if (input.type === "EMAIL_VERIFICATION") {
-                    } else if (input.type === "PASSWORDLESS_LOGIN") {
+                    if (input.type === "PASSWORDLESS_LOGIN") {
                     }
                     await oI.sendEmail(input);
                 },
@@ -475,9 +454,6 @@ ThirdPartyPasswordless.init({
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: async (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -585,9 +561,6 @@ Passwordless.init({
     getCustomUserInputCode: (userCtx) => {
         return "123";
     },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
-    },
     override: {
         apis: (oI) => {
             return {
@@ -626,9 +599,6 @@ Passwordless.init({
     flowType: "MAGIC_LINK",
     getCustomUserInputCode: (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -691,9 +661,6 @@ Passwordless.init({
     flowType: "USER_INPUT_CODE",
     getCustomUserInputCode: async (userCtx) => {
         return "123";
-    },
-    getLinkDomainAndPath: async (contactInfo, userCtx) => {
-        return "";
     },
     override: {
         apis: (oI) => {
@@ -782,8 +749,7 @@ EmailPassword.init({
                         await oI.sendRawEmail(input);
                     },
                     getContent: async (input) => {
-                        if (input.type === "EMAIL_VERIFICATION") {
-                        } else if (input.type === "PASSWORD_RESET") {
+                        if (input.type === "PASSWORD_RESET") {
                         }
                         return await oI.getContent(input);
                     },
@@ -794,8 +760,7 @@ EmailPassword.init({
             return {
                 ...oI,
                 sendEmail: async (input) => {
-                    if (input.type === "EMAIL_VERIFICATION") {
-                    } else if (input.type === "PASSWORD_RESET") {
+                    if (input.type === "PASSWORD_RESET") {
                     }
                     await oI.sendEmail(input);
                 },
@@ -823,8 +788,7 @@ ThirdPartyEmailPassword.init({
                         await oI.sendRawEmail(input);
                     },
                     getContent: async (input) => {
-                        if (input.type === "EMAIL_VERIFICATION") {
-                        } else if (input.type === "PASSWORD_RESET") {
+                        if (input.type === "PASSWORD_RESET") {
                         }
                         return await oI.getContent(input);
                     },
@@ -835,8 +799,7 @@ ThirdPartyEmailPassword.init({
             return {
                 ...oI,
                 sendEmail: async (input) => {
-                    if (input.type === "EMAIL_VERIFICATION") {
-                    } else if (input.type === "PASSWORD_RESET") {
+                    if (input.type === "PASSWORD_RESET") {
                     }
                     await oI.sendEmail(input);
                 },
@@ -846,42 +809,6 @@ ThirdPartyEmailPassword.init({
 });
 
 ThirdParty.init({
-    emailDelivery: {
-        service: new STMPServiceTP({
-            smtpSettings: {
-                host: "",
-                password: "",
-                port: 465,
-                from: {
-                    name: "",
-                    email: "",
-                },
-            },
-            override: (oI) => {
-                return {
-                    ...oI,
-                    sendRawEmail: async (input) => {
-                        await oI.sendRawEmail(input);
-                    },
-                    getContent: async (input) => {
-                        if (input.type === "EMAIL_VERIFICATION") {
-                        }
-                        return await oI.getContent(input);
-                    },
-                };
-            },
-        }),
-        override: (oI) => {
-            return {
-                ...oI,
-                sendEmail: async (input) => {
-                    if (input.type === "EMAIL_VERIFICATION") {
-                    }
-                    await oI.sendEmail(input);
-                },
-            };
-        },
-    },
     signInAndUpFeature: {
         providers: [],
     },

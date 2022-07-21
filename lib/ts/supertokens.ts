@@ -30,6 +30,7 @@ import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
+import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -119,6 +120,7 @@ export default class SuperTokens {
     static init(config: TypeInput) {
         if (SuperTokens.instance === undefined) {
             SuperTokens.instance = new SuperTokens(config);
+            PostSuperTokensInitCallbacks.runPostInitCallbacks();
         }
     }
 

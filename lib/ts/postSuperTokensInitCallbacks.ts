@@ -1,4 +1,4 @@
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2022, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -13,5 +13,16 @@
  * under the License.
  */
 
-import SMTP from "./smtp";
-export let STMPService = SMTP;
+export class PostSuperTokensInitCallbacks {
+    static postInitCallbacks: (() => void)[] = [];
+
+    static addPostInitCallback(cb: () => void) {
+        PostSuperTokensInitCallbacks.postInitCallbacks.push(cb);
+    }
+
+    static runPostInitCallbacks() {
+        for (const cb of PostSuperTokensInitCallbacks.postInitCallbacks) {
+            cb();
+        }
+    }
+}

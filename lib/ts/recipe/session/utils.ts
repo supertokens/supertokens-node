@@ -307,7 +307,7 @@ export async function getRequiredClaimValidators(
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
     userContext: any
 ) {
-    const claimValidatorsAddedByOtherRecipes = SessionRecipe.getClaimValidatorsAddedByOtherRecipes();
+    const claimValidatorsAddedByOtherRecipes = SessionRecipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
     const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
         {
             userId: session.getUserId(),

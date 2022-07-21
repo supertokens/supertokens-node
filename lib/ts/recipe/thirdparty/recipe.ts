@@ -30,16 +30,14 @@ import { Querier } from "../../querier";
 import { BaseRequest, BaseResponse } from "../../framework";
 import appleRedirectHandler from "./api/appleRedirect";
 import OverrideableBuilder from "supertokens-js-override";
-import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { TypeThirdPartyEmailDeliveryInput } from "./types";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import { GetEmailForUserIdFunc } from "../emailverification/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
     static RECIPE_ID = "thirdparty";
 
     config: TypeNormalisedInput;
-
-    emailVerificationRecipe: EmailVerificationRecipe;
 
     providers: TypeProvider[];
 
@@ -49,22 +47,16 @@ export default class Recipe extends RecipeModule {
 
     isInServerlessEnv: boolean;
 
-    emailDelivery: EmailDeliveryIngredient<TypeThirdPartyEmailDeliveryInput>;
-
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
         config: TypeInput,
-        recipes: {
-            emailVerificationInstance: EmailVerificationRecipe | undefined;
-        },
-        ingredients: {
-            emailDelivery: EmailDeliveryIngredient<TypeThirdPartyEmailDeliveryInput> | undefined;
-        }
+        _recipes: {},
+        _ingredients: {}
     ) {
         super(recipeId, appInfo);
-        this.config = validateAndNormaliseUserInput(this, appInfo, config);
+        this.config = validateAndNormaliseUserInput(appInfo, config);
         this.isInServerlessEnv = isInServerlessEnv;
 
         this.providers = this.config.signInAndUpFeature.providers;
@@ -78,30 +70,12 @@ export default class Recipe extends RecipeModule {
             this.apiImpl = builder.override(this.config.override.apis).build();
         }
 
-        /**
-         * emailDelivery will always needs to be declared after isInServerlessEnv
-         * and recipeInterfaceImpl values are set
-         */
-        this.emailDelivery =
-            ingredients.emailDelivery === undefined
-                ? new EmailDeliveryIngredient(
-                      this.config.getEmailDeliveryConfig(this.recipeInterfaceImpl, this.isInServerlessEnv)
-                  )
-                : ingredients.emailDelivery;
-        this.emailVerificationRecipe =
-            recipes.emailVerificationInstance !== undefined
-                ? recipes.emailVerificationInstance
-                : new EmailVerificationRecipe(
-                      recipeId,
-                      appInfo,
-                      isInServerlessEnv,
-                      {
-                          ...this.config.emailVerificationFeature,
-                      },
-                      {
-                          emailDelivery: this.emailDelivery,
-                      }
-                  );
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+            const emailVerificationRecipe = EmailVerificationRecipe.getInstance();
+            if (emailVerificationRecipe !== undefined) {
+                emailVerificationRecipe.addGetEmailForUserIdFunc(this.getEmailForUserId.bind(this));
+            }
+        });
     }
 
     static init(config: TypeInput): RecipeListFunction {
@@ -112,9 +86,7 @@ export default class Recipe extends RecipeModule {
                     appInfo,
                     isInServerlessEnv,
                     config,
-                    {
-                        emailVerificationInstance: undefined,
-                    },
+                    {},
                     {
                         emailDelivery: undefined,
                     }
@@ -160,7 +132,6 @@ export default class Recipe extends RecipeModule {
                 id: APPLE_REDIRECT_HANDLER,
                 disabled: this.apiImpl.appleRedirectHandlerPOST === undefined,
             },
-            ...this.emailVerificationRecipe.getAPIsHandled(),
         ];
     };
 
@@ -168,15 +139,14 @@ export default class Recipe extends RecipeModule {
         id: string,
         req: BaseRequest,
         res: BaseResponse,
-        path: NormalisedURLPath,
-        method: HTTPMethod
+        _path: NormalisedURLPath,
+        _method: HTTPMethod
     ): Promise<boolean> => {
         let options = {
             config: this.config,
             recipeId: this.getRecipeId(),
             isInServerlessEnv: this.isInServerlessEnv,
             recipeImplementation: this.recipeInterfaceImpl,
-            emailVerificationRecipeImplementation: this.emailVerificationRecipe.recipeInterfaceImpl,
             providers: this.providers,
             req,
             res,
@@ -188,37 +158,33 @@ export default class Recipe extends RecipeModule {
             return await authorisationUrlAPI(this.apiImpl, options);
         } else if (id === APPLE_REDIRECT_HANDLER) {
             return await appleRedirectHandler(this.apiImpl, options);
-        } else {
-            return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, path, method);
         }
+        return false;
     };
 
-    handleError = async (err: STError, request: BaseRequest, response: BaseResponse): Promise<void> => {
-        if (err.fromRecipe === Recipe.RECIPE_ID) {
-            throw err;
-        } else {
-            return await this.emailVerificationRecipe.handleError(err, request, response);
-        }
+    handleError = async (err: STError, _request: BaseRequest, _response: BaseResponse): Promise<void> => {
+        throw err;
     };
 
     getAllCORSHeaders = (): string[] => {
-        return [...this.emailVerificationRecipe.getAllCORSHeaders()];
+        return [];
     };
 
     isErrorFromThisRecipe = (err: any): err is STError => {
-        return (
-            STError.isErrorFromSuperTokens(err) &&
-            (err.fromRecipe === Recipe.RECIPE_ID || this.emailVerificationRecipe.isErrorFromThisRecipe(err))
-        );
+        return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     };
 
     // helper functions...
-
-    getEmailForUserId = async (userId: string, userContext: any) => {
+    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
         let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo === undefined) {
-            throw Error("Unknown User ID provided");
+        if (userInfo !== undefined) {
+            return {
+                status: "OK",
+                email: userInfo.email,
+            };
         }
-        return userInfo.email;
+        return {
+            status: "UNKNOWN_USER_ID_ERROR",
+        };
     };
 }

@@ -16,9 +16,9 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OpenIdRecipe from "../openid/recipe";
 export default class SessionRecipe extends RecipeModule {
     private static instance;
-    private static claimsAddedByOtherRecipes;
-    private static claimValidatorsAddedByOtherRecipes;
     static RECIPE_ID: string;
+    private claimsAddedByOtherRecipes;
+    private claimValidatorsAddedByOtherRecipes;
     config: TypeNormalisedInput;
     recipeInterfaceImpl: RecipeInterface;
     openIdRecipe?: OpenIdRecipe;
@@ -28,10 +28,10 @@ export default class SessionRecipe extends RecipeModule {
     static getInstanceOrThrowError(): SessionRecipe;
     static init(config?: TypeInput): RecipeListFunction;
     static reset(): void;
-    static addClaimFromOtherRecipe: (claim: SessionClaim<any>) => void;
-    static getClaimsAddedByOtherRecipes: () => SessionClaim<any>[];
-    static addClaimValidatorFromOtherRecipe: (builder: SessionClaimValidator) => void;
-    static getClaimValidatorsAddedByOtherRecipes: () => SessionClaimValidator[];
+    addClaimFromOtherRecipe: (claim: SessionClaim<any>) => void;
+    getClaimsAddedByOtherRecipes: () => SessionClaim<any>[];
+    addClaimValidatorFromOtherRecipe: (builder: SessionClaimValidator) => void;
+    getClaimValidatorsAddedByOtherRecipes: () => SessionClaimValidator[];
     getAPIsHandled: () => APIHandled[];
     handleAPIRequest: (
         id: string,

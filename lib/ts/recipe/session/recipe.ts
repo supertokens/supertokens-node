@@ -44,9 +44,10 @@ import { logDebugMessage } from "../../logger";
 // For Express
 export default class SessionRecipe extends RecipeModule {
     private static instance: SessionRecipe | undefined = undefined;
-    private static claimsAddedByOtherRecipes: SessionClaim<any>[] = [];
-    private static claimValidatorsAddedByOtherRecipes: SessionClaimValidator[] = [];
     static RECIPE_ID = "session";
+
+    private claimsAddedByOtherRecipes: SessionClaim<any>[] = [];
+    private claimValidatorsAddedByOtherRecipes: SessionClaimValidator[] = [];
 
     config: TypeNormalisedInput;
 
@@ -128,26 +129,26 @@ export default class SessionRecipe extends RecipeModule {
         SessionRecipe.instance = undefined;
     }
 
-    static addClaimFromOtherRecipe = (claim: SessionClaim<any>) => {
+    addClaimFromOtherRecipe = (claim: SessionClaim<any>) => {
         // We are throwing here (and not in addClaimValidatorFromOtherRecipe) because if multiple
         // claims are added with the same key they will overwrite each other. Validators will all run
         // and work as expected even if they are added multiple times.
-        if (SessionRecipe.claimsAddedByOtherRecipes.some((c) => c.key === claim.key)) {
+        if (this.claimsAddedByOtherRecipes.some((c) => c.key === claim.key)) {
             throw new Error("Claim added by multiple recipes");
         }
-        SessionRecipe.claimsAddedByOtherRecipes.push(claim);
+        this.claimsAddedByOtherRecipes.push(claim);
     };
 
-    static getClaimsAddedByOtherRecipes = (): SessionClaim<any>[] => {
-        return SessionRecipe.claimsAddedByOtherRecipes;
+    getClaimsAddedByOtherRecipes = (): SessionClaim<any>[] => {
+        return this.claimsAddedByOtherRecipes;
     };
 
-    static addClaimValidatorFromOtherRecipe = (builder: SessionClaimValidator) => {
-        SessionRecipe.claimValidatorsAddedByOtherRecipes.push(builder);
+    addClaimValidatorFromOtherRecipe = (builder: SessionClaimValidator) => {
+        this.claimValidatorsAddedByOtherRecipes.push(builder);
     };
 
-    static getClaimValidatorsAddedByOtherRecipes = (): SessionClaimValidator[] => {
-        return SessionRecipe.claimValidatorsAddedByOtherRecipes;
+    getClaimValidatorsAddedByOtherRecipes = (): SessionClaimValidator[] => {
+        return this.claimValidatorsAddedByOtherRecipes;
     };
 
     // abstract instance functions below...............

@@ -6,11 +6,23 @@ import {
     TypeInputWithService as EmailDeliveryTypeInputWithService,
 } from "../../ingredients/emaildelivery/types";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
-import { GeneralErrorResponse } from "../../types";
+import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
+import { SessionContainerInterface } from "../session/types";
 export declare type TypeInput = {
+    mode: "REQUIRED" | "OPTIONAL";
     emailDelivery?: EmailDeliveryTypeInput<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
-    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
+    getEmailForUserId?: (
+        userId: string,
+        userContext: any
+    ) => Promise<
+        | {
+              status: "OK";
+              email: string;
+          }
+        | {
+              status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
     /**
      * @deprecated Please use emailDelivery config instead
      */
@@ -24,11 +36,22 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
+    mode: "REQUIRED" | "OPTIONAL";
     getEmailDeliveryConfig: (
         isInServerlessEnv: boolean
     ) => EmailDeliveryTypeInputWithService<TypeEmailVerificationEmailDeliveryInput>;
-    getEmailForUserId: (userId: string, userContext: any) => Promise<string>;
-    getEmailVerificationURL: (user: User, userContext: any) => Promise<string>;
+    getEmailForUserId?: (
+        userId: string,
+        userContext: any
+    ) => Promise<
+        | {
+              status: "OK";
+              email: string;
+          }
+        | {
+              status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+          }
+    >;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -85,6 +108,7 @@ export declare type RecipeInterface = {
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
+    appInfo: NormalisedAppinfo;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
@@ -99,6 +123,7 @@ export declare type APIInterface = {
               token: string;
               options: APIOptions;
               userContext: any;
+              session?: SessionContainerInterface;
           }) => Promise<
               | {
                     status: "OK";
@@ -114,6 +139,7 @@ export declare type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: any;
+              session: SessionContainerInterface;
           }) => Promise<
               | {
                     status: "OK";
@@ -126,6 +152,7 @@ export declare type APIInterface = {
         | ((input: {
               options: APIOptions;
               userContext: any;
+              session: SessionContainerInterface;
           }) => Promise<
               | {
                     status: "EMAIL_ALREADY_VERIFIED_ERROR" | "OK";
@@ -142,3 +169,15 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
     emailVerifyLink: string;
     userContext: any;
 };
+export declare type GetEmailForUserIdFunc = (
+    userId: string,
+    userContext: any
+) => Promise<
+    | {
+          status: "OK";
+          email: string;
+      }
+    | {
+          status: "EMAIL_DOES_NOT_EXIST_ERROR" | "UNKNOWN_USER_ID_ERROR";
+      }
+>;
