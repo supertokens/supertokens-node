@@ -253,7 +253,7 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
                     reason: {
                         expectedValue: val,
                         actualValue: undefined,
-                        message: "wrong value",
+                        message: "value does not exist",
                     },
                 });
             });

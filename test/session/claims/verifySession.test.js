@@ -178,6 +178,45 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                 await startST();
                 const customValidator = {
                     id: "testid",
+                    validate: () => ({ isValid: false }),
+                };
+                SuperTokens.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        Session.init({
+                            override: {
+                                functions: (oI) => ({
+                                    ...oI,
+                                    getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
+                                        ...claimValidatorsAddedByOtherRecipes,
+                                        customValidator,
+                                    ],
+                                }),
+                            },
+                            antiCsrf: "VIA_TOKEN",
+                        }),
+                    ],
+                });
+
+                const app = getTestApp();
+
+                const session = await createSession(app);
+                const resp = await testGet(app, session, "/default-claims", 403);
+
+                validateErrorResp(resp, [{ id: "testid" }]);
+            });
+
+            it("should reject with validator returning false with reason", async function () {
+                await startST();
+                const customValidator = {
+                    id: "testid",
                     validate: () => ({ isValid: false, reason: "testReason" }),
                 };
                 SuperTokens.init({
@@ -211,128 +250,89 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                 const resp = await testGet(app, session, "/default-claims", 403);
 
                 validateErrorResp(resp, [{ id: "testid", reason: "testReason" }]);
+            });
 
-                it("should reject with validator returning false with reason", async function () {
-                    await startST();
-                    const customValidator = {
-                        id: "testid",
-                        validate: () => ({ isValid: false, reason: "testReason" }),
-                    };
-                    SuperTokens.init({
-                        supertokens: {
-                            connectionURI: "http://localhost:8080",
-                        },
-                        appInfo: {
-                            apiDomain: "api.supertokens.io",
-                            appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
-                        },
-                        recipeList: [
-                            Session.init({
-                                override: {
-                                    functions: (oI) => ({
-                                        ...oI,
-                                        getGlobalClaimValidators: ({ claimValidatorsAddedByOtherRecipes }) => [
-                                            ...claimValidatorsAddedByOtherRecipes,
-                                            customValidator,
-                                        ],
-                                    }),
+            it.skip("should reject if assertClaims returns an error", async function () {
+                const obj = {};
+                const testValidatorArr = [obj];
+                const mock = sinon.mock(SessionClass.prototype);
+                mock.expects("assertClaims")
+                    .once()
+                    .withArgs(testValidatorArr)
+                    .rejects(
+                        new SessionError({
+                            type: "INVALID_CLAIM",
+                            message: "INVALID_CLAIM",
+                            payload: [
+                                {
+                                    id: "testid",
+                                    reason: "testReason",
                                 },
-                                antiCsrf: "VIA_TOKEN",
-                            }),
-                        ],
-                    });
+                            ],
+                        })
+                    );
 
-                    const app = getTestApp();
-
-                    const session = await createSession(app);
-                    const resp = await testGet(app, session, "/default-claims", 403);
-
-                    validateErrorResp(resp, [{ id: "testid", reason: "testReason" }]);
+                await startST();
+                SuperTokens.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        Session.init({
+                            antiCsrf: "VIA_TOKEN",
+                            override: {
+                                functions: (oI) => ({ ...oI, getGlobalClaimValidators: () => testValidatorArr }),
+                            },
+                        }),
+                    ],
                 });
 
-                it("should reject if assertClaims returns an error", async function () {
-                    const obj = {};
-                    const testValidatorArr = [obj];
-                    const mock = sinon.mock(SessionClass.prototype);
-                    mock.expects("assertClaims")
-                        .once()
-                        .withArgs(testValidatorArr)
-                        .rejects(
-                            new SessionError({
-                                type: "INVALID_CLAIM",
-                                message: "INVALID_CLAIM",
-                                payload: [
-                                    {
-                                        id: "testid",
-                                        reason: "testReason",
-                                    },
-                                ],
-                            })
-                        );
+                const app = getTestApp();
 
-                    await startST();
-                    SuperTokens.init({
-                        supertokens: {
-                            connectionURI: "http://localhost:8080",
-                        },
-                        appInfo: {
-                            apiDomain: "api.supertokens.io",
-                            appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
-                        },
-                        recipeList: [
-                            Session.init({
-                                antiCsrf: "VIA_TOKEN",
-                                override: {
-                                    functions: (oI) => ({ ...oI, getGlobalClaimValidators: () => testValidatorArr }),
-                                },
-                            }),
-                        ],
-                    });
+                const session = await createSession(app);
 
-                    const app = getTestApp();
+                const res = await testGet(app, session, "/default-claims", 403);
+                validateErrorResp(res, [{ id: "testid", reason: "testReason" }]);
+                mock.verify();
+            });
 
-                    const session = await createSession(app);
+            it.skip("should allow if assertClaims returns undefined", async function () {
+                const obj = {};
+                const testValidatorArr = [obj];
+                const mock = sinon.mock(SessionClass.prototype);
+                mock.expects("assertClaims").once().withArgs(testValidatorArr).resolves(undefined);
 
-                    const res = await testGet(app, session, "/default-claims", 403);
-                    validateErrorResp(res, [{ id: "testid", reason: "testReason" }]);
-                    mock.verify();
+                await startST();
+                SuperTokens.init({
+                    supertokens: {
+                        connectionURI: "http://localhost:8080",
+                    },
+                    appInfo: {
+                        apiDomain: "api.supertokens.io",
+                        appName: "SuperTokens",
+                        websiteDomain: "supertokens.io",
+                    },
+                    recipeList: [
+                        Session.init({
+                            antiCsrf: "VIA_TOKEN",
+                            override: {
+                                functions: (oI) => ({ ...oI, getGlobalClaimValidators: () => testValidatorArr }),
+                            },
+                        }),
+                    ],
                 });
 
-                it("should allow if assertClaims returns undefined", async function () {
-                    const obj = {};
-                    const testValidatorArr = [obj];
-                    const mock = sinon.mock(SessionClass.prototype);
-                    mock.expects("assertClaims").once().withArgs(testValidatorArr).resolves(undefined);
+                const app = getTestApp();
 
-                    await startST();
-                    SuperTokens.init({
-                        supertokens: {
-                            connectionURI: "http://localhost:8080",
-                        },
-                        appInfo: {
-                            apiDomain: "api.supertokens.io",
-                            appName: "SuperTokens",
-                            websiteDomain: "supertokens.io",
-                        },
-                        recipeList: [
-                            Session.init({
-                                antiCsrf: "VIA_TOKEN",
-                                override: {
-                                    functions: (oI) => ({ ...oI, getGlobalClaimValidators: () => testValidatorArr }),
-                                },
-                            }),
-                        ],
-                    });
+                const session = await createSession(app);
 
-                    const app = getTestApp();
-
-                    const session = await createSession(app);
-
-                    await testGet(app, session, "/default-claims", 200);
-                    mock.verify();
-                });
+                await testGet(app, session, "/default-claims", 200);
+                mock.verify();
             });
         });
 

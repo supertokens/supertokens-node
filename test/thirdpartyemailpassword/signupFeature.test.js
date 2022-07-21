@@ -22,6 +22,7 @@ let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
 let Session = require("../../recipe/session");
+const EmailVerification = require("../../recipe/emailverification");
 let { Querier } = require("../../lib/build/querier");
 let { maxVersion } = require("../../lib/build/utils");
 let { middleware, errorHandler } = require("../../framework/express");
@@ -241,6 +242,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -281,7 +283,7 @@ describe(`signupTest: ${printPath("[test/thirdpartyemailpassword/signupFeature.t
         assert.strictEqual(response1.body.user.thirdParty.userId, "user");
         assert.strictEqual(response1.body.user.email, "email@test.com");
 
-        assert.strictEqual(await ThirdPartyEmailPassword.isEmailVerified(response1.body.user.id), true);
+        assert.strictEqual(await EmailVerification.isEmailVerified(response1.body.user.id), true);
     });
 
     it("test signUpAPI works when input is fine", async function () {

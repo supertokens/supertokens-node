@@ -24,5 +24,6 @@ export class PostSuperTokensInitCallbacks {
         for (const cb of PostSuperTokensInitCallbacks.postInitCallbacks) {
             cb();
         }
+        PostSuperTokensInitCallbacks.postInitCallbacks = [];
     }
 }
