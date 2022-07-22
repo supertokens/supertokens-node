@@ -59,7 +59,6 @@ export default class Wrapper {
         const recipeInstance = Recipe.getInstanceOrThrowError();
         if (email === undefined) {
             const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
-            console.log(emailInfo);
 
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
