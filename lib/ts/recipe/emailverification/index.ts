@@ -36,7 +36,7 @@ export default class Wrapper {
                 return {
                     status: "EMAIL_ALREADY_VERIFIED_ERROR",
                 };
-            } else if (emailInfo) {
+            } else {
                 throw new global.Error("Unknown User ID provided without email");
             }
         }
@@ -65,7 +65,7 @@ export default class Wrapper {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
                 return true;
-            } else if (emailInfo) {
+            } else {
                 throw new global.Error("Unknown User ID provided without email");
             }
         }
@@ -82,14 +82,13 @@ export default class Wrapper {
 
         if (email === undefined) {
             const emailInfo = await recipeInstance.getEmailForUserId(userId, userContext);
-            console.log(emailInfo);
             if (emailInfo.status === "OK") {
                 email = emailInfo.email;
             } else if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
                 return {
                     status: "EMAIL_ALREADY_VERIFIED",
                 };
-            } else if (emailInfo) {
+            } else {
                 throw new global.Error("Unknown User ID provided without email");
             }
         }
@@ -112,7 +111,7 @@ export default class Wrapper {
                 return {
                     status: "OK",
                 };
-            } else if (emailInfo) {
+            } else {
                 throw new global.Error("Unknown User ID provided without email");
             }
         }
