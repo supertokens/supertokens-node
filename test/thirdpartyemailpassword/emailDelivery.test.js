@@ -17,6 +17,7 @@ let STExpress = require("../..");
 let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
+const EmailVerification = require("../../recipe/emailverification");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
 let { STMPService } = require("../../recipe/thirdpartyemailpassword/emaildelivery");
 let nock = require("nock");
@@ -503,7 +504,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+            recipeList: [EmailVerification.init({ mode: "OPTIONAL" }), ThirdPartyEmailPassword.init(), Session.init()],
             telemetry: false,
         });
 
@@ -536,7 +537,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
         await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "thirdpartyemailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
 
@@ -558,7 +559,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [ThirdPartyEmailPassword.init(), Session.init()],
+            recipeList: [EmailVerification.init({ mode: "OPTIONAL" }), ThirdPartyEmailPassword.init(), Session.init()],
             telemetry: false,
         });
 
@@ -591,7 +592,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
         let result = await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "thirdpartyemailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
 
@@ -605,10 +606,9 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
     it("test backward compatibility: email verify (emailpassword user)", async function () {
         await startST();
+        let idInCallback = undefined;
         let email = undefined;
-        let thirdParty = undefined;
         let emailVerifyURL = undefined;
-        let timeJoined = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -619,16 +619,15 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirdPartyEmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
-                            email = input.email;
-                            thirdParty = input.thirdParty;
-                            emailVerifyURL = emailVerificationURLWithToken;
-                            timeJoined = input.timeJoined;
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
+                        email = input.email;
+                        idInCallback = input.id;
+                        emailVerifyURL = emailVerificationURLWithToken;
                     },
                 }),
+                ThirdPartyEmailPassword.init(),
                 Session.init(),
             ],
             telemetry: false,
@@ -648,20 +647,19 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
         await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "thirdpartyemailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
         await delay(2);
+        assert.strictEqual(idInCallback, user.user.id);
         assert.strictEqual(email, "test@example.com");
-        assert.strictEqual(thirdParty, undefined);
         assert.notStrictEqual(emailVerifyURL, undefined);
-        assert.notStrictEqual(timeJoined, undefined);
     });
 
     it("test backward compatibility: email verify (thirdparty user)", async function () {
         await startST();
+        let idInCallback = undefined;
         let email = undefined;
-        let thirdParty = undefined;
         let emailVerifyURL = undefined;
         STExpress.init({
             supertokens: {
@@ -673,14 +671,17 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirdPartyEmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
-                            email = input.email;
-                            thirdParty = input.thirdParty;
-                            emailVerifyURL = emailVerificationURLWithToken;
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
+                        email = input.email;
+                        idInCallback = input.id;
+                        emailVerifyURL = emailVerificationURLWithToken;
                     },
+                }),
+                ThirdPartyEmailPassword.init({
+                    // We need to add something to the providers array to make the thirdparty recipe initialize
+                    providers: [/** @type {any} */ {}],
                 }),
                 Session.init(),
             ],
@@ -704,13 +705,12 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
         await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "thirdpartyemailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
         await delay(2);
+        assert.strictEqual(idInCallback, user.user.id);
         assert.strictEqual(email, "test@example.com");
-        assert.strictEqual(user.user.thirdParty.id, thirdParty.id);
-        assert.strictEqual(user.user.thirdParty.userId, thirdParty.userId);
         assert.notStrictEqual(emailVerifyURL, undefined);
     });
 
@@ -730,7 +730,8 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirdPartyEmailPassword.init({
+                EmailVerification.init({
+                    mode: "OPTIONAL",
                     emailDelivery: {
                         override: (oI) => {
                             return {
@@ -744,6 +745,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                         },
                     },
                 }),
+                ThirdPartyEmailPassword.init(),
                 Session.init(),
             ],
             telemetry: false,
@@ -772,7 +774,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
         await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "thirdpartyemailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
 
@@ -802,7 +804,8 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                ThirdPartyEmailPassword.init({
+                EmailVerification.init({
+                    mode: "OPTIONAL",
                     emailDelivery: {
                         service: new STMPService({
                             smtpSettings: {
@@ -847,6 +850,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                         },
                     },
                 }),
+                ThirdPartyEmailPassword.init(),
                 Session.init(),
             ],
             telemetry: false,
@@ -866,7 +870,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
 
         await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "thirdpartyemailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
 

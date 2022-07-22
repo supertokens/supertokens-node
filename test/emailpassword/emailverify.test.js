@@ -28,6 +28,7 @@ const {
 } = require("../utils");
 let STExpress = require("../..");
 let Session = require("../../recipe/session");
+const EmailVerification = require("../../recipe/emailverification");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let { maxVersion } = require("../../lib/build/utils");
@@ -80,6 +81,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
@@ -125,6 +127,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
@@ -141,8 +144,8 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailPassword.createEmailVerificationToken(userId);
-        await EmailPassword.verifyEmailUsingToken(verifyToken.token);
+        let verifyToken = await EmailVerification.createEmailVerificationToken(userId);
+        await EmailVerification.verifyEmailUsingToken(verifyToken.token);
 
         response = await emailVerifyTokenRequest(
             app,
@@ -174,6 +177,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
@@ -219,6 +223,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
@@ -300,14 +305,14 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                            userInfo = user;
-                            emailToken = emailVerificationURLWithToken;
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        userInfo = user;
+                        emailToken = emailVerificationURLWithToken;
                     },
                 }),
+                EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -371,13 +376,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
                     },
                 }),
+                EmailPassword.init({}),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -442,6 +447,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
                 EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
@@ -489,6 +497,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
                 EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
@@ -539,29 +550,27 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
                     },
                     override: {
-                        emailVerificationFeature: {
-                            apis: (oI) => {
-                                return {
-                                    ...oI,
-                                    verifyEmailPOST: async (token, options) => {
-                                        let response = await oI.verifyEmailPOST(token, options);
-                                        if (response.status === "OK") {
-                                            userInfoFromCallback = response.user;
-                                        }
-                                        return response;
-                                    },
-                                };
-                            },
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                verifyEmailPOST: async (token, options) => {
+                                    let response = await oI.verifyEmailPOST(token, options);
+                                    if (response.status === "OK") {
+                                        userInfoFromCallback = response.user;
+                                    }
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
+                EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -633,13 +642,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
                     },
                 }),
+                EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -725,6 +734,9 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                }),
                 EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
@@ -772,13 +784,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
                     },
                 }),
+                EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -910,27 +922,25 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
                     },
                     override: {
-                        emailVerificationFeature: {
-                            apis: (oI) => {
-                                return {
-                                    ...oI,
-                                    verifyEmailPOST: async (input) => {
-                                        let response = await oI.verifyEmailPOST(input);
-                                        user = response.user;
-                                        return response;
-                                    },
-                                };
-                            },
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                verifyEmailPOST: async (input) => {
+                                    let response = await oI.verifyEmailPOST(input);
+                                    user = response.user;
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
+                EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -998,27 +1008,25 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
                     },
                     override: {
-                        emailVerificationFeature: {
-                            functions: (oI) => {
-                                return {
-                                    ...oI,
-                                    verifyEmailUsingToken: async (input) => {
-                                        let response = await oI.verifyEmailUsingToken(input);
-                                        user = response.user;
-                                        return response;
-                                    },
-                                };
-                            },
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                verifyEmailUsingToken: async (input) => {
+                                    let response = await oI.verifyEmailUsingToken(input);
+                                    user = response.user;
+                                    return response;
+                                },
+                            };
                         },
                     },
                 }),
+                EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -1086,29 +1094,27 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        },
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
                     },
                     override: {
-                        emailVerificationFeature: {
-                            apis: (oI) => {
-                                return {
-                                    ...oI,
-                                    verifyEmailPOST: async (input) => {
-                                        let response = await oI.verifyEmailPOST(input);
-                                        user = response.user;
-                                        throw {
-                                            error: "verify email error",
-                                        };
-                                    },
-                                };
-                            },
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                verifyEmailPOST: async (input) => {
+                                    let response = await oI.verifyEmailPOST(input);
+                                    user = response.user;
+                                    throw {
+                                        error: "verify email error",
+                                    };
+                                },
+                            };
                         },
                     },
                 }),
+                EmailPassword.init(),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -1182,26 +1188,24 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
-                            token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
-                        },
+                EmailPassword.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
                     },
                     override: {
-                        emailVerificationFeature: {
-                            functions: (oI) => {
-                                return {
-                                    ...oI,
-                                    verifyEmailUsingToken: async (input) => {
-                                        let response = await oI.verifyEmailUsingToken(input);
-                                        user = response.user;
-                                        throw {
-                                            error: "verify email error",
-                                        };
-                                    },
-                                };
-                            },
+                        functions: (oI) => {
+                            return {
+                                ...oI,
+                                verifyEmailUsingToken: async (input) => {
+                                    let response = await oI.verifyEmailUsingToken(input);
+                                    user = response.user;
+                                    throw {
+                                        error: "verify email error",
+                                    };
+                                },
+                            };
                         },
                     },
                 }),
@@ -1279,6 +1283,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
@@ -1300,13 +1305,13 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailPassword.createEmailVerificationToken(userId);
+        let verifyToken = await EmailVerification.createEmailVerificationToken(userId, "test@gmail.com");
 
-        await EmailPassword.revokeEmailVerificationTokens(userId);
+        await EmailVerification.revokeEmailVerificationTokens(userId);
 
         {
-            let response = await EmailPassword.verifyEmailUsingToken(verifyToken.token);
-            assert(response.status === "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR");
+            let response = await EmailVerification.verifyEmailUsingToken(verifyToken.token);
+            assert.equal(response.status, "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR");
         }
     });
 
@@ -1326,6 +1331,7 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
+                EmailVerification.init({ mode: "OPTIONAL" }),
             ],
         });
 
@@ -1347,14 +1353,14 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         let userId = JSON.parse(response.text).user.id;
         let infoFromResponse = extractInfoFromResponse(response);
 
-        let verifyToken = await EmailPassword.createEmailVerificationToken(userId);
+        const verifyToken = await EmailVerification.createEmailVerificationToken(userId);
 
-        await EmailPassword.verifyEmailUsingToken(verifyToken.token);
+        await EmailVerification.verifyEmailUsingToken(verifyToken.token);
 
-        assert(await EmailPassword.isEmailVerified(userId));
+        assert(await EmailVerification.isEmailVerified(userId));
 
-        await EmailPassword.unverifyEmail(userId);
+        await EmailVerification.unverifyEmail(userId);
 
-        assert(!(await EmailPassword.isEmailVerified(userId)));
+        assert(!(await EmailVerification.isEmailVerified(userId)));
     });
 });

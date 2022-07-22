@@ -150,6 +150,7 @@ export default class Session implements SessionContainerInterface {
         const origSessionClaimPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
 
         let newAccessTokenPayload = await updateClaimsInPayloadIfNeeded(
+            this.getUserId(),
             claimValidators,
             this.getAccessTokenPayload(),
             userContext

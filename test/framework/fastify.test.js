@@ -19,6 +19,7 @@ let SuperTokens = require("../../");
 let FastifyFramework = require("../../framework/fastify");
 const Fastify = require("fastify");
 let EmailPassword = require("../../recipe/emailpassword");
+const EmailVerification = require("../../recipe/emailverification");
 let Session = require("../../recipe/session");
 let { verifySession } = require("../../recipe/session/framework/fastify");
 
@@ -1338,7 +1339,7 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailVerification.init({ mode: "OPTIONAL" }), EmailPassword.init(), Session.init()],
         });
 
         await this.server.register(FastifyFramework.plugin);
@@ -1374,6 +1375,6 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
             },
         });
 
-        assert(res2.statusCode === 200);
+        assert.equal(res2.statusCode, 200);
     });
 });

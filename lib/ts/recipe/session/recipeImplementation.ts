@@ -279,6 +279,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             const origSessionClaimPayloadJSON = JSON.stringify(input.sessionInfo.accessTokenPayload);
 
             let newAccessTokenPayload = await updateClaimsInPayloadIfNeeded(
+                input.sessionInfo.userId,
                 input.claimValidators,
                 input.sessionInfo.accessTokenPayload,
                 input.userContext

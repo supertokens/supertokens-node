@@ -56,6 +56,7 @@ export declare function getRequiredClaimValidators(
     userContext: any
 ): Promise<SessionClaimValidator[]>;
 export declare function updateClaimsInPayloadIfNeeded(
+    userId: string,
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,
     userContext: any

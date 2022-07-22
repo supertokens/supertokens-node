@@ -322,6 +322,7 @@ export async function getRequiredClaimValidators(
 }
 
 export async function updateClaimsInPayloadIfNeeded(
+    userId: string,
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,
     userContext: any
@@ -330,7 +331,7 @@ export async function updateClaimsInPayloadIfNeeded(
         logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
         if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
             logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
-            const value = await validator.claim.fetchValue(this.getUserId(), userContext);
+            const value = await validator.claim.fetchValue(userId, userContext);
             logDebugMessage(
                 "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
             );
