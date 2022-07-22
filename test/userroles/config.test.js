@@ -4,6 +4,7 @@ const STExpress = require("../..");
 const UserRolesRecipe = require("../../lib/build/recipe/userroles/recipe").default;
 const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
+const { default: SessionRecipe } = require("../../lib/build/recipe/session/recipe");
 
 describe(`configTest: ${printPath("[test/userroles/config.test.js]")}`, function () {
     beforeEach(async function () {
@@ -29,7 +30,7 @@ describe(`configTest: ${printPath("[test/userroles/config.test.js]")}`, function
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRolesRecipe.init()],
+                recipeList: [UserRolesRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.14
