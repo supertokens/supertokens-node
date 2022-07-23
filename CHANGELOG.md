@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+
+-   Made the `email` parameter option in `unverifyEmail`, `revokeEmailVerificationTokens`, `isEmailVerified`, `verifyEmailUsingToken`, `createEmailVerificationToken` of the `EmailVerification` recipe.
+
+### Added
+
+-   Added support for session claims with related interfaces and classes.
+-   Added `EmailVerificationClaim`.
+-   Added `onInvalidClaim` optional error handler to send InvalidClaim error responses.
+-   Added `INVALID_CLAIMS` to `SessionErrors`.
+-   Added `invalidClaimStatusCode` optional config to set the status code of InvalidClaim errors.
+-   Added `overrideGlobalClaimValidators` to options of `getSession` and `verifySession`.
+-   Added `mergeIntoAccessTokenPayload` to the Session recipe and session objects which should be preferred to the now deprecated `updateAccessTokenPayload`.
+-   Added `assertClaims`, `validateClaimsForSessionHandle`, `validateClaimsInJWTPayload` to the Session recipe to support validation of the newly added `EmailVerificationClaim`.
+-   Added `fetchAndSetClaim`, `getClaimValue`, `setClaimValue` and `removeClaim` to the Session recipe to manage claims.
+-   Added `assertClaims`, `fetchAndSetClaim`, `getClaimValue`, `setClaimValue` and `removeClaim` to session objects to manage claims.
+-   Added session to the input of `generateEmailVerifyTokenPOST`, `verifyEmailPOST`, `isEmailVerifiedGET`.
+
+### Breaking changes
+
+-   `EmailVerification` recipe is now not initialized as part of auth recipes, it should be added to the `recipeList` directly instead.
+-   Email verification related overrides (`emailVerificationFeature` prop of `override`) moved from auth recipes into the `EmailVerification` recipe config.
+-   Email verificitaion related configs (`emailVerificationFeature` props) moved from auth recipes into the `EmailVerification` config object root.
+-   Moved email verification related configs from the `emailDelivery` config of auth recipes into a separate `EmailVerification` email delivery config.
+-   Updated return type of `getEmailForUserId` in the `EmailVerification` recipe config. It should now return an object with status.
+-   Removed `getResetPasswordURL`, `getEmailVerificationURL`, `getLinkDomainAndPath`. Changing these urls can be done in the email delivery configs instead.
+-   Removed `unverifyEmail`, `revokeEmailVerificationTokens`, `isEmailVerified`, `verifyEmailUsingToken` and `createEmailVerificationToken` from auth recipes. These should be called on the `EmailVerification` recipe instead.
+
+### Migration
+
+Before:
+
+```
+SuperTokens.init({
+    recipeList: [
+        EmailPassword.init({
+            emailVerificationFeature: {
+                // these options should be moved into the config of the EmailVerification recipe
+            },
+            override: {
+                emailVerificationFeature: {
+                    // these overrides should be moved into the overrides of the EmailVerification recipe
+                }
+            }
+        })
+    ]
+})
+```
+
+After the update:
+
+```
+SuperTokens.init({
+    recipeList: [
+        EmailVerification.init({
+            // all config should be moved here from the emailVerificationFeature prop of the EmailPassword recipe config
+            override: {
+                // move the overrides from the emailVerificationFeature prop of the override config in the EmailPassword init here
+            }
+        }),
+        EmailPassword.init()
+    ]
+})
+```
+
 ## [11.0.0] - 2022-07-05
 
 ### Breaking change:
