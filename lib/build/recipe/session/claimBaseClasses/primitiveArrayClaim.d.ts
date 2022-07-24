@@ -14,6 +14,5 @@ export declare class PrimitiveArrayClaim<T extends JSONPrimitive> extends Sessio
         excludes: (val: T, maxAgeInSeconds?: number | undefined, id?: string | undefined) => SessionClaimValidator;
         includesAll: (val: T[], maxAgeInSeconds: number, id?: string | undefined) => SessionClaimValidator;
         excludesAll: (val: T[], maxAgeInSeconds: number, id?: string | undefined) => SessionClaimValidator;
-        strictEquals: (val: T[], maxAgeInSeconds: number, id?: string | undefined) => SessionClaimValidator;
     };
 }

@@ -204,53 +204,5 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
                 },
             };
         },
-        strictEquals: (val: T[], maxAgeInSeconds: number, id?: string): SessionClaimValidator => {
-            return {
-                claim: this,
-                id: id ?? this.key + "-strictEquals",
-                shouldRefetch: (payload, ctx) =>
-                    this.getValueFromPayload(payload, ctx) === undefined ||
-                    // We know payload[this.id] is defined since the value is not undefined in this branch
-                    (maxAgeInSeconds !== undefined && payload[this.key].t < Date.now() - maxAgeInSeconds * 1000),
-                validate: async (payload, ctx) => {
-                    const claimVal = this.getValueFromPayload(payload, ctx);
-                    if (claimVal === undefined) {
-                        return {
-                            isValid: false,
-                            reason: { message: "value does not exist", expectedValue: val, actualValue: claimVal },
-                        };
-                    }
-
-                    const ageInSeconds = (Date.now() - this.getLastRefetchTime(payload, ctx)!) / 1000;
-                    if (maxAgeInSeconds !== undefined && ageInSeconds > maxAgeInSeconds) {
-                        return {
-                            isValid: false,
-                            reason: {
-                                message: "expired",
-                                ageInSeconds,
-                                maxAgeInSeconds,
-                            },
-                        };
-                    }
-                    if (val.length !== claimVal.length) {
-                        return {
-                            isValid: false,
-                            reason: { message: "wrong value", expectedValue: val, actualValue: claimVal },
-                        };
-                    }
-                    for (const [i, v] of val.entries()) {
-                        if (claimVal[i] !== v) {
-                            return {
-                                isValid: false,
-                                reason: { message: "wrong value", expectedValue: val, actualValue: claimVal },
-                            };
-                        }
-                    }
-                    return {
-                        isValid: true,
-                    };
-                },
-            };
-        },
     };
 }
