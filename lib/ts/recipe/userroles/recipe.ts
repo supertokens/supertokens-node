@@ -25,6 +25,10 @@ import RecipeImplementation from "./recipeImplementation";
 import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import SessionRecipe from "../session/recipe";
+import { UserRoleClaim } from "./userRoleClaim";
+import { PermissionClaim } from "./permissionClaim";
 
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "userroles";
@@ -43,6 +47,15 @@ export default class Recipe extends RecipeModule {
             let builder = new OverrideableBuilder(RecipeImplementation(Querier.getNewInstanceOrThrowError(recipeId)));
             this.recipeInterfaceImpl = builder.override(this.config.override.functions).build();
         }
+
+        PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+            if (!this.config.skipAddingRolesToAccessToken) {
+                SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(UserRoleClaim);
+            }
+            if (!this.config.skipAddingPermissionsToAccessToken) {
+                SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(PermissionClaim);
+            }
+        });
     }
 
     /* Init functions */
