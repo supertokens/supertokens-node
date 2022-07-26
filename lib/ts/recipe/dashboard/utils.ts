@@ -17,7 +17,7 @@ import { BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200Response } from "../../utils";
-import { DASHBOARD_API, VALIDATE_KEY_API } from "./constants";
+import { DASHBOARD_API, USERS_LIST_GET_API, VALIDATE_KEY_API } from "./constants";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
@@ -55,6 +55,10 @@ export function isApiPath(path: NormalisedURLPath, appInfo: NormalisedAppinfo): 
 export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): string | undefined {
     if (path.getAsStringDangerous().endsWith(VALIDATE_KEY_API) && method === "post") {
         return VALIDATE_KEY_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(USERS_LIST_GET_API) && method === "get") {
+        return USERS_LIST_GET_API;
     }
 
     return undefined;

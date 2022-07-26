@@ -30,6 +30,7 @@ export default function getAPIImplementation(): APIInterface {
             return `
             <html>
                 <head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <script>
                         window.staticBasePath = "${bundleDomain}/static"
                         window.dashboardAppPath = "${input.options.appInfo.apiBasePath
