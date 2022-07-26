@@ -69,4 +69,25 @@ export type RecipeInterface = {
               status: "UNKNOWN_MAPPING_ERROR";
           }
     >;
+
+    deleteUserIdMapping: (input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+    }) => Promise<{
+        status: "OK";
+        didMappingExist: boolean;
+    }>;
+
+    updateOrDeleteUserIdMappingInfo: (input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        externalUserIdInfo: string | null;
+    }) => Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "UNKNOWN_MAPPING_ERROR";
+          }
+    >;
 };

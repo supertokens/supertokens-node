@@ -53,5 +53,18 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
             return response;
         },
+        deleteUserIdMapping: async function ({ userId, userIdType }) {
+            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/userid/map/remove"), {
+                userId,
+                userIdType,
+            });
+        },
+        updateOrDeleteUserIdMappingInfo: async function ({ userId, userIdType, externalUserIdInfo }) {
+            return await querier.sendPutRequest(new NormalisedURLPath("/recipe/userid/external-user-id-info"), {
+                userId,
+                userIdType,
+                externalUserIdInfo,
+            });
+        },
     };
 }
