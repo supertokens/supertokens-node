@@ -52,7 +52,7 @@ export default class Recipe extends RecipeModule {
             return Recipe.instance;
         }
         throw new Error(
-            "Initialisation not done. Did you forget to call the UserRoles.init or SuperTokens.init functions?"
+            "Initialisation not done. Did you forget to call the UserIdMapping.init or SuperTokens.init functions?"
         );
     }
 

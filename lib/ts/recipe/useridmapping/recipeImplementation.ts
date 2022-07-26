@@ -19,15 +19,39 @@ import { Querier } from "../../querier";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     return {
-        createUserIdMapping: function ({ superTokensUserId, externalUserId, externalUserIdInfo }) {
-            return querier.sendPostRequest(new NormalisedURLPath("/recipe/userid/map"), {
+        createUserIdMapping: async function ({ superTokensUserId, externalUserId, externalUserIdInfo }) {
+            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/userid/map"), {
                 superTokensUserId,
                 externalUserId,
                 externalUserIdInfo,
             });
         },
-        getUserIdMapping: function ({ userId, userIdType }) {
-            return querier.sendGetRequest(new NormalisedURLPath("/recipe/userid/map"), { userId, userIdType });
+        getUserIdMapping: async function ({ userId, userIdType, userContext }) {
+            if (userContext._default && userContext._default.userIdMapping !== undefined) {
+                let userIdMapping = userContext._default.userIdMapping;
+                return {
+                    status: "OK",
+                    superTokensUserId: userIdMapping.superTokensUserId,
+                    externalUserId: userIdMapping.externalUserId,
+                };
+            }
+
+            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/userid/map"), {
+                userId,
+                userIdType,
+            });
+
+            if (response.status === "OK") {
+                userContext._default = {
+                    ...userContext._default,
+                    userIdMapping: {
+                        superTokensUserId: response.superTokensUserId,
+                        externalUserId: response.externalUserId,
+                    },
+                };
+            }
+
+            return response;
         },
     };
 }

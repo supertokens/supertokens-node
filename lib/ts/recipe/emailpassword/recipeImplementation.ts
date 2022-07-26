@@ -28,15 +28,26 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         signIn: async function ({
             email,
             password,
+            userContext,
         }: {
             email: string;
             password: string;
+            userContext: any;
         }): Promise<{ status: "OK"; user: User } | { status: "WRONG_CREDENTIALS_ERROR" }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signin"), {
                 email,
                 password,
             });
             if (response.status === "OK") {
+                try {
+                    let userIdMappingResponse = await getUserIdMapping(response.user.id, UserIdType.ANY, userContext);
+                    if (userIdMappingResponse.status === "OK") {
+                        response.user.id = userIdMappingResponse.externalUserId;
+                    }
+                } catch (error) {
+                    // ignore error
+                }
+
                 return response;
             } else {
                 return {
@@ -45,12 +56,23 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
         },
 
-        getUserById: async function ({ userId }: { userId: string }): Promise<User | undefined> {
-            {
-                let userIdMappingResponse = await getUserIdMapping(userId, UserIdType.EXTERNAL, undefined);
+        getUserById: async function ({
+            userId,
+            userContext,
+        }: {
+            userId: string;
+            userContext: any;
+        }): Promise<User | undefined> {
+            let externalUserId = undefined;
+
+            try {
+                let userIdMappingResponse = await getUserIdMapping(userId, UserIdType.ANY, userContext);
                 if (userIdMappingResponse.status === "OK") {
                     userId = userIdMappingResponse.superTokensUserId;
+                    externalUserId = userIdMappingResponse.externalUserId;
                 }
+            } catch (error) {
+                // ignore error
             }
 
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
@@ -58,9 +80,8 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             });
 
             if (response.status === "OK") {
-                let userIdMappingResponse = await getUserIdMapping(response.user.id, UserIdType.SUPERTOKENS, undefined);
-                if (userIdMappingResponse.status === "OK") {
-                    response.user.id = userIdMappingResponse.externalUserId;
+                if (externalUserId !== undefined) {
+                    response.user.id = externalUserId;
                 }
 
                 return {
@@ -71,14 +92,28 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             }
         },
 
-        getUserByEmail: async function ({ email }: { email: string }): Promise<User | undefined> {
+        getUserByEmail: async function ({
+            email,
+            userContext,
+        }: {
+            email: string;
+            userContext: any;
+        }): Promise<User | undefined> {
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
                 email,
             });
             if (response.status === "OK") {
-                let userIdMappingResponse = await getUserIdMapping(response.user.id, UserIdType.SUPERTOKENS, undefined);
-                if (userIdMappingResponse.status === "OK") {
-                    response.user.id = userIdMappingResponse.externalUserId;
+                try {
+                    let userIdMappingResponse = await getUserIdMapping(
+                        response.user.id,
+                        UserIdType.SUPERTOKENS,
+                        userContext
+                    );
+                    if (userIdMappingResponse.status === "OK") {
+                        response.user.id = userIdMappingResponse.externalUserId;
+                    }
+                } catch (error) {
+                    // ignore error
                 }
 
                 return {
@@ -94,13 +129,15 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         }: {
             userId: string;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
-            {
-                let userIdMappingResponse = await getUserIdMapping(userId, UserIdType.EXTERNAL, undefined);
+            try {
+                let userIdMappingResponse = await getUserIdMapping(userId, UserIdType.ANY, undefined);
                 if (userIdMappingResponse.status === "OK") {
                     userId = userIdMappingResponse.superTokensUserId;
                 }
+            } catch (error) {
+                // ignore errors
             }
-            console.log(userId);
+
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/user/password/reset/token"), {
                 userId,
             });
@@ -146,12 +183,15 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             email?: string;
             password?: string;
         }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
-            {
-                let userIdMappingResponse = await getUserIdMapping(input.userId, UserIdType.EXTERNAL, undefined);
+            try {
+                let userIdMappingResponse = await getUserIdMapping(input.userId, UserIdType.ANY, undefined);
                 if (userIdMappingResponse.status === "OK") {
                     input.userId = userIdMappingResponse.superTokensUserId;
                 }
+            } catch (error) {
+                // ignore errors
             }
+
             let response = await querier.sendPutRequest(new NormalisedURLPath("/recipe/user"), {
                 userId: input.userId,
                 email: input.email,
