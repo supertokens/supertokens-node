@@ -158,6 +158,31 @@ module.exports.extractInfoFromResponse = function (res) {
     };
 };
 
+module.exports.extractCookieCountInfo = function (res) {
+    let accessToken = 0;
+    let refreshToken = 0;
+    let idRefreshToken = 0;
+    let cookies = res.headers["set-cookie"] || res.headers["Set-Cookie"];
+    cookies = cookies === undefined ? [] : cookies;
+    if (!Array.isArray(cookies)) {
+        cookies = [cookies];
+    }
+    cookies.forEach((i) => {
+        if (i.split(";")[0].split("=")[0] === "sAccessToken") {
+            accessToken += 1;
+        } else if (i.split(";")[0].split("=")[0] === "sRefreshToken") {
+            refreshToken += 1;
+        } else {
+            idRefreshToken += 1;
+        }
+    });
+    return {
+        accessToken,
+        refreshToken,
+        idRefreshToken,
+    };
+};
+
 module.exports.setupST = async function () {
     let installationPath = process.env.INSTALL_PATH;
     try {
