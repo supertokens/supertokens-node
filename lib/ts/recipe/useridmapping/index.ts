@@ -15,7 +15,6 @@
 
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
-import { getUserIdTypeAsString } from "./utils";
 
 export default class Wrapper {
     static init = Recipe.init;
@@ -34,19 +33,38 @@ export default class Wrapper {
         });
     }
 
-    static async getUserIdMapping(userId: string, userIdType: UserIdType, userContext?: any) {
+    static async getUserIdMapping(userId: string, userIdType: "SUPERTOKENS" | "EXTERNAL" | "ANY", userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.getUserIdMapping({
             userId,
-            userIdType: getUserIdTypeAsString(userIdType),
+            userIdType,
             userContext: userContext === undefined ? {} : userContext,
         });
     }
-}
 
-export enum UserIdType {
-    SUPERTOKENS,
-    EXTERNAL,
-    ANY,
+    static async deleteUserIdMapping(
+        userId: string,
+        userIdType: "SUPERTOKENS" | "EXTERNAL" | "ANY",
+        userContext?: any
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.deleteUserIdMapping({
+            userId,
+            userIdType,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
+    static async updateOrDeleteUserIdMappingInfo(
+        userId: string,
+        userIdType: "SUPERTOKENS" | "EXTERNAL" | "ANY",
+        externalUserIdInfo: string | null,
+        userContext?: any
+    ) {
+        return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.updateOrDeleteUserIdMappingInfo({
+            userId,
+            userIdType,
+            externalUserIdInfo,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+    }
 }
 
 export const init = Wrapper.init;

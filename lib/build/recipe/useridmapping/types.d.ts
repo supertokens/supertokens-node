@@ -53,6 +53,7 @@ export declare type RecipeInterface = {
     deleteUserIdMapping: (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        userContext: any;
     }) => Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -61,6 +62,7 @@ export declare type RecipeInterface = {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo: string | null;
+        userContext: any;
     }) => Promise<
         | {
               status: "OK";

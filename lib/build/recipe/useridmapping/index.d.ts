@@ -20,7 +20,7 @@ export default class Wrapper {
     >;
     static getUserIdMapping(
         userId: string,
-        userIdType: UserIdType,
+        userIdType: "SUPERTOKENS" | "EXTERNAL" | "ANY",
         userContext?: any
     ): Promise<
         | {
@@ -33,11 +33,27 @@ export default class Wrapper {
               status: "UNKNOWN_MAPPING_ERROR";
           }
     >;
-}
-export declare enum UserIdType {
-    SUPERTOKENS = 0,
-    EXTERNAL = 1,
-    ANY = 2,
+    static deleteUserIdMapping(
+        userId: string,
+        userIdType: "SUPERTOKENS" | "EXTERNAL" | "ANY",
+        userContext?: any
+    ): Promise<{
+        status: "OK";
+        didMappingExist: boolean;
+    }>;
+    static updateOrDeleteUserIdMappingInfo(
+        userId: string,
+        userIdType: "SUPERTOKENS" | "EXTERNAL" | "ANY",
+        externalUserIdInfo: string | null,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "UNKNOWN_MAPPING_ERROR";
+          }
+    >;
 }
 export declare const init: typeof Recipe.init;
 export declare const createUserIdMapping: typeof Wrapper.createUserIdMapping;

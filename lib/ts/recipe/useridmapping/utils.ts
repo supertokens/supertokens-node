@@ -1,4 +1,3 @@
-import { UserIdType } from "./index";
 /* Copyright (c) 2022, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -32,16 +31,4 @@ export function validateAndNormaliseUserInput(
     return {
         override,
     };
-}
-
-export function getUserIdTypeAsString(userIdType: UserIdType) {
-    if (userIdType === UserIdType.SUPERTOKENS) {
-        return "SUPERTOKENS";
-    }
-
-    if (userIdType === UserIdType.EXTERNAL) {
-        return "EXTERNAL";
-    }
-
-    return "ANY";
 }

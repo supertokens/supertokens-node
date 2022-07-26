@@ -1,4 +1,4 @@
-import { getUserIdMapping, UserIdType } from "./../useridmapping/index";
+import { getUserIdMapping } from "./../useridmapping/index";
 import { RecipeInterface, User } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -40,7 +40,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             });
             if (response.status === "OK") {
                 try {
-                    let userIdMappingResponse = await getUserIdMapping(response.user.id, UserIdType.ANY, userContext);
+                    let userIdMappingResponse = await getUserIdMapping(response.user.id, "ANY", userContext);
                     if (userIdMappingResponse.status === "OK") {
                         response.user.id = userIdMappingResponse.externalUserId;
                     }
@@ -66,7 +66,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             let externalUserId = undefined;
 
             try {
-                let userIdMappingResponse = await getUserIdMapping(userId, UserIdType.ANY, userContext);
+                let userIdMappingResponse = await getUserIdMapping(userId, "ANY", userContext);
                 if (userIdMappingResponse.status === "OK") {
                     userId = userIdMappingResponse.superTokensUserId;
                     externalUserId = userIdMappingResponse.externalUserId;
@@ -104,11 +104,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             });
             if (response.status === "OK") {
                 try {
-                    let userIdMappingResponse = await getUserIdMapping(
-                        response.user.id,
-                        UserIdType.SUPERTOKENS,
-                        userContext
-                    );
+                    let userIdMappingResponse = await getUserIdMapping(response.user.id, "SUPERTOKENS", userContext);
                     if (userIdMappingResponse.status === "OK") {
                         response.user.id = userIdMappingResponse.externalUserId;
                     }
@@ -132,7 +128,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             try {
-                let userIdMappingResponse = await getUserIdMapping(userId, UserIdType.ANY, userContext);
+                let userIdMappingResponse = await getUserIdMapping(userId, "ANY", userContext);
                 if (userIdMappingResponse.status === "OK") {
                     userId = userIdMappingResponse.superTokensUserId;
                 }
@@ -180,9 +176,9 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 newPassword,
             });
 
-            if (response.status === "OK") {
+            if (response.status === "OK" && response.userId !== undefined) {
                 try {
-                    let userIdMappingResponse = await getUserIdMapping(response.userId, UserIdType.ANY, userContext);
+                    let userIdMappingResponse = await getUserIdMapping(response.userId, "ANY", userContext);
                     if (userIdMappingResponse.status === "OK") {
                         response.userId = userIdMappingResponse.superTokensUserId;
                     }
@@ -200,7 +196,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             userContext: any;
         }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
             try {
-                let userIdMappingResponse = await getUserIdMapping(input.userId, UserIdType.ANY, input.userContext);
+                let userIdMappingResponse = await getUserIdMapping(input.userId, "ANY", input.userContext);
                 if (userIdMappingResponse.status === "OK") {
                     input.userId = userIdMappingResponse.superTokensUserId;
                 }
