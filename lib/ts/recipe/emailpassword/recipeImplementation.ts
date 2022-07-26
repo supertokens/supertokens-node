@@ -126,11 +126,13 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
 
         createResetPasswordToken: async function ({
             userId,
+            userContext,
         }: {
             userId: string;
+            userContext: any;
         }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
             try {
-                let userIdMappingResponse = await getUserIdMapping(userId, UserIdType.ANY, undefined);
+                let userIdMappingResponse = await getUserIdMapping(userId, UserIdType.ANY, userContext);
                 if (userIdMappingResponse.status === "OK") {
                     userId = userIdMappingResponse.superTokensUserId;
                 }
@@ -156,9 +158,11 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         resetPasswordUsingToken: async function ({
             token,
             newPassword,
+            userContext,
         }: {
             token: string;
             newPassword: string;
+            userContext: any;
         }): Promise<
             | {
                   status: "OK";
@@ -175,6 +179,17 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 token,
                 newPassword,
             });
+
+            if (response.status === "OK") {
+                try {
+                    let userIdMappingResponse = await getUserIdMapping(response.userId, UserIdType.ANY, userContext);
+                    if (userIdMappingResponse.status === "OK") {
+                        response.userId = userIdMappingResponse.superTokensUserId;
+                    }
+                } catch (error) {
+                    // ignore errors
+                }
+            }
             return response;
         },
 
@@ -182,9 +197,10 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             userId: string;
             email?: string;
             password?: string;
+            userContext: any;
         }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
             try {
-                let userIdMappingResponse = await getUserIdMapping(input.userId, UserIdType.ANY, undefined);
+                let userIdMappingResponse = await getUserIdMapping(input.userId, UserIdType.ANY, input.userContext);
                 if (userIdMappingResponse.status === "OK") {
                     input.userId = userIdMappingResponse.superTokensUserId;
                 }
