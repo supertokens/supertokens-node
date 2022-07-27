@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Added `fetchAndSetClaim`, `getClaimValue`, `setClaimValue` and `removeClaim` to the Session recipe to manage claims.
 -   Added `assertClaims`, `fetchAndSetClaim`, `getClaimValue`, `setClaimValue` and `removeClaim` to session objects to manage claims.
 -   Added session to the input of `generateEmailVerifyTokenPOST`, `verifyEmailPOST`, `isEmailVerifiedGET`.
+-   Adds default userContext for verifySession calls that contains the request object.
 
 ### Breaking changes
 
