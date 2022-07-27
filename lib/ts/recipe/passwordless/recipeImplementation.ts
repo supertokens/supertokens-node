@@ -1,7 +1,7 @@
 import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { isUserIdMappingRecipeInitialized } from "../useridmapping/recipe";
+import UserIdMappingRecipe from "../useridmapping/recipe";
 import { getUserIdMapping } from "./../useridmapping/index";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
@@ -20,7 +20,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 copyAndRemoveUserContext(input)
             );
 
-            if (isUserIdMappingRecipeInitialized) {
+            if (UserIdMappingRecipe.isRecipeInitialized()) {
                 let userIdMappingResponse = await getUserIdMapping(response.user.id, "SUPERTOKENS", input.userContext);
                 if (userIdMappingResponse.status === "OK") {
                     response.user.id = userIdMappingResponse.externalUserId;
@@ -49,7 +49,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 copyAndRemoveUserContext(input)
             );
             if (response.status === "OK") {
-                if (isUserIdMappingRecipeInitialized) {
+                if (UserIdMappingRecipe.isRecipeInitialized()) {
                     let userIdMappingResponse = await getUserIdMapping(
                         response.user.id,
                         "SUPERTOKENS",
@@ -65,7 +65,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         getUserById: async function (input) {
             let externalId = undefined;
-            if (isUserIdMappingRecipeInitialized) {
+            if (UserIdMappingRecipe.isRecipeInitialized()) {
                 let userIdMappingResponse = await getUserIdMapping(input.userId, "ANY", input.userContext);
                 if (userIdMappingResponse.status === "OK") {
                     input.userId = userIdMappingResponse.superTokensUserId;
@@ -90,7 +90,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 copyAndRemoveUserContext(input)
             );
             if (response.status === "OK") {
-                if (isUserIdMappingRecipeInitialized) {
+                if (UserIdMappingRecipe.isRecipeInitialized()) {
                     let userIdMappingResponse = await getUserIdMapping(
                         response.user.id,
                         "SUPERTOKENS",
@@ -149,7 +149,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return { status: "OK" };
         },
         updateUser: async function (input) {
-            if (isUserIdMappingRecipeInitialized) {
+            if (UserIdMappingRecipe.isRecipeInitialized()) {
                 let userIdMappingResponse = await getUserIdMapping(input.userId, "ANY", input.userContext);
                 if (userIdMappingResponse.status === "OK") {
                     input.userId = userIdMappingResponse.superTokensUserId;

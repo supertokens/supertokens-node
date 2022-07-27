@@ -25,7 +25,7 @@ import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
-import { isUserIdMappingRecipeInitialized } from "./recipe/useridmapping/recipe";
+import UserIdMappingRecipe from "./recipe/useridmapping/recipe";
 import { getUserIdMapping } from "./recipe/useridmapping";
 
 export default class SuperTokens {
@@ -203,7 +203,7 @@ export default class SuperTokens {
             paginationToken: input.paginationToken,
         });
 
-        if (isUserIdMappingRecipeInitialized) {
+        if (UserIdMappingRecipe.isRecipeInitialized()) {
             let updatedUsersArray: {
                 recipeId: string;
                 user: any;
@@ -294,7 +294,7 @@ export default class SuperTokens {
 
             let doesUserIdMappingExist = false;
 
-            if (isUserIdMappingRecipeInitialized) {
+            if (UserIdMappingRecipe.isRecipeInitialized()) {
                 let userIdMappingResponse = await getUserIdMapping(input.userId, "ANY", undefined);
                 if (userIdMappingResponse.status === "OK") {
                     doesUserIdMappingExist = true;

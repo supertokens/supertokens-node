@@ -1,7 +1,7 @@
 import { RecipeInterface, User } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { isUserIdMappingRecipeInitialized } from "../useridmapping/recipe";
+import UserIdMappingRecipe from "../useridmapping/recipe";
 import { getUserIdMapping } from "./../useridmapping/index";
 
 export default function getRecipeImplementation(querier: Querier): RecipeInterface {
@@ -26,7 +26,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 email,
             });
 
-            if (isUserIdMappingRecipeInitialized) {
+            if (UserIdMappingRecipe.isRecipeInitialized()) {
                 let userIdMappingResponse = await getUserIdMapping(response.user.id, "ANY", userContext);
                 if (userIdMappingResponse.status === "OK") {
                     response.user.id = userIdMappingResponse.externalUserId;
@@ -48,7 +48,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
             userContext: any;
         }): Promise<User | undefined> {
             let externalId = undefined;
-            if (isUserIdMappingRecipeInitialized) {
+            if (UserIdMappingRecipe.isRecipeInitialized()) {
                 let userIdMappingResponse = await getUserIdMapping(userId, "ANY", userContext);
                 if (userIdMappingResponse.status === "OK") {
                     userId = userIdMappingResponse.superTokensUserId;
@@ -75,7 +75,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 email,
             });
 
-            if (isUserIdMappingRecipeInitialized) {
+            if (UserIdMappingRecipe.isRecipeInitialized()) {
                 for (let i = 0; i < users.length; i++) {
                     let userIdMappingResponse = await getUserIdMapping(users[i].id, "ANY", userContext);
                     if (userIdMappingResponse.status === "OK") {
@@ -101,7 +101,7 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 thirdPartyUserId,
             });
             if (response.status === "OK") {
-                if (isUserIdMappingRecipeInitialized) {
+                if (UserIdMappingRecipe.isRecipeInitialized()) {
                     let userIdMappingResponse = await getUserIdMapping(response.user.id, "ANY", userContext);
                     if (userIdMappingResponse.status === "OK") {
                         response.user.id = userIdMappingResponse.externalUserId;
