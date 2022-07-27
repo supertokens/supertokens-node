@@ -226,7 +226,7 @@ export default class SuperTokens {
 
                                 if (userIdMappingResponse.status === "OK") {
                                     updatedUsersArray[i] = {
-                                        recipeId: userObj.recipeId,
+                                        ...userObj,
                                         user: {
                                             ...userObj.user,
                                             id: userIdMappingResponse.externalUserId,
@@ -242,11 +242,6 @@ export default class SuperTokens {
                             }
                         })
                 );
-
-                let userIdMapping = await getUserIdMapping(response.users[i].id, "SUPERTOKENS", undefined);
-                if (userIdMapping.status === "OK") {
-                    response.users[i].id = userIdMapping.externalUserId;
-                }
             }
 
             let promiseArrayStartPosition = 0;
@@ -296,9 +291,13 @@ export default class SuperTokens {
         let cdiVersion = await querier.getAPIVersion();
         if (maxVersion("2.10", cdiVersion) === cdiVersion) {
             // delete user is only available >= CDI 2.10
+
+            let doesUserIdMappingExist = false;
+
             if (isUserIdMappingRecipeInitialized) {
                 let userIdMappingResponse = await getUserIdMapping(input.userId, "ANY", undefined);
                 if (userIdMappingResponse.status === "OK") {
+                    doesUserIdMappingExist = true;
                     await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
                         userId: userIdMappingResponse.superTokensUserId,
                     });
@@ -307,7 +306,9 @@ export default class SuperTokens {
                         userId: userIdMappingResponse.externalUserId,
                     });
                 }
-            } else {
+            }
+
+            if (!doesUserIdMappingExist) {
                 await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
                     userId: input.userId,
                 });

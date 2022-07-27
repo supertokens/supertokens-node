@@ -26,12 +26,10 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
                 email,
             });
 
-            if (!response.createdNewUser) {
-                if (isUserIdMappingRecipeInitialized) {
-                    let userIdMappingResponse = await getUserIdMapping(response.user.id, "ANY", userContext);
-                    if (userIdMappingResponse.status === "OK") {
-                        response.user.id = userIdMappingResponse.externalUserId;
-                    }
+            if (isUserIdMappingRecipeInitialized) {
+                let userIdMappingResponse = await getUserIdMapping(response.user.id, "ANY", userContext);
+                if (userIdMappingResponse.status === "OK") {
+                    response.user.id = userIdMappingResponse.externalUserId;
                 }
             }
 
@@ -49,16 +47,21 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
             userId: string;
             userContext: any;
         }): Promise<User | undefined> {
+            let externalId = undefined;
             if (isUserIdMappingRecipeInitialized) {
                 let userIdMappingResponse = await getUserIdMapping(userId, "ANY", userContext);
                 if (userIdMappingResponse.status === "OK") {
                     userId = userIdMappingResponse.superTokensUserId;
+                    externalId = userIdMappingResponse.externalUserId;
                 }
             }
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/user"), {
                 userId,
             });
             if (response.status === "OK") {
+                if (externalId !== undefined) {
+                    response.user.id = externalId;
+                }
                 return {
                     ...response.user,
                 };
