@@ -292,12 +292,12 @@ export default class SuperTokens {
         if (maxVersion("2.10", cdiVersion) === cdiVersion) {
             // delete user is only available >= CDI 2.10
 
-            let doesUserIdMappingExist = false;
+            let userIdMappingRecipeIsInitializedAndMappingExists = false;
 
             if (UserIdMappingRecipe.isRecipeInitialized()) {
                 let userIdMappingResponse = await getUserIdMapping(input.userId, "ANY", undefined);
                 if (userIdMappingResponse.status === "OK") {
-                    doesUserIdMappingExist = true;
+                    userIdMappingRecipeIsInitializedAndMappingExists = true;
                     await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
                         userId: userIdMappingResponse.superTokensUserId,
                     });
@@ -308,7 +308,7 @@ export default class SuperTokens {
                 }
             }
 
-            if (!doesUserIdMappingExist) {
+            if (!userIdMappingRecipeIsInitializedAndMappingExists) {
                 await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
                     userId: input.userId,
                 });
