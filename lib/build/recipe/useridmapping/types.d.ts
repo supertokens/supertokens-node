@@ -63,12 +63,7 @@ export declare type RecipeInterface = {
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
         externalUserIdInfo: string | null;
         userContext: any;
-    }) => Promise<
-        | {
-              status: "OK";
-          }
-        | {
-              status: "UNKNOWN_MAPPING_ERROR";
-          }
-    >;
+    }) => Promise<{
+        status: "OK" | "UNKNOWN_MAPPING_ERROR";
+    }>;
 };
