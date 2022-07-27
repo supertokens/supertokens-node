@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   The frontend SDK should be updated to a version supporting session claims!
     -   supertokens-auth-react: 0.25.0
-    -   supertokens-web-js: 0.1.0
+    -   supertokens-web-js: >= 0.2.0
 -   `EmailVerification` recipe is now not initialized as part of auth recipes, it should be added to the `recipeList` directly instead.
 -   Email verification related overrides (`emailVerificationFeature` prop of `override`) moved from auth recipes into the `EmailVerification` recipe config.
 -   Email verificitaion related configs (`emailVerificationFeature` props) moved from auth recipes into the `EmailVerification` config object root.
