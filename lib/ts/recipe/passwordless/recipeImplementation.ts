@@ -1,6 +1,8 @@
 import { RecipeInterface } from "./types";
 import { Querier } from "../../querier";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { isUserIdMappingRecipeInitialized } from "../useridmapping/recipe";
+import { getUserIdMapping } from "./../useridmapping/index";
 
 export default function getRecipeInterface(querier: Querier): RecipeInterface {
     function copyAndRemoveUserContext(input: any): any {
@@ -17,6 +19,20 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 new NormalisedURLPath("/recipe/signinup/code/consume"),
                 copyAndRemoveUserContext(input)
             );
+
+            if (isUserIdMappingRecipeInitialized) {
+                if (isUserIdMappingRecipeInitialized) {
+                    let userIdMappingResponse = await getUserIdMapping(
+                        response.user.id,
+                        "SUPERTOKENS",
+                        input.userContext
+                    );
+                    if (userIdMappingResponse.status === "OK") {
+                        response.user.id = userIdMappingResponse.externalUserId;
+                    }
+                }
+            }
+
             return response;
         },
         createCode: async function (input) {
@@ -39,16 +55,37 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 copyAndRemoveUserContext(input)
             );
             if (response.status === "OK") {
+                if (isUserIdMappingRecipeInitialized) {
+                    let userIdMappingResponse = await getUserIdMapping(
+                        response.user.id,
+                        "SUPERTOKENS",
+                        input.userContext
+                    );
+                    if (userIdMappingResponse.status === "OK") {
+                        response.user.id = userIdMappingResponse.externalUserId;
+                    }
+                }
                 return response.user;
             }
             return undefined;
         },
         getUserById: async function (input) {
+            let externalId = undefined;
+            if (isUserIdMappingRecipeInitialized) {
+                let userIdMappingResponse = await getUserIdMapping(input.userId, "ANY", input.userContext);
+                if (userIdMappingResponse.status === "OK") {
+                    input.userId = userIdMappingResponse.superTokensUserId;
+                    externalId = userIdMappingResponse.externalUserId;
+                }
+            }
             let response = await querier.sendGetRequest(
                 new NormalisedURLPath("/recipe/user"),
                 copyAndRemoveUserContext(input)
             );
             if (response.status === "OK") {
+                if (externalId !== undefined) {
+                    response.user.id = externalId;
+                }
                 return response.user;
             }
             return undefined;
@@ -59,6 +96,16 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 copyAndRemoveUserContext(input)
             );
             if (response.status === "OK") {
+                if (isUserIdMappingRecipeInitialized) {
+                    let userIdMappingResponse = await getUserIdMapping(
+                        response.user.id,
+                        "SUPERTOKENS",
+                        input.userContext
+                    );
+                    if (userIdMappingResponse.status === "OK") {
+                        response.user.id = userIdMappingResponse.externalUserId;
+                    }
+                }
                 return response.user;
             }
             return undefined;
@@ -108,6 +155,12 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             return { status: "OK" };
         },
         updateUser: async function (input) {
+            if (isUserIdMappingRecipeInitialized) {
+                let userIdMappingResponse = await getUserIdMapping(input.userId, "ANY", input.userContext);
+                if (userIdMappingResponse.status === "OK") {
+                    input.userId = userIdMappingResponse.superTokensUserId;
+                }
+            }
             let response = await querier.sendPutRequest(
                 new NormalisedURLPath("/recipe/user"),
                 copyAndRemoveUserContext(input)

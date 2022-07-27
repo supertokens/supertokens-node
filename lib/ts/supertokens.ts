@@ -25,6 +25,8 @@ import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
+import { isUserIdMappingRecipeInitialized } from "./recipe/useridmapping/recipe";
+import { getUserIdMapping } from "./recipe/useridmapping";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -200,6 +202,89 @@ export default class SuperTokens {
             limit: input.limit,
             paginationToken: input.paginationToken,
         });
+
+        if (isUserIdMappingRecipeInitialized) {
+            let updatedUsersArray: {
+                recipeId: string;
+                user: any;
+            }[] = [];
+
+            let userIdMappingPromises: (() => Promise<any>)[] = [];
+
+            for (let i = 0; i < response.users.length; i++) {
+                const userObj = response.users[i];
+
+                userIdMappingPromises.push(
+                    (): Promise<any> =>
+                        new Promise(async (resolve, reject) => {
+                            try {
+                                const userIdMappingResponse = await getUserIdMapping(
+                                    userObj.user.id,
+                                    "SUPERTOKENS",
+                                    undefined
+                                );
+
+                                if (userIdMappingResponse.status === "OK") {
+                                    updatedUsersArray[i] = {
+                                        recipeId: userObj.recipeId,
+                                        user: {
+                                            ...userObj.user,
+                                            id: userIdMappingResponse.externalUserId,
+                                        },
+                                    };
+                                } else {
+                                    updatedUsersArray[i] = userObj;
+                                }
+                                resolve(true);
+                            } catch (e) {
+                                // Something went wrong when fetching userId mapping data
+                                reject(e);
+                            }
+                        })
+                );
+
+                let userIdMapping = await getUserIdMapping(response.users[i].id, "SUPERTOKENS", undefined);
+                if (userIdMapping.status === "OK") {
+                    response.users[i].id = userIdMapping.externalUserId;
+                }
+            }
+
+            let promiseArrayStartPosition = 0;
+            let batchSize = 10;
+
+            while (promiseArrayStartPosition < userIdMappingPromises.length) {
+                /**
+                 * We want to query only 10 in parallel at a time
+                 *
+                 * First we check if the the array has enough elements to iterate
+                 * promiseArrayStartPosition + 9 (10 elements including current)
+                 */
+                let promiseArrayEndPosition = promiseArrayStartPosition + (batchSize - 1);
+
+                // If the end position is higher than the arrays length, we need to adjust it
+                if (promiseArrayEndPosition >= userIdMappingPromises.length) {
+                    /**
+                     * For example if the array has 7 elements [A, B, C, D, E, F, G], when you run
+                     * the second batch [startPosition = 5], this will result in promiseArrayEndPosition
+                     * to be equal to 6 [5 + ((7 - 1) - 5)] and will then iterate over indexes [5] and [6]
+                     */
+                    promiseArrayEndPosition =
+                        promiseArrayStartPosition + (userIdMappingPromises.length - 1 - promiseArrayStartPosition);
+                }
+
+                let promisesToCall: (() => Promise<any>)[] = [];
+
+                for (let j = promiseArrayStartPosition; j <= promiseArrayEndPosition; j++) {
+                    promisesToCall.push(userIdMappingPromises[j]);
+                }
+
+                await Promise.all(promisesToCall.map((p) => p()));
+                promiseArrayStartPosition += batchSize;
+            }
+
+            response.users = updatedUsersArray;
+        }
+
         return {
             users: response.users,
             nextPaginationToken: response.nextPaginationToken,
@@ -211,9 +296,22 @@ export default class SuperTokens {
         let cdiVersion = await querier.getAPIVersion();
         if (maxVersion("2.10", cdiVersion) === cdiVersion) {
             // delete user is only available >= CDI 2.10
-            await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
-                userId: input.userId,
-            });
+            if (isUserIdMappingRecipeInitialized) {
+                let userIdMappingResponse = await getUserIdMapping(input.userId, "ANY", undefined);
+                if (userIdMappingResponse.status === "OK") {
+                    await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
+                        userId: userIdMappingResponse.superTokensUserId,
+                    });
+
+                    await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
+                        userId: userIdMappingResponse.externalUserId,
+                    });
+                }
+            } else {
+                await querier.sendPostRequest(new NormalisedURLPath("/user/remove"), {
+                    userId: input.userId,
+                });
+            }
 
             return {
                 status: "OK",
