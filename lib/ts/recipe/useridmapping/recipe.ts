@@ -26,6 +26,8 @@ import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import { validateAndNormaliseUserInput } from "./utils";
 import OverrideableBuilder from "supertokens-js-override";
 
+let isUserIdMappingRecipeInitialized = false;
+
 export default class Recipe extends RecipeModule {
     static RECIPE_ID = "useridmapping";
     private static instance: Recipe | undefined = undefined;
@@ -59,6 +61,7 @@ export default class Recipe extends RecipeModule {
     static init(config?: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
+                isUserIdMappingRecipeInitialized = true;
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config);
                 return Recipe.instance;
             } else {
@@ -103,3 +106,5 @@ export default class Recipe extends RecipeModule {
         return SuperTokensError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
     }
 }
+
+export { isUserIdMappingRecipeInitialized };

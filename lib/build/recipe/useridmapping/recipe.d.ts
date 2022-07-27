@@ -5,6 +5,7 @@ import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from "../../types";
 import { RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+declare let isUserIdMappingRecipeInitialized: boolean;
 export default class Recipe extends RecipeModule {
     static RECIPE_ID: string;
     private static instance;
@@ -27,3 +28,4 @@ export default class Recipe extends RecipeModule {
     getAllCORSHeaders(): string[];
     isErrorFromThisRecipe(err: any): err is error;
 }
+export { isUserIdMappingRecipeInitialized };

@@ -58,4 +58,6 @@ export default class Wrapper {
 export declare const init: typeof Recipe.init;
 export declare const createUserIdMapping: typeof Wrapper.createUserIdMapping;
 export declare const getUserIdMapping: typeof Wrapper.getUserIdMapping;
+export declare const deleteUserIdMapping: typeof Wrapper.deleteUserIdMapping;
+export declare const updateOrDeleteUserIdMappingInfo: typeof Wrapper.updateOrDeleteUserIdMappingInfo;
 export type { RecipeInterface };

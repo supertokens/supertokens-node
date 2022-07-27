@@ -70,5 +70,7 @@ export default class Wrapper {
 export const init = Wrapper.init;
 export const createUserIdMapping = Wrapper.createUserIdMapping;
 export const getUserIdMapping = Wrapper.getUserIdMapping;
+export const deleteUserIdMapping = Wrapper.deleteUserIdMapping;
+export const updateOrDeleteUserIdMappingInfo = Wrapper.updateOrDeleteUserIdMappingInfo;
 
 export type { RecipeInterface };
