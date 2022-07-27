@@ -21,15 +21,9 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             );
 
             if (isUserIdMappingRecipeInitialized) {
-                if (isUserIdMappingRecipeInitialized) {
-                    let userIdMappingResponse = await getUserIdMapping(
-                        response.user.id,
-                        "SUPERTOKENS",
-                        input.userContext
-                    );
-                    if (userIdMappingResponse.status === "OK") {
-                        response.user.id = userIdMappingResponse.externalUserId;
-                    }
+                let userIdMappingResponse = await getUserIdMapping(response.user.id, "SUPERTOKENS", input.userContext);
+                if (userIdMappingResponse.status === "OK") {
+                    response.user.id = userIdMappingResponse.externalUserId;
                 }
             }
 
