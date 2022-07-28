@@ -27,6 +27,7 @@ let JWTRecipe = require("..//lib/build/recipe/jwt/recipe").default;
 const UserMetadataRecipe = require("../lib/build/recipe/usermetadata/recipe").default;
 let PasswordlessRecipe = require("..//lib/build/recipe/passwordless/recipe").default;
 const UserRolesRecipe = require("../lib/build/recipe/userroles/recipe").default;
+const UserIdMappingRecipe = require("../lib/build/recipe/useridmapping/recipe").default;
 let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
 let { maxVersion } = require("../lib/build/utils");
@@ -231,6 +232,7 @@ module.exports.resetAll = function () {
     JWTRecipe.reset();
     UserMetadataRecipe.reset();
     UserRolesRecipe.reset();
+    UserIdMappingRecipe.reset();
     PasswordlessRecipe.reset();
     OpenIDRecipe.reset();
     ProcessState.getInstance().reset();

@@ -1,3 +1,4 @@
+const { printPath, setupST, startST, killAllST, cleanST } = require("../utils");
 const { ProcessState } = require("../../lib/build/processState");
 const STExpress = require("../..");
 const UserIdMappingRecipe = require("../../lib/build/recipe/useridmapping/recipe").default;
@@ -17,7 +18,7 @@ describe(`configTest: ${printPath("[test/useridmapping/config.test.js]")}`, func
     });
 
     describe("recipe init", () => {
-        it("should work fine without config userIdMapping", async function () {
+        it("should work fine without config", async function () {
             await startST();
             STExpress.init({
                 supertokens: {
@@ -34,7 +35,7 @@ describe(`configTest: ${printPath("[test/useridmapping/config.test.js]")}`, func
             // Only run for version >= 2.15
             const querier = Querier.getNewInstanceOrThrowError(undefined);
             const apiVersion = await querier.getAPIVersion();
-            if (maxVersion(apiVersion, "2.15") === "2.15") {
+            if (maxVersion(apiVersion, "2.14") === "2.14") {
                 return this.skip();
             }
 
