@@ -30,13 +30,15 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
             if (userContext._default && userContext._default.userIdMapping !== undefined) {
                 return userContext._default.userIdMapping;
             }
-
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/userid/map"), {
                 userId,
                 userIdType,
             });
 
-            userContext._default.userIdMapping = response;
+            userContext._default = {
+                ...userContext._default,
+                userIdMapping: response,
+            };
             return response;
         },
         deleteUserIdMapping: async function ({ userId, userIdType }) {
