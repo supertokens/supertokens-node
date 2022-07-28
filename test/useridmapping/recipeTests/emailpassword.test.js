@@ -242,4 +242,85 @@ describe(`userIdMapping with emailpassword: ${printPath(
             assert.strictEqual(response.user.id, externalId);
         });
     });
+
+    describe("update email and password", () => {
+        it("create an emailPassword user and map their userId, update their email and password using the externalId", async function () {
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+            });
+
+            // Only run for version >= 2.15
+            const querier = Querier.getNewInstanceOrThrowError(undefined);
+            const apiVersion = await querier.getAPIVersion();
+            if (maxVersion(apiVersion, "2.14") === "2.14") {
+                return this.skip();
+            }
+
+            // create a new EmailPassword User
+            const email = "test@example.com";
+            const password = "testPass123";
+
+            let signUpResponse = await EmailPasswordRecipe.signUp(email, password);
+            assert.strictEqual(signUpResponse.status, "OK");
+            let user = signUpResponse.user;
+            let superTokensUserId = user.id;
+
+            // retrieve the users info, the id should be the superTokens userId
+            {
+                let response = await EmailPasswordRecipe.getUserByEmail(email);
+                assert.strictEqual(response.id, superTokensUserId);
+            }
+
+            // map the userId
+            const externalId = "externalId";
+            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+
+            // update the email using the externalId
+            const updatedEmail = "test123@example.com";
+            {
+                {
+                    const response = await EmailPasswordRecipe.updateEmailOrPassword({
+                        userId: externalId,
+                        email: updatedEmail,
+                    });
+                    assert.strictEqual(response.status, "OK");
+                }
+
+                // sign in with the new email
+                {
+                    const response = await EmailPasswordRecipe.signIn(updatedEmail, password);
+                    assert.strictEqual(response.status, "OK");
+                    assert.strictEqual(response.user.id, externalId);
+                }
+            }
+
+            // update the password using the externalId
+            const updatedPassword = "newTestPass123";
+            {
+                {
+                    const response = await EmailPasswordRecipe.updateEmailOrPassword({
+                        userId: externalId,
+                        password: updatedPassword,
+                    });
+                    assert.strictEqual(response.status, "OK");
+                }
+
+                // sign in with new password
+                {
+                    const response = await EmailPasswordRecipe.signIn(updatedEmail, updatedPassword);
+                    assert.strictEqual(response.status, "OK");
+                    assert.strictEqual(response.user.id, externalId);
+                }
+            }
+        });
+    });
 });
