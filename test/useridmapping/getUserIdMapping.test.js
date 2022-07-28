@@ -9,7 +9,7 @@ const SessionRecipe = require("../../lib/build/recipe/session").default;
 const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 
-describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserIdMapping.test.js]")}`, function () {
+describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMapping.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
         await setupST();
