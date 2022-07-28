@@ -28,12 +28,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
         },
         getUserIdMapping: async function ({ userId, userIdType, userContext }) {
             if (userContext._default && userContext._default.userIdMapping !== undefined) {
-                let userIdMapping = userContext._default.userIdMapping;
-                return {
-                    status: "OK",
-                    superTokensUserId: userIdMapping.superTokensUserId,
-                    externalUserId: userIdMapping.externalUserId,
-                };
+                return userContext._default.userIdMapping;
             }
 
             let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/userid/map"), {
@@ -41,16 +36,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 userIdType,
             });
 
-            if (response.status === "OK") {
-                userContext._default = {
-                    ...userContext._default,
-                    userIdMapping: {
-                        superTokensUserId: response.superTokensUserId,
-                        externalUserId: response.externalUserId,
-                    },
-                };
-            }
-
+            userContext._default.userIdMapping = response;
             return response;
         },
         deleteUserIdMapping: async function ({ userId, userIdType }) {
