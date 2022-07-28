@@ -40,6 +40,7 @@ import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
+import { makeDefaultUserContextFromAPI } from "../../utils";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
@@ -259,7 +260,7 @@ export default class SessionRecipe extends RecipeModule {
                 isInServerlessEnv: this.isInServerlessEnv,
                 recipeImplementation: this.recipeInterfaceImpl,
             },
-            userContext: {},
+            userContext: makeDefaultUserContextFromAPI(request),
         });
     };
 }
