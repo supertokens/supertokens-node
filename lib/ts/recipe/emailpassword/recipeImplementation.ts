@@ -171,7 +171,7 @@ export default function getRecipeInterface(querier: Querier): RecipeInterface {
                 if (UserIdMappingRecipe.isRecipeInitialized()) {
                     let userIdMappingResponse = await getUserIdMapping(response.userId, "ANY", userContext);
                     if (userIdMappingResponse.status === "OK") {
-                        response.userId = userIdMappingResponse.superTokensUserId;
+                        response.userId = userIdMappingResponse.externalUserId;
                     }
                 }
             }
