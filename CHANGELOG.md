@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+-   adds UserIdMapping recipe and adds compatibility with CDI 2.15
+
 ## [11.0.1] - 2022-07-18
 
 ### Fixes
