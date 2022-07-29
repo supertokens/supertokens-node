@@ -3,12 +3,12 @@ const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils
 const { ProcessState } = require("../../../lib/build/processState");
 const STExpress = require("../../..");
 const UserIdMappingRecipe = require("../../../lib/build/recipe/useridmapping").default;
-const ThirdPartyEmailPasswordRecipe = require("../../../lib/build/recipe/thirdpartyemailpassword").default;
+const ThirdPartyPasswordlessRecipe = require("../../../lib/build/recipe/thirdpartypasswordless").default;
 const SessionRecipe = require("../../../lib/build/recipe/session").default;
 const { Querier } = require("../../../lib/build/querier");
 const { maxVersion } = require("../../../lib/build/utils");
 
-describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
+describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
     "[test/useridmapping/recipeTests/emailpassword.test.js]"
 )}`, function () {
     beforeEach(async function () {
@@ -23,7 +23,7 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
     });
 
     describe("getUserById", () => {
-        it("create an emailPassword a thirdParty user and map their userIds, retrieve the user info using getUserById and check that the externalId is returned", async function () {
+        it("create a thirdParty and passwordless user and map their userIds, retrieve the user info using getUserById and check that the externalId is returned", async function () {
             await startST();
             STExpress.init({
                 supertokens: {
@@ -35,9 +35,17 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                     websiteDomain: "supertokens.io",
                 },
                 recipeList: [
-                    ThirdPartyEmailPasswordRecipe.init({
+                    ThirdPartyPasswordlessRecipe.init({
+                        contactMethod: "EMAIL_OR_PHONE",
+                        flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                        createAndSendCustomEmail: (input) => {
+                            return;
+                        },
+                        createAndSendCustomTextMessage: (input) => {
+                            return;
+                        },
                         providers: [
-                            ThirdPartyEmailPasswordRecipe.Google({
+                            ThirdPartyPasswordlessRecipe.Google({
                                 clientId: "google",
                                 clientSecret: "test",
                             }),
@@ -56,29 +64,6 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
             }
 
             {
-                // create a new EmailPassword User
-                const email = "test@example.com";
-                const password = "testPass123";
-
-                let signUpResponse = await ThirdPartyEmailPasswordRecipe.emailPasswordSignUp(email, password);
-                assert.strictEqual(signUpResponse.status, "OK");
-                let user = signUpResponse.user;
-                let superTokensUserId = user.id;
-                let externalId = "epExternalId";
-
-                // map the users id
-                await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
-
-                // retrieve the users info using the externalId, the id in the response should be the externalId
-                {
-                    let response = await ThirdPartyEmailPasswordRecipe.getUserById(superTokensUserId);
-                    assert.ok(response !== undefined);
-                    assert.strictEqual(response.id, externalId);
-                    assert.strictEqual(response.email, email);
-                }
-            }
-
-            {
                 // create a new ThirdParty user
 
                 let email = {
@@ -86,7 +71,7 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                     isVerified: true,
                 };
 
-                let signUpResponse = await ThirdPartyEmailPasswordRecipe.thirdPartySignInUp("google", "tpId", email);
+                let signUpResponse = await ThirdPartyPasswordlessRecipe.thirdPartySignInUp("google", "tpId", email);
 
                 // map the users id
                 let user = signUpResponse.user;
@@ -94,13 +79,42 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 let externalId = "tpExternalId";
                 await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
 
-                // retrieve the users info using the externalId, the id in the response should be the externalId
+                // retrieve the user info using the externalId, the id in the response should be the externalId
                 {
-                    let response = await ThirdPartyEmailPasswordRecipe.getUserById(superTokensUserId);
+                    let response = await ThirdPartyPasswordlessRecipe.getUserById(superTokensUserId);
                     assert.ok(response !== undefined);
                     assert.strictEqual(response.id, externalId);
                     assert.strictEqual(response.email, email.id);
                 }
+            }
+
+            {
+                // create a Passwordless user
+                const phoneNumber = "+911234566789";
+                const codeInfo = await ThirdPartyPasswordlessRecipe.createCode({
+                    phoneNumber,
+                });
+
+                assert.strictEqual(codeInfo.status, "OK");
+
+                const consumeCodeResponse = await ThirdPartyPasswordlessRecipe.consumeCode({
+                    preAuthSessionId: codeInfo.preAuthSessionId,
+                    userInputCode: codeInfo.userInputCode,
+                    deviceId: codeInfo.deviceId,
+                });
+
+                assert.strictEqual(consumeCodeResponse.status, "OK");
+
+                const superTokensUserId = consumeCodeResponse.user.id;
+                const externalId = "psExternalId";
+
+                // create the userIdMapping
+                await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+
+                // retrieve the user info using the externalId, the id in the response should be the externalId
+                let response = await ThirdPartyPasswordlessRecipe.getUserById(externalId);
+                assert.ok(response !== undefined);
+                assert.strictEqual(response.id, externalId);
             }
         });
     });
