@@ -85,4 +85,65 @@ describe(`userIdMapping with emailpassword: ${printPath(
             }
         });
     });
+
+    describe("getUsers", () => {
+        it("create multiple users and map one of the users userId, retrieve all users and check that response will contain the externalId for the mapped user", async function () {
+            await startST();
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+            });
+
+            // Only run for version >= 2.15
+            const querier = Querier.getNewInstanceOrThrowError(undefined);
+            const apiVersion = await querier.getAPIVersion();
+            if (maxVersion(apiVersion, "2.14") === "2.14") {
+                return this.skip();
+            }
+
+            // create multiple users
+            const email = ["test@example.com", "test1@example.com", "test2@example.com", "test3@example.com"];
+            const password = "testPass123";
+            let users = [];
+
+            for (let i = 0; i < email.length; i++) {
+                let signUpResponse = await EmailPasswordRecipe.signUp(email[i], password);
+                assert.strictEqual(signUpResponse.status, "OK");
+                users.push(signUpResponse.user);
+            }
+
+            // the first users userId
+            const superTokensUserId = users[0].id;
+
+            let externalId = "externalId";
+
+            // map the users id
+            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+
+            // retrieve all the users using getUsersNewestFirst
+            {
+                let response = await STExpress.getUsersNewestFirst();
+                assert.strictEqual(response.users.length, 4);
+                // since the first user we created has their userId mapped we access the last element from the users array in the response
+                const oldestUsersId = response.users[response.users.length - 1].user.id;
+                assert.strictEqual(oldestUsersId, externalId);
+            }
+
+            // retrieve all the users using getUsersOldestFirst
+            {
+                let response = await STExpress.getUsersOldestFirst();
+                assert.strictEqual(response.users.length, 4);
+
+                const oldestUsersId = response.users[0].user.id;
+                assert.strictEqual(oldestUsersId, externalId);
+            }
+        });
+    });
 });
