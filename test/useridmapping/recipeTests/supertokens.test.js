@@ -4,10 +4,10 @@ const { ProcessState } = require("../../../lib/build/processState");
 const STExpress = require("../../..");
 const UserIdMappingRecipe = require("../../../lib/build/recipe/useridmapping").default;
 const EmailPasswordRecipe = require("../../../lib/build/recipe/emailpassword").default;
+const UserMetadataRecipe = require("../../../lib/build/recipe/usermetadata").default;
 const SessionRecipe = require("../../../lib/build/recipe/session").default;
 const { Querier } = require("../../../lib/build/querier");
 const { maxVersion } = require("../../../lib/build/utils");
-const { default: SuperTokens } = require("../../../lib/build/supertokens");
 
 describe(`userIdMapping with emailpassword: ${printPath(
     "[test/useridmapping/recipeTests/emailpassword.test.js]"
@@ -35,7 +35,12 @@ describe(`userIdMapping with emailpassword: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [
+                    EmailPasswordRecipe.init(),
+                    UserIdMappingRecipe.init(),
+                    UserMetadataRecipe.init(),
+                    SessionRecipe.init(),
+                ],
             });
 
             // Only run for version >= 2.15
@@ -73,6 +78,19 @@ describe(`userIdMapping with emailpassword: ${printPath(
                 assert.strictEqual(response.email, email);
             }
 
+            // add userMetadata to the user mapped with the externalId
+            {
+                const testMetadata = {
+                    role: "admin",
+                };
+                await UserMetadataRecipe.updateUserMetadata(externalId, testMetadata);
+
+                // retrieve UserMetadata and check that it exists
+                let response = await UserMetadataRecipe.getUserMetadata(externalId);
+                assert.strictEqual(response.status, "OK");
+                assert.deepStrictEqual(response.metadata, testMetadata);
+            }
+
             {
                 const response = await STExpress.deleteUser(externalId);
                 assert.strictEqual(response.status, "OK");
@@ -82,6 +100,11 @@ describe(`userIdMapping with emailpassword: ${printPath(
             {
                 let response = await EmailPasswordRecipe.getUserById(superTokensUserId);
                 assert.ok(response === undefined);
+            }
+            // check that no metadata exists for the id
+            {
+                let response = await UserMetadataRecipe.getUserMetadata(externalId);
+                assert.strictEqual(Object.keys(response.metadata).length, 0);
             }
         });
     });
