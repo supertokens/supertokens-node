@@ -9,8 +9,8 @@ const SessionRecipe = require("../../../lib/build/recipe/session").default;
 const { Querier } = require("../../../lib/build/querier");
 const { maxVersion } = require("../../../lib/build/utils");
 
-describe(`userIdMapping with emailpassword: ${printPath(
-    "[test/useridmapping/recipeTests/emailpassword.test.js]"
+describe(`userIdMapping with supertokens recipe: ${printPath(
+    "[test/useridmapping/recipeTests/supertokens.test.js]"
 )}`, function () {
     beforeEach(async function () {
         await killAllST();
