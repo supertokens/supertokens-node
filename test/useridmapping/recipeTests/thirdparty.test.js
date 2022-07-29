@@ -132,7 +132,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
             // retrieve the user
             let response = await ThirdPartyRecipe.getUserById(externalId);
-            assert.strictEqual(response != undefined);
+            assert.ok(response != undefined);
             assert.strictEqual(response.id, externalId);
         });
     });
@@ -244,7 +244,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
 
             // retrieve the user
             let response = await ThirdPartyRecipe.getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
-            assert.strictEqual(response != undefined);
+            assert.ok(response != undefined);
             assert.strictEqual(response.id, externalId);
         });
     });
