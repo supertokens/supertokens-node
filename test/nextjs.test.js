@@ -21,11 +21,13 @@ let SuperTokens = require("../lib/build/").default;
 let { middleware } = require("../framework/express");
 const Session = require("../lib/build/recipe/session");
 const EmailPassword = require("../lib/build/recipe/emailpassword");
+const ThirdPartyEmailPassword = require("../lib/build/recipe/thirdpartyemailpassword");
 const superTokensMiddleware = require("../lib/build/nextjs").superTokensMiddleware;
 const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWrapper;
 let { verifySession } = require("../recipe/session/framework/express");
+let queryString = require("querystring");
 
-describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
+describe.only(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
     describe("with superTokensNextWrapper", function () {
         before(async function () {
             process.env.user = undefined;
@@ -437,6 +439,14 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
                             },
                         },
                     }),
+                    ThirdPartyEmailPassword.init({
+                        providers: [
+                            ThirdPartyEmailPassword.Google({
+                                clientId: "",
+                                clientSecret: "",
+                            }),
+                        ],
+                    }),
                     Session.init({
                         override: {
                             functions: (oI) => {
@@ -485,6 +495,39 @@ describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, functi
             response.on("end", () => {
                 assert.deepStrictEqual(response._getJSONData().status, "CUSTOM_RESPONSE");
                 assert.deepStrictEqual(response._getJSONData().nextJS, true);
+                return done();
+            });
+
+            superTokensNextWrapper(
+                async (next) => {
+                    return middleware()(request, response, next);
+                },
+                request,
+                response
+            );
+        });
+
+        it("testing __supertokensFromNextJS flag, apple redirect", function (done) {
+            const request = httpMocks.createRequest({
+                method: "POST",
+                headers: {
+                    rid: "thirdpartyemailpassword",
+                    "content-type": "application/x-www-form-urlencoded",
+                },
+                url: "/api/auth/callback/apple",
+                body: {
+                    state: "hello",
+                    code: "testing",
+                },
+            });
+
+            const response = httpMocks.createResponse({
+                eventEmitter: require("events").EventEmitter,
+            });
+
+            response.on("end", () => {
+                let expected = `<html><head><script>window.location.replace("https://supertokens.io/auth/callback/apple?state=hello&code=testing");</script></head></html>`;
+                assert.deepStrictEqual(Buffer.from(response._getData()).toString(), expected);
                 return done();
             });
 

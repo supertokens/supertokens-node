@@ -170,32 +170,7 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
     } else if (method === "delete" || method === "get") {
         if (request.query === undefined) {
             let parser = urlencoded({ extended: true });
-            let err = await new Promise((resolve) => {
-                let resolvedCalled = false;
-                /**
-                 * Nextjs allow users to disable the default parser.
-                 * To handle that scenario, we are still parsing the request body
-                 */
-                if (request.__supertokensFromNextJS === true) {
-                    /**
-                     * the setImmediate here is to counter the next.js issue
-                     * where the json parser would not resolve and thus the request
-                     * just hangs forever. Next.JS does json parsing on its own.
-                     */
-                    setImmediate(() => {
-                        if (!resolvedCalled) {
-                            resolvedCalled = true;
-                            resolve(undefined);
-                        }
-                    });
-                }
-                parser(request, new ServerResponse(request), (e) => {
-                    if (!resolvedCalled) {
-                        resolvedCalled = true;
-                        resolve(e);
-                    }
-                });
-            });
+            let err = await new Promise((resolve) => parser(request, new ServerResponse(request), resolve));
             if (err !== undefined) {
                 throw new STError({
                     type: STError.BAD_INPUT_ERROR,
@@ -207,10 +182,35 @@ export async function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
 }
 
 export async function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
-    request: Request | (NextApiRequest & { __supertokensFromNextJS?: true })
+    request: (Request | NextApiRequest) & { __supertokensFromNextJS?: true }
 ) {
     let parser = urlencoded({ extended: true });
-    let err = await new Promise((resolve) => parser(request, new ServerResponse(request), resolve));
+    let err = await new Promise((resolve) => {
+        let resolvedCalled = false;
+        /**
+         * Nextjs allow users to disable the default parser.
+         * To handle that scenario, we are still parsing the request body
+         */
+        if (request.__supertokensFromNextJS === true) {
+            /**
+             * the setImmediate here is to counter the next.js issue
+             * where the json parser would not resolve and thus the request
+             * just hangs forever. Next.JS does json parsing on its own.
+             */
+            setImmediate(() => {
+                if (!resolvedCalled) {
+                    resolvedCalled = true;
+                    resolve(undefined);
+                }
+            });
+        }
+        parser(request, new ServerResponse(request), (e) => {
+            if (!resolvedCalled) {
+                resolvedCalled = true;
+                resolve(e);
+            }
+        });
+    });
     if (err !== undefined) {
         throw new STError({
             type: STError.BAD_INPUT_ERROR,
