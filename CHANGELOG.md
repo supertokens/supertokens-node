@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [11.0.1] - 2022-08-02
+
+### Bug fix:
+
+-   Solves the issue of request getting stuck in non returning state while parsing form data for nextjs request
+
 ## [11.0.0] - 2022-07-05
 
 ### Breaking change:
