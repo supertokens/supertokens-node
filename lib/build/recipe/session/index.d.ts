@@ -19,10 +19,21 @@ export default class SessionWrapper {
         sessionData?: any,
         userContext?: any
     ): Promise<SessionContainer>;
+    static getSession(req: any, res: any): Promise<SessionContainer>;
     static getSession(
         req: any,
         res: any,
-        options?: VerifySessionOptions,
+        options?: VerifySessionOptions & {
+            sessionRequired?: true;
+        },
+        userContext?: any
+    ): Promise<SessionContainer>;
+    static getSession(
+        req: any,
+        res: any,
+        options?: VerifySessionOptions & {
+            sessionRequired: false;
+        },
         userContext?: any
     ): Promise<SessionContainer | undefined>;
     static getSessionInformation(sessionHandle: string, userContext?: any): Promise<SessionInformation | undefined>;

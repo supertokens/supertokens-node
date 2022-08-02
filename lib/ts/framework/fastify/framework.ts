@@ -23,12 +23,7 @@ import type { HTTPMethod } from "../../types";
 import { normaliseHttpMethod } from "../../utils";
 import { BaseRequest } from "../request";
 import { BaseResponse } from "../response";
-import {
-    serializeCookieValue,
-    normalizeHeaderValue,
-    getCookieValueFromHeaders,
-    getCookieValueToSetInHeader,
-} from "../utils";
+import { serializeCookieValue, normalizeHeaderValue, getCookieValueFromHeaders } from "../utils";
 import type { Framework } from "../types";
 import SuperTokens from "../../supertokens";
 import type { SessionContainerInterface } from "../../recipe/session/types";
@@ -126,12 +121,43 @@ export class FastifyResponse extends BaseResponse {
         sameSite: "strict" | "lax" | "none"
     ) => {
         let serialisedCookie = serializeCookieValue(key, value, domain, secure, httpOnly, expires, path, sameSite);
-        let prev: string | string[] | undefined = this.response.getHeader(COOKIE_HEADER) as
-            | string
-            | string[]
-            | undefined;
-        let cookieValueToSetInHeader = getCookieValueToSetInHeader(prev, serialisedCookie, key);
-        this.response.header(COOKIE_HEADER, cookieValueToSetInHeader);
+        /**
+         * lets say if current value is undefined, prev -> undefined
+         *
+         * now if add AT,
+         * cookieValueToSetInHeader -> AT
+         * response header object will be:
+         *
+         * 'set-cookie': AT
+         *
+         * now if add RT,
+         *
+         * prev -> AT
+         * cookieValueToSetInHeader -> AT + RT
+         * and response header object will be:
+         *
+         * 'set-cookie': AT + AT + RT
+         *
+         * now if add IRT,
+         *
+         * prev -> AT + AT + RT
+         * cookieValueToSetInHeader -> IRT + AT + AT + RT
+         * and response header object will be:
+         *
+         * 'set-cookie': AT + AT + RT + IRT + AT + AT + RT
+         *
+         * To avoid this, we no longer get and use the previous value
+         *
+         * Old code:
+         *
+         * let prev: string | string[] | undefined = this.response.getHeader(COOKIE_HEADER) as
+         * | string
+         * | string[]
+         * | undefined;
+         * let cookieValueToSetInHeader = getCookieValueToSetInHeader(prev, serialisedCookie, key);
+         * this.response.header(COOKIE_HEADER, cookieValueToSetInHeader);
+         */
+        this.response.header(COOKIE_HEADER, serialisedCookie);
     };
 
     /**
