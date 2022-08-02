@@ -1,5 +1,4 @@
 // @ts-nocheck
-/// <reference types="qs" />
 import type { Request, Response, NextFunction } from "express";
 import type { HTTPMethod } from "../../types";
 import { BaseRequest } from "../request";
@@ -44,29 +43,8 @@ export declare class ExpressResponse extends BaseResponse {
 export interface SessionRequest extends Request {
     session?: SessionContainerInterface;
 }
-export declare const middleware: () => (
-    req: Request<
-        import("express-serve-static-core").ParamsDictionary,
-        any,
-        any,
-        import("qs").ParsedQs,
-        Record<string, any>
-    >,
-    res: Response<any, Record<string, any>>,
-    next: NextFunction
-) => Promise<void>;
-export declare const errorHandler: () => (
-    err: any,
-    req: Request<
-        import("express-serve-static-core").ParamsDictionary,
-        any,
-        any,
-        import("qs").ParsedQs,
-        Record<string, any>
-    >,
-    res: Response<any, Record<string, any>>,
-    next: NextFunction
-) => Promise<void>;
+export declare const middleware: () => (req: Request, res: Response, next: NextFunction) => Promise<void>;
+export declare const errorHandler: () => (err: any, req: Request, res: Response, next: NextFunction) => Promise<void>;
 export interface ExpressFramework extends Framework {
     middleware: () => (req: Request, res: Response, next: NextFunction) => Promise<void>;
     errorHandler: () => (err: any, req: Request, res: Response, next: NextFunction) => Promise<void>;

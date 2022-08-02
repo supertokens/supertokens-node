@@ -27,7 +27,7 @@ const superTokensNextWrapper = require("../lib/build/nextjs").superTokensNextWra
 let { verifySession } = require("../recipe/session/framework/express");
 let queryString = require("querystring");
 
-describe.only(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
+describe(`NextJS Middleware Test: ${printPath("[test/nextjs.test.js]")}`, function () {
     describe("with superTokensNextWrapper", function () {
         before(async function () {
             process.env.user = undefined;

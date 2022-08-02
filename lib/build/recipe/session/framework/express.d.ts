@@ -4,4 +4,4 @@ import type { SessionRequest } from "../../../framework/express/framework";
 import type { NextFunction, Response } from "express";
 export declare function verifySession(
     options?: VerifySessionOptions
-): (req: SessionRequest, res: Response<any, Record<string, any>>, next: NextFunction) => Promise<void>;
+): (req: SessionRequest, res: Response, next: NextFunction) => Promise<void>;
