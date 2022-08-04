@@ -1,4 +1,3 @@
-"use strict";
 /* Copyright (c) 2022, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
@@ -13,8 +12,18 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DASHBOARD_API = "/dashboard";
-exports.VALIDATE_KEY_API = "/api/key/validate";
-exports.USERS_LIST_GET_API = "/api/users";
-exports.USERS_COUNT_API = "/api/users/count";
+
+import { APIInterface, APIOptions } from "../types";
+import SuperTokens from "../../../supertokens";
+import { send200Response } from "../../../utils";
+
+export default async function usersCountGet(_: APIInterface, options: APIOptions) {
+    const count = await SuperTokens.getInstanceOrThrowError().getUserCount();
+
+    send200Response(options.res, {
+        status: "OK",
+        count,
+    });
+
+    return true;
+}

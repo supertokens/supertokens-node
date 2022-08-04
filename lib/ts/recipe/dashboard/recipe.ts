@@ -20,7 +20,7 @@ import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, Type
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
-import { DASHBOARD_API, USERS_LIST_GET_API, VALIDATE_KEY_API } from "./constants";
+import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, VALIDATE_KEY_API } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import dashboard from "./api/dashboard";
@@ -28,6 +28,7 @@ import error from "../../error";
 import validateKey from "./api/validateKey";
 import apiKeyProtector from "./api/apiKeyProtector";
 import usersGet from "./api/usersGet";
+import usersCountGet from "./api/usersCountGet";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -129,6 +130,8 @@ export default class Recipe extends RecipeModule {
 
         if (id === USERS_LIST_GET_API) {
             apiFunction = usersGet;
+        } else if (id === USERS_COUNT_API) {
+            apiFunction = usersCountGet;
         }
 
         // If the id doesnt match any APIs return false
