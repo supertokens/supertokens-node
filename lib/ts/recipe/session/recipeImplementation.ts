@@ -61,10 +61,14 @@ export type Helpers = {
     getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
     config: TypeNormalisedInput;
-    sessionRecipeImpl: RecipeInterface;
+    getRecipeImpl: () => RecipeInterface;
 };
 
-export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface {
+export default function getRecipeInterface(
+    querier: Querier,
+    config: TypeNormalisedInput,
+    getRecipeImplAfterOverrides: () => RecipeInterface
+): RecipeInterface {
     let handshakeInfo: undefined | HandshakeInfo;
 
     async function getHandshakeInfo(forceRefetch = false): Promise<HandshakeInfo> {
@@ -377,7 +381,7 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
         updateJwtSigningPublicKeyInfo,
         getHandshakeInfo,
         config,
-        sessionRecipeImpl: obj,
+        getRecipeImpl: getRecipeImplAfterOverrides,
     };
 
     if (process.env.TEST_MODE === "testing") {
