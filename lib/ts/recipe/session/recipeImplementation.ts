@@ -7,7 +7,6 @@ import {
     AntiCsrfType,
     SessionClaimValidator,
     SessionClaim,
-    SessionContainerInterface,
     ClaimValidationError,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
@@ -21,11 +20,7 @@ import {
     setFrontTokenInHeaders,
     getRidFromHeader,
 } from "./cookieAndHeaders";
-import {
-    attachCreateOrRefreshSessionResponseToExpressRes,
-    updateClaimsInPayloadIfNeeded,
-    validateClaimsInPayload,
-} from "./utils";
+import { attachCreateOrRefreshSessionResponseToExpressRes, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod, frontendHasInterceptor } from "../../utils";
@@ -246,62 +241,53 @@ export default function getRecipeInterface(querier: Querier, config: TypeNormali
             }
         },
 
-        assertClaims: async function (
+        validateClaims: async function (
             this: RecipeInterface,
             input: {
-                session: SessionContainerInterface;
-
-                claimValidators: SessionClaimValidator[];
-                userContext?: any;
-            }
-        ): Promise<void> {
-            logDebugMessage("getSession: required validator ids " + input.claimValidators.map((c) => c.id).join(", "));
-            await input.session.assertClaims(input.claimValidators, input.userContext);
-            logDebugMessage("getSession: claim assertion successful");
-        },
-
-        validateClaimsForSessionHandle: async function (
-            this: RecipeInterface,
-            input: {
-                sessionInfo: SessionInformation;
+                userId: string;
+                accessTokenPayload: any;
                 claimValidators: SessionClaimValidator[];
                 userContext: any;
             }
-        ): Promise<
-            | {
-                  status: "SESSION_DOES_NOT_EXIST_ERROR";
-              }
-            | {
-                  status: "OK";
-                  invalidClaims: ClaimValidationError[];
-              }
-        > {
-            const origSessionClaimPayloadJSON = JSON.stringify(input.sessionInfo.accessTokenPayload);
+        ): Promise<{
+            invalidClaims: ClaimValidationError[];
+            accessTokenPayloadUpdate?: any;
+        }> {
+            let accessTokenPayload = input.accessTokenPayload;
+            let accessTokenPayloadUpdate = undefined;
+            const origSessionClaimPayloadJSON = JSON.stringify(accessTokenPayload);
 
-            let newAccessTokenPayload = await updateClaimsInPayloadIfNeeded(
-                input.sessionInfo.userId,
-                input.claimValidators,
-                input.sessionInfo.accessTokenPayload,
-                input.userContext
-            );
+            for (const validator of input.claimValidators) {
+                logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
+                if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
+                    logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
+                    const value = await validator.claim.fetchValue(input.userId, input.userContext);
+                    logDebugMessage(
+                        "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
+                    );
+                    if (value !== undefined) {
+                        accessTokenPayload = validator.claim.addToPayload_internal(
+                            accessTokenPayload,
+                            value,
+                            input.userContext
+                        );
+                    }
+                }
+            }
 
-            if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
-                await this.mergeIntoAccessTokenPayload({
-                    accessTokenPayloadUpdate: newAccessTokenPayload,
-                    sessionHandle: input.sessionInfo.sessionHandle,
-                    userContext: input.userContext,
-                });
+            if (JSON.stringify(accessTokenPayload) !== origSessionClaimPayloadJSON) {
+                accessTokenPayloadUpdate = accessTokenPayload;
             }
 
             const invalidClaims = await validateClaimsInPayload(
                 input.claimValidators,
-                newAccessTokenPayload,
+                accessTokenPayload,
                 input.userContext
             );
 
             return {
-                status: "OK",
                 invalidClaims,
+                accessTokenPayloadUpdate,
             };
         },
 

@@ -17,7 +17,6 @@ import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeade
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
-import { updateClaimsInPayloadIfNeeded, validateClaimsInPayload } from "./utils";
 
 export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
@@ -147,26 +146,22 @@ export default class Session implements SessionContainerInterface {
     };
 
     assertClaims = async (claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> => {
-        const origSessionClaimPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
-
-        let newAccessTokenPayload = await updateClaimsInPayloadIfNeeded(
-            this.getUserId(),
+        let validateClaimResponse = await this.helpers.sessionRecipeImpl.validateClaims({
+            accessTokenPayload: this.getAccessTokenPayload(userContext),
+            userId: this.getUserId(),
             claimValidators,
-            this.getAccessTokenPayload(),
-            userContext
-        );
+            userContext,
+        });
 
-        if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
-            await this.mergeIntoAccessTokenPayload(newAccessTokenPayload, userContext);
+        if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
+            await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
         }
 
-        let validationErrors = await validateClaimsInPayload(claimValidators, newAccessTokenPayload, userContext);
-
-        if (validationErrors.length !== 0) {
+        if (validateClaimResponse.invalidClaims.length !== 0) {
             throw new STError({
                 type: "INVALID_CLAIMS",
                 message: "INVALID_CLAIMS",
-                payload: validationErrors,
+                payload: validateClaimResponse.invalidClaims,
             });
         }
     };

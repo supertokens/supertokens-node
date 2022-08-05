@@ -321,32 +321,6 @@ export async function getRequiredClaimValidators(
         : globalClaimValidators;
 }
 
-export async function updateClaimsInPayloadIfNeeded(
-    userId: string,
-    claimValidators: SessionClaimValidator[],
-    newAccessTokenPayload: any,
-    userContext: any
-) {
-    for (const validator of claimValidators) {
-        logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
-        if ("claim" in validator && (await validator.shouldRefetch(newAccessTokenPayload, userContext))) {
-            logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
-            const value = await validator.claim.fetchValue(userId, userContext);
-            logDebugMessage(
-                "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
-            );
-            if (value !== undefined) {
-                newAccessTokenPayload = validator.claim.addToPayload_internal(
-                    newAccessTokenPayload,
-                    value,
-                    userContext
-                );
-            }
-        }
-    }
-    return newAccessTokenPayload;
-}
-
 export async function validateClaimsInPayload(
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,

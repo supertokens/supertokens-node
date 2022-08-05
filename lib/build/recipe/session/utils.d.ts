@@ -55,12 +55,6 @@ export declare function getRequiredClaimValidators(
     overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
     userContext: any
 ): Promise<SessionClaimValidator[]>;
-export declare function updateClaimsInPayloadIfNeeded(
-    userId: string,
-    claimValidators: SessionClaimValidator[],
-    newAccessTokenPayload: any,
-    userContext: any
-): Promise<any>;
 export declare function validateClaimsInPayload(
     claimValidators: SessionClaimValidator[],
     newAccessTokenPayload: any,

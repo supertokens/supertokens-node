@@ -245,24 +245,15 @@ export declare type RecipeInterface = {
     >;
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
-    assertClaims(input: {
-        session: SessionContainerInterface;
+    validateClaims(input: {
+        userId: string;
+        accessTokenPayload: any;
         claimValidators: SessionClaimValidator[];
         userContext: any;
-    }): Promise<void>;
-    validateClaimsForSessionHandle(input: {
-        sessionInfo: SessionInformation;
-        claimValidators: SessionClaimValidator[];
-        userContext: any;
-    }): Promise<
-        | {
-              status: "SESSION_DOES_NOT_EXIST_ERROR";
-          }
-        | {
-              status: "OK";
-              invalidClaims: ClaimValidationError[];
-          }
-    >;
+    }): Promise<{
+        invalidClaims: ClaimValidationError[];
+        accessTokenPayloadUpdate?: any;
+    }>;
     validateClaimsInJWTPayload(input: {
         userId: string;
         jwtPayload: JSONObject;

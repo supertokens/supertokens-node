@@ -110,11 +110,30 @@ export default class SessionWrapper {
                 ? await overrideGlobalClaimValidators(globalClaimValidators, sessionInfo, userContext)
                 : globalClaimValidators;
 
-        return recipeImpl.validateClaimsForSessionHandle({
-            sessionInfo,
+        let claimValidationResponse = await recipeImpl.validateClaims({
+            userId: sessionInfo.userId,
+            accessTokenPayload: sessionInfo.accessTokenPayload,
             claimValidators,
             userContext,
         });
+
+        if (claimValidationResponse.accessTokenPayloadUpdate !== undefined) {
+            if (
+                !(await recipeImpl.mergeIntoAccessTokenPayload({
+                    sessionHandle,
+                    accessTokenPayloadUpdate: claimValidationResponse.accessTokenPayloadUpdate,
+                    userContext,
+                }))
+            ) {
+                return {
+                    status: "SESSION_DOES_NOT_EXIST_ERROR",
+                };
+            }
+        }
+        return {
+            status: "OK",
+            invalidClaims: claimValidationResponse.invalidClaims,
+        };
     }
 
     static async validateClaimsInJWTPayload(
@@ -167,11 +186,7 @@ export default class SessionWrapper {
                 options?.overrideGlobalClaimValidators,
                 userContext
             );
-            await recipeInterfaceImpl.assertClaims({
-                session,
-                claimValidators,
-                userContext,
-            });
+            await session.assertClaims(claimValidators, userContext);
         }
         return session;
     }

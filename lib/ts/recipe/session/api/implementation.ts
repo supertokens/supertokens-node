@@ -56,11 +56,7 @@ export default function getAPIInterface(): APIInterface {
                         userContext
                     );
 
-                    await options.recipeImplementation.assertClaims({
-                        session,
-                        claimValidators,
-                        userContext,
-                    });
+                    await session.assertClaims(claimValidators, userContext);
                 }
 
                 return session;
