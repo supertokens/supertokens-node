@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [11.0.3] - 2022-08-05
+
 ### Bug fix:
 
 -   Fixes overrides not applying correctly in methods called on SessionContainer instances
