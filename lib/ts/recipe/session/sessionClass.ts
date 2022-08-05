@@ -188,7 +188,7 @@ export default class Session implements SessionContainerInterface {
     /**
      * @deprecated Use mergeIntoAccessTokenPayload
      */
-    updateAccessTokenPayload = async (newAccessTokenPayload: any | undefined, userContext: any) => {
+    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext: any) => {
         let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
             accessToken: this.getAccessToken(),
             newAccessTokenPayload,
