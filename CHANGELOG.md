@@ -78,6 +78,28 @@ SuperTokens.init({
 })
 ```
 
+## [11.0.3] - 2022-08-05
+
+### Bug fix:
+
+-   Fixes overrides not applying correctly in methods called on SessionContainer instances
+
+## [11.0.2] - 2022-08-02
+
+### Bug fix:
+
+-   Solves the issue of request getting stuck in non returning state while parsing form data for nextjs request
+
+## [11.0.1] - 2022-07-18
+
+### Fixes
+
+-   Fixed fastify issue where same cookie was getting set multiple times on the response object
+
+### Adds:
+
+-   Improved type definitions for `SessionWrapper.getSession`.
+
 ## [11.0.0] - 2022-07-05
 
 ### Breaking change:

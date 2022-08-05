@@ -12,7 +12,15 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, setupST, startST, killAllST, cleanST, extractInfoFromResponse } = require("../utils");
+const {
+    printPath,
+    setupST,
+    startST,
+    killAllST,
+    cleanST,
+    extractInfoFromResponse,
+    extractCookieCountInfo,
+} = require("../utils");
 let assert = require("assert");
 let { ProcessState, PROCESS_STATE } = require("../../lib/build/processState");
 let SuperTokens = require("../../");
@@ -1376,5 +1384,42 @@ describe(`Fastify: ${printPath("[test/framework/fastify.test.js]")}`, function (
         });
 
         assert.equal(res2.statusCode, 200);
+    });
+
+    it("test same cookie is not getting set multiple times", async function () {
+        await startST();
+        SuperTokens.init({
+            framework: "fastify",
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        await this.server.register(FastifyFramework.plugin);
+
+        this.server.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "id1", {}, {});
+            return res.send("").code(200);
+        });
+
+        let res = extractCookieCountInfo(
+            await this.server.inject({
+                method: "post",
+                url: "/create",
+            })
+        );
+        assert.strictEqual(res.accessToken, 1);
+        assert.strictEqual(res.refreshToken, 1);
+        assert.strictEqual(res.idRefreshToken, 1);
     });
 });

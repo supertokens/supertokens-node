@@ -43,7 +43,7 @@ export default class Session implements SessionContainerInterface {
     }
 
     revokeSession = async (userContext?: any) => {
-        await this.helpers.sessionRecipeImpl.revokeSession({
+        await this.helpers.getRecipeImpl().revokeSession({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -58,7 +58,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     getSessionData = async (userContext?: any): Promise<any> => {
-        let sessionInfo = await this.helpers.sessionRecipeImpl.getSessionInformation({
+        let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -74,7 +74,7 @@ export default class Session implements SessionContainerInterface {
 
     updateSessionData = async (newSessionData: any, userContext?: any) => {
         if (
-            !(await this.helpers.sessionRecipeImpl.updateSessionData({
+            !(await this.helpers.getRecipeImpl().updateSessionData({
                 sessionHandle: this.sessionHandle,
                 newSessionData,
                 userContext: userContext === undefined ? {} : userContext,
@@ -116,7 +116,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     getTimeCreated = async (userContext?: any): Promise<number> => {
-        let sessionInfo = await this.helpers.sessionRecipeImpl.getSessionInformation({
+        let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -131,7 +131,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     getExpiry = async (userContext?: any): Promise<number> => {
-        let sessionInfo = await this.helpers.sessionRecipeImpl.getSessionInformation({
+        let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
         });
@@ -146,7 +146,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     assertClaims = async (claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> => {
-        let validateClaimResponse = await this.helpers.sessionRecipeImpl.validateClaims({
+        let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
             accessTokenPayload: this.getAccessTokenPayload(userContext),
             userId: this.getUserId(userContext),
             claimValidators,
@@ -188,8 +188,8 @@ export default class Session implements SessionContainerInterface {
     /**
      * @deprecated Use mergeIntoAccessTokenPayload
      */
-    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext: any) => {
-        let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
+    updateAccessTokenPayload = async (newAccessTokenPayload: any | undefined, userContext: any) => {
+        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
             accessToken: this.getAccessToken(),
             newAccessTokenPayload,
             userContext: userContext === undefined ? {} : userContext,

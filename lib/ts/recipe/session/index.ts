@@ -170,6 +170,19 @@ export default class SessionWrapper {
         });
     }
 
+    static getSession(req: any, res: any): Promise<SessionContainer>;
+    static getSession(
+        req: any,
+        res: any,
+        options?: VerifySessionOptions & { sessionRequired?: true },
+        userContext?: any
+    ): Promise<SessionContainer>;
+    static getSession(
+        req: any,
+        res: any,
+        options?: VerifySessionOptions & { sessionRequired: false },
+        userContext?: any
+    ): Promise<SessionContainer | undefined>;
     static async getSession(req: any, res: any, options?: VerifySessionOptions, userContext: any = {}) {
         if (!res.wrapperUsed) {
             res = frameworks[SuperTokens.getInstanceOrThrowError().framework].wrapResponse(res);
