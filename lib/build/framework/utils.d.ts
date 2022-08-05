@@ -15,8 +15,10 @@ export declare function assertThatBodyParserHasBeenUsedForExpressLikeRequest(
         __supertokensFromNextJS?: true;
     }
 ): Promise<void>;
-export declare function assertForDataBodyParserHasBeenUsedForExpressLikeRequest(
-    request: Request | NextApiRequest
+export declare function assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(
+    request: (Request | NextApiRequest) & {
+        __supertokensFromNextJS?: true;
+    }
 ): Promise<void>;
 export declare function setHeaderForExpressLikeResponse(
     res: Response,

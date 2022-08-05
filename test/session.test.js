@@ -21,6 +21,7 @@ const {
     extractInfoFromResponse,
     setKeyValueInConfig,
     killAllSTCoresOnly,
+    mockResponse,
 } = require("./utils");
 let assert = require("assert");
 let { Querier } = require("../lib/build/querier");
@@ -1264,5 +1265,40 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         assert(response.length === 1);
 
         assert(!(await SessionFunctions.getSessionInformation(s.helpers, res.session.handle)));
+    });
+
+    it("should use override functions in sessioncontainer methods", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                    override: {
+                        functions: (oI) => ({
+                            ...oI,
+                            getSessionInformation: async (input) => {
+                                const info = await oI.getSessionInformation(input);
+                                info.sessionData = { test: 1 };
+                                return info;
+                            },
+                        }),
+                    },
+                }),
+            ],
+        });
+
+        const session = await Session.createNewSession(mockResponse(), "testId");
+
+        const data = await session.getSessionData();
+
+        assert.equal(data.test, 1);
     });
 });

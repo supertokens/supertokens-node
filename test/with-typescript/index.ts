@@ -957,7 +957,19 @@ app.use(
         // nextJS types
         let session2 = await NextJS.superTokensNextWrapper(
             async (next) => {
-                return await Session.getSession(req, res);
+                // Works without null checking by default
+                const defaultSession = await Session.getSession(req, res);
+                defaultSession.getUserId();
+
+                // Works without null checking when sessions are explicitly required
+                const requiredSession = await Session.getSession(req, res, { sessionRequired: true });
+                requiredSession.getUserId();
+
+                // REQUIRES null checking when sessions are explicitly NOT required
+                const optionalSession = await Session.getSession(req, res, { sessionRequired: false });
+                optionalSession?.getUserId();
+
+                return defaultSession;
             },
             req,
             res

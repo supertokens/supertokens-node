@@ -24,7 +24,7 @@ import {
     getCookieValueFromIncomingMessage,
     getHeaderValueFromIncomingMessage,
     assertThatBodyParserHasBeenUsedForExpressLikeRequest,
-    assertForDataBodyParserHasBeenUsedForExpressLikeRequest,
+    assertFormDataBodyParserHasBeenUsedForExpressLikeRequest,
 } from "../utils";
 import type { Framework } from "../types";
 import SuperTokens from "../../supertokens";
@@ -45,7 +45,7 @@ export class ExpressRequest extends BaseRequest {
 
     getFormData = async (): Promise<any> => {
         if (!this.formDataParserChecked) {
-            await assertForDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
+            await assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
             this.formDataParserChecked = true;
         }
         return this.request.body;
@@ -100,7 +100,14 @@ export class ExpressResponse extends BaseResponse {
 
     sendHTMLResponse = (html: string) => {
         if (!this.response.writableEnded) {
-            this.response.set("Content-Type", "text/html");
+            /**
+             * response.set method is not available if response
+             * is a nextjs response object. setHeader method
+             * is present on OutgoingMessage which is one of the
+             * bases used to construct response object for express
+             * like response as well as nextjs like response
+             */
+            this.response.setHeader("Content-Type", "text/html");
             this.response.status(this.statusCode).send(Buffer.from(html));
         }
     };
