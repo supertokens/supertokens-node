@@ -20,7 +20,7 @@ export default class Session implements SessionContainerInterface {
     revokeSession: (userContext?: any) => Promise<void>;
     getSessionData: (userContext?: any) => Promise<any>;
     updateSessionData: (newSessionData: any, userContext?: any) => Promise<void>;
-    getUserId: () => string;
+    getUserId: (_userContext?: any) => string;
     getAccessTokenPayload: (_userContext?: any) => any;
     getHandle: () => string;
     getAccessToken: () => string;

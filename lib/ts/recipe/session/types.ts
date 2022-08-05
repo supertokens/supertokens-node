@@ -72,7 +72,7 @@ export type CreateOrRefreshAPIResponse = {
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
-    onInvalidClaim: InvalidClaimErrorHandlerMiddleware;
+    onInvalidClaim?: InvalidClaimErrorHandlerMiddleware;
 }
 
 export type TypeInput = {

@@ -88,7 +88,7 @@ export default class Session implements SessionContainerInterface {
         }
     };
 
-    getUserId = () => {
+    getUserId = (_userContext?: any) => {
         return this.userId;
     };
 
@@ -148,7 +148,7 @@ export default class Session implements SessionContainerInterface {
     assertClaims = async (claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> => {
         let validateClaimResponse = await this.helpers.sessionRecipeImpl.validateClaims({
             accessTokenPayload: this.getAccessTokenPayload(userContext),
-            userId: this.getUserId(),
+            userId: this.getUserId(userContext),
             claimValidators,
             userContext,
         });
@@ -167,7 +167,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     fetchAndSetClaim = async <T>(claim: SessionClaim<T>, userContext?: any) => {
-        const update = await claim.build(this.getUserId(), userContext);
+        const update = await claim.build(this.getUserId(userContext), userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 
@@ -177,7 +177,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     getClaimValue = async <T>(claim: SessionClaim<T>, userContext?: any) => {
-        return claim.getValueFromPayload(await this.getAccessTokenPayload(), userContext);
+        return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext);
     };
 
     removeClaim = (claim: SessionClaim<any>, userContext?: any) => {
@@ -188,7 +188,7 @@ export default class Session implements SessionContainerInterface {
     /**
      * @deprecated Use mergeIntoAccessTokenPayload
      */
-    updateAccessTokenPayload = async (newAccessTokenPayload: any | undefined, userContext: any) => {
+    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext: any) => {
         let response = await this.helpers.sessionRecipeImpl.regenerateAccessToken({
             accessToken: this.getAccessToken(),
             newAccessTokenPayload,
