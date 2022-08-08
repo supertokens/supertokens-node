@@ -17,7 +17,6 @@ import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeade
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
-import { updateClaimsInPayloadIfNeeded, validateClaimsInPayload } from "./utils";
 
 export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
@@ -147,32 +146,28 @@ export default class Session implements SessionContainerInterface {
     };
 
     assertClaims = async (claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> => {
-        const origSessionClaimPayloadJSON = JSON.stringify(this.getAccessTokenPayload());
-
-        let newAccessTokenPayload = await updateClaimsInPayloadIfNeeded(
-            this.getUserId(),
+        let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
+            accessTokenPayload: this.getAccessTokenPayload(userContext),
+            userId: this.getUserId(userContext),
             claimValidators,
-            this.getAccessTokenPayload(),
-            userContext
-        );
+            userContext,
+        });
 
-        if (JSON.stringify(newAccessTokenPayload) !== origSessionClaimPayloadJSON) {
-            await this.mergeIntoAccessTokenPayload(newAccessTokenPayload, userContext);
+        if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
+            await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
         }
 
-        let validationErrors = await validateClaimsInPayload(claimValidators, newAccessTokenPayload, userContext);
-
-        if (validationErrors.length !== 0) {
+        if (validateClaimResponse.invalidClaims.length !== 0) {
             throw new STError({
                 type: "INVALID_CLAIMS",
                 message: "INVALID_CLAIMS",
-                payload: validationErrors,
+                payload: validateClaimResponse.invalidClaims,
             });
         }
     };
 
     fetchAndSetClaim = async <T>(claim: SessionClaim<T>, userContext?: any) => {
-        const update = await claim.build(this.getUserId(), userContext);
+        const update = await claim.build(this.getUserId(userContext), userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     };
 
@@ -182,7 +177,7 @@ export default class Session implements SessionContainerInterface {
     };
 
     getClaimValue = async <T>(claim: SessionClaim<T>, userContext?: any) => {
-        return claim.getValueFromPayload(await this.getAccessTokenPayload(), userContext);
+        return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext);
     };
 
     removeClaim = (claim: SessionClaim<any>, userContext?: any) => {
@@ -193,7 +188,7 @@ export default class Session implements SessionContainerInterface {
     /**
      * @deprecated Use mergeIntoAccessTokenPayload
      */
-    updateAccessTokenPayload = async (newAccessTokenPayload: any | undefined, userContext: any) => {
+    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext: any) => {
         let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
             accessToken: this.getAccessToken(),
             newAccessTokenPayload,

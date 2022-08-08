@@ -864,8 +864,7 @@ let sessionConfig: SessionTypeInput = {
                 setClaimValue: originalImpl.setClaimValue,
                 getClaimValue: originalImpl.getClaimValue,
                 removeClaim: originalImpl.removeClaim,
-                assertClaims: originalImpl.assertClaims,
-                validateClaimsForSessionHandle: originalImpl.validateClaimsForSessionHandle,
+                validateClaims: originalImpl.validateClaims,
                 validateClaimsInJWTPayload: originalImpl.validateClaimsInJWTPayload,
             };
         },

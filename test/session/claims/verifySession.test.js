@@ -252,26 +252,31 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                 validateErrorResp(resp, [{ id: "testid", reason: "testReason" }]);
             });
 
-            it.skip("should reject if assertClaims returns an error", async function () {
+            it("should reject if assertClaims returns an error", async function () {
                 const obj = {};
                 const testValidatorArr = [obj];
-                const mock = sinon.mock(SessionClass.prototype);
-                mock.expects("assertClaims")
-                    .once()
-                    .withArgs(testValidatorArr)
-                    .rejects(
-                        new SessionError({
-                            type: "INVALID_CLAIM",
-                            message: "INVALID_CLAIM",
-                            payload: [
-                                {
-                                    id: "testid",
-                                    reason: "testReason",
-                                },
-                            ],
-                        })
-                    );
 
+                const validateClaims = sinon.expectation
+                    .create("validateClaims")
+                    .once()
+                    .withArgs({
+                        accessTokenPayload: {},
+                        userId: "testing-userId",
+                        claimValidators: testValidatorArr,
+                        userContext: {
+                            _default: {
+                                request: sinon.match.any,
+                            },
+                        },
+                    })
+                    .resolves({
+                        invalidClaims: [
+                            {
+                                id: "testid",
+                                reason: "testReason",
+                            },
+                        ],
+                    });
                 await startST();
                 SuperTokens.init({
                     supertokens: {
@@ -286,7 +291,11 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                         Session.init({
                             antiCsrf: "VIA_TOKEN",
                             override: {
-                                functions: (oI) => ({ ...oI, getGlobalClaimValidators: () => testValidatorArr }),
+                                functions: (oI) => ({
+                                    ...oI,
+                                    getGlobalClaimValidators: () => testValidatorArr,
+                                    validateClaims,
+                                }),
                             },
                         }),
                     ],
@@ -298,15 +307,29 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
 
                 const res = await testGet(app, session, "/default-claims", 403);
                 validateErrorResp(res, [{ id: "testid", reason: "testReason" }]);
-                mock.verify();
+
+                validateClaims.verify();
             });
 
-            it.skip("should allow if assertClaims returns undefined", async function () {
+            it("should allow if assertClaims returns no errors", async function () {
                 const obj = {};
                 const testValidatorArr = [obj];
-                const mock = sinon.mock(SessionClass.prototype);
-                mock.expects("assertClaims").once().withArgs(testValidatorArr).resolves(undefined);
-
+                const validateClaims = sinon.expectation
+                    .create("validateClaims")
+                    .once()
+                    .withArgs({
+                        accessTokenPayload: {},
+                        userId: "testing-userId",
+                        claimValidators: testValidatorArr,
+                        userContext: {
+                            _default: {
+                                request: sinon.match.any,
+                            },
+                        },
+                    })
+                    .resolves({
+                        invalidClaims: [],
+                    });
                 await startST();
                 SuperTokens.init({
                     supertokens: {
@@ -321,7 +344,11 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                         Session.init({
                             antiCsrf: "VIA_TOKEN",
                             override: {
-                                functions: (oI) => ({ ...oI, getGlobalClaimValidators: () => testValidatorArr }),
+                                functions: (oI) => ({
+                                    ...oI,
+                                    getGlobalClaimValidators: () => testValidatorArr,
+                                    validateClaims,
+                                }),
                             },
                         }),
                     ],
@@ -332,7 +359,7 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                 const session = await createSession(app);
 
                 await testGet(app, session, "/default-claims", 200);
-                mock.verify();
+                validateClaims.verify();
             });
         });
 
