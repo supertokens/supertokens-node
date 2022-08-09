@@ -40,7 +40,7 @@ export type TypeNormalisedInput = {
 };
 
 export type RecipeInterface = {
-    getDashboardBundleDomain(input: { userContext: any }): Promise<string>;
+    getDashboardBundleBasePath(input: { userContext: any }): Promise<string>;
     shouldAllowAccess(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }): Promise<boolean>;
 };
 
