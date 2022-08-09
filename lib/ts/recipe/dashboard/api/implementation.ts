@@ -21,11 +21,13 @@ import { APIInterface } from "../types";
 export default function getAPIImplementation(): APIInterface {
     return {
         dashboardGET: async function (input) {
-            const bundleDomain = new NormalisedURLDomain(
-                await input.options.recipeImplementation.getDashboardBundleDomain({
-                    userContext: input.userContext,
-                })
-            ).getAsStringDangerous();
+            const bundleBasePathString = await input.options.recipeImplementation.getDashboardBundleDomain({
+                userContext: input.userContext,
+            });
+
+            const bundleDomain =
+                new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous() +
+                new NormalisedURLPath(bundleBasePathString).getAsStringDangerous();
 
             return `
             <html>
