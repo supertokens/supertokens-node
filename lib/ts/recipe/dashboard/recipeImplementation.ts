@@ -13,13 +13,13 @@
  * under the License.
  */
 
+import { DASHBOARD_VERSION } from "../../constants";
 import { RecipeInterface } from "./types";
 
 export default function getRecipeImplementation(): RecipeInterface {
     return {
         getDashboardBundleBasePath: async function () {
-            // TODO NEMI: Add default bundle URL here
-            return "https://cdn.jsdelivr.net/gh/supertokens/dashboard@test/build/";
+            return `https://cdn.jsdelivr.net/gh/supertokens/dashboard@${DASHBOARD_VERSION}/build/`;
         },
         shouldAllowAccess: async function (input) {
             let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");
