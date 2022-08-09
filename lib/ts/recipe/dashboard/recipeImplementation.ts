@@ -19,7 +19,7 @@ export default function getRecipeImplementation(): RecipeInterface {
     return {
         getDashboardBundleBasePath: async function () {
             // TODO NEMI: Add default bundle URL here
-            return "";
+            return "https://cdn.jsdelivr.net/gh/supertokens/dashboard@test/build/";
         },
         shouldAllowAccess: async function (input) {
             let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");

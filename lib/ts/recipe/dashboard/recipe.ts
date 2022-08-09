@@ -165,7 +165,6 @@ export default class Recipe extends RecipeModule {
             return DASHBOARD_API;
         }
 
-        // TODO NEMI: Find a way to use the parent function here
         return undefined;
     };
 }
