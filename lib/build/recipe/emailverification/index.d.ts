@@ -16,7 +16,7 @@ export default class Wrapper {
               token: string;
           }
         | {
-              status: string;
+              status: "EMAIL_ALREADY_VERIFIED_ERROR";
           }
     >;
     static verifyEmailUsingToken(

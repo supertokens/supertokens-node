@@ -25,7 +25,17 @@ export default class Wrapper {
 
     static EmailVerificationClaim = EmailVerificationClaim;
 
-    static async createEmailVerificationToken(userId: string, email?: string, userContext?: any) {
+    static async createEmailVerificationToken(
+        userId: string,
+        email?: string,
+        userContext?: any
+    ): Promise<
+        | {
+              status: "OK";
+              token: string;
+          }
+        | { status: "EMAIL_ALREADY_VERIFIED_ERROR" }
+    > {
         const recipeInstance = Recipe.getInstanceOrThrowError();
 
         if (email === undefined) {
