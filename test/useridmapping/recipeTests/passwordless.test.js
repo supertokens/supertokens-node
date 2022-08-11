@@ -7,8 +7,8 @@ const SessionRecipe = require("../../../lib/build/recipe/session").default;
 const { Querier } = require("../../../lib/build/querier");
 const { maxVersion } = require("../../../lib/build/utils");
 
-describe(`userIdMapping with thirdparty: ${printPath(
-    "[test/useridmapping/recipeTests/thirdparty.test.js]"
+describe(`userIdMapping with passwordless: ${printPath(
+    "[test/useridmapping/recipeTests/passwordless.test.js]"
 )}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -44,7 +44,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                             return;
                         },
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -76,7 +75,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const externalId = "externalId";
 
             // create the userIdMapping
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // sign in again and check and the externalId is returned
             const codeInfo_2 = await PasswordlessRecipe.createCode({
@@ -119,7 +121,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                             return;
                         },
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -151,7 +152,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const externalId = "externalId";
 
             // create the userIdMapping
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             let response = await PasswordlessRecipe.getUserById({
                 userId: externalId,
@@ -184,7 +188,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                             return;
                         },
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -216,7 +219,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const externalId = "externalId";
 
             // create the userIdMapping
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             let response = await PasswordlessRecipe.getUserByEmail({
                 email,
@@ -249,7 +255,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                             return;
                         },
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -281,7 +286,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const externalId = "externalId";
 
             // create the userIdMapping
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             let response = await PasswordlessRecipe.getUserByPhoneNumber({
                 phoneNumber,
@@ -314,7 +322,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                             return;
                         },
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -347,7 +354,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const email = "test@example.com";
 
             // create the userIdMapping
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             let updateUserResponse = await PasswordlessRecipe.updateUser({
                 userId: externalId,
