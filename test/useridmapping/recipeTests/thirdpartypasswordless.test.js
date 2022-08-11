@@ -50,7 +50,6 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                             }),
                         ],
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -76,7 +75,10 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                 let user = signUpResponse.user;
                 let superTokensUserId = user.id;
                 let externalId = "tpExternalId";
-                await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+                await STExpress.createUserIdMapping({
+                    superTokensUserId,
+                    externalUserId: externalId,
+                });
 
                 // retrieve the user info using the externalId, the id in the response should be the externalId
                 {
@@ -108,7 +110,10 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                 const externalId = "psExternalId";
 
                 // create the userIdMapping
-                await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+                await STExpress.createUserIdMapping({
+                    superTokensUserId,
+                    externalUserId: externalId,
+                });
 
                 // retrieve the user info using the externalId, the id in the response should be the externalId
                 let response = await ThirdPartyPasswordlessRecipe.getUserById(externalId);

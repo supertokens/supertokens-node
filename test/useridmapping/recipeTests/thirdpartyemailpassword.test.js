@@ -42,7 +42,6 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                             }),
                         ],
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -66,7 +65,10 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 let externalId = "epExternalId";
 
                 // map the users id
-                await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+                await STExpress.createUserIdMapping({
+                    superTokensUserId,
+                    externalUserId: externalId,
+                });
 
                 // retrieve the users info using the externalId, the id in the response should be the externalId
                 {
@@ -91,7 +93,10 @@ describe(`userIdMapping with ThirdPartyEmailPassword: ${printPath(
                 let user = signUpResponse.user;
                 let superTokensUserId = user.id;
                 let externalId = "tpExternalId";
-                await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+                await STExpress.createUserIdMapping({
+                    superTokensUserId,
+                    externalUserId: externalId,
+                });
 
                 // retrieve the users info using the externalId, the id in the response should be the externalId
                 {
