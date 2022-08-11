@@ -33,7 +33,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -61,7 +61,10 @@ describe(`userIdMapping with emailpassword: ${printPath(
             let externalId = "externalId";
 
             // map the users id
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // retrieve the users info using the superTokensUserId, the id in the response should be the externalId
             {
@@ -73,7 +76,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // retrieve the users info using the externalId, the id in the response should be the externalId
             {
-                let response = await EmailPasswordRecipe.getUserById(superTokensUserId);
+                let response = await EmailPasswordRecipe.getUserById(externalId);
                 assert.ok(response !== undefined);
                 assert.strictEqual(response.id, externalId);
                 assert.strictEqual(response.email, email);
@@ -93,7 +96,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -121,7 +124,10 @@ describe(`userIdMapping with emailpassword: ${printPath(
             let externalId = "externalId";
 
             // map the users id
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // retrieve the users info using email, the id in the response should be the externalId
             {
@@ -145,7 +151,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -173,7 +179,10 @@ describe(`userIdMapping with emailpassword: ${printPath(
             let externalId = "externalId";
 
             // map the users id
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // sign in, check that the userId retrieved is the external userId
             let signInResponse = await EmailPasswordRecipe.signIn(email, password);
@@ -194,7 +203,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -221,7 +230,10 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // map the userId
             const externalId = "externalId";
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
             // create the password resestToken
             let createResetPasswordTokenResponse = await EmailPasswordRecipe.createResetPasswordToken(externalId);
             assert.strictEqual(createResetPasswordTokenResponse.status, "OK");
@@ -254,7 +266,7 @@ describe(`userIdMapping with emailpassword: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -281,7 +293,10 @@ describe(`userIdMapping with emailpassword: ${printPath(
 
             // map the userId
             const externalId = "externalId";
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // update the email using the externalId
             const updatedEmail = "test123@example.com";
