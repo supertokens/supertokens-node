@@ -44,7 +44,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                             ],
                         },
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -67,7 +66,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const externalId = "externalId";
 
             // create the userIdMapping
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // sign in and check that the userId in the response is the externalId
             let response = await ThirdPartyRecipe.signInUp("google", "tpId", {
@@ -104,7 +106,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                             ],
                         },
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -127,7 +128,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const externalId = "externalId";
 
             // create the userIdMapping
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // retrieve the user
             let response = await ThirdPartyRecipe.getUserById(externalId);
@@ -159,7 +163,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                             ],
                         },
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -182,7 +185,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const externalId = "externalId";
 
             // create the userIdMapping
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // retrieve the user
             let response = await ThirdPartyRecipe.getUsersByEmail("test@example.com");
@@ -214,7 +220,6 @@ describe(`userIdMapping with thirdparty: ${printPath(
                             ],
                         },
                     }),
-                    UserIdMappingRecipe.init(),
                     SessionRecipe.init(),
                 ],
             });
@@ -239,7 +244,10 @@ describe(`userIdMapping with thirdparty: ${printPath(
             const externalId = "externalId";
 
             // create the userIdMapping
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // retrieve the user
             let response = await ThirdPartyRecipe.getUserByThirdPartyInfo(thirdPartyId, thirdPartyUserId);
