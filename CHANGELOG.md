@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
--   adds UserIdMapping recipe and adds compatibility with CDI 2.15
+## [11.1.0] - 2022-08-11
+
+### Adds:
+
+-   UserId Mapping functionality and compatibility with CDI 2.15
+-   Adds `createUserIdMapping`, `getUserIdMapping`, `deleteUserIdMapping`, `updateOrDeleteUserIdMappingInfo` functions
 
 ## [11.0.3] - 2022-08-05
 
