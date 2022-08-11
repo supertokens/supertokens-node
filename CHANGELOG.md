@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
+-   Renames `STMP` to `SMTP` everywhere (typo).
 -   The frontend SDK should be updated to a version supporting session claims!
     -   supertokens-auth-react: >= 0.25.0
     -   supertokens-web-js: >= 0.2.0

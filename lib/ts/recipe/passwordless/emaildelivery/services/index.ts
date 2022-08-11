@@ -13,4 +13,4 @@
  * under the License.
  */
 import SMTP from "./smtp";
-export let STMPService = SMTP;
+export let SMTPService = SMTP;

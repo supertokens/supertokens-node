@@ -19,7 +19,7 @@ let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 const EmailVerification = require("../../recipe/emailverification");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
-let { STMPService } = require("../../recipe/thirdpartyemailpassword/emaildelivery");
+let { SMTPService } = require("../../recipe/thirdpartyemailpassword/emaildelivery");
 let nock = require("nock");
 let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");
@@ -418,7 +418,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
             recipeList: [
                 ThirdPartyEmailPassword.init({
                     emailDelivery: {
-                        service: new STMPService({
+                        service: new SMTPService({
                             smtpSettings: {
                                 host: "",
                                 from: {
@@ -807,7 +807,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
                 EmailVerification.init({
                     mode: "OPTIONAL",
                     emailDelivery: {
-                        service: new STMPService({
+                        service: new SMTPService({
                             smtpSettings: {
                                 host: "",
                                 from: {

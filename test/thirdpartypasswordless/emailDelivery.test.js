@@ -19,7 +19,7 @@ let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdpartyPasswordless = require("../../recipe/thirdpartypasswordless");
-let { STMPService } = require("../../recipe/thirdpartypasswordless/emaildelivery");
+let { SMTPService } = require("../../recipe/thirdpartypasswordless/emaildelivery");
 let nock = require("nock");
 let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");
@@ -443,7 +443,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                 EmailVerification.init({
                     mode: "OPTIONAL",
                     emailDelivery: {
-                        service: new STMPService({
+                        service: new SMTPService({
                             smtpSettings: {
                                 host: "",
                                 from: {
@@ -758,7 +758,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     emailDelivery: {
-                        service: new STMPService({
+                        service: new SMTPService({
                             smtpSettings: {
                                 host: "",
                                 from: {
@@ -1205,7 +1205,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
                     contactMethod: "EMAIL",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     emailDelivery: {
-                        service: new STMPService({
+                        service: new SMTPService({
                             smtpSettings: {
                                 host: "",
                                 from: {

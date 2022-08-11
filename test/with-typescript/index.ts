@@ -9,10 +9,10 @@ import ThirdPartyEmailPassword from "../../recipe/thirdpartyemailpassword";
 import ThirdParty from "../../recipe/thirdparty";
 import Passwordless from "../../recipe/passwordless";
 import ThirdPartyPasswordless from "../../recipe/thirdpartypasswordless";
-import { STMPService as STMPServiceTPP } from "../../recipe/thirdpartypasswordless/emaildelivery";
-import { STMPService as STMPServiceP } from "../../recipe/passwordless/emaildelivery";
-import { STMPService as STMPServiceTPEP } from "../../recipe/thirdpartyemailpassword/emaildelivery";
-import { STMPService as STMPServiceEP } from "../../recipe/emailpassword/emaildelivery";
+import { SMTPService as SMTPServiceTPP } from "../../recipe/thirdpartypasswordless/emaildelivery";
+import { SMTPService as SMTPServiceP } from "../../recipe/passwordless/emaildelivery";
+import { SMTPService as SMTPServiceTPEP } from "../../recipe/thirdpartyemailpassword/emaildelivery";
+import { SMTPService as SMTPServiceEP } from "../../recipe/emailpassword/emaildelivery";
 import {
     TwilioService as TwilioServiceTPP,
     SupertokensService as SupertokensServiceTPP,
@@ -416,7 +416,7 @@ ThirdPartyPasswordless.init({
 ThirdPartyPasswordless.init({
     contactMethod: "EMAIL",
     emailDelivery: {
-        service: new STMPServiceTPP({
+        service: new SMTPServiceTPP({
             smtpSettings: {
                 host: "",
                 password: "",
@@ -466,7 +466,7 @@ ThirdPartyPasswordless.init({
 
 ThirdPartyPasswordless.init({
     emailDelivery: {
-        service: new STMPServiceTPP({
+        service: new SMTPServiceTPP({
             smtpSettings: {
                 host: "",
                 password: "",
@@ -623,7 +623,7 @@ Passwordless.init({
 Passwordless.init({
     contactMethod: "EMAIL",
     emailDelivery: {
-        service: new STMPServiceP({
+        service: new SMTPServiceP({
             smtpSettings: {
                 host: "",
                 password: "",
@@ -673,7 +673,7 @@ Passwordless.init({
 
 Passwordless.init({
     emailDelivery: {
-        service: new STMPServiceP({
+        service: new SMTPServiceP({
             smtpSettings: {
                 host: "",
                 password: "",
@@ -732,7 +732,7 @@ Passwordless.init({
 
 EmailPassword.init({
     emailDelivery: {
-        service: new STMPServiceEP({
+        service: new SMTPServiceEP({
             smtpSettings: {
                 host: "",
                 password: "",
@@ -771,7 +771,7 @@ EmailPassword.init({
 
 ThirdPartyEmailPassword.init({
     emailDelivery: {
-        service: new STMPServiceTPEP({
+        service: new SMTPServiceTPEP({
             smtpSettings: {
                 host: "",
                 password: "",
