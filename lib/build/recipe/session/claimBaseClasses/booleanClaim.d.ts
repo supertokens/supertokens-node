@@ -8,7 +8,7 @@ export declare class BooleanClaim extends PrimitiveClaim<boolean> {
         defaultMaxAgeInSeconds?: number;
     });
     validators: PrimitiveClaim<boolean>["validators"] & {
-        isTrue: (maxAge?: number) => SessionClaimValidator;
-        isFalse: (maxAge?: number) => SessionClaimValidator;
+        isTrue: (maxAge?: number, id?: string) => SessionClaimValidator;
+        isFalse: (maxAge?: number, id?: string) => SessionClaimValidator;
     };
 }
