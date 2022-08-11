@@ -2,11 +2,13 @@ import { JSONPrimitive } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 
 export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
-    public fetchValue: (userId: string, userContext: any) => Promise<T | undefined> | T | undefined;
+    public readonly fetchValue: (userId: string, userContext: any) => Promise<T | undefined> | T | undefined;
+    public readonly defaultMaxAgeInSeconds: number;
 
-    constructor(config: { key: string; fetchValue: SessionClaim<T>["fetchValue"] }) {
+    constructor(config: { key: string; fetchValue: SessionClaim<T>["fetchValue"]; defaultMaxAgeInSeconds?: number }) {
         super(config.key);
         this.fetchValue = config.fetchValue;
+        this.defaultMaxAgeInSeconds = config.defaultMaxAgeInSeconds === undefined ? 300 : config.defaultMaxAgeInSeconds;
     }
 
     addToPayload_internal(payload: any, value: T, _userContext: any): any {
@@ -45,28 +47,18 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
     }
 
     validators = {
-        hasValue: (val: T, id?: string): SessionClaimValidator => {
+        hasValue: (
+            val: T,
+            maxAgeInSeconds: number = this.defaultMaxAgeInSeconds,
+            id?: string
+        ): SessionClaimValidator => {
             return {
                 claim: this,
                 id: id ?? this.key,
-                shouldRefetch: (payload, ctx) => this.getValueFromPayload(payload, ctx) === undefined,
-                validate: async (payload, ctx) => {
-                    const claimVal = this.getValueFromPayload(payload, ctx);
-                    const isValid = claimVal === val;
-                    return isValid
-                        ? { isValid: isValid }
-                        : { isValid, reason: { message: "wrong value", expectedValue: val, actualValue: claimVal } };
-                },
-            };
-        },
-        hasFreshValue: (val: T, maxAgeInSeconds: number, id?: string): SessionClaimValidator => {
-            return {
-                claim: this,
-                id: id ?? this.key + "-fresh-val",
                 shouldRefetch: (payload, ctx) =>
                     this.getValueFromPayload(payload, ctx) === undefined ||
-                    // We know payload[this.id] is defined since the value is not undefined in this branch
-                    payload[this.key].t < Date.now() - maxAgeInSeconds * 1000,
+                    (maxAgeInSeconds !== undefined && // We know payload[this.id] is defined since the value is not undefined in this branch
+                        payload[this.key].t < Date.now() - maxAgeInSeconds * 1000),
                 validate: async (payload, ctx) => {
                     const claimVal = this.getValueFromPayload(payload, ctx);
                     if (claimVal === undefined) {
@@ -76,7 +68,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
                         };
                     }
                     const ageInSeconds = (Date.now() - this.getLastRefetchTime(payload, ctx)!) / 1000;
-                    if (ageInSeconds > maxAgeInSeconds) {
+                    if (maxAgeInSeconds !== undefined && ageInSeconds > maxAgeInSeconds) {
                         return {
                             isValid: false,
                             reason: {
@@ -86,6 +78,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
                             },
                         };
                     }
+
                     if (claimVal !== val) {
                         return {
                             isValid: false,

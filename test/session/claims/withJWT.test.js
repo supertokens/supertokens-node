@@ -122,7 +122,7 @@ describe(`sessionClaims/withJWT: ${printPath("[test/session/claims/withJWT.test.
             const failingValidator = UndefinedClaim.validators.hasValue(true);
             assert.deepStrictEqual(
                 await Session.validateClaimsInJWTPayload(sessionInfo.userId, decodedJWT, () => [
-                    TrueClaim.validators.hasFreshValue(true, 2),
+                    TrueClaim.validators.hasValue(true, 2),
                     failingValidator,
                 ]),
                 {
@@ -133,7 +133,7 @@ describe(`sessionClaims/withJWT: ${printPath("[test/session/claims/withJWT.test.
                             reason: {
                                 actualValue: undefined,
                                 expectedValue: true,
-                                message: "wrong value",
+                                message: "value does not exist",
                             },
                         },
                     ],

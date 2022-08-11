@@ -27,7 +27,7 @@ export class EmailVerificationClaimClass extends BooleanClaim {
         this.validators = {
             ...this.validators,
             isVerified: (refetchTimeOnFalseInSeconds: number = 10) => ({
-                ...this.validators.hasValue(true, "st-ev-isVerified"),
+                ...this.validators.hasValue(true),
                 shouldRefetch: (payload, userContext) => {
                     const value = this.getValueFromPayload(payload, userContext);
                     return (

@@ -178,147 +178,266 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
                 key: "asdf",
                 fetchValue: () => val,
             });
-
-            it("should not validate empty payload", async () => {
-                const res = await claim.validators.hasValue(val).validate({}, {});
-                assert.deepStrictEqual(res, {
-                    isValid: false,
-                    reason: {
-                        expectedValue: val,
-                        actualValue: undefined,
-                        message: "wrong value",
-                    },
-                });
-            });
-
-            it("should not validate mismatching payload", async () => {
-                const payload = await claim.build("userId");
-                const res = await claim.validators.hasValue(val2).validate(payload, {});
-                assert.deepStrictEqual(res, {
-                    isValid: false,
-                    reason: {
-                        expectedValue: val2,
-                        actualValue: val,
-                        message: "wrong value",
-                    },
-                });
-            });
-
-            it("should validate matching payload", async () => {
-                const payload = await claim.build("userId");
-                const res = await claim.validators.hasValue(val).validate(payload, {});
-                assert.deepStrictEqual(res, {
-                    isValid: true,
-                });
-            });
-
-            it("should validate old values as well", async () => {
-                const now = Date.now();
-                const clock = sinon.useFakeTimers(now);
-
-                const payload = await claim.build("userId");
-
-                // advance clock by one week
-                clock.tick(6.048e8);
-
-                const res = await claim.validators.hasValue(val).validate(payload, {});
-                assert.deepStrictEqual(res, {
-                    isValid: true,
-                });
-            });
-
-            it("should refetch if value is not set", async () => {
-                assert.equal(await claim.validators.hasValue(val2).shouldRefetch({}), true);
-            });
-
-            it("should not refetch if value is set", async () => {
-                const payload = await claim.build("userId");
-
-                assert.equal(await claim.validators.hasValue(val2).shouldRefetch(payload), false);
-            });
-        });
-
-        describe("validators.hasFreshValue", () => {
-            const val = { a: 1 };
-            const val2 = { b: 1 };
-            const claim = new PrimitiveClaim({
+            const claimWithInifiniteMaxAge = new PrimitiveClaim({
                 key: "asdf",
                 fetchValue: () => val,
+                defaultMaxAgeInSeconds: Number.POSITIVE_INFINITY,
+            });
+            const claimWithDefaultMaxAge = new PrimitiveClaim({
+                key: "asdf",
+                fetchValue: () => val,
+                defaultMaxAgeInSeconds: 600,
             });
 
-            it("should not validate empty payload", async () => {
-                const res = await claim.validators.hasFreshValue(val, 600).validate({}, {});
-                assert.deepStrictEqual(res, {
-                    isValid: false,
-                    reason: {
-                        expectedValue: val,
-                        actualValue: undefined,
-                        message: "value does not exist",
-                    },
+            describe("with infinite defaultMaxAgeInSeconds", () => {
+                it("should not validate empty payload", async () => {
+                    const res = await claimWithInifiniteMaxAge.validators.hasValue(val).validate({}, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: false,
+                        reason: {
+                            expectedValue: val,
+                            actualValue: undefined,
+                            message: "value does not exist",
+                        },
+                    });
+                });
+
+                it("should not validate mismatching payload", async () => {
+                    const payload = await claimWithInifiniteMaxAge.build("userId");
+                    const res = await claimWithInifiniteMaxAge.validators.hasValue(val2).validate(payload, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: false,
+                        reason: {
+                            expectedValue: val2,
+                            actualValue: val,
+                            message: "wrong value",
+                        },
+                    });
+                });
+
+                it("should validate matching payload", async () => {
+                    const payload = await claimWithInifiniteMaxAge.build("userId");
+                    const res = await claimWithInifiniteMaxAge.validators.hasValue(val).validate(payload, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: true,
+                    });
+                });
+
+                it("should validate old values as well", async () => {
+                    const now = Date.now();
+                    const clock = sinon.useFakeTimers(now);
+
+                    const payload = await claimWithInifiniteMaxAge.build("userId");
+
+                    // advance clock by one week
+                    clock.tick(6.048e8);
+
+                    const res = await claimWithInifiniteMaxAge.validators.hasValue(val).validate(payload, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: true,
+                    });
+                });
+
+                it("should refetch if value is not set", async () => {
+                    assert.equal(await claimWithInifiniteMaxAge.validators.hasValue(val2).shouldRefetch({}), true);
+                });
+
+                it("should not refetch if value is set", async () => {
+                    const payload = await claimWithInifiniteMaxAge.build("userId");
+
+                    assert.equal(
+                        await claimWithInifiniteMaxAge.validators.hasValue(val2).shouldRefetch(payload),
+                        false
+                    );
                 });
             });
 
-            it("should not validate mismatching payload", async () => {
-                const payload = await claim.build("userId");
-                const res = await claim.validators.hasFreshValue(val2, 600).validate(payload, {});
-                assert.deepStrictEqual(res, {
-                    isValid: false,
-                    reason: {
-                        expectedValue: val2,
-                        actualValue: val,
-                        message: "wrong value",
-                    },
+            describe("with set defaultMaxAgeInSeconds", () => {
+                it("should validate matching payload", async () => {
+                    const payload = await claimWithDefaultMaxAge.build("userId");
+                    const res = await claimWithDefaultMaxAge.validators.hasValue(val).validate(payload, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: true,
+                    });
+                });
+
+                it("should not validate old values", async () => {
+                    const now = Date.now();
+                    const clock = sinon.useFakeTimers(now);
+
+                    const payload = await claimWithDefaultMaxAge.build("userId");
+
+                    // advance clock by one week
+                    clock.tick(6.048e8);
+
+                    const res = await claimWithDefaultMaxAge.validators.hasValue(val).validate(payload, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: false,
+                        reason: {
+                            ageInSeconds: 604800,
+                            maxAgeInSeconds: 600,
+                            message: "expired",
+                        },
+                    });
+                });
+
+                it("should refetch if value is not set", () => {
+                    assert.equal(claimWithDefaultMaxAge.validators.hasValue(val2).shouldRefetch({}), true);
+                });
+
+                it("should not refetch if value is set", async () => {
+                    const payload = await claimWithDefaultMaxAge.build("userId");
+
+                    assert.equal(claimWithDefaultMaxAge.validators.hasValue(val2).shouldRefetch(payload), false);
+                });
+
+                it("should refetch if value is old", async () => {
+                    const now = Date.now();
+                    const clock = sinon.useFakeTimers(now);
+
+                    const payload = await claimWithDefaultMaxAge.build("userId");
+
+                    // advance clock by one week
+                    clock.tick(6.048e8);
+
+                    assert.equal(claimWithDefaultMaxAge.validators.hasValue(val2).shouldRefetch(payload), true);
+                });
+
+                it("should not refetch with an overridden maxAgeInSeconds", async () => {
+                    const now = Date.now();
+                    const clock = sinon.useFakeTimers(now);
+
+                    const payload = await claimWithDefaultMaxAge.build("userId");
+
+                    // advance clock by one week
+                    clock.tick(6.048e8);
+
+                    assert.equal(
+                        claimWithDefaultMaxAge.validators
+                            .hasValue(val2, Number.POSITIVE_INFINITY)
+                            .shouldRefetch(payload),
+                        false
+                    );
                 });
             });
 
-            it("should validate matching payload", async () => {
-                const payload = await claim.build("userId");
-                const res = await claim.validators.hasFreshValue(val, 600).validate(payload, {});
-                assert.deepStrictEqual(res, {
-                    isValid: true,
+            describe("with default defaultMaxAgeInSeconds", () => {
+                it("should validate matching payload", async () => {
+                    const payload = await claim.build("userId");
+                    const res = await claim.validators.hasValue(val).validate(payload, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: true,
+                    });
+                });
+
+                it("should not validate old values", async () => {
+                    const now = Date.now();
+                    const clock = sinon.useFakeTimers(now);
+
+                    const payload = await claim.build("userId");
+
+                    // advance clock by one week
+                    clock.tick(6.048e8);
+
+                    const res = await claim.validators.hasValue(val).validate(payload, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: false,
+                        reason: {
+                            ageInSeconds: 604800,
+                            maxAgeInSeconds: 300,
+                            message: "expired",
+                        },
+                    });
+                });
+
+                it("should refetch if value is not set", () => {
+                    assert.equal(claim.validators.hasValue(val2).shouldRefetch({}), true);
+                });
+
+                it("should not refetch if value is set", async () => {
+                    const payload = await claim.build("userId");
+
+                    assert.equal(claim.validators.hasValue(val2).shouldRefetch(payload), false);
+                });
+
+                it("should refetch if value is old", async () => {
+                    const now = Date.now();
+                    const clock = sinon.useFakeTimers(now);
+
+                    const payload = await claim.build("userId");
+
+                    // advance clock by one week
+                    clock.tick(6.048e8);
+
+                    assert.equal(claim.validators.hasValue(val2).shouldRefetch(payload), true);
+                });
+
+                it("should not refetch with an overridden maxAgeInSeconds", async () => {
+                    const now = Date.now();
+                    const clock = sinon.useFakeTimers(now);
+
+                    const payload = await claim.build("userId");
+
+                    // advance clock by one week
+                    clock.tick(6.048e8);
+
+                    assert.equal(
+                        claim.validators.hasValue(val2, Number.POSITIVE_INFINITY).shouldRefetch(payload),
+                        false
+                    );
                 });
             });
 
-            it("should not validate old values as well", async () => {
-                const now = Date.now();
-                const clock = sinon.useFakeTimers(now);
-
-                const payload = await claim.build("userId");
-
-                // advance clock by one week
-                clock.tick(6.048e8);
-
-                const res = await claim.validators.hasFreshValue(val, 600).validate(payload, {});
-                assert.deepStrictEqual(res, {
-                    isValid: false,
-                    reason: {
-                        ageInSeconds: 604800,
-                        maxAgeInSeconds: 600,
-                        message: "expired",
-                    },
+            describe("with maxAgeInSeconds", () => {
+                it("should validate matching payload", async () => {
+                    const payload = await claimWithInifiniteMaxAge.build("userId");
+                    const res = await claimWithInifiniteMaxAge.validators.hasValue(val, 600).validate(payload, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: true,
+                    });
                 });
-            });
 
-            it("should refetch if value is not set", () => {
-                assert.equal(claim.validators.hasFreshValue(val2, 600).shouldRefetch({}), true);
-            });
+                it("should not validate old values", async () => {
+                    const now = Date.now();
+                    const clock = sinon.useFakeTimers(now);
 
-            it("should not refetch if value is set", async () => {
-                const payload = await claim.build("userId");
+                    const payload = await claimWithInifiniteMaxAge.build("userId");
 
-                assert.equal(claim.validators.hasFreshValue(val2, 600).shouldRefetch(payload), false);
-            });
+                    // advance clock by one week
+                    clock.tick(6.048e8);
 
-            it("should refetch if value is old", async () => {
-                const now = Date.now();
-                const clock = sinon.useFakeTimers(now);
+                    const res = await claimWithInifiniteMaxAge.validators.hasValue(val, 600).validate(payload, {});
+                    assert.deepStrictEqual(res, {
+                        isValid: false,
+                        reason: {
+                            ageInSeconds: 604800,
+                            maxAgeInSeconds: 600,
+                            message: "expired",
+                        },
+                    });
+                });
 
-                const payload = await claim.build("userId");
+                it("should refetch if value is not set", () => {
+                    assert.equal(claimWithInifiniteMaxAge.validators.hasValue(val2, 600).shouldRefetch({}), true);
+                });
 
-                // advance clock by one week
-                clock.tick(6.048e8);
+                it("should not refetch if value is set", async () => {
+                    const payload = await claimWithInifiniteMaxAge.build("userId");
 
-                assert.equal(claim.validators.hasFreshValue(val2, 600).shouldRefetch(payload), true);
+                    assert.equal(claimWithInifiniteMaxAge.validators.hasValue(val2, 600).shouldRefetch(payload), false);
+                });
+
+                it("should refetch if value is old", async () => {
+                    const now = Date.now();
+                    const clock = sinon.useFakeTimers(now);
+
+                    const payload = await claimWithInifiniteMaxAge.build("userId");
+
+                    // advance clock by one week
+                    clock.tick(6.048e8);
+
+                    assert.equal(claimWithInifiniteMaxAge.validators.hasValue(val2, 600).shouldRefetch(payload), true);
+                });
             });
         });
     });
