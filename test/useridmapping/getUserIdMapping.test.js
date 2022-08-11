@@ -33,7 +33,7 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -52,20 +52,20 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
             let externalIdInfo = "externalIdInfo";
 
             // create the userId mapping
-            let createUserIdMappingResponse = await UserIdMappingRecipe.createUserIdMapping(
+            let createUserIdMappingResponse = await STExpress.createUserIdMapping({
                 superTokensUserId,
-                externalId,
-                externalIdInfo
-            );
+                externalUserId: externalId,
+                externalUserIdInfo: externalIdInfo,
+            });
             assert.strictEqual(Object.keys(createUserIdMappingResponse).length, 1);
             assert.strictEqual(createUserIdMappingResponse.status, "OK");
 
             // check that the userId mapping exists with userIdType as SUPERTOKENS
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(
-                    superTokensUserId,
-                    "SUPERTOKENS"
-                );
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: superTokensUserId,
+                    userIdType: "SUPERTOKENS",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 4);
                 assert.strictEqual(getUserIdMappingResponse.status, "OK");
                 assert.strictEqual(getUserIdMappingResponse.superTokensUserId, superTokensUserId);
@@ -75,7 +75,10 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
 
             // check that userId mapping exists with userIdType as EXTERNAL
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(externalId, "ANY");
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: externalId,
+                    userIdType: "ANY",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 4);
                 assert.strictEqual(getUserIdMappingResponse.status, "OK");
                 assert.strictEqual(getUserIdMappingResponse.superTokensUserId, superTokensUserId);
@@ -87,7 +90,9 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
             {
                 // while using the superTokensUserId
                 {
-                    let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(superTokensUserId);
+                    let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                        userId: superTokensUserId,
+                    });
                     assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 4);
                     assert.strictEqual(getUserIdMappingResponse.status, "OK");
                     assert.strictEqual(getUserIdMappingResponse.superTokensUserId, superTokensUserId);
@@ -97,7 +102,9 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
 
                 // while using the externalUserId
                 {
-                    let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(externalId);
+                    let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                        userId: externalId,
+                    });
                     assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 4);
                     assert.strictEqual(getUserIdMappingResponse.status, "OK");
                     assert.strictEqual(getUserIdMappingResponse.superTokensUserId, superTokensUserId);
@@ -119,7 +126,7 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -130,22 +137,28 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
             }
 
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(
-                    "unknownUserId",
-                    "SUPERTOKENS"
-                );
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: "unknownId",
+                    userIdType: "SUPERTOKENS",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 1);
                 assert.strictEqual(getUserIdMappingResponse.status, "UNKNOWN_MAPPING_ERROR");
             }
 
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping("unknownUserId", "EXTERNAL");
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: "unknownId",
+                    userIdType: "EXTERNAL",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 1);
                 assert.strictEqual(getUserIdMappingResponse.status, "UNKNOWN_MAPPING_ERROR");
             }
 
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping("unknownUserId");
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: "unknownId",
+                    userIdType: "ANY",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 1);
                 assert.strictEqual(getUserIdMappingResponse.status, "UNKNOWN_MAPPING_ERROR");
             }
@@ -163,7 +176,7 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -181,19 +194,19 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
             let externalId = "externalId";
 
             // create the userId mapping
-            let createUserIdMappingResponse = await UserIdMappingRecipe.createUserIdMapping(
+            let createUserIdMappingResponse = await STExpress.createUserIdMapping({
                 superTokensUserId,
-                externalId
-            );
+                externalUserId: externalId,
+            });
             assert.strictEqual(Object.keys(createUserIdMappingResponse).length, 1);
             assert.strictEqual(createUserIdMappingResponse.status, "OK");
 
             // with userIdType as SUPERTOKENS
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(
-                    superTokensUserId,
-                    "SUPERTOKENS"
-                );
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: superTokensUserId,
+                    userIdType: "SUPERTOKENS",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 3);
                 assert.strictEqual(getUserIdMappingResponse.status, "OK");
                 assert.strictEqual(getUserIdMappingResponse.superTokensUserId, superTokensUserId);
@@ -202,7 +215,10 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
 
             // with userIdType as EXTERNAL
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(externalId, "EXTERNAL");
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: externalId,
+                    userIdType: "EXTERNAL",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 3);
                 assert.strictEqual(getUserIdMappingResponse.status, "OK");
                 assert.strictEqual(getUserIdMappingResponse.superTokensUserId, superTokensUserId);
@@ -213,7 +229,9 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
             {
                 // with supertokensUserId
                 {
-                    let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(superTokensUserId);
+                    let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                        userId: superTokensUserId,
+                    });
                     assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 3);
                     assert.strictEqual(getUserIdMappingResponse.status, "OK");
                     assert.strictEqual(getUserIdMappingResponse.superTokensUserId, superTokensUserId);
@@ -222,7 +240,9 @@ describe(`getUserIdMappingTest: ${printPath("[test/useridmapping/getUserIdMappin
 
                 // with externalUserId
                 {
-                    let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(externalId);
+                    let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                        userId: externalId,
+                    });
                     assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 3);
                     assert.strictEqual(getUserIdMappingResponse.status, "OK");
                     assert.strictEqual(getUserIdMappingResponse.superTokensUserId, superTokensUserId);
