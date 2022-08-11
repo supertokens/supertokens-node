@@ -1,3 +1,3 @@
 // @ts-nocheck
-export declare const version = "11.0.3";
+export declare const version = "11.1.0";
 export declare const cdiSupported: string[];
