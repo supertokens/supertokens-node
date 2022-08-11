@@ -531,3 +531,17 @@ module.exports.areArraysEqual = function (arr1, arr2) {
 
     return true;
 };
+
+/**
+ *
+ * @returns {import("express").Response}
+ */
+module.exports.mockResponse = () => {
+    const headers = {};
+    const res = {
+        getHeaders: () => headers,
+        getHeader: (key) => headers[key],
+        setHeader: (key, val) => (headers[key] = val),
+    };
+    return res;
+};

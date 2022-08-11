@@ -26,7 +26,7 @@ import {
     assertThatBodyParserHasBeenUsedForExpressLikeRequest,
     setHeaderForExpressLikeResponse,
     setCookieForServerResponse,
-    assertForDataBodyParserHasBeenUsedForExpressLikeRequest,
+    assertFormDataBodyParserHasBeenUsedForExpressLikeRequest,
 } from "../utils";
 import SuperTokens from "../../supertokens";
 import type { Framework } from "../types";
@@ -46,7 +46,7 @@ export class LoopbackRequest extends BaseRequest {
 
     getFormData = async (): Promise<any> => {
         if (!this.formDataParserChecked) {
-            await assertForDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
+            await assertFormDataBodyParserHasBeenUsedForExpressLikeRequest(this.request);
             this.formDataParserChecked = true;
         }
         return this.request.body;

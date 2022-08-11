@@ -23,6 +23,10 @@ export declare type Helpers = {
     getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
     config: TypeNormalisedInput;
-    sessionRecipeImpl: RecipeInterface;
+    getRecipeImpl: () => RecipeInterface;
 };
-export default function getRecipeInterface(querier: Querier, config: TypeNormalisedInput): RecipeInterface;
+export default function getRecipeInterface(
+    querier: Querier,
+    config: TypeNormalisedInput,
+    getRecipeImplAfterOverrides: () => RecipeInterface
+): RecipeInterface;
