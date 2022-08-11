@@ -34,12 +34,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [
-                    EmailPasswordRecipe.init(),
-                    UserIdMappingRecipe.init(),
-                    UserMetadataRecipe.init(),
-                    SessionRecipe.init(),
-                ],
+                recipeList: [EmailPasswordRecipe.init(), UserMetadataRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -67,7 +62,10 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
             let externalId = "externalId";
 
             // map the users id
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // retrieve the users info using the superTokensUserId, the id in the response should be the externalId
             {
@@ -120,7 +118,7 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -147,7 +145,10 @@ describe(`userIdMapping with supertokens recipe: ${printPath(
             let externalId = "externalId";
 
             // map the users id
-            await UserIdMappingRecipe.createUserIdMapping(superTokensUserId, externalId);
+            await STExpress.createUserIdMapping({
+                superTokensUserId,
+                externalUserId: externalId,
+            });
 
             // retrieve all the users using getUsersNewestFirst
             {
