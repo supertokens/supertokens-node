@@ -33,7 +33,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -44,21 +44,21 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
             }
 
             {
-                let response = await UserIdMappingRecipe.deleteUserIdMapping("unknown", "SUPERTOKENS");
+                let response = await STExpress.deleteUserIdMapping({ userId: "unknown", userIdType: "SUPERTOKENS" });
                 assert.strictEqual(Object.keys(response).length, 2);
                 assert.strictEqual(response.status, "OK");
                 assert.strictEqual(response.didMappingExist, false);
             }
 
             {
-                let response = await UserIdMappingRecipe.deleteUserIdMapping("unknown", "EXTERNAL");
+                let response = await STExpress.deleteUserIdMapping({ userId: "unknown", userIdType: "EXTERNAL" });
                 assert.strictEqual(Object.keys(response).length, 2);
                 assert.strictEqual(response.status, "OK");
                 assert.strictEqual(response.didMappingExist, false);
             }
 
             {
-                let response = await UserIdMappingRecipe.deleteUserIdMapping("unknown", "ANY");
+                let response = await STExpress.deleteUserIdMapping({ userId: "unknown", userIdType: "ANY" });
                 assert.strictEqual(Object.keys(response).length, 2);
                 assert.strictEqual(response.status, "OK");
                 assert.strictEqual(response.didMappingExist, false);
@@ -77,7 +77,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -99,10 +99,10 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
             await createUserIdMappingAndCheckThatItExists(superTokensUserId, externalId, externalIdInfo);
 
             // delete the mapping
-            let deleteUserIdMappingResponse = await UserIdMappingRecipe.deleteUserIdMapping(
-                superTokensUserId,
-                "SUPERTOKENS"
-            );
+            let deleteUserIdMappingResponse = await STExpress.deleteUserIdMapping({
+                userId: superTokensUserId,
+                userIdType: "SUPERTOKENS",
+            });
 
             assert.strictEqual(Object.keys(deleteUserIdMappingResponse).length, 2);
             assert.strictEqual(deleteUserIdMappingResponse.status, "OK");
@@ -110,10 +110,10 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
 
             // check that the mapping is deleted
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(
-                    superTokensUserId,
-                    "SUPERTOKENS"
-                );
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: superTokensUserId,
+                    userIdType: "SUPERTOKENS",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 1);
                 assert.strictEqual(getUserIdMappingResponse.status, "UNKNOWN_MAPPING_ERROR");
             }
@@ -131,7 +131,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -153,7 +153,10 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
             await createUserIdMappingAndCheckThatItExists(superTokensUserId, externalId, externalUserIdInfo);
 
             // delete the mapping
-            let deleteUserIdMappingResponse = await UserIdMappingRecipe.deleteUserIdMapping(externalId, "EXTERNAL");
+            let deleteUserIdMappingResponse = await STExpress.deleteUserIdMapping({
+                userId: externalId,
+                userIdType: "EXTERNAL",
+            });
 
             assert.strictEqual(Object.keys(deleteUserIdMappingResponse).length, 2);
             assert.strictEqual(deleteUserIdMappingResponse.status, "OK");
@@ -161,7 +164,10 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
 
             // check that the mapping is deleted
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(externalId, "EXTERNAL");
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: externalId,
+                    userIdType: "EXTERNAL",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 1);
                 assert.strictEqual(getUserIdMappingResponse.status, "UNKNOWN_MAPPING_ERROR");
             }
@@ -179,7 +185,7 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -202,10 +208,10 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 await createUserIdMappingAndCheckThatItExists(superTokensUserId, externalId, externalIdInfo);
 
                 // delete the mapping with the supertokensUserId and ANY
-                let deleteUserIdMappingResponse = await UserIdMappingRecipe.deleteUserIdMapping(
-                    superTokensUserId,
-                    "ANY"
-                );
+                let deleteUserIdMappingResponse = await STExpress.deleteUserIdMapping({
+                    userId: superTokensUserId,
+                    userIdType: "ANY",
+                });
 
                 assert.strictEqual(Object.keys(deleteUserIdMappingResponse).length, 2);
                 assert.strictEqual(deleteUserIdMappingResponse.status, "OK");
@@ -214,7 +220,10 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
 
             // check that the mapping is deleted
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(superTokensUserId, "ANY");
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: superTokensUserId,
+                    userIdType: "ANY",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 1);
                 assert.strictEqual(getUserIdMappingResponse.status, "UNKNOWN_MAPPING_ERROR");
             }
@@ -224,7 +233,10 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
 
             // delete the mapping with externalId and ANY
             {
-                let deleteUserIdMappingResponse = await UserIdMappingRecipe.deleteUserIdMapping(externalId, "ANY");
+                let deleteUserIdMappingResponse = await STExpress.deleteUserIdMapping({
+                    userId: externalId,
+                    userIdType: "ANY",
+                });
 
                 assert.strictEqual(Object.keys(deleteUserIdMappingResponse).length, 2);
                 assert.strictEqual(deleteUserIdMappingResponse.status, "OK");
@@ -233,7 +245,10 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
 
             // check that the mapping is deleted
             {
-                let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(externalId, "ANY");
+                let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                    userId: externalId,
+                    userIdType: "ANY",
+                });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 1);
                 assert.strictEqual(getUserIdMappingResponse.status, "UNKNOWN_MAPPING_ERROR");
             }
@@ -242,16 +257,16 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
 
     async function createUserIdMappingAndCheckThatItExists(superTokensUserId, externalUserId, externalUserIdInfo) {
         {
-            let response = await UserIdMappingRecipe.createUserIdMapping(
+            let response = await STExpress.createUserIdMapping({
                 superTokensUserId,
                 externalUserId,
-                externalUserIdInfo
-            );
+                externalUserIdInfo,
+            });
             assert.strictEqual(response.status, "OK");
         }
 
         {
-            let response = await UserIdMappingRecipe.getUserIdMapping(superTokensUserId, "SUPERTOKENS");
+            let response = await STExpress.getUserIdMapping({ userId: superTokensUserId, userIdType: "SUPERTOKENS" });
             assert.strictEqual(response.status, "OK");
             assert.strictEqual(response.superTokensUserId, superTokensUserId);
             assert.strictEqual(response.externalUserId, externalUserId);
