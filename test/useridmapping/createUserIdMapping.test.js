@@ -3,7 +3,6 @@ const assert = require("assert");
 const { printPath, setupST, startST, killAllST, cleanST, areArraysEqual } = require("../utils");
 const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
-const UserIdMappingRecipe = require("../../lib/build/recipe/useridmapping").default;
 const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword").default;
 const SessionRecipe = require("../../lib/build/recipe/session").default;
 const { Querier } = require("../../lib/build/querier");
@@ -34,7 +33,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -49,25 +48,28 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
             assert.strictEqual(signUpResponse.status, "OK");
 
             let superTokensUserId = signUpResponse.user.id;
-            let externalId = "externalId";
-            let externalIdInfo = "externalIdInfo";
+            let externalUserId = "externalId";
+            let externalUserIdInfo = "externalIdInfo";
 
             // create the userId mapping
-            let createUserIdMappingResponse = await UserIdMappingRecipe.createUserIdMapping(
+            let createUserIdMappingResponse = await STExpress.createUserIdMapping({
                 superTokensUserId,
-                externalId,
-                externalIdInfo
-            );
+                externalUserId,
+                externalUserIdInfo,
+            });
             assert.strictEqual(Object.keys(createUserIdMappingResponse).length, 1);
             assert.strictEqual(createUserIdMappingResponse.status, "OK");
 
             // check that the userId mapping exists
-            let getUserIdMappingResponse = await UserIdMappingRecipe.getUserIdMapping(superTokensUserId, "SUPERTOKENS");
+            let getUserIdMappingResponse = await STExpress.getUserIdMapping({
+                userId: superTokensUserId,
+                userIdType: "SUPERTOKENS",
+            });
             assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 4);
             assert.strictEqual(getUserIdMappingResponse.status, "OK");
             assert.strictEqual(getUserIdMappingResponse.superTokensUserId, superTokensUserId);
-            assert.strictEqual(getUserIdMappingResponse.externalUserId, externalId);
-            assert.strictEqual(getUserIdMappingResponse.externalUserIdInfo, externalIdInfo);
+            assert.strictEqual(getUserIdMappingResponse.externalUserId, externalUserId);
+            assert.strictEqual(getUserIdMappingResponse.externalUserIdInfo, externalUserIdInfo);
         });
 
         it("create a userId mapping with an unknown superTokensUserId", async function () {
@@ -82,7 +84,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -93,11 +95,11 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
             }
 
             // create the userId mapping
-            let createUserIdMappingResponse = await UserIdMappingRecipe.createUserIdMapping(
-                "unknownuUserId",
-                "externalId",
-                "externalInfo"
-            );
+            let createUserIdMappingResponse = await STExpress.createUserIdMapping({
+                superTokensUserId: "unknownuUserId",
+                externalUserId: "externalId",
+                externalUserIdInfo: "externalInfo",
+            });
             assert.strictEqual(Object.keys(createUserIdMappingResponse).length, 1);
             assert.strictEqual(createUserIdMappingResponse.status, "UNKNOWN_SUPERTOKENS_USER_ID_ERROR");
         });
@@ -114,7 +116,7 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [EmailPasswordRecipe.init(), UserIdMappingRecipe.init(), SessionRecipe.init()],
+                recipeList: [EmailPasswordRecipe.init(), SessionRecipe.init()],
             });
 
             // Only run for version >= 2.15
@@ -132,20 +134,20 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
             const superTokensUserId = signInResponse.user.id;
             const externalId = "externalId";
             {
-                const createUserIdMappingResponse = await UserIdMappingRecipe.createUserIdMapping(
+                const createUserIdMappingResponse = await STExpress.createUserIdMapping({
                     superTokensUserId,
-                    externalId
-                );
+                    externalUserId: externalId,
+                });
                 assert.strictEqual(Object.keys(createUserIdMappingResponse).length, 1);
                 assert.strictEqual(createUserIdMappingResponse.status, "OK");
             }
 
             // create a duplicate mapping where both superTokensUserId and externalId already exist
             {
-                const createUserIdMappingResponse = await UserIdMappingRecipe.createUserIdMapping(
+                const createUserIdMappingResponse = await STExpress.createUserIdMapping({
                     superTokensUserId,
-                    externalId
-                );
+                    externalUserId: externalId,
+                });
                 assert.strictEqual(Object.keys(createUserIdMappingResponse).length, 3);
                 assert.strictEqual(createUserIdMappingResponse.status, "USER_ID_MAPPING_ALREADY_EXISTS_ERROR");
                 assert.strictEqual(createUserIdMappingResponse.doesSuperTokensUserIdExist, true);
@@ -154,10 +156,10 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
 
             // create a duplicate mapping where both superTokensUserId already exists
             {
-                const createUserIdMappingResponse = await UserIdMappingRecipe.createUserIdMapping(
+                const createUserIdMappingResponse = await STExpress.createUserIdMapping({
                     superTokensUserId,
-                    "newExternalUserId"
-                );
+                    externalUserId: "newExternalUserId",
+                });
                 assert.strictEqual(Object.keys(createUserIdMappingResponse).length, 3);
                 assert.strictEqual(createUserIdMappingResponse.status, "USER_ID_MAPPING_ALREADY_EXISTS_ERROR");
                 assert.strictEqual(createUserIdMappingResponse.doesSuperTokensUserIdExist, true);
@@ -166,13 +168,13 @@ describe(`createUserIdMappingTest: ${printPath("[test/useridmapping/createUserId
 
             // create a duplicate mapping where both externalUserId already exists
             {
-                const newUserSignInReponse = await EmailPasswordRecipe.signUp("testnew@example.com", "testPass123");
-                assert.strictEqual(newUserSignInReponse.status, "OK");
+                const newUserSignInResponse = await EmailPasswordRecipe.signUp("testnew@example.com", "testPass123");
+                assert.strictEqual(newUserSignInResponse.status, "OK");
 
-                const createUserIdMappingResponse = await UserIdMappingRecipe.createUserIdMapping(
-                    newUserSignInReponse.user.id,
-                    externalId
-                );
+                const createUserIdMappingResponse = await STExpress.createUserIdMapping({
+                    superTokensUserId: newUserSignInResponse.user.id,
+                    externalUserId: externalId,
+                });
                 assert.strictEqual(Object.keys(createUserIdMappingResponse).length, 3);
                 assert.strictEqual(createUserIdMappingResponse.status, "USER_ID_MAPPING_ALREADY_EXISTS_ERROR");
                 assert.strictEqual(createUserIdMappingResponse.doesSuperTokensUserIdExist, false);

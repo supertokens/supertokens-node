@@ -2,7 +2,6 @@ const assert = require("assert");
 const { printPath, setupST, startST, killAllST, cleanST } = require("../../utils");
 const { ProcessState } = require("../../../lib/build/processState");
 const STExpress = require("../../..");
-const UserIdMappingRecipe = require("../../../lib/build/recipe/useridmapping").default;
 const ThirdPartyEmailPasswordRecipe = require("../../../lib/build/recipe/thirdpartyemailpassword").default;
 const SessionRecipe = require("../../../lib/build/recipe/session").default;
 const { Querier } = require("../../../lib/build/querier");
