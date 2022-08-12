@@ -2,11 +2,13 @@ import { JSONPrimitive } from "../../../types";
 import { SessionClaim, SessionClaimValidator } from "../types";
 
 export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T[]> {
-    public fetchValue: (userId: string, userContext: any) => Promise<T[] | undefined> | T[] | undefined;
+    public readonly fetchValue: (userId: string, userContext: any) => Promise<T[] | undefined> | T[] | undefined;
+    public readonly defaultMaxAgeInSeconds: number;
 
-    constructor(config: { key: string; fetchValue: SessionClaim<T[]>["fetchValue"] }) {
+    constructor(config: { key: string; fetchValue: SessionClaim<T[]>["fetchValue"]; defaultMaxAgeInSeconds?: number }) {
         super(config.key);
         this.fetchValue = config.fetchValue;
+        this.defaultMaxAgeInSeconds = config.defaultMaxAgeInSeconds === undefined ? 300 : config.defaultMaxAgeInSeconds;
     }
 
     addToPayload_internal(payload: any, value: T[], _userContext: any): any {
@@ -45,10 +47,14 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
     }
 
     validators = {
-        includes: (val: T, maxAgeInSeconds?: number, id?: string): SessionClaimValidator => {
+        includes: (
+            val: T,
+            maxAgeInSeconds: number = this.defaultMaxAgeInSeconds,
+            id?: string
+        ): SessionClaimValidator => {
             return {
                 claim: this,
-                id: id ?? this.key + "-includes",
+                id: id ?? this.key,
                 shouldRefetch: (payload, ctx) =>
                     this.getValueFromPayload(payload, ctx) === undefined ||
                     // We know payload[this.id] is defined since the value is not undefined in this branch
@@ -82,10 +88,14 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
                 },
             };
         },
-        excludes: (val: T, maxAgeInSeconds?: number, id?: string): SessionClaimValidator => {
+        excludes: (
+            val: T,
+            maxAgeInSeconds: number = this.defaultMaxAgeInSeconds,
+            id?: string
+        ): SessionClaimValidator => {
             return {
                 claim: this,
-                id: id ?? this.key + "-excludes",
+                id: id ?? this.key,
                 shouldRefetch: (payload, ctx) =>
                     this.getValueFromPayload(payload, ctx) === undefined ||
                     // We know payload[this.id] is defined since the value is not undefined in this branch
@@ -123,10 +133,14 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
                 },
             };
         },
-        includesAll: (val: T[], maxAgeInSeconds: number, id?: string): SessionClaimValidator => {
+        includesAll: (
+            val: T[],
+            maxAgeInSeconds: number = this.defaultMaxAgeInSeconds,
+            id?: string
+        ): SessionClaimValidator => {
             return {
                 claim: this,
-                id: id ?? this.key + "-includesAll",
+                id: id ?? this.key,
                 shouldRefetch: (payload, ctx) =>
                     this.getValueFromPayload(payload, ctx) === undefined ||
                     // We know payload[this.id] is defined since the value is not undefined in this branch
@@ -161,10 +175,14 @@ export class PrimitiveArrayClaim<T extends JSONPrimitive> extends SessionClaim<T
                 },
             };
         },
-        excludesAll: (val: T[], maxAgeInSeconds: number, id?: string): SessionClaimValidator => {
+        excludesAll: (
+            val: T[],
+            maxAgeInSeconds: number = this.defaultMaxAgeInSeconds,
+            id?: string
+        ): SessionClaimValidator => {
             return {
                 claim: this,
-                id: id ?? this.key + "excludesAll",
+                id: id ?? this.key,
                 shouldRefetch: (payload, ctx) =>
                     this.getValueFromPayload(payload, ctx) === undefined ||
                     // We know payload[this.id] is defined since the value is not undefined in this branch

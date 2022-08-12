@@ -134,7 +134,15 @@ describe(`sessionClaims/verifySession: ${printPath("[test/session/claims/verifyS
                 const session = await createSession(app);
                 const resp = await testGet(app, session, "/default-claims", 403);
 
-                validateErrorResp(resp, [{ id: "st-undef", reason: { message: "wrong value", expectedValue: true } }]);
+                validateErrorResp(resp, [
+                    {
+                        id: "st-undef",
+                        reason: {
+                            message: "value does not exist",
+                            expectedValue: true,
+                        },
+                    },
+                ]);
             });
 
             it("should allow with custom validator returning true", async function () {

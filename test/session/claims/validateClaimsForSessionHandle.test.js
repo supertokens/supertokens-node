@@ -86,7 +86,7 @@ describe(`sessionClaims/validateClaimsForSessionHandle: ${printPath(
                             reason: {
                                 actualValue: undefined,
                                 expectedValue: true,
-                                message: "wrong value",
+                                message: "value does not exist",
                             },
                         },
                     ],
