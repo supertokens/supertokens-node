@@ -21,6 +21,10 @@ import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, VALIDATE_KEY_API } 
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
+    if (config.apiKey.trim().length === 0) {
+        throw new Error("apiKey provided to Dashboard recipe cannot be empty");
+    }
+
     let override = {
         functions: (originalImplementation: RecipeInterface) => originalImplementation,
         apis: (originalImplementation: APIInterface) => originalImplementation,
