@@ -1,5 +1,4 @@
 import { APIInterface, APIOptions, VerifySessionOptions } from "../";
-import STError from "../error";
 import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
@@ -14,8 +13,12 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<void> {
-            await options.recipeImplementation.refreshSession({ req: options.req, res: options.res, userContext });
+        }): Promise<SessionContainerInterface> {
+            return await options.recipeImplementation.refreshSession({
+                req: options.req,
+                res: options.res,
+                userContext,
+            });
         },
 
         verifySession: async function ({
@@ -64,10 +67,11 @@ export default function getAPIInterface(): APIInterface {
         },
 
         signOutPOST: async function ({
-            options,
+            session,
             userContext,
         }: {
             options: APIOptions;
+            session: SessionContainerInterface | undefined;
             userContext: any;
         }): Promise<
             | {
@@ -75,32 +79,9 @@ export default function getAPIInterface(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            let session;
-            try {
-                session = await options.recipeImplementation.getSession({
-                    req: options.req,
-                    res: options.res,
-                    options: {
-                        overrideGlobalClaimValidators: () => [],
-                    },
-                    userContext,
-                });
-            } catch (err) {
-                if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNAUTHORISED) {
-                    // The session is expired / does not exist anyway. So we return OK
-                    return {
-                        status: "OK",
-                    };
-                }
-                throw err;
+            if (session !== undefined) {
+                await session.revokeSession(userContext);
             }
-
-            if (session === undefined) {
-                throw new Error("Session is undefined. Should not come here.");
-            }
-
-            await session.revokeSession(userContext);
-
             return {
                 status: "OK",
             };
