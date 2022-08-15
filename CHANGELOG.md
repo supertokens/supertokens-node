@@ -41,6 +41,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Removed `getResetPasswordURL`, `getEmailVerificationURL`, `getLinkDomainAndPath`. Changing these urls can be done in the email delivery configs instead.
 -   Removed `unverifyEmail`, `revokeEmailVerificationTokens`, `isEmailVerified`, `verifyEmailUsingToken` and `createEmailVerificationToken` from auth recipes. These should be called on the `EmailVerification` recipe instead.
 -   Changed function signature for email verification APIs to accept a session as an input.
+-   Changed Session API interface functions:
+    -   `refreshPOST` now returns a Session container object.
+    -   `signOutPOST` now takes in an optional session object as a parameter.
 
 ### Migration
 

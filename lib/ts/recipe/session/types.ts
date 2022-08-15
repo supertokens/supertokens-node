@@ -379,12 +379,17 @@ export type APIInterface = {
      * since it's not something that is directly called by the user on the
      * frontend anyway
      */
-    refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<void>);
+    refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<SessionContainerInterface>);
 
     signOutPOST:
         | undefined
         | ((input: {
               options: APIOptions;
+              // the reason we make this optional is cause it allows users to do something in
+              // case a session does not exist and the sign out button is pressed. It is
+              // rare that something needs to be done in this case, but making it like this
+              // has little disadvantages.
+              session: SessionContainerInterface | undefined;
               userContext: any;
           }) => Promise<
               | {

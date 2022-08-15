@@ -320,11 +320,12 @@ export declare type APIInterface = {
      * since it's not something that is directly called by the user on the
      * frontend anyway
      */
-    refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<void>);
+    refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<SessionContainerInterface>);
     signOutPOST:
         | undefined
         | ((input: {
               options: APIOptions;
+              session: SessionContainerInterface | undefined;
               userContext: any;
           }) => Promise<
               | {
