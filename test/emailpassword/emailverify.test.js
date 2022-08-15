@@ -1363,4 +1363,39 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         assert(!(await EmailVerification.isEmailVerified(userId)));
     });
+
+    it("should work with getEmailForUserId returning errors", async () => {
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    getEmailForUserId: (userId) =>
+                        userId === "testuserid"
+                            ? { status: "EMAIL_DOES_NOT_EXIST_ERROR" }
+                            : { status: "UNKNOWN_USER_ID_ERROR" },
+                }),
+                Session.init(),
+            ],
+        });
+
+        assert.deepStrictEqual(await EmailVerification.revokeEmailVerificationTokens("testuserid"), { status: "OK" });
+
+        let caughtError;
+        try {
+            await EmailVerification.revokeEmailVerificationTokens("nouserid");
+        } catch (err) {
+            caughtError = err;
+        }
+
+        assert.ok(caughtError);
+        assert.strictEqual(caughtError.message, "Unknown User ID provided without email");
+    });
 });
