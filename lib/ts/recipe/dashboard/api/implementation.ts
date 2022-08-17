@@ -15,6 +15,7 @@
 
 import NormalisedURLDomain from "../../../normalisedURLDomain";
 import NormalisedURLPath from "../../../normalisedURLPath";
+import SuperTokens from "../../../supertokens";
 import { DASHBOARD_API } from "../constants";
 import { APIInterface } from "../types";
 
@@ -29,6 +30,13 @@ export default function getAPIImplementation(): APIInterface {
                 new NormalisedURLDomain(bundleBasePathString).getAsStringDangerous() +
                 new NormalisedURLPath(bundleBasePathString).getAsStringDangerous();
 
+            let connectionURI: string = "";
+            const superTokensInstance = SuperTokens.getInstanceOrThrowError();
+
+            if (superTokensInstance.supertokens !== undefined) {
+                connectionURI = superTokensInstance.supertokens.connectionURI;
+            }
+
             return `
             <html>
                 <head>
@@ -38,6 +46,7 @@ export default function getAPIImplementation(): APIInterface {
                         window.dashboardAppPath = "${input.options.appInfo.apiBasePath
                             .appendPath(new NormalisedURLPath(DASHBOARD_API))
                             .getAsStringDangerous()}"
+                        window.connectionURI = "${connectionURI}"
                     </script>
                     <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">
