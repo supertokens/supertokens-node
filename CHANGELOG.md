@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Bug fix:
+
+-   Adds missing `force` param from `createUserIdMapping` and `deleteUserIdMapping` functions
+
 ## [11.1.0] - 2022-08-11
 
 ### Adds:

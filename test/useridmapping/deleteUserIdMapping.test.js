@@ -5,6 +5,7 @@ const STExpress = require("../..");
 const { ProcessState } = require("../../lib/build/processState");
 const EmailPasswordRecipe = require("../../lib/build/recipe/emailpassword").default;
 const SessionRecipe = require("../../lib/build/recipe/session").default;
+const UserMetadataRecipe = require("../../lib/build/recipe/usermetadata").default;
 const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
 
@@ -251,6 +252,84 @@ describe(`deleteUserIdMappingTest: ${printPath("[test/useridmapping/deleteUserId
                 });
                 assert.strictEqual(Object.keys(getUserIdMappingResponse).length, 1);
                 assert.strictEqual(getUserIdMappingResponse.status, "UNKNOWN_MAPPING_ERROR");
+            }
+        });
+
+        it("delete a userId mapping when userMetadata exists with externalId with and without force", async function () {
+            await startST();
+
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "api.supertokens.io",
+                    appName: "SuperTokens",
+                    websiteDomain: "supertokens.io",
+                },
+                recipeList: [EmailPasswordRecipe.init(), UserMetadataRecipe.init(), SessionRecipe.init()],
+            });
+
+            // Only run for version >= 2.15
+            let querier = Querier.getNewInstanceOrThrowError(undefined);
+            let apiVersion = await querier.getAPIVersion();
+            if (maxVersion(apiVersion, "2.14") === "2.14") {
+                return this.skip();
+            }
+
+            // create a user and map their userId
+            let signUpResponse = await EmailPasswordRecipe.signUp("test@example.com", "testPass123");
+            assert.strictEqual(signUpResponse.status, "OK");
+
+            let superTokensUserId = signUpResponse.user.id;
+            let externalId = "externalId";
+            let externalIdInfo = "test";
+
+            await createUserIdMappingAndCheckThatItExists(superTokensUserId, externalId, externalIdInfo);
+
+            // add metadata to the user
+            const testMetadata = {
+                role: "admin",
+            };
+            await UserMetadataRecipe.updateUserMetadata(externalId, testMetadata);
+
+            // delete UserIdMapping without passing force
+            {
+                try {
+                    await STExpress.deleteUserIdMapping({
+                        userId: externalId,
+                        userIdType: "EXTERNAL",
+                    });
+                    throw new Error("Should not come here");
+                } catch (error) {
+                    assert(error.message.includes("UserId is already in use in UserMetadata recipe"));
+                }
+            }
+
+            // try deleting mapping with force set to false
+            {
+                try {
+                    await STExpress.deleteUserIdMapping({
+                        userId: externalId,
+                        userIdType: "EXTERNAL",
+                        force: false,
+                    });
+                    throw new Error("Should not come here");
+                } catch (error) {
+                    assert(error.message.includes("UserId is already in use in UserMetadata recipe"));
+                }
+            }
+
+            // delete mapping with force set to true
+            {
+                let deleteUserIdMappingResponse = await STExpress.deleteUserIdMapping({
+                    userId: externalId,
+                    userIdType: "EXTERNAL",
+                    force: true,
+                });
+                assert.strictEqual(Object.keys(deleteUserIdMappingResponse).length, 2);
+                assert.strictEqual(deleteUserIdMappingResponse.status, "OK");
+                assert.strictEqual(deleteUserIdMappingResponse.didMappingExist, true);
             }
         });
     });

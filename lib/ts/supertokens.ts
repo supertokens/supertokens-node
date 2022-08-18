@@ -227,6 +227,7 @@ export default class SuperTokens {
         superTokensUserId: string;
         externalUserId: string;
         externalUserIdInfo?: string;
+        force?: boolean;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -245,6 +246,7 @@ export default class SuperTokens {
                 superTokensUserId: input.superTokensUserId,
                 externalUserId: input.externalUserId,
                 externalUserIdInfo: input.externalUserIdInfo,
+                force: input.force,
             });
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
@@ -282,6 +284,7 @@ export default class SuperTokens {
     deleteUserIdMapping = async function (input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        force?: boolean;
     }): Promise<{
         status: "OK";
         didMappingExist: boolean;
@@ -292,6 +295,7 @@ export default class SuperTokens {
             return await querier.sendPostRequest(new NormalisedURLPath("/recipe/userid/map/remove"), {
                 userId: input.userId,
                 userIdType: input.userIdType,
+                force: input.force,
             });
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
