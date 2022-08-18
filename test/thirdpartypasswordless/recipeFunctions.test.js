@@ -69,10 +69,11 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         // create a ThirdParty user with a verified email
-        let response = await ThirdPartyPasswordless.thirdPartySignInUp("customProvider", "verifiedUser", {
-            id: "test@example.com",
-            isVerified: true,
-        });
+        let response = await ThirdPartyPasswordless.thirdPartySignInUp(
+            "customProvider",
+            "verifiedUser",
+            "test@example.com"
+        );
 
         // verify the user's email
         let emailVerificationToken = await EmailVerification.createEmailVerificationToken(response.user.id);
@@ -82,10 +83,11 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         assert(await EmailVerification.isEmailVerified(response.user.id));
 
         // create a ThirdParty user with an unverfied email and check that it is not verified
-        let response2 = await ThirdPartyPasswordless.thirdPartySignInUp("customProvider2", "NotVerifiedUser", {
-            id: "test@example.com",
-            isVerified: false,
-        });
+        let response2 = await ThirdPartyPasswordless.thirdPartySignInUp(
+            "customProvider2",
+            "NotVerifiedUser",
+            "test@example.com"
+        );
 
         assert(!(await EmailVerification.isEmailVerified(response2.user.id)));
     });

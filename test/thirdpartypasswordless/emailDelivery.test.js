@@ -104,10 +104,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", {
-            id: "test@example.com",
-            isVerified: false,
-        });
+        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         let appName = undefined;
@@ -175,10 +172,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", {
-            id: "test@example.com",
-            isVerified: false,
-        });
+        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         let appName = undefined;
@@ -258,10 +252,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", {
-            id: "test@example.com",
-            isVerified: false,
-        });
+        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         await supertest(app)
@@ -393,10 +384,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", {
-            id: "test@example.com",
-            isVerified: false,
-        });
+        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         process.env.TEST_MODE = "production";
@@ -510,10 +498,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartypasswordless/emailDelivery
         });
         app.use(errorHandler());
 
-        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", {
-            id: "test@example.com",
-            isVerified: false,
-        });
+        let user = await ThirdpartyPasswordless.thirdPartySignInUp("supertokens", "test-user-id", "test@example.com");
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         await supertest(app)
