@@ -23,15 +23,7 @@ export default class Wrapper {
 
     static Error = SuperTokensError;
 
-    static async signInUp(
-        thirdPartyId: string,
-        thirdPartyUserId: string,
-        email: {
-            id: string;
-            isVerified: boolean;
-        },
-        userContext: any = {}
-    ) {
+    static async signInUp(thirdPartyId: string, thirdPartyUserId: string, email: string, userContext: any = {}) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.signInUp({
             thirdPartyId,
             thirdPartyUserId,

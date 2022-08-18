@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
+-   Changed `signInUp` third party recipe function to accept an email string instead of an object that takes `{id: string, isVerified: boolean}`.
 -   Renames `STMP` to `SMTP` everywhere (typo).
 -   The frontend SDK should be updated to a version supporting session claims!
     -   supertokens-auth-react: >= 0.25.0

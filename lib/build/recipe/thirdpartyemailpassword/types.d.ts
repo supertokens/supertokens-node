@@ -82,10 +82,7 @@ export declare type RecipeInterface = {
     thirdPartySignInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
-        email: {
-            id: string;
-            isVerified: boolean;
-        };
+        email: string;
         userContext: any;
     }): Promise<{
         status: "OK";
