@@ -145,7 +145,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             assert.ok(err);
             assert.strictEqual(err.type, "INVALID_CLAIMS");
             assert.strictEqual(err.payload.length, 1);
-            assert.strictEqual(err.payload[0].id, "st-role-includes");
+            assert.strictEqual(err.payload[0].id, "st-role");
             assert.deepStrictEqual(err.payload[0].reason, {
                 message: "wrong value",
                 expectedToInclude: "nope",
@@ -221,7 +221,7 @@ describe(`claimsTest: ${printPath("[test/userroles/claims.test.js]")}`, function
             assert.ok(err);
             assert.strictEqual(err.type, "INVALID_CLAIMS");
             assert.strictEqual(err.payload.length, 1);
-            assert.strictEqual(err.payload[0].id, "st-perm-includes");
+            assert.strictEqual(err.payload[0].id, "st-perm");
             assert.deepStrictEqual(err.payload[0].reason, {
                 message: "wrong value",
                 expectedToInclude: "nope",
