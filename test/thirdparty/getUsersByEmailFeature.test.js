@@ -83,8 +83,8 @@ describe(`getUsersByEmail: ${printPath("[test/thirdparty/getUsersByEmailFeature.
             return;
         }
 
-        await signInUp("mock", "thirdPartyJohnDoe", { id: "john.doe@example.com", isVerified: true });
-        await signInUp("mock2", "thirdPartyDaveDoe", { id: "john.doe@example.com", isVerified: false });
+        await signInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com");
+        await signInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
         const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
 

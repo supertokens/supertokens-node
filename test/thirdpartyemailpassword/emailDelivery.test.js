@@ -305,10 +305,7 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         app.use(middleware());
         app.use(errorHandler());
 
-        await ThirdPartyEmailPassword.thirdPartySignInUp("custom-provider", "test-user-id", {
-            id: "test@example.com",
-            isVerified: false,
-        });
+        await ThirdPartyEmailPassword.thirdPartySignInUp("custom-provider", "test-user-id", "test@example.com");
 
         await supertest(app)
             .post("/auth/user/password/reset/token")
@@ -697,10 +694,11 @@ describe(`emailDelivery: ${printPath("[test/thirdpartyemailpassword/emailDeliver
         });
         app.use(errorHandler());
 
-        let user = await ThirdPartyEmailPassword.thirdPartySignInUp("custom-provider", "test-user-id", {
-            id: "test@example.com",
-            isVerified: false,
-        });
+        let user = await ThirdPartyEmailPassword.thirdPartySignInUp(
+            "custom-provider",
+            "test-user-id",
+            "test@example.com"
+        );
         let res = extractInfoFromResponse(await supertest(app).post("/create").send({ id: user.user.id }).expect(200));
 
         await supertest(app)

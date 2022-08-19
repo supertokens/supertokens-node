@@ -8,10 +8,7 @@ export default class Wrapper {
     static signInUp(
         thirdPartyId: string,
         thirdPartyUserId: string,
-        email: {
-            id: string;
-            isVerified: boolean;
-        },
+        email: string,
         userContext?: any
     ): Promise<{
         status: "OK";

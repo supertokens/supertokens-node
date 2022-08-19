@@ -150,7 +150,7 @@ export default function getAPIInterface(): APIInterface {
             let response = await options.recipeImplementation.signInUp({
                 thirdPartyId: provider.id,
                 thirdPartyUserId: userInfo.id,
-                email: emailInfo,
+                email: emailInfo.id,
                 userContext,
             });
 
