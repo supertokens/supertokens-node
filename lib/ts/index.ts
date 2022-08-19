@@ -68,6 +68,7 @@ export default class SuperTokensWrapper {
         superTokensUserId: string;
         externalUserId: string;
         externalUserIdInfo?: string;
+        force?: boolean;
     }) {
         return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input);
     }
@@ -76,7 +77,11 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().getUserIdMapping(input);
     }
 
-    static deleteUserIdMapping(input: { userId: string; userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" }) {
+    static deleteUserIdMapping(input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        force?: boolean;
+    }) {
         return SuperTokens.getInstanceOrThrowError().deleteUserIdMapping(input);
     }
 

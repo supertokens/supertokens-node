@@ -37,6 +37,7 @@ export default class SuperTokensWrapper {
         superTokensUserId: string;
         externalUserId: string;
         externalUserIdInfo?: string;
+        force?: boolean;
     }): Promise<
         | {
               status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
@@ -64,6 +65,7 @@ export default class SuperTokensWrapper {
     static deleteUserIdMapping(input: {
         userId: string;
         userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        force?: boolean;
     }): Promise<{
         status: "OK";
         didMappingExist: boolean;
