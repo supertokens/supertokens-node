@@ -257,12 +257,18 @@ export default class Wrapper {
 
     // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
 
-    static async sendEmail(input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }) {
-        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail(input);
+    static async sendEmail(input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext?: any }) {
+        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
+            userContext: {},
+            ...input,
+        });
     }
 
-    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext: any }) {
-        return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms(input);
+    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext?: any }) {
+        return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms({
+            userContext: {},
+            ...input,
+        });
     }
 }
 

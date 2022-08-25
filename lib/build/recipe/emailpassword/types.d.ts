@@ -285,7 +285,6 @@ export declare type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
         email: string;
     };
     passwordResetLink: string;
-    userContext: any;
 };
 export declare type TypeEmailPasswordEmailDeliveryInput =
     | TypeEmailPasswordPasswordResetEmailDeliveryInput

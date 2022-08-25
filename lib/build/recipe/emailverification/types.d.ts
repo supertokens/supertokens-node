@@ -140,5 +140,4 @@ export declare type TypeEmailVerificationEmailDeliveryInput = {
         email: string;
     };
     emailVerifyLink: string;
-    userContext: any;
 };
