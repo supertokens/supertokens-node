@@ -52,6 +52,11 @@ Before:
 
 ```
 SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
     recipeList: [
         EmailPassword.init({
             emailVerificationFeature: {
@@ -71,6 +76,11 @@ After the update:
 
 ```
 SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
     recipeList: [
         EmailVerification.init({
             // all config should be moved here from the emailVerificationFeature prop of the EmailPassword recipe config
@@ -81,6 +91,77 @@ SuperTokens.init({
         EmailPassword.init()
     ]
 })
+```
+
+#### Passwordless users and email verification
+
+If you turn on email verification your email-based passwordless users may be redirected to an email verification screen in their existing session.
+Logging out and logging in again will solve this problem or they could click the link in the email to verify themselves.
+
+You can avoid this by running a script that will:
+
+1. list all users of passwordless
+2. create an emailverification token for each of them if they have email addresses
+3. user the token to verify their address
+
+Something similar to this script:
+
+```ts
+const SuperTokens = require("supertokens-node");
+const Session = require("supertokens-node/recipe/session");
+const Passwordless = require("supertokens-node/recipe/passwordless");
+const EmailVerification = require("supertokens-node/recipe/emailverification");
+
+SuperTokens.init({
+    supertokens: {
+        // TODO: This is a core hosted for demo purposes. You can use this, but make sure to change it to your core instance URI eventually.
+        connectionURI: "https://try.supertokens.com",
+        apiKey: "<REQUIRED FOR MANAGED SERVICE, ELSE YOU CAN REMOVE THIS FIELD>",
+    },
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        EmailVerification.init({
+            mode: "REQUIRED",
+        }),
+        Passwordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        }),
+        Session.init(),
+    ],
+});
+
+async function main() {
+    let paginationToken = undefined;
+    let done = false;
+    while (!done) {
+        const userList = await SuperTokens.getUsersNewestFirst({
+            includeRecipeIds: ["passwordless"],
+            limit: 100,
+            paginationToken,
+        });
+
+        for (const { recipeId, user } of userList.users) {
+            if (recipeId === "passwordless" && user.email) {
+                const tokenResp = await EmailVerification.createEmailVerificationToken(user.id, user.email);
+                if (tokenResp.status === "OK") {
+                    await EmailVerification.verifyEmailUsingToken(tokenResp.token);
+                }
+            }
+        }
+
+        done = userList.nextPaginationToken !== undefined;
+        if (!done) {
+            paginationToken = userList.nextPaginationToken;
+        }
+    }
+}
+
+main().then(console.log, console.error);
 ```
 
 ## [11.0.3] - 2022-08-05
