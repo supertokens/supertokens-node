@@ -22,7 +22,7 @@ export interface SMTPServiceConfig {
     };
     port: number;
     secure?: boolean;
-    username: string;
+    username?: string;
     password: string;
 }
 
