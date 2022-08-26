@@ -50,6 +50,7 @@ export default function getAPIImplementation(): APIInterface {
                     </script>
                     <script defer src="${bundleDomain}/static/js/bundle.js"></script></head>
                     <link href="${bundleDomain}/static/css/main.css" rel="stylesheet" type="text/css">
+                    <link rel="icon" type="image/x-icon" href="${bundleDomain}/static/media/favicon.ico">
                 </head>
                 <body>
                     <noscript>You need to enable JavaScript to run this app.</noscript>
