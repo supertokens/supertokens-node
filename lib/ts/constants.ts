@@ -15,5 +15,3 @@
 
 export const HEADER_RID = "rid";
 export const HEADER_FDI = "fdi-version";
-// Note: The actual script import for dashboard uses v{DASHBOARD_VERSION}
-export const DASHBOARD_VERSION = "0.1";

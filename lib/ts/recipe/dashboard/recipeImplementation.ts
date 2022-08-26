@@ -13,13 +13,13 @@
  * under the License.
  */
 
-import { DASHBOARD_VERSION } from "../../constants";
+import { dashboardVersion } from "../../version";
 import { RecipeInterface } from "./types";
 
 export default function getRecipeImplementation(): RecipeInterface {
     return {
-        getDashboardBundleBasePath: async function () {
-            return `https://cdn.jsdelivr.net/gh/supertokens/dashboard@v${DASHBOARD_VERSION}/build/`;
+        getDashboardBundleLocation: async function () {
+            return `https://cdn.jsdelivr.net/gh/supertokens/dashboard@v${dashboardVersion}/build/`;
         },
         shouldAllowAccess: async function (input) {
             let apiKeyHeaderValue: string | undefined = input.req.getHeaderValue("authorization");

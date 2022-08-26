@@ -23,7 +23,7 @@ export declare type TypeNormalisedInput = {
     };
 };
 export declare type RecipeInterface = {
-    getDashboardBundleBasePath(input: { userContext: any }): Promise<string>;
+    getDashboardBundleLocation(input: { userContext: any }): Promise<string>;
     shouldAllowAccess(input: { req: BaseRequest; config: TypeNormalisedInput; userContext: any }): Promise<boolean>;
 };
 export declare type APIOptions = {

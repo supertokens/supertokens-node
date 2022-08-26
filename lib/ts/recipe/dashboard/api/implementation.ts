@@ -22,7 +22,7 @@ import { APIInterface } from "../types";
 export default function getAPIImplementation(): APIInterface {
     return {
         dashboardGET: async function (input) {
-            const bundleBasePathString = await input.options.recipeImplementation.getDashboardBundleBasePath({
+            const bundleBasePathString = await input.options.recipeImplementation.getDashboardBundleLocation({
                 userContext: input.userContext,
             });
 
