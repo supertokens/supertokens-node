@@ -43,6 +43,50 @@ export default class SuperTokens {
     }) => Promise<{
         status: "OK";
     }>;
+    createUserIdMapping: (input: {
+        superTokensUserId: string;
+        externalUserId: string;
+        externalUserIdInfo?: string | undefined;
+        force?: boolean | undefined;
+    }) => Promise<
+        | {
+              status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
+          }
+        | {
+              status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
+              doesSuperTokensUserIdExist: boolean;
+              doesExternalUserIdExist: boolean;
+          }
+    >;
+    getUserIdMapping: (input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" | undefined;
+    }) => Promise<
+        | {
+              status: "OK";
+              superTokensUserId: string;
+              externalUserId: string;
+              externalUserIdInfo: string | undefined;
+          }
+        | {
+              status: "UNKNOWN_MAPPING_ERROR";
+          }
+    >;
+    deleteUserIdMapping: (input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" | undefined;
+        force?: boolean | undefined;
+    }) => Promise<{
+        status: "OK";
+        didMappingExist: boolean;
+    }>;
+    updateOrDeleteUserIdMappingInfo: (input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" | undefined;
+        externalUserIdInfo?: string | undefined;
+    }) => Promise<{
+        status: "OK" | "UNKNOWN_MAPPING_ERROR";
+    }>;
     middleware: (request: BaseRequest, response: BaseResponse) => Promise<boolean>;
     errorHandler: (err: any, request: BaseRequest, response: BaseResponse) => Promise<void>;
 }

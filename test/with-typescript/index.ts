@@ -967,7 +967,19 @@ app.use(
         // nextJS types
         let session2 = await NextJS.superTokensNextWrapper(
             async (next) => {
-                return await Session.getSession(req, res);
+                // Works without null checking by default
+                const defaultSession = await Session.getSession(req, res);
+                defaultSession.getUserId();
+
+                // Works without null checking when sessions are explicitly required
+                const requiredSession = await Session.getSession(req, res, { sessionRequired: true });
+                requiredSession.getUserId();
+
+                // REQUIRES null checking when sessions are explicitly NOT required
+                const optionalSession = await Session.getSession(req, res, { sessionRequired: false });
+                optionalSession?.getUserId();
+
+                return defaultSession;
             },
             req,
             res
@@ -1239,4 +1251,89 @@ Session.init({
             };
         },
     },
+});
+
+ThirdPartyEmailPassword.sendEmail({
+    emailVerifyLink: "",
+    type: "EMAIL_VERIFICATION",
+    user: {
+        email: "",
+        id: "",
+    },
+});
+ThirdPartyEmailPassword.sendEmail({
+    emailVerifyLink: "",
+    type: "EMAIL_VERIFICATION",
+    user: {
+        email: "",
+        id: "",
+    },
+    userContext: {},
+});
+
+ThirdPartyEmailPassword.sendEmail({
+    type: "PASSWORD_RESET",
+    passwordResetLink: "",
+    user: {
+        email: "",
+        id: "",
+    },
+});
+ThirdPartyEmailPassword.sendEmail({
+    type: "PASSWORD_RESET",
+    passwordResetLink: "",
+    user: {
+        email: "",
+        id: "",
+    },
+    userContext: {},
+});
+
+ThirdPartyPasswordless.sendEmail({
+    codeLifetime: 234,
+    email: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userInputCode: "",
+    urlWithLinkCode: "",
+});
+ThirdPartyPasswordless.sendEmail({
+    codeLifetime: 234,
+    email: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userContext: {},
+});
+ThirdPartyPasswordless.sendEmail({
+    emailVerifyLink: "",
+    type: "EMAIL_VERIFICATION",
+    user: {
+        email: "",
+        id: "",
+    },
+    userContext: {},
+});
+ThirdPartyPasswordless.sendEmail({
+    emailVerifyLink: "",
+    type: "EMAIL_VERIFICATION",
+    user: {
+        email: "",
+        id: "",
+    },
+});
+
+ThirdPartyPasswordless.sendSms({
+    codeLifetime: 234,
+    phoneNumber: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userInputCode: "",
+    urlWithLinkCode: "",
+});
+ThirdPartyPasswordless.sendSms({
+    codeLifetime: 234,
+    phoneNumber: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userContext: {},
 });

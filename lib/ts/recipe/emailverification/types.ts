@@ -137,5 +137,4 @@ export type TypeEmailVerificationEmailDeliveryInput = {
         email: string;
     };
     emailVerifyLink: string;
-    userContext: any;
 };

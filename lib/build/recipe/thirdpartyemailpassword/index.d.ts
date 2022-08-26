@@ -129,7 +129,7 @@ export default class Wrapper {
     static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
-            userContext: any;
+            userContext?: any;
         }
     ): Promise<void>;
 }

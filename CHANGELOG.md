@@ -7,9 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
-### Adds
+### Adds:
 
 -   Adds a Dashboard recipe
+
+## [11.1.2] - 2022-08-25
+
+### Type fix:
+
+-   Makes `userContext` optional in `sendEmail` and `sendSms` function in all recipe exposed functions.
+
+## [11.1.1] - 2022-08-11
+
+### Bug fix:
+
+-   Adds missing `force` param from `createUserIdMapping` and `deleteUserIdMapping` functions
+
+## [11.1.0] - 2022-08-11
+
+### Adds:
+
+-   UserId Mapping functionality and compatibility with CDI 2.15
+-   Adds `createUserIdMapping`, `getUserIdMapping`, `deleteUserIdMapping`, `updateOrDeleteUserIdMappingInfo` functions
+
+## [11.0.3] - 2022-08-05
+
+### Bug fix:
+
+-   Fixes overrides not applying correctly in methods called on SessionContainer instances
+
+## [11.0.2] - 2022-08-02
+
+### Bug fix:
+
+-   Solves the issue of request getting stuck in non returning state while parsing form data for nextjs request
+
+## [11.0.1] - 2022-07-18
+
+### Fixes
+
+-   Fixed fastify issue where same cookie was getting set multiple times on the response object
+
+### Adds:
+
+-   Improved type definitions for `SessionWrapper.getSession`.
 
 ## [11.0.0] - 2022-07-05
 

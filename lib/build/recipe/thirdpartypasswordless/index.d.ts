@@ -295,12 +295,12 @@ export default class Wrapper {
     static GoogleWorkspaces: typeof import("../thirdparty/providers/googleWorkspaces").default;
     static sendEmail(
         input: TypeThirdPartyPasswordlessEmailDeliveryInput & {
-            userContext: any;
+            userContext?: any;
         }
     ): Promise<void>;
     static sendSms(
         input: TypePasswordlessSmsDeliveryInput & {
-            userContext: any;
+            userContext?: any;
         }
     ): Promise<void>;
 }

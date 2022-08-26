@@ -161,8 +161,11 @@ export default class Wrapper {
 
     // static ActiveDirectory = thirdPartyProviders.ActiveDirectory;
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) {
-        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail(input);
+    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
+        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
+            userContext: {},
+            ...input,
+        });
     }
 }
 
