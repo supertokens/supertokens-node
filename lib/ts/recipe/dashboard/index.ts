@@ -1,6 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-/* Copyright (c) 2021, VRAI Labs and/or its affiliates. All rights reserved.
+/* Copyright (c) 2022, VRAI Labs and/or its affiliates. All rights reserved.
  *
  * This software is licensed under the Apache License, Version 2.0 (the
  * "License") as published by the Apache Software Foundation.
@@ -14,7 +12,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-exports.version = "11.1.2";
-exports.cdiSupported = ["2.8", "2.9", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15"];
-// Note: The actual script import for dashboard uses v{DASHBOARD_VERSION}
-exports.dashboardVersion = "0.1";
+import Recipe from "./recipe";
+import { RecipeInterface, APIOptions, APIInterface } from "./types";
+
+export default class Wrapper {
+    static init = Recipe.init;
+}
+
+export let init = Wrapper.init;
+
+export type { RecipeInterface, APIOptions, APIInterface };

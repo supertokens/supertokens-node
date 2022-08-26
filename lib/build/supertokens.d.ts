@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
 import RecipeModule from "./recipeModule";
 import NormalisedURLPath from "./normalisedURLPath";
 import { BaseRequest, BaseResponse } from "./framework";
@@ -10,6 +10,7 @@ export default class SuperTokens {
     appInfo: NormalisedAppinfo;
     isInServerlessEnv: boolean;
     recipeModules: RecipeModule[];
+    supertokens: undefined | SuperTokensInfo;
     constructor(config: TypeInput);
     sendTelemetry: () => Promise<void>;
     static init(config: TypeInput): void;

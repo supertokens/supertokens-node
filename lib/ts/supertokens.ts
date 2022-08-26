@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
 import axios from "axios";
 import { normaliseInputAppInfoOrThrowError, maxVersion, normaliseHttpMethod, sendNon200Response } from "./utils";
 import { Querier } from "./querier";
@@ -37,6 +37,8 @@ export default class SuperTokens {
 
     recipeModules: RecipeModule[];
 
+    supertokens: undefined | SuperTokensInfo;
+
     constructor(config: TypeInput) {
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
         logDebugMessage("appInfo: " + JSON.stringify(config.appInfo));
@@ -44,6 +46,7 @@ export default class SuperTokens {
         this.framework = config.framework !== undefined ? config.framework : "express";
         logDebugMessage("framework: " + this.framework);
         this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
+        this.supertokens = config.supertokens;
 
         Querier.init(
             config.supertokens?.connectionURI
