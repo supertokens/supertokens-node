@@ -294,7 +294,6 @@ describe(`emailDelivery: ${printPath("[test/thirdparty/emailDelivery.test.js]")}
                                     email: "",
                                     name: "",
                                 },
-                                username: "",
                                 password: "",
                                 port: 465,
                                 secure: true,
