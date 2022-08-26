@@ -24,6 +24,7 @@ import {
 } from "../../recipe/thirdpartypasswordless/smsdelivery";
 import UserMetadata from "../../recipe/usermetadata";
 import UserRoles from "../../recipe/userroles";
+import Dashboard from "../../recipe/dashboard";
 
 UserRoles.init({
     override: {
@@ -1336,4 +1337,40 @@ ThirdPartyPasswordless.sendSms({
     type: "PASSWORDLESS_LOGIN",
     preAuthSessionId: "",
     userContext: {},
+});
+
+Supertokens.init({
+    appInfo: {
+        apiDomain: "",
+        appName: "",
+        websiteDomain: "",
+    },
+    recipeList: [
+        Dashboard.init({
+            apiKey: "",
+            override: {
+                functions: () => {
+                    return {
+                        getDashboardBundleLocation: async () => {
+                            return "";
+                        },
+                        shouldAllowAccess: async () => {
+                            return false;
+                        },
+                    };
+                },
+                apis: () => {
+                    return {
+                        dashboardGET: async () => {
+                            return "";
+                        },
+                    };
+                },
+            },
+        }),
+    ],
+});
+
+Dashboard.init({
+    apiKey: "",
 });
