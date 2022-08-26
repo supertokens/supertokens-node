@@ -15,5 +15,5 @@
 
 export const HEADER_RID = "rid";
 export const HEADER_FDI = "fdi-version";
-// TODO NEMI: Add proper dashboard version here
-export const DASHBOARD_VERSION = "test";
+// Note: The actual script import for dashboard uses v{DASHBOARD_VERSION}
+export const DASHBOARD_VERSION = "0.1";
