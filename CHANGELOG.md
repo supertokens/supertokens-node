@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [11.2.0] - 2022-08-26
+
+### Adds:
+
+-   Adds a Dashboard recipe
+
+## [11.1.2] - 2022-08-25
+
+### Type fix:
+
+-   Makes `userContext` optional in `sendEmail` and `sendSms` function in all recipe exposed functions.
+
 ## [11.1.1] - 2022-08-11
 
 ### Bug fix:

@@ -24,6 +24,7 @@ import {
 } from "../../recipe/thirdpartypasswordless/smsdelivery";
 import UserMetadata from "../../recipe/usermetadata";
 import UserRoles from "../../recipe/userroles";
+import Dashboard from "../../recipe/dashboard";
 
 UserRoles.init({
     override: {
@@ -1251,4 +1252,125 @@ Session.init({
             };
         },
     },
+});
+
+ThirdPartyEmailPassword.sendEmail({
+    emailVerifyLink: "",
+    type: "EMAIL_VERIFICATION",
+    user: {
+        email: "",
+        id: "",
+    },
+});
+ThirdPartyEmailPassword.sendEmail({
+    emailVerifyLink: "",
+    type: "EMAIL_VERIFICATION",
+    user: {
+        email: "",
+        id: "",
+    },
+    userContext: {},
+});
+
+ThirdPartyEmailPassword.sendEmail({
+    type: "PASSWORD_RESET",
+    passwordResetLink: "",
+    user: {
+        email: "",
+        id: "",
+    },
+});
+ThirdPartyEmailPassword.sendEmail({
+    type: "PASSWORD_RESET",
+    passwordResetLink: "",
+    user: {
+        email: "",
+        id: "",
+    },
+    userContext: {},
+});
+
+ThirdPartyPasswordless.sendEmail({
+    codeLifetime: 234,
+    email: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userInputCode: "",
+    urlWithLinkCode: "",
+});
+ThirdPartyPasswordless.sendEmail({
+    codeLifetime: 234,
+    email: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userContext: {},
+});
+ThirdPartyPasswordless.sendEmail({
+    emailVerifyLink: "",
+    type: "EMAIL_VERIFICATION",
+    user: {
+        email: "",
+        id: "",
+    },
+    userContext: {},
+});
+ThirdPartyPasswordless.sendEmail({
+    emailVerifyLink: "",
+    type: "EMAIL_VERIFICATION",
+    user: {
+        email: "",
+        id: "",
+    },
+});
+
+ThirdPartyPasswordless.sendSms({
+    codeLifetime: 234,
+    phoneNumber: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userInputCode: "",
+    urlWithLinkCode: "",
+});
+ThirdPartyPasswordless.sendSms({
+    codeLifetime: 234,
+    phoneNumber: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userContext: {},
+});
+
+Supertokens.init({
+    appInfo: {
+        apiDomain: "",
+        appName: "",
+        websiteDomain: "",
+    },
+    recipeList: [
+        Dashboard.init({
+            apiKey: "",
+            override: {
+                functions: () => {
+                    return {
+                        getDashboardBundleLocation: async () => {
+                            return "";
+                        },
+                        shouldAllowAccess: async () => {
+                            return false;
+                        },
+                    };
+                },
+                apis: () => {
+                    return {
+                        dashboardGET: async () => {
+                            return "";
+                        },
+                    };
+                },
+            },
+        }),
+    ],
+});
+
+Dashboard.init({
+    apiKey: "",
 });

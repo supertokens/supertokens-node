@@ -152,12 +152,12 @@ export default class Wrapper {
     }>;
     static sendEmail(
         input: TypePasswordlessEmailDeliveryInput & {
-            userContext: any;
+            userContext?: any;
         }
     ): Promise<void>;
     static sendSms(
         input: TypePasswordlessSmsDeliveryInput & {
-            userContext: any;
+            userContext?: any;
         }
     ): Promise<void>;
 }
