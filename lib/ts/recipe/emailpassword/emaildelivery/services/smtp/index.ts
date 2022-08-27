@@ -30,7 +30,7 @@ export default class SMTPService implements EmailDeliveryInterface<TypeEmailPass
             host: config.smtpSettings.host,
             port: config.smtpSettings.port,
             auth: {
-                user: config.smtpSettings.from.email,
+                user: config.smtpSettings.username || config.smtpSettings.from.email,
                 pass: config.smtpSettings.password,
             },
             secure: config.smtpSettings.secure,
