@@ -438,6 +438,7 @@ ThirdPartyPasswordless.init({
         service: new STMPServiceTPP({
             smtpSettings: {
                 host: "",
+                authUsername: "",
                 password: "",
                 port: 465,
                 from: {

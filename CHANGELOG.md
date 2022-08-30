@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [11.3.0] - 2022-08-30
+
+### Added:
+
+-   `authUsername` option in smtp config for when email is different than the username for auth.
+
 ## [11.2.0] - 2022-08-26
 
 ### Adds:
