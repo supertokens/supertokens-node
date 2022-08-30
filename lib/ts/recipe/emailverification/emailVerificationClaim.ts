@@ -26,12 +26,13 @@ export class EmailVerificationClaimClass extends BooleanClaim {
 
         this.validators = {
             ...this.validators,
-            isVerified: (refetchTimeOnFalseInSeconds: number = 10) => ({
+            isVerified: (refetchTimeOnFalseInSeconds: number = 10, maxAgeInSeconds: number = 300) => ({
                 ...this.validators.hasValue(true),
                 shouldRefetch: (payload, userContext) => {
                     const value = this.getValueFromPayload(payload, userContext);
                     return (
                         value === undefined ||
+                        this.getLastRefetchTime(payload, userContext)! < Date.now() - maxAgeInSeconds * 1000 ||
                         (value === false &&
                             this.getLastRefetchTime(payload, userContext)! <
                                 Date.now() - refetchTimeOnFalseInSeconds * 1000)
