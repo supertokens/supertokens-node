@@ -174,6 +174,11 @@ export function validateAndNormaliseUserInput(
 
     let sessionExpiredStatusCode =
         config === undefined || config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
+    const invalidClaimStatusCode = config?.invalidClaimStatusCode ?? 403;
+
+    if (sessionExpiredStatusCode === invalidClaimStatusCode) {
+        throw new Error("sessionExpiredStatusCode and sessionExpiredStatusCode must be different");
+    }
 
     if (config !== undefined && config.antiCsrf !== undefined) {
         if (config.antiCsrf !== "NONE" && config.antiCsrf !== "VIA_CUSTOM_HEADER" && config.antiCsrf !== "VIA_TOKEN") {
@@ -267,7 +272,7 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
-        invalidClaimStatusCode: config?.invalidClaimStatusCode ?? 403,
+        invalidClaimStatusCode,
         jwt: {
             enable: enableJWT,
             propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
