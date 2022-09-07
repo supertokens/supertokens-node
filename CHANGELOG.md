@@ -14,13 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 -   Added support for session claims with related interfaces and classes.
--   Added `EmailVerificationClaim`.
 -   Added `onInvalidClaim` optional error handler to send InvalidClaim error responses.
 -   Added `INVALID_CLAIMS` to `SessionErrors`.
 -   Added `invalidClaimStatusCode` optional config to set the status code of InvalidClaim errors.
 -   Added `overrideGlobalClaimValidators` to options of `getSession` and `verifySession`.
 -   Added `mergeIntoAccessTokenPayload` to the Session recipe and session objects which should be preferred to the now deprecated `updateAccessTokenPayload`.
--   Added `assertClaims`, `validateClaimsForSessionHandle`, `validateClaimsInJWTPayload` to the Session recipe to support validation of the newly added `EmailVerificationClaim`.
+-   Added `EmailVerificationClaim`, `UserRoleClaim` and `PermissionClaim`. These claims are now added to the access token payload by default by their respective recipes.
+-   Added `assertClaims`, `validateClaimsForSessionHandle`, `validateClaimsInJWTPayload` to the Session recipe to support validation of the newly added claims.
 -   Added `fetchAndSetClaim`, `getClaimValue`, `setClaimValue` and `removeClaim` to the Session recipe to manage claims.
 -   Added `assertClaims`, `fetchAndSetClaim`, `getClaimValue`, `setClaimValue` and `removeClaim` to session objects to manage claims.
 -   Added session to the input of `generateEmailVerifyTokenPOST`, `verifyEmailPOST`, `isEmailVerifiedGET`.
@@ -163,6 +163,25 @@ async function main() {
 
 main().then(console.log, console.error);
 ```
+
+#### User roles
+
+The UserRoles recipe now adds role and permission information into the access token payload by default. If you are already doing this manually, this will result in duplicate data in the access token.
+
+-   You can disable this behaviour by setting `skipAddingRolesToAccessToken` and `skipAddingPermissionsToAccessToken` to true in the recipe init.
+-   Check how to use the new claims in the updated guide: https://supertokens.com/docs/userroles/protecting-routes
+
+#### Next.js integration
+
+-   Since a new exception type has been added, there is a required change in SRR (`getServerSideProps`). You should handle the new (`INVALID_CLAIMS`) exception in the same way as you handle `UNAUTHORISED`
+-   You can check our updated guide here: https://supertokens.com/docs/thirdpartyemailpassword/nextjs/session-verification/in-ssr
+
+#### AWS integration
+
+-   The new exception type and error code requires changes if you are using SuperTokens as as an Authorizer in API Gateways.
+-   You need to handle the new exception type in the authorizer code.
+-   You need to configure the "Access Denied" response.
+-   You can check our updated guide here: https://supertokens.com/docs/thirdpartyemailpassword/serverless/with-aws-lambda/authorizer
 
 ## [11.0.3] - 2022-08-05
 
