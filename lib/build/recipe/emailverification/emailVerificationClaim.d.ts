@@ -7,7 +7,7 @@ import { SessionClaimValidator } from "../session";
 export declare class EmailVerificationClaimClass extends BooleanClaim {
     constructor();
     validators: BooleanClaim["validators"] & {
-        isVerified: (refetchTimeOnFalseInSeconds?: number) => SessionClaimValidator;
+        isVerified: (refetchTimeOnFalseInSeconds?: number, maxAgeInSeconds?: number) => SessionClaimValidator;
     };
 }
 export declare const EmailVerificationClaim: EmailVerificationClaimClass;
