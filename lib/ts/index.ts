@@ -63,6 +63,35 @@ export default class SuperTokensWrapper {
             userId,
         });
     }
+
+    static createUserIdMapping(input: {
+        superTokensUserId: string;
+        externalUserId: string;
+        externalUserIdInfo?: string;
+        force?: boolean;
+    }) {
+        return SuperTokens.getInstanceOrThrowError().createUserIdMapping(input);
+    }
+
+    static getUserIdMapping(input: { userId: string; userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY" }) {
+        return SuperTokens.getInstanceOrThrowError().getUserIdMapping(input);
+    }
+
+    static deleteUserIdMapping(input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        force?: boolean;
+    }) {
+        return SuperTokens.getInstanceOrThrowError().deleteUserIdMapping(input);
+    }
+
+    static updateOrDeleteUserIdMappingInfo(input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        externalUserIdInfo?: string;
+    }) {
+        return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -76,5 +105,13 @@ export let getUsersOldestFirst = SuperTokensWrapper.getUsersOldestFirst;
 export let getUsersNewestFirst = SuperTokensWrapper.getUsersNewestFirst;
 
 export let deleteUser = SuperTokensWrapper.deleteUser;
+
+export let createUserIdMapping = SuperTokensWrapper.createUserIdMapping;
+
+export let getUserIdMapping = SuperTokensWrapper.getUserIdMapping;
+
+export let deleteUserIdMapping = SuperTokensWrapper.deleteUserIdMapping;
+
+export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
 
 export let Error = SuperTokensWrapper.Error;

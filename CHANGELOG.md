@@ -183,6 +183,37 @@ The UserRoles recipe now adds role and permission information into the access to
 -   You need to configure the "Access Denied" response.
 -   You can check our updated guide here: https://supertokens.com/docs/thirdpartyemailpassword/serverless/with-aws-lambda/authorizer
 
+## [11.3.0] - 2022-08-30
+
+### Added:
+
+-   `authUsername` option in smtp config for when email is different than the username for auth.
+
+## [11.2.0] - 2022-08-26
+
+### Adds:
+
+-   Adds a Dashboard recipe
+
+## [11.1.2] - 2022-08-25
+
+### Type fix:
+
+-   Makes `userContext` optional in `sendEmail` and `sendSms` function in all recipe exposed functions.
+
+## [11.1.1] - 2022-08-11
+
+### Bug fix:
+
+-   Adds missing `force` param from `createUserIdMapping` and `deleteUserIdMapping` functions
+
+## [11.1.0] - 2022-08-11
+
+### Adds:
+
+-   UserId Mapping functionality and compatibility with CDI 2.15
+-   Adds `createUserIdMapping`, `getUserIdMapping`, `deleteUserIdMapping`, `updateOrDeleteUserIdMappingInfo` functions
+
 ## [11.0.3] - 2022-08-05
 
 ### Bug fix:

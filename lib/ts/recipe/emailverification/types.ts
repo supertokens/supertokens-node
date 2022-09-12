@@ -160,7 +160,6 @@ export type TypeEmailVerificationEmailDeliveryInput = {
         email: string;
     };
     emailVerifyLink: string;
-    userContext: any;
 };
 
 export type GetEmailForUserIdFunc = (

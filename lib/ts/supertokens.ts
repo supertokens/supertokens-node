@@ -13,7 +13,7 @@
  * under the License.
  */
 
-import { TypeInput, NormalisedAppinfo, HTTPMethod } from "./types";
+import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
 import axios from "axios";
 import {
     normaliseInputAppInfoOrThrowError,
@@ -43,6 +43,8 @@ export default class SuperTokens {
 
     recipeModules: RecipeModule[];
 
+    supertokens: undefined | SuperTokensInfo;
+
     constructor(config: TypeInput) {
         logDebugMessage("Started SuperTokens with debug logging (supertokens.init called)");
         logDebugMessage("appInfo: " + JSON.stringify(config.appInfo));
@@ -50,6 +52,7 @@ export default class SuperTokens {
         this.framework = config.framework !== undefined ? config.framework : "express";
         logDebugMessage("framework: " + this.framework);
         this.appInfo = normaliseInputAppInfoOrThrowError(config.appInfo);
+        this.supertokens = config.supertokens;
 
         Querier.init(
             config.supertokens?.connectionURI
@@ -227,6 +230,105 @@ export default class SuperTokens {
             };
         } else {
             throw new global.Error("Please upgrade the SuperTokens core to >= 3.7.0");
+        }
+    };
+
+    createUserIdMapping = async function (input: {
+        superTokensUserId: string;
+        externalUserId: string;
+        externalUserIdInfo?: string;
+        force?: boolean;
+    }): Promise<
+        | {
+              status: "OK" | "UNKNOWN_SUPERTOKENS_USER_ID_ERROR";
+          }
+        | {
+              status: "USER_ID_MAPPING_ALREADY_EXISTS_ERROR";
+              doesSuperTokensUserIdExist: boolean;
+              doesExternalUserIdExist: boolean;
+          }
+    > {
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let cdiVersion = await querier.getAPIVersion();
+        if (maxVersion("2.15", cdiVersion) === cdiVersion) {
+            // create userId mapping is only available >= CDI 2.15
+            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/userid/map"), {
+                superTokensUserId: input.superTokensUserId,
+                externalUserId: input.externalUserId,
+                externalUserIdInfo: input.externalUserIdInfo,
+                force: input.force,
+            });
+        } else {
+            throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
+        }
+    };
+
+    getUserIdMapping = async function (input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+    }): Promise<
+        | {
+              status: "OK";
+              superTokensUserId: string;
+              externalUserId: string;
+              externalUserIdInfo: string | undefined;
+          }
+        | {
+              status: "UNKNOWN_MAPPING_ERROR";
+          }
+    > {
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let cdiVersion = await querier.getAPIVersion();
+        if (maxVersion("2.15", cdiVersion) === cdiVersion) {
+            // create userId mapping is only available >= CDI 2.15
+            let response = await querier.sendGetRequest(new NormalisedURLPath("/recipe/userid/map"), {
+                userId: input.userId,
+                userIdType: input.userIdType,
+            });
+            return response;
+        } else {
+            throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
+        }
+    };
+
+    deleteUserIdMapping = async function (input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        force?: boolean;
+    }): Promise<{
+        status: "OK";
+        didMappingExist: boolean;
+    }> {
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let cdiVersion = await querier.getAPIVersion();
+        if (maxVersion("2.15", cdiVersion) === cdiVersion) {
+            return await querier.sendPostRequest(new NormalisedURLPath("/recipe/userid/map/remove"), {
+                userId: input.userId,
+                userIdType: input.userIdType,
+                force: input.force,
+            });
+        } else {
+            throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
+        }
+    };
+
+    updateOrDeleteUserIdMappingInfo = async function (input: {
+        userId: string;
+        userIdType?: "SUPERTOKENS" | "EXTERNAL" | "ANY";
+        externalUserIdInfo?: string;
+    }): Promise<{
+        status: "OK" | "UNKNOWN_MAPPING_ERROR";
+    }> {
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let cdiVersion = await querier.getAPIVersion();
+        if (maxVersion("2.15", cdiVersion) === cdiVersion) {
+            return await querier.sendPutRequest(new NormalisedURLPath("/recipe/userid/external-user-id-info"), {
+                userId: input.userId,
+                userIdType: input.userIdType,
+                externalUserIdInfo: input.externalUserIdInfo,
+            });
+        } else {
+            throw new global.Error("Please upgrade the SuperTokens core to >= 3.15.0");
         }
     };
 

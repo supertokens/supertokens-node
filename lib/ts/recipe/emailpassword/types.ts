@@ -256,7 +256,6 @@ export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
         email: string;
     };
     passwordResetLink: string;
-    userContext: any;
 };
 
 export type TypeEmailPasswordEmailDeliveryInput = TypeEmailPasswordPasswordResetEmailDeliveryInput;

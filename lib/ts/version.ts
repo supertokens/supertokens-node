@@ -12,6 +12,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-export const version = "11.0.3";
+export const version = "11.3.0";
 
-export const cdiSupported = ["2.8", "2.9", "2.10", "2.11", "2.12", "2.13", "2.14"];
+export const cdiSupported = ["2.8", "2.9", "2.10", "2.11", "2.12", "2.13", "2.14", "2.15"];
+
+// Note: The actual script import for dashboard uses v{DASHBOARD_VERSION}
+export const dashboardVersion = "0.1";

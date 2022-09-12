@@ -74,9 +74,12 @@ export default class Wrapper {
         });
     }
 
-    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }) {
+    static async sendEmail(input: TypeEmailPasswordEmailDeliveryInput & { userContext?: any }) {
         let recipeInstance = Recipe.getInstanceOrThrowError();
-        return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail(input);
+        return await recipeInstance.emailDelivery.ingredientInterfaceImpl.sendEmail({
+            userContext: {},
+            ...input,
+        });
     }
 }
 

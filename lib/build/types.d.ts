@@ -19,11 +19,12 @@ export declare type NormalisedAppinfo = {
     apiGatewayPath: NormalisedURLPath;
     websiteBasePath: NormalisedURLPath;
 };
+export declare type SuperTokensInfo = {
+    connectionURI: string;
+    apiKey?: string;
+};
 export declare type TypeInput = {
-    supertokens?: {
-        connectionURI: string;
-        apiKey?: string;
-    };
+    supertokens?: SuperTokensInfo;
     framework?: TypeFramework;
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];

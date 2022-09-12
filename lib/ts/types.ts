@@ -36,11 +36,13 @@ export type NormalisedAppinfo = {
     websiteBasePath: NormalisedURLPath;
 };
 
+export type SuperTokensInfo = {
+    connectionURI: string;
+    apiKey?: string;
+};
+
 export type TypeInput = {
-    supertokens?: {
-        connectionURI: string;
-        apiKey?: string;
-    };
+    supertokens?: SuperTokensInfo;
     framework?: TypeFramework;
     appInfo: AppInfo;
     recipeList: RecipeListFunction[];

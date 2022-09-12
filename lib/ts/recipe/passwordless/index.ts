@@ -158,12 +158,18 @@ export default class Wrapper {
         return Recipe.getInstanceOrThrowError().signInUp({ userContext: {}, ...input });
     }
 
-    static async sendEmail(input: TypePasswordlessEmailDeliveryInput & { userContext: any }) {
-        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail(input);
+    static async sendEmail(input: TypePasswordlessEmailDeliveryInput & { userContext?: any }) {
+        return await Recipe.getInstanceOrThrowError().emailDelivery.ingredientInterfaceImpl.sendEmail({
+            userContext: {},
+            ...input,
+        });
     }
 
-    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext: any }) {
-        return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms(input);
+    static async sendSms(input: TypePasswordlessSmsDeliveryInput & { userContext?: any }) {
+        return await Recipe.getInstanceOrThrowError().smsDelivery.ingredientInterfaceImpl.sendSms({
+            userContext: {},
+            ...input,
+        });
     }
 }
 

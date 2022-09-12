@@ -1,6 +1,7 @@
 import * as express from "express";
 import Supertokens from "../..";
 import Session, { RecipeInterface, SessionClaimValidator } from "../../recipe/session";
+import EmailVerification from "../../recipe/emailverification";
 import EmailPassword from "../../recipe/emailpassword";
 import { verifySession } from "../../recipe/session/framework/express";
 import { middleware, errorHandler, SessionRequest } from "../../framework/express";
@@ -24,6 +25,7 @@ import {
 import UserMetadata from "../../recipe/usermetadata";
 import { BooleanClaim, PrimitiveClaim, SessionClaim } from "../../recipe/session/claims";
 import UserRoles from "../../recipe/userroles";
+import Dashboard from "../../recipe/dashboard";
 
 UserRoles.init({
     override: {
@@ -419,6 +421,7 @@ ThirdPartyPasswordless.init({
         service: new SMTPServiceTPP({
             smtpSettings: {
                 host: "",
+                authUsername: "",
                 password: "",
                 port: 465,
                 from: {
@@ -1274,3 +1277,97 @@ Session.validateClaimsInJWTPayload(
     (globalClaimValidators, userId) => [...globalClaimValidators, stringClaim.validators.startsWith(userId)],
     { test: 1 }
 );
+EmailVerification.sendEmail({
+    emailVerifyLink: "",
+    type: "EMAIL_VERIFICATION",
+    user: {
+        email: "",
+        id: "",
+    },
+});
+
+ThirdPartyEmailPassword.sendEmail({
+    type: "PASSWORD_RESET",
+    passwordResetLink: "",
+    user: {
+        email: "",
+        id: "",
+    },
+});
+ThirdPartyEmailPassword.sendEmail({
+    type: "PASSWORD_RESET",
+    passwordResetLink: "",
+    user: {
+        email: "",
+        id: "",
+    },
+    userContext: {},
+});
+
+ThirdPartyPasswordless.sendEmail({
+    codeLifetime: 234,
+    email: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userInputCode: "",
+    urlWithLinkCode: "",
+});
+ThirdPartyPasswordless.sendEmail({
+    codeLifetime: 234,
+    email: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userContext: {},
+});
+
+ThirdPartyPasswordless.sendSms({
+    codeLifetime: 234,
+    phoneNumber: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userInputCode: "",
+    urlWithLinkCode: "",
+});
+ThirdPartyPasswordless.sendSms({
+    codeLifetime: 234,
+    phoneNumber: "",
+    type: "PASSWORDLESS_LOGIN",
+    preAuthSessionId: "",
+    userContext: {},
+});
+
+Supertokens.init({
+    appInfo: {
+        apiDomain: "",
+        appName: "",
+        websiteDomain: "",
+    },
+    recipeList: [
+        Dashboard.init({
+            apiKey: "",
+            override: {
+                functions: () => {
+                    return {
+                        getDashboardBundleLocation: async () => {
+                            return "";
+                        },
+                        shouldAllowAccess: async () => {
+                            return false;
+                        },
+                    };
+                },
+                apis: () => {
+                    return {
+                        dashboardGET: async () => {
+                            return "";
+                        },
+                    };
+                },
+            },
+        }),
+    ],
+});
+
+Dashboard.init({
+    apiKey: "",
+});
