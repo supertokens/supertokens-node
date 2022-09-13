@@ -92,7 +92,7 @@ describe(`sessionClaims/setClaimValue: ${printPath("[test/session/claims/setClai
             assert.equal(Object.keys(payload).length, 1);
             assert.ok(payload["st-true"]);
             assert.equal(payload["st-true"].v, true);
-            assert(payload["st-true"].t > Date.now() - 1000);
+            assert(payload["st-true"].t > Date.now() - 2000);
 
             await res.setClaimValue(TrueClaim, false);
 

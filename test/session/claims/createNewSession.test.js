@@ -172,22 +172,24 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             const res = await Session.createNewSession(response, "someId", payloadParam);
 
             // The passed object should be unchanged
-            assert.equal(Object.keys(payloadParam).length, 1);
+            assert.strictEqual(Object.keys(payloadParam).length, 1);
 
             const payload = res.getAccessTokenPayload();
-            assert.equal(Object.keys(payload).length, 4);
+            assert.strictEqual(Object.keys(payload).length, 5);
             // We have the prop from the payload param
-            assert.equal(payload["initial"], true);
+            assert.strictEqual(payload["initial"], true);
             // We have the boolean claim
             assert.ok(payload["st-true"]);
-            assert.equal(payload["st-true"].v, true);
+            assert.strictEqual(payload["st-true"].v, true);
             assert(payload["st-true"].t > Date.now() - 1000);
             // We have the custom claim
-            // The resulting payload is different from the input: it doesn't container undefined and null values
-            assert.deepEqual(payload["user-custom"], "asdf");
-            assert.deepEqual(payload["user-custom2"], {
+            // The resulting payload is different from the input: it doesn't container undefined
+            assert.deepStrictEqual(payload["user-custom"], "asdf");
+            assert.deepStrictEqual(payload["user-custom2"], {
                 inner: "asdf",
+                nullProp: null,
             });
+            assert.deepStrictEqual(payload["user-custom3"], null);
         });
     });
 });
