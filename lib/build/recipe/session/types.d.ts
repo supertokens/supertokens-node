@@ -263,17 +263,17 @@ export declare type RecipeInterface = {
         status: "OK";
         invalidClaims: ClaimValidationError[];
     }>;
-    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
+    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
         value: T;
-        userContext?: any;
+        userContext: any;
     }): Promise<boolean>;
     getClaimValue<T>(input: {
         sessionHandle: string;
         claim: SessionClaim<T>;
-        userContext?: any;
+        userContext: any;
     }): Promise<
         | {
               status: "SESSION_DOES_NOT_EXIST_ERROR";
@@ -283,7 +283,7 @@ export declare type RecipeInterface = {
               value: T | undefined;
           }
     >;
-    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }): Promise<boolean>;
+    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
 };
 export interface SessionContainerInterface {
     revokeSession(userContext?: any): Promise<void>;
