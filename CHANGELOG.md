@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Bug fix:
+
+-   Makes `SuperTokensError` extend the built-in `Error` class to fix serialization issues.
+
 ## [11.3.0] - 2022-08-30
 
 ### Added:
