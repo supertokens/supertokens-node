@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+-   Support for FDI 1.15
 -   Added support for session claims with related interfaces and classes.
 -   Added `onInvalidClaim` optional error handler to send InvalidClaim error responses.
 -   Added `INVALID_CLAIMS` to `SessionErrors`.
@@ -34,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Breaking changes
 
+-   Removes support for FDI < 1.15
 -   Changed `signInUp` third party recipe function to accept an email string instead of an object that takes `{id: string, isVerified: boolean}`.
 -   Renames `STMP` to `SMTP` everywhere (typo).
 -   The frontend SDK should be updated to a version supporting session claims!
