@@ -29,6 +29,7 @@ let { ProcessState } = require("../lib/build/processState");
 let SuperTokens = require("../");
 let Session = require("../recipe/session");
 let EmailPassword = require("../recipe/emailpassword");
+const EmailVerification = require("../recipe/emailverification");
 let SessionRecipe = require("../lib/build/recipe/session/recipe").default;
 let { middleware, errorHandler } = require("../framework/express");
 let { verifySession } = require("../recipe/session/framework/express");
@@ -231,5 +232,101 @@ describe(`middleware2: ${printPath("[test/middleware2.test.js]")}`, function () 
         );
 
         assert(response.body.custom);
+    });
+
+    it("should handle email verification requests of FDI 1.14", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init(),
+                EmailVerification.init({
+                    mode: "REQUIRED",
+                }),
+                EmailPassword.init(),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+        app.use(errorHandler());
+
+        // Getting a 401 here means that we got to the handler
+        await new Promise((resolve, reject) =>
+            request(app)
+                .get("/auth/user/email/verify")
+                .set("rid", "emailpassword")
+                .expect(401)
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        await new Promise((resolve, reject) =>
+            request(app)
+                .get("/auth/user/email/verify")
+                .set("rid", "emailverification")
+                .expect(401)
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        await new Promise((resolve, reject) =>
+            request(app)
+                .get("/auth/user/email/verify")
+                .expect(401)
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        // Providing recipe ids of not initialized or not existing recipes should still return 404
+        await new Promise((resolve, reject) =>
+            request(app)
+                .get("/auth/user/email/verify")
+                .set("rid", "thirdpartyemailpassword")
+                .expect(404)
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        await new Promise((resolve, reject) =>
+            request(app)
+                .get("/auth/user/email/verify")
+                .set("rid", "random")
+                .expect(404)
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
     });
 });

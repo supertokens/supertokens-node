@@ -18,6 +18,7 @@ let Session = require("../../recipe/session");
 let EmailPassword = require("../../recipe/emailpassword");
 let ThirdParty = require("../../recipe/thirdparty");
 let ThirdPartyEmailPassword = require("../../recipe/thirdpartyemailpassword");
+let EmailVerification = require("../../recipe/emailverification");
 let { verifySession } = require("../../recipe/session/framework/express");
 let { middleware, errorHandler } = require("../../framework/express");
 let express = require("express");
@@ -29,6 +30,7 @@ let PasswordlessRaw = require("../../lib/build/recipe/passwordless/recipe").defa
 let Passwordless = require("../../recipe/passwordless");
 let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
 let { default: SuperTokensRaw } = require("../../lib/build/supertokens");
+const { default: EmailVerificationRaw } = require("../../lib/build/recipe/emailverification/recipe");
 const { default: EmailPasswordRaw } = require("../../lib/build/recipe/emailpassword/recipe");
 const { default: ThirdPartyRaw } = require("../../lib/build/recipe/thirdparty/recipe");
 const { default: ThirdPartyEmailPasswordRaw } = require("../../lib/build/recipe/thirdpartyemailpassword/recipe");
@@ -209,6 +211,7 @@ server.listen(process.env.NODE_PORT === undefined ? 8083 : process.env.NODE_PORT
 
 function initST({ passwordlessConfig } = {}) {
     PasswordlessRaw.reset();
+    EmailVerificationRaw.reset();
     EmailPasswordRaw.reset();
     ThirdPartyRaw.reset();
     ThirdPartyEmailPasswordRaw.reset();
@@ -225,35 +228,40 @@ function initST({ passwordlessConfig } = {}) {
         ...passwordlessConfig,
     };
     const recipeList = [
+        EmailVerification.init({
+            createAndSendCustomEmail: (_, emailVerificationURLWithToken) => {
+                latestURLWithToken = emailVerificationURLWithToken;
+            },
+            override: {
+                apis: (oI) => {
+                    return {
+                        ...oI,
+                        generateEmailVerifyTokenPOST: async function (input) {
+                            let body = await input.options.req.getJSONBody();
+                            if (body.generalError === true) {
+                                return {
+                                    status: "GENERAL_ERROR",
+                                    message: "general error from API email verification code",
+                                };
+                            }
+                            return oI.generateEmailVerifyTokenPOST(input);
+                        },
+                        verifyEmailPOST: async function (input) {
+                            let body = await input.options.req.getJSONBody();
+                            if (body.generalError === true) {
+                                return {
+                                    status: "GENERAL_ERROR",
+                                    message: "general error from API email verify",
+                                };
+                            }
+                            return oI.verifyEmailPOST(input);
+                        },
+                    };
+                },
+            },
+        }),
         EmailPassword.init({
             override: {
-                emailVerificationFeature: {
-                    apis: (oI) => {
-                        return {
-                            ...oI,
-                            generateEmailVerifyTokenPOST: async function (input) {
-                                let body = await input.options.req.getJSONBody();
-                                if (body.generalError === true) {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API email verification code",
-                                    };
-                                }
-                                return oI.generateEmailVerifyTokenPOST(input);
-                            },
-                            verifyEmailPOST: async function (input) {
-                                let body = await input.options.req.getJSONBody();
-                                if (body.generalError === true) {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API email verify",
-                                    };
-                                }
-                                return oI.verifyEmailPOST(input);
-                            },
-                        };
-                    },
-                },
                 apis: (oI) => {
                     return {
                         ...oI,
@@ -322,11 +330,6 @@ function initST({ passwordlessConfig } = {}) {
             resetPasswordUsingTokenFeature: {
                 createAndSendCustomEmail: (_, passwordResetURLWithToken) => {
                     latestURLWithToken = passwordResetURLWithToken;
-                },
-            },
-            emailVerificationFeature: {
-                createAndSendCustomEmail: (_, emailVerificationURLWithToken) => {
-                    latestURLWithToken = emailVerificationURLWithToken;
                 },
             },
         }),

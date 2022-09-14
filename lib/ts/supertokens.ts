@@ -373,6 +373,20 @@ export default class SuperTokens {
 
             let id = matchedRecipe.returnAPIIdIfCanHandleRequest(path, method);
             if (id === undefined) {
+                // test that it doesn't fail if EV is not initialized
+                // This part is only necessary while we support FDI < 1.15
+                // Using rid manually copied here to avoid circular dependencies
+                const emailVerificationRecipe = this.recipeModules.find((r) => r.getRecipeId() === "emailverification");
+                if (emailVerificationRecipe) {
+                    logDebugMessage(
+                        "middleware: recipe matched by rid didn't handle this path, falling back to email verification for backwards compatibility"
+                    );
+                    matchedRecipe = emailVerificationRecipe;
+                    id = emailVerificationRecipe.returnAPIIdIfCanHandleRequest(path, method);
+                }
+            }
+
+            if (id === undefined) {
                 logDebugMessage(
                     "middleware: Not handling because recipe doesn't handle request path or method. Request path: " +
                         path.getAsStringDangerous() +
