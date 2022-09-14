@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [12.0.0] - 2022-09-14
 
+### Bug fix:
+
+-   Makes `SuperTokensError` extend the built-in `Error` class to fix serialization issues.
+
 ### Changed
 
 -   Made the `email` parameter option in `unverifyEmail`, `revokeEmailVerificationTokens`, `isEmailVerified`, `verifyEmailUsingToken`, `createEmailVerificationToken` of the `EmailVerification` recipe.

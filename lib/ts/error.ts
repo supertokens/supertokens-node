@@ -13,12 +13,11 @@
  * under the License.
  */
 
-export default class SuperTokensError {
+export default class SuperTokensError extends Error {
     private static errMagic = "ndskajfasndlfkj435234krjdsa";
     static BAD_INPUT_ERROR: "BAD_INPUT_ERROR" = "BAD_INPUT_ERROR";
 
     public type: string;
-    public message: string;
     public payload: any;
 
     // this variable is used to identify which
@@ -44,8 +43,8 @@ export default class SuperTokensError {
                   payload: undefined;
               }
     ) {
+        super(options.message);
         this.type = options.type;
-        this.message = options.message;
         this.payload = options.payload;
         this.errMagic = SuperTokensError.errMagic;
     }
