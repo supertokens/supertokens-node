@@ -185,7 +185,7 @@ const plugin: Plugin<{}> = {
                 }
             });
             if ((request.response as Boom).isBoom) {
-                let err = (request.response as Boom).data;
+                let err = (request.response as Boom).data || request.response;
                 let req = new HapiRequest(request);
                 let res = new HapiResponse(h as ExtendedResponseToolkit);
                 if (err !== undefined && err !== null) {
