@@ -19,7 +19,7 @@ export class EmailVerificationClaimClass extends BooleanClaim {
                     // We consider people without email addresses as validated
                     return true;
                 } else {
-                    throw new Error("Should never come here: UNKNOWN_USER_ID or invalid result from getEmailForUserId");
+                    throw new Error("UNKNOWN_USER_ID");
                 }
             },
         });

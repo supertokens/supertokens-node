@@ -174,6 +174,59 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(res2.status === 404);
     });
 
+    it("test that the sign out API clears cookies without session", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+        const app = express();
+        app.use(middleware());
+
+        let res2 = await new Promise((resolve, reject) =>
+            request(app)
+                .post("/auth/signout")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        const infoSignOut = extractInfoFromResponse(res2);
+        assert.deepStrictEqual(infoSignOut, {
+            antiCsrf: undefined,
+            accessToken: "",
+            refreshToken: "",
+            idRefreshTokenFromHeader: "remove",
+            idRefreshTokenFromCookie: "",
+            accessTokenExpiry: "Thu, 01 Jan 1970 00:00:00 GMT",
+            refreshTokenExpiry: "Thu, 01 Jan 1970 00:00:00 GMT",
+            idRefreshTokenExpiry: "Thu, 01 Jan 1970 00:00:00 GMT",
+            accessTokenDomain: undefined,
+            refreshTokenDomain: undefined,
+            idRefreshTokenDomain: undefined,
+            frontToken: undefined,
+            accessTokenHttpOnly: true,
+            refreshTokenHttpOnly: true,
+            idRefreshTokenHttpOnly: true,
+        });
+    });
+
     //- check for token theft detection
     it("express token theft detection", async function () {
         await startST();
