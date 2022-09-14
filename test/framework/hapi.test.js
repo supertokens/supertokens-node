@@ -351,7 +351,8 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
                 "anti-csrf": res.antiCsrf,
             },
         });
-        assert(res3.statusCode === 401);
+
+        assert.strictEqual(res3.statusCode, 401);
         assert.deepStrictEqual(res3.result, { message: "token theft detected" });
 
         let cookies = extractInfoFromResponse(res3);
