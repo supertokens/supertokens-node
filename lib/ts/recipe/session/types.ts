@@ -17,6 +17,7 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { RecipeInterface as JWTRecipeInterface, APIInterface as JWTAPIInterface } from "../jwt/types";
 import OverrideableBuilder from "supertokens-js-override";
 import { RecipeInterface as OpenIdRecipeInterface, APIInterface as OpenIdAPIInterface } from "../openid/types";
+import { JSONObject, JSONValue } from "../../types";
 import { GeneralErrorResponse } from "../../types";
 
 export type KeyInfo = {
@@ -71,6 +72,7 @@ export type CreateOrRefreshAPIResponse = {
 export interface ErrorHandlers {
     onUnauthorised?: ErrorHandlerMiddleware;
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
+    onInvalidClaim?: InvalidClaimErrorHandlerMiddleware;
 }
 
 export type TypeInput = {
@@ -80,6 +82,7 @@ export type TypeInput = {
     cookieDomain?: string;
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+    invalidClaimStatusCode?: number;
     jwt?:
         | {
               enable: true;
@@ -124,6 +127,8 @@ export type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+
+    invalidClaimStatusCode: number;
     jwt: {
         enable: boolean;
         propertyNameInAccessTokenPayload: string;
@@ -170,15 +175,25 @@ export interface TokenTheftErrorHandlerMiddleware {
     (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 
+export interface InvalidClaimErrorHandlerMiddleware {
+    (validatorErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse): Promise<void>;
+}
+
 export interface NormalisedErrorHandlers {
     onUnauthorised: ErrorHandlerMiddleware;
     onTryRefreshToken: ErrorHandlerMiddleware;
     onTokenTheftDetected: TokenTheftErrorHandlerMiddleware;
+    onInvalidClaim: InvalidClaimErrorHandlerMiddleware;
 }
 
 export interface VerifySessionOptions {
     antiCsrfCheck?: boolean;
     sessionRequired?: boolean;
+    overrideGlobalClaimValidators?: (
+        globalClaimValidators: SessionClaimValidator[],
+        session: SessionContainerInterface,
+        userContext: any
+    ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 }
 
 export type RecipeInterface = {
@@ -189,6 +204,12 @@ export type RecipeInterface = {
         sessionData?: any;
         userContext: any;
     }): Promise<SessionContainerInterface>;
+
+    getGlobalClaimValidators(input: {
+        userId: string;
+        claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
+        userContext: any;
+    }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
 
     getSession(input: {
         req: BaseRequest;
@@ -222,14 +243,25 @@ export type RecipeInterface = {
     // Returns false if the sessionHandle does not exist
     updateSessionData(input: { sessionHandle: string; newSessionData: any; userContext: any }): Promise<boolean>;
 
-    // Returns false if the sessionHandle does not exist
+    /**
+     * @deprecated Use mergeIntoAccessTokenPayload instead
+     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
+     */
     updateAccessTokenPayload(input: {
         sessionHandle: string;
         newAccessTokenPayload: any;
         userContext: any;
     }): Promise<boolean>;
 
-    // Returns undefined if the sessionHandle does not exist
+    mergeIntoAccessTokenPayload(input: {
+        sessionHandle: string;
+        accessTokenPayloadUpdate: JSONObject;
+        userContext: any;
+    }): Promise<boolean>;
+
+    /**
+     * @returns {Promise<boolean>} Returns false if the sessionHandle does not exist
+     */
     regenerateAccessToken(input: {
         accessToken: string;
         newAccessTokenPayload?: any;
@@ -254,6 +286,50 @@ export type RecipeInterface = {
     getAccessTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
 
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
+
+    validateClaims(input: {
+        userId: string;
+        accessTokenPayload: any;
+        claimValidators: SessionClaimValidator[];
+        userContext: any;
+    }): Promise<{
+        invalidClaims: ClaimValidationError[];
+        accessTokenPayloadUpdate?: any;
+    }>;
+
+    validateClaimsInJWTPayload(input: {
+        userId: string;
+        jwtPayload: JSONObject;
+        claimValidators: SessionClaimValidator[];
+        userContext: any;
+    }): Promise<{
+        status: "OK";
+        invalidClaims: ClaimValidationError[];
+    }>;
+
+    fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
+    setClaimValue<T>(input: {
+        sessionHandle: string;
+        claim: SessionClaim<T>;
+        value: T;
+        userContext: any;
+    }): Promise<boolean>;
+
+    getClaimValue<T>(input: {
+        sessionHandle: string;
+        claim: SessionClaim<T>;
+        userContext: any;
+    }): Promise<
+        | {
+              status: "SESSION_DOES_NOT_EXIST_ERROR";
+          }
+        | {
+              status: "OK";
+              value: T | undefined;
+          }
+    >;
+
+    removeClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
 };
 
 export interface SessionContainerInterface {
@@ -271,11 +347,21 @@ export interface SessionContainerInterface {
 
     getAccessToken(userContext?: any): string;
 
+    /**
+     * @deprecated Use mergeIntoAccessTokenPayload instead
+     */
     updateAccessTokenPayload(newAccessTokenPayload: any, userContext?: any): Promise<void>;
+    mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: JSONObject, userContext?: any): Promise<void>;
 
     getTimeCreated(userContext?: any): Promise<number>;
 
     getExpiry(userContext?: any): Promise<number>;
+
+    assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void>;
+    fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void>;
+    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void>;
+    getClaimValue<T>(claim: SessionClaim<T>, userContext?: any): Promise<T | undefined>;
+    removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void>;
 }
 
 export type APIOptions = {
@@ -293,12 +379,17 @@ export type APIInterface = {
      * since it's not something that is directly called by the user on the
      * frontend anyway
      */
-    refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<void>);
+    refreshPOST: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<SessionContainerInterface>);
 
     signOutPOST:
         | undefined
         | ((input: {
               options: APIOptions;
+              // the reason we make this optional is cause it allows users to do something in
+              // case a session does not exist and the sign out button is pressed. It is
+              // rare that something needs to be done in this case, but making it like this
+              // has little disadvantages.
+              session: SessionContainerInterface | undefined;
               userContext: any;
           }) => Promise<
               | {
@@ -322,3 +413,77 @@ export type SessionInformation = {
     accessTokenPayload: any;
     timeCreated: number;
 };
+
+export type ClaimValidationResult = { isValid: true } | { isValid: false; reason?: JSONValue };
+export type ClaimValidationError = {
+    id: string;
+    reason?: JSONValue;
+};
+
+export type SessionClaimValidator = (
+    | // We split the type like this to express that either both claim and shouldRefetch is defined or neither.
+    {
+          claim: SessionClaim<any>;
+          /**
+           * Decides if we need to refetch the claim value before checking the payload with `isValid`.
+           * E.g.: if the information in the payload is expired, or is not sufficient for this check.
+           */
+          shouldRefetch: (payload: any, userContext: any) => Promise<boolean> | boolean;
+      }
+    | {}
+) & {
+    id: string;
+    /**
+     * Decides if the claim is valid based on the payload (and not checking DB or anything else)
+     */
+    validate: (payload: any, userContext: any) => Promise<ClaimValidationResult>;
+};
+
+export abstract class SessionClaim<T> {
+    constructor(public readonly key: string) {}
+
+    /**
+     * This methods fetches the current value of this claim for the user.
+     * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
+     * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
+     */
+    abstract fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
+
+    /**
+     * Saves the provided value into the payload, by cloning and updating the entire object.
+     *
+     * @returns The modified payload object
+     */
+    abstract addToPayload_internal(payload: JSONObject, value: T, userContext: any): JSONObject;
+
+    /**
+     * Removes the claim from the payload by setting it to null, so mergeIntoAccessTokenPayload clears it
+     *
+     * @returns The modified payload object
+     */
+    abstract removeFromPayloadByMerge_internal(payload: JSONObject, userContext?: any): JSONObject;
+
+    /**
+     * Removes the claim from the payload, by cloning and updating the entire object.
+     *
+     * @returns The modified payload object
+     */
+    abstract removeFromPayload(payload: JSONObject, userContext?: any): JSONObject;
+
+    /**
+     * Gets the value of the claim stored in the payload
+     *
+     * @returns Claim value
+     */
+    abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
+
+    async build(userId: string, userContext?: any): Promise<JSONObject> {
+        const value = await this.fetchValue(userId, userContext);
+
+        if (value === undefined) {
+            return {};
+        }
+
+        return this.addToPayload_internal({}, value, userContext);
+    }
+}

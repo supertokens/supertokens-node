@@ -6,6 +6,7 @@ const { ProcessState } = require("../../lib/build/processState");
 const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
 const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
+const { default: SessionRecipe } = require("../../lib/build/recipe/session/recipe");
 
 describe(`getRolesThatHavePermissions: ${printPath(
     "[test/userroles/getRolesThatHavePermissions.test.js]"
@@ -34,7 +35,7 @@ describe(`getRolesThatHavePermissions: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRolesRecipe.init()],
+                recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
             // Only run for version >= 2.14
@@ -76,7 +77,7 @@ describe(`getRolesThatHavePermissions: ${printPath(
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRolesRecipe.init()],
+                recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
             // Only run for version >= 2.14

@@ -103,8 +103,8 @@ describe(`getUsersByEmail: ${printPath("[test/thirdpartypasswordless/getUsersByE
             return;
         }
 
-        await thirdPartySignInUp("mock", "thirdPartyJohnDoe", { id: "john.doe@example.com", isVerified: true });
-        await thirdPartySignInUp("mock2", "thirdPartyDaveDoe", { id: "john.doe@example.com", isVerified: false });
+        await thirdPartySignInUp("mock", "thirdPartyJohnDoe", "john.doe@example.com");
+        await thirdPartySignInUp("mock2", "thirdPartyDaveDoe", "john.doe@example.com");
 
         const thirdPartyUsers = await getUsersByEmail("john.doe@example.com");
 

@@ -1,6 +1,7 @@
 // @ts-nocheck
+import { JSONObject } from "../../types";
 import Recipe from "./recipe";
-import { RecipeInterface, JSONObject } from "./types";
+import { RecipeInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
     static getUserMetadata(

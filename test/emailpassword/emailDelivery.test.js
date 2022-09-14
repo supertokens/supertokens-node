@@ -18,7 +18,8 @@ let Session = require("../../recipe/session");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let EmailPassword = require("../../recipe/emailpassword");
-let { STMPService } = require("../../recipe/emailpassword/emaildelivery");
+const EmailVerification = require("../../recipe/emailverification");
+let { SMTPService } = require("../../recipe/emailpassword/emaildelivery");
 let nock = require("nock");
 let supertest = require("supertest");
 const { middleware, errorHandler } = require("../../framework/express");
@@ -359,7 +360,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
             recipeList: [
                 EmailPassword.init({
                     emailDelivery: {
-                        service: new STMPService({
+                        service: new SMTPService({
                             smtpSettings: {
                                 host: "",
                                 from: {
@@ -445,7 +446,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailVerification.init({ mode: "OPTIONAL" }), EmailPassword.init(), Session.init()],
             telemetry: false,
         });
 
@@ -478,7 +479,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
 
         await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "emailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
 
@@ -500,7 +501,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 appName: "SuperTokens",
                 websiteDomain: "supertokens.io",
             },
-            recipeList: [EmailPassword.init(), Session.init()],
+            recipeList: [EmailVerification.init({ mode: "OPTIONAL" }), EmailPassword.init(), Session.init()],
             telemetry: false,
         });
 
@@ -533,7 +534,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
 
         let result = await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "emailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
 
@@ -549,7 +550,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
         await startST();
         let email = undefined;
         let emailVerifyURL = undefined;
-        let timeJoined = undefined;
+        let userIdInCb = undefined;
         STExpress.init({
             supertokens: {
                 connectionURI: "http://localhost:8080",
@@ -560,15 +561,14 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
-                    emailVerificationFeature: {
-                        createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
-                            email = input.email;
-                            emailVerifyURL = emailVerificationURLWithToken;
-                            timeJoined = input.timeJoined;
-                        },
+                EmailVerification.init({
+                    createAndSendCustomEmail: async (input, emailVerificationURLWithToken) => {
+                        email = input.email;
+                        userIdInCb = input.id;
+                        emailVerifyURL = emailVerificationURLWithToken;
                     },
                 }),
+                EmailPassword.init(),
                 Session.init(),
             ],
             telemetry: false,
@@ -588,13 +588,13 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
 
         await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "emailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
         await delay(2);
         assert.strictEqual(email, "test@example.com");
+        assert.strictEqual(userIdInCb, user.user.id);
         assert.notStrictEqual(emailVerifyURL, undefined);
-        assert.notStrictEqual(timeJoined, undefined);
     });
 
     it("test custom override: email verify", async function () {
@@ -613,7 +613,8 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
+                EmailVerification.init({
+                    mode: "OPTIONAL",
                     emailDelivery: {
                         override: (oI) => {
                             return {
@@ -627,6 +628,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                         },
                     },
                 }),
+                EmailPassword.init(),
                 Session.init(),
             ],
             telemetry: false,
@@ -655,7 +657,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
 
         await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "emailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
 
@@ -685,9 +687,10 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
-                EmailPassword.init({
+                EmailVerification.init({
+                    mode: "OPTIONAL",
                     emailDelivery: {
-                        service: new STMPService({
+                        service: new SMTPService({
                             smtpSettings: {
                                 host: "",
                                 from: {
@@ -730,6 +733,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
                         },
                     },
                 }),
+                EmailPassword.init(),
                 Session.init(),
             ],
             telemetry: false,
@@ -749,7 +753,7 @@ describe(`emailDelivery: ${printPath("[test/emailpassword/emailDelivery.test.js]
 
         await supertest(app)
             .post("/auth/user/email/verify/token")
-            .set("rid", "emailpassword")
+            .set("rid", "emailverification")
             .set("Cookie", ["sAccessToken=" + res.accessToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
             .expect(200);
 

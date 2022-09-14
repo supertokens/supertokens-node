@@ -2,17 +2,11 @@
 import Recipe from "./recipe";
 import { TypeInput, TypeNormalisedInput, NormalisedFormField, TypeInputFormField } from "./types";
 import { NormalisedAppinfo } from "../../types";
-import { TypeInput as TypeNormalisedInputEmailVerification } from "../emailverification/types";
 export declare function validateAndNormaliseUserInput(
     recipeInstance: Recipe,
     appInfo: NormalisedAppinfo,
     config?: TypeInput
 ): TypeNormalisedInput;
-export declare function validateAndNormaliseEmailVerificationConfig(
-    recipeInstance: Recipe,
-    _: NormalisedAppinfo,
-    config?: TypeInput
-): TypeNormalisedInputEmailVerification;
 export declare function normaliseSignUpFormFields(formFields?: TypeInputFormField[]): NormalisedFormField[];
 export declare function defaultPasswordValidator(
     value: any

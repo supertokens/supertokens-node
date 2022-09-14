@@ -5,9 +5,10 @@ import { RecipeInterface, APIOptions, APIInterface, User, TypeEmailVerificationE
 export default class Wrapper {
     static init: typeof Recipe.init;
     static Error: typeof SuperTokensError;
+    static EmailVerificationClaim: import("./emailVerificationClaim").EmailVerificationClaimClass;
     static createEmailVerificationToken(
         userId: string,
-        email: string,
+        email?: string,
         userContext?: any
     ): Promise<
         | {
@@ -30,20 +31,20 @@ export default class Wrapper {
               status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
           }
     >;
-    static isEmailVerified(userId: string, email: string, userContext?: any): Promise<boolean>;
+    static isEmailVerified(userId: string, email?: string, userContext?: any): Promise<boolean>;
     static revokeEmailVerificationTokens(
         userId: string,
-        email: string,
+        email?: string,
         userContext?: any
     ): Promise<{
-        status: "OK";
+        status: string;
     }>;
     static unverifyEmail(
         userId: string,
-        email: string,
+        email?: string,
         userContext?: any
     ): Promise<{
-        status: "OK";
+        status: string;
     }>;
     static sendEmail(
         input: TypeEmailVerificationEmailDeliveryInput & {
@@ -60,3 +61,4 @@ export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVeri
 export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
 export type { RecipeInterface, APIOptions, APIInterface, User };
 export declare let sendEmail: typeof Wrapper.sendEmail;
+export { EmailVerificationClaim } from "./emailVerificationClaim";

@@ -29,6 +29,8 @@ export function validateAndNormaliseUserInput(
     };
 
     return {
+        skipAddingRolesToAccessToken: config?.skipAddingRolesToAccessToken === true,
+        skipAddingPermissionsToAccessToken: config?.skipAddingPermissionsToAccessToken === true,
         override,
     };
 }

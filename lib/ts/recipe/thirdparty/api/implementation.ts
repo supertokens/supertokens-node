@@ -5,6 +5,7 @@ import * as axios from "axios";
 import * as qs from "querystring";
 import { SessionContainerInterface } from "../../session/types";
 import { GeneralErrorResponse } from "../../../types";
+import EmailVerification from "../../emailverification/recipe";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -149,24 +150,29 @@ export default function getAPIInterface(): APIInterface {
             let response = await options.recipeImplementation.signInUp({
                 thirdPartyId: provider.id,
                 thirdPartyUserId: userInfo.id,
-                email: emailInfo,
+                email: emailInfo.id,
                 userContext,
             });
 
             // we set the email as verified if already verified by the OAuth provider.
             // This block was added because of https://github.com/supertokens/supertokens-core/issues/295
             if (emailInfo.isVerified) {
-                const tokenResponse = await options.emailVerificationRecipeImplementation.createEmailVerificationToken({
-                    userId: response.user.id,
-                    email: response.user.email,
-                    userContext,
-                });
+                const emailVerificationInstance = EmailVerification.getInstance();
+                if (emailVerificationInstance) {
+                    const tokenResponse = await emailVerificationInstance.recipeInterfaceImpl.createEmailVerificationToken(
+                        {
+                            userId: response.user.id,
+                            email: response.user.email,
+                            userContext,
+                        }
+                    );
 
-                if (tokenResponse.status === "OK") {
-                    await options.emailVerificationRecipeImplementation.verifyEmailUsingToken({
-                        token: tokenResponse.token,
-                        userContext,
-                    });
+                    if (tokenResponse.status === "OK") {
+                        await emailVerificationInstance.recipeInterfaceImpl.verifyEmailUsingToken({
+                            token: tokenResponse.token,
+                            userContext,
+                        });
+                    }
                 }
             }
 

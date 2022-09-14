@@ -15,7 +15,12 @@
 
 import { TypeInput, NormalisedAppinfo, HTTPMethod, SuperTokensInfo } from "./types";
 import axios from "axios";
-import { normaliseInputAppInfoOrThrowError, maxVersion, normaliseHttpMethod, sendNon200Response } from "./utils";
+import {
+    normaliseInputAppInfoOrThrowError,
+    maxVersion,
+    normaliseHttpMethod,
+    sendNon200ResponseWithMessage,
+} from "./utils";
 import { Querier } from "./querier";
 import RecipeModule from "./recipeModule";
 import { HEADER_RID, HEADER_FDI } from "./constants";
@@ -25,6 +30,7 @@ import { BaseRequest, BaseResponse } from "./framework";
 import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
+import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -117,6 +123,7 @@ export default class SuperTokens {
     static init(config: TypeInput) {
         if (SuperTokens.instance === undefined) {
             SuperTokens.instance = new SuperTokens(config);
+            PostSuperTokensInitCallbacks.runPostInitCallbacks();
         }
     }
 
@@ -419,7 +426,7 @@ export default class SuperTokens {
             logDebugMessage("errorHandler: Error is from SuperTokens recipe. Message: " + err.message);
             if (err.type === STError.BAD_INPUT_ERROR) {
                 logDebugMessage("errorHandler: Sending 400 status code response");
-                return sendNon200Response(response, err.message, 400);
+                return sendNon200ResponseWithMessage(response, err.message, 400);
             }
 
             for (let i = 0; i < this.recipeModules.length; i++) {

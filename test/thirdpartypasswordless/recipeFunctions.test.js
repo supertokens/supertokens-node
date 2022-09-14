@@ -18,8 +18,9 @@ let Session = require("../../recipe/session");
 let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
-let SuperTokens = require("../../lib/build/supertokens").default;
+const EmailVerification = require("../../recipe/emailverification");
 let { isCDIVersionCompatible } = require("../utils");
+
 describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunctions.test.js]")}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -47,9 +48,11 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             },
             recipeList: [
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+                    providers: [/** @type {any} */ {}],
                     createAndSendCustomEmail: (input) => {
                         return;
                     },
@@ -66,25 +69,27 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
         }
 
         // create a ThirdParty user with a verified email
-        let response = await ThirdPartyPasswordless.thirdPartySignInUp("customProvider", "verifiedUser", {
-            id: "test@example.com",
-            isVerified: true,
-        });
+        let response = await ThirdPartyPasswordless.thirdPartySignInUp(
+            "customProvider",
+            "verifiedUser",
+            "test@example.com"
+        );
 
         // verify the user's email
-        let emailVerificationToken = await ThirdPartyPasswordless.createEmailVerificationToken(response.user.id);
-        await ThirdPartyPasswordless.verifyEmailUsingToken(emailVerificationToken.token);
+        let emailVerificationToken = await EmailVerification.createEmailVerificationToken(response.user.id);
+        await EmailVerification.verifyEmailUsingToken(emailVerificationToken.token);
 
         // check that the ThirdParty user's email is verified
-        assert(await ThirdPartyPasswordless.isEmailVerified(response.user.id));
+        assert(await EmailVerification.isEmailVerified(response.user.id));
 
         // create a ThirdParty user with an unverfied email and check that it is not verified
-        let response2 = await ThirdPartyPasswordless.thirdPartySignInUp("customProvider2", "NotVerifiedUser", {
-            id: "test@example.com",
-            isVerified: false,
-        });
+        let response2 = await ThirdPartyPasswordless.thirdPartySignInUp(
+            "customProvider2",
+            "NotVerifiedUser",
+            "test@example.com"
+        );
 
-        assert(!(await ThirdPartyPasswordless.isEmailVerified(response2.user.id)));
+        assert(!(await EmailVerification.isEmailVerified(response2.user.id)));
     });
 
     it("test with thirdPartyPasswordless, for Passwordless user that isEmailVerified returns true for both email and phone", async function () {
@@ -101,6 +106,7 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             },
             recipeList: [
                 Session.init(),
+                EmailVerification.init({ mode: "OPTIONAL" }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL_OR_PHONE",
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
@@ -124,12 +130,16 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             email: "test@example.com",
         });
 
-        // check that the Passwordless user's email is verified
-        assert(await ThirdPartyPasswordless.isEmailVerified(response.user.id));
+        // verify the user's email
+        let emailVerificationToken = await EmailVerification.createEmailVerificationToken(response.user.id);
+        await EmailVerification.verifyEmailUsingToken(emailVerificationToken.token);
 
-        // check that creating an email verification with passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
+        // check that the Passwordless user's email is verified
+        assert(await EmailVerification.isEmailVerified(response.user.id));
+
+        // check that creating an email verification with a verified passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
         assert(
-            (await ThirdPartyPasswordless.createEmailVerificationToken(response.user.id)).status ===
+            (await EmailVerification.createEmailVerificationToken(response.user.id)).status ===
                 "EMAIL_ALREADY_VERIFIED_ERROR"
         );
 
@@ -138,12 +148,13 @@ describe(`recipeFunctions: ${printPath("[test/thirdpartypasswordless/recipeFunct
             phoneNumber: "+123456789012",
         });
 
-        assert(await ThirdPartyPasswordless.isEmailVerified(response2.user.id));
+        // check that the Passwordless phone number user's is automatically verified
+        assert(await EmailVerification.isEmailVerified(response2.user.id));
 
-        // check that creating an email verification with passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
-        assert(
-            (await ThirdPartyPasswordless.createEmailVerificationToken(response2.user.id)).status ===
-                "EMAIL_ALREADY_VERIFIED_ERROR"
+        // check that creating an email verification with a phone-based passwordless user should return EMAIL_ALREADY_VERIFIED_ERROR
+        assert.equal(
+            (await EmailVerification.createEmailVerificationToken(response2.user.id)).status,
+            "EMAIL_ALREADY_VERIFIED_ERROR"
         );
     });
 

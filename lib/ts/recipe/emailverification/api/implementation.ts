@@ -1,30 +1,30 @@
-import { APIInterface, APIOptions, User } from "../";
+import { APIInterface, User } from "../";
 import { logDebugMessage } from "../../../logger";
-import Session from "../../session";
+import EmailVerificationRecipe from "../recipe";
 import { GeneralErrorResponse } from "../../../types";
+import { EmailVerificationClaim } from "../emailVerificationClaim";
 
 export default function getAPIInterface(): APIInterface {
     return {
         verifyEmailPOST: async function ({
             token,
             options,
+            session,
             userContext,
-        }: {
-            token: string;
-            options: APIOptions;
-            userContext: any;
         }): Promise<
             { status: "OK"; user: User } | { status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR" } | GeneralErrorResponse
         > {
-            return await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
+            const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
+
+            if (res.status === "OK" && session !== undefined) {
+                await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+            }
+            return res;
         },
 
         isEmailVerifiedGET: async function ({
-            options,
             userContext,
-        }: {
-            options: APIOptions;
-            userContext: any;
+            session,
         }): Promise<
             | {
                   status: "OK";
@@ -32,71 +32,86 @@ export default function getAPIInterface(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            let session = await Session.getSession(options.req, options.res, userContext);
-
             if (session === undefined) {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            let userId = session.getUserId();
+            await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+            const isVerified = await session.getClaimValue(EmailVerificationClaim, userContext);
 
-            let email = await options.config.getEmailForUserId(userId, userContext);
+            if (isVerified === undefined) {
+                throw new Error("Should never come here: EmailVerificationClaim failed to set value");
+            }
 
             return {
                 status: "OK",
-                isVerified: await options.recipeImplementation.isEmailVerified({ userId, email, userContext }),
+                isVerified,
             };
         },
 
         generateEmailVerifyTokenPOST: async function ({
             options,
             userContext,
-        }: {
-            options: APIOptions;
-            userContext: any;
+            session,
         }): Promise<{ status: "OK" | "EMAIL_ALREADY_VERIFIED_ERROR" } | GeneralErrorResponse> {
-            let session = await Session.getSession(options.req, options.res, userContext);
-
             if (session === undefined) {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            let userId = session.getUserId();
+            const userId = session.getUserId();
 
-            let email = await options.config.getEmailForUserId(userId, userContext);
-
-            let response = await options.recipeImplementation.createEmailVerificationToken({
+            const emailInfo = await EmailVerificationRecipe.getInstanceOrThrowError().getEmailForUserId(
                 userId,
-                email,
-                userContext,
-            });
+                userContext
+            );
 
-            if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
-                logDebugMessage(`Email verification email not sent to ${email} because it is already verified.`);
-                return response;
+            if (emailInfo.status === "EMAIL_DOES_NOT_EXIST_ERROR") {
+                logDebugMessage(
+                    `Email verification email not sent to user ${userId} because it doesn't have an email address.`
+                );
+                return {
+                    status: "EMAIL_ALREADY_VERIFIED_ERROR",
+                };
+            } else if (emailInfo.status === "OK") {
+                let response = await options.recipeImplementation.createEmailVerificationToken({
+                    userId,
+                    email: emailInfo.email,
+                    userContext,
+                });
+
+                if (response.status === "EMAIL_ALREADY_VERIFIED_ERROR") {
+                    logDebugMessage(
+                        `Email verification email not sent to ${emailInfo.email} because it is already verified.`
+                    );
+                    return response;
+                }
+
+                let emailVerifyLink =
+                    options.appInfo.websiteDomain.getAsStringDangerous() +
+                    options.appInfo.websiteBasePath.getAsStringDangerous() +
+                    "/verify-email" +
+                    "?token=" +
+                    response.token +
+                    "&rid=" +
+                    options.recipeId;
+
+                logDebugMessage(`Sending email verification email to ${emailInfo}`);
+                await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
+                    type: "EMAIL_VERIFICATION",
+                    user: {
+                        id: userId,
+                        email: emailInfo.email,
+                    },
+                    emailVerifyLink,
+                    userContext,
+                });
+
+                return {
+                    status: "OK",
+                };
+            } else {
+                throw new Error("Should never come here: UNKNOWN_USER_ID or invalid result from getEmailForUserId");
             }
-
-            let emailVerifyLink =
-                (await options.config.getEmailVerificationURL({ id: userId, email }, userContext)) +
-                "?token=" +
-                response.token +
-                "&rid=" +
-                options.recipeId;
-
-            logDebugMessage(`Sending email verification email to ${email}`);
-            await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
-                type: "EMAIL_VERIFICATION",
-                user: {
-                    id: userId,
-                    email: email,
-                },
-                emailVerifyLink,
-                userContext,
-            });
-
-            return {
-                status: "OK",
-            };
         },
     };
 }

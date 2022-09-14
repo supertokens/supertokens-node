@@ -1,18 +1,8 @@
 // @ts-nocheck
-import {
-    RecipeInterface as EmailVerificationRecipeInterface,
-    APIInterface as EmailVerificationAPIInterface,
-} from "../emailverification";
-import { TypeInput as TypeInputEmailVerification } from "../emailverification/types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
 import OverrideableBuilder from "supertokens-js-override";
 import { SessionContainerInterface } from "../session/types";
-import {
-    TypeInput as EmailDeliveryTypeInput,
-    TypeInputWithService as EmailDeliveryTypeInputWithService,
-} from "../../ingredients/emaildelivery/types";
-import { TypeEmailVerificationEmailDeliveryInput } from "../emailverification/types";
 import { GeneralErrorResponse } from "../../types";
 export declare type UserInfo = {
     id: string;
@@ -56,13 +46,6 @@ export declare type User = {
         userId: string;
     };
 };
-export declare type TypeInputEmailVerificationFeature = {
-    getEmailVerificationURL?: (user: User, userContext: any) => Promise<string>;
-    /**
-     * @deprecated Please use emailDelivery config instead
-     */
-    createAndSendCustomEmail?: (user: User, emailVerificationURLWithToken: string, userContext: any) => Promise<void>;
-};
 export declare type TypeInputSignInAndUp = {
     providers: TypeProvider[];
 };
@@ -71,49 +54,22 @@ export declare type TypeNormalisedInputSignInAndUp = {
 };
 export declare type TypeInput = {
     signInAndUpFeature: TypeInputSignInAndUp;
-    emailDelivery?: EmailDeliveryTypeInput<TypeThirdPartyEmailDeliveryInput>;
-    emailVerificationFeature?: TypeInputEmailVerificationFeature;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis?: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 export declare type TypeNormalisedInput = {
-    getEmailDeliveryConfig: (
-        recipeImpl: RecipeInterface,
-        isInServerlessEnv: boolean
-    ) => EmailDeliveryTypeInputWithService<TypeThirdPartyEmailDeliveryInput>;
     signInAndUpFeature: TypeNormalisedInputSignInAndUp;
-    emailVerificationFeature: TypeInputEmailVerification;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
             builder?: OverrideableBuilder<RecipeInterface>
         ) => RecipeInterface;
         apis: (originalImplementation: APIInterface, builder?: OverrideableBuilder<APIInterface>) => APIInterface;
-        emailVerificationFeature?: {
-            functions?: (
-                originalImplementation: EmailVerificationRecipeInterface,
-                builder?: OverrideableBuilder<EmailVerificationRecipeInterface>
-            ) => EmailVerificationRecipeInterface;
-            apis?: (
-                originalImplementation: EmailVerificationAPIInterface,
-                builder?: OverrideableBuilder<EmailVerificationAPIInterface>
-            ) => EmailVerificationAPIInterface;
-        };
     };
 };
 export declare type RecipeInterface = {
@@ -127,10 +83,7 @@ export declare type RecipeInterface = {
     signInUp(input: {
         thirdPartyId: string;
         thirdPartyUserId: string;
-        email: {
-            id: string;
-            isVerified: boolean;
-        };
+        email: string;
         userContext: any;
     }): Promise<{
         status: "OK";
@@ -140,7 +93,6 @@ export declare type RecipeInterface = {
 };
 export declare type APIOptions = {
     recipeImplementation: RecipeInterface;
-    emailVerificationRecipeImplementation: EmailVerificationRecipeInterface;
     config: TypeNormalisedInput;
     recipeId: string;
     isInServerlessEnv: boolean;
@@ -190,4 +142,3 @@ export declare type APIInterface = {
         | undefined
         | ((input: { code: string; state: string; options: APIOptions; userContext: any }) => Promise<void>);
 };
-export declare type TypeThirdPartyEmailDeliveryInput = TypeEmailVerificationEmailDeliveryInput;

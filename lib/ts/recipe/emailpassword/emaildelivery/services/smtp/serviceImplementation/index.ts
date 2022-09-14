@@ -21,8 +21,6 @@ import {
     GetContentResult,
 } from "../../../../../../ingredients/emaildelivery/services/smtp";
 import getPasswordResetEmailContent from "../passwordReset";
-import { getServiceImplementation as getEmailVerificationServiceImplementation } from "../../../../../emailverification/emaildelivery/services/smtp/serviceImplementation";
-import DerivedEV from "./emailVerificationServiceImplementation";
 
 export function getServiceImplementation(
     transporter: Transporter,
@@ -31,7 +29,6 @@ export function getServiceImplementation(
         email: string;
     }
 ): ServiceInterface<TypeEmailPasswordEmailDeliveryInput> {
-    let emailVerificationServiceImpl = getEmailVerificationServiceImplementation(transporter, from);
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
             if (input.isHtml) {
@@ -53,9 +50,6 @@ export function getServiceImplementation(
         getContent: async function (
             input: TypeEmailPasswordEmailDeliveryInput & { userContext: any }
         ): Promise<GetContentResult> {
-            if (input.type === "EMAIL_VERIFICATION") {
-                return await emailVerificationServiceImpl.getContent.bind(DerivedEV(this))(input);
-            }
             return getPasswordResetEmailContent(input);
         },
     };

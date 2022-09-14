@@ -11,15 +11,12 @@ export default function getRecipeImplementation(querier: Querier): RecipeInterfa
         }: {
             thirdPartyId: string;
             thirdPartyUserId: string;
-            email: {
-                id: string;
-                isVerified: boolean;
-            };
+            email: string;
         }): Promise<{ status: "OK"; createdNewUser: boolean; user: User }> {
             let response = await querier.sendPostRequest(new NormalisedURLPath("/recipe/signinup"), {
                 thirdPartyId,
                 thirdPartyUserId,
-                email,
+                email: { id: email },
             });
             return {
                 status: "OK",

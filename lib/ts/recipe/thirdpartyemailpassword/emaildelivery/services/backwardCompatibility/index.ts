@@ -12,21 +12,17 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { TypeThirdPartyEmailPasswordEmailDeliveryInput, User, RecipeInterface } from "../../../types";
+import { TypeThirdPartyEmailPasswordEmailDeliveryInput, User } from "../../../types";
 import { RecipeInterface as EmailPasswordRecipeInterface } from "../../../../emailpassword";
-import { User as EmailVerificationUser } from "../../../../emailverification/types";
 import { NormalisedAppinfo } from "../../../../../types";
-import EmailVerificationBackwardCompatibilityService from "../../../../emailverification/emaildelivery/services/backwardCompatibility";
 import EmailPasswordBackwardCompatibilityService from "../../../../emailpassword/emaildelivery/services/backwardCompatibility";
 import { EmailDeliveryInterface } from "../../../../../ingredients/emaildelivery/types";
 
 export default class BackwardCompatibilityService
     implements EmailDeliveryInterface<TypeThirdPartyEmailPasswordEmailDeliveryInput> {
     private emailPasswordBackwardCompatibilityService: EmailPasswordBackwardCompatibilityService;
-    private emailVerificationBackwardCompatibilityService: EmailVerificationBackwardCompatibilityService;
 
     constructor(
-        recipeInterfaceImpl: RecipeInterface,
         emailPasswordRecipeInterfaceImpl: EmailPasswordRecipeInterface,
         appInfo: NormalisedAppinfo,
         isInServerlessEnv: boolean,
@@ -36,58 +32,19 @@ export default class BackwardCompatibilityService
                 passwordResetURLWithToken: string,
                 userContext: any
             ) => Promise<void>;
-        },
-        emailVerificationFeature?: {
-            createAndSendCustomEmail?: (
-                user: User,
-                emailVerificationURLWithToken: string,
-                userContext: any
-            ) => Promise<void>;
         }
     ) {
-        {
-            const inputCreateAndSendCustomEmail = emailVerificationFeature?.createAndSendCustomEmail;
-            let emailVerificationFeatureNormalisedConfig =
-                inputCreateAndSendCustomEmail !== undefined
-                    ? {
-                          createAndSendCustomEmail: async (
-                              user: EmailVerificationUser,
-                              link: string,
-                              userContext: any
-                          ) => {
-                              let userInfo = await recipeInterfaceImpl.getUserById({
-                                  userId: user.id,
-                                  userContext,
-                              });
-                              if (userInfo === undefined) {
-                                  throw new Error("Unknown User ID provided");
-                              }
-                              return await inputCreateAndSendCustomEmail(userInfo, link, userContext);
-                          },
-                      }
-                    : {};
-            this.emailVerificationBackwardCompatibilityService = new EmailVerificationBackwardCompatibilityService(
-                appInfo,
-                isInServerlessEnv,
-                emailVerificationFeatureNormalisedConfig.createAndSendCustomEmail
-            );
-        }
         {
             this.emailPasswordBackwardCompatibilityService = new EmailPasswordBackwardCompatibilityService(
                 emailPasswordRecipeInterfaceImpl,
                 appInfo,
                 isInServerlessEnv,
-                resetPasswordUsingTokenFeature,
-                emailVerificationFeature
+                resetPasswordUsingTokenFeature
             );
         }
     }
 
     sendEmail = async (input: TypeThirdPartyEmailPasswordEmailDeliveryInput & { userContext: any }) => {
-        if (input.type === "EMAIL_VERIFICATION") {
-            await this.emailVerificationBackwardCompatibilityService.sendEmail(input);
-        } else {
-            await this.emailPasswordBackwardCompatibilityService.sendEmail(input);
-        }
+        await this.emailPasswordBackwardCompatibilityService.sendEmail(input);
     };
 }

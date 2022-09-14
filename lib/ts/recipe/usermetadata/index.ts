@@ -13,8 +13,9 @@
  * under the License.
  */
 
+import { JSONObject } from "../../types";
 import Recipe from "./recipe";
-import { RecipeInterface, JSONObject } from "./types";
+import { RecipeInterface } from "./types";
 
 export default class Wrapper {
     static init = Recipe.init;

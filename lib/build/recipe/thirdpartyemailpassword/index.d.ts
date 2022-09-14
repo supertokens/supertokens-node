@@ -10,10 +10,7 @@ export default class Wrapper {
     static thirdPartySignInUp(
         thirdPartyId: string,
         thirdPartyUserId: string,
-        email: {
-            id: string;
-            isVerified: boolean;
-        },
+        email: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -86,41 +83,6 @@ export default class Wrapper {
     }): Promise<{
         status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
     }>;
-    static createEmailVerificationToken(
-        userId: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "EMAIL_ALREADY_VERIFIED_ERROR";
-          }
-    >;
-    static verifyEmailUsingToken(
-        token: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-          }
-        | User
-        | undefined
-    >;
-    static isEmailVerified(userId: string, userContext?: any): Promise<boolean>;
-    static revokeEmailVerificationTokens(
-        userId: string,
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-    }>;
-    static unverifyEmail(
-        userId: string,
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-    }>;
     static Google: typeof import("../thirdparty/providers/google").default;
     static Github: typeof import("../thirdparty/providers/github").default;
     static Facebook: typeof import("../thirdparty/providers/facebook").default;
@@ -143,11 +105,6 @@ export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyIn
 export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
-export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
-export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
-export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
-export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
-export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
 export declare let Google: typeof import("../thirdparty/providers/google").default;
 export declare let Github: typeof import("../thirdparty/providers/github").default;

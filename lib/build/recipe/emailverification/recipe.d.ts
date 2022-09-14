@@ -1,6 +1,6 @@
 // @ts-nocheck
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForUserIdFunc } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -15,6 +15,7 @@ export default class Recipe extends RecipeModule {
     apiImpl: APIInterface;
     isInServerlessEnv: boolean;
     emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
+    getEmailForUserIdFuncsFromOtherRecipes: GetEmailForUserIdFunc[];
     constructor(
         recipeId: string,
         appInfo: NormalisedAppinfo,
@@ -25,6 +26,7 @@ export default class Recipe extends RecipeModule {
         }
     );
     static getInstanceOrThrowError(): Recipe;
+    static getInstance(): Recipe | undefined;
     static init(config: TypeInput): RecipeListFunction;
     static reset(): void;
     getAPIsHandled: () => APIHandled[];
@@ -38,4 +40,6 @@ export default class Recipe extends RecipeModule {
     handleError: (err: STError, _: BaseRequest, __: BaseResponse) => Promise<void>;
     getAllCORSHeaders: () => string[];
     isErrorFromThisRecipe: (err: any) => err is STError;
+    getEmailForUserId: GetEmailForUserIdFunc;
+    addGetEmailForUserIdFunc: (func: GetEmailForUserIdFunc) => void;
 }

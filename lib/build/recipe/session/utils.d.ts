@@ -1,5 +1,13 @@
 // @ts-nocheck
-import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput } from "./types";
+import {
+    CreateOrRefreshAPIResponse,
+    TypeInput,
+    TypeNormalisedInput,
+    ClaimValidationError,
+    SessionClaimValidator,
+    SessionContainerInterface,
+    VerifySessionOptions,
+} from "./types";
 import SessionRecipe from "./recipe";
 import { NormalisedAppinfo } from "../../types";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -12,6 +20,12 @@ export declare function sendTryRefreshTokenResponse(
 export declare function sendUnauthorisedResponse(
     recipeInstance: SessionRecipe,
     _: string,
+    __: BaseRequest,
+    response: BaseResponse
+): Promise<void>;
+export declare function sendInvalidClaimResponse(
+    recipeInstance: SessionRecipe,
+    claimValidationErrors: ClaimValidationError[],
     __: BaseRequest,
     response: BaseResponse
 ): Promise<void>;
@@ -36,3 +50,18 @@ export declare function attachCreateOrRefreshSessionResponseToExpressRes(
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse
 ): void;
+export declare function getRequiredClaimValidators(
+    session: SessionContainerInterface,
+    overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
+    userContext: any
+): Promise<SessionClaimValidator[]>;
+export declare function validateClaimsInPayload(
+    claimValidators: SessionClaimValidator[],
+    newAccessTokenPayload: any,
+    userContext: any
+): Promise<
+    {
+        id: string;
+        reason: import("../../types").JSONValue;
+    }[]
+>;

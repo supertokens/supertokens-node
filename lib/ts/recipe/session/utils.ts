@@ -13,7 +13,16 @@
  * under the License.
  */
 
-import { CreateOrRefreshAPIResponse, TypeInput, TypeNormalisedInput, NormalisedErrorHandlers } from "./types";
+import {
+    CreateOrRefreshAPIResponse,
+    TypeInput,
+    TypeNormalisedInput,
+    NormalisedErrorHandlers,
+    ClaimValidationError,
+    SessionClaimValidator,
+    SessionContainerInterface,
+    VerifySessionOptions,
+} from "./types";
 import {
     setFrontTokenInHeaders,
     attachAccessTokenToCookie,
@@ -30,8 +39,9 @@ import * as psl from "psl";
 import { isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
-import { sendNon200Response } from "../../utils";
+import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY, JWT_RESERVED_KEY_USE_ERROR_MESSAGE } from "./with-jwt/constants";
+import { logDebugMessage } from "../../logger";
 
 export async function sendTryRefreshTokenResponse(
     recipeInstance: SessionRecipe,
@@ -39,7 +49,7 @@ export async function sendTryRefreshTokenResponse(
     __: BaseRequest,
     response: BaseResponse
 ) {
-    sendNon200Response(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
+    sendNon200ResponseWithMessage(response, "try refresh token", recipeInstance.config.sessionExpiredStatusCode);
 }
 
 export async function sendUnauthorisedResponse(
@@ -48,7 +58,19 @@ export async function sendUnauthorisedResponse(
     __: BaseRequest,
     response: BaseResponse
 ) {
-    sendNon200Response(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
+    sendNon200ResponseWithMessage(response, "unauthorised", recipeInstance.config.sessionExpiredStatusCode);
+}
+
+export async function sendInvalidClaimResponse(
+    recipeInstance: SessionRecipe,
+    claimValidationErrors: ClaimValidationError[],
+    __: BaseRequest,
+    response: BaseResponse
+) {
+    sendNon200Response(response, recipeInstance.config.invalidClaimStatusCode, {
+        message: "invalid claim",
+        claimValidationErrors,
+    });
 }
 
 export async function sendTokenTheftDetectedResponse(
@@ -59,7 +81,7 @@ export async function sendTokenTheftDetectedResponse(
     response: BaseResponse
 ) {
     await recipeInstance.recipeInterfaceImpl.revokeSession({ sessionHandle, userContext: {} });
-    sendNon200Response(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
+    sendNon200ResponseWithMessage(response, "token theft detected", recipeInstance.config.sessionExpiredStatusCode);
 }
 
 export function normaliseSessionScopeOrThrowError(sessionScope: string): string {
@@ -152,6 +174,11 @@ export function validateAndNormaliseUserInput(
 
     let sessionExpiredStatusCode =
         config === undefined || config.sessionExpiredStatusCode === undefined ? 401 : config.sessionExpiredStatusCode;
+    const invalidClaimStatusCode = config?.invalidClaimStatusCode ?? 403;
+
+    if (sessionExpiredStatusCode === invalidClaimStatusCode) {
+        throw new Error("sessionExpiredStatusCode and sessionExpiredStatusCode must be different");
+    }
 
     if (config !== undefined && config.antiCsrf !== undefined) {
         if (config.antiCsrf !== "NONE" && config.antiCsrf !== "VIA_CUSTOM_HEADER" && config.antiCsrf !== "VIA_TOKEN") {
@@ -181,6 +208,9 @@ export function validateAndNormaliseUserInput(
         onUnauthorised: async (message: string, request: BaseRequest, response: BaseResponse) => {
             return await sendUnauthorisedResponse(recipeInstance, message, request, response);
         },
+        onInvalidClaim: (validationErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse) => {
+            return sendInvalidClaimResponse(recipeInstance, validationErrors, request, response);
+        },
     };
     if (config !== undefined && config.errorHandlers !== undefined) {
         if (config.errorHandlers.onTokenTheftDetected !== undefined) {
@@ -188,6 +218,9 @@ export function validateAndNormaliseUserInput(
         }
         if (config.errorHandlers.onUnauthorised !== undefined) {
             errorHandlers.onUnauthorised = config.errorHandlers.onUnauthorised;
+        }
+        if (config.errorHandlers.onInvalidClaim !== undefined) {
+            errorHandlers.onInvalidClaim = config.errorHandlers.onInvalidClaim;
         }
     }
 
@@ -239,6 +272,7 @@ export function validateAndNormaliseUserInput(
         errorHandlers,
         antiCsrf,
         override,
+        invalidClaimStatusCode,
         jwt: {
             enable: enableJWT,
             propertyNameInAccessTokenPayload: accessTokenPayloadJWTPropertyName,
@@ -271,4 +305,44 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
+}
+
+export async function getRequiredClaimValidators(
+    session: SessionContainerInterface,
+    overrideGlobalClaimValidators: VerifySessionOptions["overrideGlobalClaimValidators"],
+    userContext: any
+) {
+    const claimValidatorsAddedByOtherRecipes = SessionRecipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
+    const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
+        {
+            userId: session.getUserId(),
+            claimValidatorsAddedByOtherRecipes,
+            userContext,
+        }
+    );
+
+    return overrideGlobalClaimValidators !== undefined
+        ? await overrideGlobalClaimValidators(globalClaimValidators, session, userContext)
+        : globalClaimValidators;
+}
+
+export async function validateClaimsInPayload(
+    claimValidators: SessionClaimValidator[],
+    newAccessTokenPayload: any,
+    userContext: any
+) {
+    const validationErrors = [];
+    for (const validator of claimValidators) {
+        const claimValidationResult = await validator.validate(newAccessTokenPayload, userContext);
+        logDebugMessage(
+            "validateClaimsInPayload " + validator.id + " validation res " + JSON.stringify(claimValidationResult)
+        );
+        if (!claimValidationResult.isValid) {
+            validationErrors.push({
+                id: validator.id,
+                reason: claimValidationResult.reason,
+            });
+        }
+    }
+    return validationErrors;
 }

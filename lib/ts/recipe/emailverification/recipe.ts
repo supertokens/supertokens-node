@@ -14,7 +14,7 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface } from "./types";
+import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, GetEmailForUserIdFunc } from "./types";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
@@ -29,6 +29,9 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import OverrideableBuilder from "supertokens-js-override";
 import EmailDeliveryIngredient from "../../ingredients/emaildelivery";
 import { TypeEmailVerificationEmailDeliveryInput } from "./types";
+import { PostSuperTokensInitCallbacks } from "../../postSuperTokensInitCallbacks";
+import SessionRecipe from "../session/recipe";
+import { EmailVerificationClaim } from "./emailVerificationClaim";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -43,6 +46,8 @@ export default class Recipe extends RecipeModule {
     isInServerlessEnv: boolean;
 
     emailDelivery: EmailDeliveryIngredient<TypeEmailVerificationEmailDeliveryInput>;
+
+    getEmailForUserIdFuncsFromOtherRecipes: GetEmailForUserIdFunc[] = [];
 
     constructor(
         recipeId: string,
@@ -83,12 +88,27 @@ export default class Recipe extends RecipeModule {
         throw new Error("Initialisation not done. Did you forget to call the SuperTokens.init function?");
     }
 
+    static getInstance(): Recipe | undefined {
+        return Recipe.instance;
+    }
+
     static init(config: TypeInput): RecipeListFunction {
         return (appInfo, isInServerlessEnv) => {
             if (Recipe.instance === undefined) {
                 Recipe.instance = new Recipe(Recipe.RECIPE_ID, appInfo, isInServerlessEnv, config, {
                     emailDelivery: undefined,
                 });
+
+                PostSuperTokensInitCallbacks.addPostInitCallback(() => {
+                    SessionRecipe.getInstanceOrThrowError().addClaimFromOtherRecipe(EmailVerificationClaim);
+
+                    if (config.mode === "REQUIRED") {
+                        SessionRecipe.getInstanceOrThrowError().addClaimValidatorFromOtherRecipe(
+                            EmailVerificationClaim.validators.isVerified()
+                        );
+                    }
+                });
+
                 return Recipe.instance;
             } else {
                 throw new Error(
@@ -145,6 +165,7 @@ export default class Recipe extends RecipeModule {
             req,
             res,
             emailDelivery: this.emailDelivery,
+            appInfo: this.getAppInfo(),
         };
         if (id === GENERATE_EMAIL_VERIFY_TOKEN_API) {
             return await generateEmailVerifyTokenAPI(this.apiImpl, options);
@@ -163,5 +184,29 @@ export default class Recipe extends RecipeModule {
 
     isErrorFromThisRecipe = (err: any): err is STError => {
         return STError.isErrorFromSuperTokens(err) && err.fromRecipe === Recipe.RECIPE_ID;
+    };
+
+    getEmailForUserId: GetEmailForUserIdFunc = async (userId, userContext) => {
+        if (this.config.getEmailForUserId !== undefined) {
+            const userRes = await this.config.getEmailForUserId(userId, userContext);
+            if (userRes.status !== "UNKNOWN_USER_ID_ERROR") {
+                return userRes;
+            }
+        }
+
+        for (const getEmailForUserId of this.getEmailForUserIdFuncsFromOtherRecipes) {
+            const res = await getEmailForUserId(userId, userContext);
+            if (res.status !== "UNKNOWN_USER_ID_ERROR") {
+                return res;
+            }
+        }
+
+        return {
+            status: "UNKNOWN_USER_ID_ERROR",
+        };
+    };
+
+    addGetEmailForUserIdFunc = (func: GetEmailForUserIdFunc): void => {
+        this.getEmailForUserIdFuncsFromOtherRecipes.push(func);
     };
 }

@@ -7,6 +7,182 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed
+
+-   Made the `email` parameter option in `unverifyEmail`, `revokeEmailVerificationTokens`, `isEmailVerified`, `verifyEmailUsingToken`, `createEmailVerificationToken` of the `EmailVerification` recipe.
+
+### Added
+
+-   Added support for session claims with related interfaces and classes.
+-   Added `onInvalidClaim` optional error handler to send InvalidClaim error responses.
+-   Added `INVALID_CLAIMS` to `SessionErrors`.
+-   Added `invalidClaimStatusCode` optional config to set the status code of InvalidClaim errors.
+-   Added `overrideGlobalClaimValidators` to options of `getSession` and `verifySession`.
+-   Added `mergeIntoAccessTokenPayload` to the Session recipe and session objects which should be preferred to the now deprecated `updateAccessTokenPayload`.
+-   Added `EmailVerificationClaim`, `UserRoleClaim` and `PermissionClaim`. These claims are now added to the access token payload by default by their respective recipes.
+-   Added `assertClaims`, `validateClaimsForSessionHandle`, `validateClaimsInJWTPayload` to the Session recipe to support validation of the newly added claims.
+-   Added `fetchAndSetClaim`, `getClaimValue`, `setClaimValue` and `removeClaim` to the Session recipe to manage claims.
+-   Added `assertClaims`, `fetchAndSetClaim`, `getClaimValue`, `setClaimValue` and `removeClaim` to session objects to manage claims.
+-   Added session to the input of `generateEmailVerifyTokenPOST`, `verifyEmailPOST`, `isEmailVerifiedGET`.
+-   Adds default userContext for verifySession calls that contains the request object.
+
+### Breaking changes
+
+-   Changed `signInUp` third party recipe function to accept an email string instead of an object that takes `{id: string, isVerified: boolean}`.
+-   Renames `STMP` to `SMTP` everywhere (typo).
+-   The frontend SDK should be updated to a version supporting session claims!
+    -   supertokens-auth-react: >= 0.25.0
+    -   supertokens-web-js: >= 0.2.0
+-   `EmailVerification` recipe is now not initialized as part of auth recipes, it should be added to the `recipeList` directly instead.
+-   Email verification related overrides (`emailVerificationFeature` prop of `override`) moved from auth recipes into the `EmailVerification` recipe config.
+-   Email verificitaion related configs (`emailVerificationFeature` props) moved from auth recipes into the `EmailVerification` config object root.
+-   ThirdParty recipe no longer takes emailDelivery config -> use emailverification recipe's emailDelivery instead.
+-   Moved email verification related configs from the `emailDelivery` config of auth recipes into a separate `EmailVerification` email delivery config.
+-   Updated return type of `getEmailForUserId` in the `EmailVerification` recipe config. It should now return an object with status.
+-   Removed `getResetPasswordURL`, `getEmailVerificationURL`, `getLinkDomainAndPath`. Changing these urls can be done in the email delivery configs instead.
+-   Removed `unverifyEmail`, `revokeEmailVerificationTokens`, `isEmailVerified`, `verifyEmailUsingToken` and `createEmailVerificationToken` from auth recipes. These should be called on the `EmailVerification` recipe instead.
+-   Changed function signature for email verification APIs to accept a session as an input.
+-   Changed Session API interface functions:
+    -   `refreshPOST` now returns a Session container object.
+    -   `signOutPOST` now takes in an optional session object as a parameter.
+
+### Migration
+
+Before:
+
+```
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        EmailPassword.init({
+            emailVerificationFeature: {
+                // these options should be moved into the config of the EmailVerification recipe
+            },
+            override: {
+                emailVerificationFeature: {
+                    // these overrides should be moved into the overrides of the EmailVerification recipe
+                }
+            }
+        })
+    ]
+})
+```
+
+After the update:
+
+```
+SuperTokens.init({
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        EmailVerification.init({
+            // all config should be moved here from the emailVerificationFeature prop of the EmailPassword recipe config
+            override: {
+                // move the overrides from the emailVerificationFeature prop of the override config in the EmailPassword init here
+            }
+        }),
+        EmailPassword.init()
+    ]
+})
+```
+
+#### Passwordless users and email verification
+
+If you turn on email verification your email-based passwordless users may be redirected to an email verification screen in their existing session.
+Logging out and logging in again will solve this problem or they could click the link in the email to verify themselves.
+
+You can avoid this by running a script that will:
+
+1. list all users of passwordless
+2. create an emailverification token for each of them if they have email addresses
+3. user the token to verify their address
+
+Something similar to this script:
+
+```ts
+const SuperTokens = require("supertokens-node");
+const Session = require("supertokens-node/recipe/session");
+const Passwordless = require("supertokens-node/recipe/passwordless");
+const EmailVerification = require("supertokens-node/recipe/emailverification");
+
+SuperTokens.init({
+    supertokens: {
+        // TODO: This is a core hosted for demo purposes. You can use this, but make sure to change it to your core instance URI eventually.
+        connectionURI: "https://try.supertokens.com",
+        apiKey: "<REQUIRED FOR MANAGED SERVICE, ELSE YOU CAN REMOVE THIS FIELD>",
+    },
+    appInfo: {
+        apiDomain: "...",
+        appName: "...",
+        websiteDomain: "...",
+    },
+    recipeList: [
+        EmailVerification.init({
+            mode: "REQUIRED",
+        }),
+        Passwordless.init({
+            contactMethod: "EMAIL_OR_PHONE",
+            flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
+        }),
+        Session.init(),
+    ],
+});
+
+async function main() {
+    let paginationToken = undefined;
+    let done = false;
+    while (!done) {
+        const userList = await SuperTokens.getUsersNewestFirst({
+            includeRecipeIds: ["passwordless"],
+            limit: 100,
+            paginationToken,
+        });
+
+        for (const { recipeId, user } of userList.users) {
+            if (recipeId === "passwordless" && user.email) {
+                const tokenResp = await EmailVerification.createEmailVerificationToken(user.id, user.email);
+                if (tokenResp.status === "OK") {
+                    await EmailVerification.verifyEmailUsingToken(tokenResp.token);
+                }
+            }
+        }
+
+        done = userList.nextPaginationToken !== undefined;
+        if (!done) {
+            paginationToken = userList.nextPaginationToken;
+        }
+    }
+}
+
+main().then(console.log, console.error);
+```
+
+#### User roles
+
+The UserRoles recipe now adds role and permission information into the access token payload by default. If you are already doing this manually, this will result in duplicate data in the access token.
+
+-   You can disable this behaviour by setting `skipAddingRolesToAccessToken` and `skipAddingPermissionsToAccessToken` to true in the recipe init.
+-   Check how to use the new claims in the updated guide: https://supertokens.com/docs/userroles/protecting-routes
+
+#### Next.js integration
+
+-   Since a new exception type has been added, there is a required change in SRR (`getServerSideProps`). You should handle the new (`INVALID_CLAIMS`) exception in the same way as you handle `UNAUTHORISED`
+-   You can check our updated guide here: https://supertokens.com/docs/thirdpartyemailpassword/nextjs/session-verification/in-ssr
+
+#### AWS integration
+
+-   The new exception type and error code requires changes if you are using SuperTokens as as an Authorizer in API Gateways.
+-   You need to handle the new exception type in the authorizer code.
+-   You need to configure the "Access Denied" response.
+-   You can check our updated guide here: https://supertokens.com/docs/thirdpartyemailpassword/serverless/with-aws-lambda/authorizer
+
 ## [11.3.0] - 2022-08-30
 
 ### Added:

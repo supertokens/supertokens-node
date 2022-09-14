@@ -39,6 +39,12 @@ export declare type APIHandled = {
     disabled: boolean;
 };
 export declare type HTTPMethod = "post" | "get" | "delete" | "put" | "options" | "trace";
+export declare type JSONPrimitive = string | number | boolean | null;
+export declare type JSONArray = Array<JSONValue>;
+export declare type JSONValue = JSONPrimitive | JSONObject | JSONArray | undefined;
+export interface JSONObject {
+    [ind: string]: JSONValue;
+}
 export declare type GeneralErrorResponse = {
     status: "GENERAL_ERROR";
     message: string;

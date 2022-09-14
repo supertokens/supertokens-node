@@ -56,15 +56,11 @@ describe(`userIdMapping with thirdparty: ${printPath(
             }
 
             // create a thirdParty user
-            let signInUpResponse = await ThirdPartyRecipe.signInUp("google", "tpId", {
-                id: "test@example.com",
-                isVerified: true,
-            });
+            let signInUpResponse = await ThirdPartyRecipe.signInUp("google", "tpId", "test@example.com");
 
             assert.strictEqual(signInUpResponse.status, "OK");
             const superTokensUserId = signInUpResponse.user.id;
             const externalId = "externalId";
-
             // create the userIdMapping
             await STExpress.createUserIdMapping({
                 superTokensUserId,
@@ -72,10 +68,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             });
 
             // sign in and check that the userId in the response is the externalId
-            let response = await ThirdPartyRecipe.signInUp("google", "tpId", {
-                id: "test@example.com",
-                isVerified: true,
-            });
+            let response = await ThirdPartyRecipe.signInUp("google", "tpId", "test@example.com");
 
             assert.strictEqual(response.status, "OK");
             assert.strictEqual(response.createdNewUser, false);
@@ -118,10 +111,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             }
 
             // create a thirdParty user
-            let signInUpResponse = await ThirdPartyRecipe.signInUp("google", "tpId", {
-                id: "test@example.com",
-                isVerified: true,
-            });
+            let signInUpResponse = await ThirdPartyRecipe.signInUp("google", "tpId", "test@example.com");
 
             assert.strictEqual(signInUpResponse.status, "OK");
             const superTokensUserId = signInUpResponse.user.id;
@@ -175,10 +165,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             }
 
             // create a thirdParty user
-            let signInUpResponse = await ThirdPartyRecipe.signInUp("google", "tpId", {
-                id: "test@example.com",
-                isVerified: true,
-            });
+            let signInUpResponse = await ThirdPartyRecipe.signInUp("google", "tpId", "test@example.com");
 
             assert.strictEqual(signInUpResponse.status, "OK");
             const superTokensUserId = signInUpResponse.user.id;
@@ -234,10 +221,7 @@ describe(`userIdMapping with thirdparty: ${printPath(
             // create a thirdParty user
             const thirdPartyId = "google";
             const thirdPartyUserId = "tpId";
-            let signInUpResponse = await ThirdPartyRecipe.signInUp(thirdPartyId, thirdPartyUserId, {
-                id: "test@example.com",
-                isVerified: true,
-            });
+            let signInUpResponse = await ThirdPartyRecipe.signInUp(thirdPartyId, thirdPartyUserId, "test@example.com");
 
             assert.strictEqual(signInUpResponse.status, "OK");
             const superTokensUserId = signInUpResponse.user.id;
