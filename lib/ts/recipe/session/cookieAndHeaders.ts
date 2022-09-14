@@ -101,7 +101,7 @@ export function setIdRefreshTokenInHeaderAndCookie(
 }
 
 export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpiry: number, accessTokenPayload: any) {
-    let tokenInfo = {
+    const tokenInfo = {
         uid: userId,
         ate: atExpiry,
         up: accessTokenPayload,

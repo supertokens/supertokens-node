@@ -14,7 +14,15 @@
  */
 
 import RecipeModule from "../../recipeModule";
-import { TypeInput, TypeNormalisedInput, RecipeInterface, APIInterface, VerifySessionOptions } from "./types";
+import {
+    TypeInput,
+    TypeNormalisedInput,
+    RecipeInterface,
+    APIInterface,
+    VerifySessionOptions,
+    SessionClaimValidator,
+    SessionClaim,
+} from "./types";
 import STError from "./error";
 import { validateAndNormaliseUserInput } from "./utils";
 import { NormalisedAppinfo, RecipeListFunction, APIHandled, HTTPMethod } from "../../types";
@@ -32,11 +40,15 @@ import OverrideableBuilder from "supertokens-js-override";
 import { APIOptions } from ".";
 import OpenIdRecipe from "../openid/recipe";
 import { logDebugMessage } from "../../logger";
+import { makeDefaultUserContextFromAPI } from "../../utils";
 
 // For Express
 export default class SessionRecipe extends RecipeModule {
     private static instance: SessionRecipe | undefined = undefined;
     static RECIPE_ID = "session";
+
+    private claimsAddedByOtherRecipes: SessionClaim<any>[] = [];
+    private claimValidatorsAddedByOtherRecipes: SessionClaimValidator[] = [];
 
     config: TypeNormalisedInput;
 
@@ -126,6 +138,28 @@ export default class SessionRecipe extends RecipeModule {
         SessionRecipe.instance = undefined;
     }
 
+    addClaimFromOtherRecipe = (claim: SessionClaim<any>) => {
+        // We are throwing here (and not in addClaimValidatorFromOtherRecipe) because if multiple
+        // claims are added with the same key they will overwrite each other. Validators will all run
+        // and work as expected even if they are added multiple times.
+        if (this.claimsAddedByOtherRecipes.some((c) => c.key === claim.key)) {
+            throw new Error("Claim added by multiple recipes");
+        }
+        this.claimsAddedByOtherRecipes.push(claim);
+    };
+
+    getClaimsAddedByOtherRecipes = (): SessionClaim<any>[] => {
+        return this.claimsAddedByOtherRecipes;
+    };
+
+    addClaimValidatorFromOtherRecipe = (builder: SessionClaimValidator) => {
+        this.claimValidatorsAddedByOtherRecipes.push(builder);
+    };
+
+    getClaimValidatorsAddedByOtherRecipes = (): SessionClaimValidator[] => {
+        return this.claimValidatorsAddedByOtherRecipes;
+    };
+
     // abstract instance functions below...............
 
     getAPIsHandled = (): APIHandled[] => {
@@ -193,6 +227,8 @@ export default class SessionRecipe extends RecipeModule {
                     request,
                     response
                 );
+            } else if (err.type === STError.INVALID_CLAIMS) {
+                return await this.config.errorHandlers.onInvalidClaim(err.payload, request, response);
             } else {
                 throw err;
             }
@@ -232,7 +268,7 @@ export default class SessionRecipe extends RecipeModule {
                 isInServerlessEnv: this.isInServerlessEnv,
                 recipeImplementation: this.recipeInterfaceImpl,
             },
-            userContext: {},
+            userContext: makeDefaultUserContextFromAPI(request),
         });
     };
 }

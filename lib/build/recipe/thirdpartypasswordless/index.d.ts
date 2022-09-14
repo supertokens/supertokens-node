@@ -17,10 +17,7 @@ export default class Wrapper {
     static thirdPartySignInUp(
         thirdPartyId: string,
         thirdPartyUserId: string,
-        email: {
-            id: string;
-            isVerified: boolean;
-        },
+        email: string,
         userContext?: any
     ): Promise<{
         status: "OK";
@@ -75,57 +72,6 @@ export default class Wrapper {
         | undefined
     >;
     static getUsersByEmail(email: string, userContext?: any): Promise<User[]>;
-    static createEmailVerificationToken(
-        userId: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "EMAIL_ALREADY_VERIFIED_ERROR";
-          }
-    >;
-    static verifyEmailUsingToken(
-        token: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-          }
-        | ({
-              email?: string | undefined;
-              phoneNumber?: string | undefined;
-          } & {
-              id: string;
-              timeJoined: number;
-          })
-        | ({
-              email: string;
-              thirdParty: {
-                  id: string;
-                  userId: string;
-              };
-          } & {
-              id: string;
-              timeJoined: number;
-          })
-        | undefined
-    >;
-    static isEmailVerified(userId: string, userContext?: any): Promise<boolean>;
-    static revokeEmailVerificationTokens(
-        userId: string,
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-    }>;
-    static unverifyEmail(
-        userId: string,
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-    }>;
     static createCode(
         input: (
             | {
@@ -311,11 +257,6 @@ export declare let passwordlessSignInUp: typeof Wrapper.passwordlessSignInUp;
 export declare let getUserById: typeof Wrapper.getUserById;
 export declare let getUserByThirdPartyInfo: typeof Wrapper.getUserByThirdPartyInfo;
 export declare let getUsersByEmail: typeof Wrapper.getUsersByEmail;
-export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
-export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
-export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
-export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
-export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
 export declare let createCode: typeof Wrapper.createCode;
 export declare let consumeCode: typeof Wrapper.consumeCode;
 export declare let getUserByPhoneNumber: typeof Wrapper.getUserByPhoneNumber;

@@ -25,6 +25,7 @@ let STExpress = require("../../");
 let assert = require("assert");
 let { ProcessState } = require("../../lib/build/processState");
 let ThirdPartyPasswordless = require("../../lib/build/recipe/thirdpartypasswordless");
+const EmailVerification = require("../../lib/build/recipe/emailverification");
 let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
@@ -250,6 +251,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
+                EmailVerification.init({ mode: "OPTIONAL", createAndSendCustomEmail: () => {} }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -311,7 +313,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(await ThirdPartyPasswordless.isEmailVerified(response1.body.user.id), true);
+        assert.strictEqual(
+            await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
+            true
+        );
 
         let response2 = await new Promise((resolve) =>
             request(app)
@@ -425,6 +430,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
+                EmailVerification.init({ mode: "OPTIONAL", createAndSendCustomEmail: () => {} }),
                 ThirdPartyPasswordless.init({
                     contactMethod: "EMAIL",
                     createAndSendCustomEmail: (input) => {
@@ -487,7 +493,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(await ThirdPartyPasswordless.isEmailVerified(response1.body.user.id), true);
+        assert.strictEqual(
+            await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
+            true
+        );
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -554,6 +563,7 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
                     flowType: "USER_INPUT_CODE_AND_MAGIC_LINK",
                     providers: [this.customProvider5],
                 }),
+                EmailVerification.init({ mode: "OPTIONAL", createAndSendCustomEmail: () => {} }),
             ],
         });
 
@@ -608,7 +618,10 @@ describe(`signinupTest: ${printPath("[test/thirdpartypasswordless/signinupFeatur
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(await ThirdPartyPasswordless.isEmailVerified(response1.body.user.id), false);
+        assert.strictEqual(
+            await EmailVerification.isEmailVerified(response1.body.user.id, response1.body.user.email),
+            false
+        );
     });
 
     it("test with thirdPartyPasswordless, thirdparty provider doesn't exist in config", async function () {

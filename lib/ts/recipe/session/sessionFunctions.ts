@@ -33,6 +33,7 @@ export async function createNewSession(
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
+
     let requestBody: {
         userId: string;
         userDataInJWT: any;

@@ -3,6 +3,8 @@ import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
 export default class Wrapper {
     static init: typeof Recipe.init;
+    static PermissionClaim: import("./permissionClaim").PermissionClaimClass;
+    static UserRoleClaim: import("./userRoleClaim").UserRoleClaimClass;
     static addRoleToUser(
         userId: string,
         role: string,
@@ -107,4 +109,6 @@ export declare const removePermissionsFromRole: typeof Wrapper.removePermissions
 export declare const getRolesThatHavePermission: typeof Wrapper.getRolesThatHavePermission;
 export declare const deleteRole: typeof Wrapper.deleteRole;
 export declare const getAllRoles: typeof Wrapper.getAllRoles;
+export { UserRoleClaim } from "./userRoleClaim";
+export { PermissionClaim } from "./permissionClaim";
 export type { RecipeInterface };

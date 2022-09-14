@@ -18,16 +18,6 @@ import { NormalisedAppinfo } from "../../types";
 import axios, { AxiosError } from "axios";
 import { logDebugMessage } from "../../logger";
 
-export function getEmailVerificationURL(appInfo: NormalisedAppinfo) {
-    return async (_: User): Promise<string> => {
-        return (
-            appInfo.websiteDomain.getAsStringDangerous() +
-            appInfo.websiteBasePath.getAsStringDangerous() +
-            "/verify-email"
-        );
-    };
-}
-
 export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (user: User, emailVerifyURLWithToken: string) => {
         if (process.env.TEST_MODE === "testing") {

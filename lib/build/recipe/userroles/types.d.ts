@@ -1,6 +1,8 @@
 // @ts-nocheck
 import OverrideableBuilder from "supertokens-js-override";
 export declare type TypeInput = {
+    skipAddingRolesToAccessToken?: boolean;
+    skipAddingPermissionsToAccessToken?: boolean;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -10,6 +12,8 @@ export declare type TypeInput = {
     };
 };
 export declare type TypeNormalisedInput = {
+    skipAddingRolesToAccessToken: boolean;
+    skipAddingPermissionsToAccessToken: boolean;
     override: {
         functions: (
             originalImplementation: RecipeInterface,

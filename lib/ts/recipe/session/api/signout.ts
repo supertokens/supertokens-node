@@ -24,9 +24,22 @@ export default async function signOutAPI(apiImplementation: APIInterface, option
         return false;
     }
 
+    let defaultUserContext = makeDefaultUserContextFromAPI(options.req);
+
+    const session = await options.recipeImplementation.getSession({
+        req: options.req,
+        res: options.res,
+        options: {
+            sessionRequired: false,
+            overrideGlobalClaimValidators: () => [],
+        },
+        userContext: defaultUserContext,
+    });
+
     let result = await apiImplementation.signOutPOST({
         options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
+        session,
+        userContext: defaultUserContext,
     });
 
     send200Response(options.res, result);

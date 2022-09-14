@@ -1,9 +1,9 @@
 import { APIInterface, APIOptions, VerifySessionOptions } from "../";
-import STError from "../error";
 import { normaliseHttpMethod } from "../../../utils";
 import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
 import { GeneralErrorResponse } from "../../../types";
+import { getRequiredClaimValidators } from "../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -13,8 +13,12 @@ export default function getAPIInterface(): APIInterface {
         }: {
             options: APIOptions;
             userContext: any;
-        }): Promise<void> {
-            await options.recipeImplementation.refreshSession({ req: options.req, res: options.res, userContext });
+        }): Promise<SessionContainerInterface> {
+            return await options.recipeImplementation.refreshSession({
+                req: options.req,
+                res: options.res,
+                userContext,
+            });
         },
 
         verifySession: async function ({
@@ -36,26 +40,38 @@ export default function getAPIInterface(): APIInterface {
             let refreshTokenPath = options.config.refreshTokenPath;
 
             if (incomingPath.equals(refreshTokenPath) && method === "post") {
-                return await options.recipeImplementation.refreshSession({
+                return options.recipeImplementation.refreshSession({
                     req: options.req,
                     res: options.res,
                     userContext,
                 });
             } else {
-                return await options.recipeImplementation.getSession({
+                const session = await options.recipeImplementation.getSession({
                     req: options.req,
                     res: options.res,
                     options: verifySessionOptions,
                     userContext,
                 });
+                if (session !== undefined) {
+                    const claimValidators = await getRequiredClaimValidators(
+                        session,
+                        verifySessionOptions?.overrideGlobalClaimValidators,
+                        userContext
+                    );
+
+                    await session.assertClaims(claimValidators, userContext);
+                }
+
+                return session;
             }
         },
 
         signOutPOST: async function ({
-            options,
+            session,
             userContext,
         }: {
             options: APIOptions;
+            session: SessionContainerInterface | undefined;
             userContext: any;
         }): Promise<
             | {
@@ -63,29 +79,9 @@ export default function getAPIInterface(): APIInterface {
               }
             | GeneralErrorResponse
         > {
-            let session;
-            try {
-                session = await options.recipeImplementation.getSession({
-                    req: options.req,
-                    res: options.res,
-                    userContext,
-                });
-            } catch (err) {
-                if (STError.isErrorFromSuperTokens(err) && err.type === STError.UNAUTHORISED) {
-                    // The session is expired / does not exist anyway. So we return OK
-                    return {
-                        status: "OK",
-                    };
-                }
-                throw err;
+            if (session !== undefined) {
+                await session.revokeSession(userContext);
             }
-
-            if (session === undefined) {
-                throw new Error("Session is undefined. Should not come here.");
-            }
-
-            await session.revokeSession(userContext);
-
             return {
                 status: "OK",
             };

@@ -13,11 +13,15 @@
  * under the License.
  */
 
+import { PermissionClaim } from "./permissionClaim";
 import Recipe from "./recipe";
 import { RecipeInterface } from "./types";
+import { UserRoleClaim } from "./userRoleClaim";
 
 export default class Wrapper {
     static init = Recipe.init;
+    static PermissionClaim = PermissionClaim;
+    static UserRoleClaim = UserRoleClaim;
 
     static async addRoleToUser(userId: string, role: string, userContext?: any) {
         return await Recipe.getInstanceOrThrowError().recipeInterfaceImpl.addRoleToUser({
@@ -104,5 +108,7 @@ export const removePermissionsFromRole = Wrapper.removePermissionsFromRole;
 export const getRolesThatHavePermission = Wrapper.getRolesThatHavePermission;
 export const deleteRole = Wrapper.deleteRole;
 export const getAllRoles = Wrapper.getAllRoles;
+export { UserRoleClaim } from "./userRoleClaim";
+export { PermissionClaim } from "./permissionClaim";
 
 export type { RecipeInterface };

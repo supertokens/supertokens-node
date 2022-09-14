@@ -5,6 +5,9 @@ import {
     SessionInformation,
     KeyInfo,
     AntiCsrfType,
+    SessionClaimValidator,
+    SessionClaim,
+    ClaimValidationError,
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
@@ -17,13 +20,14 @@ import {
     setFrontTokenInHeaders,
     getRidFromHeader,
 } from "./cookieAndHeaders";
-import { attachCreateOrRefreshSessionResponseToExpressRes } from "./utils";
+import { attachCreateOrRefreshSessionResponseToExpressRes, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
 import { normaliseHttpMethod, frontendHasInterceptor } from "../../utils";
 import { Querier } from "../../querier";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
+import { JSONObject } from "../../types";
 import { logDebugMessage } from "../../logger";
 import { BaseResponse } from "../../framework/response";
 import { BaseRequest } from "../../framework/request";
@@ -105,7 +109,7 @@ export default function getRecipeInterface(
         }
     }
 
-    let obj = {
+    let obj: RecipeInterface = {
         createNewSession: async function ({
             res,
             userId,
@@ -116,6 +120,7 @@ export default function getRecipeInterface(
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
+            userContext: any;
         }): Promise<Session> {
             let response = await SessionFunctions.createNewSession(helpers, userId, accessTokenPayload, sessionData);
             attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
@@ -129,6 +134,12 @@ export default function getRecipeInterface(
             );
         },
 
+        getGlobalClaimValidators: async function (input: {
+            claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
+        }) {
+            return input.claimValidatorsAddedByOtherRecipes;
+        },
+
         getSession: async function ({
             req,
             res,
@@ -137,6 +148,7 @@ export default function getRecipeInterface(
             req: BaseRequest;
             res: BaseResponse;
             options?: VerifySessionOptions;
+            userContext: any;
         }): Promise<Session | undefined> {
             logDebugMessage("getSession: Started");
             logDebugMessage("getSession: rid in header: " + frontendHasInterceptor(req));
@@ -214,7 +226,7 @@ export default function getRecipeInterface(
                     accessToken = response.accessToken.token;
                 }
                 logDebugMessage("getSession: Success!");
-                return new Session(
+                const session = new Session(
                     helpers,
                     accessToken,
                     response.session.handle,
@@ -222,6 +234,8 @@ export default function getRecipeInterface(
                     response.session.userDataInJWT,
                     res
                 );
+
+                return session;
             } catch (err) {
                 if (err.type === STError.UNAUTHORISED) {
                     logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response");
@@ -229,6 +243,82 @@ export default function getRecipeInterface(
                 }
                 throw err;
             }
+        },
+
+        validateClaims: async function (
+            this: RecipeInterface,
+            input: {
+                userId: string;
+                accessTokenPayload: any;
+                claimValidators: SessionClaimValidator[];
+                userContext: any;
+            }
+        ): Promise<{
+            invalidClaims: ClaimValidationError[];
+            accessTokenPayloadUpdate?: any;
+        }> {
+            let accessTokenPayload = input.accessTokenPayload;
+            let accessTokenPayloadUpdate = undefined;
+            const origSessionClaimPayloadJSON = JSON.stringify(accessTokenPayload);
+
+            for (const validator of input.claimValidators) {
+                logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
+                if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
+                    logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
+                    const value = await validator.claim.fetchValue(input.userId, input.userContext);
+                    logDebugMessage(
+                        "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
+                    );
+                    if (value !== undefined) {
+                        accessTokenPayload = validator.claim.addToPayload_internal(
+                            accessTokenPayload,
+                            value,
+                            input.userContext
+                        );
+                    }
+                }
+            }
+
+            if (JSON.stringify(accessTokenPayload) !== origSessionClaimPayloadJSON) {
+                accessTokenPayloadUpdate = accessTokenPayload;
+            }
+
+            const invalidClaims = await validateClaimsInPayload(
+                input.claimValidators,
+                accessTokenPayload,
+                input.userContext
+            );
+
+            return {
+                invalidClaims,
+                accessTokenPayloadUpdate,
+            };
+        },
+
+        validateClaimsInJWTPayload: async function (
+            this: RecipeInterface,
+            input: {
+                userId: string;
+                jwtPayload: JSONObject;
+                claimValidators: SessionClaimValidator[];
+                userContext: any;
+            }
+        ): Promise<{
+            status: "OK";
+            invalidClaims: ClaimValidationError[];
+        }> {
+            // We skip refetching here, because we have no way of updating the JWT payload here
+            // if we have access to the entire session other methods can be used to do validation while updating
+            const invalidClaims = await validateClaimsInPayload(
+                input.claimValidators,
+                input.jwtPayload,
+                input.userContext
+            );
+
+            return {
+                status: "OK",
+                invalidClaims,
+            };
         },
 
         getSessionInformation: async function ({
@@ -239,7 +329,10 @@ export default function getRecipeInterface(
             return SessionFunctions.getSessionInformation(helpers, sessionHandle);
         },
 
-        refreshSession: async function ({ req, res }: { req: BaseRequest; res: BaseResponse }): Promise<Session> {
+        refreshSession: async function (
+            this: RecipeInterface,
+            { req, res }: { req: BaseRequest; res: BaseResponse }
+        ): Promise<Session> {
             logDebugMessage("refreshSession: Started");
             let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
             if (inputIdRefreshToken === undefined) {
@@ -367,12 +460,112 @@ export default function getRecipeInterface(
             return SessionFunctions.updateAccessTokenPayload(helpers, sessionHandle, newAccessTokenPayload);
         },
 
+        mergeIntoAccessTokenPayload: async function (
+            this: RecipeInterface,
+            {
+                sessionHandle,
+                accessTokenPayloadUpdate,
+                userContext,
+            }: {
+                sessionHandle: string;
+                accessTokenPayloadUpdate: JSONObject;
+                userContext: any;
+            }
+        ) {
+            const sessionInfo = await this.getSessionInformation({ sessionHandle, userContext });
+            if (sessionInfo === undefined) {
+                return false;
+            }
+            const newAccessTokenPayload = { ...sessionInfo.accessTokenPayload, ...accessTokenPayloadUpdate };
+            for (const key of Object.keys(accessTokenPayloadUpdate)) {
+                if (accessTokenPayloadUpdate[key] === null) {
+                    delete newAccessTokenPayload[key];
+                }
+            }
+            return this.updateAccessTokenPayload({ sessionHandle, newAccessTokenPayload, userContext });
+        },
+
         getAccessTokenLifeTimeMS: async function (): Promise<number> {
             return (await getHandshakeInfo()).accessTokenValidity;
         },
 
         getRefreshTokenLifeTimeMS: async function (): Promise<number> {
             return (await getHandshakeInfo()).refreshTokenValidity;
+        },
+
+        fetchAndSetClaim: async function <T>(
+            this: RecipeInterface,
+            input: {
+                sessionHandle: string;
+                claim: SessionClaim<T>;
+                userContext?: any;
+            }
+        ) {
+            const sessionInfo = await this.getSessionInformation({
+                sessionHandle: input.sessionHandle,
+                userContext: input.userContext,
+            });
+            if (sessionInfo === undefined) {
+                return false;
+            }
+            const accessTokenPayloadUpdate = await input.claim.build(sessionInfo.userId, input.userContext);
+
+            return this.mergeIntoAccessTokenPayload({
+                sessionHandle: input.sessionHandle,
+                accessTokenPayloadUpdate,
+                userContext: input.userContext,
+            });
+        },
+
+        setClaimValue: function <T>(
+            this: RecipeInterface,
+            input: {
+                sessionHandle: string;
+                claim: SessionClaim<T>;
+                value: T;
+                userContext?: any;
+            }
+        ) {
+            const accessTokenPayloadUpdate = input.claim.addToPayload_internal({}, input.value, input.userContext);
+            return this.mergeIntoAccessTokenPayload({
+                sessionHandle: input.sessionHandle,
+                accessTokenPayloadUpdate,
+                userContext: input.userContext,
+            });
+        },
+
+        getClaimValue: async function <T>(
+            this: RecipeInterface,
+            input: { sessionHandle: string; claim: SessionClaim<T>; userContext?: any }
+        ) {
+            const sessionInfo = await this.getSessionInformation({
+                sessionHandle: input.sessionHandle,
+                userContext: input.userContext,
+            });
+
+            if (sessionInfo === undefined) {
+                return {
+                    status: "SESSION_DOES_NOT_EXIST_ERROR",
+                };
+            }
+
+            return {
+                status: "OK",
+                value: input.claim.getValueFromPayload(sessionInfo.accessTokenPayload, input.userContext),
+            };
+        },
+
+        removeClaim: function (
+            this: RecipeInterface,
+            input: { sessionHandle: string; claim: SessionClaim<any>; userContext?: any }
+        ) {
+            const accessTokenPayloadUpdate = input.claim.removeFromPayloadByMerge_internal({}, input.userContext);
+
+            return this.mergeIntoAccessTokenPayload({
+                sessionHandle: input.sessionHandle,
+                accessTokenPayloadUpdate,
+                userContext: input.userContext,
+            });
         },
     };
 

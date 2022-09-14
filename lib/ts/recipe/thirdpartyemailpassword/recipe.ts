@@ -14,7 +14,6 @@
  */
 import RecipeModule from "../../recipeModule";
 import { NormalisedAppinfo, APIHandled, RecipeListFunction, HTTPMethod } from "../../types";
-import EmailVerificationRecipe from "../emailverification/recipe";
 import EmailPasswordRecipe from "../emailpassword/recipe";
 import ThirdPartyRecipe from "../thirdparty/recipe";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -46,8 +45,6 @@ export default class Recipe extends RecipeModule {
 
     config: TypeNormalisedInput;
 
-    emailVerificationRecipe: EmailVerificationRecipe;
-
     private emailPasswordRecipe: EmailPasswordRecipe;
 
     private thirdPartyRecipe: ThirdPartyRecipe | undefined;
@@ -66,7 +63,6 @@ export default class Recipe extends RecipeModule {
         isInServerlessEnv: boolean,
         config: TypeInput,
         recipes: {
-            emailVerificationInstance: EmailVerificationRecipe | undefined;
             thirdPartyInstance: ThirdPartyRecipe | undefined;
             emailPasswordInstance: EmailPasswordRecipe | undefined;
         },
@@ -99,28 +95,9 @@ export default class Recipe extends RecipeModule {
         this.emailDelivery =
             ingredients.emailDelivery === undefined
                 ? new EmailDeliveryIngredient(
-                      this.config.getEmailDeliveryConfig(
-                          this.recipeInterfaceImpl,
-                          emailPasswordRecipeImplementation,
-                          this.isInServerlessEnv
-                      )
+                      this.config.getEmailDeliveryConfig(emailPasswordRecipeImplementation, this.isInServerlessEnv)
                   )
                 : ingredients.emailDelivery;
-
-        this.emailVerificationRecipe =
-            recipes.emailVerificationInstance !== undefined
-                ? recipes.emailVerificationInstance
-                : new EmailVerificationRecipe(
-                      recipeId,
-                      appInfo,
-                      isInServerlessEnv,
-                      {
-                          ...this.config.emailVerificationFeature,
-                      },
-                      {
-                          emailDelivery: this.emailDelivery,
-                      }
-                  );
 
         this.emailPasswordRecipe =
             recipes.emailPasswordInstance !== undefined
@@ -143,7 +120,6 @@ export default class Recipe extends RecipeModule {
                           },
                           resetPasswordUsingTokenFeature: this.config.resetPasswordUsingTokenFeature,
                       },
-                      { emailVerificationInstance: this.emailVerificationRecipe },
                       {
                           emailDelivery: this.emailDelivery,
                       }
@@ -170,9 +146,7 @@ export default class Recipe extends RecipeModule {
                                   providers: this.config.providers,
                               },
                           },
-                          {
-                              emailVerificationInstance: this.emailVerificationRecipe,
-                          },
+                          {},
                           {
                               emailDelivery: this.emailDelivery,
                           }
@@ -190,7 +164,6 @@ export default class Recipe extends RecipeModule {
                     config,
                     {
                         emailPasswordInstance: undefined,
-                        emailVerificationInstance: undefined,
                         thirdPartyInstance: undefined,
                     },
                     {
@@ -221,10 +194,7 @@ export default class Recipe extends RecipeModule {
     }
 
     getAPIsHandled = (): APIHandled[] => {
-        let apisHandled = [
-            ...this.emailPasswordRecipe.getAPIsHandled(),
-            ...this.emailVerificationRecipe.getAPIsHandled(),
-        ];
+        let apisHandled = [...this.emailPasswordRecipe.getAPIsHandled()];
         if (this.thirdPartyRecipe !== undefined) {
             apisHandled.push(...this.thirdPartyRecipe.getAPIsHandled());
         }
@@ -247,7 +217,7 @@ export default class Recipe extends RecipeModule {
         ) {
             return await this.thirdPartyRecipe.handleAPIRequest(id, req, res, path, method);
         }
-        return await this.emailVerificationRecipe.handleAPIRequest(id, req, res, path, method);
+        return false;
     };
 
     handleError = async (
@@ -263,15 +233,12 @@ export default class Recipe extends RecipeModule {
             } else if (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)) {
                 return await this.thirdPartyRecipe.handleError(err, request, response);
             }
-            return await this.emailVerificationRecipe.handleError(err, request, response);
+            throw err;
         }
     };
 
     getAllCORSHeaders = (): string[] => {
-        let corsHeaders = [
-            ...this.emailVerificationRecipe.getAllCORSHeaders(),
-            ...this.emailPasswordRecipe.getAllCORSHeaders(),
-        ];
+        let corsHeaders = [...this.emailPasswordRecipe.getAllCORSHeaders()];
         if (this.thirdPartyRecipe !== undefined) {
             corsHeaders.push(...this.thirdPartyRecipe.getAllCORSHeaders());
         }
@@ -282,19 +249,8 @@ export default class Recipe extends RecipeModule {
         return (
             STError.isErrorFromSuperTokens(err) &&
             (err.fromRecipe === Recipe.RECIPE_ID ||
-                this.emailVerificationRecipe.isErrorFromThisRecipe(err) ||
                 this.emailPasswordRecipe.isErrorFromThisRecipe(err) ||
                 (this.thirdPartyRecipe !== undefined && this.thirdPartyRecipe.isErrorFromThisRecipe(err)))
         );
-    };
-
-    // helper functions...
-
-    getEmailForUserId = async (userId: string, userContext: any) => {
-        let userInfo = await this.recipeInterfaceImpl.getUserById({ userId, userContext });
-        if (userInfo === undefined) {
-            throw new Error("Unknown User ID provided");
-        }
-        return userInfo.email;
     };
 }

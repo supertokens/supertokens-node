@@ -16,7 +16,7 @@
 import { BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
-import { sendNon200Response } from "../../utils";
+import { sendNon200ResponseWithMessage } from "../../utils";
 import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, VALIDATE_KEY_API } from "./constants";
 import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
@@ -73,5 +73,5 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
 }
 
 export function sendUnauthorisedAccess(res: BaseResponse) {
-    sendNon200Response(res, "Unauthorised access", 401);
+    sendNon200ResponseWithMessage(res, "Unauthorised access", 401);
 }

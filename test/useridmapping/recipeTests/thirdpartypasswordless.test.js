@@ -8,7 +8,7 @@ const { Querier } = require("../../../lib/build/querier");
 const { maxVersion } = require("../../../lib/build/utils");
 
 describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
-    "[test/useridmapping/recipeTests/emailpassword.test.js]"
+    "[test/useridmapping/recipeTests/thirdpartypasswordless.test.js]"
 )}`, function () {
     beforeEach(async function () {
         await killAllST();
@@ -62,13 +62,8 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
             }
 
             {
+                const email = "test2@example.com";
                 // create a new ThirdParty user
-
-                let email = {
-                    id: "test2@example.com",
-                    isVerified: true,
-                };
-
                 let signUpResponse = await ThirdPartyPasswordlessRecipe.thirdPartySignInUp("google", "tpId", email);
 
                 // map the users id
@@ -85,7 +80,7 @@ describe(`userIdMapping with thirdPartyPasswordless: ${printPath(
                     let response = await ThirdPartyPasswordlessRecipe.getUserById(superTokensUserId);
                     assert.ok(response !== undefined);
                     assert.strictEqual(response.id, externalId);
-                    assert.strictEqual(response.email, email.id);
+                    assert.strictEqual(response.email, email);
                 }
             }
 

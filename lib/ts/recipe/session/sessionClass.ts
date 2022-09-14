@@ -15,7 +15,7 @@
 import { BaseResponse } from "../../framework";
 import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
 import STError from "./error";
-import { SessionContainerInterface } from "./types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
 
 export default class Session implements SessionContainerInterface {
@@ -92,7 +92,7 @@ export default class Session implements SessionContainerInterface {
         return this.userId;
     };
 
-    getAccessTokenPayload = () => {
+    getAccessTokenPayload = (_userContext?: any) => {
         return this.userDataInAccessToken;
     };
 
@@ -104,35 +104,15 @@ export default class Session implements SessionContainerInterface {
         return this.accessToken;
     };
 
-    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any) => {
-        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
-            accessToken: this.getAccessToken(),
-            newAccessTokenPayload,
-            userContext: userContext === undefined ? {} : userContext,
-        });
-        if (response === undefined) {
-            clearSessionFromCookie(this.helpers.config, this.res);
-            throw new STError({
-                message: "Session does not exist anymore",
-                type: STError.UNAUTHORISED,
-            });
+    mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any) => {
+        const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
+        for (const key of Object.keys(accessTokenPayloadUpdate)) {
+            if (accessTokenPayloadUpdate[key] === null) {
+                delete updatedPayload[key];
+            }
         }
-        this.userDataInAccessToken = response.session.userDataInJWT;
-        if (response.accessToken !== undefined) {
-            this.accessToken = response.accessToken.token;
-            setFrontTokenInHeaders(
-                this.res,
-                response.session.userId,
-                response.accessToken.expiry,
-                response.session.userDataInJWT
-            );
-            attachAccessTokenToCookie(
-                this.helpers.config,
-                this.res,
-                response.accessToken.token,
-                response.accessToken.expiry
-            );
-        }
+
+        await this.updateAccessTokenPayload(updatedPayload, userContext);
     };
 
     getTimeCreated = async (userContext?: any): Promise<number> => {
@@ -163,5 +143,79 @@ export default class Session implements SessionContainerInterface {
             });
         }
         return sessionInfo.expiry;
+    };
+
+    assertClaims = async (claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> => {
+        let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
+            accessTokenPayload: this.getAccessTokenPayload(userContext),
+            userId: this.getUserId(userContext),
+            claimValidators,
+            userContext,
+        });
+
+        if (validateClaimResponse.accessTokenPayloadUpdate !== undefined) {
+            await this.mergeIntoAccessTokenPayload(validateClaimResponse.accessTokenPayloadUpdate, userContext);
+        }
+
+        if (validateClaimResponse.invalidClaims.length !== 0) {
+            throw new STError({
+                type: "INVALID_CLAIMS",
+                message: "INVALID_CLAIMS",
+                payload: validateClaimResponse.invalidClaims,
+            });
+        }
+    };
+
+    fetchAndSetClaim = async <T>(claim: SessionClaim<T>, userContext?: any) => {
+        const update = await claim.build(this.getUserId(userContext), userContext);
+        return this.mergeIntoAccessTokenPayload(update, userContext);
+    };
+
+    setClaimValue = <T>(claim: SessionClaim<T>, value: T, userContext?: any) => {
+        const update = claim.addToPayload_internal({}, value, userContext);
+        return this.mergeIntoAccessTokenPayload(update, userContext);
+    };
+
+    getClaimValue = async <T>(claim: SessionClaim<T>, userContext?: any) => {
+        return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext);
+    };
+
+    removeClaim = (claim: SessionClaim<any>, userContext?: any) => {
+        const update = claim.removeFromPayloadByMerge_internal({}, userContext);
+        return this.mergeIntoAccessTokenPayload(update, userContext);
+    };
+
+    /**
+     * @deprecated Use mergeIntoAccessTokenPayload
+     */
+    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext: any) => {
+        let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
+            accessToken: this.getAccessToken(),
+            newAccessTokenPayload,
+            userContext: userContext === undefined ? {} : userContext,
+        });
+        if (response === undefined) {
+            clearSessionFromCookie(this.helpers.config, this.res);
+            throw new STError({
+                message: "Session does not exist anymore",
+                type: STError.UNAUTHORISED,
+            });
+        }
+        this.userDataInAccessToken = response.session.userDataInJWT;
+        if (response.accessToken !== undefined) {
+            this.accessToken = response.accessToken.token;
+            setFrontTokenInHeaders(
+                this.res,
+                response.session.userId,
+                response.accessToken.expiry,
+                response.session.userDataInJWT
+            );
+            attachAccessTokenToCookie(
+                this.helpers.config,
+                this.res,
+                response.accessToken.token,
+                response.accessToken.expiry
+            );
+        }
     };
 }

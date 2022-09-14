@@ -8,7 +8,6 @@ export default class BackwardCompatibilityService
     private isInServerlessEnv;
     private appInfo;
     private resetPasswordUsingTokenFeature;
-    private emailVerificationBackwardCompatibilityService;
     constructor(
         recipeInterfaceImpl: RecipeInterface,
         appInfo: NormalisedAppinfo,
@@ -19,22 +18,11 @@ export default class BackwardCompatibilityService
                 passwordResetURLWithToken: string,
                 userContext: any
             ) => Promise<void>;
-        },
-        emailVerificationFeature?: {
-            createAndSendCustomEmail?: (
-                user: User,
-                emailVerificationURLWithToken: string,
-                userContext: any
-            ) => Promise<void>;
         }
     );
     sendEmail: (
-        input:
-            | (import("../../../../emailverification/types").TypeEmailVerificationEmailDeliveryInput & {
-                  userContext: any;
-              })
-            | (import("../../../types").TypeEmailPasswordPasswordResetEmailDeliveryInput & {
-                  userContext: any;
-              })
+        input: import("../../../types").TypeEmailPasswordPasswordResetEmailDeliveryInput & {
+            userContext: any;
+        }
     ) => Promise<void>;
 }

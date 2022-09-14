@@ -66,41 +66,6 @@ export default class Wrapper {
     }): Promise<{
         status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
     }>;
-    static createEmailVerificationToken(
-        userId: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "OK";
-              token: string;
-          }
-        | {
-              status: "EMAIL_ALREADY_VERIFIED_ERROR";
-          }
-    >;
-    static verifyEmailUsingToken(
-        token: string,
-        userContext?: any
-    ): Promise<
-        | {
-              status: "EMAIL_VERIFICATION_INVALID_TOKEN_ERROR";
-          }
-        | User
-        | undefined
-    >;
-    static isEmailVerified(userId: string, userContext?: any): Promise<boolean>;
-    static revokeEmailVerificationTokens(
-        userId: string,
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-    }>;
-    static unverifyEmail(
-        userId: string,
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-    }>;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {
             userContext?: any;
@@ -115,11 +80,6 @@ export declare let getUserById: typeof Wrapper.getUserById;
 export declare let getUserByEmail: typeof Wrapper.getUserByEmail;
 export declare let createResetPasswordToken: typeof Wrapper.createResetPasswordToken;
 export declare let resetPasswordUsingToken: typeof Wrapper.resetPasswordUsingToken;
-export declare let createEmailVerificationToken: typeof Wrapper.createEmailVerificationToken;
-export declare let verifyEmailUsingToken: typeof Wrapper.verifyEmailUsingToken;
-export declare let isEmailVerified: typeof Wrapper.isEmailVerified;
-export declare let revokeEmailVerificationTokens: typeof Wrapper.revokeEmailVerificationTokens;
-export declare let unverifyEmail: typeof Wrapper.unverifyEmail;
 export declare let updateEmailOrPassword: typeof Wrapper.updateEmailOrPassword;
 export type { RecipeInterface, User, APIOptions, APIInterface };
 export declare let sendEmail: typeof Wrapper.sendEmail;

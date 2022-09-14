@@ -22,6 +22,7 @@ let nock = require("nock");
 const express = require("express");
 const request = require("supertest");
 let Session = require("../../recipe/session");
+const EmailVerification = require("../../recipe/emailverification");
 let { middleware, errorHandler } = require("../../framework/express");
 
 describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")}`, function () {
@@ -289,8 +290,6 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(await ThirdParty.isEmailVerified(response1.body.user.id), true);
-
         let response2 = await new Promise((resolve) =>
             request(app)
                 .post("/auth/signinup")
@@ -392,6 +391,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -449,7 +449,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(await ThirdParty.isEmailVerified(response1.body.user.id), true);
+        assert.strictEqual(await EmailVerification.isEmailVerified(response1.body.user.id), true);
 
         nock("https://test.com").post("/oauth/token").reply(200, {});
 
@@ -505,6 +505,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
                 websiteDomain: "supertokens.io",
             },
             recipeList: [
+                EmailVerification.init({ mode: "OPTIONAL" }),
                 Session.init({
                     antiCsrf: "VIA_TOKEN",
                 }),
@@ -562,7 +563,7 @@ describe(`signinupTest: ${printPath("[test/thirdparty/signinupFeature.test.js]")
         assert.strictEqual(cookies1.idRefreshTokenDomain, undefined);
         assert.notStrictEqual(cookies1.frontToken, undefined);
 
-        assert.strictEqual(await ThirdParty.isEmailVerified(response1.body.user.id), false);
+        assert.strictEqual(await EmailVerification.isEmailVerified(response1.body.user.id), false);
     });
 
     it("test thirdparty provider doesn't exist", async function () {

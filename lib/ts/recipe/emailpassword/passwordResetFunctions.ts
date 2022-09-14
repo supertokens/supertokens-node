@@ -18,17 +18,6 @@ import { NormalisedAppinfo } from "../../types";
 import axios, { AxiosError } from "axios";
 import { logDebugMessage } from "../../logger";
 
-export function getResetPasswordURL(appInfo: NormalisedAppinfo) {
-    return async (_: User): Promise<string> => {
-        // according to https://github.com/supertokens/supertokens-auth-react/issues/6
-        return (
-            appInfo.websiteDomain.getAsStringDangerous() +
-            appInfo.websiteBasePath.getAsStringDangerous() +
-            "/reset-password"
-        );
-    };
-}
-
 export function createAndSendCustomEmail(appInfo: NormalisedAppinfo) {
     return async (user: User, passwordResetURLWithToken: string) => {
         // related issue: https://github.com/supertokens/supertokens-node/issues/38

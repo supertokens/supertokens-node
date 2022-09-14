@@ -6,6 +6,7 @@ const { ProcessState } = require("../../lib/build/processState");
 const UserRolesRecipe = require("../../lib/build/recipe/userroles").default;
 const { Querier } = require("../../lib/build/querier");
 const { maxVersion } = require("../../lib/build/utils");
+const { default: SessionRecipe } = require("../../lib/build/recipe/session/recipe");
 
 describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]")}`, function () {
     beforeEach(async function () {
@@ -32,7 +33,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRolesRecipe.init()],
+                recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
             // Only run for version >= 2.14
@@ -80,7 +81,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRolesRecipe.init()],
+                recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
             // Only run for version >= 2.14
@@ -135,7 +136,7 @@ describe(`addRoleToUserTest: ${printPath("[test/userroles/addRoleToUser.test.js]
                     appName: "SuperTokens",
                     websiteDomain: "supertokens.io",
                 },
-                recipeList: [UserRolesRecipe.init()],
+                recipeList: [SessionRecipe.init(), UserRolesRecipe.init()],
             });
 
             // Only run for version >= 2.14

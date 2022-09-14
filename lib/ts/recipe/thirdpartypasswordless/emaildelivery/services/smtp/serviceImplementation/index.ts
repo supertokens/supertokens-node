@@ -20,9 +20,7 @@ import {
     TypeInputSendRawEmail,
     GetContentResult,
 } from "../../../../../../ingredients/emaildelivery/services/smtp";
-import { getServiceImplementation as getEmailVerificationServiceImplementation } from "../../../../../emailverification/emaildelivery/services/smtp/serviceImplementation";
 import { getServiceImplementation as getPasswordlessServiceImplementation } from "../../../../../passwordless/emaildelivery/services/smtp/serviceImplementation";
-import DerivedEV from "./emailVerificationServiceImplementation";
 import DerivedPwdless from "./passwordlessServiceImplementation";
 
 export function getServiceImplementation(
@@ -32,7 +30,6 @@ export function getServiceImplementation(
         email: string;
     }
 ): ServiceInterface<TypeThirdPartyPasswordlessEmailDeliveryInput> {
-    let emailVerificationServiceImpl = getEmailVerificationServiceImplementation(transporter, from);
     let passwordlessServiceImpl = getPasswordlessServiceImplementation(transporter, from);
     return {
         sendRawEmail: async function (input: TypeInputSendRawEmail) {
@@ -46,9 +43,6 @@ export function getServiceImplementation(
         getContent: async function (
             input: TypeThirdPartyPasswordlessEmailDeliveryInput & { userContext: any }
         ): Promise<GetContentResult> {
-            if (input.type === "EMAIL_VERIFICATION") {
-                return await emailVerificationServiceImpl.getContent.bind(DerivedEV(this))(input);
-            }
             return await passwordlessServiceImpl.getContent.bind(DerivedPwdless(this))(input);
         },
     };

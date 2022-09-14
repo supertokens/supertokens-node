@@ -99,10 +99,6 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm[0].id, "email");
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm.length, 1);
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm[0].id, "password");
-
-        let emailVerificationFeatureEP = emailpassword.config.emailVerificationFeature;
-
-        let emailVerificationRecipe = thirdpartyemailpassword.emailVerificationRecipe;
     });
 
     it("test config for thirdpartyemailpassword module, with provider", async function () {
@@ -151,9 +147,5 @@ describe(`configTest: ${printPath("[test/thirdpartyemailpassword/config.test.js]
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForGenerateTokenForm[0].id, "email");
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm.length, 1);
         assert.strictEqual(resetPasswordUsingTokenFeature.formFieldsForPasswordResetForm[0].id, "password");
-
-        let emailVerificationFeatureEP = emailpassword.config.emailVerificationFeature;
-
-        let emailVerificationRecipe = thirdpartyemailpassword.emailVerificationRecipe;
     });
 });

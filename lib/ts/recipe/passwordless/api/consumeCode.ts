@@ -56,6 +56,7 @@ export default async function consumeCode(apiImplementation: APIInterface, optio
         });
     }
 
+    const userContext = makeDefaultUserContextFromAPI(options.req);
     let result = await apiImplementation.consumeCodePOST(
         deviceId !== undefined
             ? {
@@ -63,13 +64,13 @@ export default async function consumeCode(apiImplementation: APIInterface, optio
                   userInputCode,
                   preAuthSessionId,
                   options,
-                  userContext: makeDefaultUserContextFromAPI(options.req),
+                  userContext,
               }
             : {
                   linkCode,
                   options,
                   preAuthSessionId,
-                  userContext: makeDefaultUserContextFromAPI(options.req),
+                  userContext,
               }
     );
 

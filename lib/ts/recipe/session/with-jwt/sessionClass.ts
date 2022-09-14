@@ -16,7 +16,7 @@ import * as JsonWebToken from "jsonwebtoken";
 import * as assert from "assert";
 
 import { RecipeInterface as OpenIdRecipeInterface } from "../../openid/types";
-import { SessionContainerInterface } from "../types";
+import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "../types";
 import { ACCESS_TOKEN_PAYLOAD_JWT_PROPERTY_NAME_KEY } from "./constants";
 import { addJWTToAccessTokenPayload } from "./utils";
 
@@ -56,7 +56,34 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         return this.originalSessionClass.getExpiry(userContext);
     };
 
-    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext?: any): Promise<void> => {
+    assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
+        return this.originalSessionClass.assertClaims.bind(this)(claimValidators, userContext);
+    }
+
+    fetchAndSetClaim = <T>(claim: SessionClaim<T>, userContext?: any) => {
+        return this.originalSessionClass.fetchAndSetClaim.bind(this)(claim, userContext);
+    };
+
+    setClaimValue = <T>(claim: SessionClaim<T>, value: T, userContext?: any) => {
+        return this.originalSessionClass.setClaimValue.bind(this)(claim, value, userContext);
+    };
+
+    getClaimValue = <T>(claim: SessionClaim<T>, userContext?: any) => {
+        return this.originalSessionClass.getClaimValue.bind(this)(claim, userContext);
+    };
+
+    removeClaim = (claim: SessionClaim<any>, userContext?: any) => {
+        return this.originalSessionClass.removeClaim.bind(this)(claim, userContext);
+    };
+
+    mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any): Promise<void> => {
+        return this.originalSessionClass.mergeIntoAccessTokenPayload.bind(this)(accessTokenPayloadUpdate, userContext);
+    };
+
+    /**
+     * @deprecated use mergeIntoAccessTokenPayload instead
+     */
+    updateAccessTokenPayload = async (newAccessTokenPayload: any | undefined, userContext?: any): Promise<void> => {
         newAccessTokenPayload =
             newAccessTokenPayload === null || newAccessTokenPayload === undefined ? {} : newAccessTokenPayload;
         let accessTokenPayload = this.getAccessTokenPayload(userContext);
@@ -96,6 +123,6 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
             userContext,
         });
 
-        return await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload, userContext);
+        await this.originalSessionClass.updateAccessTokenPayload(newAccessTokenPayload, userContext);
     };
 }
