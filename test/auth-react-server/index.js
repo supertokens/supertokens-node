@@ -25,6 +25,10 @@ let cookieParser = require("cookie-parser");
 let bodyParser = require("body-parser");
 let http = require("http");
 let cors = require("cors");
+let EmailVerificationRaw = require("../../lib/build/recipe/emailverification/recipe").default;
+let EmailVerification = require("../../recipe/emailverification");
+let UserRolesRaw = require("../../lib/build/recipe/userroles/recipe").default;
+let UserRoles = require("../../recipe/userroles");
 let PasswordlessRaw = require("../../lib/build/recipe/passwordless/recipe").default;
 let Passwordless = require("../../recipe/passwordless");
 let ThirdPartyPasswordless = require("../../recipe/thirdpartypasswordless");
@@ -118,7 +122,7 @@ app.get("/test/getDevice", (req, res) => {
 });
 
 app.get("/test/featureFlags", (req, res) => {
-    const available = ["passwordless", "thirdpartypasswordless", "generalerror"];
+    const available = ["passwordless", "thirdpartypasswordless", "generalerror", "userroles"];
 
     res.send({
         available,
@@ -130,11 +134,18 @@ app.get("/ping", async (req, res) => {
 });
 
 app.post("/startst", async (req, res) => {
+    if (req.body && req.body.configUpdates) {
+        for (const update of req.body.configUpdates) {
+            await setKeyValueInConfig(update.key, update.value);
+        }
+    }
     let pid = await startST();
     res.send(pid + "");
 });
 
 app.post("/beforeeach", async (req, res) => {
+    deviceStore = new Map();
+
     await killAllST();
     await setupST();
     res.send();
@@ -171,16 +182,74 @@ app.get("/sessioninfo", verifySession(), async (req, res) => {
     }
 });
 
+app.get("/unverifyEmail", verifySession(), async (req, res) => {
+    let session = req.session;
+    await EmailVerification.unverifyEmail(session.getUserId());
+    await session.fetchAndSetClaim(EmailVerification.EmailVerificationClaim);
+    res.send({ status: "OK" });
+});
+
+app.post("/setRole", verifySession(), async (req, res) => {
+    let session = req.session;
+    await UserRoles.createNewRoleOrAddPermissions(req.body.role, req.body.permissions);
+    await UserRoles.addRoleToUser(session.getUserId(), req.body.role);
+    await session.fetchAndSetClaim(UserRoles.UserRoleClaim);
+    await session.fetchAndSetClaim(UserRoles.PermissionClaim);
+    res.send({ status: "OK" });
+});
+
+app.post(
+    "/checkRole",
+    verifySession({
+        overrideGlobalClaimValidators: async (gv, _session, userContext) => {
+            const res = [...gv];
+            const body = await userContext._default.request.getJSONBody();
+            if (body.role !== undefined) {
+                const info = body.role;
+                res.push(UserRoles.UserRoleClaim.validators[info.validator](...info.args));
+            }
+
+            if (body.permission !== undefined) {
+                const info = body.permission;
+                res.push(UserRoles.PermissionClaim.validators[info.validator](...info.args));
+            }
+            return res;
+        },
+    }),
+    async (req, res) => {
+        res.send({ status: "OK" });
+    }
+);
+
 app.get("/token", async (_, res) => {
     res.send({
         latestURLWithToken,
     });
 });
 
+app.post("/test/setFlow", (req, res) => {
+    initST({
+        passwordlessConfig: {
+            contactMethod: req.body.contactMethod,
+            flowType: req.body.flowType,
+            createAndSendCustomTextMessage: saveCode,
+            createAndSendCustomEmail: saveCode,
+        },
+    });
+    res.sendStatus(200);
+});
+
+app.get("/test/getDevice", (req, res) => {
+    res.send(deviceStore.get(req.query.preAuthSessionId));
+});
+
 app.use(errorHandler());
 
 app.use(async (err, req, res, next) => {
-    res.status(500).send(err);
+    try {
+        console.error(err);
+        res.status(500).send(err);
+    } catch (ignored) {}
 });
 
 let server = http.createServer(app);
@@ -208,11 +277,13 @@ server.listen(process.env.NODE_PORT === undefined ? 8083 : process.env.NODE_PORT
 })(process.env.START === "true");
 
 function initST({ passwordlessConfig } = {}) {
+    UserRolesRaw.reset();
+    ThirdPartyPasswordlessRaw.reset();
     PasswordlessRaw.reset();
+    EmailVerificationRaw.reset();
     EmailPasswordRaw.reset();
     ThirdPartyRaw.reset();
     ThirdPartyEmailPasswordRaw.reset();
-    ThirdPartyPasswordlessRaw.reset();
     SessionRaw.reset();
 
     SuperTokensRaw.reset();
@@ -224,36 +295,44 @@ function initST({ passwordlessConfig } = {}) {
         createAndSendCustomEmail: saveCode,
         ...passwordlessConfig,
     };
+
     const recipeList = [
+        EmailVerification.init({
+            mode: "OPTIONAL",
+            createAndSendCustomEmail: (_, emailVerificationURLWithToken) => {
+                console.log(emailVerificationURLWithToken);
+                latestURLWithToken = emailVerificationURLWithToken;
+            },
+            override: {
+                apis: (oI) => {
+                    return {
+                        ...oI,
+                        generateEmailVerifyTokenPOST: async function (input) {
+                            let body = await input.options.req.getJSONBody();
+                            if (body.generalError === true) {
+                                return {
+                                    status: "GENERAL_ERROR",
+                                    message: "general error from API email verification code",
+                                };
+                            }
+                            return oI.generateEmailVerifyTokenPOST(input);
+                        },
+                        verifyEmailPOST: async function (input) {
+                            let body = await input.options.req.getJSONBody();
+                            if (body.generalError === true) {
+                                return {
+                                    status: "GENERAL_ERROR",
+                                    message: "general error from API email verify",
+                                };
+                            }
+                            return oI.verifyEmailPOST(input);
+                        },
+                    };
+                },
+            },
+        }),
         EmailPassword.init({
             override: {
-                emailVerificationFeature: {
-                    apis: (oI) => {
-                        return {
-                            ...oI,
-                            generateEmailVerifyTokenPOST: async function (input) {
-                                let body = await input.options.req.getJSONBody();
-                                if (body.generalError === true) {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API email verification code",
-                                    };
-                                }
-                                return oI.generateEmailVerifyTokenPOST(input);
-                            },
-                            verifyEmailPOST: async function (input) {
-                                let body = await input.options.req.getJSONBody();
-                                if (body.generalError === true) {
-                                    return {
-                                        status: "GENERAL_ERROR",
-                                        message: "general error from API email verify",
-                                    };
-                                }
-                                return oI.verifyEmailPOST(input);
-                            },
-                        };
-                    },
-                },
                 apis: (oI) => {
                     return {
                         ...oI,
@@ -321,12 +400,8 @@ function initST({ passwordlessConfig } = {}) {
             },
             resetPasswordUsingTokenFeature: {
                 createAndSendCustomEmail: (_, passwordResetURLWithToken) => {
+                    console.log(passwordResetURLWithToken);
                     latestURLWithToken = passwordResetURLWithToken;
-                },
-            },
-            emailVerificationFeature: {
-                createAndSendCustomEmail: (_, emailVerificationURLWithToken) => {
-                    latestURLWithToken = emailVerificationURLWithToken;
                 },
             },
         }),
@@ -381,6 +456,12 @@ function initST({ passwordlessConfig } = {}) {
         ThirdPartyEmailPassword.init({
             signUpFeature: {
                 formFields,
+            },
+            resetPasswordUsingTokenFeature: {
+                createAndSendCustomEmail: (_, passwordResetURLWithToken) => {
+                    console.log(passwordResetURLWithToken);
+                    latestURLWithToken = passwordResetURLWithToken;
+                },
             },
             providers: [
                 ThirdPartyEmailPassword.Google({
@@ -614,6 +695,7 @@ function initST({ passwordlessConfig } = {}) {
                 },
             },
         }),
+        UserRoles.init(),
     ];
 
     SuperTokens.init({
