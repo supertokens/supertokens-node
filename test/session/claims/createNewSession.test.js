@@ -168,6 +168,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             if (maxVersion(apiVersion, "2.12") === "2.12") {
                 return;
             }
+            const includesNullInPayload = maxVersion(apiVersion, "2.14") !== "2.14";
             const response = mockResponse();
             const res = await Session.createNewSession(response, "someId", payloadParam);
 
@@ -175,7 +176,7 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             assert.strictEqual(Object.keys(payloadParam).length, 1);
 
             const payload = res.getAccessTokenPayload();
-            assert.strictEqual(Object.keys(payload).length, 5);
+            assert.strictEqual(Object.keys(payload).length, includesNullInPayload ? 5 : 4);
             // We have the prop from the payload param
             assert.strictEqual(payload["initial"], true);
             // We have the boolean claim
@@ -185,11 +186,18 @@ describe(`sessionClaims/createNewSession: ${printPath("[test/session/claims/crea
             // We have the custom claim
             // The resulting payload is different from the input: it doesn't container undefined
             assert.deepStrictEqual(payload["user-custom"], "asdf");
-            assert.deepStrictEqual(payload["user-custom2"], {
-                inner: "asdf",
-                nullProp: null,
-            });
-            assert.deepStrictEqual(payload["user-custom3"], null);
+            if (includesNullInPayload) {
+                assert.deepStrictEqual(payload["user-custom2"], {
+                    inner: "asdf",
+                    nullProp: null,
+                });
+                assert.deepStrictEqual(payload["user-custom3"], null);
+            } else {
+                assert.deepStrictEqual(payload["user-custom2"], {
+                    inner: "asdf",
+                });
+                assert.deepStrictEqual(payload["user-custom3"], undefined);
+            }
         });
     });
 });
