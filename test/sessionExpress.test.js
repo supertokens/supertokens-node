@@ -75,7 +75,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -140,7 +140,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -195,12 +195,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
         app.post("/session/verify", async (req, res) => {
-            await Session.getSession(req, res, true);
+            await Session.getSession(req, res);
             res.status(200).send("");
         });
 
@@ -314,7 +314,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -419,12 +419,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
         app.post("/session/verify", async (req, res) => {
-            await Session.getSession(req, res, true);
+            await Session.getSession(req, res);
             res.status(200).send("");
         });
         app.post("/auth/session/refresh", async (req, res) => {
@@ -432,7 +432,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
         app.post("/session/revoke", async (req, res) => {
-            let session = await Session.getSession(req, res, true);
+            let session = await Session.getSession(req, res);
             await session.revokeSession();
             res.status(200).send("");
         });
@@ -567,6 +567,352 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert(sessionRevokedResponseExtracted.idRefreshTokenFromHeader === "remove");
     });
 
+    it("test basic usage of express sessions with headers", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                    getTokenTransferMethod: () => "header",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/session/verify", async (req, res) => {
+            await Session.getSession(req, res);
+            res.status(200).send("");
+        });
+        app.post("/auth/session/refresh", async (req, res) => {
+            await Session.refreshSession(req, res);
+            res.status(200).send("");
+        });
+        app.post("/session/revoke", async (req, res) => {
+            let session = await Session.getSession(req, res);
+            await session.revokeSession();
+            res.status(200).send("");
+        });
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(res.antiCsrf === undefined);
+
+        assert.ok(res.accessTokenFromHeader);
+        assert.strictEqual(res.accessToken, undefined);
+
+        assert.ok(res.refreshTokenFromHeader);
+        assert.strictEqual(res.refreshToken, undefined);
+
+        assert.strictEqual(res.idRefreshTokenFromCookie, undefined);
+        assert.ok(res.idRefreshTokenFromHeader);
+
+        await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set("Authorization", `Bearer ${res.accessTokenFromHeader.value}`)
+                .set("st-id-refresh-token", res.idRefreshTokenFromHeader)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
+        assert(verifyState3 === undefined);
+
+        let res2 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("st-refresh-token", res.refreshTokenFromHeader.value)
+                    .set("st-id-refresh-token", res.idRefreshTokenFromHeader)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(res2.antiCsrf === undefined);
+        assert.ok(res2.accessTokenFromHeader);
+        assert.strictEqual(res2.accessToken, undefined);
+
+        assert.ok(res2.refreshTokenFromHeader);
+        assert.strictEqual(res2.refreshToken, undefined);
+
+        assert.strictEqual(res2.idRefreshTokenFromCookie, undefined);
+        assert.ok(res2.idRefreshTokenFromHeader);
+
+        let res3 = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/session/verify")
+                    .set("Authorization", `Bearer ${res2.accessTokenFromHeader.value}`)
+                    .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+        assert(verifyState !== undefined);
+        assert(res3.accessTokenFromHeader !== undefined);
+
+        ProcessState.getInstance().reset();
+
+        await new Promise((resolve) =>
+            request(app)
+                .post("/session/verify")
+                .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
+                .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
+        assert(verifyState2 === undefined);
+
+        let sessionRevokedResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/session/revoke")
+                .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
+                .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
+        assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader.value, "");
+        assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader.expiry, 0);
+        assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.value, "");
+        assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.expiry, 0);
+        assert.strictEqual(sessionRevokedResponseExtracted.idRefreshTokenFromHeader, "remove");
+    });
+
+    it("test cookie -> header upgrade flow", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(req, res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.post("/session/verify", verifySession(), async (req, res) => {
+            res.status(200).send("");
+        });
+        app.post("/auth/session/refresh", async (req, res) => {
+            await Session.refreshSession(req, res);
+            res.status(200).send("");
+        });
+        app.post("/session/revoke", async (req, res) => {
+            let session = await Session.getSession(req, res);
+            await session.revokeSession();
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert.notStrictEqual(res.accessToken, undefined);
+        assert.notStrictEqual(res.antiCsrf, undefined);
+        assert.notStrictEqual(res.idRefreshTokenFromCookie, undefined);
+        assert.notStrictEqual(res.idRefreshTokenFromHeader, undefined);
+        assert.notStrictEqual(res.refreshToken, undefined);
+
+        const verifyRes1 = await new Promise((resolve, reject) =>
+            request(app)
+                .post("/session/verify")
+                .set("Cookie", ["sAccessToken=" + res.accessToken + ";sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .set("rid", "anti-csrf;header")
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+                .expect(401)
+        );
+        assert.ok(verifyRes1);
+        assert.strictEqual(verifyRes1.status, 401);
+        assert.strictEqual(verifyRes1.text, '{"message":"try refresh token"}');
+
+        let verifyState3 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1500);
+        assert(verifyState3 === undefined);
+
+        let res2 = extractInfoFromResponse(
+            await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/auth/session/refresh")
+                    .set("Cookie", [
+                        "sRefreshToken=" + res.refreshToken,
+                        "sIdRefreshToken=" + res.idRefreshTokenFromCookie,
+                    ])
+                    .set("anti-csrf", res.antiCsrf)
+                    .set("rid", "anti-csrf;header")
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(res2.antiCsrf === undefined);
+        assert.ok(res2.accessTokenFromHeader);
+        assert.strictEqual(res2.accessToken, undefined);
+
+        assert.ok(res2.refreshTokenFromHeader);
+        assert.strictEqual(res2.refreshToken, undefined);
+
+        assert.strictEqual(res2.idRefreshTokenFromCookie, undefined);
+        assert.ok(res2.idRefreshTokenFromHeader);
+
+        let res3 = extractInfoFromResponse(
+            await new Promise((resolve, reject) =>
+                request(app)
+                    .post("/session/verify")
+                    .set("Authorization", `Bearer ${res2.accessTokenFromHeader.value}`)
+                    .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
+                    .set("rid", "anti-csrf;header")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+        let verifyState = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY);
+        assert(verifyState !== undefined);
+        assert(res3.accessTokenFromHeader !== undefined);
+
+        ProcessState.getInstance().reset();
+
+        await new Promise((resolve, reject) =>
+            request(app)
+                .post("/session/verify")
+                .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
+                .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
+                .set("rid", "anti-csrf;header")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let verifyState2 = await ProcessState.getInstance().waitForEvent(PROCESS_STATE.CALLING_SERVICE_IN_VERIFY, 1000);
+        assert(verifyState2 === undefined);
+
+        let sessionRevokedResponse = await new Promise((resolve, reject) =>
+            request(app)
+                .post("/session/revoke")
+                .set("Authorization", `Bearer ${res3.accessTokenFromHeader.value}`)
+                .set("st-id-refresh-token", res2.idRefreshTokenFromHeader)
+                .set("rid", "anti-csrf;header")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+        let sessionRevokedResponseExtracted = extractInfoFromResponse(sessionRevokedResponse);
+        assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader.value, "");
+        assert.strictEqual(sessionRevokedResponseExtracted.accessTokenFromHeader.expiry, 0);
+        assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.value, "");
+        assert.strictEqual(sessionRevokedResponseExtracted.refreshTokenFromHeader.expiry, 0);
+        assert.strictEqual(sessionRevokedResponseExtracted.idRefreshTokenFromHeader, "remove");
+    });
+
     it("test signout API works", async function () {
         await startST();
         SuperTokens.init({
@@ -588,7 +934,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -654,7 +1000,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         let sessionHandle = "";
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "", {}, {});
+            let session = await Session.createNewSession(req, res, "", {}, {});
             sessionHandle = session.getHandle();
             res.status(200).send("");
         });
@@ -726,7 +1072,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -893,12 +1239,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
         app.post("/session/verify", async (req, res) => {
-            let sessionResponse = await Session.getSession(req, res, true);
+            let sessionResponse = await Session.getSession(req, res);
             res.status(200).json({ userId: sessionResponse.userId });
         });
 
@@ -975,7 +1321,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -1059,21 +1405,21 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
         app.post("/usercreate", async (req, res) => {
-            await Session.createNewSession(res, "someUniqueUserId", {}, {});
+            await Session.createNewSession(req, res, "someUniqueUserId", {}, {});
             res.status(200).send("");
         });
         app.post("/session/revoke", async (req, res) => {
-            let session = await Session.getSession(req, res, true);
+            let session = await Session.getSession(req, res);
             await session.revokeSession();
             res.status(200).send("");
         });
 
         app.post("/session/revokeUserid", async (req, res) => {
-            let session = await Session.getSession(req, res, true);
+            let session = await Session.getSession(req, res);
             await Session.revokeAllSessionsForUser(session.getUserId());
             res.status("200").send("");
         });
@@ -1205,22 +1551,22 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
         app.post("/updateSessionData", async (req, res) => {
-            let session = await Session.getSession(req, res, true);
+            let session = await Session.getSession(req, res);
             await session.updateSessionData({ key: "value" });
             res.status(200).send("");
         });
         app.post("/getSessionData", async (req, res) => {
-            let session = await Session.getSession(req, res, true);
+            let session = await Session.getSession(req, res);
             let sessionData = await session.getSessionData();
             res.status(200).json(sessionData);
         });
 
         app.post("/updateSessionData2", async (req, res) => {
-            let session = await Session.getSession(req, res, true);
+            let session = await Session.getSession(req, res);
             await session.updateSessionData(null);
             res.status(200).send("");
         });
@@ -1362,11 +1708,11 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         });
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "user1", {}, {});
+            await Session.createNewSession(req, res, "user1", {}, {});
             res.status(200).send("");
         });
         app.post("/updateAccessTokenPayload", async (req, res) => {
-            let session = await Session.getSession(req, res, true);
+            let session = await Session.getSession(req, res);
             let accessTokenBefore = session.accessToken;
             await session.updateAccessTokenPayload({ key: "value" });
             let accessTokenAfter = session.accessToken;
@@ -1378,13 +1724,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
         app.post("/getAccessTokenPayload", async (req, res) => {
-            let session = await Session.getSession(req, res, true);
+            let session = await Session.getSession(req, res);
             let jwtPayload = session.getAccessTokenPayload();
             res.status(200).json(jwtPayload);
         });
 
         app.post("/updateAccessTokenPayload2", async (req, res) => {
-            let session = await Session.getSession(req, res, true);
+            let session = await Session.getSession(req, res);
             await session.updateAccessTokenPayload(null);
             res.status(200).send("");
         });
@@ -1587,7 +1933,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.post("/create", async (req, res) => {
             res.header("testHeader", "testValue");
             res.header("Access-Control-Expose-Headers", "customValue");
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -1608,7 +1954,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.deepEqual(response.headers.testheader, "testValue");
         assert.deepEqual(
             response.headers["access-control-expose-headers"],
-            "customValue, front-token, id-refresh-token, anti-csrf"
+            "customValue, front-token, st-id-refresh-token, anti-csrf"
         );
 
         //normal session headers
@@ -1641,12 +1987,12 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
         app.post("/session/verify", async (req, res) => {
-            let sessionResponse = await Session.getSession(req, res, true);
+            let sessionResponse = await Session.getSession(req, res);
             res.status(200).json({ userId: sessionResponse.userId });
         });
         app.post("/session/verifyAntiCsrfFalse", async (req, res) => {
@@ -1720,7 +2066,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.post("/session/verify", async (req, res) => {
             try {
-                await Session.getSession(req, res, true);
+                await Session.getSession(req, res);
             } catch (err) {
                 if (err.type === Session.Error.UNAUTHORISED) {
                     res.status(200).json({ success: true });
@@ -1832,7 +2178,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         const app = express();
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -1955,7 +2301,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -2027,7 +2373,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -2164,7 +2510,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -2359,7 +2705,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -2458,7 +2804,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.post("/create", async (req, res, next) => {
             try {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 res.status(200).send("");
             } catch (err) {
                 next(err);
@@ -2532,7 +2878,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -2609,7 +2955,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -2675,7 +3021,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -2742,7 +3088,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         const app = express();
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "id1", {}, {});
+            await Session.createNewSession(req, res, "id1", {}, {});
             res.status(200).send("");
         });
 
@@ -2912,7 +3258,7 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
 
         app.post("/session/verify", async (req, res, next) => {
             try {
-                await Session.getSession(req, res, true);
+                await Session.getSession(req, res);
                 res.status(200).send("");
             } catch (err) {
                 next(err);

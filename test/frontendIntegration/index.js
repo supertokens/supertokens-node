@@ -91,13 +91,25 @@ function getConfig(enableAntiCsrf, enableJWT, jwtPropertyName) {
                         functions: function (oI) {
                             return {
                                 ...oI,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oI.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oI.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -200,7 +212,7 @@ app.post("/reinitialiseBackendConfig", async (req, res) => {
 
 app.post("/login", async (req, res) => {
     let userId = req.body.userId;
-    let session = await Session.createNewSession(res, userId);
+    let session = await Session.createNewSession(req, res, userId);
     res.send(session.getUserId());
 });
 

@@ -105,18 +105,18 @@ describe(`signoutFeature: ${printPath("[test/emailpassword/signoutFeature.test.j
                     })
             )
         );
-        assert(response2.antiCsrf === undefined);
-        assert(response2.accessToken === "");
-        assert(response2.refreshToken === "");
-        assert(response2.idRefreshTokenFromHeader === "remove");
-        assert(response2.idRefreshTokenFromCookie === "");
-        assert(response2.accessTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response2.refreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response2.idRefreshTokenExpiry === "Thu, 01 Jan 1970 00:00:00 GMT");
-        assert(response2.accessTokenDomain === undefined);
-        assert(response2.refreshTokenDomain === undefined);
-        assert(response2.idRefreshTokenDomain === undefined);
-        assert(response2.frontToken === undefined);
+        assert.strictEqual(response2.antiCsrf, undefined);
+        assert.strictEqual(response2.accessToken, "");
+        assert.strictEqual(response2.refreshToken, "");
+        assert.strictEqual(response2.idRefreshTokenFromHeader, "remove");
+        assert.strictEqual(response2.idRefreshTokenFromCookie, "");
+        assert.strictEqual(response2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(response2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(response2.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.strictEqual(response2.accessTokenDomain, undefined);
+        assert.strictEqual(response2.refreshTokenDomain, undefined);
+        assert.strictEqual(response2.idRefreshTokenDomain, undefined);
+        assert.strictEqual(response2.frontToken, undefined);
     });
 
     // Disable default route and test that that API returns 404

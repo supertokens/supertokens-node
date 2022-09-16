@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, startST, killAllST, setupST, cleanST, mockResponse } = require("../../utils");
+const { printPath, startST, killAllST, setupST, cleanST, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const { default: SessionClass } = require("../../../lib/build/recipe/session/sessionClass");
 const sinon = require("sinon");
@@ -79,7 +79,7 @@ describe(`sessionClaims/fetchAndSetClaim: ${printPath("[test/session/claims/fetc
             });
 
             const response = mockResponse();
-            const res = await Session.createNewSession(response, "someId");
+            const res = await Session.createNewSession(mockRequest(), response, "someId");
 
             await Session.fetchAndSetClaim(res.getHandle(), TrueClaim);
 

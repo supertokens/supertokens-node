@@ -11,23 +11,20 @@ import {
 } from "./types";
 import * as SessionFunctions from "./sessionFunctions";
 import {
-    attachAccessTokenToCookie,
-    clearSessionFromCookie,
-    getAccessTokenFromCookie,
+    clearSession,
     getAntiCsrfTokenFromHeaders,
-    getIdRefreshTokenFromCookie,
-    getRefreshTokenFromCookie,
     setFrontTokenInHeaders,
-    getRidFromHeader,
+    getToken,
+    setToken,
 } from "./cookieAndHeaders";
 import { attachCreateOrRefreshSessionResponseToExpressRes, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
 import STError from "./error";
-import { normaliseHttpMethod, frontendHasInterceptor } from "../../utils";
+import { normaliseHttpMethod, frontendHasInterceptor, getRidFromHeader } from "../../utils";
 import { Querier } from "../../querier";
 import { PROCESS_STATE, ProcessState } from "../../processState";
 import NormalisedURLPath from "../../normalisedURLPath";
-import { JSONObject } from "../../types";
+import { JSONObject, NormalisedAppinfo } from "../../types";
 import { logDebugMessage } from "../../logger";
 import { BaseResponse } from "../../framework/response";
 import { BaseRequest } from "../../framework/request";
@@ -65,12 +62,14 @@ export type Helpers = {
     getHandshakeInfo: (forceRefetch?: boolean) => Promise<HandshakeInfo>;
     updateJwtSigningPublicKeyInfo: (keyList: KeyInfo[] | undefined, publicKey: string, expiryTime: number) => void;
     config: TypeNormalisedInput;
+    appInfo: NormalisedAppinfo;
     getRecipeImpl: () => RecipeInterface;
 };
 
 export default function getRecipeInterface(
     querier: Querier,
     config: TypeNormalisedInput,
+    appInfo: NormalisedAppinfo,
     getRecipeImplAfterOverrides: () => RecipeInterface
 ): RecipeInterface {
     let handshakeInfo: undefined | HandshakeInfo;
@@ -111,26 +110,37 @@ export default function getRecipeInterface(
 
     let obj: RecipeInterface = {
         createNewSession: async function ({
+            req,
             res,
             userId,
             accessTokenPayload = {},
             sessionData = {},
+            userContext,
         }: {
+            req: BaseRequest;
             res: BaseResponse;
             userId: string;
             accessTokenPayload?: any;
             sessionData?: any;
             userContext: any;
         }): Promise<Session> {
-            let response = await SessionFunctions.createNewSession(helpers, userId, accessTokenPayload, sessionData);
-            attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
+            const disableAntiCSRF = config.getTokenTransferMethod({ req, userContext }) === "header";
+            let response = await SessionFunctions.createNewSession(
+                helpers,
+                userId,
+                disableAntiCSRF,
+                accessTokenPayload,
+                sessionData
+            );
+            attachCreateOrRefreshSessionResponseToExpressRes(config, req, res, response, userContext);
             return new Session(
                 helpers,
                 response.accessToken.token,
                 response.session.handle,
                 response.session.userId,
                 response.session.userDataInJWT,
-                res
+                res,
+                req
             );
         },
 
@@ -144,6 +154,7 @@ export default function getRecipeInterface(
             req,
             res,
             options,
+            userContext,
         }: {
             req: BaseRequest;
             res: BaseResponse;
@@ -154,9 +165,27 @@ export default function getRecipeInterface(
             logDebugMessage("getSession: rid in header: " + frontendHasInterceptor(req));
             logDebugMessage("getSession: request method: " + req.getMethod());
             let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
+            const transferMethod = config.getTokenTransferMethod({ req, userContext });
 
-            let idRefreshToken = getIdRefreshTokenFromCookie(req);
+            let idRefreshToken = getToken(config, req, "idRefresh", userContext, transferMethod);
             if (idRefreshToken === undefined) {
+                idRefreshToken = getToken(
+                    config,
+                    req,
+                    "idRefresh",
+                    userContext,
+                    transferMethod === "cookie" ? "header" : "cookie"
+                );
+                if (idRefreshToken !== undefined) {
+                    logDebugMessage(
+                        "getSession: Returning try refresh token because idRefresh token were not sent as a " +
+                            transferMethod
+                    );
+                    throw new STError({
+                        message: "idRefreshToken sent with the wrong method. Please call the refresh API",
+                        type: STError.TRY_REFRESH_TOKEN,
+                    });
+                }
                 // we do not clear cookies here because of a
                 // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
 
@@ -175,7 +204,7 @@ export default function getRecipeInterface(
                     type: STError.UNAUTHORISED,
                 });
             }
-            let accessToken = getAccessTokenFromCookie(req);
+            let accessToken = getToken(config, req, "access", userContext, transferMethod);
             if (accessToken === undefined) {
                 // maybe the access token has expired.
                 /**
@@ -202,6 +231,7 @@ export default function getRecipeInterface(
             }
             try {
                 let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
+                const disableAntiCSRF = transferMethod === "header";
 
                 if (doAntiCsrfCheck === undefined) {
                     doAntiCsrfCheck = normaliseHttpMethod(req.getMethod()) !== "get";
@@ -212,7 +242,7 @@ export default function getRecipeInterface(
                     helpers,
                     accessToken,
                     antiCsrfToken,
-                    doAntiCsrfCheck,
+                    !disableAntiCSRF && doAntiCsrfCheck,
                     getRidFromHeader(req) !== undefined
                 );
                 if (response.accessToken !== undefined) {
@@ -222,7 +252,15 @@ export default function getRecipeInterface(
                         response.accessToken.expiry,
                         response.session.userDataInJWT
                     );
-                    attachAccessTokenToCookie(config, res, response.accessToken.token, response.accessToken.expiry);
+                    setToken(
+                        config,
+                        req,
+                        res,
+                        "access",
+                        response.accessToken.token,
+                        response.accessToken.expiry,
+                        userContext
+                    );
                     accessToken = response.accessToken.token;
                 }
                 logDebugMessage("getSession: Success!");
@@ -232,14 +270,15 @@ export default function getRecipeInterface(
                     response.session.handle,
                     response.session.userId,
                     response.session.userDataInJWT,
-                    res
+                    res,
+                    req
                 );
 
                 return session;
             } catch (err) {
                 if (err.type === STError.UNAUTHORISED) {
                     logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response");
-                    clearSessionFromCookie(config, res);
+                    clearSession(config, req, res, userContext);
                 }
                 throw err;
             }
@@ -331,10 +370,22 @@ export default function getRecipeInterface(
 
         refreshSession: async function (
             this: RecipeInterface,
-            { req, res }: { req: BaseRequest; res: BaseResponse }
+            { req, res, userContext }: { req: BaseRequest; res: BaseResponse; userContext: any }
         ): Promise<Session> {
             logDebugMessage("refreshSession: Started");
-            let inputIdRefreshToken = getIdRefreshTokenFromCookie(req);
+            let transferMethod = config.getTokenTransferMethod({ req, userContext });
+            // We do this before the fallback mechanism
+            const disableAntiCSRF = transferMethod === "header";
+            let inputIdRefreshToken = getToken(config, req, "idRefresh", userContext, transferMethod);
+
+            // We use a fallback mechanism here, to ensure there is a smooth upgrade path when switching transfer methods
+            // We only use it here and not while getting/validating sessions, because we want to "force" clients to upgrade
+            if (inputIdRefreshToken === undefined) {
+                transferMethod = transferMethod === "cookie" ? "header" : "cookie";
+                // TODO: optionally disable this?
+                inputIdRefreshToken = getToken(config, req, "idRefresh", userContext, transferMethod);
+            }
+
             if (inputIdRefreshToken === undefined) {
                 logDebugMessage("refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined");
                 // we do not clear cookies here because of a
@@ -347,7 +398,7 @@ export default function getRecipeInterface(
             }
 
             try {
-                let inputRefreshToken = getRefreshTokenFromCookie(req);
+                let inputRefreshToken = getToken(config, req, "refresh", userContext, transferMethod);
                 if (inputRefreshToken === undefined) {
                     logDebugMessage("refreshSession: UNAUTHORISED because refresh token from cookies is undefined");
                     throw new STError({
@@ -361,9 +412,12 @@ export default function getRecipeInterface(
                     helpers,
                     inputRefreshToken,
                     antiCsrfToken,
-                    getRidFromHeader(req) !== undefined
+                    getRidFromHeader(req) !== undefined,
+                    disableAntiCSRF
                 );
-                attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
+                // This will get the preferred transfer method again, and intentionally not use the fallback
+                // See above for the reasoning
+                attachCreateOrRefreshSessionResponseToExpressRes(config, req, res, response, userContext);
                 logDebugMessage("refreshSession: Success!");
                 return new Session(
                     helpers,
@@ -371,7 +425,8 @@ export default function getRecipeInterface(
                     response.session.handle,
                     response.session.userId,
                     response.session.userDataInJWT,
-                    res
+                    res,
+                    req
                 );
             } catch (err) {
                 if (
@@ -381,7 +436,7 @@ export default function getRecipeInterface(
                     logDebugMessage(
                         "refreshSession: Clearing cookies because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
                     );
-                    clearSessionFromCookie(config, res);
+                    clearSession(config, req, res, userContext);
                 }
                 throw err;
             }
@@ -574,6 +629,7 @@ export default function getRecipeInterface(
         updateJwtSigningPublicKeyInfo,
         getHandshakeInfo,
         config,
+        appInfo,
         getRecipeImpl: getRecipeImplAfterOverrides,
     };
 

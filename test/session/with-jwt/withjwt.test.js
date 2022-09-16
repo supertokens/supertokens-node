@@ -68,14 +68,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -97,7 +109,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -149,14 +161,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -178,7 +202,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "", {}, {});
+            let session = await Session.createNewSession(req, res, "", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -228,14 +252,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -257,7 +293,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -345,14 +381,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -374,7 +422,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -433,14 +481,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -462,7 +522,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "", {}, {});
+            let session = await Session.createNewSession(req, res, "", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -509,14 +569,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -552,14 +624,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -581,7 +665,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -629,14 +713,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -687,14 +783,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -716,7 +824,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -764,13 +872,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         sub: "customsub",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -792,7 +912,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -839,14 +959,26 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -868,7 +1000,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -916,13 +1048,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         iss: "customIss",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -944,7 +1088,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -989,13 +1133,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1017,7 +1173,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1082,13 +1238,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1110,7 +1278,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1188,13 +1356,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1216,7 +1396,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1263,13 +1443,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1291,7 +1483,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1360,13 +1552,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1388,7 +1592,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1469,13 +1673,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1497,7 +1713,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1536,13 +1752,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1580,13 +1808,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1608,7 +1848,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1648,13 +1888,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1709,13 +1961,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1737,7 +2001,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1820,13 +2084,25 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customClaim: "customValue",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -1848,7 +2124,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", {}, {});
+            let session = await Session.createNewSession(req, res, "userId", {}, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 
@@ -1929,7 +2205,7 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         app.use(express.json());
 
         app.post("/create", async (req, res) => {
-            let session = await Session.createNewSession(res, "userId", undefined, {});
+            let session = await Session.createNewSession(req, res, "userId", undefined, {});
             res.status(200).json({ sessionHandle: session.getHandle() });
         });
 

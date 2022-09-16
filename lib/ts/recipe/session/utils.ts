@@ -23,20 +23,14 @@ import {
     SessionContainerInterface,
     VerifySessionOptions,
 } from "./types";
-import {
-    setFrontTokenInHeaders,
-    attachAccessTokenToCookie,
-    attachRefreshTokenToCookie,
-    setIdRefreshTokenInHeaderAndCookie,
-    setAntiCsrfTokenInHeaders,
-} from "./cookieAndHeaders";
+import { setFrontTokenInHeaders, setAntiCsrfTokenInHeaders, setToken } from "./cookieAndHeaders";
 import { URL } from "url";
 import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
 import * as psl from "psl";
-import { isAnIpAddress } from "../../utils";
+import { getIsHeaderPreferredFromHeader, isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
@@ -224,21 +218,6 @@ export function validateAndNormaliseUserInput(
         }
     }
 
-    if (
-        cookieSameSite === "none" &&
-        !cookieSecure &&
-        !(
-            (topLevelAPIDomain === "localhost" || isAnIpAddress(topLevelAPIDomain)) &&
-            (topLevelWebsiteDomain === "localhost" || isAnIpAddress(topLevelWebsiteDomain))
-        )
-    ) {
-        // We can allow insecure cookie when both website & API domain are localhost or an IP
-        // When either of them is a different domain, API domain needs to have https and a secure cookie to work
-        throw new Error(
-            "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
-        );
-    }
-
     let enableJWT = false;
     let accessTokenPayloadJWTPropertyName = "jwt";
     let issuer: string | undefined;
@@ -265,6 +244,10 @@ export function validateAndNormaliseUserInput(
 
     return {
         refreshTokenPath: appInfo.apiBasePath.appendPath(new NormalisedURLPath(REFRESH_API_PATH)),
+        getTokenTransferMethod:
+            config?.getTokenTransferMethod === undefined
+                ? defaultGetTokenTransferMethod
+                : config.getTokenTransferMethod,
         cookieDomain,
         cookieSameSite,
         cookieSecure,
@@ -292,16 +275,18 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
 
 export function attachCreateOrRefreshSessionResponseToExpressRes(
     config: TypeNormalisedInput,
+    req: BaseRequest,
     res: BaseResponse,
-    response: CreateOrRefreshAPIResponse
+    response: CreateOrRefreshAPIResponse,
+    userContext: any
 ) {
     let accessToken = response.accessToken;
     let refreshToken = response.refreshToken;
     let idRefreshToken = response.idRefreshToken;
     setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
-    attachAccessTokenToCookie(config, res, accessToken.token, accessToken.expiry);
-    attachRefreshTokenToCookie(config, res, refreshToken.token, refreshToken.expiry);
-    setIdRefreshTokenInHeaderAndCookie(config, res, idRefreshToken.token, idRefreshToken.expiry);
+    setToken(config, req, res, "access", accessToken.token, accessToken.expiry, userContext);
+    setToken(config, req, res, "refresh", refreshToken.token, refreshToken.expiry, userContext);
+    setToken(config, req, res, "idRefresh", idRefreshToken.token, idRefreshToken.expiry, userContext);
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
@@ -345,4 +330,8 @@ export async function validateClaimsInPayload(
         }
     }
     return validationErrors;
+}
+
+function defaultGetTokenTransferMethod({ req }: { req: BaseRequest }): "cookie" | "header" {
+    return getIsHeaderPreferredFromHeader(req) ? "header" : "cookie";
 }

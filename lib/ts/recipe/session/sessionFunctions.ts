@@ -19,8 +19,9 @@ import { PROCESS_STATE, ProcessState } from "../../processState";
 import { CreateOrRefreshAPIResponse, SessionInformation } from "./types";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
-import { maxVersion } from "../../utils";
+import { isAnIpAddress, maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
+import { getTopLevelDomainForSameSiteResolution } from "./utils";
 
 /**
  * @description call this to "login" a user.
@@ -28,11 +29,33 @@ import { logDebugMessage } from "../../logger";
 export async function createNewSession(
     helpers: Helpers,
     userId: string,
+    disableAntiCsrf: boolean,
     accessTokenPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
+
+    let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(helpers.appInfo.apiDomain.getAsStringDangerous());
+    let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(
+        helpers.appInfo.websiteDomain.getAsStringDangerous()
+    );
+
+    if (
+        !disableAntiCsrf &&
+        helpers.config.cookieSameSite === "none" &&
+        !helpers.config.cookieSecure &&
+        !(
+            (topLevelAPIDomain === "localhost" || isAnIpAddress(topLevelAPIDomain)) &&
+            (topLevelWebsiteDomain === "localhost" || isAnIpAddress(topLevelWebsiteDomain))
+        )
+    ) {
+        // We can allow insecure cookie when both website & API domain are localhost or an IP
+        // When either of them is a different domain, API domain needs to have https and a secure cookie to work
+        throw new Error(
+            "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
+        );
+    }
 
     let requestBody: {
         userId: string;
@@ -46,7 +69,7 @@ export async function createNewSession(
     };
 
     let handShakeInfo = await helpers.getHandshakeInfo();
-    requestBody.enableAntiCsrf = handShakeInfo.antiCsrf === "VIA_TOKEN";
+    requestBody.enableAntiCsrf = !disableAntiCsrf && handShakeInfo.antiCsrf === "VIA_TOKEN";
     let response = await helpers.querier.sendPostRequest(new NormalisedURLPath("/recipe/session"), requestBody);
     helpers.updateJwtSigningPublicKeyInfo(
         response.jwtSigningPublicKeyList,
@@ -313,7 +336,8 @@ export async function refreshSession(
     helpers: Helpers,
     refreshToken: string,
     antiCsrfToken: string | undefined,
-    containsCustomHeader: boolean
+    containsCustomHeader: boolean,
+    disableAntiCSRF: boolean
 ): Promise<CreateOrRefreshAPIResponse> {
     let handShakeInfo = await helpers.getHandshakeInfo();
 
@@ -324,7 +348,7 @@ export async function refreshSession(
     } = {
         refreshToken,
         antiCsrfToken,
-        enableAntiCsrf: handShakeInfo.antiCsrf === "VIA_TOKEN",
+        enableAntiCsrf: !disableAntiCSRF && handShakeInfo.antiCsrf === "VIA_TOKEN",
     };
 
     if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {

@@ -32,6 +32,7 @@ let { ProcessState } = require("../lib/build/processState");
 let { Querier } = require("../lib/build/querier");
 let { maxVersion } = require("../lib/build/utils");
 const { default: OpenIDRecipe } = require("../lib/build/recipe/openid/recipe");
+const { wrapRequest } = require("../framework/express");
 
 module.exports.printPath = function (path) {
     return `${createFormat([consoleOptions.yellow, consoleOptions.italic, consoleOptions.dim])}${path}${createFormat([
@@ -75,7 +76,7 @@ module.exports.setKeyValueInConfig = async function (key, value) {
 
 module.exports.extractInfoFromResponse = function (res) {
     let antiCsrf = res.headers["anti-csrf"];
-    let idRefreshTokenFromHeader = res.headers["id-refresh-token"];
+    let idRefreshTokenFromHeader = res.headers["st-id-refresh-token"];
     let accessToken = undefined;
     let refreshToken = undefined;
     let idRefreshTokenFromCookie = undefined;
@@ -140,10 +141,29 @@ module.exports.extractInfoFromResponse = function (res) {
             idRefreshTokenHttpOnly = i.split(";").findIndex((j) => j.includes("HttpOnly")) !== -1;
         }
     });
+
+    let refreshTokenFromHeader = undefined;
+    if (res.headers["st-refresh-token"]) {
+        const [value, expiry] = res.headers["st-refresh-token"].split(";");
+        refreshTokenFromHeader = {
+            value,
+            expiry: Number.parseInt(expiry),
+        };
+    }
+    let accessTokenFromHeader = undefined;
+    if (res.headers["st-access-token"]) {
+        const [value, expiry] = res.headers["st-access-token"].split(";");
+        accessTokenFromHeader = {
+            value,
+            expiry: Number.parseInt(expiry),
+        };
+    }
     return {
         antiCsrf,
         accessToken,
         refreshToken,
+        accessTokenFromHeader,
+        refreshTokenFromHeader,
         idRefreshTokenFromHeader,
         idRefreshTokenFromCookie,
         accessTokenExpiry,
@@ -546,4 +566,18 @@ module.exports.mockResponse = () => {
         setHeader: (key, val) => (headers[key] = val),
     };
     return res;
+};
+
+/**
+ *
+ * @returns {import("express").Request}
+ */
+module.exports.mockRequest = () => {
+    const headers = {};
+    const req = {
+        headers,
+        get: (key) => headers[key],
+        header: (key) => headers[key],
+    };
+    return req;
 };

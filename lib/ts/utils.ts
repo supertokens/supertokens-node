@@ -1,9 +1,9 @@
 import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject } from "./types";
-import { HEADER_RID } from "./constants";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
+import { HEADER_RID } from "./constants";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -70,10 +70,6 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
     };
 }
 
-export function getRIDFromRequest(req: BaseRequest): string | undefined {
-    return req.getHeaderValue(HEADER_RID);
-}
-
 export function normaliseHttpMethod(method: string): HTTPMethod {
     return method.toLowerCase() as HTTPMethod;
 }
@@ -103,8 +99,16 @@ export function isAnIpAddress(ipaddress: string) {
     );
 }
 
+export function getIsHeaderPreferredFromHeader(req: BaseRequest): boolean {
+    return req.getHeaderValue(HEADER_RID)?.split(";")[1] === "header";
+}
+
+export function getRidFromHeader(req: BaseRequest): string | undefined {
+    return req.getHeaderValue(HEADER_RID)?.split(";")[0];
+}
+
 export function frontendHasInterceptor(req: BaseRequest): boolean {
-    return getRIDFromRequest(req) !== undefined;
+    return getRidFromHeader(req) !== undefined;
 }
 
 export function humaniseMilliseconds(ms: number): string {

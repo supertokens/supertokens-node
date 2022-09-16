@@ -75,14 +75,21 @@ export interface ErrorHandlers {
     onInvalidClaim?: InvalidClaimErrorHandlerMiddleware;
 }
 
+export type TokenType = "access" | "refresh" | "idRefresh";
+
 export type TypeInput = {
+    sessionExpiredStatusCode?: number;
+    invalidClaimStatusCode?: number;
+
     cookieSecure?: boolean;
     cookieSameSite?: "strict" | "lax" | "none";
-    sessionExpiredStatusCode?: number;
     cookieDomain?: string;
+
+    // TODO: better name (useCookies?)
+    getTokenTransferMethod?: (input: { req: BaseRequest; userContext: any }) => "cookie" | "header";
+
     errorHandlers?: ErrorHandlers;
     antiCsrf?: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
-    invalidClaimStatusCode?: number;
     jwt?:
         | {
               enable: true;
@@ -127,6 +134,9 @@ export type TypeNormalisedInput = {
     sessionExpiredStatusCode: number;
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
+
+    // TODO: better name (useCookies?)
+    getTokenTransferMethod: (input: { req: BaseRequest; userContext: any }) => "cookie" | "header";
 
     invalidClaimStatusCode: number;
     jwt: {
@@ -198,6 +208,7 @@ export interface VerifySessionOptions {
 
 export type RecipeInterface = {
     createNewSession(input: {
+        req: BaseRequest;
         res: BaseResponse;
         userId: string;
         accessTokenPayload?: any;

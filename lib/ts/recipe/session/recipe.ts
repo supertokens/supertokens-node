@@ -81,6 +81,7 @@ export default class SessionRecipe extends RecipeModule {
                 RecipeImplementation(
                     Querier.getNewInstanceOrThrowError(recipeId),
                     this.config,
+                    this.getAppInfo(),
                     () => this.recipeInterfaceImpl
                 )
             );
@@ -101,6 +102,7 @@ export default class SessionRecipe extends RecipeModule {
                     RecipeImplementation(
                         Querier.getNewInstanceOrThrowError(recipeId),
                         this.config,
+                        this.getAppInfo(),
                         () => this.recipeInterfaceImpl
                     )
                 );

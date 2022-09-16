@@ -35,7 +35,7 @@ let Create = class Create {
         this.ctx = ctx;
     }
     async handler() {
-        await session_1.default.createNewSession(this.ctx, "userId", {}, {});
+        await session_1.default.createNewSession(this.ctx, this.ctx, "userId", {}, {});
         return {};
     }
 };
