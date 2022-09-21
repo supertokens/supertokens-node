@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 -   Email verification endpoints will now clear the session if called by a deleted/unknown user
--   The sign out endpoint will now always clear cookies even if no valid session exists
 
 ## [12.0.0] - 2022-09-14
 
