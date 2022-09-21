@@ -4,7 +4,6 @@ import NormalisedURLPath from "../../../normalisedURLPath";
 import { SessionContainerInterface } from "../types";
 import { GeneralErrorResponse } from "../../../types";
 import { getRequiredClaimValidators } from "../utils";
-import { clearSessionFromCookie } from "../cookieAndHeaders";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -68,7 +67,6 @@ export default function getAPIInterface(): APIInterface {
         },
 
         signOutPOST: async function ({
-            options,
             session,
             userContext,
         }: {
@@ -84,8 +82,6 @@ export default function getAPIInterface(): APIInterface {
             if (session !== undefined) {
                 await session.revokeSession(userContext);
             }
-
-            clearSessionFromCookie(options.config, options.res);
 
             return {
                 status: "OK",
