@@ -39,7 +39,10 @@ export function clearSession(config: TypeNormalisedInput, req: BaseRequest, res:
     const tokenTypes: TokenType[] = ["access", "refresh", "idRefresh"];
     for (const token of tokenTypes) {
         setToken(config, req, res, token, "", 0, userContext, transferMethod);
-        if (transferMethod === "header" && hasTokenCookie(req, token)) {
+
+        // This is to ensure we clear the cookies as well if the user has migrated to headers,
+        // because this can't be done on the client side
+        if (transferMethod === "header" && isTokenInCookies(req, token)) {
             setToken(config, req, res, token, "", 0, userContext, "cookie");
         }
     }
@@ -94,7 +97,7 @@ function getHeaderNameFromTokenType(tokenType: TokenType) {
     }
 }
 
-export function hasTokenCookie(req: BaseRequest, tokenType: TokenType) {
+export function isTokenInCookies(req: BaseRequest, tokenType: TokenType) {
     return req.getCookieValue(getCookieNameFromTokenType(tokenType)) !== undefined;
 }
 
@@ -150,7 +153,7 @@ export function setToken(
             tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath"
         );
 
-        // If we are saving the idRefresh token we want to also add it as a
+        // If we are saving the idRefresh token we want to also add it as a header
         if (tokenType === "idRefresh") {
             setHeader(res, idRefreshTokenHeaderKey, value === "" ? "remove" : value, expires);
         }

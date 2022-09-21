@@ -37,7 +37,6 @@ export declare function sendTokenTheftDetectedResponse(
     response: BaseResponse
 ): Promise<void>;
 export declare function normaliseSessionScopeOrThrowError(sessionScope: string): string;
-export declare function getTopLevelDomainForSameSiteResolution(url: string): string;
 export declare function getURLProtocol(url: string): string;
 export declare function validateAndNormaliseUserInput(
     recipeInstance: SessionRecipe,

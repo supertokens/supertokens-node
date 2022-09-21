@@ -21,7 +21,6 @@ import NormalisedURLPath from "../../normalisedURLPath";
 import { Helpers } from "./recipeImplementation";
 import { isAnIpAddress, maxVersion } from "../../utils";
 import { logDebugMessage } from "../../logger";
-import { getTopLevelDomainForSameSiteResolution } from "./utils";
 
 /**
  * @description call this to "login" a user.
@@ -36,18 +35,14 @@ export async function createNewSession(
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
 
-    let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(helpers.appInfo.apiDomain.getAsStringDangerous());
-    let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(
-        helpers.appInfo.websiteDomain.getAsStringDangerous()
-    );
-
     if (
         !disableAntiCsrf &&
         helpers.config.cookieSameSite === "none" &&
         !helpers.config.cookieSecure &&
         !(
-            (topLevelAPIDomain === "localhost" || isAnIpAddress(topLevelAPIDomain)) &&
-            (topLevelWebsiteDomain === "localhost" || isAnIpAddress(topLevelWebsiteDomain))
+            (helpers.appInfo.topLevelAPIDomain === "localhost" || isAnIpAddress(helpers.appInfo.topLevelAPIDomain)) &&
+            (helpers.appInfo.topLevelWebsiteDomain === "localhost" ||
+                isAnIpAddress(helpers.appInfo.topLevelWebsiteDomain))
         )
     ) {
         // We can allow insecure cookie when both website & API domain are localhost or an IP
@@ -337,7 +332,8 @@ export async function refreshSession(
     refreshToken: string,
     antiCsrfToken: string | undefined,
     containsCustomHeader: boolean,
-    disableAntiCSRF: boolean
+    inputTransferMethod: "header" | "cookie",
+    outputTransferMethod: "header" | "cookie"
 ): Promise<CreateOrRefreshAPIResponse> {
     let handShakeInfo = await helpers.getHandshakeInfo();
 
@@ -348,17 +344,17 @@ export async function refreshSession(
     } = {
         refreshToken,
         antiCsrfToken,
-        enableAntiCsrf: !disableAntiCSRF && handShakeInfo.antiCsrf === "VIA_TOKEN",
+        enableAntiCsrf: outputTransferMethod === "cookie" && handShakeInfo.antiCsrf === "VIA_TOKEN",
     };
 
-    if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER") {
+    if (handShakeInfo.antiCsrf === "VIA_CUSTOM_HEADER" && inputTransferMethod === "cookie") {
         if (!containsCustomHeader) {
             logDebugMessage("refreshSession: Returning UNAUTHORISED because custom header (rid) was not passed");
             throw new STError({
                 message: "anti-csrf check failed. Please pass 'rid: \"session\"' header in the request.",
                 type: STError.UNAUTHORISED,
                 payload: {
-                    clearCookies: false, // see https://github.com/supertokens/supertokens-node/issues/141
+                    clearTokens: false, // see https://github.com/supertokens/supertokens-node/issues/141
                 },
             });
         }

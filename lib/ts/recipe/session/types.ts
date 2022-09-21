@@ -85,7 +85,6 @@ export type TypeInput = {
     cookieSameSite?: "strict" | "lax" | "none";
     cookieDomain?: string;
 
-    // TODO: better name (useCookies?)
     getTokenTransferMethod?: (input: { req: BaseRequest; userContext: any }) => "cookie" | "header";
 
     errorHandlers?: ErrorHandlers;
@@ -135,7 +134,6 @@ export type TypeNormalisedInput = {
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 
-    // TODO: better name (useCookies?)
     getTokenTransferMethod: (input: { req: BaseRequest; userContext: any }) => "cookie" | "header";
 
     invalidClaimStatusCode: number;

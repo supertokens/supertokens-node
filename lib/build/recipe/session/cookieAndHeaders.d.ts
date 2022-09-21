@@ -19,7 +19,7 @@ export declare function setFrontTokenInHeaders(
     accessTokenPayload: any
 ): void;
 export declare function getCORSAllowedHeaders(): string[];
-export declare function hasTokenCookie(req: BaseRequest, tokenType: TokenType): boolean;
+export declare function isTokenInCookies(req: BaseRequest, tokenType: TokenType): boolean;
 export declare function getToken(
     config: TypeNormalisedInput,
     req: BaseRequest,

@@ -169,6 +169,10 @@ export default function getRecipeInterface(
 
             let idRefreshToken = getToken(config, req, "idRefresh", userContext, transferMethod);
             if (idRefreshToken === undefined) {
+                // We are checking if we could've gone ahead with validation if the transferMethod was different
+                // However, we don't want to do the fallback here, but force a call to refresh
+                // This is done to ensure that the browsers update the transfermethod in a timely manner (basically on the next API call)
+                // instead of waiting for the session to expire
                 idRefreshToken = getToken(
                     config,
                     req,
@@ -373,17 +377,15 @@ export default function getRecipeInterface(
             { req, res, userContext }: { req: BaseRequest; res: BaseResponse; userContext: any }
         ): Promise<Session> {
             logDebugMessage("refreshSession: Started");
-            let transferMethod = config.getTokenTransferMethod({ req, userContext });
-            // We do this before the fallback mechanism
-            const disableAntiCSRF = transferMethod === "header";
-            let inputIdRefreshToken = getToken(config, req, "idRefresh", userContext, transferMethod);
-
             // We use a fallback mechanism here, to ensure there is a smooth upgrade path when switching transfer methods
             // We only use it here and not while getting/validating sessions, because we want to "force" clients to upgrade
+            const outputTransferMethod = config.getTokenTransferMethod({ req, userContext });
+            let inputTransferMethod = outputTransferMethod;
+            let inputIdRefreshToken = getToken(config, req, "idRefresh", userContext, inputTransferMethod);
+
             if (inputIdRefreshToken === undefined) {
-                transferMethod = transferMethod === "cookie" ? "header" : "cookie";
-                // TODO: optionally disable this?
-                inputIdRefreshToken = getToken(config, req, "idRefresh", userContext, transferMethod);
+                inputTransferMethod = inputTransferMethod === "cookie" ? "header" : "cookie";
+                inputIdRefreshToken = getToken(config, req, "idRefresh", userContext, inputTransferMethod);
             }
 
             if (inputIdRefreshToken === undefined) {
@@ -398,7 +400,7 @@ export default function getRecipeInterface(
             }
 
             try {
-                let inputRefreshToken = getToken(config, req, "refresh", userContext, transferMethod);
+                let inputRefreshToken = getToken(config, req, "refresh", userContext, inputTransferMethod);
                 if (inputRefreshToken === undefined) {
                     logDebugMessage("refreshSession: UNAUTHORISED because refresh token from cookies is undefined");
                     throw new STError({
@@ -413,7 +415,8 @@ export default function getRecipeInterface(
                     inputRefreshToken,
                     antiCsrfToken,
                     getRidFromHeader(req) !== undefined,
-                    disableAntiCSRF
+                    inputTransferMethod,
+                    outputTransferMethod
                 );
                 // This will get the preferred transfer method again, and intentionally not use the fallback
                 // See above for the reasoning
@@ -430,7 +433,7 @@ export default function getRecipeInterface(
                 );
             } catch (err) {
                 if (
-                    (err.type === STError.UNAUTHORISED && err.payload.clearCookies) ||
+                    (err.type === STError.UNAUTHORISED && err.payload.clearTokens) ||
                     err.type === STError.TOKEN_THEFT_DETECTED
                 ) {
                     logDebugMessage(

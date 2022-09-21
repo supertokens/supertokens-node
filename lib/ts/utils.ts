@@ -1,3 +1,5 @@
+import * as psl from "psl";
+
 import type { AppInfo, NormalisedAppinfo, HTTPMethod, JSONObject } from "./types";
 import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
@@ -53,10 +55,16 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
         appInfo.apiGatewayPath !== undefined
             ? new NormalisedURLPath(appInfo.apiGatewayPath)
             : new NormalisedURLPath("");
+
+    const websiteDomain = new NormalisedURLDomain(appInfo.websiteDomain);
+    const apiDomain = new NormalisedURLDomain(appInfo.apiDomain);
+    const topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(apiDomain.getAsStringDangerous());
+    const topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(websiteDomain.getAsStringDangerous());
+
     return {
         appName: appInfo.appName,
-        websiteDomain: new NormalisedURLDomain(appInfo.websiteDomain),
-        apiDomain: new NormalisedURLDomain(appInfo.apiDomain),
+        websiteDomain,
+        apiDomain,
         apiBasePath: apiGatewayPath.appendPath(
             appInfo.apiBasePath === undefined
                 ? new NormalisedURLPath("/auth")
@@ -67,6 +75,8 @@ export function normaliseInputAppInfoOrThrowError(appInfo: AppInfo): NormalisedA
                 ? new NormalisedURLPath("/auth")
                 : new NormalisedURLPath(appInfo.websiteBasePath),
         apiGatewayPath,
+        topLevelAPIDomain,
+        topLevelWebsiteDomain,
     };
 }
 
@@ -99,11 +109,20 @@ export function isAnIpAddress(ipaddress: string) {
     );
 }
 
-export function getIsHeaderPreferredFromHeader(req: BaseRequest): boolean {
+export function getIsHeaderPreferredFromRequestHeaders(req: BaseRequest): boolean {
+    // This will return false if:
+    // 1. the header is set to "recipename;cookie" (or anything else, but that's the only other valid value)
+    // 2. the header is set to "recipename"
+    // 3. the header is omitted
     return req.getHeaderValue(HEADER_RID)?.split(";")[1] === "header";
 }
 
 export function getRidFromHeader(req: BaseRequest): string | undefined {
+    // This will return:
+    // 1. the part before the first ';' if present
+    // 2. the entire string if there is no ';'
+    // 3. undefined if the header is omitted
+
     return req.getHeaderValue(HEADER_RID)?.split(";")[0];
 }
 
@@ -135,4 +154,18 @@ export function makeDefaultUserContextFromAPI(request: BaseRequest): any {
             request,
         },
     };
+}
+
+export function getTopLevelDomainForSameSiteResolution(url: string): string {
+    let urlObj = new URL(url);
+    let hostname = urlObj.hostname;
+    if (hostname.startsWith("localhost") || hostname.startsWith("localhost.org") || isAnIpAddress(hostname)) {
+        // we treat these as the same TLDs since we can use sameSite lax for all of them.
+        return "localhost";
+    }
+    let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
+    if (parsedURL.domain === null) {
+        throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");
+    }
+    return parsedURL.domain;
 }

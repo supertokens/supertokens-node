@@ -29,8 +29,7 @@ import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
-import * as psl from "psl";
-import { getIsHeaderPreferredFromHeader, isAnIpAddress } from "../../utils";
+import { getIsHeaderPreferredFromRequestHeaders, isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
@@ -119,20 +118,6 @@ export function normaliseSessionScopeOrThrowError(sessionScope: string): string 
     return noDotNormalised;
 }
 
-export function getTopLevelDomainForSameSiteResolution(url: string): string {
-    let urlObj = new URL(url);
-    let hostname = urlObj.hostname;
-    if (hostname.startsWith("localhost") || hostname.startsWith("localhost.org") || isAnIpAddress(hostname)) {
-        // we treat these as the same TLDs since we can use sameSite lax for all of them.
-        return "localhost";
-    }
-    let parsedURL = psl.parse(hostname) as psl.ParsedDomain;
-    if (parsedURL.domain === null) {
-        throw new Error("Please make sure that the apiDomain and websiteDomain have correct values");
-    }
-    return parsedURL.domain;
-}
-
 export function getURLProtocol(url: string): string {
     let urlObj = new URL(url);
     return urlObj.protocol;
@@ -148,14 +133,13 @@ export function validateAndNormaliseUserInput(
             ? undefined
             : normaliseSessionScopeOrThrowError(config.cookieDomain);
 
-    let topLevelAPIDomain = getTopLevelDomainForSameSiteResolution(appInfo.apiDomain.getAsStringDangerous());
-    let topLevelWebsiteDomain = getTopLevelDomainForSameSiteResolution(appInfo.websiteDomain.getAsStringDangerous());
-
     let protocolOfAPIDomain = getURLProtocol(appInfo.apiDomain.getAsStringDangerous());
     let protocolOfWebsiteDomain = getURLProtocol(appInfo.websiteDomain.getAsStringDangerous());
 
     let cookieSameSite: "strict" | "lax" | "none" =
-        topLevelAPIDomain !== topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain ? "none" : "lax";
+        appInfo.topLevelAPIDomain !== appInfo.topLevelWebsiteDomain || protocolOfAPIDomain !== protocolOfWebsiteDomain
+            ? "none"
+            : "lax";
     cookieSameSite =
         config === undefined || config.cookieSameSite === undefined
             ? cookieSameSite
@@ -333,5 +317,5 @@ export async function validateClaimsInPayload(
 }
 
 function defaultGetTokenTransferMethod({ req }: { req: BaseRequest }): "cookie" | "header" {
-    return getIsHeaderPreferredFromHeader(req) ? "header" : "cookie";
+    return getIsHeaderPreferredFromRequestHeaders(req) ? "header" : "cookie";
 }
