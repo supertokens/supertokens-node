@@ -22,10 +22,6 @@ const accessTokenheaderKey = "st-access-token";
 const refreshTokenCookieKey = "sRefreshToken";
 const refreshTokenHeaderKey = "st-refresh-token";
 
-// there are two of them because one is used by the server to check if the user is logged in and the other is checked by the frontend to see if the user is logged in.
-const idRefreshTokenCookieKey = "sIdRefreshToken";
-const idRefreshTokenHeaderKey = "st-id-refresh-token";
-
 const antiCsrfHeaderKey = "anti-csrf";
 
 const frontTokenHeaderKey = "front-token";
@@ -36,7 +32,7 @@ const frontTokenHeaderKey = "front-token";
 export function clearSession(config: TypeNormalisedInput, req: BaseRequest, res: BaseResponse, userContext: any) {
     const transferMethod = config.getTokenTransferMethod({ req, userContext });
 
-    const tokenTypes: TokenType[] = ["access", "refresh", "idRefresh"];
+    const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
         setToken(config, req, res, token, "", 0, userContext, transferMethod);
 
@@ -46,6 +42,8 @@ export function clearSession(config: TypeNormalisedInput, req: BaseRequest, res:
             setToken(config, req, res, token, "", 0, userContext, "cookie");
         }
     }
+    res.setHeader(frontTokenHeaderKey, "remove", false);
+    res.setHeader("Access-Control-Expose-Headers", frontTokenHeaderKey, true);
 }
 
 export function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined {
@@ -68,15 +66,13 @@ export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpi
 }
 
 export function getCORSAllowedHeaders(): string[] {
-    return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, refreshTokenHeaderKey, idRefreshTokenHeaderKey];
+    return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, refreshTokenHeaderKey];
 }
 
 function getCookieNameFromTokenType(tokenType: TokenType) {
     switch (tokenType) {
         case "access":
             return accessTokenCookieKey;
-        case "idRefresh":
-            return idRefreshTokenCookieKey;
         case "refresh":
             return refreshTokenCookieKey;
         default:
@@ -88,8 +84,6 @@ function getHeaderNameFromTokenType(tokenType: TokenType) {
     switch (tokenType) {
         case "access":
             return accessTokenheaderKey;
-        case "idRefresh":
-            return idRefreshTokenHeaderKey;
         case "refresh":
             return refreshTokenHeaderKey;
         default:
@@ -152,17 +146,8 @@ export function setToken(
             expires,
             tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath"
         );
-
-        // If we are saving the idRefresh token we want to also add it as a header
-        if (tokenType === "idRefresh") {
-            setHeader(res, idRefreshTokenHeaderKey, value === "" ? "remove" : value, expires);
-        }
     } else if (transferMethod === "header") {
-        if (tokenType === "idRefresh" && value === "") {
-            setHeader(res, getHeaderNameFromTokenType(tokenType), "remove", expires);
-        } else {
-            setHeader(res, getHeaderNameFromTokenType(tokenType), value, expires);
-        }
+        setHeader(res, getHeaderNameFromTokenType(tokenType), value, expires);
     }
 }
 

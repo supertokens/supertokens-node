@@ -167,26 +167,26 @@ export default function getRecipeInterface(
             let doAntiCsrfCheck = options !== undefined ? options.antiCsrfCheck : undefined;
             const transferMethod = config.getTokenTransferMethod({ req, userContext });
 
-            let idRefreshToken = getToken(config, req, "idRefresh", userContext, transferMethod);
-            if (idRefreshToken === undefined) {
+            let accessToken = getToken(config, req, "access", userContext, transferMethod);
+            if (accessToken === undefined) {
                 // We are checking if we could've gone ahead with validation if the transferMethod was different
                 // However, we don't want to do the fallback here, but force a call to refresh
                 // This is done to ensure that the browsers update the transfermethod in a timely manner (basically on the next API call)
                 // instead of waiting for the session to expire
-                idRefreshToken = getToken(
+                accessToken = getToken(
                     config,
                     req,
-                    "idRefresh",
+                    "access",
                     userContext,
                     transferMethod === "cookie" ? "header" : "cookie"
                 );
-                if (idRefreshToken !== undefined) {
+                if (accessToken !== undefined) {
                     logDebugMessage(
-                        "getSession: Returning try refresh token because idRefresh token were not sent as a " +
+                        "getSession: Returning try refresh token because the access token was not sent as a " +
                             transferMethod
                     );
                     throw new STError({
-                        message: "idRefreshToken sent with the wrong method. Please call the refresh API",
+                        message: "access token sent with the wrong method. Please call the refresh API",
                         type: STError.TRY_REFRESH_TOKEN,
                     });
                 }
@@ -195,20 +195,19 @@ export default function getRecipeInterface(
 
                 if (options !== undefined && typeof options !== "boolean" && options.sessionRequired === false) {
                     logDebugMessage(
-                        "getSession: returning undefined because idRefreshToken is undefined and sessionRequired is false"
+                        "getSession: returning undefined because accessToken is undefined and sessionRequired is false"
                     );
                     // there is no session that exists here, and the user wants session verification
                     // to be optional. So we return undefined.
                     return undefined;
                 }
 
-                logDebugMessage("getSession: UNAUTHORISED because idRefreshToken from cookies is undefined");
+                logDebugMessage("getSession: UNAUTHORISED because accessToken from cookies is undefined");
                 throw new STError({
                     message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
                     type: STError.UNAUTHORISED,
                 });
             }
-            let accessToken = getToken(config, req, "access", userContext, transferMethod);
             if (accessToken === undefined) {
                 // maybe the access token has expired.
                 /**
@@ -262,7 +261,10 @@ export default function getRecipeInterface(
                         res,
                         "access",
                         response.accessToken.token,
-                        response.accessToken.expiry,
+                        // We set the expiration to 10 years, because we can't really access the expiration of the refresh token here.
+                        // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+                        // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
+                        Date.now() + 315360000000,
                         userContext
                     );
                     accessToken = response.accessToken.token;
@@ -381,26 +383,14 @@ export default function getRecipeInterface(
             // We only use it here and not while getting/validating sessions, because we want to "force" clients to upgrade
             const outputTransferMethod = config.getTokenTransferMethod({ req, userContext });
             let inputTransferMethod = outputTransferMethod;
-            let inputIdRefreshToken = getToken(config, req, "idRefresh", userContext, inputTransferMethod);
 
-            if (inputIdRefreshToken === undefined) {
+            let inputRefreshToken = getToken(config, req, "refresh", userContext, inputTransferMethod);
+            if (inputRefreshToken === undefined) {
                 inputTransferMethod = inputTransferMethod === "cookie" ? "header" : "cookie";
-                inputIdRefreshToken = getToken(config, req, "idRefresh", userContext, inputTransferMethod);
-            }
-
-            if (inputIdRefreshToken === undefined) {
-                logDebugMessage("refreshSession: UNAUTHORISED because idRefreshToken from cookies is undefined");
-                // we do not clear cookies here because of a
-                // race condition mentioned here: https://github.com/supertokens/supertokens-node/issues/17
-
-                throw new STError({
-                    message: "Session does not exist. Are you sending the session tokens in the request as cookies?",
-                    type: STError.UNAUTHORISED,
-                });
+                inputRefreshToken = getToken(config, req, "refresh", userContext, inputTransferMethod);
             }
 
             try {
-                let inputRefreshToken = getToken(config, req, "refresh", userContext, inputTransferMethod);
                 if (inputRefreshToken === undefined) {
                     logDebugMessage("refreshSession: UNAUTHORISED because refresh token from cookies is undefined");
                     throw new STError({

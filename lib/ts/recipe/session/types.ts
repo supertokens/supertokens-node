@@ -75,7 +75,7 @@ export interface ErrorHandlers {
     onInvalidClaim?: InvalidClaimErrorHandlerMiddleware;
 }
 
-export type TokenType = "access" | "refresh" | "idRefresh";
+export type TokenType = "access" | "refresh";
 
 export type TypeInput = {
     sessionExpiredStatusCode?: number;

@@ -55,7 +55,7 @@ export interface ErrorHandlers {
     onTokenTheftDetected?: TokenTheftErrorHandlerMiddleware;
     onInvalidClaim?: InvalidClaimErrorHandlerMiddleware;
 }
-export declare type TokenType = "access" | "refresh" | "idRefresh";
+export declare type TokenType = "access" | "refresh";
 export declare type TypeInput = {
     sessionExpiredStatusCode?: number;
     invalidClaimStatusCode?: number;

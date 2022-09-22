@@ -266,11 +266,20 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
 ) {
     let accessToken = response.accessToken;
     let refreshToken = response.refreshToken;
-    let idRefreshToken = response.idRefreshToken;
     setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
-    setToken(config, req, res, "access", accessToken.token, accessToken.expiry, userContext);
+    setToken(
+        config,
+        req,
+        res,
+        "access",
+        accessToken.token,
+        // We set the expiration to 10 years, because in other places we set it we can't really access the expiration of the refresh token.
+        // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+        // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
+        Date.now() + 315360000000,
+        userContext
+    );
     setToken(config, req, res, "refresh", refreshToken.token, refreshToken.expiry, userContext);
-    setToken(config, req, res, "idRefresh", idRefreshToken.token, idRefreshToken.expiry, userContext);
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }

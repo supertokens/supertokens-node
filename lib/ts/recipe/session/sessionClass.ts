@@ -219,7 +219,10 @@ export default class Session implements SessionContainerInterface {
                 this.res,
                 "access",
                 response.accessToken.token,
-                response.accessToken.expiry,
+                // We set the expiration to 10 years, because we can't really access the expiration of the refresh token here.
+                // This should be safe to do, since this is only the validity of the cookie (set here or on the frontend) but we check the expiration of the JWT anyway.
+                // Even if the token is expired the presence of the token indicates that the user could have a valid refresh token
+                Date.now() + 315360000000,
                 userContext
             );
         }
