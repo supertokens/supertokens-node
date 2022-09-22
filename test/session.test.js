@@ -341,7 +341,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let response2 = await SessionFunctions.refreshSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
-            response.antiCsrfToken
+            response.antiCsrfToken,
+            true,
+            "cookie",
+            "cookie"
         );
 
         await SessionFunctions.getSession(
@@ -356,7 +359,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             await SessionFunctions.refreshSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 response.refreshToken.token,
-                response.antiCsrfToken
+                response.antiCsrfToken,
+                true,
+                "cookie",
+                "cookie"
             );
             throw new Error("should not have come here");
         } catch (err) {
@@ -397,7 +403,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let response2 = await SessionFunctions.refreshSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
-            response.antiCsrfToken
+            response.antiCsrfToken,
+            true,
+            "cookie",
+            "cookie"
         );
 
         await SessionFunctions.getSession(
@@ -412,7 +421,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
             await SessionFunctions.refreshSession(
                 SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
                 response.refreshToken.token,
-                response.antiCsrfToken
+                response.antiCsrfToken,
+                true,
+                "cookie",
+                "cookie"
             );
             throw new Error("should not have come here");
         } catch (err) {
@@ -496,7 +508,10 @@ describe(`session: ${printPath("[test/session.test.js]")}`, function () {
         let response2 = await SessionFunctions.refreshSession(
             s.recipeInterfaceImpl.helpers,
             response.refreshToken.token,
-            response.antiCsrfToken
+            response.antiCsrfToken,
+            true,
+            "cookie",
+            "cookie"
         );
         assert(response2.session !== undefined);
         assert(response2.accessToken !== undefined);

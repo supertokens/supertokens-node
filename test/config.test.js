@@ -39,7 +39,7 @@ let SuperTokens = require("../lib/build/supertokens").default;
 let ST = require("../");
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
-const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/recipe/session/utils");
+const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/utils");
 const { middleware } = require("../framework/express");
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {

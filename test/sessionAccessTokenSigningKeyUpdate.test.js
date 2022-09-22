@@ -138,7 +138,10 @@ describe(`sessionAccessTokenSigningKeyUpdate: ${printPath(
         const response2 = await SessionFunctions.refreshSession(
             SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.helpers,
             response.refreshToken.token,
-            response.antiCsrfToken
+            response.antiCsrfToken,
+            true,
+            "cookie",
+            "cookie"
         );
 
         await SessionFunctions.getSession(
