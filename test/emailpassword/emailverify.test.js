@@ -1397,6 +1397,12 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
 
         app.use(errorHandler());
 
+        const querier = Querier.getNewInstanceOrThrowError(undefined);
+        const apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.10") !== apiVersion) {
+            return this.skip();
+        }
+
         let response = await signUPRequest(app, "test@gmail.com", "testPass123");
         assert.strictEqual(response.body.status, "OK");
         assert.strictEqual(response.status, 200);
