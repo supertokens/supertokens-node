@@ -1364,6 +1364,57 @@ describe(`emailverify: ${printPath("[test/emailpassword/emailverify.test.js]")}`
         assert(!(await EmailVerification.isEmailVerified(userId)));
     });
 
+    it("test the email verify API with deleted user", async function () {
+        await startST();
+
+        let token = null;
+        STExpress.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                EmailPassword.init(),
+                EmailVerification.init({
+                    mode: "OPTIONAL",
+                    createAndSendCustomEmail: (user, emailVerificationURLWithToken) => {
+                        token = emailVerificationURLWithToken.split("?token=")[1].split("&rid=")[0];
+                    },
+                }),
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.use(errorHandler());
+
+        let response = await signUPRequest(app, "test@gmail.com", "testPass123");
+        assert.strictEqual(response.body.status, "OK");
+        assert.strictEqual(response.status, 200);
+
+        let userId = response.body.user.id;
+        let infoFromResponse = extractInfoFromResponse(response);
+        await STExpress.deleteUser(userId);
+        response = await emailVerifyTokenRequest(
+            app,
+            infoFromResponse.accessToken,
+            infoFromResponse.idRefreshTokenFromCookie,
+            infoFromResponse.antiCsrf,
+            userId
+        );
+        assert.strictEqual(response.statusCode, 401);
+        assert.deepStrictEqual(response.body, { message: "unauthorised" });
+    });
+
     it("should work with getEmailForUserId returning errors", async () => {
         STExpress.init({
             supertokens: {

@@ -3,6 +3,7 @@ import { logDebugMessage } from "../../../logger";
 import EmailVerificationRecipe from "../recipe";
 import { GeneralErrorResponse } from "../../../types";
 import { EmailVerificationClaim } from "../emailVerificationClaim";
+import SessionError from "../../session/error";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -17,7 +18,17 @@ export default function getAPIInterface(): APIInterface {
             const res = await options.recipeImplementation.verifyEmailUsingToken({ token, userContext });
 
             if (res.status === "OK" && session !== undefined) {
-                await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                try {
+                    await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+                } catch (err) {
+                    // This should never happen, since we've just set the status above.
+                    if (err && (err as Error).message === "UNKNOWN_USER_ID") {
+                        throw new SessionError({
+                            type: SessionError.UNAUTHORISED,
+                            message: "Unknown User ID provided",
+                        });
+                    }
+                }
             }
             return res;
         },
@@ -36,7 +47,16 @@ export default function getAPIInterface(): APIInterface {
                 throw new Error("Session is undefined. Should not come here.");
             }
 
-            await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+            try {
+                await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
+            } catch (err) {
+                if (err && (err as Error).message === "UNKNOWN_USER_ID") {
+                    throw new SessionError({
+                        type: SessionError.UNAUTHORISED,
+                        message: "Unknown User ID provided",
+                    });
+                }
+            }
             const isVerified = await session.getClaimValue(EmailVerificationClaim, userContext);
 
             if (isVerified === undefined) {
@@ -110,7 +130,7 @@ export default function getAPIInterface(): APIInterface {
                     status: "OK",
                 };
             } else {
-                throw new Error("Should never come here: UNKNOWN_USER_ID or invalid result from getEmailForUserId");
+                throw new SessionError({ type: SessionError.UNAUTHORISED, message: "Unknown User ID provided" });
             }
         },
     };
