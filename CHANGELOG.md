@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [12.0.1] - 2022-09-22
+
 ### Changed
 
 -   Email verification endpoints will now clear the session if called by a deleted/unknown user
