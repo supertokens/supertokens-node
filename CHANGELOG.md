@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Bug fix:
+
+-   Properly rethrowing generic errors in email verification endpoints.
+
 ## [12.0.1] - 2022-09-22
 
 ### Changed

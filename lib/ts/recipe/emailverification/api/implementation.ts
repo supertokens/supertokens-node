@@ -22,12 +22,13 @@ export default function getAPIInterface(): APIInterface {
                     await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
                 } catch (err) {
                     // This should never happen, since we've just set the status above.
-                    if (err && (err as Error).message === "UNKNOWN_USER_ID") {
+                    if ((err as Error).message === "UNKNOWN_USER_ID") {
                         throw new SessionError({
                             type: SessionError.UNAUTHORISED,
                             message: "Unknown User ID provided",
                         });
                     }
+                    throw err;
                 }
             }
             return res;
@@ -50,12 +51,13 @@ export default function getAPIInterface(): APIInterface {
             try {
                 await session.fetchAndSetClaim(EmailVerificationClaim, userContext);
             } catch (err) {
-                if (err && (err as Error).message === "UNKNOWN_USER_ID") {
+                if ((err as Error).message === "UNKNOWN_USER_ID") {
                     throw new SessionError({
                         type: SessionError.UNAUTHORISED,
                         message: "Unknown User ID provided",
                     });
                 }
+                throw err;
             }
             const isVerified = await session.getClaimValue(EmailVerificationClaim, userContext);
 
