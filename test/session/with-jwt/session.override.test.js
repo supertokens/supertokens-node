@@ -110,7 +110,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -318,7 +318,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
 
         app.post("/create", async (req, res, next) => {
             try {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 res.status(200).send("");
             } catch (err) {
                 next(err);
@@ -398,7 +398,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -502,7 +502,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -596,7 +596,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 
@@ -670,7 +670,7 @@ describe(`session: ${printPath("[test/session/with-jwt/session.override.test.js]
         app.use(middleware());
 
         app.post("/create", async (req, res) => {
-            await Session.createNewSession(res, "", {}, {});
+            await Session.createNewSession(req, res, "", {}, {});
             res.status(200).send("");
         });
 

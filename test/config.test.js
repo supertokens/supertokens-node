@@ -21,6 +21,8 @@ const {
     cleanST,
     resetAll,
     extractInfoFromResponse,
+    mockResponse,
+    mockRequest,
 } = require("./utils");
 const request = require("supertest");
 const express = require("express");
@@ -37,8 +39,8 @@ let SuperTokens = require("../lib/build/supertokens").default;
 let ST = require("../");
 let EmailPassword = require("../lib/build/recipe/emailpassword");
 let EmailPasswordRecipe = require("../lib/build/recipe/emailpassword/recipe").default;
-const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/recipe/session/utils");
-let { middleware, errorHandler } = require("../framework/express");
+const { getTopLevelDomainForSameSiteResolution } = require("../lib/build/utils");
+const { middleware } = require("../framework/express");
 
 describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
     beforeEach(async function () {
@@ -484,25 +486,28 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
         ];
 
         for (const domainCombination of domainCombinations) {
+            let err;
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    appName: "SuperTokens",
+                    websiteDomain: domainCombination[0],
+                    apiDomain: domainCombination[1],
+                },
+                recipeList: [Session.init({ cookieSameSite: "none" })],
+            });
             try {
-                STExpress.init({
-                    supertokens: {
-                        connectionURI: "http://localhost:8080",
-                    },
-                    appInfo: {
-                        appName: "SuperTokens",
-                        websiteDomain: domainCombination[0],
-                        apiDomain: domainCombination[1],
-                    },
-                    recipeList: [Session.init({ cookieSameSite: "none" })],
-                });
-                assert(false);
+                await Session.createNewSession(mockRequest(), mockResponse(), "asdf");
             } catch (e) {
-                assert(
-                    e.message ===
-                        "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
-                );
+                err = e;
             }
+            assert.ok(err);
+            assert.strictEqual(
+                err.message,
+                "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
+            );
             resetAll();
         }
     });
@@ -1105,14 +1110,13 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                     },
                     recipeList: [Session.init()],
                 });
+                await Session.createNewSession(mockRequest(), mockResponse(), "userId");
                 assert(false);
             } catch (err) {
-                if (
-                    err.message !==
+                assert.strictEqual(
+                    err.message,
                     "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
-                ) {
-                    throw err;
-                }
+                );
             }
             resetAll();
         }
@@ -1136,15 +1140,37 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
                         }),
                     ],
                 });
+                await Session.createNewSession(mockRequest(), mockResponse(), "userId");
                 assert(false);
             } catch (err) {
-                if (
-                    err.message !==
+                assert.strictEqual(
+                    err.message,
                     "Since your API and website domain are different, for sessions to work, please use https on your apiDomain and dont set cookieSecure to false."
-                ) {
-                    throw err;
-                }
+                );
             }
+            resetAll();
+        }
+
+        {
+            STExpress.init({
+                supertokens: {
+                    connectionURI: "http://localhost:8080",
+                },
+                appInfo: {
+                    apiDomain: "https://api.test.com:3000",
+                    appName: "SuperTokens",
+                    websiteDomain: "google.com",
+                    apiBasePath: "test/",
+                    websiteBasePath: "test1/",
+                },
+                recipeList: [
+                    Session.init({
+                        getTokenTransferMethod: () => "header",
+                        cookieSecure: false,
+                    }),
+                ],
+            });
+            await Session.createNewSession(mockRequest(), mockResponse(), "userId");
             resetAll();
         }
 
@@ -1346,7 +1372,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             app.use(middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 res.status(200).send("");
             });
 
@@ -1413,7 +1439,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             app.use(middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 res.status(200).send("");
             });
 
@@ -1480,7 +1506,7 @@ describe(`configTest: ${printPath("[test/config.test.js]")}`, function () {
             app.use(middleware());
 
             app.post("/create", async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 res.status(200).send("");
             });
 

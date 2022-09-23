@@ -12,7 +12,7 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-const { printPath, startST, killAllST, setupST, cleanST, mockResponse } = require("../../utils");
+const { printPath, startST, killAllST, setupST, cleanST, mockResponse, mockRequest } = require("../../utils");
 const assert = require("assert");
 const SuperTokens = require("../../..");
 const Session = require("../../../recipe/session");
@@ -68,7 +68,7 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(response, "someId");
+            const session = await Session.createNewSession(mockRequest(), response, "someId");
 
             const res = await session.getClaimValue(TrueClaim);
             assert.equal(res, true);
@@ -105,7 +105,7 @@ describe(`sessionClaims/getClaimValue: ${printPath("[test/session/claims/getClai
             });
 
             const response = mockResponse();
-            const session = await Session.createNewSession(response, "someId");
+            const session = await Session.createNewSession(mockRequest(), response, "someId");
 
             const res = await Session.getClaimValue(session.getHandle(), TrueClaim);
             assert.deepStrictEqual(res, {

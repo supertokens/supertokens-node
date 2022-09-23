@@ -82,7 +82,7 @@ describe(`sessionClaims/withJWT: ${printPath("[test/session/claims/withJWT.test.
             app.use(express.json());
 
             app.post("/create", async (req, res) => {
-                let session = await Session.createNewSession(res, "userId", undefined, {});
+                let session = await Session.createNewSession(req, res, "userId", undefined, {});
                 res.status(200).json({ sessionHandle: session.getHandle() });
             });
 

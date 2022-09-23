@@ -37,7 +37,6 @@ export declare function sendTokenTheftDetectedResponse(
     response: BaseResponse
 ): Promise<void>;
 export declare function normaliseSessionScopeOrThrowError(sessionScope: string): string;
-export declare function getTopLevelDomainForSameSiteResolution(url: string): string;
 export declare function getURLProtocol(url: string): string;
 export declare function validateAndNormaliseUserInput(
     recipeInstance: SessionRecipe,
@@ -47,8 +46,10 @@ export declare function validateAndNormaliseUserInput(
 export declare function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none";
 export declare function attachCreateOrRefreshSessionResponseToExpressRes(
     config: TypeNormalisedInput,
+    req: BaseRequest,
     res: BaseResponse,
-    response: CreateOrRefreshAPIResponse
+    response: CreateOrRefreshAPIResponse,
+    userContext: any
 ): void;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,

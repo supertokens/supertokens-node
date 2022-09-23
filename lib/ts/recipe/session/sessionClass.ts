@@ -12,8 +12,8 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-import { BaseResponse } from "../../framework";
-import { attachAccessTokenToCookie, clearSessionFromCookie, setFrontTokenInHeaders } from "./cookieAndHeaders";
+import { BaseRequest, BaseResponse } from "../../framework";
+import { clearSession, setFrontTokenInHeaders, setToken } from "./cookieAndHeaders";
 import STError from "./error";
 import { SessionClaim, SessionClaimValidator, SessionContainerInterface } from "./types";
 import { Helpers } from "./recipeImplementation";
@@ -22,6 +22,7 @@ export default class Session implements SessionContainerInterface {
     protected sessionHandle: string;
     protected userId: string;
     protected userDataInAccessToken: any;
+    protected readonly req: BaseRequest;
     protected res: BaseResponse;
     protected accessToken: string;
     protected helpers: Helpers;
@@ -32,11 +33,13 @@ export default class Session implements SessionContainerInterface {
         sessionHandle: string,
         userId: string,
         userDataInAccessToken: any,
-        res: BaseResponse
+        res: BaseResponse,
+        req: BaseRequest
     ) {
         this.sessionHandle = sessionHandle;
         this.userId = userId;
         this.userDataInAccessToken = userDataInAccessToken;
+        this.req = req;
         this.res = res;
         this.accessToken = accessToken;
         this.helpers = helpers;
@@ -54,7 +57,7 @@ export default class Session implements SessionContainerInterface {
         // If we instead clear the cookies only when revokeSession
         // returns true, it can cause this kind of a bug:
         // https://github.com/supertokens/supertokens-node/issues/343
-        clearSessionFromCookie(this.helpers.config, this.res);
+        clearSession(this.helpers.config, this.req, this.res, userContext);
     };
 
     getSessionData = async (userContext?: any): Promise<any> => {
@@ -63,7 +66,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSessionFromCookie(this.helpers.config, this.res);
+            clearSession(this.helpers.config, this.req, this.res, userContext);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -80,7 +83,7 @@ export default class Session implements SessionContainerInterface {
                 userContext: userContext === undefined ? {} : userContext,
             }))
         ) {
-            clearSessionFromCookie(this.helpers.config, this.res);
+            clearSession(this.helpers.config, this.req, this.res, userContext);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -121,7 +124,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSessionFromCookie(this.helpers.config, this.res);
+            clearSession(this.helpers.config, this.req, this.res, userContext);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -136,7 +139,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSessionFromCookie(this.helpers.config, this.res);
+            clearSession(this.helpers.config, this.req, this.res, userContext);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -195,7 +198,7 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (response === undefined) {
-            clearSessionFromCookie(this.helpers.config, this.res);
+            clearSession(this.helpers.config, this.req, this.res, userContext);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -210,11 +213,14 @@ export default class Session implements SessionContainerInterface {
                 response.accessToken.expiry,
                 response.session.userDataInJWT
             );
-            attachAccessTokenToCookie(
+            setToken(
                 this.helpers.config,
+                this.req,
                 this.res,
+                "access",
                 response.accessToken.token,
-                response.accessToken.expiry
+                response.accessToken.expiry,
+                userContext
             );
         }
     };

@@ -7,6 +7,7 @@ import { Helpers } from "./recipeImplementation";
 export declare function createNewSession(
     helpers: Helpers,
     userId: string,
+    disableAntiCsrf: boolean,
     accessTokenPayload?: any,
     sessionData?: any
 ): Promise<CreateOrRefreshAPIResponse>;
@@ -47,7 +48,9 @@ export declare function refreshSession(
     helpers: Helpers,
     refreshToken: string,
     antiCsrfToken: string | undefined,
-    containsCustomHeader: boolean
+    containsCustomHeader: boolean,
+    inputTransferMethod: "header" | "cookie",
+    outputTransferMethod: "header" | "cookie"
 ): Promise<CreateOrRefreshAPIResponse>;
 /**
  * @description deletes session info of a user from db. This only invalidates the refresh token. Not the access token.

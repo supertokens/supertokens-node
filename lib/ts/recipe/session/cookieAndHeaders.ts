@@ -12,92 +12,49 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
+import { HEADER_RID } from "../../constants";
 import { BaseRequest, BaseResponse } from "../../framework";
-import { TypeNormalisedInput } from "./types";
+import { TokenType, TypeNormalisedInput } from "./types";
 
+const authorizationHeaderKey = "authorization";
 const accessTokenCookieKey = "sAccessToken";
+const accessTokenheaderKey = "st-access-token";
 const refreshTokenCookieKey = "sRefreshToken";
+const refreshTokenHeaderKey = "st-refresh-token";
 
 // there are two of them because one is used by the server to check if the user is logged in and the other is checked by the frontend to see if the user is logged in.
 const idRefreshTokenCookieKey = "sIdRefreshToken";
-const idRefreshTokenHeaderKey = "id-refresh-token";
+const idRefreshTokenHeaderKey = "st-id-refresh-token";
 
 const antiCsrfHeaderKey = "anti-csrf";
-
-const ridHeaderKey = "rid";
 
 const frontTokenHeaderKey = "front-token";
 
 /**
  * @description clears all the auth cookies from the response
  */
-export function clearSessionFromCookie(config: TypeNormalisedInput, res: BaseResponse) {
-    setCookie(config, res, accessTokenCookieKey, "", 0, "accessTokenPath");
-    setCookie(config, res, refreshTokenCookieKey, "", 0, "refreshTokenPath");
-    setCookie(config, res, idRefreshTokenCookieKey, "", 0, "accessTokenPath");
-    res.setHeader(idRefreshTokenHeaderKey, "remove", false);
-    res.setHeader("Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
-}
+export function clearSession(config: TypeNormalisedInput, req: BaseRequest, res: BaseResponse, userContext: any) {
+    const transferMethod = config.getTokenTransferMethod({ req, userContext });
 
-/**
- * @param expiry: must be time in milliseconds from epoch time.
- */
-export function attachAccessTokenToCookie(
-    config: TypeNormalisedInput,
-    res: BaseResponse,
-    token: string,
-    expiry: number
-) {
-    setCookie(config, res, accessTokenCookieKey, token, expiry, "accessTokenPath");
-}
+    const tokenTypes: TokenType[] = ["access", "refresh", "idRefresh"];
+    for (const token of tokenTypes) {
+        setToken(config, req, res, token, "", 0, userContext, transferMethod);
 
-/**
- * @param expiry: must be time in milliseconds from epoch time.
- */
-export function attachRefreshTokenToCookie(
-    config: TypeNormalisedInput,
-    res: BaseResponse,
-    token: string,
-    expiry: number
-) {
-    setCookie(config, res, refreshTokenCookieKey, token, expiry, "refreshTokenPath");
-}
-
-export function getAccessTokenFromCookie(req: BaseRequest): string | undefined {
-    return req.getCookieValue(accessTokenCookieKey);
-}
-
-export function getRefreshTokenFromCookie(req: BaseRequest): string | undefined {
-    return req.getCookieValue(refreshTokenCookieKey);
+        // This is to ensure we clear the cookies as well if the user has migrated to headers,
+        // because this can't be done on the client side
+        if (transferMethod === "header" && isTokenInCookies(req, token)) {
+            setToken(config, req, res, token, "", 0, userContext, "cookie");
+        }
+    }
 }
 
 export function getAntiCsrfTokenFromHeaders(req: BaseRequest): string | undefined {
     return req.getHeaderValue(antiCsrfHeaderKey);
 }
 
-export function getRidFromHeader(req: BaseRequest): string | undefined {
-    return req.getHeaderValue(ridHeaderKey);
-}
-
-export function getIdRefreshTokenFromCookie(req: BaseRequest): string | undefined {
-    return req.getCookieValue(idRefreshTokenCookieKey);
-}
-
 export function setAntiCsrfTokenInHeaders(res: BaseResponse, antiCsrfToken: string) {
     res.setHeader(antiCsrfHeaderKey, antiCsrfToken, false);
     res.setHeader("Access-Control-Expose-Headers", antiCsrfHeaderKey, true);
-}
-
-export function setIdRefreshTokenInHeaderAndCookie(
-    config: TypeNormalisedInput,
-    res: BaseResponse,
-    idRefreshToken: string,
-    expiry: number
-) {
-    res.setHeader(idRefreshTokenHeaderKey, idRefreshToken + ";" + expiry, false);
-    res.setHeader("Access-Control-Expose-Headers", idRefreshTokenHeaderKey, true);
-
-    setCookie(config, res, idRefreshTokenCookieKey, idRefreshToken, expiry, "accessTokenPath");
 }
 
 export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpiry: number, accessTokenPayload: any) {
@@ -111,7 +68,111 @@ export function setFrontTokenInHeaders(res: BaseResponse, userId: string, atExpi
 }
 
 export function getCORSAllowedHeaders(): string[] {
-    return [antiCsrfHeaderKey, ridHeaderKey];
+    return [antiCsrfHeaderKey, HEADER_RID, authorizationHeaderKey, refreshTokenHeaderKey, idRefreshTokenHeaderKey];
+}
+
+function getCookieNameFromTokenType(tokenType: TokenType) {
+    switch (tokenType) {
+        case "access":
+            return accessTokenCookieKey;
+        case "idRefresh":
+            return idRefreshTokenCookieKey;
+        case "refresh":
+            return refreshTokenCookieKey;
+        default:
+            throw new Error("Unknown token type, should never happen.");
+    }
+}
+
+function getHeaderNameFromTokenType(tokenType: TokenType) {
+    switch (tokenType) {
+        case "access":
+            return accessTokenheaderKey;
+        case "idRefresh":
+            return idRefreshTokenHeaderKey;
+        case "refresh":
+            return refreshTokenHeaderKey;
+        default:
+            throw new Error("Unknown token type, should never happen.");
+    }
+}
+
+export function isTokenInCookies(req: BaseRequest, tokenType: TokenType) {
+    return req.getCookieValue(getCookieNameFromTokenType(tokenType)) !== undefined;
+}
+
+export function getToken(
+    config: TypeNormalisedInput,
+    req: BaseRequest,
+    tokenType: TokenType,
+    userContext: any,
+    transferMethod?: "cookie" | "header"
+) {
+    if (transferMethod === undefined) {
+        transferMethod = config.getTokenTransferMethod({ req, userContext });
+    }
+
+    if (transferMethod === "cookie") {
+        return req.getCookieValue(getCookieNameFromTokenType(tokenType));
+    } else if (transferMethod === "header") {
+        if (tokenType === "access") {
+            const value = req.getHeaderValue(authorizationHeaderKey);
+            if (value === undefined || !value.startsWith("Bearer ")) {
+                return undefined;
+            }
+            return value.replace(/^Bearer /, "");
+        }
+        return req.getHeaderValue(getHeaderNameFromTokenType(tokenType));
+    } else {
+        throw new Error("Should never happen: Unknown transferMethod: " + transferMethod);
+    }
+}
+
+export function setToken(
+    config: TypeNormalisedInput,
+    req: BaseRequest,
+    res: BaseResponse,
+    tokenType: TokenType,
+    value: string,
+    expires: number,
+    userContext: any,
+    transferMethod?: "cookie" | "header"
+) {
+    if (transferMethod === undefined) {
+        transferMethod = config.getTokenTransferMethod({ req, userContext });
+    }
+
+    if (transferMethod === "cookie") {
+        // We intentionally use accessTokenPath for idRefresh tokens
+        setCookie(
+            config,
+            res,
+            getCookieNameFromTokenType(tokenType),
+            value,
+            expires,
+            tokenType === "refresh" ? "refreshTokenPath" : "accessTokenPath"
+        );
+
+        // If we are saving the idRefresh token we want to also add it as a header
+        if (tokenType === "idRefresh") {
+            setHeader(res, idRefreshTokenHeaderKey, value === "" ? "remove" : value, expires);
+        }
+    } else if (transferMethod === "header") {
+        if (tokenType === "idRefresh" && value === "") {
+            setHeader(res, getHeaderNameFromTokenType(tokenType), "remove", expires);
+        } else {
+            setHeader(res, getHeaderNameFromTokenType(tokenType), value, expires);
+        }
+    }
+}
+
+export function setHeader(res: BaseResponse, name: string, value: string, expires: number) {
+    if (value === "remove") {
+        res.setHeader(name, value, false);
+    } else {
+        res.setHeader(name, `${value};${expires}`, false);
+    }
+    res.setHeader("Access-Control-Expose-Headers", name, true);
 }
 
 /**

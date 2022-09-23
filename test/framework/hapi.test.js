@@ -75,7 +75,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             path: "/create",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -134,7 +134,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -188,7 +188,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -298,7 +298,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -390,7 +390,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -527,7 +527,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -587,7 +587,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -725,7 +725,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "id1", {}, {});
+                await Session.createNewSession(req, res, "id1", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -806,7 +806,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "id1", {}, {});
+                await Session.createNewSession(req, res, "id1", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -888,7 +888,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -896,7 +896,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/usercreate",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "someUniqueUserId", {}, {});
+                await Session.createNewSession(req, res, "someUniqueUserId", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -1006,7 +1006,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "", {}, {});
+                await Session.createNewSession(req, res, "", {}, {});
                 return res.response("").code(200);
             },
         });
@@ -1150,7 +1150,7 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             path: "/create",
             method: "post",
             handler: async (req, res) => {
-                await Session.createNewSession(res, "user1", {}, {});
+                await Session.createNewSession(req, res, "user1", {}, {});
                 return res.response("").code(200);
             },
         });

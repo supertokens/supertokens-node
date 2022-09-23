@@ -176,7 +176,14 @@ export default function getAPIInterface(): APIInterface {
                 }
             }
 
-            let session = await Session.createNewSession(options.res, response.user.id, {}, {}, userContext);
+            let session = await Session.createNewSession(
+                options.req,
+                options.res,
+                response.user.id,
+                {},
+                {},
+                userContext
+            );
             return {
                 status: "OK",
                 createdNewUser: response.createdNewUser,

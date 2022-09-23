@@ -48,14 +48,26 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },
@@ -114,14 +126,26 @@ describe(`session-jwt-functions: ${printPath("[test/session/with-jwt/jwtFunction
                         functions: function (oi) {
                             return {
                                 ...oi,
-                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                createNewSession: async function ({
+                                    req,
+                                    res,
+                                    userId,
+                                    accessTokenPayload,
+                                    sessionData,
+                                }) {
                                     accessTokenPayload = {
                                         ...accessTokenPayload,
                                         customKey: "customValue",
                                         customKey2: "customValue2",
                                     };
 
-                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                    return await oi.createNewSession({
+                                        req,
+                                        res,
+                                        userId,
+                                        accessTokenPayload,
+                                        sessionData,
+                                    });
                                 },
                             };
                         },

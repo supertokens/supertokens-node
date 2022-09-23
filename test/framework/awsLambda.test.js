@@ -64,7 +64,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         });
 
         let createSession = async (awsEvent, _) => {
-            await Session.createNewSession(awsEvent, "userId", {}, {});
+            await Session.createNewSession(awsEvent, awsEvent, "userId", {}, {});
             return {
                 body: JSON.stringify(""),
                 statusCode: 200,
@@ -243,7 +243,7 @@ describe(`AWS Lambda: ${printPath("[test/framework/awsLambda.test.js]")}`, funct
         });
 
         let createSession = async (awsEvent, _) => {
-            await Session.createNewSession(awsEvent, "userId", {}, {});
+            await Session.createNewSession(awsEvent, awsEvent, "userId", {}, {});
             return {
                 body: JSON.stringify(""),
                 statusCode: 200,
