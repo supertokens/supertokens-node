@@ -188,6 +188,13 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             },
             recipeList: [
                 Session.init({
+                    errorHandlers: {
+                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                            response.sendJSONResponse({
+                                success: true,
+                            });
+                        },
+                    },
                     antiCsrf: "VIA_TOKEN",
                 }),
             ],
@@ -204,16 +211,16 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
             res.status(200).send("");
         });
 
-        app.post("/auth/session/refresh", async (req, res) => {
+        app.post("/auth/session/refresh", async (req, res, next) => {
             try {
                 await Session.refreshSession(req, res);
                 res.status(200).send(JSON.stringify({ success: false }));
             } catch (err) {
-                res.status(200).json({
-                    success: err.type === Session.Error.TOKEN_THEFT_DETECTED,
-                });
+                next(err);
             }
         });
+
+        app.use(errorHandler());
 
         let res = extractInfoFromResponse(
             await new Promise((resolve) =>

@@ -171,6 +171,13 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             },
             recipeList: [
                 Session.init({
+                    errorHandlers: {
+                        onTokenTheftDetected: async (sessionHandle, userId, request, response) => {
+                            response.sendJSONResponse({
+                                success: true,
+                            });
+                        },
+                    },
                     antiCsrf: "VIA_TOKEN",
                     override: {
                         apis: (oI) => {
@@ -206,16 +213,8 @@ describe(`Hapi: ${printPath("[test/framework/hapi.test.js]")}`, function () {
             method: "post",
             path: "/auth/session/refresh",
             handler: async (req, res) => {
-                try {
-                    await Session.refreshSession(req, res);
-                    return res.response({ success: false }).code(200);
-                } catch (err) {
-                    return res
-                        .response({
-                            success: err.type === Session.Error.TOKEN_THEFT_DETECTED,
-                        })
-                        .code(200);
-                }
+                await Session.refreshSession(req, res);
+                return res.response({ success: false }).code(200);
             },
         });
 
