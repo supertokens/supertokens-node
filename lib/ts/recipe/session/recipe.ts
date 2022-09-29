@@ -218,7 +218,11 @@ export default class SessionRecipe extends RecipeModule {
         if (err.fromRecipe === SessionRecipe.RECIPE_ID) {
             if (err.type === STError.UNAUTHORISED) {
                 logDebugMessage("errorHandler: returning UNAUTHORISED");
-                if (err.payload === undefined || err.payload.clearCookies === true) {
+                if (
+                    err.payload === undefined ||
+                    err.payload.clearCookies === undefined ||
+                    err.payload.clearCookies === true
+                ) {
                     logDebugMessage("errorHandler: Clearing cookies because of UNAUTHORISED response");
                     clearSessionFromCookie(this.config, response);
                 }
@@ -228,6 +232,8 @@ export default class SessionRecipe extends RecipeModule {
                 return await this.config.errorHandlers.onTryRefreshToken(err.message, request, response);
             } else if (err.type === STError.TOKEN_THEFT_DETECTED) {
                 logDebugMessage("errorHandler: returning TOKEN_THEFT_DETECTED");
+                logDebugMessage("errorHandler: Clearing cookies because of TOKEN_THEFT_DETECTED response");
+                clearSessionFromCookie(this.config, response);
                 return await this.config.errorHandlers.onTokenTheftDetected(
                     err.payload.sessionHandle,
                     err.payload.userId,
