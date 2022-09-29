@@ -218,7 +218,8 @@ export default class SessionRecipe extends RecipeModule {
         if (err.fromRecipe === SessionRecipe.RECIPE_ID) {
             if (err.type === STError.UNAUTHORISED) {
                 logDebugMessage("errorHandler: returning UNAUTHORISED");
-                if (err.payload.clearCookies === true) {
+                if (err.payload === undefined || err.payload.clearCookies === true) {
+                    logDebugMessage("errorHandler: Clearing cookies because of UNAUTHORISED response");
                     clearSessionFromCookie(this.config, response);
                 }
                 return await this.config.errorHandlers.onUnauthorised(err.message, request, response);

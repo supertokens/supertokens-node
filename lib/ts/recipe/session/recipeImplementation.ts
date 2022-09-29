@@ -18,6 +18,7 @@ import {
     getRefreshTokenFromCookie,
     setFrontTokenInHeaders,
     getRidFromHeader,
+    clearSessionFromCookie,
 } from "./cookieAndHeaders";
 import { attachCreateOrRefreshSessionResponseToExpressRes, validateClaimsInPayload } from "./utils";
 import Session from "./sessionClass";
@@ -199,48 +200,41 @@ export default function getRecipeInterface(
                 }
                 return undefined;
             }
-            try {
-                let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
+            let antiCsrfToken = getAntiCsrfTokenFromHeaders(req);
 
-                if (doAntiCsrfCheck === undefined) {
-                    doAntiCsrfCheck = normaliseHttpMethod(req.getMethod()) !== "get";
-                }
-                logDebugMessage("getSession: Value of doAntiCsrfCheck is: " + doAntiCsrfCheck);
-
-                let response = await SessionFunctions.getSession(
-                    helpers,
-                    accessToken,
-                    antiCsrfToken,
-                    doAntiCsrfCheck,
-                    getRidFromHeader(req) !== undefined
-                );
-                if (response.accessToken !== undefined) {
-                    setFrontTokenInHeaders(
-                        res,
-                        response.session.userId,
-                        response.accessToken.expiry,
-                        response.session.userDataInJWT
-                    );
-                    attachAccessTokenToCookie(config, res, response.accessToken.token, response.accessToken.expiry);
-                    accessToken = response.accessToken.token;
-                }
-                logDebugMessage("getSession: Success!");
-                const session = new Session(
-                    helpers,
-                    accessToken,
-                    response.session.handle,
-                    response.session.userId,
-                    response.session.userDataInJWT,
-                    res
-                );
-
-                return session;
-            } catch (err) {
-                if (err.type === STError.UNAUTHORISED) {
-                    logDebugMessage("getSession: Cookies will get cleared because of UNAUTHORISED response");
-                }
-                throw err;
+            if (doAntiCsrfCheck === undefined) {
+                doAntiCsrfCheck = normaliseHttpMethod(req.getMethod()) !== "get";
             }
+            logDebugMessage("getSession: Value of doAntiCsrfCheck is: " + doAntiCsrfCheck);
+
+            let response = await SessionFunctions.getSession(
+                helpers,
+                accessToken,
+                antiCsrfToken,
+                doAntiCsrfCheck,
+                getRidFromHeader(req) !== undefined
+            );
+            if (response.accessToken !== undefined) {
+                setFrontTokenInHeaders(
+                    res,
+                    response.session.userId,
+                    response.accessToken.expiry,
+                    response.session.userDataInJWT
+                );
+                attachAccessTokenToCookie(config, res, response.accessToken.token, response.accessToken.expiry);
+                accessToken = response.accessToken.token;
+            }
+            logDebugMessage("getSession: Success!");
+            const session = new Session(
+                helpers,
+                accessToken,
+                response.session.handle,
+                response.session.userId,
+                response.session.userDataInJWT,
+                res
+            );
+
+            return session;
         },
 
         validateClaims: async function (
@@ -372,13 +366,9 @@ export default function getRecipeInterface(
                     res
                 );
             } catch (err) {
-                if (
-                    (err.type === STError.UNAUTHORISED && err.payload.clearCookies) ||
-                    err.type === STError.TOKEN_THEFT_DETECTED
-                ) {
-                    logDebugMessage(
-                        "refreshSession: Cookies will get cleared because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
-                    );
+                if (err.type === STError.TOKEN_THEFT_DETECTED) {
+                    logDebugMessage("refreshSession: Clearing cookies because of TOKEN_THEFT_DETECTED response");
+                    clearSessionFromCookie(config, res);
                 }
                 throw err;
             }
