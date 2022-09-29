@@ -12,7 +12,6 @@ import {
 import * as SessionFunctions from "./sessionFunctions";
 import {
     attachAccessTokenToCookie,
-    clearSessionFromCookie,
     getAccessTokenFromCookie,
     getAntiCsrfTokenFromHeaders,
     getIdRefreshTokenFromCookie,
@@ -238,8 +237,7 @@ export default function getRecipeInterface(
                 return session;
             } catch (err) {
                 if (err.type === STError.UNAUTHORISED) {
-                    logDebugMessage("getSession: Clearing cookies because of UNAUTHORISED response");
-                    clearSessionFromCookie(config, res);
+                    logDebugMessage("getSession: Cookies will get cleared because of UNAUTHORISED response");
                 }
                 throw err;
             }
@@ -379,9 +377,8 @@ export default function getRecipeInterface(
                     err.type === STError.TOKEN_THEFT_DETECTED
                 ) {
                     logDebugMessage(
-                        "refreshSession: Clearing cookies because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
+                        "refreshSession: Cookies will get cleared because of UNAUTHORISED or TOKEN_THEFT_DETECTED response"
                     );
-                    clearSessionFromCookie(config, res);
                 }
                 throw err;
             }

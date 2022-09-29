@@ -63,7 +63,6 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSessionFromCookie(this.helpers.config, this.res);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -80,7 +79,6 @@ export default class Session implements SessionContainerInterface {
                 userContext: userContext === undefined ? {} : userContext,
             }))
         ) {
-            clearSessionFromCookie(this.helpers.config, this.res);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -121,7 +119,6 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSessionFromCookie(this.helpers.config, this.res);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -136,7 +133,6 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (sessionInfo === undefined) {
-            clearSessionFromCookie(this.helpers.config, this.res);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
@@ -195,7 +191,6 @@ export default class Session implements SessionContainerInterface {
             userContext: userContext === undefined ? {} : userContext,
         });
         if (response === undefined) {
-            clearSessionFromCookie(this.helpers.config, this.res);
             throw new STError({
                 message: "Session does not exist anymore",
                 type: STError.UNAUTHORISED,
