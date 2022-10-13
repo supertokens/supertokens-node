@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed:
+
+-   Removed default max age from claims
+
 ## [12.0.3] - 2022-09-29
 
 ### Refactor:
