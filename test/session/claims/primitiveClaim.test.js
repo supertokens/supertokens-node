@@ -330,7 +330,7 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
                     });
                 });
 
-                it("should not validate old values", async () => {
+                it("should validate old values", async () => {
                     const now = Date.now();
                     const clock = sinon.useFakeTimers(now);
 
@@ -341,12 +341,7 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
 
                     const res = await claim.validators.hasValue(val).validate(payload, {});
                     assert.deepStrictEqual(res, {
-                        isValid: false,
-                        reason: {
-                            ageInSeconds: 604800,
-                            maxAgeInSeconds: 300,
-                            message: "expired",
-                        },
+                        isValid: true,
                     });
                 });
 
@@ -369,7 +364,7 @@ describe(`sessionClaims/primitiveClaim: ${printPath("[test/session/claims/primit
                     // advance clock by one week
                     clock.tick(6.048e8);
 
-                    assert.equal(claim.validators.hasValue(val2).shouldRefetch(payload), true);
+                    assert.equal(claim.validators.hasValue(val2).shouldRefetch(payload), false);
                 });
 
                 it("should not refetch with an overridden maxAgeInSeconds", async () => {
