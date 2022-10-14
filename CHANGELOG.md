@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+### Changed:
+
+-   Removed default defaultMaxAge from session claim base classes
+-   Added a 5 minute defaultMaxAge to UserRoleClaim, PermissionClaim and EmailVerificationClaim
+
 ## [12.0.3] - 2022-09-29
 
 ### Refactor:

@@ -33,6 +33,7 @@ export class PermissionClaimClass extends PrimitiveArrayClaim<string> {
 
                 return Array.from(userPermissions);
             },
+            defaultMaxAgeInSeconds: 300,
         });
     }
 }

@@ -22,12 +22,13 @@ export class EmailVerificationClaimClass extends BooleanClaim {
                     throw new Error("UNKNOWN_USER_ID");
                 }
             },
+            defaultMaxAgeInSeconds: 300,
         });
 
         this.validators = {
             ...this.validators,
             isVerified: (refetchTimeOnFalseInSeconds: number = 10, maxAgeInSeconds: number = 300) => ({
-                ...this.validators.hasValue(true),
+                ...this.validators.hasValue(true, maxAgeInSeconds),
                 shouldRefetch: (payload, userContext) => {
                     const value = this.getValueFromPayload(payload, userContext);
                     return (

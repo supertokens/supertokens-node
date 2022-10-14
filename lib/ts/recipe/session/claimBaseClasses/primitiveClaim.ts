@@ -3,12 +3,12 @@ import { SessionClaim, SessionClaimValidator } from "../types";
 
 export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
     public readonly fetchValue: (userId: string, userContext: any) => Promise<T | undefined> | T | undefined;
-    public readonly defaultMaxAgeInSeconds: number;
+    public readonly defaultMaxAgeInSeconds: number | undefined;
 
     constructor(config: { key: string; fetchValue: SessionClaim<T>["fetchValue"]; defaultMaxAgeInSeconds?: number }) {
         super(config.key);
         this.fetchValue = config.fetchValue;
-        this.defaultMaxAgeInSeconds = config.defaultMaxAgeInSeconds === undefined ? 300 : config.defaultMaxAgeInSeconds;
+        this.defaultMaxAgeInSeconds = config.defaultMaxAgeInSeconds;
     }
 
     addToPayload_internal(payload: any, value: T, _userContext: any): any {
@@ -49,7 +49,7 @@ export class PrimitiveClaim<T extends JSONPrimitive> extends SessionClaim<T> {
     validators = {
         hasValue: (
             val: T,
-            maxAgeInSeconds: number = this.defaultMaxAgeInSeconds,
+            maxAgeInSeconds: number | undefined = this.defaultMaxAgeInSeconds,
             id?: string
         ): SessionClaimValidator => {
             return {
