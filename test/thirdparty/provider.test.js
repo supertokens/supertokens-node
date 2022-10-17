@@ -83,7 +83,7 @@ describe(`providerTest: ${printPath("[test/thirdparty/provider.test.js]")}`, fun
         let providerInfo = ThirPartyRecipe.getInstanceOrThrowError().providers[0];
         assert.strictEqual(providerInfo.id, "google");
         let providerInfoGetResult = await providerInfo.get();
-        assert.strictEqual(providerInfoGetResult.accessTokenAPI.url, "https://accounts.google.com/o/oauth2/token");
+        assert.strictEqual(providerInfoGetResult.accessTokenAPI.url, "https://oauth2.googleapis.com/token");
         assert.strictEqual(
             providerInfoGetResult.authorisationRedirect.url,
             "https://accounts.google.com/o/oauth2/v2/auth"

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+-   Updated google token endpoint.
+
 ## [12.0.4] - 2022-10-14
 
 ### Changed:
