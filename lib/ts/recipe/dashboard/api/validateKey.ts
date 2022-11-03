@@ -26,11 +26,11 @@ export default async function validateKey(_: APIInterface, options: APIOptions):
 
     if (!shouldAllowAccess) {
         sendUnauthorisedAccess(options.res);
-        return true;
+    } else {
+        options.res.sendJSONResponse({
+            status: "OK",
+        });
     }
 
-    options.res.sendJSONResponse({
-        status: "OK",
-    });
     return true;
 }
