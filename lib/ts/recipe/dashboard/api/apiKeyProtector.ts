@@ -14,13 +14,13 @@
  */
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIFunction, APIInterface, APIOptions } from "../types";
-import { APIResponse } from "./types";
+import { sendUnauthorisedAccess } from "../utils";
 
 export default async function apiKeyProtector(
     apiImplementation: APIInterface,
     options: APIOptions,
     apiFunction: APIFunction
-): Promise<APIResponse> {
+): Promise<boolean> {
     const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
         req: options.req,
         config: options.config,
@@ -28,10 +28,10 @@ export default async function apiKeyProtector(
     });
 
     if (!shouldAllowAccess) {
-        return {
-            status: "UNAUTHORISED",
-        };
+        sendUnauthorisedAccess(options.res);
+        return true;
     }
 
-    return await apiFunction(apiImplementation, options);
+    await apiFunction(apiImplementation, options);
+    return true;
 }

@@ -17,9 +17,8 @@ import STError from "../../../error";
 import SuperTokens from "../../../supertokens";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
-import { APIResponse } from "./types";
 
-export type UsersGetAPIResponse = {
+export type Response = {
     status: "OK";
     nextPaginationToken?: string;
     users: {
@@ -48,7 +47,7 @@ export type UsersGetAPIResponse = {
     }[];
 };
 
-export default async function usersGet(_: APIInterface, options: APIOptions): Promise<APIResponse> {
+export default async function usersGet(_: APIInterface, options: APIOptions): Promise<Response> {
     const req = options.req;
     const limit = options.req.getKeyValueFromQuery("limit");
 

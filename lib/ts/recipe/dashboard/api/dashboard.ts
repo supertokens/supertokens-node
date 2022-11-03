@@ -15,13 +15,10 @@
 
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { APIInterface, APIOptions } from "../types";
-import { APIResponse } from "./types";
 
-export default async function dashboard(apiImplementation: APIInterface, options: APIOptions): Promise<APIResponse> {
+export default async function dashboard(apiImplementation: APIInterface, options: APIOptions): Promise<boolean> {
     if (apiImplementation.dashboardGET === undefined) {
-        return {
-            status: "DISABLED",
-        };
+        return false;
     }
 
     const htmlString = await apiImplementation.dashboardGET({
@@ -29,8 +26,6 @@ export default async function dashboard(apiImplementation: APIInterface, options
         userContext: makeDefaultUserContextFromAPI(options.req),
     });
 
-    return {
-        status: "HTML_RESPONSE",
-        string: htmlString,
-    };
+    options.res.sendHTMLResponse(htmlString);
+    return true;
 }

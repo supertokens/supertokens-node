@@ -19,7 +19,7 @@ import { APIHandled, HTTPMethod, NormalisedAppinfo, RecipeListFunction } from ".
 import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
-import { getApiIdIfMatched, isApiPath, sendUnauthorisedAccess, validateAndNormaliseUserInput } from "./utils";
+import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
 import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, VALIDATE_KEY_API } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
@@ -29,7 +29,6 @@ import validateKey from "./api/validateKey";
 import apiKeyProtector from "./api/apiKeyProtector";
 import usersGet from "./api/usersGet";
 import usersCountGet from "./api/usersCountGet";
-import { APIResponse } from "./api/types";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -117,49 +116,30 @@ export default class Recipe extends RecipeModule {
             appInfo: this.getAppInfo(),
         };
 
-        async function getApiResponse(apiImplementation: APIInterface): Promise<APIResponse> {
-            // For these APIs we dont need API key validation
-            if (id === DASHBOARD_API) {
-                return await dashboard(apiImplementation, options);
-            }
-
-            if (id === VALIDATE_KEY_API) {
-                return await validateKey(apiImplementation, options);
-            }
-
-            // Do API key validation for the remaining APIs
-            let apiFunction: APIFunction | undefined;
-
-            if (id === USERS_LIST_GET_API) {
-                apiFunction = usersGet;
-            } else if (id === USERS_COUNT_API) {
-                apiFunction = usersCountGet;
-            }
-
-            // If the id doesnt match any APIs return disabled
-            if (apiFunction === undefined) {
-                return {
-                    status: "DISABLED",
-                };
-            }
-
-            return await apiKeyProtector(apiImplementation, options, apiFunction);
+        // For these APIs we dont need API key validation
+        if (id === DASHBOARD_API) {
+            return await dashboard(this.apiImpl, options);
         }
 
-        const apiResponse = await getApiResponse(this.apiImpl);
+        if (id === VALIDATE_KEY_API) {
+            return await validateKey(this.apiImpl, options);
+        }
 
-        if (apiResponse.status === "DISABLED") {
+        // Do API key validation for the remaining APIs
+        let apiFunction: APIFunction | undefined;
+
+        if (id === USERS_LIST_GET_API) {
+            apiFunction = usersGet;
+        } else if (id === USERS_COUNT_API) {
+            apiFunction = usersCountGet;
+        }
+
+        // If the id doesnt match any APIs return false
+        if (apiFunction === undefined) {
             return false;
         }
 
-        if (apiResponse.status === "UNAUTHORISED") {
-            sendUnauthorisedAccess(options.res);
-        } else if (apiResponse.status === "HTML_RESPONSE") {
-            options.res.sendHTMLResponse(apiResponse.string);
-        } else {
-            options.res.sendJSONResponse(apiResponse);
-        }
-        return true;
+        return await apiKeyProtector(this.apiImpl, options, apiFunction);
     };
 
     handleError = async (err: error, _: BaseRequest, __: BaseResponse): Promise<void> => {

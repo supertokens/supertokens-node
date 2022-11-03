@@ -1,7 +1,6 @@
 // @ts-nocheck
 import { APIInterface, APIOptions } from "../types";
-import { APIResponse } from "./types";
-export declare type UsersGetAPIResponse = {
+export declare type Response = {
     status: "OK";
     nextPaginationToken?: string;
     users: {
@@ -29,4 +28,4 @@ export declare type UsersGetAPIResponse = {
         );
     }[];
 };
-export default function usersGet(_: APIInterface, options: APIOptions): Promise<APIResponse>;
+export default function usersGet(_: APIInterface, options: APIOptions): Promise<Response>;
