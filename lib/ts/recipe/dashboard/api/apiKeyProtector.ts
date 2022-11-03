@@ -32,6 +32,7 @@ export default async function apiKeyProtector(
         return true;
     }
 
-    await apiFunction(apiImplementation, options);
+    const response = await apiFunction(apiImplementation, options);
+    options.res.sendJSONResponse(response);
     return true;
 }
