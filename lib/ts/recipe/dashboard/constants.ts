@@ -19,3 +19,4 @@ export const USERS_LIST_GET_API = "/api/users";
 export const USERS_COUNT_API = "/api/users/count";
 export const USER_API = "/api/user";
 export const USER_EMAIL_VERIFY_API = "/api/user/email/verify";
+export const USER_METADATA_API = "/api/user/metadata";

@@ -9,7 +9,7 @@ type Response =
           isVerified: boolean;
       }
     | {
-          status: "FEATURE_NOT_ENABLED";
+          status: "FEATURE_NOT_ENABLED_ERROR";
       };
 
 export const userEmailverifyGet: APIFunction = async (_: APIInterface, options: APIOptions): Promise<Response> => {
@@ -27,7 +27,7 @@ export const userEmailverifyGet: APIFunction = async (_: APIInterface, options: 
         EmailVerificationRecipe.getInstanceOrThrowError();
     } catch (e) {
         return {
-            status: "FEATURE_NOT_ENABLED",
+            status: "FEATURE_NOT_ENABLED_ERROR",
         };
     }
 
