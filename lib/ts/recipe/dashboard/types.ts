@@ -58,4 +58,4 @@ export type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
 };
 
-export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<boolean>;
+export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;

@@ -15,15 +15,17 @@
 
 import { APIInterface, APIOptions } from "../types";
 import SuperTokens from "../../../supertokens";
-import { send200Response } from "../../../utils";
 
-export default async function usersCountGet(_: APIInterface, options: APIOptions) {
+export type Response = {
+    status: "OK";
+    count: number;
+};
+
+export default async function usersCountGet(_: APIInterface, __: APIOptions): Promise<Response> {
     const count = await SuperTokens.getInstanceOrThrowError().getUserCount();
 
-    send200Response(options.res, {
+    return {
         status: "OK",
         count,
-    });
-
-    return true;
+    };
 }
