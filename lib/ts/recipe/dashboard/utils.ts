@@ -17,8 +17,8 @@ import { BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
-import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, VALIDATE_KEY_API } from "./constants";
-import { APIInterface, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
+import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, USER_API, VALIDATE_KEY_API } from "./constants";
+import { APIInterface, RecipeIdForUser, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
     if (config.apiKey.trim().length === 0) {
@@ -69,9 +69,17 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
         return USERS_COUNT_API;
     }
 
+    if (path.getAsStringDangerous().endsWith(USER_API) && method === "get") {
+        return USER_API;
+    }
+
     return undefined;
 }
 
 export function sendUnauthorisedAccess(res: BaseResponse) {
     sendNon200ResponseWithMessage(res, "Unauthorised access", 401);
+}
+
+export function isValidRecipeId(recipeId: string): recipeId is RecipeIdForUser {
+    return recipeId === "emailpassword" || recipeId === "thirdparty" || recipeId === "passwordless";
 }

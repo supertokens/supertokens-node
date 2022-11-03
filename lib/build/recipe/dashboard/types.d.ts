@@ -39,3 +39,4 @@ export declare type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
 };
 export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
+export declare type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";

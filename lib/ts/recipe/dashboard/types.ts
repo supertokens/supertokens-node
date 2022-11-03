@@ -59,3 +59,5 @@ export type APIInterface = {
 };
 
 export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
+
+export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
