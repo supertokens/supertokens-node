@@ -16,6 +16,7 @@
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
+import { APIResponse } from "./api/types";
 
 export type TypeInput = {
     apiKey: string;
@@ -58,4 +59,4 @@ export type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
 };
 
-export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<boolean>;
+export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<APIResponse>;

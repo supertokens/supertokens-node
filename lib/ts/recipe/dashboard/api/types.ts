@@ -13,24 +13,30 @@
  * under the License.
  */
 
-import { makeDefaultUserContextFromAPI } from "../../../utils";
-import { APIInterface, APIOptions } from "../types";
-import { APIResponse } from "./types";
+import { UsersCountAPIResponse } from "./usersCountGet";
+import { UsersGetAPIResponse } from "./usersGet";
 
-export default async function dashboard(apiImplementation: APIInterface, options: APIOptions): Promise<APIResponse> {
-    if (apiImplementation.dashboardGET === undefined) {
-        return {
-            status: "DISABLED",
-        };
-    }
+type UnauthorisedResponse = {
+    status: "UNAUTHORISED";
+};
 
-    const htmlString = await apiImplementation.dashboardGET({
-        options,
-        userContext: makeDefaultUserContextFromAPI(options.req),
-    });
+type HTMLResponse = {
+    status: "HTML_RESPONSE";
+    string: string;
+};
 
-    return {
-        status: "HTML_RESPONSE",
-        string: htmlString,
-    };
-}
+type DisabledAPI = {
+    status: "DISABLED";
+};
+
+type OkResponse = {
+    status: "OK";
+};
+
+export type APIResponse =
+    | UnauthorisedResponse
+    | UsersCountAPIResponse
+    | UsersGetAPIResponse
+    | HTMLResponse
+    | DisabledAPI
+    | OkResponse;

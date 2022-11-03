@@ -15,9 +15,9 @@
 
 import { APIInterface, APIOptions } from "../types";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
-import { sendUnauthorisedAccess } from "../utils";
+import { APIResponse } from "./types";
 
-export default async function validateKey(_: APIInterface, options: APIOptions): Promise<boolean> {
+export default async function validateKey(_: APIInterface, options: APIOptions): Promise<APIResponse> {
     const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
         req: options.req,
         config: options.config,
@@ -25,12 +25,12 @@ export default async function validateKey(_: APIInterface, options: APIOptions):
     });
 
     if (!shouldAllowAccess) {
-        sendUnauthorisedAccess(options.res);
-    } else {
-        options.res.sendJSONResponse({
-            status: "OK",
-        });
+        return {
+            status: "UNAUTHORISED",
+        };
     }
 
-    return true;
+    return {
+        status: "OK",
+    };
 }

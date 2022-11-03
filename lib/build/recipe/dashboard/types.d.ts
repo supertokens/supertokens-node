@@ -2,6 +2,7 @@
 import OverrideableBuilder from "supertokens-js-override";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { NormalisedAppinfo } from "../../types";
+import { APIResponse } from "./api/types";
 export declare type TypeInput = {
     apiKey: string;
     override?: {
@@ -38,4 +39,4 @@ export declare type APIOptions = {
 export declare type APIInterface = {
     dashboardGET: undefined | ((input: { options: APIOptions; userContext: any }) => Promise<string>);
 };
-export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<boolean>;
+export declare type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<APIResponse>;
