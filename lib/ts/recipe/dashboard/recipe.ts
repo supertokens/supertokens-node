@@ -27,6 +27,7 @@ import {
     USER_API,
     USER_EMAIL_VERIFY_API,
     USER_METADATA_API,
+    USER_SESSIONS_API,
     VALIDATE_KEY_API,
 } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
@@ -40,6 +41,7 @@ import usersCountGet from "./api/usersCountGet";
 import { userGet } from "./api/userdetails/userGet";
 import { userEmailverifyGet } from "./api/userdetails/userEmailVerifyGet";
 import { userMetaDataGet } from "./api/userdetails/userMetadataGet";
+import { userSessionsGet } from "./api/userdetails/userSessionsGet";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -154,6 +156,10 @@ export default class Recipe extends RecipeModule {
         } else if (id === USER_METADATA_API) {
             if (req.getMethod() === "get") {
                 apiFunction = userMetaDataGet;
+            }
+        } else if (id === USER_SESSIONS_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userSessionsGet;
             }
         }
 

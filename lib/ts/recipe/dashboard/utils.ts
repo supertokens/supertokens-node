@@ -24,6 +24,7 @@ import {
     USER_API,
     USER_EMAIL_VERIFY_API,
     USER_METADATA_API,
+    USER_SESSIONS_API,
     VALIDATE_KEY_API,
 } from "./constants";
 import { APIInterface, RecipeIdForUser, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
@@ -86,6 +87,10 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
 
     if (path.getAsStringDangerous().endsWith(USER_METADATA_API) && method === "get") {
         return USER_METADATA_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(USER_SESSIONS_API) && method === "get") {
+        return USER_SESSIONS_API;
     }
 
     return undefined;
