@@ -20,7 +20,16 @@ import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, Type
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
-import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, VALIDATE_KEY_API } from "./constants";
+import {
+    DASHBOARD_API,
+    USERS_COUNT_API,
+    USERS_LIST_GET_API,
+    USER_API,
+    USER_EMAIL_VERIFY_API,
+    USER_METADATA_API,
+    USER_SESSIONS_API,
+    VALIDATE_KEY_API,
+} from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import dashboard from "./api/dashboard";
@@ -29,6 +38,10 @@ import validateKey from "./api/validateKey";
 import apiKeyProtector from "./api/apiKeyProtector";
 import usersGet from "./api/usersGet";
 import usersCountGet from "./api/usersCountGet";
+import { userGet } from "./api/userdetails/userGet";
+import { userEmailverifyGet } from "./api/userdetails/userEmailVerifyGet";
+import { userMetaDataGet } from "./api/userdetails/userMetadataGet";
+import { userSessionsGet } from "./api/userdetails/userSessionsGet";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -132,6 +145,22 @@ export default class Recipe extends RecipeModule {
             apiFunction = usersGet;
         } else if (id === USERS_COUNT_API) {
             apiFunction = usersCountGet;
+        } else if (id === USER_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userGet;
+            }
+        } else if (id === USER_EMAIL_VERIFY_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userEmailverifyGet;
+            }
+        } else if (id === USER_METADATA_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userMetaDataGet;
+            }
+        } else if (id === USER_SESSIONS_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userSessionsGet;
+            }
         }
 
         // If the id doesnt match any APIs return false
