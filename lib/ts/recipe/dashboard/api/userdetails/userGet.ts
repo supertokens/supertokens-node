@@ -9,6 +9,7 @@ import ThirdParty from "../../../thirdparty";
 import Passwordless from "../../../passwordless";
 import ThirdPartyEmailPassword from "../../../thirdpartyemailpassword";
 import ThirdPartyPasswordless from "../../../thirdpartypasswordless";
+import UserMetaDataRecipe from "../../../usermetadata/recipe";
 import UserMetaData from "../../../usermetadata";
 
 type CommonUserInformation = {
@@ -142,6 +143,22 @@ export const userGet: APIFunction = async (_: APIInterface, options: APIOptions)
                 // No - op
             }
         }
+
+        if (user === undefined) {
+            try {
+                const userResponse = await ThirdPartyPasswordless.getUserById(userId);
+
+                if (userResponse !== undefined) {
+                    user = {
+                        ...userResponse,
+                        firstName: "",
+                        lastName: "",
+                    };
+                }
+            } catch (e) {
+                // No - op
+            }
+        }
     } else if (recipeId === PasswordlessRecipe.RECIPE_ID) {
         try {
             const userResponse = await Passwordless.getUserById({
@@ -183,29 +200,29 @@ export const userGet: APIFunction = async (_: APIInterface, options: APIOptions)
     }
 
     try {
-        const userMetaData = await UserMetaData.getUserMetadata(userId);
-        const { first_name, last_name } = userMetaData.metadata;
-
-        if (first_name !== undefined) {
-            user = {
-                ...user,
-                firstName: first_name,
-            };
-        }
-
-        if (last_name !== undefined) {
-            user = {
-                ...user,
-                lastName: last_name,
-            };
-        }
-    } catch {
+        UserMetaDataRecipe.getInstanceOrThrowError();
+    } catch (_) {
         user = {
             ...user,
             firstName: "FEATURE_NOT_ENABLED",
             lastName: "FEATURE_NOT_ENABLED",
         };
+
+        return {
+            status: "OK",
+            recipeId: recipeId as any,
+            user,
+        };
     }
+
+    const userMetaData = await UserMetaData.getUserMetadata(userId);
+    const { first_name, last_name } = userMetaData.metadata;
+
+    user = {
+        ...user,
+        firstName: first_name === undefined ? "" : first_name,
+        lastName: last_name === undefined ? "" : last_name,
+    };
 
     return {
         status: "OK",
