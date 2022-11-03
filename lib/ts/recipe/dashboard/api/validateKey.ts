@@ -17,12 +17,6 @@ import { APIInterface, APIOptions } from "../types";
 import { makeDefaultUserContextFromAPI } from "../../../utils";
 import { sendUnauthorisedAccess } from "../utils";
 
-export type Response =
-    | {
-          status: "OK";
-      }
-    | undefined;
-
 export default async function validateKey(_: APIInterface, options: APIOptions): Promise<boolean> {
     const shouldAllowAccess = await options.recipeImplementation.shouldAllowAccess({
         req: options.req,

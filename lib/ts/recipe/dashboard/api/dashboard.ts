@@ -27,5 +27,6 @@ export default async function dashboard(apiImplementation: APIInterface, options
     });
 
     options.res.sendHTMLResponse(htmlString);
+
     return true;
 }
