@@ -17,7 +17,14 @@ import { BaseResponse } from "../../framework";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { HTTPMethod, NormalisedAppinfo } from "../../types";
 import { sendNon200ResponseWithMessage } from "../../utils";
-import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, USER_API, VALIDATE_KEY_API } from "./constants";
+import {
+    DASHBOARD_API,
+    USERS_COUNT_API,
+    USERS_LIST_GET_API,
+    USER_API,
+    USER_EMAIL_VERIFY_API,
+    VALIDATE_KEY_API,
+} from "./constants";
 import { APIInterface, RecipeIdForUser, RecipeInterface, TypeInput, TypeNormalisedInput } from "./types";
 
 export function validateAndNormaliseUserInput(config: TypeInput): TypeNormalisedInput {
@@ -71,6 +78,9 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
 
     if (path.getAsStringDangerous().endsWith(USER_API) && method === "get") {
         return USER_API;
+    }
+    if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_API) && method === "get") {
+        return USER_EMAIL_VERIFY_API;
     }
 
     return undefined;

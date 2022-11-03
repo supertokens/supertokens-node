@@ -20,7 +20,14 @@ import { APIFunction, APIInterface, APIOptions, RecipeInterface, TypeInput, Type
 import RecipeImplementation from "./recipeImplementation";
 import APIImplementation from "./api/implementation";
 import { getApiIdIfMatched, isApiPath, validateAndNormaliseUserInput } from "./utils";
-import { DASHBOARD_API, USERS_COUNT_API, USERS_LIST_GET_API, USER_API, VALIDATE_KEY_API } from "./constants";
+import {
+    DASHBOARD_API,
+    USERS_COUNT_API,
+    USERS_LIST_GET_API,
+    USER_API,
+    USER_EMAIL_VERIFY_API,
+    VALIDATE_KEY_API,
+} from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { BaseRequest, BaseResponse } from "../../framework";
 import dashboard from "./api/dashboard";
@@ -30,6 +37,7 @@ import apiKeyProtector from "./api/apiKeyProtector";
 import usersGet from "./api/usersGet";
 import usersCountGet from "./api/usersCountGet";
 import { userGet } from "./api/userdetails/userGet";
+import { userEmailverifyGet } from "./api/userdetails/userEmailVerifyGet";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -136,6 +144,10 @@ export default class Recipe extends RecipeModule {
         } else if (id === USER_API) {
             if (req.getMethod() === "get") {
                 apiFunction = userGet;
+            }
+        } else if (id === USER_EMAIL_VERIFY_API) {
+            if (req.getMethod() === "get") {
+                apiFunction = userEmailverifyGet;
             }
         }
 
