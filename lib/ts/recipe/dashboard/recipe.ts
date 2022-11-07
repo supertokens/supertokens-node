@@ -42,6 +42,7 @@ import { userGet } from "./api/userdetails/userGet";
 import { userEmailverifyGet } from "./api/userdetails/userEmailVerifyGet";
 import { userMetaDataGet } from "./api/userdetails/userMetadataGet";
 import { userSessionsGet } from "./api/userdetails/userSessionsGet";
+import { userDelete } from "./api/userdetails/userDelete";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -148,6 +149,10 @@ export default class Recipe extends RecipeModule {
         } else if (id === USER_API) {
             if (req.getMethod() === "get") {
                 apiFunction = userGet;
+            }
+
+            if (req.getMethod() === "delete") {
+                apiFunction = userDelete;
             }
         } else if (id === USER_EMAIL_VERIFY_API) {
             if (req.getMethod() === "get") {

@@ -78,9 +78,12 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
         return USERS_COUNT_API;
     }
 
-    if (path.getAsStringDangerous().endsWith(USER_API) && method === "get") {
-        return USER_API;
+    if (path.getAsStringDangerous().endsWith(USER_API)) {
+        if (method === "get" || method === "delete") {
+            return USER_API;
+        }
     }
+
     if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_API) && method === "get") {
         return USER_EMAIL_VERIFY_API;
     }
