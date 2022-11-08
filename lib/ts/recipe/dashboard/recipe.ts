@@ -43,6 +43,7 @@ import { userEmailverifyGet } from "./api/userdetails/userEmailVerifyGet";
 import { userMetaDataGet } from "./api/userdetails/userMetadataGet";
 import { userSessionsGet } from "./api/userdetails/userSessionsGet";
 import { userDelete } from "./api/userdetails/userDelete";
+import { userEmailVerifyPut } from "./api/userdetails/userEmailVerifyPut";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -157,6 +158,10 @@ export default class Recipe extends RecipeModule {
         } else if (id === USER_EMAIL_VERIFY_API) {
             if (req.getMethod() === "get") {
                 apiFunction = userEmailverifyGet;
+            }
+
+            if (req.getMethod() === "put") {
+                apiFunction = userEmailVerifyPut;
             }
         } else if (id === USER_METADATA_API) {
             if (req.getMethod() === "get") {

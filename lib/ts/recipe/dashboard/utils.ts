@@ -84,8 +84,10 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
         }
     }
 
-    if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_API) && method === "get") {
-        return USER_EMAIL_VERIFY_API;
+    if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_API)) {
+        if (method === "get" || method === "put") {
+            return USER_EMAIL_VERIFY_API;
+        }
     }
 
     if (path.getAsStringDangerous().endsWith(USER_METADATA_API) && method === "get") {
