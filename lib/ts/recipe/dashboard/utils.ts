@@ -98,8 +98,10 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
         }
     }
 
-    if (path.getAsStringDangerous().endsWith(USER_SESSIONS_API) && method === "get") {
-        return USER_SESSIONS_API;
+    if (path.getAsStringDangerous().endsWith(USER_SESSIONS_API)) {
+        if (method === "get" || method === "post") {
+            return USER_SESSIONS_API;
+        }
     }
 
     if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
