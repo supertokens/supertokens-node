@@ -27,6 +27,7 @@ import {
     USER_API,
     USER_EMAIL_VERIFY_API,
     USER_METADATA_API,
+    USER_PASSWORD_API,
     USER_SESSIONS_API,
     VALIDATE_KEY_API,
 } from "./constants";
@@ -45,6 +46,7 @@ import { userSessionsGet } from "./api/userdetails/userSessionsGet";
 import { userDelete } from "./api/userdetails/userDelete";
 import { userEmailVerifyPut } from "./api/userdetails/userEmailVerifyPut";
 import { userMetadataPut } from "./api/userdetails/userMetadataPut";
+import { userPasswordPut } from "./api/userdetails/userPasswordPut";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -176,6 +178,8 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "get") {
                 apiFunction = userSessionsGet;
             }
+        } else if (id === USER_PASSWORD_API) {
+            apiFunction = userPasswordPut;
         }
 
         // If the id doesnt match any APIs return false
