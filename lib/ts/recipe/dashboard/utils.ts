@@ -80,7 +80,7 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
     }
 
     if (path.getAsStringDangerous().endsWith(USER_API)) {
-        if (method === "get" || method === "delete") {
+        if (method === "get" || method === "delete" || method === "put") {
             return USER_API;
         }
     }

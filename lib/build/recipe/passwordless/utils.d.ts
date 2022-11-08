@@ -7,3 +7,5 @@ export declare function validateAndNormaliseUserInput(
     appInfo: NormalisedAppinfo,
     config: TypeInput
 ): TypeNormalisedInput;
+export declare function defaultValidatePhoneNumber(value: string): Promise<string | undefined> | string | undefined;
+export declare function defaultValidateEmail(value: string): Promise<string | undefined> | string | undefined;

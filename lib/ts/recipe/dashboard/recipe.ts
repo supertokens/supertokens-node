@@ -47,6 +47,7 @@ import { userDelete } from "./api/userdetails/userDelete";
 import { userEmailVerifyPut } from "./api/userdetails/userEmailVerifyPut";
 import { userMetadataPut } from "./api/userdetails/userMetadataPut";
 import { userPasswordPut } from "./api/userdetails/userPasswordPut";
+import { userPut } from "./api/userdetails/userPut";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -157,6 +158,10 @@ export default class Recipe extends RecipeModule {
 
             if (req.getMethod() === "delete") {
                 apiFunction = userDelete;
+            }
+
+            if (req.getMethod() === "put") {
+                apiFunction === userPut;
             }
         } else if (id === USER_EMAIL_VERIFY_API) {
             if (req.getMethod() === "get") {
