@@ -21,3 +21,4 @@ export const USER_API = "/api/user";
 export const USER_EMAIL_VERIFY_API = "/api/user/email/verify";
 export const USER_METADATA_API = "/api/user/metadata";
 export const USER_SESSIONS_API = "/api/user/sessions";
+export const USER_PASSWORD_API = "/api/user/password";

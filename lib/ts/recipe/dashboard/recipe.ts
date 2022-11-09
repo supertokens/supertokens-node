@@ -27,6 +27,7 @@ import {
     USER_API,
     USER_EMAIL_VERIFY_API,
     USER_METADATA_API,
+    USER_PASSWORD_API,
     USER_SESSIONS_API,
     VALIDATE_KEY_API,
 } from "./constants";
@@ -42,6 +43,11 @@ import { userGet } from "./api/userdetails/userGet";
 import { userEmailverifyGet } from "./api/userdetails/userEmailVerifyGet";
 import { userMetaDataGet } from "./api/userdetails/userMetadataGet";
 import { userSessionsGet } from "./api/userdetails/userSessionsGet";
+import { userDelete } from "./api/userdetails/userDelete";
+import { userEmailVerifyPut } from "./api/userdetails/userEmailVerifyPut";
+import { userMetadataPut } from "./api/userdetails/userMetadataPut";
+import { userPasswordPut } from "./api/userdetails/userPasswordPut";
+import { userPut } from "./api/userdetails/userPut";
 
 export default class Recipe extends RecipeModule {
     private static instance: Recipe | undefined = undefined;
@@ -149,18 +155,36 @@ export default class Recipe extends RecipeModule {
             if (req.getMethod() === "get") {
                 apiFunction = userGet;
             }
+
+            if (req.getMethod() === "delete") {
+                apiFunction = userDelete;
+            }
+
+            if (req.getMethod() === "put") {
+                apiFunction === userPut;
+            }
         } else if (id === USER_EMAIL_VERIFY_API) {
             if (req.getMethod() === "get") {
                 apiFunction = userEmailverifyGet;
+            }
+
+            if (req.getMethod() === "put") {
+                apiFunction = userEmailVerifyPut;
             }
         } else if (id === USER_METADATA_API) {
             if (req.getMethod() === "get") {
                 apiFunction = userMetaDataGet;
             }
+
+            if (req.getMethod() === "put") {
+                apiFunction = userMetadataPut;
+            }
         } else if (id === USER_SESSIONS_API) {
             if (req.getMethod() === "get") {
                 apiFunction = userSessionsGet;
             }
+        } else if (id === USER_PASSWORD_API) {
+            apiFunction = userPasswordPut;
         }
 
         // If the id doesnt match any APIs return false

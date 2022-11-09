@@ -145,7 +145,7 @@ export function validateAndNormaliseUserInput(
     }
 }
 
-function defaultValidatePhoneNumber(value: string): Promise<string | undefined> | string | undefined {
+export function defaultValidatePhoneNumber(value: string): Promise<string | undefined> | string | undefined {
     if (typeof value !== "string") {
         return "Development bug: Please make sure the phoneNumber field is a string";
     }
@@ -160,7 +160,7 @@ function defaultValidatePhoneNumber(value: string): Promise<string | undefined> 
     return undefined;
 }
 
-function defaultValidateEmail(value: string): Promise<string | undefined> | string | undefined {
+export function defaultValidateEmail(value: string): Promise<string | undefined> | string | undefined {
     // We check if the email syntax is correct
     // As per https://github.com/supertokens/supertokens-auth-react/issues/5#issuecomment-709512438
     // Regex from https://stackoverflow.com/a/46181/3867175
