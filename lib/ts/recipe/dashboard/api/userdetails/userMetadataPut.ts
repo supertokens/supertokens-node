@@ -31,7 +31,19 @@ export const userMetadataPut = async (_: APIInterface, options: APIOptions): Pro
 
     // Make sure that data is a valid JSON, this will throw
     try {
-        JSON.parse(data);
+        let parsedData = JSON.parse(data);
+
+        if (typeof parsedData !== "object") {
+            throw new Error();
+        }
+
+        if (Array.isArray(parsedData)) {
+            throw new Error();
+        }
+
+        if (parsedData === null) {
+            throw new Error();
+        }
     } catch (e) {
         throw new STError({
             message: "'data' must be a valid JSON body",
