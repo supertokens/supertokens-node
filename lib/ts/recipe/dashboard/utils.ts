@@ -23,6 +23,7 @@ import {
     USERS_LIST_GET_API,
     USER_API,
     USER_EMAIL_VERIFY_API,
+    USER_EMAIL_VERIFY_TOKEN_API,
     USER_METADATA_API,
     USER_PASSWORD_API,
     USER_SESSIONS_API,
@@ -114,8 +115,18 @@ export function getApiIdIfMatched(path: NormalisedURLPath, method: HTTPMethod): 
         }
     }
 
-    if (path.getAsStringDangerous().endsWith(USER_SESSIONS_API) && method === "get") {
-        return USER_SESSIONS_API;
+    if (path.getAsStringDangerous().endsWith(USER_SESSIONS_API)) {
+        if (method === "get" || method === "post") {
+            return USER_SESSIONS_API;
+        }
+    }
+
+    if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {
+        return USER_PASSWORD_API;
+    }
+
+    if (path.getAsStringDangerous().endsWith(USER_EMAIL_VERIFY_TOKEN_API) && method === "post") {
+        return USER_EMAIL_VERIFY_TOKEN_API;
     }
 
     if (path.getAsStringDangerous().endsWith(USER_PASSWORD_API) && method === "put") {

@@ -8,3 +8,4 @@ export declare const USER_EMAIL_VERIFY_API = "/api/user/email/verify";
 export declare const USER_METADATA_API = "/api/user/metadata";
 export declare const USER_SESSIONS_API = "/api/user/sessions";
 export declare const USER_PASSWORD_API = "/api/user/password";
+export declare const USER_EMAIL_VERIFY_TOKEN_API = "/api/user/email/verify/token";

@@ -4,6 +4,7 @@ import EmailVerificationRecipe from "../recipe";
 import { GeneralErrorResponse } from "../../../types";
 import { EmailVerificationClaim } from "../emailVerificationClaim";
 import SessionError from "../../session/error";
+import { getEmailVerifyLink } from "../utils";
 
 export default function getAPIInterface(): APIInterface {
     return {
@@ -108,14 +109,11 @@ export default function getAPIInterface(): APIInterface {
                     return response;
                 }
 
-                let emailVerifyLink =
-                    options.appInfo.websiteDomain.getAsStringDangerous() +
-                    options.appInfo.websiteBasePath.getAsStringDangerous() +
-                    "/verify-email" +
-                    "?token=" +
-                    response.token +
-                    "&rid=" +
-                    options.recipeId;
+                let emailVerifyLink = getEmailVerifyLink({
+                    appInfo: options.appInfo,
+                    token: response.token,
+                    recipeId: options.recipeId,
+                });
 
                 logDebugMessage(`Sending email verification email to ${emailInfo}`);
                 await options.emailDelivery.ingredientInterfaceImpl.sendEmail({
