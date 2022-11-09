@@ -39,6 +39,17 @@ export const userMetadataPut = async (_: APIInterface, options: APIOptions): Pro
         });
     }
 
+    /**
+     * This API is meant to set the user metadata of a user. We delete the existing data
+     * before updating it because we want to make sure that shallow merging does not result
+     * in the data being incorrect
+     *
+     * For example if the old data is {test: "test", test2: "test2"} and the user wants to delete
+     * test2 from the data simply calling updateUserMetadata with {test: "test"} would not remove
+     * test2 because of shallow merging.
+     *
+     * Removing first ensures that the final data is exactly what the user wanted it to be
+     */
     await UserMetaData.clearUserMetadata(userId);
     await UserMetaData.updateUserMetadata(userId, JSON.parse(data));
 

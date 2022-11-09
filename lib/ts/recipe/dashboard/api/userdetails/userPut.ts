@@ -8,8 +8,7 @@ import EmailPassword from "../../../emailpassword";
 import Passwordless from "../../../passwordless";
 import ThirdPartyEmailPassword from "../../../thirdpartyemailpassword";
 import ThirdPartyPasswordless from "../../../thirdpartypasswordless";
-import { isValidRecipeId } from "../../utils";
-import { getUserForRecipeId } from "./userGet";
+import { isValidRecipeId, getUserForRecipeId } from "../../utils";
 import UserMetadataRecipe from "../../../usermetadata/recipe";
 import UserMetadata from "../../../usermetadata";
 import { FORM_FIELD_EMAIL_ID } from "../../../emailpassword/constants";
@@ -55,10 +54,6 @@ const updateEmailForRecipeId = async (
             (field) => field.id === FORM_FIELD_EMAIL_ID
         );
 
-        if (emailFormFields.length === 0) {
-            throw new Error("Should never come here");
-        }
-
         let validationError = await emailFormFields[0].validate(email);
 
         if (validationError !== undefined) {
@@ -88,10 +83,6 @@ const updateEmailForRecipeId = async (
         let emailFormFields = ThirdPartyEmailPasswordRecipe.getInstanceOrThrowError().config.signUpFeature.formFields.filter(
             (field) => field.id === FORM_FIELD_EMAIL_ID
         );
-
-        if (emailFormFields.length === 0) {
-            throw new Error("Should never come here");
-        }
 
         let validationError = await emailFormFields[0].validate(email);
 

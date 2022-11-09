@@ -61,3 +61,27 @@ export type APIInterface = {
 export type APIFunction = (apiImplementation: APIInterface, options: APIOptions) => Promise<any>;
 
 export type RecipeIdForUser = "emailpassword" | "thirdparty" | "passwordless";
+
+type CommonUserInformation = {
+    id: string;
+    timeJoined: number;
+    firstName: string;
+    lastName: string;
+};
+
+export type EmailPasswordUser = CommonUserInformation & {
+    email: string;
+};
+
+export type ThirdPartyUser = CommonUserInformation & {
+    email: string;
+    thirdParty: {
+        id: string;
+        userId: string;
+    };
+};
+
+export type PasswordlessUser = CommonUserInformation & {
+    email?: string;
+    phone?: string;
+};
