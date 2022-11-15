@@ -164,7 +164,7 @@ export default class Recipe extends RecipeModule {
             }
 
             if (req.getMethod() === "put") {
-                apiFunction === userPut;
+                apiFunction = userPut;
             }
         } else if (id === USER_EMAIL_VERIFY_API) {
             if (req.getMethod() === "get") {
