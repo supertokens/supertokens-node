@@ -42,7 +42,7 @@ export default class Session implements SessionContainerInterface {
         this.helpers = helpers;
     }
 
-    revokeSession = async (userContext?: any) => {
+    async revokeSession(userContext?: any) {
         await this.helpers.getRecipeImpl().revokeSession({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -55,9 +55,9 @@ export default class Session implements SessionContainerInterface {
         // returns true, it can cause this kind of a bug:
         // https://github.com/supertokens/supertokens-node/issues/343
         clearSessionFromCookie(this.helpers.config, this.res);
-    };
+    }
 
-    getSessionData = async (userContext?: any): Promise<any> => {
+    async getSessionData(userContext?: any): Promise<any> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -69,9 +69,9 @@ export default class Session implements SessionContainerInterface {
             });
         }
         return sessionInfo.sessionData;
-    };
+    }
 
-    updateSessionData = async (newSessionData: any, userContext?: any) => {
+    async updateSessionData(newSessionData: any, userContext?: any) {
         if (
             !(await this.helpers.getRecipeImpl().updateSessionData({
                 sessionHandle: this.sessionHandle,
@@ -84,25 +84,26 @@ export default class Session implements SessionContainerInterface {
                 type: STError.UNAUTHORISED,
             });
         }
-    };
+    }
 
-    getUserId = (_userContext?: any) => {
+    getUserId(_userContext?: any) {
         return this.userId;
-    };
+    }
 
-    getAccessTokenPayload = (_userContext?: any) => {
+    getAccessTokenPayload(_userContext?: any) {
         return this.userDataInAccessToken;
-    };
+    }
 
-    getHandle = () => {
+    getHandle() {
         return this.sessionHandle;
-    };
+    }
 
-    getAccessToken = () => {
+    getAccessToken() {
         return this.accessToken;
-    };
+    }
 
-    mergeIntoAccessTokenPayload = async (accessTokenPayloadUpdate: any, userContext?: any) => {
+    // Any update to this function should also be reflected in the respective JWT version
+    async mergeIntoAccessTokenPayload(accessTokenPayloadUpdate: any, userContext?: any): Promise<void> {
         const updatedPayload = { ...this.getAccessTokenPayload(userContext), ...accessTokenPayloadUpdate };
         for (const key of Object.keys(accessTokenPayloadUpdate)) {
             if (accessTokenPayloadUpdate[key] === null) {
@@ -111,9 +112,9 @@ export default class Session implements SessionContainerInterface {
         }
 
         await this.updateAccessTokenPayload(updatedPayload, userContext);
-    };
+    }
 
-    getTimeCreated = async (userContext?: any): Promise<number> => {
+    async getTimeCreated(userContext?: any): Promise<number> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -125,9 +126,9 @@ export default class Session implements SessionContainerInterface {
             });
         }
         return sessionInfo.timeCreated;
-    };
+    }
 
-    getExpiry = async (userContext?: any): Promise<number> => {
+    async getExpiry(userContext?: any): Promise<number> {
         let sessionInfo = await this.helpers.getRecipeImpl().getSessionInformation({
             sessionHandle: this.sessionHandle,
             userContext: userContext === undefined ? {} : userContext,
@@ -139,9 +140,10 @@ export default class Session implements SessionContainerInterface {
             });
         }
         return sessionInfo.expiry;
-    };
+    }
 
-    assertClaims = async (claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> => {
+    // Any update to this function should also be reflected in the respective JWT version
+    async assertClaims(claimValidators: SessionClaimValidator[], userContext?: any): Promise<void> {
         let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
             accessTokenPayload: this.getAccessTokenPayload(userContext),
             userId: this.getUserId(userContext),
@@ -160,31 +162,35 @@ export default class Session implements SessionContainerInterface {
                 payload: validateClaimResponse.invalidClaims,
             });
         }
-    };
+    }
 
-    fetchAndSetClaim = async <T>(claim: SessionClaim<T>, userContext?: any) => {
+    // Any update to this function should also be reflected in the respective JWT version
+    async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
         const update = await claim.build(this.getUserId(userContext), userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
-    };
+    }
 
-    setClaimValue = <T>(claim: SessionClaim<T>, value: T, userContext?: any) => {
+    // Any update to this function should also be reflected in the respective JWT version
+    setClaimValue<T>(claim: SessionClaim<T>, value: T, userContext?: any): Promise<void> {
         const update = claim.addToPayload_internal({}, value, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
-    };
+    }
 
-    getClaimValue = async <T>(claim: SessionClaim<T>, userContext?: any) => {
+    // Any update to this function should also be reflected in the respective JWT version
+    async getClaimValue<T>(claim: SessionClaim<T>, userContext?: any) {
         return claim.getValueFromPayload(await this.getAccessTokenPayload(userContext), userContext);
-    };
+    }
 
-    removeClaim = (claim: SessionClaim<any>, userContext?: any) => {
+    // Any update to this function should also be reflected in the respective JWT version
+    removeClaim(claim: SessionClaim<any>, userContext?: any): Promise<void> {
         const update = claim.removeFromPayloadByMerge_internal({}, userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
-    };
+    }
 
     /**
      * @deprecated Use mergeIntoAccessTokenPayload
      */
-    updateAccessTokenPayload = async (newAccessTokenPayload: any, userContext: any) => {
+    async updateAccessTokenPayload(newAccessTokenPayload: any, userContext: any): Promise<void> {
         let response = await this.helpers.getRecipeImpl().regenerateAccessToken({
             accessToken: this.getAccessToken(),
             newAccessTokenPayload,
@@ -212,5 +218,5 @@ export default class Session implements SessionContainerInterface {
                 response.accessToken.expiry
             );
         }
-    };
+    }
 }

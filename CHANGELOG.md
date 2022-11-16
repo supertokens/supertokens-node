@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [12.0.7] - 2022-11-16
+
+### Fixed:
+
+-   Fixed mergeIntoAccessTokenPayload not updating the JWT payload
+
 ## [12.0.6] - 2022-11-09
 
 ### Fixes
