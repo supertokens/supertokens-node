@@ -1,6 +1,6 @@
 {
     "name": "supertokens-node",
-    "version": "12.0.7",
+    "version": "12.0.6",
     "description": "NodeJS driver for SuperTokens core",
     "main": "index.js",
     "scripts": {
