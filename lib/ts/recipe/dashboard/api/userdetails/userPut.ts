@@ -123,14 +123,14 @@ const updateEmailForRecipeId = async (
             const validationResult = await defaultValidateEmail(email);
 
             if (validationResult !== undefined) {
-                isValidEmail = true;
+                isValidEmail = false;
                 validationError = validationResult;
             }
         } else {
             const validationResult = await passwordlessConfig.validateEmailAddress(email);
 
             if (validationResult !== undefined) {
-                isValidEmail = true;
+                isValidEmail = false;
                 validationError = validationResult;
             }
         }
@@ -172,14 +172,14 @@ const updateEmailForRecipeId = async (
             const validationResult = await defaultValidateEmail(email);
 
             if (validationResult !== undefined) {
-                isValidEmail = true;
+                isValidEmail = false;
                 validationError = validationResult;
             }
         } else {
             const validationResult = await passwordlessConfig.validateEmailAddress(email);
 
             if (validationResult !== undefined) {
-                isValidEmail = true;
+                isValidEmail = false;
                 validationError = validationResult;
             }
         }
@@ -243,14 +243,14 @@ const updatePhoneForRecipeId = async (
             const validationResult = await defaultValidatePhoneNumber(phone);
 
             if (validationResult !== undefined) {
-                isValidPhone = true;
+                isValidPhone = false;
                 validationError = validationResult;
             }
         } else {
             const validationResult = await passwordlessConfig.validatePhoneNumber(phone);
 
             if (validationResult !== undefined) {
-                isValidPhone = true;
+                isValidPhone = false;
                 validationError = validationResult;
             }
         }
@@ -292,14 +292,14 @@ const updatePhoneForRecipeId = async (
             const validationResult = await defaultValidatePhoneNumber(phone);
 
             if (validationResult !== undefined) {
-                isValidPhone = true;
+                isValidPhone = false;
                 validationError = validationResult;
             }
         } else {
             const validationResult = await passwordlessConfig.validatePhoneNumber(phone);
 
             if (validationResult !== undefined) {
-                isValidPhone = true;
+                isValidPhone = false;
                 validationError = validationResult;
             }
         }
