@@ -31,6 +31,7 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
+import { AccountInfo, AccountInfoWithRecipeId, User } from "./recipe/accountlinking/types";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -439,4 +440,25 @@ export default class SuperTokens {
         }
         throw err;
     };
+
+    getUser = async (input: {
+        userId: string
+    }): Promise<User | undefined> => {
+        // TODO
+        return;
+    }
+
+    listUsersByAccountInfo = async (input: {
+        info: AccountInfo
+    }): Promise<User[] | undefined> => {
+        // TODO
+        return;
+    }
+
+    getUserByAccountInfoAndRecipeId = async (input: {
+        info: AccountInfoWithRecipeId
+    }): Promise<User | undefined> => {
+        // TODO
+        return;
+    }
 }

@@ -25,12 +25,14 @@ export default class Session implements SessionContainerInterface {
     protected res: BaseResponse;
     protected accessToken: string;
     protected helpers: Helpers;
+    protected recipeUserId: string;
 
     constructor(
         helpers: Helpers,
         accessToken: string,
         sessionHandle: string,
         userId: string,
+        recipeUserId: string,
         userDataInAccessToken: any,
         res: BaseResponse
     ) {
@@ -40,6 +42,11 @@ export default class Session implements SessionContainerInterface {
         this.res = res;
         this.accessToken = accessToken;
         this.helpers = helpers;
+        this.recipeUserId = recipeUserId;
+    }
+    // TODO
+    getRecipeUserId(userContext?: any): string {
+        return this.recipeUserId;
     }
 
     revokeSession = async (userContext?: any) => {

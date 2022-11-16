@@ -15,6 +15,7 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
+import { AccountInfo, AccountInfoWithAuthType } from "./recipe/accountlinking/types";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -92,6 +93,24 @@ export default class SuperTokensWrapper {
     }) {
         return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
     }
+
+    static getUser(input: {
+        userId: string
+    }) {
+        return SuperTokens.getInstanceOrThrowError().getUser(input);
+    }
+
+    static listUsersByAccountInfo(input: {
+        info: AccountInfo
+    }) {
+        return SuperTokens.getInstanceOrThrowError().listUsersByAccountInfo(input);
+    }
+
+    static getUserByAccountInfo(input: {
+        info: AccountInfoWithAuthType
+    }) {
+        return SuperTokens.getInstanceOrThrowError().getUserByAccountInfo(input);
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -113,5 +132,11 @@ export let getUserIdMapping = SuperTokensWrapper.getUserIdMapping;
 export let deleteUserIdMapping = SuperTokensWrapper.deleteUserIdMapping;
 
 export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
+
+export let getUser = SuperTokensWrapper.getUser;
+
+export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
+
+export let getUserByAccountInfo = SuperTokensWrapper.getUserByAccountInfo;
 
 export let Error = SuperTokensWrapper.Error;

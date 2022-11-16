@@ -128,6 +128,7 @@ export default function getRecipeInterface(
                 response.accessToken.token,
                 response.session.handle,
                 response.session.userId,
+                response.session.recipeUserId,
                 response.session.userDataInJWT,
                 res
             );
@@ -232,6 +233,7 @@ export default function getRecipeInterface(
                 accessToken,
                 response.session.handle,
                 response.session.userId,
+                response.session.recipeUserId,
                 response.session.userDataInJWT,
                 res
             );
@@ -362,6 +364,7 @@ export default function getRecipeInterface(
                 response.accessToken.token,
                 response.session.handle,
                 response.session.userId,
+                response.session.recipeUserId,
                 response.session.userDataInJWT,
                 res
             );

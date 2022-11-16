@@ -49,6 +49,7 @@ export type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
         userId: string;
+        recipeUserId: string; // TODO in core
         userDataInJWT: any;
     };
     accessToken: {
@@ -340,6 +341,8 @@ export interface SessionContainerInterface {
     updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
 
     getUserId(userContext?: any): string;
+
+    getRecipeUserId(userContext?: any): string;
 
     getAccessTokenPayload(userContext?: any): any;
 

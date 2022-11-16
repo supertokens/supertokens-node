@@ -74,6 +74,7 @@ export async function getSession(
     session: {
         handle: string;
         userId: string;
+        recipeUserId: string,
         userDataInJWT: any;
     };
     accessToken?: {
@@ -213,6 +214,7 @@ export async function getSession(
             session: {
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
+                recipeUserId: accessTokenInfo.recipeUserId,
                 userDataInJWT: accessTokenInfo.userData,
             },
         };

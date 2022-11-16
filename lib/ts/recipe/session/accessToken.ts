@@ -23,6 +23,7 @@ export async function getInfoFromAccessToken(
 ): Promise<{
     sessionHandle: string;
     userId: string;
+    recipeUserId: string,
     refreshTokenHash1: string;
     parentRefreshTokenHash1: string | undefined;
     userData: any;
@@ -35,6 +36,7 @@ export async function getInfoFromAccessToken(
 
         let sessionHandle = sanitizeStringInput(payload.sessionHandle);
         let userId = sanitizeStringInput(payload.userId);
+        let recipeUserId = sanitizeStringInput(payload.recipeUserId);
         let refreshTokenHash1 = sanitizeStringInput(payload.refreshTokenHash1);
         let parentRefreshTokenHash1 = sanitizeStringInput(payload.parentRefreshTokenHash1);
         let userData = payload.userData;
@@ -44,6 +46,7 @@ export async function getInfoFromAccessToken(
         if (
             sessionHandle === undefined ||
             userId === undefined ||
+            recipeUserId === undefined ||
             refreshTokenHash1 === undefined ||
             userData === undefined ||
             (antiCsrfToken === undefined && doAntiCsrfCheck) ||
@@ -65,6 +68,7 @@ export async function getInfoFromAccessToken(
             antiCsrfToken,
             expiryTime,
             timeCreated,
+            recipeUserId,
         };
     } catch (err) {
         throw new STError({
