@@ -2950,4 +2950,383 @@ describe(`sessionExpress: ${printPath("[test/sessionExpress.test.js]")}`, functi
         assert.strictEqual(response.status, 403);
         assert(testpass);
     });
+
+    it("test revoking a session during refresh with revokeSession function", async function () {
+        await startST();
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiBasePath: "/",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                refreshPOST: async function (input) {
+                                    let session = await oI.refreshPOST(input);
+                                    await session.revokeSession();
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(res.accessToken !== undefined);
+        assert(res.antiCsrf !== undefined);
+        assert(res.idRefreshTokenFromCookie !== undefined);
+        assert(res.idRefreshTokenFromHeader !== undefined);
+        assert(res.refreshToken !== undefined);
+
+        let resp = await new Promise((resolve) =>
+            request(app)
+                .post("/session/refresh")
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(resp.status === 200);
+
+        let res2 = extractInfoFromResponse(resp);
+
+        assert(res2.antiCsrf.length > 1);
+        assert.deepEqual(res2.accessToken, "");
+        assert.deepEqual(res2.refreshToken, "");
+        assert.deepEqual(res2.idRefreshTokenFromHeader, "remove");
+        assert.deepEqual(res2.idRefreshTokenFromCookie, "");
+        assert.deepEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res2.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(res2.accessTokenDomain === undefined);
+        assert(res2.refreshTokenDomain === undefined);
+        assert(res2.idRefreshTokenDomain === undefined);
+        assert(res2.frontToken.length > 1);
+    });
+
+    it("test revoking a session during refresh with revokeSession function and sending 401", async function () {
+        await startST();
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiBasePath: "/",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                refreshPOST: async function (input) {
+                                    let session = await oI.refreshPOST(input);
+                                    await session.revokeSession();
+                                    input.options.res.setStatusCode(401);
+                                    input.options.res.sendJSONResponse({});
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(res.accessToken !== undefined);
+        assert(res.antiCsrf !== undefined);
+        assert(res.idRefreshTokenFromCookie !== undefined);
+        assert(res.idRefreshTokenFromHeader !== undefined);
+        assert(res.refreshToken !== undefined);
+
+        let resp = await new Promise((resolve) =>
+            request(app)
+                .post("/session/refresh")
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(resp.status === 401);
+
+        let res2 = extractInfoFromResponse(resp);
+
+        assert(res2.antiCsrf.length > 1);
+        assert.deepEqual(res2.accessToken, "");
+        assert.deepEqual(res2.refreshToken, "");
+        assert.deepEqual(res2.idRefreshTokenFromHeader, "remove");
+        assert.deepEqual(res2.idRefreshTokenFromCookie, "");
+        assert.deepEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res2.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(res2.accessTokenDomain === undefined);
+        assert(res2.refreshTokenDomain === undefined);
+        assert(res2.idRefreshTokenDomain === undefined);
+        assert(res2.frontToken.length > 1);
+    });
+
+    it("test revoking a session during refresh with throwing unauthorised error", async function () {
+        await startST();
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiBasePath: "/",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                refreshPOST: async function (input) {
+                                    let session = await oI.refreshPOST(input);
+                                    throw new Session.Error({
+                                        message: "unauthorised",
+                                        type: Session.Error.UNAUTHORISED,
+                                    });
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(res.accessToken !== undefined);
+        assert(res.antiCsrf !== undefined);
+        assert(res.idRefreshTokenFromCookie !== undefined);
+        assert(res.idRefreshTokenFromHeader !== undefined);
+        assert(res.refreshToken !== undefined);
+
+        let resp = await new Promise((resolve) =>
+            request(app)
+                .post("/session/refresh")
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(resp.status === 401);
+
+        let res2 = extractInfoFromResponse(resp);
+
+        assert(res2.antiCsrf.length > 1);
+        assert.deepEqual(res2.accessToken, "");
+        assert.deepEqual(res2.refreshToken, "");
+        assert.deepEqual(res2.idRefreshTokenFromHeader, "remove");
+        assert.deepEqual(res2.idRefreshTokenFromCookie, "");
+        assert.deepEqual(res2.accessTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res2.idRefreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert.deepEqual(res2.refreshTokenExpiry, "Thu, 01 Jan 1970 00:00:00 GMT");
+        assert(res2.accessTokenDomain === undefined);
+        assert(res2.refreshTokenDomain === undefined);
+        assert(res2.idRefreshTokenDomain === undefined);
+        assert(res2.frontToken.length > 1);
+    });
+
+    it("test revoking a session during refresh fails if just sending 401", async function () {
+        await startST();
+
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+                apiBasePath: "/",
+            },
+            recipeList: [
+                Session.init({
+                    antiCsrf: "VIA_TOKEN",
+                    override: {
+                        apis: (oI) => {
+                            return {
+                                ...oI,
+                                refreshPOST: async function (input) {
+                                    let session = await oI.refreshPOST(input);
+                                    input.options.res.setStatusCode(401);
+                                    input.options.res.sendJSONResponse({});
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        const app = express();
+
+        app.use(middleware());
+
+        app.post("/create", async (req, res) => {
+            await Session.createNewSession(res, "", {}, {});
+            res.status(200).send("");
+        });
+
+        app.use(errorHandler());
+
+        let res = extractInfoFromResponse(
+            await new Promise((resolve) =>
+                request(app)
+                    .post("/create")
+                    .expect(200)
+                    .end((err, res) => {
+                        if (err) {
+                            resolve(undefined);
+                        } else {
+                            resolve(res);
+                        }
+                    })
+            )
+        );
+
+        assert(res.accessToken !== undefined);
+        assert(res.antiCsrf !== undefined);
+        assert(res.idRefreshTokenFromCookie !== undefined);
+        assert(res.idRefreshTokenFromHeader !== undefined);
+        assert(res.refreshToken !== undefined);
+
+        let resp = await new Promise((resolve) =>
+            request(app)
+                .post("/session/refresh")
+                .set("Cookie", ["sRefreshToken=" + res.refreshToken, "sIdRefreshToken=" + res.idRefreshTokenFromCookie])
+                .set("anti-csrf", res.antiCsrf)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        assert(resp.status === 401);
+
+        let res2 = extractInfoFromResponse(resp);
+
+        assert(res2.accessToken.length > 1);
+        assert(res2.antiCsrf.length > 1);
+        assert(res2.idRefreshTokenFromCookie.length > 1);
+        assert(res2.idRefreshTokenFromHeader !== "remove");
+        assert(res2.refreshToken.length > 1);
+    });
 });
