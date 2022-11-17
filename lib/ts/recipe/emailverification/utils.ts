@@ -68,3 +68,15 @@ export function validateAndNormaliseUserInput(
         getEmailDeliveryConfig,
     };
 }
+
+export function getEmailVerifyLink(input: { appInfo: NormalisedAppinfo; token: string; recipeId: string }): string {
+    return (
+        input.appInfo.websiteDomain.getAsStringDangerous() +
+        input.appInfo.websiteBasePath.getAsStringDangerous() +
+        "/verify-email" +
+        "?token=" +
+        input.token +
+        "&rid=" +
+        input.recipeId
+    );
+}
