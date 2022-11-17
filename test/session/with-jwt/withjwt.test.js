@@ -327,6 +327,96 @@ describe(`session-with-jwt: ${printPath("[test/session/with-jwt/withjwt.test.js]
         );
     });
 
+    it("Test that mergeIntoAccessTokenPayload updates JWT", async function () {
+        await startST();
+        SuperTokens.init({
+            supertokens: {
+                connectionURI: "http://localhost:8080",
+            },
+            appInfo: {
+                apiDomain: "api.supertokens.io",
+                appName: "SuperTokens",
+                websiteDomain: "supertokens.io",
+            },
+            recipeList: [
+                Session.init({
+                    jwt: { enable: true },
+                    override: {
+                        functions: function (oi) {
+                            return {
+                                ...oi,
+                                createNewSession: async function ({ res, userId, accessTokenPayload, sessionData }) {
+                                    accessTokenPayload = {
+                                        ...accessTokenPayload,
+                                        customKey: "customValue",
+                                        customKey2: "customValue2",
+                                    };
+
+                                    return await oi.createNewSession({ res, userId, accessTokenPayload, sessionData });
+                                },
+                            };
+                        },
+                    },
+                }),
+            ],
+        });
+
+        // Only run for version >= 2.9
+        let querier = Querier.getNewInstanceOrThrowError(undefined);
+        let apiVersion = await querier.getAPIVersion();
+        if (maxVersion(apiVersion, "2.8") === "2.8") {
+            return;
+        }
+
+        let app = express();
+
+        app.use(middleware());
+        app.use(express.json());
+
+        app.post("/create", async (req, res) => {
+            let session = await Session.createNewSession(res, "userId", {}, {});
+            res.status(200).json({ sessionHandle: session.getHandle() });
+        });
+
+        app.use(errorHandler());
+
+        let createJWTResponse = await new Promise((resolve) =>
+            request(app)
+                .post("/create")
+                .expect(200)
+                .end((err, res) => {
+                    if (err) {
+                        resolve(undefined);
+                    } else {
+                        resolve(res);
+                    }
+                })
+        );
+
+        let sessionHandle = createJWTResponse.body.sessionHandle;
+        let accessTokenPayload = (await Session.getSessionInformation(sessionHandle)).accessTokenPayload;
+
+        let jwtPayload = accessTokenPayload.jwt.split(".")[1];
+        jwtPayload = accessTokenPayload.jwt.split(".")[1];
+        let parsedJWTPayload = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8"));
+        assert.strictEqual(parsedJWTPayload.newKey, undefined);
+        let jwtExpiryInSeconds = parsedJWTPayload.exp;
+
+        await Session.mergeIntoAccessTokenPayload(sessionHandle, { newKey: "newValue" });
+
+        accessTokenPayload = (await Session.getSessionInformation(sessionHandle)).accessTokenPayload;
+
+        jwtPayload = accessTokenPayload.jwt.split(".")[1];
+        parsedJWTPayload = JSON.parse(Buffer.from(jwtPayload, "base64").toString("utf-8"));
+        assert.strictEqual(parsedJWTPayload.newKey, "newValue");
+
+        const newJwtExpiryInSeconds = parsedJWTPayload.exp;
+        assert.strictEqual(accessTokenPayload.sub, undefined);
+        assert.strictEqual(accessTokenPayload.iss, undefined);
+        assert.strictEqual(accessTokenPayload._jwtPName, "jwt");
+        assert(jwtExpiryInSeconds + 100 >= newJwtExpiryInSeconds && jwtExpiryInSeconds - 100 <= newJwtExpiryInSeconds);
+    });
+
     it("Test that when updating access token payload, jwt expiry does not change", async function () {
         await startST();
         SuperTokens.init({
