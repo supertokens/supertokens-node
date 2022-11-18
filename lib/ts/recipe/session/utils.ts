@@ -29,7 +29,7 @@ import SessionRecipe from "./recipe";
 import { REFRESH_API_PATH } from "./constants";
 import NormalisedURLPath from "../../normalisedURLPath";
 import { NormalisedAppinfo } from "../../types";
-import { getIsHeaderPreferredFromRequestHeaders, isAnIpAddress } from "../../utils";
+import { getAuthModeFromHeader, isAnIpAddress } from "../../utils";
 import { RecipeInterface, APIInterface } from "./types";
 import { BaseRequest, BaseResponse } from "../../framework";
 import { sendNon200ResponseWithMessage, sendNon200Response } from "../../utils";
@@ -327,5 +327,6 @@ export async function validateClaimsInPayload(
 }
 
 function defaultGetTokenTransferMethod({ req }: { req: BaseRequest }): "cookie" | "header" {
-    return getIsHeaderPreferredFromRequestHeaders(req) ? "header" : "cookie";
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAuthModeFromHeader(req));
+    return getAuthModeFromHeader(req) === "header" ? "header" : "cookie";
 }
