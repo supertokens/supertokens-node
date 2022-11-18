@@ -201,6 +201,7 @@ export type RecipeInterface = {
     createNewSession(input: {
         res: BaseResponse;
         userId: string;
+        recipeUserId?: string;
         accessTokenPayload?: any;
         sessionData?: any;
         userContext: any;
@@ -208,6 +209,7 @@ export type RecipeInterface = {
 
     getGlobalClaimValidators(input: {
         userId: string;
+        recipeUserId: string;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
         userContext: any;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
@@ -273,6 +275,7 @@ export type RecipeInterface = {
               session: {
                   handle: string;
                   userId: string;
+                  recipeUserId: string;
                   userDataInJWT: any;
               };
               accessToken?: {
@@ -411,6 +414,7 @@ export type APIInterface = {
 export type SessionInformation = {
     sessionHandle: string;
     userId: string;
+    recipeUserId: string;
     sessionData: any;
     expiry: number;
     accessTokenPayload: any;

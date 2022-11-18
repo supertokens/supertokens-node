@@ -80,6 +80,7 @@ export type TypeNormalisedInputResetPasswordUsingTokenFeature = {
 
 export type User = {
     id: string;
+    recipeUserId: string;
     email: string;
     timeJoined: number;
 };

@@ -112,16 +112,18 @@ export default function getRecipeInterface(
         createNewSession: async function ({
             res,
             userId,
+            recipeUserId,
             accessTokenPayload = {},
             sessionData = {},
         }: {
             res: BaseResponse;
             userId: string;
+            recipeUserId?: string;
             accessTokenPayload?: any;
             sessionData?: any;
             userContext: any;
         }): Promise<Session> {
-            let response = await SessionFunctions.createNewSession(helpers, userId, accessTokenPayload, sessionData);
+            let response = await SessionFunctions.createNewSession(helpers, userId, recipeUserId, accessTokenPayload, sessionData);
             attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
             return new Session(
                 helpers,
@@ -383,6 +385,7 @@ export default function getRecipeInterface(
                   session: {
                       handle: string;
                       userId: string;
+                      recipeUserId: string;
                       userDataInJWT: any;
                   };
                   accessToken?: {

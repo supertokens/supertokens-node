@@ -14,6 +14,7 @@
  */
 
 import OverrideableBuilder from "supertokens-js-override";
+import { User } from "../../types";
 import { SessionContainer } from "../session";
 
 export type TypeInput = {
@@ -141,21 +142,6 @@ export type RecipeInterface = {
     }>
 };
 
-export type User = {
-    id: string,
-    isPrimaryUser: boolean,
-    emails: string[],
-    phoneNumbers: string[],
-    thirdpartyInfo: {
-        thirdpartyId: string,
-        thirdpartyUserId: string
-    }[],
-    linkedRecipes: {
-        recipeId: string,
-        recipeUserId: string
-    }[]
-}
-
 type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
     recipeUserId: string;
@@ -175,26 +161,6 @@ type RecipeLevelUser = {
  * SuperTokens.listUsersByAccountInfo(info: AccountInfo) => User[] | undefined
  * SuperTokens.getUserByAccountInfo(info: AccountInfoWithAuthType) => User | undefined
  */
-export type AccountInfo = {
-    email: string
-} | {
-    thirdpartyId: string,
-    thirdpartyUserId: string
-} | {
-    phoneNumber: string
-}
- 
-export type AccountInfoWithRecipeId = {
-    recipeId: "emailpassword" | "passwordless",
-    email: string
-} | {
-    recipeId: "thirdparty",
-    thirdpartyId: string,
-    thirdpartyUserId: string
-} | {
-    recipeId: "passwordless",
-    phoneNumber: string
-}
 
 // this is there cause we use this in the shouldDoAutomaticAccountLinking callback and that
 // function takes in an input user. In case of thirdparty, if the input user doesn't have email,

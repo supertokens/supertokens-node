@@ -48,6 +48,7 @@ export type TypeProvider = {
 export type User = {
     // https://github.com/supertokens/core-driver-interface/wiki#third-party-user
     id: string;
+    recipeUserId: string;
     timeJoined: number;
     email: string;
     thirdParty: {

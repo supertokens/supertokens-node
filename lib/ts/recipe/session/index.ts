@@ -41,6 +41,7 @@ export default class SessionWrapper {
     static async createNewSession(
         res: any,
         userId: string,
+        recipeUserId?: string,
         accessTokenPayload: any = {},
         sessionData: any = {},
         userContext: any = {}
@@ -63,6 +64,7 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
+            recipeUserId,
             accessTokenPayload: finalAccessTokenPayload,
             sessionData,
             userContext,
@@ -101,6 +103,7 @@ export default class SessionWrapper {
         const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
             userId: sessionInfo?.userId,
+            recipeUserId: sessionInfo?.recipeUserId,
             claimValidatorsAddedByOtherRecipes,
             userContext,
         });
@@ -139,9 +142,11 @@ export default class SessionWrapper {
     static async validateClaimsInJWTPayload(
         userId: string,
         jwtPayload: JSONObject,
+        recipeUserId: string,
         overrideGlobalClaimValidators?: (
             globalClaimValidators: SessionClaimValidator[],
             userId: string,
+            recipeUserId: string,
             userContext: any
         ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
         userContext: any = {}
@@ -154,13 +159,14 @@ export default class SessionWrapper {
         const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
             userId,
+            recipeUserId: recipeUserId,
             claimValidatorsAddedByOtherRecipes,
             userContext,
         });
 
         const claimValidators =
             overrideGlobalClaimValidators !== undefined
-                ? await overrideGlobalClaimValidators(globalClaimValidators, userId, userContext)
+                ? await overrideGlobalClaimValidators(globalClaimValidators, userId, recipeUserId, userContext)
                 : globalClaimValidators;
         return recipeImpl.validateClaimsInJWTPayload({
             userId,

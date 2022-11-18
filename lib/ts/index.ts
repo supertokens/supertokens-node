@@ -15,7 +15,7 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
-import { AccountInfo, AccountInfoWithAuthType } from "./recipe/accountlinking/types";
+import { AccountInfo, AccountInfoWithRecipeId, User } from "./types";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -36,7 +36,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
     }): Promise<{
-        users: { recipeId: string; user: any }[];
+        users: User[];
         nextPaginationToken?: string;
     }> {
         return SuperTokens.getInstanceOrThrowError().getUsers({
@@ -50,7 +50,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
     }): Promise<{
-        users: { recipeId: string; user: any }[];
+        users: User[];
         nextPaginationToken?: string;
     }> {
         return SuperTokens.getInstanceOrThrowError().getUsers({
@@ -107,9 +107,9 @@ export default class SuperTokensWrapper {
     }
 
     static getUserByAccountInfo(input: {
-        info: AccountInfoWithAuthType
+        info: AccountInfoWithRecipeId
     }) {
-        return SuperTokens.getInstanceOrThrowError().getUserByAccountInfo(input);
+        return SuperTokens.getInstanceOrThrowError().getUserByAccountInfoAndRecipeId(input);
     }
 }
 

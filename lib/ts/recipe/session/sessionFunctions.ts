@@ -28,19 +28,23 @@ import { logDebugMessage } from "../../logger";
 export async function createNewSession(
     helpers: Helpers,
     userId: string,
+    recipeUserId?: string,
     accessTokenPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
+    recipeUserId = recipeUserId || userId;
 
     let requestBody: {
         userId: string;
+        recipeUserId: string;
         userDataInJWT: any;
         userDataInDatabase: any;
         enableAntiCsrf?: boolean;
     } = {
         userId,
+        recipeUserId,
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionData,
     };

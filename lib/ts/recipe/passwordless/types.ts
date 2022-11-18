@@ -32,6 +32,7 @@ import { GeneralErrorResponse, NormalisedAppinfo } from "../../types";
 
 export type User = {
     id: string;
+    recipeUserId: string;
     email?: string;
     phoneNumber?: string;
     timeJoined: number;

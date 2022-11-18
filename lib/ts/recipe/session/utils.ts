@@ -316,6 +316,7 @@ export async function getRequiredClaimValidators(
     const globalClaimValidators: SessionClaimValidator[] = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.getGlobalClaimValidators(
         {
             userId: session.getUserId(),
+            recipeUserId: session.getRecipeUserId(),
             claimValidatorsAddedByOtherRecipes,
             userContext,
         }

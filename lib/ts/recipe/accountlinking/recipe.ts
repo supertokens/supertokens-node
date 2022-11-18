@@ -18,12 +18,13 @@ import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
 import RecipeModule from "../../recipeModule";
 import SuperTokens from "../..";
-import { APIHandled, HTTPMethod } from "../../types";
+import { AccountInfoWithRecipeId, APIHandled, HTTPMethod } from "../../types";
 import { SessionContainer } from "../session";
-import { User, RecipeInterface, AccountInfoAndEmailWithRecipeId } from "./types";
+import { AccountInfoAndEmailWithRecipeId } from "./types";
+import { User } from "../../types";
 
 export default class AccountLinkingRecipe extends RecipeModule {
-    recipeInterfaceImpl: RecipeInterface;
+    // recipeInterfaceImpl: RecipeInterface; TODO
 
     getAPIsHandled(): APIHandled[] {
         throw new Error("Method not implemented.");
@@ -41,10 +42,10 @@ export default class AccountLinkingRecipe extends RecipeModule {
     isErrorFromThisRecipe(err: any): err is error {
         throw new Error("Method not implemented.");
     }
-    isSignUpAllowed = async (
-        identifyinInfo: AccountInfoAndEmailWithRecipeId
-    ): Promise<boolean> => {
-        let user: User | undefined = await SuperTokens.getUserByAccountInfo(identifyinInfo);
+    isSignUpAllowed = async (input: {
+        info: AccountInfoWithRecipeId
+    }): Promise<boolean> => {
+        let user: User | undefined = await SuperTokens.getUserByAccountInfo(input);
         if (user === undefined || !user.isPrimaryUser) {
             return true;
         }
@@ -60,16 +61,16 @@ export default class AccountLinkingRecipe extends RecipeModule {
         //  */
         return true;
     }
-    createPrimaryUserIdOrLinkAccountPostSignUp = async (
+    createPrimaryUserIdOrLinkAccountPostSignUp = async (input: {
         identifyinInfo: AccountInfoAndEmailWithRecipeId,
         shouldRequireVerification: boolean
-    ) => {
+    }) => {
         // TODO
     }
-    accountLinkPostSignInViaSession = async (
+    accountLinkPostSignInViaSession = async (input: {
         session: SessionContainer,
         identifyinInfo: AccountInfoAndEmailWithRecipeId
-    ): Promise<{
+    }): Promise<{
         createRecipeUser: true
     } | ({
         createRecipeUser: false,

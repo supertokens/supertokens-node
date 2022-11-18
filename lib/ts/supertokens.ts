@@ -31,7 +31,7 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
-import { AccountInfo, AccountInfoWithRecipeId, User } from "./recipe/accountlinking/types";
+import { AccountInfo, AccountInfoWithRecipeId, User } from "./types";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -191,7 +191,7 @@ export default class SuperTokens {
         paginationToken?: string;
         includeRecipeIds?: string[];
     }): Promise<{
-        users: { recipeId: string; user: any }[];
+        users: User[];
         nextPaginationToken?: string;
     }> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);

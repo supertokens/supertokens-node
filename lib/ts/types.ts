@@ -71,3 +71,39 @@ export type GeneralErrorResponse = {
     status: "GENERAL_ERROR";
     message: string;
 };
+
+export type AccountInfo = {
+    email: string
+} | {
+    thirdpartyId: string,
+    thirdpartyUserId: string
+} | {
+    phoneNumber: string
+}
+ 
+export type AccountInfoWithRecipeId = {
+    recipeId: "emailpassword" | "passwordless",
+    email: string
+} | {
+    recipeId: "thirdparty",
+    thirdpartyId: string,
+    thirdpartyUserId: string
+} | {
+    recipeId: "passwordless",
+    phoneNumber: string
+}
+
+export type User = {
+    id: string,
+    isPrimaryUser: boolean,
+    emails: string[],
+    phoneNumbers: string[],
+    thirdpartyInfo: {
+        thirdpartyId: string,
+        thirdpartyUserId: string
+    }[],
+    linkedRecipes: {
+        recipeId: string,
+        recipeUserId: string
+    }[]
+}

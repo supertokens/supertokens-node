@@ -28,6 +28,9 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         this.openIdRecipeImplementation = openIdRecipeImplementation;
         this.originalSessionClass = originalSessionClass;
     }
+    getRecipeUserId(userContext?: any): string {
+        return this.originalSessionClass.getRecipeUserId(userContext);
+    }
     revokeSession = (userContext?: any): Promise<void> => {
         return this.originalSessionClass.revokeSession(userContext);
     };
