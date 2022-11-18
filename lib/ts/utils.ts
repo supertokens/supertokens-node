@@ -5,7 +5,7 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
-import { HEADER_RID } from "./constants";
+import { HEADER_AUTH_MODE, HEADER_RID } from "./constants";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {
     let intersection = v1.filter((value) => v2.indexOf(value) !== -1);
@@ -109,21 +109,12 @@ export function isAnIpAddress(ipaddress: string) {
     );
 }
 
-export function getIsHeaderPreferredFromRequestHeaders(req: BaseRequest): boolean {
-    // This will return false if:
-    // 1. the header is set to "recipename;cookie" (or anything else, but that's the only other valid value)
-    // 2. the header is set to "recipename"
-    // 3. the header is omitted
-    return req.getHeaderValue(HEADER_RID)?.split(";")[1] === "header";
+export function getAuthModeFromHeader(req: BaseRequest): string | undefined {
+    return req.getHeaderValue(HEADER_AUTH_MODE);
 }
 
 export function getRidFromHeader(req: BaseRequest): string | undefined {
-    // This will return:
-    // 1. the part before the first ';' if present
-    // 2. the entire string if there is no ';'
-    // 3. undefined if the header is omitted
-
-    return req.getHeaderValue(HEADER_RID)?.split(";")[0];
+    return req.getHeaderValue(HEADER_RID);
 }
 
 export function frontendHasInterceptor(req: BaseRequest): boolean {

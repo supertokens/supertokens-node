@@ -14,4 +14,5 @@
  */
 
 export const HEADER_RID = "rid";
+export const HEADER_AUTH_MODE = "st-auth-mode";
 export const HEADER_FDI = "fdi-version";
