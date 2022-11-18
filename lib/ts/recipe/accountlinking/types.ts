@@ -155,16 +155,6 @@ type RecipeLevelUser = {
     }
 }
 
-/**
- * TODO:
- * SuperTokens.getUser(userId: string) => User | undefined // userId can be primary or recipe
- * SuperTokens.listUsersByAccountInfo(info: AccountInfo) => User[] | undefined
- * SuperTokens.getUserByAccountInfo(info: AccountInfoWithAuthType) => User | undefined
- */
-
-// this is there cause we use this in the shouldDoAutomaticAccountLinking callback and that
-// function takes in an input user. In case of thirdparty, if the input user doesn't have email,
-// it will be strange for the developer, so we add an email to the "thirdparty" type as well. 
 export type AccountInfoAndEmailWithRecipeId = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
     email?: string;
