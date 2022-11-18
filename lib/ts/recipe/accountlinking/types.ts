@@ -190,9 +190,6 @@ export type AccountInfoWithRecipeId = {
     phoneNumber: string
 }
 
-// this is there cause we use this in the shouldDoAutomaticAccountLinking callback and that
-// function takes in an input user. In case of thirdparty, if the input user doesn't have email,
-// it will be strange for the developer, so we add an email to the "thirdparty" type as well. 
 export type AccountInfoAndEmailWithRecipeId = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
     email?: string;
