@@ -169,12 +169,6 @@ type RecipeLevelUser = {
     }
 }
 
-/**
- * TODO:
- * SuperTokens.getUser(userId: string) => User | undefined // userId can be primary or recipe
- * SuperTokens.listUsersByAccountInfo(info: AccountInfo) => User[] | undefined
- * SuperTokens.getUserByAccountInfo(info: AccountInfoWithAuthType) => User | undefined
- */
 export type AccountInfo = {
     email: string
 } | {
