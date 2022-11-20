@@ -21,21 +21,17 @@ export declare function setFrontTokenInHeaders(
 export declare function getCORSAllowedHeaders(): string[];
 export declare function isTokenInCookies(req: BaseRequest, tokenType: TokenType): boolean;
 export declare function getToken(
-    config: TypeNormalisedInput,
     req: BaseRequest,
     tokenType: TokenType,
-    userContext: any,
-    transferMethod?: "cookie" | "header"
+    transferMethod: "cookie" | "header"
 ): string | undefined;
 export declare function setToken(
     config: TypeNormalisedInput,
-    req: BaseRequest,
     res: BaseResponse,
     tokenType: TokenType,
     value: string,
     expires: number,
-    userContext: any,
-    transferMethod?: "cookie" | "header"
+    transferMethod: "cookie" | "header"
 ): void;
 export declare function setHeader(res: BaseResponse, name: string, value: string, expires: number): void;
 /**

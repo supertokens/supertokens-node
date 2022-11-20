@@ -283,7 +283,7 @@ export async function getSession(
             // we force update the signing keys...
             await helpers.getHandshakeInfo(true);
         }
-        logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because of core response");
+        logDebugMessage("getSession: Returning TRY_REFRESH_TOKEN because of core response.");
         throw new STError({
             message: response.message,
             type: STError.TRY_REFRESH_TOKEN,

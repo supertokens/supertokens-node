@@ -46,10 +46,9 @@ export declare function validateAndNormaliseUserInput(
 export declare function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax" | "none";
 export declare function attachCreateOrRefreshSessionResponseToExpressRes(
     config: TypeNormalisedInput,
-    req: BaseRequest,
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse,
-    userContext: any
+    transferMethod: "cookie" | "header"
 ): void;
 export declare function getRequiredClaimValidators(
     session: SessionContainerInterface,

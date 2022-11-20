@@ -259,17 +259,15 @@ export function normaliseSameSiteOrThrowError(sameSite: string): "strict" | "lax
 
 export function attachCreateOrRefreshSessionResponseToExpressRes(
     config: TypeNormalisedInput,
-    req: BaseRequest,
     res: BaseResponse,
     response: CreateOrRefreshAPIResponse,
-    userContext: any
+    transferMethod: "cookie" | "header"
 ) {
     let accessToken = response.accessToken;
     let refreshToken = response.refreshToken;
     setFrontTokenInHeaders(res, response.session.userId, response.accessToken.expiry, response.session.userDataInJWT);
     setToken(
         config,
-        req,
         res,
         "access",
         accessToken.token,
@@ -278,9 +276,9 @@ export function attachCreateOrRefreshSessionResponseToExpressRes(
         // Even if the token is expired the presence of the token indicates that the user could have a valid refresh
         // Setting them to infinity would require special case handling on the frontend and just adding 10 years seems enough.
         Date.now() + 315360000000,
-        userContext
+        transferMethod
     );
-    setToken(config, req, res, "refresh", refreshToken.token, refreshToken.expiry, userContext);
+    setToken(config, res, "refresh", refreshToken.token, refreshToken.expiry, transferMethod);
     if (response.antiCsrfToken !== undefined) {
         setAntiCsrfTokenInHeaders(res, response.antiCsrfToken);
     }
@@ -326,6 +324,13 @@ export async function validateClaimsInPayload(
     return validationErrors;
 }
 
-function defaultGetTokenTransferMethod({ req }: { req: BaseRequest }): "cookie" | "header" {
-    return getAuthModeFromHeader(req) === "header" ? "header" : "cookie";
+function defaultGetTokenTransferMethod({ req }: { req: BaseRequest }): "cookie" | "header" | "MISSING_AUTH_HEADER" {
+    switch (getAuthModeFromHeader(req)) {
+        case "header":
+            return "header";
+        case "cookie":
+            return "cookie";
+        default:
+            return "MISSING_AUTH_HEADER";
+    }
 }

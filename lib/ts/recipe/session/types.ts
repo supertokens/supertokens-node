@@ -61,11 +61,6 @@ export type CreateOrRefreshAPIResponse = {
         expiry: number;
         createdTime: number;
     };
-    idRefreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
     antiCsrfToken: string | undefined;
 };
 
@@ -134,7 +129,10 @@ export type TypeNormalisedInput = {
     errorHandlers: NormalisedErrorHandlers;
     antiCsrf: "VIA_TOKEN" | "VIA_CUSTOM_HEADER" | "NONE";
 
-    getTokenTransferMethod: (input: { req: BaseRequest; userContext: any }) => "cookie" | "header";
+    getTokenTransferMethod: (input: {
+        req: BaseRequest;
+        userContext: any;
+    }) => "cookie" | "header" | "MISSING_AUTH_HEADER";
 
     invalidClaimStatusCode: number;
     jwt: {

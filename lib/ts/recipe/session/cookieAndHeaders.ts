@@ -18,7 +18,7 @@ import { TokenType, TypeNormalisedInput } from "./types";
 
 const authorizationHeaderKey = "authorization";
 const accessTokenCookieKey = "sAccessToken";
-const accessTokenheaderKey = "st-access-token";
+const accessTokenHeaderKey = "st-access-token";
 const refreshTokenCookieKey = "sRefreshToken";
 const refreshTokenHeaderKey = "st-refresh-token";
 
@@ -30,16 +30,21 @@ const frontTokenHeaderKey = "front-token";
  * @description clears all the auth cookies from the response
  */
 export function clearSession(config: TypeNormalisedInput, req: BaseRequest, res: BaseResponse, userContext: any) {
-    const transferMethod = config.getTokenTransferMethod({ req, userContext });
+    // If we can tell it's a cookie based session we are not clearing using headers
+    let transferMethod = config.getTokenTransferMethod({ req, userContext });
+
+    if (transferMethod === "MISSING_AUTH_HEADER") {
+        transferMethod = "header";
+    }
 
     const tokenTypes: TokenType[] = ["access", "refresh"];
     for (const token of tokenTypes) {
-        setToken(config, req, res, token, "", 0, userContext, transferMethod);
+        setToken(config, res, token, "", 0, transferMethod);
 
         // This is to ensure we clear the cookies as well if the user has migrated to headers,
         // because this can't be done on the client side
         if (transferMethod === "header" && isTokenInCookies(req, token)) {
-            setToken(config, req, res, token, "", 0, userContext, "cookie");
+            setToken(config, res, token, "", 0, "cookie");
         }
     }
     res.setHeader(frontTokenHeaderKey, "remove", false);
@@ -83,7 +88,9 @@ function getCookieNameFromTokenType(tokenType: TokenType) {
 function getHeaderNameFromTokenType(tokenType: TokenType) {
     switch (tokenType) {
         case "access":
-            return accessTokenheaderKey;
+            // We are getting the access token from the authorization header during verification.
+            // This case is handled in the getToken fn below.
+            return accessTokenHeaderKey;
         case "refresh":
             return refreshTokenHeaderKey;
         default:
@@ -95,17 +102,7 @@ export function isTokenInCookies(req: BaseRequest, tokenType: TokenType) {
     return req.getCookieValue(getCookieNameFromTokenType(tokenType)) !== undefined;
 }
 
-export function getToken(
-    config: TypeNormalisedInput,
-    req: BaseRequest,
-    tokenType: TokenType,
-    userContext: any,
-    transferMethod?: "cookie" | "header"
-) {
-    if (transferMethod === undefined) {
-        transferMethod = config.getTokenTransferMethod({ req, userContext });
-    }
-
+export function getToken(req: BaseRequest, tokenType: TokenType, transferMethod: "cookie" | "header") {
     if (transferMethod === "cookie") {
         return req.getCookieValue(getCookieNameFromTokenType(tokenType));
     } else if (transferMethod === "header") {
@@ -124,18 +121,12 @@ export function getToken(
 
 export function setToken(
     config: TypeNormalisedInput,
-    req: BaseRequest,
     res: BaseResponse,
     tokenType: TokenType,
     value: string,
     expires: number,
-    userContext: any,
-    transferMethod?: "cookie" | "header"
+    transferMethod: "cookie" | "header"
 ) {
-    if (transferMethod === undefined) {
-        transferMethod = config.getTokenTransferMethod({ req, userContext });
-    }
-
     if (transferMethod === "cookie") {
         // We intentionally use accessTokenPath for idRefresh tokens
         setCookie(
