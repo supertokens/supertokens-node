@@ -327,6 +327,5 @@ export async function validateClaimsInPayload(
 }
 
 function defaultGetTokenTransferMethod({ req }: { req: BaseRequest }): "cookie" | "header" {
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", getAuthModeFromHeader(req));
     return getAuthModeFromHeader(req) === "header" ? "header" : "cookie";
 }
