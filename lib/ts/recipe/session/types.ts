@@ -49,7 +49,7 @@ export type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
         userId: string;
-        recipeUserId: string; // TODO in core
+        recipeUserId: string;
         userDataInJWT: any;
     };
     accessToken: {
@@ -173,7 +173,7 @@ export interface ErrorHandlerMiddleware {
 }
 
 export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
+    (sessionHandle: string, userId: string, recipeUserId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 
 export interface InvalidClaimErrorHandlerMiddleware {
@@ -293,6 +293,7 @@ export type RecipeInterface = {
 
     validateClaims(input: {
         userId: string;
+        recipeUserId: string;
         accessTokenPayload: any;
         claimValidators: SessionClaimValidator[];
         userContext: any;
@@ -300,17 +301,6 @@ export type RecipeInterface = {
         invalidClaims: ClaimValidationError[];
         accessTokenPayloadUpdate?: any;
     }>;
-
-    validateClaimsInJWTPayload(input: {
-        userId: string;
-        jwtPayload: JSONObject;
-        claimValidators: SessionClaimValidator[];
-        userContext: any;
-    }): Promise<{
-        status: "OK";
-        invalidClaims: ClaimValidationError[];
-    }>;
-
     fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
     setClaimValue<T>(input: {
         sessionHandle: string;
@@ -454,7 +444,7 @@ export abstract class SessionClaim<T> {
      * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
-    abstract fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
+    abstract fetchValue(userId: string, recipeUserId: string, userContext: any): Promise<T | undefined> | T | undefined;
 
     /**
      * Saves the provided value into the payload, by cloning and updating the entire object.
@@ -484,8 +474,8 @@ export abstract class SessionClaim<T> {
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
 
-    async build(userId: string, userContext?: any): Promise<JSONObject> {
-        const value = await this.fetchValue(userId, userContext);
+    async build(userId: string, recipeUserId: string, userContext?: any): Promise<JSONObject> {
+        const value = await this.fetchValue(userId, recipeUserId, userContext);
 
         if (value === undefined) {
             return {};

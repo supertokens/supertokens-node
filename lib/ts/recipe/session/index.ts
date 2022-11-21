@@ -139,43 +139,6 @@ export default class SessionWrapper {
         };
     }
 
-    static async validateClaimsInJWTPayload(
-        userId: string,
-        jwtPayload: JSONObject,
-        recipeUserId: string,
-        overrideGlobalClaimValidators?: (
-            globalClaimValidators: SessionClaimValidator[],
-            userId: string,
-            recipeUserId: string,
-            userContext: any
-        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        userContext: any = {}
-    ): Promise<{
-        status: "OK";
-        invalidClaims: ClaimValidationError[];
-    }> {
-        const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-
-        const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
-        const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
-            userId,
-            recipeUserId: recipeUserId,
-            claimValidatorsAddedByOtherRecipes,
-            userContext,
-        });
-
-        const claimValidators =
-            overrideGlobalClaimValidators !== undefined
-                ? await overrideGlobalClaimValidators(globalClaimValidators, userId, recipeUserId, userContext)
-                : globalClaimValidators;
-        return recipeImpl.validateClaimsInJWTPayload({
-            userId,
-            jwtPayload,
-            claimValidators,
-            userContext,
-        });
-    }
-
     static getSession(req: any, res: any): Promise<SessionContainer>;
     static getSession(
         req: any,
@@ -399,7 +362,6 @@ export let fetchAndSetClaim = SessionWrapper.fetchAndSetClaim;
 export let setClaimValue = SessionWrapper.setClaimValue;
 export let getClaimValue = SessionWrapper.getClaimValue;
 export let removeClaim = SessionWrapper.removeClaim;
-export let validateClaimsInJWTPayload = SessionWrapper.validateClaimsInJWTPayload;
 export let validateClaimsForSessionHandle = SessionWrapper.validateClaimsForSessionHandle;
 
 export let Error = SessionWrapper.Error;

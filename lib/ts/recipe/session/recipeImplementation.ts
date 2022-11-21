@@ -247,6 +247,7 @@ export default function getRecipeInterface(
             this: RecipeInterface,
             input: {
                 userId: string;
+                recipeUserId: string;
                 accessTokenPayload: any;
                 claimValidators: SessionClaimValidator[];
                 userContext: any;
@@ -263,7 +264,7 @@ export default function getRecipeInterface(
                 logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
                 if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
                     logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
-                    const value = await validator.claim.fetchValue(input.userId, input.userContext);
+                    const value = await validator.claim.fetchValue(input.userId, input.recipeUserId, input.userContext);
                     logDebugMessage(
                         "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
                     );
@@ -290,32 +291,6 @@ export default function getRecipeInterface(
             return {
                 invalidClaims,
                 accessTokenPayloadUpdate,
-            };
-        },
-
-        validateClaimsInJWTPayload: async function (
-            this: RecipeInterface,
-            input: {
-                userId: string;
-                jwtPayload: JSONObject;
-                claimValidators: SessionClaimValidator[];
-                userContext: any;
-            }
-        ): Promise<{
-            status: "OK";
-            invalidClaims: ClaimValidationError[];
-        }> {
-            // We skip refetching here, because we have no way of updating the JWT payload here
-            // if we have access to the entire session other methods can be used to do validation while updating
-            const invalidClaims = await validateClaimsInPayload(
-                input.claimValidators,
-                input.jwtPayload,
-                input.userContext
-            );
-
-            return {
-                status: "OK",
-                invalidClaims,
             };
         },
 

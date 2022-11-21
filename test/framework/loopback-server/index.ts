@@ -9,7 +9,7 @@ class Create {
     @post("/create")
     @response(200)
     async handler() {
-        await Session.createNewSession(this.ctx, "userId", "userId", {}, {});
+        await Session.createNewSession(this.ctx, "userId", {}, {});
         return {};
     }
 }
