@@ -5,7 +5,6 @@ import NormalisedURLDomain from "./normalisedURLDomain";
 import NormalisedURLPath from "./normalisedURLPath";
 import type { BaseRequest, BaseResponse } from "./framework";
 import { logDebugMessage } from "./logger";
-import { URL } from "url";
 import { HEADER_AUTH_MODE, HEADER_RID } from "./constants";
 
 export function getLargestVersionFromIntersection(v1: string[], v2: string[]): string | undefined {

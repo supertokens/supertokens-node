@@ -128,7 +128,6 @@ export function setToken(
     transferMethod: "cookie" | "header"
 ) {
     if (transferMethod === "cookie") {
-        // We intentionally use accessTokenPath for idRefresh tokens
         setCookie(
             config,
             res,
