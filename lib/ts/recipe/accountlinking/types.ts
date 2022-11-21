@@ -144,9 +144,9 @@ export type RecipeInterface = {
 
 type RecipeLevelUser = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
-    recipeUserId: string;
+    id: string; // can be recipeUserId or primaryUserId
     timeJoined: number;
-    primaryUserId?: string;
+    recipeUserId: string;
     email?: string;
     phoneNumber?: string;
     thirdParty?: {
