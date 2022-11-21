@@ -61,11 +61,6 @@ export type CreateOrRefreshAPIResponse = {
         expiry: number;
         createdTime: number;
     };
-    idRefreshToken: {
-        token: string;
-        expiry: number;
-        createdTime: number;
-    };
     antiCsrfToken: string | undefined;
 };
 
