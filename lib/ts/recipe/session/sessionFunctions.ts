@@ -217,7 +217,7 @@ export async function getSession(
             session: {
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
-                recipeUserId: accessTokenInfo.recipeUserId || accessTokenInfo.userId,
+                recipeUserId: accessTokenInfo.recipeUserId,
                 userDataInJWT: accessTokenInfo.userData,
             },
         };
