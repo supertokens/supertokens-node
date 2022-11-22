@@ -18,27 +18,22 @@ import { User } from "../../types";
 import { SessionContainer } from "../session";
 
 export type TypeInput = {
-    onAccountLinked?: (
-        user: User,
-        newAccountInfo: RecipeLevelUser,
-        userContext: any
-    ) => Promise<void>,
-    onAccountUnlinked?: (
-        user: User,
-        unlinkedAccount: RecipeLevelUser,
-        userContext: any
-    ) => Promise<void>,
+    onAccountLinked?: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
+    onAccountUnlinked?: (user: User, unlinkedAccount: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking?: (
         newAccountInfo: AccountInfoAndEmailWithRecipeId,
         user: User | undefined,
         session: SessionContainer | undefined,
         userContext: any
-    ) => Promise<{
-        shouldAutomaticallyLink: false
-    } | {
-        shouldAutomaticallyLink: true,
-        shouldRequireVerification: boolean
-    }>
+    ) => Promise<
+        | {
+              shouldAutomaticallyLink: false;
+          }
+        | {
+              shouldAutomaticallyLink: true;
+              shouldRequireVerification: boolean;
+          }
+    >;
     override?: {
         functions?: (
             originalImplementation: RecipeInterface,
@@ -49,27 +44,22 @@ export type TypeInput = {
 };
 
 export type TypeNormalisedInput = {
-    onAccountLinked: (
-        user: User,
-        newAccountInfo: RecipeLevelUser,
-        userContext: any
-    ) => Promise<void>,
-    onAccountUnlinked: (
-        user: User,
-        unlinkedAccount: RecipeLevelUser,
-        userContext: any
-    ) => Promise<void>,
+    onAccountLinked: (user: User, newAccountInfo: RecipeLevelUser, userContext: any) => Promise<void>;
+    onAccountUnlinked: (user: User, unlinkedAccount: RecipeLevelUser, userContext: any) => Promise<void>;
     shouldDoAutomaticAccountLinking: (
         newAccountInfo: AccountInfoAndEmailWithRecipeId,
         user: User | undefined,
         session: SessionContainer | undefined,
         userContext: any
-    ) => Promise<{
-        shouldAutomaticallyLink: false
-    } | {
-        shouldAutomaticallyLink: true,
-        shouldRequireVerification: boolean
-    }>
+    ) => Promise<
+        | {
+              shouldAutomaticallyLink: false;
+          }
+        | {
+              shouldAutomaticallyLink: true;
+              shouldRequireVerification: boolean;
+          }
+    >;
     override: {
         functions: (
             originalImplementation: RecipeInterface,
@@ -85,61 +75,79 @@ export type RecipeInterface = {
     canCreatePrimaryUserId: (input: {
         recipeUserId: string;
         userContext: any;
-    }) => Promise<{
-        status: "OK"
-    } | {
-        status: "PRIMARY_USER_ALREADY_EXISTS_FOR_RECIPE_USER_ID_ERROR"
-        | "PRIMARY_USER_ALREADY_EXISTS_FOR_ACCOUNT_INFO_ERROR",
-        primaryUserId: string
-    }>,
+    }) => Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status:
+                  | "PRIMARY_USER_ALREADY_EXISTS_FOR_RECIPE_USER_ID_ERROR"
+                  | "PRIMARY_USER_ALREADY_EXISTS_FOR_ACCOUNT_INFO_ERROR";
+              primaryUserId: string;
+          }
+    >;
     createPrimaryUser: (input: {
         recipeUserId: string;
         userContext: any;
-    }) => Promise<{
-        status: "OK",
-        user: User
-    } | {
-        status: "PRIMARY_USER_ALREADY_EXISTS_FOR_RECIPE_USER_ID_ERROR"
-            | "PRIMARY_USER_ALREADY_EXISTS_FOR_ACCOUNT_INFO_ERROR",
-        primaryUserId: string
-    }>,
+    }) => Promise<
+        | {
+              status: "OK";
+              user: User;
+          }
+        | {
+              status:
+                  | "PRIMARY_USER_ALREADY_EXISTS_FOR_RECIPE_USER_ID_ERROR"
+                  | "PRIMARY_USER_ALREADY_EXISTS_FOR_ACCOUNT_INFO_ERROR";
+              primaryUserId: string;
+          }
+    >;
     canLinkAccounts: (input: {
         recipeUserId: string;
         primaryUserId: string;
         userContext: any;
-    }) => Promise<{
-        status: "OK"
-    } |{
-        status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        primaryUserId: string
-    } | {
-        status: "ACCOUNTS_ALREADY_LINKED_ERROR"
-    } | {
-        status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        primaryUserId: string
-    }>,
+    }) => Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+        | {
+              status: "ACCOUNTS_ALREADY_LINKED_ERROR";
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+    >;
     linkAccounts: (input: {
         recipeUserId: string;
         primaryUserId: string;
         userContext: any;
-    }) => Promise<{
-        status: "OK"
-    } |{
-        status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        primaryUserId: string
-    } | {
-        status: "ACCOUNTS_ALREADY_LINKED_ERROR"
-    } | {
-        status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR",
-        primaryUserId: string
-    }>,
+    }) => Promise<
+        | {
+              status: "OK";
+          }
+        | {
+              status: "RECIPE_USER_ID_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+        | {
+              status: "ACCOUNTS_ALREADY_LINKED_ERROR";
+          }
+        | {
+              status: "ACCOUNT_INFO_ALREADY_LINKED_WITH_ANOTHER_PRIMARY_USER_ID_ERROR";
+              primaryUserId: string;
+          }
+    >;
     unlinkAccounts: (input: {
         recipeUserId: string;
         userContext: any;
     }) => Promise<{
-        status: "OK",
-        wasRecipeUserDeleted: boolean
-    }>
+        status: "OK";
+        wasRecipeUserDeleted: boolean;
+    }>;
 };
 
 type RecipeLevelUser = {
@@ -152,8 +160,8 @@ type RecipeLevelUser = {
     thirdParty?: {
         id: string;
         userId: string;
-    }
-}
+    };
+};
 
 export type AccountInfoAndEmailWithRecipeId = {
     recipeId: "emailpassword" | "thirdparty" | "passwordless";
@@ -162,5 +170,5 @@ export type AccountInfoAndEmailWithRecipeId = {
     thirdParty?: {
         id: string;
         userId: string;
-    }
-}
+    };
+};

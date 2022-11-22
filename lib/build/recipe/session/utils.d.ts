@@ -33,7 +33,8 @@ export declare function sendTokenTheftDetectedResponse(
     recipeInstance: SessionRecipe,
     sessionHandle: string,
     _: string,
-    __: BaseRequest,
+    __: string,
+    ___: BaseRequest,
     response: BaseResponse
 ): Promise<void>;
 export declare function normaliseSessionScopeOrThrowError(sessionScope: string): string;

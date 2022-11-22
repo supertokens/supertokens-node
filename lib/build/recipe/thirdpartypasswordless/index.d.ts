@@ -34,6 +34,7 @@ export default class Wrapper {
               phoneNumber?: string | undefined;
           } & {
               id: string;
+              recipeUserId: string;
               timeJoined: number;
           })
         | ({
@@ -44,6 +45,7 @@ export default class Wrapper {
               };
           } & {
               id: string;
+              recipeUserId: string;
               timeJoined: number;
           })
         | undefined
@@ -57,6 +59,7 @@ export default class Wrapper {
               phoneNumber?: string | undefined;
           } & {
               id: string;
+              recipeUserId: string;
               timeJoined: number;
           })
         | ({
@@ -67,6 +70,7 @@ export default class Wrapper {
               };
           } & {
               id: string;
+              recipeUserId: string;
               timeJoined: number;
           })
         | undefined
@@ -150,6 +154,7 @@ export default class Wrapper {
               phoneNumber?: string | undefined;
           } & {
               id: string;
+              recipeUserId: string;
               timeJoined: number;
           })
         | ({
@@ -160,6 +165,7 @@ export default class Wrapper {
               };
           } & {
               id: string;
+              recipeUserId: string;
               timeJoined: number;
           })
         | undefined

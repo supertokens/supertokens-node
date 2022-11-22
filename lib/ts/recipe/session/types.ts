@@ -173,7 +173,13 @@ export interface ErrorHandlerMiddleware {
 }
 
 export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, recipeUserId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
+    (
+        sessionHandle: string,
+        userId: string,
+        recipeUserId: string,
+        request: BaseRequest,
+        response: BaseResponse
+    ): Promise<void>;
 }
 
 export interface InvalidClaimErrorHandlerMiddleware {

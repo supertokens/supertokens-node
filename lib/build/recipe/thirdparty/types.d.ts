@@ -39,6 +39,7 @@ export declare type TypeProvider = {
 };
 export declare type User = {
     id: string;
+    recipeUserId: string;
     timeJoined: number;
     email: string;
     thirdParty: {

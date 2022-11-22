@@ -1,3 +1,4 @@
+// @ts-nocheck
 import error from "../../error";
 import { BaseRequest, BaseResponse } from "../../framework";
 import normalisedURLPath from "../../normalisedURLPath";
@@ -7,30 +8,38 @@ import { SessionContainer } from "../session";
 import { AccountInfoAndEmailWithRecipeId } from "./types";
 export default class AccountLinkingRecipe extends RecipeModule {
     getAPIsHandled(): APIHandled[];
-    handleAPIRequest(id: string, req: BaseRequest, response: BaseResponse, path: normalisedURLPath, method: HTTPMethod): Promise<boolean>;
-    handleError(error: error, request: BaseRequest, response: BaseResponse): Promise<void>;
+    handleAPIRequest(
+        _id: string,
+        _req: BaseRequest,
+        _response: BaseResponse,
+        _path: normalisedURLPath,
+        _method: HTTPMethod
+    ): Promise<boolean>;
+    handleError(_error: error, _request: BaseRequest, _response: BaseResponse): Promise<void>;
     getAllCORSHeaders(): string[];
-    isErrorFromThisRecipe(err: any): err is error;
-    isSignUpAllowed: (input: {
-        info: AccountInfoWithRecipeId;
-    }) => Promise<boolean>;
-    createPrimaryUserIdOrLinkAccountPostSignUp: (input: {
+    isErrorFromThisRecipe(_err: any): _err is error;
+    isSignUpAllowed: (input: { info: AccountInfoWithRecipeId }) => Promise<boolean>;
+    createPrimaryUserIdOrLinkAccountPostSignUp: (_input: {
         identifyinInfo: AccountInfoAndEmailWithRecipeId;
         shouldRequireVerification: boolean;
     }) => Promise<void>;
-    accountLinkPostSignInViaSession: (input: {
+    accountLinkPostSignInViaSession: (_input: {
         session: SessionContainer;
         identifyinInfo: AccountInfoAndEmailWithRecipeId;
-    }) => Promise<{
-        createRecipeUser: true;
-    } | ({
-        createRecipeUser: false;
-    } & {
-        accountsLinked: true;
-    }) | ({
-        createRecipeUser: false;
-    } & {
-        accountsLinked: false;
-        reason: string;
-    })>;
+    }) => Promise<
+        | {
+              createRecipeUser: true;
+          }
+        | ({
+              createRecipeUser: false;
+          } & {
+              accountsLinked: true;
+          })
+        | ({
+              createRecipeUser: false;
+          } & {
+              accountsLinked: false;
+              reason: string;
+          })
+    >;
 }

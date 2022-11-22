@@ -78,7 +78,7 @@ export async function getSession(
     session: {
         handle: string;
         userId: string;
-        recipeUserId: string,
+        recipeUserId: string;
         userDataInJWT: any;
     };
     accessToken?: {
@@ -361,6 +361,7 @@ export async function refreshSession(
         throw new STError({
             message: "Token theft detected",
             payload: {
+                recipeUserId: response.session.recipeUserId,
                 userId: response.session.userId,
                 sessionHandle: response.session.handle,
             },

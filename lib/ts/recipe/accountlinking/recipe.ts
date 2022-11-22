@@ -29,22 +29,26 @@ export default class AccountLinkingRecipe extends RecipeModule {
     getAPIsHandled(): APIHandled[] {
         throw new Error("Method not implemented.");
     }
-    handleAPIRequest(id: string, req: BaseRequest, response: BaseResponse, path: normalisedURLPath, method: HTTPMethod): Promise<boolean> {
+    handleAPIRequest(
+        _id: string,
+        _req: BaseRequest,
+        _response: BaseResponse,
+        _path: normalisedURLPath,
+        _method: HTTPMethod
+    ): Promise<boolean> {
         throw new Error("Method not implemented.");
     }
-    handleError(error: error, request: BaseRequest, response: BaseResponse): Promise<void> {
+    handleError(_error: error, _request: BaseRequest, _response: BaseResponse): Promise<void> {
         throw new Error("Method not implemented.");
     }
-    
+
     getAllCORSHeaders(): string[] {
         throw new Error("Method not implemented.");
     }
-    isErrorFromThisRecipe(err: any): err is error {
+    isErrorFromThisRecipe(_err: any): _err is error {
         throw new Error("Method not implemented.");
     }
-    isSignUpAllowed = async (input: {
-        info: AccountInfoWithRecipeId
-    }): Promise<boolean> => {
+    isSignUpAllowed = async (input: { info: AccountInfoWithRecipeId }): Promise<boolean> => {
         let user: User | undefined = await SuperTokens.getUserByAccountInfo(input);
         if (user === undefined || !user.isPrimaryUser) {
             return true;
@@ -55,34 +59,40 @@ export default class AccountLinkingRecipe extends RecipeModule {
         }
         // /**
         //  * for each linked recipes, get all the verified identifying info
-        //  * 
+        //  *
         //  * if the input identifyingInfo is found in the above generated list
         //  * of verified identifyingInfos, return true else false.
         //  */
         return true;
-    }
-    createPrimaryUserIdOrLinkAccountPostSignUp = async (input: {
-        identifyinInfo: AccountInfoAndEmailWithRecipeId,
-        shouldRequireVerification: boolean
+    };
+    createPrimaryUserIdOrLinkAccountPostSignUp = async (_input: {
+        identifyinInfo: AccountInfoAndEmailWithRecipeId;
+        shouldRequireVerification: boolean;
     }) => {
         // TODO
-    }
-    accountLinkPostSignInViaSession = async (input: {
-        session: SessionContainer,
-        identifyinInfo: AccountInfoAndEmailWithRecipeId
-    }): Promise<{
-        createRecipeUser: true
-    } | ({
-        createRecipeUser: false,
-    } & ({
-        accountsLinked: true
-    } | {
-        accountsLinked: false,
-        reason: string // TODO
-    }))> => {
+    };
+    accountLinkPostSignInViaSession = async (_input: {
+        session: SessionContainer;
+        identifyinInfo: AccountInfoAndEmailWithRecipeId;
+    }): Promise<
+        | {
+              createRecipeUser: true;
+          }
+        | ({
+              createRecipeUser: false;
+          } & (
+              | {
+                    accountsLinked: true;
+                }
+              | {
+                    accountsLinked: false;
+                    reason: string; // TODO
+                }
+          ))
+    > => {
         // let userId = session.getUserId();
         return {
-            createRecipeUser: true
+            createRecipeUser: true,
         };
-    }
+    };
 }

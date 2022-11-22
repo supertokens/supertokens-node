@@ -18,6 +18,7 @@ import {
 import { GeneralErrorResponse } from "../../types";
 export declare type User = {
     id: string;
+    recipeUserId: string;
     timeJoined: number;
     email: string;
     thirdParty?: {

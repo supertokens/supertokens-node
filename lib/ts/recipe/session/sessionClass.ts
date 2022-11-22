@@ -44,7 +44,7 @@ export default class Session implements SessionContainerInterface {
         this.helpers = helpers;
         this.recipeUserId = recipeUserId;
     }
-    getRecipeUserId(userContext?: any): string {
+    getRecipeUserId(_userContext?: any): string {
         return this.recipeUserId;
     }
 

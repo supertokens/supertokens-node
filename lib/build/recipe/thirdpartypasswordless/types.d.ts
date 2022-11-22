@@ -32,6 +32,7 @@ export declare type User = (
       }
 ) & {
     id: string;
+    recipeUserId: string;
     timeJoined: number;
 };
 export declare type TypeInput = (

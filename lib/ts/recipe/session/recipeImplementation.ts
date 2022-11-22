@@ -123,7 +123,13 @@ export default function getRecipeInterface(
             sessionData?: any;
             userContext: any;
         }): Promise<Session> {
-            let response = await SessionFunctions.createNewSession(helpers, userId, recipeUserId, accessTokenPayload, sessionData);
+            let response = await SessionFunctions.createNewSession(
+                helpers,
+                userId,
+                recipeUserId,
+                accessTokenPayload,
+                sessionData
+            );
             attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
             return new Session(
                 helpers,
@@ -469,7 +475,11 @@ export default function getRecipeInterface(
             if (sessionInfo === undefined) {
                 return false;
             }
-            const accessTokenPayloadUpdate = await input.claim.build(sessionInfo.userId, sessionInfo.recipeUserId, input.userContext);
+            const accessTokenPayloadUpdate = await input.claim.build(
+                sessionInfo.userId,
+                sessionInfo.recipeUserId,
+                input.userContext
+            );
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,

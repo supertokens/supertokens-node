@@ -441,24 +441,18 @@ export default class SuperTokens {
         throw err;
     };
 
-    getUser = async (input: {
-        userId: string
-    }): Promise<User | undefined> => {
+    getUser = async (_input: { userId: string }): Promise<User | undefined> => {
         // TODO
         return;
-    }
+    };
 
-    listUsersByAccountInfo = async (input: {
-        info: AccountInfo
-    }): Promise<User[] | undefined> => {
+    listUsersByAccountInfo = async (_input: { info: AccountInfo }): Promise<User[] | undefined> => {
         // TODO
         return;
-    }
+    };
 
-    getUserByAccountInfoAndRecipeId = async (input: {
-        info: AccountInfoWithRecipeId
-    }): Promise<User | undefined> => {
+    getUserByAccountInfoAndRecipeId = async (_input: { info: AccountInfoWithRecipeId }): Promise<User | undefined> => {
         // TODO
         return;
-    }
+    };
 }

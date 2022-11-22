@@ -6,6 +6,7 @@ export declare function getInfoFromAccessToken(
 ): Promise<{
     sessionHandle: string;
     userId: string;
+    recipeUserId: string;
     refreshTokenHash1: string;
     parentRefreshTokenHash1: string | undefined;
     userData: any;

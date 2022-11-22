@@ -94,21 +94,15 @@ export default class SuperTokensWrapper {
         return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
     }
 
-    static getUser(input: {
-        userId: string
-    }) {
+    static getUser(input: { userId: string }) {
         return SuperTokens.getInstanceOrThrowError().getUser(input);
     }
 
-    static listUsersByAccountInfo(input: {
-        info: AccountInfo
-    }) {
+    static listUsersByAccountInfo(input: { info: AccountInfo }) {
         return SuperTokens.getInstanceOrThrowError().listUsersByAccountInfo(input);
     }
 
-    static getUserByAccountInfo(input: {
-        info: AccountInfoWithRecipeId
-    }) {
+    static getUserByAccountInfo(input: { info: AccountInfoWithRecipeId }) {
         return SuperTokens.getInstanceOrThrowError().getUserByAccountInfoAndRecipeId(input);
     }
 }

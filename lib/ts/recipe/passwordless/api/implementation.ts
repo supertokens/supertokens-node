@@ -47,7 +47,14 @@ export default function getAPIImplementation(): APIInterface {
                 }
             }
 
-            const session = await Session.createNewSession(input.options.res, user.id, user.recipeUserId, {}, {}, input.userContext);
+            const session = await Session.createNewSession(
+                input.options.res,
+                user.id,
+                user.recipeUserId,
+                {},
+                {},
+                input.userContext
+            );
 
             return {
                 status: "OK",
