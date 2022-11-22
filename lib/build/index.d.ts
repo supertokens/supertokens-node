@@ -24,7 +24,8 @@ export default class SuperTokensWrapper {
         nextPaginationToken?: string;
     }>;
     static deleteUser(
-        userId: string
+        userId: string,
+        removeAllLinkedAccounts?: boolean
     ): Promise<{
         status: "OK";
     }>;

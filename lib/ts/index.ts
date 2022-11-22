@@ -59,9 +59,10 @@ export default class SuperTokensWrapper {
         });
     }
 
-    static deleteUser(userId: string) {
+    static deleteUser(userId: string, removeAllLinkedAccounts: boolean = true) {
         return SuperTokens.getInstanceOrThrowError().deleteUser({
             userId,
+            removeAllLinkedAccounts,
         });
     }
 

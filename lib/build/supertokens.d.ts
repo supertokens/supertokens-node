@@ -38,6 +38,7 @@ export default class SuperTokens {
     }>;
     deleteUser: (input: {
         userId: string;
+        removeAllLinkedAccounts: boolean;
     }) => Promise<{
         status: "OK";
     }>;

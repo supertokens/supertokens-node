@@ -217,7 +217,7 @@ export default class SuperTokens {
         };
     };
 
-    deleteUser = async (input: { userId: string }): Promise<{ status: "OK" }> => {
+    deleteUser = async (input: { userId: string; removeAllLinkedAccounts: boolean }): Promise<{ status: "OK" }> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let cdiVersion = await querier.getAPIVersion();
         if (maxVersion("2.10", cdiVersion) === cdiVersion) {
