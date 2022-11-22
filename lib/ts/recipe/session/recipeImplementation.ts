@@ -469,7 +469,7 @@ export default function getRecipeInterface(
             if (sessionInfo === undefined) {
                 return false;
             }
-            const accessTokenPayloadUpdate = await input.claim.build(sessionInfo.userId, input.userContext);
+            const accessTokenPayloadUpdate = await input.claim.build(sessionInfo.userId, sessionInfo.recipeUserId, input.userContext);
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,

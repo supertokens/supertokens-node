@@ -51,7 +51,7 @@ export default class SessionWrapper {
         let finalAccessTokenPayload = accessTokenPayload;
 
         for (const claim of claimsAddedByOtherRecipes) {
-            const update = await claim.build(userId, userContext);
+            const update = await claim.build(userId, recipeUserId, userContext);
             finalAccessTokenPayload = {
                 ...finalAccessTokenPayload,
                 ...update,
@@ -115,6 +115,7 @@ export default class SessionWrapper {
 
         let claimValidationResponse = await recipeImpl.validateClaims({
             userId: sessionInfo.userId,
+            recipeUserId: sessionInfo.recipeUserId,
             accessTokenPayload: sessionInfo.accessTokenPayload,
             claimValidators,
             userContext,

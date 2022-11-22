@@ -108,7 +108,7 @@ export default class SuperTokens {
             }
             await axios({
                 method: "POST",
-                url: "https://api.supertokens.io/0/st/telemetry",
+                url: "https://api.supertokens.com/0/st/telemetry",
                 data: {
                     appName: this.appInfo.appName,
                     websiteDomain: this.appInfo.websiteDomain.getAsStringDangerous(),

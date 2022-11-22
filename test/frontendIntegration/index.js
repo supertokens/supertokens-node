@@ -184,6 +184,7 @@ app.get("/featureFlags", async (req, res) => {
     res.status(200).json({
         sessionJwt:
             maxVersion(supertokens_node_version, "8.3") === supertokens_node_version && currentEnableJWT === true,
+        sessionClaims: maxVersion(supertokens_node_version, "12.0") === supertokens_node_version,
     });
 });
 
@@ -237,7 +238,7 @@ app.get(
     (req, res, next) => verifySession()(req, res, next),
     async (req, res) => {
         let response = req.headers["rid"];
-        res.send(response === undefined ? "fail" : "success");
+        res.send(response !== "anti-csrf" ? "fail" : "success");
     }
 );
 
@@ -257,6 +258,27 @@ app.post(
         res.json(req.session.getAccessTokenPayload());
     }
 );
+
+app.post(
+    "/session-claims-error",
+    (req, res, next) =>
+        verifySession({
+            overrideGlobalClaimValidators: () => [
+                {
+                    id: "test-claim-failing",
+                    shouldRefetch: () => false,
+                    validate: () => ({ isValid: false, reason: { message: "testReason" } }),
+                },
+            ],
+        })(req, res, next),
+    async (req, res) => {
+        res.json({});
+    }
+);
+
+app.post("/403-without-body", async (req, res) => {
+    res.sendStatus(403);
+});
 
 app.use("/testing", async (req, res) => {
     let tH = req.headers["testing"];
@@ -314,6 +336,10 @@ app.get("/getSessionCalledTime", async (req, res) => {
     res.status(200).send("" + noOfTimesGetSessionCalledDuringTest);
 });
 
+app.get("/getPackageVersion", async (req, res) => {
+    res.status(200).send("" + package_version);
+});
+
 app.get("/ping", async (req, res) => {
     res.send("success");
 });
@@ -337,8 +363,15 @@ app.post("/checkAllowCredentials", (req, res) => {
 app.get("/index.html", (req, res) => {
     res.sendFile("index.html", { root: __dirname });
 });
+
+app.use("/angular", express.static("./angular"));
+
 app.get("/testError", (req, res) => {
-    res.status(500).send("test error message");
+    let code = 500;
+    if (req.query.code) {
+        code = Number.parseInt(req.query.code);
+    }
+    res.status(code).send("test error message");
 });
 
 app.post(
