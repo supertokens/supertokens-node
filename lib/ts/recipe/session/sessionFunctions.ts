@@ -34,11 +34,10 @@ export async function createNewSession(
 ): Promise<CreateOrRefreshAPIResponse> {
     accessTokenPayload = accessTokenPayload === null || accessTokenPayload === undefined ? {} : accessTokenPayload;
     sessionData = sessionData === null || sessionData === undefined ? {} : sessionData;
-    recipeUserId = recipeUserId || userId;
 
     let requestBody: {
         userId: string;
-        recipeUserId: string;
+        recipeUserId?: string;
         userDataInJWT: any;
         userDataInDatabase: any;
         enableAntiCsrf?: boolean;
