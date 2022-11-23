@@ -116,9 +116,13 @@ export type RecipeInterface = {
     getUserByEmail(input: { email: string; userContext: any }): Promise<User | undefined>;
 
     createResetPasswordToken(input: {
-        userId: string;
+        userId: string; // the id can be either recipeUserId or primaryUserId
         userContext: any;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
+    }): Promise<
+        | { status: "OK"; token: string }
+        | { status: "UNKNOWN_USER_ID_ERROR" }
+        | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
+    >;
 
     resetPasswordUsingToken(input: {
         token: string;
@@ -127,21 +131,23 @@ export type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              /**
-               * The id of the user whose password was reset.
-               * Defined for Core versions 3.9 or later
-               */
-              userId?: string;
+              userId: string;
           }
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
     >;
 
     updateEmailOrPassword(input: {
-        userId: string;
+        userId: string; // the id can be either recipeUserId or primaryUserId
         email?: string;
         password?: string;
         userContext: any;
-    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<{
+        status:
+            | "OK"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "EMAIL_ALREADY_EXISTS_ERROR"
+            | "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
+    }>;
 };
 
 export type APIOptions = {
@@ -183,6 +189,10 @@ export type APIInterface = {
               | {
                     status: "OK";
                 }
+              | {
+                    status: "PASSWORD_RESET_NOT_ALLOWED_CONTACT_SUPPORT";
+                }
+              | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
               | GeneralErrorResponse
           >);
 
@@ -199,7 +209,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    userId?: string;
+                    userId: string;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -246,6 +256,34 @@ export type APIInterface = {
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
                 }
+              | {
+                    status: "SIGNUP_NOT_ALLOWED";
+                }
+              | GeneralErrorResponse
+          >);
+
+    postSignInAccountLinkingPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              session: SessionContainerInterface;
+              options: APIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    session: SessionContainerInterface;
+                }
+              | {
+                    status: "ACCOUNT_LINK_FAILURE";
+                    reason: string;
+                    contactSupport: boolean;
+                    recipeUserCreated: boolean;
+                }
               | GeneralErrorResponse
           >);
 };
@@ -254,6 +292,7 @@ export type TypeEmailPasswordPasswordResetEmailDeliveryInput = {
     type: "PASSWORD_RESET";
     user: {
         id: string;
+        recipeUserId: string;
         email: string;
     };
     passwordResetLink: string;

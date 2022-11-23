@@ -6,6 +6,35 @@ import { GeneralErrorResponse } from "../../../types";
 
 export default function getAPIImplementation(): APIInterface {
     return {
+        postSignInAccountLinkingPOST: async function (_input: {
+            formFields: {
+                id: string;
+                value: string;
+            }[];
+            session: SessionContainerInterface;
+            options: APIOptions;
+            userContext: any;
+        }): Promise<
+            | {
+                  status: "OK";
+                  session: SessionContainerInterface;
+                  user: User;
+              }
+            | {
+                  status: "ACCOUNT_LINK_FAILURE";
+                  reason: string;
+                  contactSupport: boolean;
+                  recipeUserCreated: boolean;
+              }
+            | GeneralErrorResponse
+        > {
+            return {
+                status: "ACCOUNT_LINK_FAILURE",
+                reason: "",
+                contactSupport: false,
+                recipeUserCreated: false,
+            };
+        },
         emailExistsGET: async function ({
             email,
             options,
@@ -43,6 +72,8 @@ export default function getAPIImplementation(): APIInterface {
             | {
                   status: "OK";
               }
+            | { status: "PASSWORD_RESET_NOT_ALLOWED_CONTACT_SUPPORT" }
+            | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
             | GeneralErrorResponse
         > {
             let email = formFields.filter((f) => f.id === "email")[0].value;
@@ -63,6 +94,10 @@ export default function getAPIImplementation(): APIInterface {
                 return {
                     status: "OK",
                 };
+            }
+
+            if (response.status === "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR") {
+                return response;
             }
 
             let passwordResetLink =
@@ -101,11 +136,7 @@ export default function getAPIImplementation(): APIInterface {
         }): Promise<
             | {
                   status: "OK";
-                  /**
-                   * The id of the user whose password was reset.
-                   * Defined for Core versions 3.9 or later
-                   */
-                  userId?: string;
+                  userId: string;
               }
             | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
             | GeneralErrorResponse
@@ -177,6 +208,9 @@ export default function getAPIImplementation(): APIInterface {
               }
             | {
                   status: "EMAIL_ALREADY_EXISTS_ERROR";
+              }
+            | {
+                  status: "SIGNUP_NOT_ALLOWED";
               }
             | GeneralErrorResponse
         > {

@@ -41,7 +41,11 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
         createResetPasswordToken: async function (input: {
             userId: string;
             userContext: any;
-        }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }> {
+        }): Promise<
+            | { status: "OK"; token: string }
+            | { status: "UNKNOWN_USER_ID_ERROR" }
+            | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
+        > {
             return recipeInterface.createResetPasswordToken(input);
         },
 
@@ -54,7 +58,10 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             email?: string;
             password?: string;
             userContext: any;
-        }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }> {
+        }): Promise<
+            | { status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }
+            | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
+        > {
             return recipeInterface.updateEmailOrPassword(input);
         },
     };

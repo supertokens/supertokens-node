@@ -44,6 +44,9 @@ export default class Wrapper {
         | {
               status: "UNKNOWN_USER_ID_ERROR";
           }
+        | {
+              status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
+          }
     >;
     static resetPasswordUsingToken(
         token: string,
@@ -52,7 +55,7 @@ export default class Wrapper {
     ): Promise<
         | {
               status: "OK";
-              userId?: string | undefined;
+              userId: string;
           }
         | {
               status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -64,7 +67,11 @@ export default class Wrapper {
         password?: string;
         userContext?: any;
     }): Promise<{
-        status: "OK" | "EMAIL_ALREADY_EXISTS_ERROR" | "UNKNOWN_USER_ID_ERROR";
+        status:
+            | "OK"
+            | "EMAIL_ALREADY_EXISTS_ERROR"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
     }>;
     static sendEmail(
         input: TypeEmailPasswordEmailDeliveryInput & {

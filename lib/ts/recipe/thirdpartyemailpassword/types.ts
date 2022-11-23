@@ -127,7 +127,13 @@ export type RecipeInterface = {
     createResetPasswordToken(input: {
         userId: string;
         userContext: any;
-    }): Promise<{ status: "OK"; token: string } | { status: "UNKNOWN_USER_ID_ERROR" }>;
+    }): Promise<
+        | { status: "OK"; token: string }
+        | { status: "UNKNOWN_USER_ID_ERROR" }
+        | {
+              status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
+          }
+    >;
 
     resetPasswordUsingToken(input: {
         token: string;
@@ -136,11 +142,7 @@ export type RecipeInterface = {
     }): Promise<
         | {
               status: "OK";
-              /**
-               * The id of the user whose password was reset.
-               * Defined for Core versions 3.9 or later
-               */
-              userId?: string;
+              userId: string;
           }
         | { status: "RESET_PASSWORD_INVALID_TOKEN_ERROR" }
     >;
@@ -150,7 +152,13 @@ export type RecipeInterface = {
         email?: string;
         password?: string;
         userContext: any;
-    }): Promise<{ status: "OK" | "UNKNOWN_USER_ID_ERROR" | "EMAIL_ALREADY_EXISTS_ERROR" }>;
+    }): Promise<{
+        status:
+            | "OK"
+            | "UNKNOWN_USER_ID_ERROR"
+            | "EMAIL_ALREADY_EXISTS_ERROR"
+            | "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
+    }>;
 };
 
 export type EmailPasswordAPIOptions = EmailPasswordAPIOptionsOriginal;
@@ -198,6 +206,10 @@ export type APIInterface = {
               | {
                     status: "OK";
                 }
+              | {
+                    status: "PASSWORD_RESET_NOT_ALLOWED_CONTACT_SUPPORT";
+                }
+              | { status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR" }
               | GeneralErrorResponse
           >);
 
@@ -214,7 +226,7 @@ export type APIInterface = {
           }) => Promise<
               | {
                     status: "OK";
-                    userId?: string;
+                    userId: string;
                 }
               | {
                     status: "RESET_PASSWORD_INVALID_TOKEN_ERROR";
@@ -246,6 +258,30 @@ export type APIInterface = {
                 }
           >);
 
+    emailPasswordPostSignInAccountLinkingPOST:
+        | undefined
+        | ((input: {
+              formFields: {
+                  id: string;
+                  value: string;
+              }[];
+              session: SessionContainerInterface;
+              options: EmailPasswordAPIOptions;
+              userContext: any;
+          }) => Promise<
+              | {
+                    status: "OK";
+                    user: User;
+                    session: SessionContainerInterface;
+                }
+              | {
+                    status: "ACCOUNT_LINK_FAILURE";
+                    reason: string;
+                    contactSupport: boolean;
+                    recipeUserCreated: boolean;
+                }
+              | GeneralErrorResponse
+          >);
     emailPasswordSignInPOST:
         | undefined
         | ((input: {
@@ -284,6 +320,9 @@ export type APIInterface = {
                 }
               | {
                     status: "EMAIL_ALREADY_EXISTS_ERROR";
+                }
+              | {
+                    status: "SIGNUP_NOT_ALLOWED";
                 }
               | GeneralErrorResponse
           >);

@@ -11,6 +11,9 @@ type Response =
           status: "OK";
       }
     | {
+          status: "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR";
+      }
+    | {
           status: "INVALID_PASSWORD_ERROR";
           error: string;
       };
@@ -74,6 +77,10 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
             throw new Error("Should never come here");
         }
 
+        if (passwordResetToken.status === "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR") {
+            return passwordResetToken;
+        }
+
         const passwordResetResponse = await EmailPassword.resetPasswordUsingToken(
             passwordResetToken.token,
             newPassword
@@ -106,6 +113,10 @@ export const userPasswordPut = async (_: APIInterface, options: APIOptions): Pro
     if (passwordResetToken.status === "UNKNOWN_USER_ID_ERROR") {
         // Techincally it can but its an edge case so we assume that it wont
         throw new Error("Should never come here");
+    }
+
+    if (passwordResetToken.status === "PROVIDE_RECIPE_USER_ID_AS_USER_ID_ERROR") {
+        return passwordResetToken;
     }
 
     const passwordResetResponse = await ThirdPartyEmailPassword.resetPasswordUsingToken(
