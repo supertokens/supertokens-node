@@ -18,33 +18,27 @@ import SuperTokens from "../../../supertokens";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
 
+type User = {
+    id: string;
+    isPrimaryUser: boolean;
+    firstName?: string;
+    lastName?: string;
+    emails: string[];
+    phoneNumbers: string[];
+    thirdpartyInfo: {
+        thirdpartyId: string;
+        thirdpartyUserId: string;
+    }[];
+    linkedRecipes: {
+        recipeId: string;
+        recipeUserId: string;
+    }[];
+};
+
 export type Response = {
     status: "OK";
     nextPaginationToken?: string;
-    users: {
-        recipeId: string;
-        user: {
-            id: string;
-            timeJoined: number;
-            firstName?: string;
-            lastName?: string;
-        } & (
-            | {
-                  email: string;
-              }
-            | {
-                  email: string;
-                  thirdParty: {
-                      id: string;
-                      userId: string;
-                  };
-              }
-            | {
-                  email?: string;
-                  phoneNumber?: string;
-              }
-        );
-    }[];
+    users: User[];
 };
 
 export default async function usersGet(_: APIInterface, options: APIOptions): Promise<Response> {
@@ -91,10 +85,7 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
         };
     }
 
-    let updatedUsersArray: {
-        recipeId: string;
-        user: any;
-    }[] = [];
+    let updatedUsersArray: User[] = [];
     let metaDataFetchPromises: (() => Promise<any>)[] = [];
 
     for (let i = 0; i < usersResponse.users.length; i++) {
@@ -103,16 +94,13 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
             (): Promise<any> =>
                 new Promise(async (resolve, reject) => {
                     try {
-                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.user.id);
+                        const userMetaDataResponse = await UserMetaData.getUserMetadata(userObj.id);
                         const { first_name, last_name } = userMetaDataResponse.metadata;
 
                         updatedUsersArray[i] = {
-                            recipeId: userObj.recipeId,
-                            user: {
-                                ...userObj.user,
-                                firstName: first_name,
-                                lastName: last_name,
-                            },
+                            ...userObj,
+                            firstName: first_name,
+                            lastName: last_name,
                         };
                         resolve(true);
                     } catch (e) {

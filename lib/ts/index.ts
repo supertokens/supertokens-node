@@ -15,6 +15,7 @@
 
 import SuperTokens from "./supertokens";
 import SuperTokensError from "./error";
+import { AccountInfo, AccountInfoWithRecipeId, User } from "./types";
 
 // For Express
 export default class SuperTokensWrapper {
@@ -35,7 +36,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
     }): Promise<{
-        users: { recipeId: string; user: any }[];
+        users: User[];
         nextPaginationToken?: string;
     }> {
         return SuperTokens.getInstanceOrThrowError().getUsers({
@@ -49,7 +50,7 @@ export default class SuperTokensWrapper {
         paginationToken?: string;
         includeRecipeIds?: string[];
     }): Promise<{
-        users: { recipeId: string; user: any }[];
+        users: User[];
         nextPaginationToken?: string;
     }> {
         return SuperTokens.getInstanceOrThrowError().getUsers({
@@ -58,9 +59,10 @@ export default class SuperTokensWrapper {
         });
     }
 
-    static deleteUser(userId: string) {
+    static deleteUser(userId: string, removeAllLinkedAccounts: boolean = true) {
         return SuperTokens.getInstanceOrThrowError().deleteUser({
             userId,
+            removeAllLinkedAccounts,
         });
     }
 
@@ -92,6 +94,18 @@ export default class SuperTokensWrapper {
     }) {
         return SuperTokens.getInstanceOrThrowError().updateOrDeleteUserIdMappingInfo(input);
     }
+
+    static getUser(input: { userId: string }) {
+        return SuperTokens.getInstanceOrThrowError().getUser(input);
+    }
+
+    static listUsersByAccountInfo(input: { info: AccountInfo }) {
+        return SuperTokens.getInstanceOrThrowError().listUsersByAccountInfo(input);
+    }
+
+    static getUserByAccountInfo(input: { info: AccountInfoWithRecipeId }) {
+        return SuperTokens.getInstanceOrThrowError().getUserByAccountInfoAndRecipeId(input);
+    }
 }
 
 export let init = SuperTokensWrapper.init;
@@ -113,5 +127,11 @@ export let getUserIdMapping = SuperTokensWrapper.getUserIdMapping;
 export let deleteUserIdMapping = SuperTokensWrapper.deleteUserIdMapping;
 
 export let updateOrDeleteUserIdMappingInfo = SuperTokensWrapper.updateOrDeleteUserIdMappingInfo;
+
+export let getUser = SuperTokensWrapper.getUser;
+
+export let listUsersByAccountInfo = SuperTokensWrapper.listUsersByAccountInfo;
+
+export let getUserByAccountInfo = SuperTokensWrapper.getUserByAccountInfo;
 
 export let Error = SuperTokensWrapper.Error;

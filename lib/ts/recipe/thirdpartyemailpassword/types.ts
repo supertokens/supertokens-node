@@ -32,6 +32,7 @@ import { GeneralErrorResponse } from "../../types";
 
 export type User = {
     id: string;
+    recipeUserId: string;
     timeJoined: number;
     email: string;
     thirdParty?: {

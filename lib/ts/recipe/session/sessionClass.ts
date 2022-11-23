@@ -25,12 +25,14 @@ export default class Session implements SessionContainerInterface {
     protected res: BaseResponse;
     protected accessToken: string;
     protected helpers: Helpers;
+    protected recipeUserId: string;
 
     constructor(
         helpers: Helpers,
         accessToken: string,
         sessionHandle: string,
         userId: string,
+        recipeUserId: string,
         userDataInAccessToken: any,
         res: BaseResponse
     ) {
@@ -40,6 +42,10 @@ export default class Session implements SessionContainerInterface {
         this.res = res;
         this.accessToken = accessToken;
         this.helpers = helpers;
+        this.recipeUserId = recipeUserId;
+    }
+    getRecipeUserId(_userContext?: any): string {
+        return this.recipeUserId;
     }
 
     async revokeSession(userContext?: any) {
@@ -147,6 +153,7 @@ export default class Session implements SessionContainerInterface {
         let validateClaimResponse = await this.helpers.getRecipeImpl().validateClaims({
             accessTokenPayload: this.getAccessTokenPayload(userContext),
             userId: this.getUserId(userContext),
+            recipeUserId: this.getRecipeUserId(userContext),
             claimValidators,
             userContext,
         });
@@ -166,7 +173,7 @@ export default class Session implements SessionContainerInterface {
 
     // Any update to this function should also be reflected in the respective JWT version
     async fetchAndSetClaim<T>(claim: SessionClaim<T>, userContext?: any): Promise<void> {
-        const update = await claim.build(this.getUserId(userContext), userContext);
+        const update = await claim.build(this.getUserId(userContext), this.getRecipeUserId(userContext), userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 

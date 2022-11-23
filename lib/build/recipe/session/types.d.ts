@@ -31,6 +31,7 @@ export declare type CreateOrRefreshAPIResponse = {
     session: {
         handle: string;
         userId: string;
+        recipeUserId: string;
         userDataInJWT: any;
     };
     accessToken: {
@@ -149,7 +150,13 @@ export interface ErrorHandlerMiddleware {
     (message: string, request: BaseRequest, response: BaseResponse): Promise<void>;
 }
 export interface TokenTheftErrorHandlerMiddleware {
-    (sessionHandle: string, userId: string, request: BaseRequest, response: BaseResponse): Promise<void>;
+    (
+        sessionHandle: string,
+        userId: string,
+        recipeUserId: string,
+        request: BaseRequest,
+        response: BaseResponse
+    ): Promise<void>;
 }
 export interface InvalidClaimErrorHandlerMiddleware {
     (validatorErrors: ClaimValidationError[], request: BaseRequest, response: BaseResponse): Promise<void>;
@@ -173,12 +180,14 @@ export declare type RecipeInterface = {
     createNewSession(input: {
         res: BaseResponse;
         userId: string;
+        recipeUserId?: string;
         accessTokenPayload?: any;
         sessionData?: any;
         userContext: any;
     }): Promise<SessionContainerInterface>;
     getGlobalClaimValidators(input: {
         userId: string;
+        recipeUserId: string;
         claimValidatorsAddedByOtherRecipes: SessionClaimValidator[];
         userContext: any;
     }): Promise<SessionClaimValidator[]> | SessionClaimValidator[];
@@ -233,6 +242,7 @@ export declare type RecipeInterface = {
               session: {
                   handle: string;
                   userId: string;
+                  recipeUserId: string;
                   userDataInJWT: any;
               };
               accessToken?: {
@@ -247,21 +257,13 @@ export declare type RecipeInterface = {
     getRefreshTokenLifeTimeMS(input: { userContext: any }): Promise<number>;
     validateClaims(input: {
         userId: string;
+        recipeUserId: string;
         accessTokenPayload: any;
         claimValidators: SessionClaimValidator[];
         userContext: any;
     }): Promise<{
         invalidClaims: ClaimValidationError[];
         accessTokenPayloadUpdate?: any;
-    }>;
-    validateClaimsInJWTPayload(input: {
-        userId: string;
-        jwtPayload: JSONObject;
-        claimValidators: SessionClaimValidator[];
-        userContext: any;
-    }): Promise<{
-        status: "OK";
-        invalidClaims: ClaimValidationError[];
     }>;
     fetchAndSetClaim(input: { sessionHandle: string; claim: SessionClaim<any>; userContext: any }): Promise<boolean>;
     setClaimValue<T>(input: {
@@ -290,6 +292,7 @@ export interface SessionContainerInterface {
     getSessionData(userContext?: any): Promise<any>;
     updateSessionData(newSessionData: any, userContext?: any): Promise<any>;
     getUserId(userContext?: any): string;
+    getRecipeUserId(userContext?: any): string;
     getAccessTokenPayload(userContext?: any): any;
     getHandle(userContext?: any): string;
     getAccessToken(userContext?: any): string;
@@ -342,6 +345,7 @@ export declare type APIInterface = {
 export declare type SessionInformation = {
     sessionHandle: string;
     userId: string;
+    recipeUserId: string;
     sessionData: any;
     expiry: number;
     accessTokenPayload: any;
@@ -385,7 +389,7 @@ export declare abstract class SessionClaim<T> {
      * The undefined return value signifies that we don't want to update the claim payload and or the claim value is not present in the database
      * This can happen for example with a second factor auth claim, where we don't want to add the claim to the session automatically.
      */
-    abstract fetchValue(userId: string, userContext: any): Promise<T | undefined> | T | undefined;
+    abstract fetchValue(userId: string, recipeUserId: string, userContext: any): Promise<T | undefined> | T | undefined;
     /**
      * Saves the provided value into the payload, by cloning and updating the entire object.
      *
@@ -410,5 +414,5 @@ export declare abstract class SessionClaim<T> {
      * @returns Claim value
      */
     abstract getValueFromPayload(payload: JSONObject, userContext: any): T | undefined;
-    build(userId: string, userContext?: any): Promise<JSONObject>;
+    build(userId: string, recipeUserId?: string, userContext?: any): Promise<JSONObject>;
 }

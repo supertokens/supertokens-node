@@ -837,6 +837,7 @@ let sessionConfig: SessionTypeInput = {
                         getAccessTokenPayload: session.getAccessTokenPayload,
                         getSessionData: session.getSessionData,
                         getUserId: session.getUserId,
+                        getRecipeUserId: session.getRecipeUserId,
                         revokeSession: session.revokeSession,
                         updateAccessTokenPayload: session.updateAccessTokenPayload,
                         updateSessionData: session.updateSessionData,
@@ -868,7 +869,6 @@ let sessionConfig: SessionTypeInput = {
                 getClaimValue: originalImpl.getClaimValue,
                 removeClaim: originalImpl.removeClaim,
                 validateClaims: originalImpl.validateClaims,
-                validateClaimsInJWTPayload: originalImpl.validateClaimsInJWTPayload,
             };
         },
     },
@@ -1266,17 +1266,6 @@ Session.validateClaimsForSessionHandle(
     { test: 1 }
 );
 
-Session.validateClaimsInJWTPayload("userId", {});
-Session.validateClaimsInJWTPayload("userId", {}, (globalClaimValidators) => [
-    ...globalClaimValidators,
-    boolClaim.validators.isTrue(),
-]);
-Session.validateClaimsInJWTPayload(
-    "userId",
-    {},
-    (globalClaimValidators, userId) => [...globalClaimValidators, stringClaim.validators.startsWith(userId)],
-    { test: 1 }
-);
 EmailVerification.sendEmail({
     emailVerifyLink: "",
     type: "EMAIL_VERIFICATION",

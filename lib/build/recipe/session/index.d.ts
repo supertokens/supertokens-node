@@ -19,6 +19,7 @@ export default class SessionWrapper {
     static createNewSession(
         res: any,
         userId: string,
+        recipeUserId?: string,
         accessTokenPayload?: any,
         sessionData?: any,
         userContext?: any
@@ -40,19 +41,6 @@ export default class SessionWrapper {
               invalidClaims: ClaimValidationError[];
           }
     >;
-    static validateClaimsInJWTPayload(
-        userId: string,
-        jwtPayload: JSONObject,
-        overrideGlobalClaimValidators?: (
-            globalClaimValidators: SessionClaimValidator[],
-            userId: string,
-            userContext: any
-        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        userContext?: any
-    ): Promise<{
-        status: "OK";
-        invalidClaims: ClaimValidationError[];
-    }>;
     static getSession(req: any, res: any): Promise<SessionContainer>;
     static getSession(
         req: any,
@@ -87,6 +75,7 @@ export default class SessionWrapper {
               session: {
                   handle: string;
                   userId: string;
+                  recipeUserId: string;
                   userDataInJWT: any;
               };
               accessToken?:
@@ -173,7 +162,6 @@ export declare let fetchAndSetClaim: typeof SessionWrapper.fetchAndSetClaim;
 export declare let setClaimValue: typeof SessionWrapper.setClaimValue;
 export declare let getClaimValue: typeof SessionWrapper.getClaimValue;
 export declare let removeClaim: typeof SessionWrapper.removeClaim;
-export declare let validateClaimsInJWTPayload: typeof SessionWrapper.validateClaimsInJWTPayload;
 export declare let validateClaimsForSessionHandle: typeof SessionWrapper.validateClaimsForSessionHandle;
 export declare let Error: typeof SuperTokensError;
 export declare let createJWT: typeof SessionWrapper.createJWT;

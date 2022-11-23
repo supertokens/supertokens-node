@@ -9,14 +9,17 @@ export default class Session implements SessionContainerInterface {
     protected res: BaseResponse;
     protected accessToken: string;
     protected helpers: Helpers;
+    protected recipeUserId: string;
     constructor(
         helpers: Helpers,
         accessToken: string,
         sessionHandle: string,
         userId: string,
+        recipeUserId: string,
         userDataInAccessToken: any,
         res: BaseResponse
     );
+    getRecipeUserId(_userContext?: any): string;
     revokeSession(userContext?: any): Promise<void>;
     getSessionData(userContext?: any): Promise<any>;
     updateSessionData(newSessionData: any, userContext?: any): Promise<void>;

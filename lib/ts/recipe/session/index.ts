@@ -41,6 +41,7 @@ export default class SessionWrapper {
     static async createNewSession(
         res: any,
         userId: string,
+        recipeUserId?: string,
         accessTokenPayload: any = {},
         sessionData: any = {},
         userContext: any = {}
@@ -50,7 +51,7 @@ export default class SessionWrapper {
         let finalAccessTokenPayload = accessTokenPayload;
 
         for (const claim of claimsAddedByOtherRecipes) {
-            const update = await claim.build(userId, userContext);
+            const update = await claim.build(userId, recipeUserId, userContext);
             finalAccessTokenPayload = {
                 ...finalAccessTokenPayload,
                 ...update,
@@ -63,6 +64,7 @@ export default class SessionWrapper {
         return Recipe.getInstanceOrThrowError().recipeInterfaceImpl.createNewSession({
             res,
             userId,
+            recipeUserId,
             accessTokenPayload: finalAccessTokenPayload,
             sessionData,
             userContext,
@@ -100,7 +102,8 @@ export default class SessionWrapper {
 
         const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
         const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
-            userId: sessionInfo?.userId,
+            userId: sessionInfo.userId,
+            recipeUserId: sessionInfo.recipeUserId,
             claimValidatorsAddedByOtherRecipes,
             userContext,
         });
@@ -112,6 +115,7 @@ export default class SessionWrapper {
 
         let claimValidationResponse = await recipeImpl.validateClaims({
             userId: sessionInfo.userId,
+            recipeUserId: sessionInfo.recipeUserId,
             accessTokenPayload: sessionInfo.accessTokenPayload,
             claimValidators,
             userContext,
@@ -134,40 +138,6 @@ export default class SessionWrapper {
             status: "OK",
             invalidClaims: claimValidationResponse.invalidClaims,
         };
-    }
-
-    static async validateClaimsInJWTPayload(
-        userId: string,
-        jwtPayload: JSONObject,
-        overrideGlobalClaimValidators?: (
-            globalClaimValidators: SessionClaimValidator[],
-            userId: string,
-            userContext: any
-        ) => Promise<SessionClaimValidator[]> | SessionClaimValidator[],
-        userContext: any = {}
-    ): Promise<{
-        status: "OK";
-        invalidClaims: ClaimValidationError[];
-    }> {
-        const recipeImpl = Recipe.getInstanceOrThrowError().recipeInterfaceImpl;
-
-        const claimValidatorsAddedByOtherRecipes = Recipe.getInstanceOrThrowError().getClaimValidatorsAddedByOtherRecipes();
-        const globalClaimValidators: SessionClaimValidator[] = await recipeImpl.getGlobalClaimValidators({
-            userId,
-            claimValidatorsAddedByOtherRecipes,
-            userContext,
-        });
-
-        const claimValidators =
-            overrideGlobalClaimValidators !== undefined
-                ? await overrideGlobalClaimValidators(globalClaimValidators, userId, userContext)
-                : globalClaimValidators;
-        return recipeImpl.validateClaimsInJWTPayload({
-            userId,
-            jwtPayload,
-            claimValidators,
-            userContext,
-        });
     }
 
     static getSession(req: any, res: any): Promise<SessionContainer>;
@@ -393,7 +363,6 @@ export let fetchAndSetClaim = SessionWrapper.fetchAndSetClaim;
 export let setClaimValue = SessionWrapper.setClaimValue;
 export let getClaimValue = SessionWrapper.getClaimValue;
 export let removeClaim = SessionWrapper.removeClaim;
-export let validateClaimsInJWTPayload = SessionWrapper.validateClaimsInJWTPayload;
 export let validateClaimsForSessionHandle = SessionWrapper.validateClaimsForSessionHandle;
 
 export let Error = SessionWrapper.Error;

@@ -15,6 +15,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             return {
                 email: user.email,
                 id: user.id,
+                recipeUserId: user.recipeUserId,
                 timeJoined: user.timeJoined,
                 thirdParty: user.thirdParty,
             };
@@ -36,6 +37,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
                 user: {
                     email: result.user.email,
                     id: result.user.id,
+                    recipeUserId: result.user.recipeUserId,
                     timeJoined: result.user.timeJoined,
                     thirdParty: result.user.thirdParty,
                 },
@@ -51,6 +53,7 @@ export default function getRecipeInterface(recipeInterface: ThirdPartyEmailPassw
             return {
                 email: user.email,
                 id: user.id,
+                recipeUserId: user.recipeUserId,
                 timeJoined: user.timeJoined,
                 thirdParty: user.thirdParty,
             };

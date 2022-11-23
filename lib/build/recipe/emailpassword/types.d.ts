@@ -59,6 +59,7 @@ export declare type TypeNormalisedInputResetPasswordUsingTokenFeature = {
 };
 export declare type User = {
     id: string;
+    recipeUserId: string;
     email: string;
     timeJoined: number;
 };

@@ -31,6 +31,7 @@ import { TypeFramework } from "./framework/types";
 import STError from "./error";
 import { logDebugMessage } from "./logger";
 import { PostSuperTokensInitCallbacks } from "./postSuperTokensInitCallbacks";
+import { AccountInfo, AccountInfoWithRecipeId, User } from "./types";
 
 export default class SuperTokens {
     private static instance: SuperTokens | undefined;
@@ -190,7 +191,7 @@ export default class SuperTokens {
         paginationToken?: string;
         includeRecipeIds?: string[];
     }): Promise<{
-        users: { recipeId: string; user: any }[];
+        users: User[];
         nextPaginationToken?: string;
     }> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
@@ -216,7 +217,7 @@ export default class SuperTokens {
         };
     };
 
-    deleteUser = async (input: { userId: string }): Promise<{ status: "OK" }> => {
+    deleteUser = async (input: { userId: string; removeAllLinkedAccounts: boolean }): Promise<{ status: "OK" }> => {
         let querier = Querier.getNewInstanceOrThrowError(undefined);
         let cdiVersion = await querier.getAPIVersion();
         if (maxVersion("2.10", cdiVersion) === cdiVersion) {
@@ -438,5 +439,20 @@ export default class SuperTokens {
             }
         }
         throw err;
+    };
+
+    getUser = async (_input: { userId: string }): Promise<User | undefined> => {
+        // TODO
+        return;
+    };
+
+    listUsersByAccountInfo = async (_input: { info: AccountInfo }): Promise<User[] | undefined> => {
+        // TODO
+        return;
+    };
+
+    getUserByAccountInfoAndRecipeId = async (_input: { info: AccountInfoWithRecipeId }): Promise<User | undefined> => {
+        // TODO
+        return;
     };
 }

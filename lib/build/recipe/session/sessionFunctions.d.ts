@@ -7,6 +7,7 @@ import { Helpers } from "./recipeImplementation";
 export declare function createNewSession(
     helpers: Helpers,
     userId: string,
+    recipeUserId?: string,
     accessTokenPayload?: any,
     sessionData?: any
 ): Promise<CreateOrRefreshAPIResponse>;
@@ -23,6 +24,7 @@ export declare function getSession(
     session: {
         handle: string;
         userId: string;
+        recipeUserId: string;
         userDataInJWT: any;
     };
     accessToken?: {

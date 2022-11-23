@@ -28,6 +28,7 @@ import { logDebugMessage } from "../../logger";
 export async function createNewSession(
     helpers: Helpers,
     userId: string,
+    recipeUserId?: string,
     accessTokenPayload: any = {},
     sessionData: any = {}
 ): Promise<CreateOrRefreshAPIResponse> {
@@ -36,11 +37,13 @@ export async function createNewSession(
 
     let requestBody: {
         userId: string;
+        recipeUserId?: string;
         userDataInJWT: any;
         userDataInDatabase: any;
         enableAntiCsrf?: boolean;
     } = {
         userId,
+        recipeUserId,
         userDataInJWT: accessTokenPayload,
         userDataInDatabase: sessionData,
     };
@@ -74,6 +77,7 @@ export async function getSession(
     session: {
         handle: string;
         userId: string;
+        recipeUserId: string;
         userDataInJWT: any;
     };
     accessToken?: {
@@ -213,6 +217,7 @@ export async function getSession(
             session: {
                 handle: accessTokenInfo.sessionHandle,
                 userId: accessTokenInfo.userId,
+                recipeUserId: accessTokenInfo.recipeUserId,
                 userDataInJWT: accessTokenInfo.userData,
             },
         };
@@ -355,6 +360,7 @@ export async function refreshSession(
         throw new STError({
             message: "Token theft detected",
             payload: {
+                recipeUserId: response.session.recipeUserId,
                 userId: response.session.userId,
                 sessionHandle: response.session.handle,
             },

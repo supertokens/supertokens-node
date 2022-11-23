@@ -24,6 +24,7 @@ export default class SessionError extends STError {
                   type: "TOKEN_THEFT_DETECTED";
                   payload: {
                       userId: string;
+                      recipeUserId: string;
                       sessionHandle: string;
                   };
               }

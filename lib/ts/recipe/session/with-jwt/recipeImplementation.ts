@@ -107,12 +107,14 @@ export default function (
             {
                 res,
                 userId,
+                recipeUserId,
                 accessTokenPayload,
                 sessionData,
                 userContext,
             }: {
                 res: BaseResponse;
                 userId: string;
+                recipeUserId?: string;
                 accessTokenPayload?: any;
                 sessionData?: any;
                 userContext: any;
@@ -134,6 +136,7 @@ export default function (
             let sessionContainer = await originalImplementation.createNewSession({
                 res,
                 userId,
+                recipeUserId,
                 accessTokenPayload,
                 sessionData,
                 userContext,

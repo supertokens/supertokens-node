@@ -28,6 +28,10 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         private readonly openIdRecipeImplementation: OpenIdRecipeInterface
     ) {}
 
+    getRecipeUserId(userContext?: any): string {
+        return this.originalSessionClass.getRecipeUserId(userContext);
+    }
+
     revokeSession(userContext?: any): Promise<void> {
         return this.originalSessionClass.revokeSession(userContext);
     }
@@ -61,6 +65,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
         let validateClaimResponse = await SessionRecipe.getInstanceOrThrowError().recipeInterfaceImpl.validateClaims({
             accessTokenPayload: this.getAccessTokenPayload(userContext),
             userId: this.getUserId(userContext),
+            recipeUserId: this.getRecipeUserId(userContext),
             claimValidators,
             userContext,
         });
@@ -80,7 +85,7 @@ export default class SessionClassWithJWT implements SessionContainerInterface {
 
     // We copy the implementation here, since we want to override updateAccessTokenPayload
     async fetchAndSetClaim<T>(this: SessionClassWithJWT, claim: SessionClaim<T>, userContext?: any) {
-        const update = await claim.build(this.getUserId(userContext), userContext);
+        const update = await claim.build(this.getUserId(userContext), this.getRecipeUserId(userContext), userContext);
         return this.mergeIntoAccessTokenPayload(update, userContext);
     }
 

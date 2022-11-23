@@ -112,22 +112,31 @@ export default function getRecipeInterface(
         createNewSession: async function ({
             res,
             userId,
+            recipeUserId,
             accessTokenPayload = {},
             sessionData = {},
         }: {
             res: BaseResponse;
             userId: string;
+            recipeUserId?: string;
             accessTokenPayload?: any;
             sessionData?: any;
             userContext: any;
         }): Promise<Session> {
-            let response = await SessionFunctions.createNewSession(helpers, userId, accessTokenPayload, sessionData);
+            let response = await SessionFunctions.createNewSession(
+                helpers,
+                userId,
+                recipeUserId,
+                accessTokenPayload,
+                sessionData
+            );
             attachCreateOrRefreshSessionResponseToExpressRes(config, res, response);
             return new Session(
                 helpers,
                 response.accessToken.token,
                 response.session.handle,
                 response.session.userId,
+                response.session.recipeUserId,
                 response.session.userDataInJWT,
                 res
             );
@@ -232,6 +241,7 @@ export default function getRecipeInterface(
                 accessToken,
                 response.session.handle,
                 response.session.userId,
+                response.session.recipeUserId,
                 response.session.userDataInJWT,
                 res
             );
@@ -243,6 +253,7 @@ export default function getRecipeInterface(
             this: RecipeInterface,
             input: {
                 userId: string;
+                recipeUserId: string;
                 accessTokenPayload: any;
                 claimValidators: SessionClaimValidator[];
                 userContext: any;
@@ -259,7 +270,7 @@ export default function getRecipeInterface(
                 logDebugMessage("updateClaimsInPayloadIfNeeded checking shouldRefetch for " + validator.id);
                 if ("claim" in validator && (await validator.shouldRefetch(accessTokenPayload, input.userContext))) {
                     logDebugMessage("updateClaimsInPayloadIfNeeded refetching " + validator.id);
-                    const value = await validator.claim.fetchValue(input.userId, input.userContext);
+                    const value = await validator.claim.fetchValue(input.userId, input.recipeUserId, input.userContext);
                     logDebugMessage(
                         "updateClaimsInPayloadIfNeeded " + validator.id + " refetch result " + JSON.stringify(value)
                     );
@@ -286,32 +297,6 @@ export default function getRecipeInterface(
             return {
                 invalidClaims,
                 accessTokenPayloadUpdate,
-            };
-        },
-
-        validateClaimsInJWTPayload: async function (
-            this: RecipeInterface,
-            input: {
-                userId: string;
-                jwtPayload: JSONObject;
-                claimValidators: SessionClaimValidator[];
-                userContext: any;
-            }
-        ): Promise<{
-            status: "OK";
-            invalidClaims: ClaimValidationError[];
-        }> {
-            // We skip refetching here, because we have no way of updating the JWT payload here
-            // if we have access to the entire session other methods can be used to do validation while updating
-            const invalidClaims = await validateClaimsInPayload(
-                input.claimValidators,
-                input.jwtPayload,
-                input.userContext
-            );
-
-            return {
-                status: "OK",
-                invalidClaims,
             };
         },
 
@@ -362,6 +347,7 @@ export default function getRecipeInterface(
                 response.accessToken.token,
                 response.session.handle,
                 response.session.userId,
+                response.session.recipeUserId,
                 response.session.userDataInJWT,
                 res
             );
@@ -380,6 +366,7 @@ export default function getRecipeInterface(
                   session: {
                       handle: string;
                       userId: string;
+                      recipeUserId: string;
                       userDataInJWT: any;
                   };
                   accessToken?: {
@@ -488,7 +475,11 @@ export default function getRecipeInterface(
             if (sessionInfo === undefined) {
                 return false;
             }
-            const accessTokenPayloadUpdate = await input.claim.build(sessionInfo.userId, input.userContext);
+            const accessTokenPayloadUpdate = await input.claim.build(
+                sessionInfo.userId,
+                sessionInfo.recipeUserId,
+                input.userContext
+            );
 
             return this.mergeIntoAccessTokenPayload({
                 sessionHandle: input.sessionHandle,

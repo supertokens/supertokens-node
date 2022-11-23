@@ -1,6 +1,6 @@
-import SuperTokens from "../../../../supertokens";
 import { APIInterface, APIOptions } from "../../types";
 import STError from "../../../../error";
+import { deleteUser } from "../../../..";
 
 type Response = {
     status: "OK";
@@ -8,6 +8,12 @@ type Response = {
 
 export const userDelete = async (_: APIInterface, options: APIOptions): Promise<Response> => {
     const userId = options.req.getKeyValueFromQuery("userId");
+    let removeAllLinkedAccountsQueryValue = options.req.getKeyValueFromQuery("removeAllLinkedAccounts");
+    if (removeAllLinkedAccountsQueryValue !== undefined) {
+        removeAllLinkedAccountsQueryValue = removeAllLinkedAccountsQueryValue.trim().toLowerCase();
+    }
+    const removeAllLinkedAccounts =
+        removeAllLinkedAccountsQueryValue === undefined ? undefined : removeAllLinkedAccountsQueryValue === "true";
 
     if (userId === undefined) {
         throw new STError({
@@ -16,9 +22,7 @@ export const userDelete = async (_: APIInterface, options: APIOptions): Promise<
         });
     }
 
-    await SuperTokens.getInstanceOrThrowError().deleteUser({
-        userId,
-    });
+    await deleteUser(userId, removeAllLinkedAccounts);
 
     return {
         status: "OK",

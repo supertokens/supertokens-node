@@ -49,6 +49,7 @@ export type User = (
       }
 ) & {
     id: string;
+    recipeUserId: string;
     timeJoined: number;
 };
 
