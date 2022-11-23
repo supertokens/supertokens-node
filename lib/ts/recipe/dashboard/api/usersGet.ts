@@ -17,17 +17,28 @@ import STError from "../../../error";
 import SuperTokens from "../../../supertokens";
 import UserMetaDataRecipe from "../../usermetadata/recipe";
 import UserMetaData from "../../usermetadata";
-import { User } from "../../../types";
 
-type UserWithMetadata = User & {
+type User = {
+    id: string;
+    isPrimaryUser: boolean;
     firstName?: string;
     lastName?: string;
+    emails: string[];
+    phoneNumbers: string[];
+    thirdpartyInfo: {
+        thirdpartyId: string;
+        thirdpartyUserId: string;
+    }[];
+    linkedRecipes: {
+        recipeId: string;
+        recipeUserId: string;
+    }[];
 };
 
 export type Response = {
     status: "OK";
     nextPaginationToken?: string;
-    users: UserWithMetadata[];
+    users: User[];
 };
 
 export default async function usersGet(_: APIInterface, options: APIOptions): Promise<Response> {
@@ -74,7 +85,7 @@ export default async function usersGet(_: APIInterface, options: APIOptions): Pr
         };
     }
 
-    let updatedUsersArray: UserWithMetadata[] = [];
+    let updatedUsersArray: User[] = [];
     let metaDataFetchPromises: (() => Promise<any>)[] = [];
 
     for (let i = 0; i < usersResponse.users.length; i++) {
